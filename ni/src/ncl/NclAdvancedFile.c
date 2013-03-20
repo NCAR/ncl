@@ -1741,8 +1741,7 @@ NclFileGrpNode *_getGrpNodeFromNclFileGrpNode(NclFileGrpNode *ingrpnode,
 
     if(NULL == ingrpnode)
     {
-        NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-            "_getGrpNodeFromNclFileGrpNode: input grpnode is NULL.\n"));
+        NHLPERROR((NhlWARNING,NhlEUNKNOWN, "_getGrpNodeFromNclFileGrpNode: input grpnode is NULL.\n"));
         goto done_getGrpNodeFromNclFileGrpNode;
     }
 
@@ -5236,7 +5235,7 @@ static NhlErrorTypes AdvancedFileSetFileOption(NclFile  infile,
         if (thefile->advancedfile.format_funcs->set_option == NULL)
         {
             NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                  "%s: advancedfile does not support any options", __PRETTY_FUNCTION__));
+                  "advancedfile does not support any options"));
             return(NhlWARNING);
         }
 
@@ -5262,22 +5261,22 @@ static NhlErrorTypes AdvancedFileSetFileOption(NclFile  infile,
             if (fcp->options[i].access == 1 && thefile->advancedfile.wr_status != 1)
             {
                 NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                    "%s: option %s is invalid unless file is opened for reading only",
-                      __PRETTY_FUNCTION__, NrmQuarkToString(option)));
+                    "%option %s is invalid unless file is opened for reading only",
+                      NrmQuarkToString(option)));
                 return(NhlWARNING);
             }
             else if (fcp->options[i].access == 2 && thefile->advancedfile.wr_status > 0)
             {
                 NHLPERROR((NhlWARNING,NhlEUNKNOWN,
                     "AdvancedFileSetFileOption: option %s is invalid unless file is open for writing",
-                      __PRETTY_FUNCTION__, NrmQuarkToString(option)));
+                      NrmQuarkToString(option)));
                 return(NhlWARNING);
             }
             else if (fcp->options[i].access == 3 && thefile->advancedfile.wr_status != -1)
             {
                 NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                    "%s: option %s is can only be set prior to file creation",
-                      __PRETTY_FUNCTION__, NrmQuarkToString(option)));
+                    "option %s is can only be set prior to file creation",
+                     NrmQuarkToString(option)));
                 return(NhlWARNING);
             }
 
@@ -5297,8 +5296,8 @@ static NhlErrorTypes AdvancedFileSetFileOption(NclFile  infile,
             if(tmp_md == NULL)
             {
                 NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                    "%s: invalid type for %s option value; value must be coercible to %s",
-                      __PRETTY_FUNCTION__, NrmQuarkToString(option),
+                    "Invalid type for %s option value; value must be coercible to %s",
+                     NrmQuarkToString(option),
                       NrmQuarkToString(_NclObjTypeToName(fcp->options[i].value->multidval.type->type_class.type))));
                 return(NhlWARNING);
             }
@@ -5328,8 +5327,8 @@ static NhlErrorTypes AdvancedFileSetFileOption(NclFile  infile,
                     {
                         NclFree(lvalue);
                         NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                              "%s: invalid value supplied for option %s",
-                              __PRETTY_FUNCTION__, NrmQuarkToString(option)));
+                              "Invalid value supplied for option %s",
+                               NrmQuarkToString(option)));
                         return(NhlWARNING);
                     }
                 }
@@ -5353,8 +5352,8 @@ static NhlErrorTypes AdvancedFileSetFileOption(NclFile  infile,
                 if(! ok)
                 {
                     NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                          "%s: invalid value supplied for option %s",
-                              __PRETTY_FUNCTION__, NrmQuarkToString(option)));
+                          "Invalid value supplied for option %s",
+                           NrmQuarkToString(option)));
                     return(NhlWARNING);
                 }
             }
@@ -5388,8 +5387,8 @@ static NhlErrorTypes AdvancedFileSetFileOption(NclFile  infile,
         }
 
         NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-              "%s: %s is not a recognized file option for format %s",
-              __PRETTY_FUNCTION__, NrmQuarkToString(option),NrmQuarkToString(format)));
+              "%s is not a recognized file option for format %s",
+               NrmQuarkToString(option),NrmQuarkToString(format)));
         return(NhlWARNING);
     }
     else if (format != NrmNULLQUARK)
@@ -5408,8 +5407,8 @@ static NhlErrorTypes AdvancedFileSetFileOption(NclFile  infile,
                     if(_NclGetLower(fcp->options[i].format) != NrmStringToQuark("all"))
                     {
                         NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                                   "%s: %s is not a recognized option for format %s",
-                                   __PRETTY_FUNCTION__, NrmQuarkToString(option),NrmQuarkToString(format)));
+                                   "%s is not a recognized option for format %s",
+                                    NrmQuarkToString(option),NrmQuarkToString(format)));
                         return(NhlWARNING);
                     }
                 }
@@ -5424,8 +5423,8 @@ static NhlErrorTypes AdvancedFileSetFileOption(NclFile  infile,
                     if(_NclGetLower(fcp->options[i].format) != NrmStringToQuark("all"))
                     {
                         NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                                   "%s: %s is not a recognized option for format %s",
-                                   __PRETTY_FUNCTION__, NrmQuarkToString(option),NrmQuarkToString(format)));
+                                   "%s is not a recognized option for format %s",
+                                    NrmQuarkToString(option),NrmQuarkToString(format)));
                              return(NhlWARNING);
                     }
                 }
@@ -5444,8 +5443,8 @@ static NhlErrorTypes AdvancedFileSetFileOption(NclFile  infile,
             if (tmp_md == NULL)
             {
                 NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                    "%s: invalid type for %s option value; value must be coercible to %s",
-                      __PRETTY_FUNCTION__, NrmQuarkToString(option), 
+                    "%Invalid type for %s option value; value must be coercible to %s",
+                      NrmQuarkToString(option), 
                       NrmQuarkToString(_NclObjTypeToName(fcp->options[i].value->multidval.type->type_class.type))));
                 return(NhlWARNING);
             }
@@ -5475,8 +5474,8 @@ static NhlErrorTypes AdvancedFileSetFileOption(NclFile  infile,
                     {
                         NclFree(lvalue);
                         NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                              "%s: invalid value supplied for option %s",
-                              __PRETTY_FUNCTION__, NrmQuarkToString(option)));
+                              "Invalid value supplied for option %s",
+                               NrmQuarkToString(option)));
                         return(NhlWARNING);
                     }
                 }
@@ -5500,8 +5499,8 @@ static NhlErrorTypes AdvancedFileSetFileOption(NclFile  infile,
                 if(! ok)
                 {
                     NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                          "%s: invalid value supplied for option %s",
-                              __PRETTY_FUNCTION__, NrmQuarkToString(option)));
+                          "Invalid value supplied for option %s",
+                           NrmQuarkToString(option)));
                     return(NhlWARNING);
                 }
             }
@@ -5525,14 +5524,13 @@ static NhlErrorTypes AdvancedFileSetFileOption(NclFile  infile,
             return NhlNOERROR;
         }
         NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-              "%s: %s is not a recognized file option for format %s",
-              __PRETTY_FUNCTION__, NrmQuarkToString(option),NrmQuarkToString(format)));
+              "%s is not a recognized file option for format %s",
+               NrmQuarkToString(option),NrmQuarkToString(format)));
         return(NhlWARNING);
     }
     else
     {
-        NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-              "%s: invalid file or format", __PRETTY_FUNCTION__));
+        NHLPERROR((NhlWARNING,NhlEUNKNOWN, "Invalid file or format"));
         return(NhlWARNING);
     }                        
         
@@ -6671,7 +6669,7 @@ static NhlErrorTypes MyAdvancedFileWriteVar(NclFile infile, NclQuark var,
                 if(NULL == tmp_md)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                              "%s: Type mismatch, can't perform assignment", __PRETTY_FUNCTION__));
+                              "Type mismatch, can't perform assignment"));
                     ret = NhlFATAL;
                     goto done_MyAdvancedFileWriteVar;
                 }
@@ -6742,8 +6740,8 @@ static NhlErrorTypes MyAdvancedFileWriteVar(NclFile infile, NclQuark var,
             if(NULL == tmp_md)
             {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                        "%s: lhs_type = %d, rhs_type = %d, Type mismatch, can't perform assignment",
-			lhs_type, rhs_type, __PRETTY_FUNCTION__));
+                        "lhs_type = %d, rhs_type = %d, Type mismatch, can't perform assignment",
+			lhs_type, rhs_type));
                 ret = NhlFATAL;
                 goto done_MyAdvancedFileWriteVar;
             }

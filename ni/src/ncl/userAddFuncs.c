@@ -4378,7 +4378,7 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
         else
         {
             NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: can only handle list less than %d elements.\n",
-                                            __PRETTY_FUNCTION__, MAX_LIST_ELEMENT);
+                                            "process_list", MAX_LIST_ELEMENT);
             return(NhlFATAL);
         }
 
@@ -4427,7 +4427,7 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
                     *}
                     */
          
-                     NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: can not print file list yet.\n", __PRETTY_FUNCTION__);
+                     NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: can not print file list yet.\n", "process_list");
                      return(NhlFATAL);
                  }
                  else if(thevalue->obj.obj_type_mask & Ncl_MultiDVallistData)
@@ -4436,7 +4436,7 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
                     *ret = _PrintListVarSummary((NclObj)thevalue,fp);
                     */
          
-                     NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: can not print list in list yet.\n", __PRETTY_FUNCTION__);
+                     NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: can not print list in list yet.\n", "process_list");
                      return(NhlFATAL);
                  }
                  else

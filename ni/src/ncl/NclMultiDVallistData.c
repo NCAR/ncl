@@ -302,8 +302,7 @@ static struct _NclDataRec *MultiDVal_list_ReadSection
                                 }
 			}
 			if((sel_ptr->u.sub.start > self_md->multidval.dim_sizes[sel_ptr->dim_num] - 1)||(sel_ptr->u.sub.start < 0)) {
-				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s: Subscript out of range, error in subscript #%d",
-						__PRETTY_FUNCTION__, i));
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d", i));
 				return(NULL);
 			}
 
@@ -318,13 +317,11 @@ static struct _NclDataRec *MultiDVal_list_ReadSection
 * a dim_size > 1
 */
 			if((sel_ptr->u.vec.min < 0)|| (sel_ptr->u.vec.min > self_md->multidval.dim_sizes[sel_ptr->dim_num]-1)) {
-				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s: Subscript out of range, error in subscript #%d",
-						__PRETTY_FUNCTION__, i));
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d", i));
 				return(NULL);
 			}
 			if((sel_ptr->u.vec.max < 0)|| (sel_ptr->u.vec.max > self_md->multidval.dim_sizes[sel_ptr->dim_num]-1)) {
-				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s: Subscript out of range, error in subscript #%d",
-						__PRETTY_FUNCTION__, i));
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d", i));
 				return(NULL);
 			}
 			n_elem = sel_ptr->u.vec.n_ind;

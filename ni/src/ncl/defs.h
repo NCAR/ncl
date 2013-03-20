@@ -58,7 +58,6 @@ struct _NclMemoryStruct
     size_t memloc;
     size_t linenumb;
     char   filename[NCL_MAX_NAME_LENGTH];
-    char   funcname[NCL_MAX_NAME_LENGTH];
 };
 
 typedef struct _NclMemoryStruct NclMemoryStruct;
@@ -244,22 +243,19 @@ typedef struct _ext_stack {
 } ExtStack;
 
 #ifdef NCLDEBUG
-void *_underNclMalloc(int linenum, const char *filename, const char *funcname,
-                      ng_usize_t size);
-void _underNclFree(int linenum, const char *filename, const char *funcname,
-                   void *ptr);
-void *_underNclCalloc(int linenum, const char *filename, const char *funcname,
+void *_underNclMalloc(int linenum, const char *filename, ng_usize_t size);
+void _underNclFree(int linenum, const char *filename, void *ptr);
+void *_underNclCalloc(int linenum, const char *filename,
                       ng_usize_t num, ng_usize_t size);
-void *_underNclRealloc(int linenum, const char *filename, const char *funcname,
+void *_underNclRealloc(int linenum, const char *filename,
                        void *ptr, ng_usize_t size);
 
-#define NclMalloc(size)	_underNclMalloc(__LINE__, __FILE__, __PRETTY_FUNCTION__,\
-			                (ng_usize_t) size)
-#define NclCalloc(num, size)	_underNclCalloc(__LINE__, __FILE__, __PRETTY_FUNCTION__,\
+#define NclMalloc(size)	_underNclMalloc(__LINE__, __FILE__, (ng_usize_t) size)
+#define NclCalloc(num, size)	_underNclCalloc(__LINE__, __FILE__, \
 				                (ng_usize_t) num, (ng_usize_t) size)
-#define NclRealloc(ptr, size)	_underNclRealloc(__LINE__, __FILE__, __PRETTY_FUNCTION__,\
+#define NclRealloc(ptr, size)	_underNclRealloc(__LINE__, __FILE__, \
 				                 ptr, (ng_usize_t) size)
-#define NclFree(ptr)	_underNclFree(__LINE__, __FILE__, __PRETTY_FUNCTION__, ptr)
+#define NclFree(ptr)	_underNclFree(__LINE__, __FILE__, ptr)
 #else
 extern void *NclMalloc(
 #if     NhlNeedProto

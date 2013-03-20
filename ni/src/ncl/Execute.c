@@ -8198,8 +8198,7 @@ NclExecuteReturnStatus _NclExecute
 				break;
 			default:
 			      /*
-			       *fprintf(stderr, "function %s, file: %s, line: %d\n",
-			       *                 __PRETTY_FUNCTION__, __FILE__, __LINE__)
+			       *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__)
 			       *fprintf(stderr, "\tUNKNOWN Operator *ptr: %ld\n", (long)*ptr);
 			       */
 				break;

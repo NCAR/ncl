@@ -99,8 +99,7 @@ char **GetNclFileVarNames(NclFile thefile, int *num_vars)
     else
     {
         fprintf(stderr, "\n\nWARNING!\n\n");
-        fprintf(stderr, "file %s, line: %d, function: %s\n",
-                         __FILE__, __LINE__, __PRETTY_FUNCTION__);
+        fprintf(stderr, "file %s, line: %d\n", __FILE__, __LINE__);
         fprintf(stderr, "\tA null char ** variable is expected but input is not.\n");
         fprintf(stderr, "\tMemory leak risk is high.\n");
         fprintf(stderr, "\n\nWARNING!!\n\n");
@@ -115,8 +114,7 @@ char **GetNclFileVarNames(NclFile thefile, int *num_vars)
         strcpy(varnames[n], str);
 
       /*
-       *fprintf(stderr, "file %s, line: %d, function: %s\n",
-       *                 __FILE__, __LINE__, __PRETTY_FUNCTION__);
+       *fprintf(stderr, "file %s, line: %d\n", __FILE__, __LINE__);
        *fprintf(stderr, "\tVar %d: <%s>\n", n, varnames[n]);
        */
     }
@@ -163,8 +161,7 @@ char **guiGetNclFileAttNames(NclFile thefile, int *num_atts)
             attnames[n] = (char *)NclCalloc(strlen(str) + 1, sizeof(char));
             strcpy(attnames[n], str);
           /*
-           *fprintf(stderr, "\tfile %s, line: %d, function: %s\n",
-           *        __FILE__, __LINE__, __PRETTY_FUNCTION__);
+           *fprintf(stderr, "file %s, line: %d\n", __FILE__, __LINE__);
            *fprintf(stderr, "\tatt %d: <%s>\n", n, str);
            */
         }
@@ -177,8 +174,7 @@ char **guiGetNclFileAttNames(NclFile thefile, int *num_atts)
             attnames[n] = (char *)NclCalloc(strlen(str) + 1, sizeof(char));
             strcpy(attnames[n], str);
           /*
-           *fprintf(stderr, "\tfile %s, line: %d, function: %s\n",
-           *        __FILE__, __LINE__, __PRETTY_FUNCTION__);
+           *fprintf(stderr, "\tfile %s, line: %d\n", __FILE__, __LINE__);
            *fprintf(stderr, "\tatt %d: <%s>\n", n, str);
            */
         }
@@ -241,8 +237,7 @@ void getNclFileVarInfo(NclFile thefile, int *ndims, int **dimsizes, char ***dimn
     {
       /*
        */
-        fprintf(stderr, "file %s, line: %d, function: %s\n",
-                         __FILE__, __LINE__, __PRETTY_FUNCTION__);
+        fprintf(stderr, "file %s, line: %d\n", __FILE__, __LINE__);
         fprintf(stderr, "\tnumber of vars = %d\n", thefile->file.n_vars);
 
         for(i = 0; i < thefile->file.n_vars; ++i)

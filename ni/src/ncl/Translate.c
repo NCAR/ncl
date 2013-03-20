@@ -1886,8 +1886,7 @@ Unneeded translations
 				break;	
 			case Ncl_REWRITEIT:
 				/*
-				 *fprintf(stderr, "\nfunc: %s, file: %s, line: %d\n",
-				 *		   __PRETTY_FUNCTION__, __FILE__, __LINE__);
+				 *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
 				 */
 
 				if(varatt->subscript_list != NULL) {
@@ -2584,8 +2583,7 @@ Unneeded translations
 				break;
 			case Ncl_REWRITEIT:
 #if 1
-                                fprintf(stderr, "\nfunc: %s, file: %s, line: %d\n",
-                                                __PRETTY_FUNCTION__, __FILE__, __LINE__);
+                                fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
                                 fprintf(stderr, "\tReassgin to group is not supported in NCL.\n");
 				exit (-1);
 #else

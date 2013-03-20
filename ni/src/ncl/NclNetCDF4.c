@@ -240,7 +240,7 @@ static int InitializeOptions(NclFileGrpNode *grpnode)
     grpnode->n_options = NC_NUM_OPTIONS;
 
   /*
-   *fprintf(stderr, "\nfile: %s, line: %d, function: %s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
+   *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tgrpnode->n_options = %d\n", grpnode->n_options);
    */
     
@@ -2238,7 +2238,7 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
             nc_inq_var_deflate(gid, i, &(varnode->shuffle), &deflatep, &(varnode->compress_level));
 
           /*
-           *fprintf(stderr, "\nfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+           *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
            *fprintf(stderr, "\t\tvarnode->shuffle = %d, deflatep = %d, compress_level = %d\n",
            *                     varnode->shuffle, deflatep, varnode->compress_level);
            */
@@ -2492,7 +2492,7 @@ static void NC4FreeFileRec(void* therec)
             if(NC_NOERR != ret)
             {
               /*
-               *fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+               fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
                *NHLPERROR((NhlWARNING,NhlEUNKNOWN,(char*)nc_strerror(ret)));
                */
                 NHLPERROR((NhlINFO,NhlEUNKNOWN,(char*)nc_strerror(ret)));
@@ -2735,8 +2735,8 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Error in nc_def_var_chunking in file (%s) in <%s> for writing, at line: %d\n",
-                                  __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Error in nc_def_var_chunking in file (%s) for writing, at line: %d\n",
+                                  __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
                     check_err(nc_ret, __LINE__, __FILE__);
                     return;
                 }
@@ -2750,7 +2750,7 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
 
                   /*
                    */
-                    fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+                    fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
                     fprintf(stderr, "\t\tvarnode->shuffle = %d, compress_level = %d\n",
                                          varnode->shuffle, varnode->compress_level);
 
@@ -2897,8 +2897,8 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
         if(nc_ret != NC_NOERR)
         {
             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
             return(NULL);
         }
 
@@ -3416,8 +3416,8 @@ static void *NC4ReadVarAtt(void *therec, NclQuark thevar, NclQuark theatt, void 
 
                 if(nc_ret != NC_NOERR) {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
                     return(NULL);
                 }
                 grpnode->fid = fid;
@@ -3477,7 +3477,7 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
     int fill_mode;
 
   /*
-   *fprintf(stderr, "\nEnter %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+   *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
    */
 
@@ -3512,7 +3512,7 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 }
 
               /*
-               *fprintf(stderr, "\t%s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+               *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
                *fprintf(stderr, "\tDim %d: count[%d] = %ld, locstart[%d] = %ld, n_elem = %ld, no_stride = %d, dimnode->is_unlimited = %d, dimnode->size = %d, finish[%d] = %ld, stride[%d] = %ld\n",
                *                  i, i, count[i], i, locstart[i], n_elem, no_stride, dimnode->is_unlimited, dimnode->size, i, finish[i], i, stride[i]);
                */
@@ -3538,8 +3538,8 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
             if(nc_ret != NC_NOERR)
             {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
                 return(NhlFATAL);
             }
 
@@ -3684,8 +3684,7 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                             }
                             else
                             {
-                                fprintf(stderr, "\tfile: %s, function: %s, line: %d\n",
-                                                  __FILE__, __PRETTY_FUNCTION__, __LINE__);
+                                fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
                                 fprintf(stderr, "\tUnknown cur_var->obj.obj_type: 0%x\n", cur_var->obj.obj_type);
                             }
 
@@ -3779,8 +3778,8 @@ static NhlErrorTypes NC4WriteAtt(void *therec, NclQuark theatt, void *data)
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
                     return(NhlFATAL);
                 }
                 grpnode->fid = fid;
@@ -3800,8 +3799,8 @@ static NhlErrorTypes NC4WriteAtt(void *therec, NclQuark theatt, void *data)
                         if(nc_ret != NC_NOERR)
                         {
                             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                                  "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
-                                  __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
+                                  "%s: Could not redef the file id (%d) for writing, at line: %d\n",
+                                  __FILE__, fid, __LINE__));
                             return(NhlFATAL);
                         }
 
@@ -3825,8 +3824,8 @@ static NhlErrorTypes NC4WriteAtt(void *therec, NclQuark theatt, void *data)
                         if(nc_ret != NC_NOERR)
                         {
                             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                                  "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
-                                  __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
+                                  "%s: Could not redef the file id (%d) for writing, at line: %d\n",
+                                  __FILE__, fid, __LINE__));
                             return(NhlFATAL);
                         }
                         grpnode->define_mode = 1;
@@ -3900,8 +3899,8 @@ static NhlErrorTypes NC4DelAtt(void *therec, NclQuark theatt)
                     if(nc_ret != NC_NOERR)
                     {
                         NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
                         return(NhlFATAL);
                     }
                     grpnode->fid = fid;
@@ -3917,8 +3916,8 @@ static NhlErrorTypes NC4DelAtt(void *therec, NclQuark theatt)
                    *if(nc_ret != NC_NOERR)
                    *{
                    *    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                   *          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
-                   *          __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
+                   *          "%s: Could not redef the file id (%d) for writing, at line: %d\n",
+                   *          __FILE__, fid, __LINE__));
                    *    return(NhlFATAL);
                    *}
                    */
@@ -3990,8 +3989,8 @@ static NhlErrorTypes NC4DelVarAtt(void *therec, NclQuark thevar, NclQuark theatt
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
                     return(NhlFATAL);
                 }
                 grpnode->fid = fid;
@@ -4006,8 +4005,8 @@ static NhlErrorTypes NC4DelVarAtt(void *therec, NclQuark thevar, NclQuark theatt
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
-                          __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not redef the file id (%d) for writing, at line: %d\n",
+                          __FILE__, fid, __LINE__));
                     return(NhlFATAL);
                 }
                 grpnode->define_mode = 1;
@@ -4098,8 +4097,8 @@ static NhlErrorTypes NC4WriteVarAtt(void *therec, NclQuark thevar,
             if(nc_ret != NC_NOERR)
             {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
                 return(NhlFATAL);
             }
             grpnode->fid = fid;
@@ -4119,8 +4118,8 @@ static NhlErrorTypes NC4WriteVarAtt(void *therec, NclQuark thevar,
                     if(nc_ret != NC_NOERR)
                     {
                         NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                              "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
-                              __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
+                              "%s: Could not redef the file id (%d) for writing, at line: %d\n",
+                              __FILE__, fid, __LINE__));
                         return(NhlFATAL);
                     }
                     grpnode->define_mode = 1;
@@ -4142,8 +4141,8 @@ static NhlErrorTypes NC4WriteVarAtt(void *therec, NclQuark thevar,
                     if(nc_ret != NC_NOERR)
                     {
                         NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                              "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
-                              __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
+                              "%s: Could not redef the file id (%d) for writing, at line: %d\n",
+                              __FILE__, fid, __LINE__));
                         return(NhlFATAL);
                     }
                     grpnode->define_mode = 1;
@@ -4208,8 +4207,7 @@ NhlErrorTypes NC4AddVarChunk(void* therec, NclQuark thevar,
     int storage = NC_CHUNKED;
 
   /*
-   *fprintf(stderr, "\nEnter %s, file: %s, line: %d\n",
-   *                 __PRETTY_FUNCTION__, __FILE__, __LINE__);
+   *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
    */
 
     if(grpnode->status > 0)
@@ -4231,8 +4229,8 @@ NhlErrorTypes NC4AddVarChunk(void* therec, NclQuark thevar,
         if(nc_ret != NC_NOERR)
         {
             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
             return(NhlFATAL);
         }
         grpnode->fid = fid;
@@ -4257,8 +4255,7 @@ NhlErrorTypes NC4AddVarChunk(void* therec, NclQuark thevar,
         }
 
      /*
-      *fprintf(stderr, "function %s, file: %s, line: %d\n",
-      *                 __PRETTY_FUNCTION__, __FILE__, __LINE__);
+      *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
       *fprintf(stderr, "\tn_chunk_dims = %d\n", n_chunk_dims);
       */
 
@@ -4287,8 +4284,8 @@ NhlErrorTypes NC4AddVarChunk(void* therec, NclQuark thevar,
             if(nc_ret != NC_NOERR)
             {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                      "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
-                      __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
+                      "%s: Could not redef the file id (%d) for writing, at line: %d\n",
+                      __FILE__, fid, __LINE__));
                 return(NhlFATAL);
             }
             grpnode->define_mode = 1;
@@ -4298,8 +4295,8 @@ NhlErrorTypes NC4AddVarChunk(void* therec, NclQuark thevar,
         if(nc_ret != NC_NOERR)
         {
             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Error in nc_def_var_chunking in file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Error in nc_def_var_chunking in file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
             return(NhlFATAL);
             check_err(nc_ret, __LINE__, __FILE__);
         }
@@ -4338,8 +4335,8 @@ static NhlErrorTypes NC4AddVarChunkCache(void* therec, NclQuark thevar,
         if(nc_ret != NC_NOERR)
         {
             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
             return(NhlFATAL);
         }
         grpnode->fid = fid;
@@ -4403,8 +4400,8 @@ static NhlErrorTypes NC4SetVarCompressLevel(void* therec, NclQuark thevar,
         if(nc_ret != NC_NOERR)
         {
             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
             return(NhlFATAL);
         }
         grpnode->fid = fid;
@@ -4422,7 +4419,7 @@ static NhlErrorTypes NC4SetVarCompressLevel(void* therec, NclQuark thevar,
         varnode->shuffle = *(int *)(grpnode->options[Ncl_SHUFFLE].values);
 
       /*
-       *fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+       *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
        *fprintf(stderr, "\t\tvarnode->shuffle = %d, compress_level = %d\n",
        *                     varnode->shuffle, varnode->compress_level);
        */
@@ -4475,8 +4472,8 @@ static NhlErrorTypes NC4AddDim(void* therec, NclQuark thedim,
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
                     return(NhlFATAL);
                 }
                 grpnode->fid = fid;
@@ -4492,8 +4489,8 @@ static NhlErrorTypes NC4AddDim(void* therec, NclQuark thedim,
                *if(nc_ret != NC_NOERR)
                *{
                *    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-               *          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
-               *          __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
+               *          "%s: Could not redef the file id (%d) for writing, at line: %d\n",
+               *          __FILE__, fid, __LINE__));
                *    return(NhlFATAL);
                *}
                */
@@ -4613,8 +4610,8 @@ static NhlErrorTypes NC4AddChunkDim(void* therec, NclQuark thedim,
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
                     return(NhlFATAL);
                 }
                 grpnode->fid = fid;
@@ -4629,8 +4626,8 @@ static NhlErrorTypes NC4AddChunkDim(void* therec, NclQuark thedim,
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
-                          __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not redef the file id (%d) for writing, at line: %d\n",
+                          __FILE__, fid, __LINE__));
                     return(NhlFATAL);
                 }
                 grpnode->define_mode = 1;
@@ -4700,8 +4697,8 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
             if(nc_ret != NC_NOERR)
             {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
                 return(NhlFATAL);
             }
             grpnode->fid = fid;
@@ -4777,8 +4774,8 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
                *if(nc_ret != NC_NOERR)
                *{
                *    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-               *          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
-               *          __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
+               *          "%s: Could not redef the file id (%d) for writing, at line: %d\n",
+               *          __FILE__, fid, __LINE__));
                *    return(NhlFATAL);
                *}
                */
@@ -4802,7 +4799,7 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
                 if((ret == NC_NOERR) && (grpnode->format > 2) && (deflate_level > 0))
                 {
                   /*
-                   *fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+                   *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
                    *fprintf(stderr, "\t\tshuffle = %d, compress_level = %d\n",
                    *                    shuffle, deflate_level);
                    */
@@ -4910,8 +4907,8 @@ static NhlErrorTypes NC4RenameDim(void* therec, NclQuark from, NclQuark to)
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
                     return(NhlFATAL);
                 }
 
@@ -4927,8 +4924,8 @@ static NhlErrorTypes NC4RenameDim(void* therec, NclQuark from, NclQuark to)
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
-                          __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not redef the file id (%d) for writing, at line: %d\n",
+                          __FILE__, fid, __LINE__));
                     return(NhlFATAL);
                 }
                 grpnode->define_mode = 1;
@@ -4983,8 +4980,8 @@ static NhlErrorTypes NC4AddAtt(void *therec, NclQuark theatt,
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
                     NclFree(the_data_type);
                     return(NhlFATAL);
                 }
@@ -5002,8 +4999,8 @@ static NhlErrorTypes NC4AddAtt(void *therec, NclQuark theatt,
                *if(nc_ret != NC_NOERR)
                *{
                *    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-               *          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
-               *          __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
+               *          "%s: Could not redef the file id (%d) for writing, at line: %d\n",
+               *          __FILE__, fid, __LINE__));
                *    return(NhlFATAL);
                *}
                */
@@ -5094,8 +5091,8 @@ static NhlErrorTypes NC4AddVarAtt(void *therec, NclQuark thevar, NclQuark theatt
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
                     NclFree(the_data_type);
                     return(NhlFATAL);
                 }
@@ -5115,8 +5112,8 @@ static NhlErrorTypes NC4AddVarAtt(void *therec, NclQuark thevar, NclQuark theatt
                     if(nc_ret != NC_NOERR)
                     {
                         NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                              "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
-                              __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
+                              "%s: Could not redef the file id (%d) for writing, at line: %d\n",
+                              __FILE__, fid, __LINE__));
                         return(NhlFATAL);
                     }
                     grpnode->define_mode = 1;
@@ -5265,7 +5262,7 @@ static NhlErrorTypes NC4SetOption(void *rootgrp, NclQuark option,
         grpnode->options[Ncl_SHUFFLE].values = values;
 
       /*
-       *fprintf(stderr, "\tfunc: %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+       *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
        *fprintf(stderr, "\t\tset shuffle = %d\n", *(int *)values);
        */
     }
@@ -5373,8 +5370,8 @@ static NhlErrorTypes NC4AddVlenVar(void* therec, NclQuark thevar,
             if(nc_ret != NC_NOERR)
             {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
                 check_err(nc_ret, __LINE__, __FILE__);
                 return(NhlFATAL);
             }
@@ -5418,8 +5415,8 @@ static NhlErrorTypes NC4AddVlenVar(void* therec, NclQuark thevar,
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
-                          __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not redef the file id (%d) for writing, at line: %d\n",
+                          __FILE__, fid, __LINE__));
                     return(NhlFATAL);
                 }
                 grpnode->define_mode = 1;
@@ -5600,8 +5597,8 @@ static NhlErrorTypes NC4AddEnumVar(void* therec, NclQuark thevar,
             if(nc_ret != NC_NOERR)
             {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
                 check_err(nc_ret, __LINE__, __FILE__);
                 return(NhlFATAL);
             }
@@ -5645,8 +5642,8 @@ static NhlErrorTypes NC4AddEnumVar(void* therec, NclQuark thevar,
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
-                          __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not redef the file id (%d) for writing, at line: %d\n",
+                          __FILE__, fid, __LINE__));
                     return(NhlFATAL);
                 }
                 grpnode->define_mode = 1;
@@ -5822,8 +5819,8 @@ static NhlErrorTypes NC4AddOpaqueVar(void* therec, NclQuark thevar,
             if(nc_ret != NC_NOERR)
             {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
                 check_err(nc_ret, __LINE__, __FILE__);
                 return(NhlFATAL);
             }
@@ -5867,8 +5864,8 @@ static NhlErrorTypes NC4AddOpaqueVar(void* therec, NclQuark thevar,
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
-                          __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not redef the file id (%d) for writing, at line: %d\n",
+                          __FILE__, fid, __LINE__));
                     return(NhlFATAL);
                 }
                 grpnode->define_mode = 1;
@@ -6025,8 +6022,8 @@ static NclFileVarNode *defNC4CompoundVar(void* therec, NclQuark thevar,
             if(nc_ret != NC_NOERR)
             {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
                 check_err(nc_ret, __LINE__, __FILE__);
                 return (varnode);
             }
@@ -6070,8 +6067,8 @@ static NclFileVarNode *defNC4CompoundVar(void* therec, NclQuark thevar,
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not redef the file id (%d) in <%s> for writing, at line: %d\n",
-                          __FILE__, fid, __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not redef the file id (%d) for writing, at line: %d\n",
+                          __FILE__, fid, __LINE__));
                     return(NULL);
                 }
                 grpnode->define_mode = 1;
@@ -6367,8 +6364,8 @@ NhlErrorTypes NC4WriteCompound(void *rec, NclQuark compound_name, NclQuark var_n
         if(nc_ret != NC_NOERR)
         {
             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) in <%s> for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __PRETTY_FUNCTION__, __LINE__));
+                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
             check_err(nc_ret, __LINE__, __FILE__);
             return(NhlFATAL);
         }

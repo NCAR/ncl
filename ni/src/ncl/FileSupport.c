@@ -1826,8 +1826,8 @@ NhlErrorTypes _NclPrintAdvancedFileVarSummary(NclFile thefile, NclQuark varname)
 
 	if(NULL == varnode)
 	{
-		NHLPERROR((NhlWARNING,NhlEUNKNOWN,"%s: (%s) is not a variable in the file (%s)",
-			__PRETTY_FUNCTION__, NrmQuarkToString(varname),
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,"(%s) is not a variable in the file (%s)",
+			NrmQuarkToString(varname),
 			NrmQuarkToString(advfile->advancedfile.fname)));
 		return(NhlWARNING);	
 	}

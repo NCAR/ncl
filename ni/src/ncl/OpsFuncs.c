@@ -882,8 +882,8 @@ NclStackEntry _NclCreateAList(const char *buffer)
 	}
         else
 	{
-		fprintf(stderr, "\nin file: %s, at line: %d, in function: <%s>\n",
-                                   __FILE__, __LINE__, __PRETTY_FUNCTION__);
+		fprintf(stderr, "\nin file: %s, at line: %d, in function: <_NclCreateAList>\n",
+                                   __FILE__, __LINE__);
 		fprintf(stderr, "Unable to create list type: <%s>\n", buffer);
                 fprintf(stderr, "Use FIFO as the default list type.\n");
 

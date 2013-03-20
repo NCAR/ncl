@@ -1465,7 +1465,7 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
 
             if(0 != status)
             {
-                fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+                fprintf(stderr, "\nError in file: %s, line: %d\n", __FILE__, __LINE__);
             }
 
             switch(obj_type)
@@ -3359,7 +3359,7 @@ void _readH5dataset(hid_t dset, hid_t d_type,
 
     if(0 != status)
     {
-        fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+        fprintf(stderr, "\nError in file: %s, line: %d\n", __FILE__, __LINE__);
     }
 
     H5Sclose(m_space);
@@ -3547,7 +3547,7 @@ void *_getH5compoundAsList(hid_t fid, NclFileVarNode *varnode)
 
         if(0 != status)
         {
-            fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+            fprintf(stderr, "\nError in file: %s, line: %d\n", __FILE__, __LINE__);
         }
 
         H5Tclose(datatype_id);
@@ -3657,7 +3657,7 @@ static void *_getH5CompoundData(hid_t fid, NclFileVarNode *varnode,
 
         if(0 != status)
         {
-            fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+            fprintf(stderr, "\nError in file: %s, line: %d\n", __FILE__, __LINE__);
         }
 
         H5Tclose(str_type);
@@ -3844,7 +3844,7 @@ void _readH5string(hid_t dset, hid_t d_type,
 
     if(0 != status)
     {
-        fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+        fprintf(stderr, "\nError in file: %s, line: %d\n", __FILE__, __LINE__);
     }
 
     for(i = 0; i < numstr; ++i)
@@ -4022,7 +4022,7 @@ void *_getH5vlen(hid_t fid, NclFileVarNode *varnode)
 
              if(0 != status)
              {
-                 fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+                 fprintf(stderr, "\nError in file: %s, line: %d\n", __FILE__, __LINE__);
              }
 
              break;
@@ -4170,7 +4170,7 @@ void *_getH5enum(hid_t fid, NclFileVarNode *varnode)
 
              if(0 != status)
              {
-                 fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+                 fprintf(stderr, "\nError in file: %s, line: %d\n", __FILE__, __LINE__);
              }
 
              break;
@@ -4308,7 +4308,7 @@ void *_getH5opaque(hid_t fid, NclFileVarNode *varnode)
 
              if(0 != status)
              {
-                 fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+                 fprintf(stderr, "\nError in file: %s, line: %d\n", __FILE__, __LINE__);
              }
  
              break;
@@ -5475,7 +5475,7 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
 
             if(0 != status)
             {
-                fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+                fprintf(stderr, "\nError in file: %s, line: %d\n", __FILE__, __LINE__);
             }
 
           /*
@@ -5814,8 +5814,7 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
                     }
                     else
                     {
-                        fprintf(stderr, "\tfile: %s, function: %s, line: %d\n",
-                                          __FILE__, __PRETTY_FUNCTION__, __LINE__);
+                        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
                         fprintf(stderr, "\tUnknown cur_var->obj.obj_type: 0%x\n", cur_var->obj.obj_type);
                     }
 
@@ -6228,7 +6227,7 @@ NhlErrorTypes H5WriteCompound(void *rec, NclQuark compound_name, NclQuark var_na
 
             if(0 != status)
             {
-                fprintf(stderr, "\nError in %s, file: %s, line: %d\n", __PRETTY_FUNCTION__, __FILE__, __LINE__);
+                fprintf(stderr, "\nError in file: %s, line: %d\n", __FILE__, __LINE__);
             }
 
             H5Tclose(tid);
