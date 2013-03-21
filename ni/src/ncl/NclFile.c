@@ -1455,7 +1455,7 @@ NclMultiDValData value;
 			}
 			else if (fcp->options[i].access == 3 && thefile->file.wr_status != -1) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
-				    "FileSetFileOption: option %s is can only be set prior to file creation",
+				    "FileSetFileOption: option %s can only be set prior to file creation",
 					  NrmQuarkToString(option));
 				return(NhlWARNING);
 			}

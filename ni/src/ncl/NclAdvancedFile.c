@@ -5275,7 +5275,7 @@ static NhlErrorTypes AdvancedFileSetFileOption(NclFile  infile,
             else if (fcp->options[i].access == 3 && thefile->advancedfile.wr_status != -1)
             {
                 NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                    "option %s is can only be set prior to file creation",
+                    "option %s can only be set prior to file creation",
                      NrmQuarkToString(option)));
                 return(NhlWARNING);
             }
