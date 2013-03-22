@@ -75,8 +75,9 @@ extern NclFormatFunctionRecPtr OGRAddFileFormat(
 void
 #endif
 );
-
+#ifndef NIO_LIB_ONLY
 extern NclFormatFunctionRecPtr AdvancedOGRAddFileFormat(void);
+#endif
 #endif
 
 void _NclAddFileFormats
@@ -158,6 +159,7 @@ void _NclAddFileFormats
         /* TIGER: see http://www.census.gov/geo/www/tiger/tiger2006se/tgr2006se.html */
 #endif
 
+#ifndef NIO_LIB_ONLY
 	/*
 	 *where this file will be scanned to find the second match.
 	 *The advanced file-structure is used when found the second match.
@@ -182,7 +184,7 @@ void _NclAddFileFormats
         _NclRegisterFormat(AdvancedOGRAddFileFormat, "mif");  /* mapinfo */
         _NclRegisterFormat(AdvancedOGRAddFileFormat, "gmt");  /* GMT   */
 #endif
-
+#endif
 	return;
 }
 

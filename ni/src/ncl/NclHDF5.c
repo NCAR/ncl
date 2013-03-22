@@ -4547,7 +4547,7 @@ static void _HDF5CacheAttValue
         strncpy(tmp,value,att_inq->n_elem);
         tmp[att_inq->n_elem] = '\0'; 
         att_inq->value = NclMalloc(sizeof(NclQuark));
-        *(string*)att_inq->value = NrmStringToQuark(tmp);
+        *(NclQuark*)att_inq->value = NrmStringToQuark(tmp);
         NclFree(tmp);
     }   
     else

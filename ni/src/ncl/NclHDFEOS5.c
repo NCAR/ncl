@@ -1709,9 +1709,11 @@ NclQuark path;
         /* global attributes from file */
         ngrp_atts = HE5_EHinqglbattrs(HE5_GDfid,NULL,&str_buf_size);
 
+#if 0
 	fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
 	fprintf(stderr, "\tngrp_atts = %d\n", ngrp_atts);
 	fprintf(stderr, "\tpathname: <%s>\n", pathname);
+#endif
 
         if(ngrp_atts > 0 )
         {
@@ -3397,9 +3399,11 @@ void* therec;
 NclQuark thevar;
 #endif
 {
+#if 0
 	fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
 	fprintf(stderr, "\tHave not done anyhting with HDFEOS5GetCoordInfo yet.\n");
 	fprintf(stderr, "\nfile: %s, line: %d\n\n", __FILE__, __LINE__);
+#endif
 	return NULL;
 }
 

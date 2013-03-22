@@ -3325,6 +3325,8 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 		}
 	}
 
+#ifndef NIO_LIB_ONLY
+
 	if(NrmStringToQuark("h5") == file_ext_q)
 		use_advanced_file_structure = 1;
 
@@ -3356,9 +3358,12 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	}					
 	else
 	{
+#endif
 		file_out = _NclFileCreate(inst, theclass, obj_type, obj_type_mask, status,
 				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
-	}					
+#ifndef NIO_LIB_ONLY
+	}		
+#endif			
 
 	return file_out;
 }

@@ -314,7 +314,7 @@ NIO_NCL_OTHER_FILES = AddFileFormats.c AttSupport.c DataSupport.c	\
 		NclCCM.c NclCoordVar.c NclData.c NclGroup.c NclFile.c	\
 		NclAdvancedFile.c NclAdvancedGroup.c			\
 		NclFileVar.c NclGRIB.c NclGRIB2.c NclHDF.c		\
-		NclHDFEOS.c NclHDFEOS5.c NclNewHDFEOS5.c NclNewHDF5.c	\
+		NclHDFEOS.c NclHDFEOS5.c NclHDF5.c	\
 		NclMultiDValData.c.sed NclMultiDValnclfileData.c	\
 		NclNetCdf.c NclOneDValCoordData.c NclType.c NclOGR.c	\
 		NclType.c.sed NclTypebyte.c.specific			\
