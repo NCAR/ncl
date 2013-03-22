@@ -58,13 +58,13 @@
 NclFile NclCreateFile(const char *path)
 {
     NclQuark qpath = NrmStringToQuark(path);
-    return (_NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,qpath,0));
+    return (_NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,qpath,-1));
 }
 
 NclAdvancedFile NclCreateAdvancedFile(const char *path)
 {
     NclQuark qpath = NrmStringToQuark(path);
-    return (_NclCreateAdvancedFile(NULL,NULL,Ncl_File,0,TEMPORARY,qpath,0));
+    return (_NclCreateAdvancedFile(NULL,NULL,Ncl_File,0,TEMPORARY,qpath,-1));
 }
 
 void guiSetAdvancedFileStructure(const char *format)
