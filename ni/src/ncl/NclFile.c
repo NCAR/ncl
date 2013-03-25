@@ -2302,6 +2302,50 @@ static int FileIsVar
 
 	strcpy(var_str, NrmQuarkToString(var));
 	slash_ptr = strrchr(var_str, '/');
+
+      /*Wei 03/25/2013
+       *Treat whole string as a variable name.
+       */
+
+	if(NULL == slash_ptr)
+	{
+		for(i = 0; i < thefile->file.n_vars; i++) {
+			if((thefile->file.var_info[i]->var_full_name_quark == var) ||
+			   (thefile->file.var_info[i]->var_real_name_quark == var) ||
+			   (thefile->file.var_info[i]->var_name_quark == var)) {
+				return(i);
+			}
+		}
+	}
+	else
+	{
+	      /*
+               *fprintf(stdout, "\n\n\nhit FileIsVar. file: %s, line: %d\n", __FILE__, __LINE__);
+	       *fprintf(stdout, "\tvar: <%s> has / in it.\n\n", var_str);
+	       *fprintf(stdout, "\tvar short name: %s.\n\n", slash_ptr+1);
+	       */
+		for(i = 0; i < thefile->file.n_vars; i++) {
+		      /*
+		       *fprintf(stdout, "\tCheck %d: var_full_name <%s>\n", i, 
+		       *	NrmQuarkToString(thefile->file.var_info[i]->var_full_name_quark));
+		       */
+			if((thefile->file.var_info[i]->var_full_name_quark == var) ||
+			   (thefile->file.var_info[i]->var_real_name_quark == var) ||
+			   (thefile->file.var_info[i]->var_name_quark == var)) {
+			      /*
+			       *fprintf(stdout, "\tFind var_quark <%s>\n", NrmQuarkToString(var));
+			       */
+				if(thefile->file.var_info[i]->var_full_name_quark == var)
+					thefile->file.var_info[i]->var_name_quark = var;
+				return(i);
+			}
+		}
+	}
+
+      /*Wei 03/25/2013
+       *Since the whole string is not a variable, then let us check if it has compound data in it.
+       */
+
 	dot_ptr = strchr(var_str, '.');
 	if(dot_ptr)
 	{
@@ -2389,41 +2433,6 @@ static int FileIsVar
 				return(i);
 			}
 		}
-		}
-	}
-
-	if(NULL == slash_ptr)
-	{
-		for(i = 0; i < thefile->file.n_vars; i++) {
-			if((thefile->file.var_info[i]->var_full_name_quark == var) ||
-			   (thefile->file.var_info[i]->var_real_name_quark == var) ||
-			   (thefile->file.var_info[i]->var_name_quark == var)) {
-				return(i);
-			}
-		}
-	}
-	else
-	{
-	      /*
-               *fprintf(stdout, "\n\n\nhit FileIsVar. file: %s, line: %d\n", __FILE__, __LINE__);
-	       *fprintf(stdout, "\tvar: <%s> has / in it.\n\n", var_str);
-	       *fprintf(stdout, "\tvar short name: %s.\n\n", slash_ptr+1);
-	       */
-		for(i = 0; i < thefile->file.n_vars; i++) {
-		      /*
-		       *fprintf(stdout, "\tCheck %d: var_full_name <%s>\n", i, 
-		       *	NrmQuarkToString(thefile->file.var_info[i]->var_full_name_quark));
-		       */
-			if((thefile->file.var_info[i]->var_full_name_quark == var) ||
-			   (thefile->file.var_info[i]->var_real_name_quark == var) ||
-			   (thefile->file.var_info[i]->var_name_quark == var)) {
-			      /*
-			       *fprintf(stdout, "\tFind var_quark <%s>\n", NrmQuarkToString(var));
-			       */
-				if(thefile->file.var_info[i]->var_full_name_quark == var)
-					thefile->file.var_info[i]->var_name_quark = var;
-				return(i);
-			}
 		}
 	}
       /*
