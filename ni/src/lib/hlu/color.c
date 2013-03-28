@@ -11,6 +11,8 @@
 
 const uint32_t ALPHA_MASK = 0x40000000;
 const uint32_t ALPHA_OPAQUE = 0x7f000000;
+const uint32_t LEFTMOST_BYTE = 0x000000ff;
+const uint32_t LEFTMOST_6BITS = 0x0000003f;
 
 /*
  * _NhlSetOpacity()
@@ -103,4 +105,17 @@ int _NhlRGBAToColorIndex(float *rgba, int has_alpha)
 	a = (has_alpha) ? (int)(*(rgba+3) * 63) << 24 | ALPHA_MASK : ALPHA_OPAQUE;
 	tint = a | r | g | b;
 	return (tint);
+}
+
+/* assumes caller allocates memory for rgba array */
+
+void _NhlColorIndexToRGBA(int color_index, float *rgba, int want_alpha)
+{
+	rgba[0] = ((color_index >> 16) & LEFTMOST_BYTE) / 255.0;
+	rgba[1] = ((color_index >> 8) & LEFTMOST_BYTE) / 255.0;
+	rgba[2] = (color_index & LEFTMOST_BYTE) / 255.0;
+	if (want_alpha) 
+		rgba[3] = ((color_index >> 24) & LEFTMOST_6BITS) / 63.0;
+
+	return;
 }
