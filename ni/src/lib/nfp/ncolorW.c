@@ -5,6 +5,7 @@
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/Workstation.h>
+#include <ncarg/hlu/color.h>
 #include "wrapper.h"
 
 NhlErrorTypes NhlGetNamedColorIndex_W( void )
@@ -85,5 +86,89 @@ NhlErrorTypes NhlGetNamedColorIndex_W( void )
 	}
   }
   return(NclReturnValue( (void *) ci, ndims_out, dsizes_out, NULL, NCL_int, 0));
+}
+
+NhlErrorTypes rgba_to_color_index_W( void )
+{
+  int i, *ci;
+  float *rgba;
+  ng_size_t dsizes[2];
+  int has_alpha;
+  int stride;
+
+/*
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value. In this example
+ * the type parameter is set to NULL because the function
+ * is later registered to only accept floating point numbers.
+ *
+ * Retrieve argument #1
+ */
+
+  rgba  = (float *) NclGetArgValue(0,1,NULL,dsizes,NULL,NULL,
+				   NULL,DONT_CARE);
+
+/* ndims must be 2, dsizes[0] can be any number; dsizes[1] must be 3 or 4 */
+
+  if (dsizes[1] == 3) {
+	  has_alpha = 0;
+	  stride = 3;
+  }
+  else if (dsizes[1] == 4) {
+	  has_alpha = 1;
+	  stride = 4;
+  }
+  else  {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,
+		    "rgba_to_color_index: the second dimension of the input array must have either three or four elements");
+	  return(NhlFATAL);
+  }
+
+  ci =  (int*)calloc(dsizes[0],sizeof(int));
+  
+
+  for(i = 0; i < dsizes[0]; i++) {
+	  ci[i] = _NhlRGBAToColorIndex(rgba + i * stride,has_alpha);
+  }
+
+  return(NclReturnValue( (void *) ci, 1, &(dsizes[0]), NULL, NCL_int, 0));
+}
+
+NhlErrorTypes color_index_to_rgba_W( void )
+{
+  int i, *ci;
+  float *rgba;
+  ng_size_t dsizes[2];
+  int stride;
+
+/*
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value. In this example
+ * the type parameter is set to NULL because the function
+ * is later registered to only accept floating point numbers.
+ *
+ * Retrieve argument #1
+ */
+
+  ci  = (int *) NclGetArgValue(0,1,NULL,dsizes,NULL,NULL,
+				   NULL,DONT_CARE);
+
+/* ndims must be 1, dsizes[0] can be any number */
+
+
+  rgba = (float *) calloc(4 * dsizes[0], sizeof(float));
+
+  stride = 4;
+  for(i = 0; i < dsizes[0]; i++) {
+	  _NhlColorIndexToRGBA(ci[i], rgba + i * stride,1);
+  }
+
+  dsizes[1] = 4;
+
+  return(NclReturnValue( (void *) rgba, 2, dsizes, NULL, NCL_float, 0));
 }
 

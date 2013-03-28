@@ -522,6 +522,8 @@ extern NhlErrorTypes rtest_W(void);
 extern NhlErrorTypes equiv_sample_size_W(void);
 extern NhlErrorTypes z2geouv_W(void);
 extern NhlErrorTypes NhlGetNamedColorIndex_W(void);
+extern NhlErrorTypes rgba_to_color_index_W(void);
+extern NhlErrorTypes color_index_to_rgba_W(void);
 extern NhlErrorTypes output_gif_W(void);
 /*
 extern NhlErrorTypes attcreate_W(void);
@@ -7128,6 +7130,22 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "string", 0, NclANY);   nargs++;
     NclRegisterFunc(NhlGetNamedColorIndex_W, args, "NhlGetNamedColorIndex", nargs);
 
+/*
+ *  Register rgba_to_color_index.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args, nargs, "float", 2, NclANY);  nargs++;
+    NclRegisterFunc(rgba_to_color_index_W, args, "rgba_to_color_index", nargs);
+
+/*
+ *  Register color_index_to_rgba.
+ */
+
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+    NclRegisterFunc(color_index_to_rgba_W, args, "color_index_to_rgba", nargs);
 
 /*
  *  Register output_gif.
