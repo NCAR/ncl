@@ -5561,7 +5561,7 @@ GribRecordInqRec *grib_rec;
 	var_time_ind = node->time_range_indicator == 10 ? 0 : node->time_range_indicator;
 	rec_time_ind = (int) grib_rec->pds[20] == 10 ? 0 : (int)grib_rec->pds[20];
 
-	if (var_time_ind < 2 && rec_time_ind < 2) {
+	if (! (var_time_ind < 2 && rec_time_ind < 2)) {
 		if (var_time_ind != rec_time_ind) {
 			return var_time_ind - rec_time_ind;
 		}
