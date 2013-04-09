@@ -490,10 +490,6 @@ int NclDriver(int argc, char **argv)
 
     NclFree(cur_line_text);
 
-    _NclFinalizeSymbol();      
-
-    _NclFinalizeMachine();
-
     _NclExit(NclReturnStatus);
 
     return NclReturnStatus;

@@ -3322,9 +3322,14 @@ void
 
 void _NclExit(int status) {
 	_NclFileCleanUp();
+
         NhlClose();
 
 	NCL_PROF_FINALIZE();
+
+	_NclFinalizeSymbol();
+
+	_NclFinalizeMachine();
 
 #ifdef NCLDEBUG
 	if(NCLdebug_on)
