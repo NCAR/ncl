@@ -1910,8 +1910,8 @@ end
 ;                  res[1]  : logical                                    ;
 ;                  type[1] : string                                     ;
 ;                                                                       ;
-; Sets some resources for a PlotManager labeblar. This is for the       ;
-; "new" labelbar being created in NCL V6.1.0 and later.                 ;
+; Sets some resources for a PlotManager labelbar. This is for when we   ;
+; decide to use the PlotManager labelbar instead of the custom labelbar.;
 ;                                                                       ;
 ; The "type" allows you to check for special plots, like polar plots.   ;
 ;***********************************************************************;
@@ -1956,8 +1956,10 @@ end
 ; "type" is the type of plot ("ce", "polar", and so on) so the labelbar ;
 ; can be positioned differently depending on the plot.                  ;
 ;                                                                       ;
-; This is for NCL V6.0.0 and earlier. With NCL V6.1.0, we went back to  ;
-; using the PlotManager labelbar.                                       ;
+; Eventually we want to move to using the PlotManager labelbar. This is ;
+; what the global GSN_OLD_LABELBAR variable is for. If it's set to True,;
+; then the PlotManager labelbar is *not* used, and instead, a custom    ;
+; one via this routine, is created.                                     ;
 ;***********************************************************************;
 undef("add_labelbar")
 procedure add_labelbar(wks:graphic,plot,zone:integer, \
@@ -2213,7 +2215,8 @@ end
 ; This procedure "fixes" a PlotManager labelbar by adjusting the label  ;
 ; font heights, among possibly other things.                            ;
 ;                                                                       ;
-; This is for NCL V6.1.0 and later.                                     ;
+; This is for when we decide to start using the PlotManager labelbar    ;
+; again (GSN_OLD_LABELBAR = False).                                     ;
 ;***********************************************************************;
 undef("fix_labelbar")
 procedure fix_labelbar(plot:graphic,font_height:numeric,res)
