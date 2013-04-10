@@ -483,9 +483,17 @@ int cro_Cellarray(GKSC *gksc) {
             for (i = i_start; i != i_end; i = i + i_inc) {
                 for (k = 0; k < cols[i]; k++) {
                     unsigned int color = colia[j * nx + i];
-                    iar[kount] = ((color & ARGB_MASK) > 0)
-                               ? pack_argb(unpack_argb(NULL, color))  /* ARGB color... */
-                               : (psa->ctable)[color];
+                    if ((color & ARGB_MASK) > 0) {
+                        struct color_value cval = unpack_argb(NULL, color);
+                        /* cairo image_surface requires pre-multiplied alpha values! */
+                        cval.alpha = ALPHA_BLEND(cval.alpha, psa->attributes.fill_alpha);
+                        cval.red   = ALPHA_BLEND(cval.red,   psa->attributes.fill_alpha);
+                        cval.green = ALPHA_BLEND(cval.green, psa->attributes.fill_alpha);
+                        cval.blue  = ALPHA_BLEND(cval.blue,  psa->attributes.fill_alpha);
+                        iar[kount] = pack_argb(cval);
+                    }
+                    else
+                        iar[kount] = (psa->ctable)[color];
                     kount++;
                 }
             }
