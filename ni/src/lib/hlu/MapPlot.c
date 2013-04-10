@@ -344,22 +344,34 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(us_state.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
 
-	{NhlNmpProvincialLineColor,NhlCLineColor,NhlTColorIndex,
-		 sizeof(NhlColorIndex),Oset(us_state.color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
-	{NhlNmpProvincialLineDashPattern,NhlCLineDashPattern,
-		 NhlTDashIndex,sizeof(NhlDashIndex),Oset(us_state.dash_pat),
-		 NhlTImmediate,_NhlUSET(0),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(us_state.dash_seglen_set),
+		 Oset(provincial.color_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
+	{NhlNmpProvincialLineColor,NhlCLineColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(provincial.color),
+	         NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(provincial.dash_pat_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
+	{NhlNmpProvincialLineDashPattern,NhlCLineDashPattern,
+		 NhlTDashIndex,sizeof(NhlDashIndex),Oset(provincial.dash_pat),
+	         NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(provincial.dash_seglen_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpProvincialLineDashSegLenF,NhlCLineDashSegLenF,
-		 NhlTFloat,sizeof(float),Oset(us_state.dash_seglen),
+		 NhlTFloat,sizeof(float),Oset(provincial.dash_seglen),
 		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(provincial.thickness_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpProvincialLineThicknessF,NhlCLineThicknessF,
-		 NhlTFloat,sizeof(float),Oset(us_state.thickness),
-		 NhlTString, _NhlUSET("1.0"),0,NULL},
+		 NhlTFloat,sizeof(float),Oset(provincial.thickness),
+	         NhlTProcedure, _NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 
 /* County line resources */
 
@@ -1314,6 +1326,18 @@ MapPlotInitialize
                 mpp->grid_spacing = 15.0;
         if (mpp->grid_lat_spacing <= 0.0) mpp->grid_lat_spacing = 15.0;
         if (mpp->grid_lon_spacing <= 0.0) mpp->grid_lon_spacing = 15.0;
+	/* the provincial values override the usstates values if they are set */
+	if (mpp->provincial.color_set)
+		mpp->us_state.color = mpp->provincial.color;
+	if (mpp->provincial.dash_pat_set)
+		mpp->us_state.dash_pat = mpp->provincial.dash_pat;
+	if (mpp->provincial.dash_seglen_set) {
+		mpp->us_state.dash_seglen = mpp->provincial.dash_seglen;
+		mpp->us_state.dash_seglen_set = True;
+	}
+	if (mpp->provincial.thickness_set)
+		mpp->us_state.thickness = mpp->provincial.thickness;
+
 /*
  * tickmark modes cannot be set for now; hopefully this will change
  */
@@ -1424,6 +1448,10 @@ MapPlotInitialize
 	mpp->data_set_name = NULL;
         mpp->area_masking_on_set = False;
         mpp->outline_masking_on_set = False;
+	mpp->provincial.color_set = False;
+	mpp->provincial.dash_pat_set = False;
+        mpp->provincial.dash_seglen_set = False;
+	mpp->provincial.thickness_set = False;
         mpp->grid_spacing_set = False;
         
 	mpp = NULL;
@@ -1611,9 +1639,18 @@ static NhlErrorTypes MapPlotSetValues
 		mpp->inland_water.scale_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpGeophysicalLineDashSegLenF))
 		mpp->geophysical.dash_seglen_set = True;
-	if (_NhlArgIsSet(args,num_args,NhlNmpUSStateLineDashSegLenF) || 
-	    _NhlArgIsSet(args,num_args,NhlNmpProvincialLineDashSegLenF))
+	if (_NhlArgIsSet(args,num_args,NhlNmpProvincialLineDashSegLenF)) {
+		mpp->us_state.dash_seglen = mpp->provincial.dash_seglen;
 		mpp->us_state.dash_seglen_set = True;
+	}
+	else if (_NhlArgIsSet(args,num_args,NhlNmpUSStateLineDashSegLenF))
+		mpp->us_state.dash_seglen_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNmpProvincialLineColor)) 
+		mpp->us_state.color = mpp->provincial.color;
+	if (_NhlArgIsSet(args,num_args,NhlNmpProvincialLineDashPattern)) 
+		mpp->us_state.dash_pat = mpp->provincial.dash_pat;
+	if (_NhlArgIsSet(args,num_args,NhlNmpProvincialLineThicknessF)) 
+		mpp->us_state.thickness = mpp->provincial.thickness;
 	if (_NhlArgIsSet(args,num_args,NhlNmpCountyLineDashSegLenF))
 		mpp->county.dash_seglen_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpNationalLineDashSegLenF))

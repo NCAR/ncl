@@ -42,11 +42,14 @@
 typedef struct _NhlmpLineAttrs {
 	NhlBoolean	on;
 	NhlDrawOrder	order;
+	NhlBoolean      color_set;
 	int		color;
 	int		gks_color;
+	NhlBoolean      dash_pat_set;
 	int		dash_pat;
 	NhlBoolean	dash_seglen_set;
 	float		dash_seglen;
+	NhlBoolean      thickness_set;
 	float		thickness;
 } NhlmpLineAttrs;
 
@@ -118,7 +121,8 @@ typedef struct NhlMapPlotLayerPart {
 	NhlMapBoundarySets outline_boundaries;
 	NhlGenArray	outline_specs;
 	NhlmpLineAttrs	geophysical;
-	NhlmpLineAttrs	us_state;
+	NhlmpLineAttrs	us_state;     
+	NhlmpLineAttrs	provincial;
 	NhlmpLineAttrs	national;
 	NhlmpLineAttrs	county;
 
