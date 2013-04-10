@@ -4417,8 +4417,9 @@ WorkstationFill
 	ginq_linewidth(&err_ind, &save_linewidth);
 	ginq_fill_int_style(&err_ind, &save_fillstyle);
 	ginq_linetype(&err_ind, &save_linetype);
-    fill_opacity = _NhlGetFillOpacity(l);
-    _NhlSetFillOpacity(l, wkfp->fill_opacity);
+        fill_opacity = _NhlGetFillOpacity(l);
+        _NhlSetFillOpacity(l, wkfp->fill_opacity);
+        
         switch (wkfp->fill_color) {
             case NhlTRANSPARENT:
                     fill_color = NhlTRANSPARENT;
@@ -4526,8 +4527,9 @@ WorkstationFill
 	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
-    _NhlSetFillOpacity(l, wkfp->fill_opacity);
-	return(NhlNOERROR);
+       _NhlSetFillOpacity(l, fill_opacity);
+
+       return(NhlNOERROR);
 
 }
 

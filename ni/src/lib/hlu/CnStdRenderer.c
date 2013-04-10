@@ -863,6 +863,8 @@ static NhlErrorTypes UpdateFillInfo
 	    (cnp->fill_on || cnp->raster_mode_on)) {
 	}
 #endif 
+        
+        _NhlSetFillOpacity(cl, cnp->fill_opacity);
 /*
  * Since the missing value fill resources are not supposed to be affected
  * by the mono flags, you cannot optimize the fill away if mono fill color is
@@ -2172,6 +2174,12 @@ int (_NHLCALLF(hlucpfill,HLUCPFILL))
 				pat_ix = reg_attrs->fill_pat;
 				fscale = reg_attrs->fill_scale;
 			}
+                        
+                        float fill_opacity;
+                        int ret  = NhlVAGetValues(Cnl->base.wkptr->base.id,
+                                        _NhlNwkFillOpacityF, &fill_opacity, 
+                                        NULL);
+                        
 			NhlVASetValues(Cnl->base.wkptr->base.id,
 				       _NhlNwkFillIndex, pat_ix,
 				       _NhlNwkFillColor, col_ix,
@@ -2185,6 +2193,11 @@ int (_NHLCALLF(hlucpfill,HLUCPFILL))
 			
 			_NhlSetFillInfo(Cnl->base.wkptr,(NhlLayer) Cnl);
 			_NhlWorkstationFill(Cnl->base.wkptr,xcs,ycs,*ncs);
+
+       			NhlVASetValues(Cnl->base.wkptr->base.id,
+                                _NhlNwkFillOpacityF, fill_opacity, 
+                                NULL);
+	
 		}
 	}
 	return 0;
