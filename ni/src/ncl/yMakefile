@@ -62,8 +62,8 @@ MPI_DEFS = -DUSE_MPI
 
 #ifdef UseNetCDF4Features
 NC4_FEATURES_DEFS = -DUSE_NETCDF4_FEATURES
-NC4_FEATURES_SRCS = NclAdvancedFile.c NclAdvancedGroup.c NclNetCDF4.c 
-NC4_FEATURES_OBJS = NclAdvancedFile.o NclAdvancedGroup.o NclNetCDF4.o
+NC4_FEATURES_SRCS = NclNetCDF4.c 
+NC4_FEATURES_OBJS = NclNetCDF4.o
 #else
 #define NC4_FEATURES_DEFS
 #define NC4_FEATURES_SRCS
@@ -260,7 +260,7 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 
 
 INSTALL_HDRS	= 	ApiRecords.h AttSupport.h DataSupport.h FileSupport.h HluClasses.h \
-			AdvancedFileSupport.h \
+			AdvancedFileSupport.h NclAdvancedGroup.h \
 			NclApi.h NclAtt.h NclBuiltInSupport.h NclBuiltIns.h NclCallBacksI.h \
 			NclCoordVar.h NclData.h NclDataDefs.h NclDriver.h NclFile.h \
 			NclFileInterfaces.h NclGroup.h NclList.h NclMdInc.h NclMultiDValData.h \
@@ -388,6 +388,7 @@ GEN_MATH_SRCS   =       MathFuncs.c
 STATIC_IO_SRCS  =       AddFileFormats.c AttSupport.c DataSupport.c \
 			FileSupport.c Formats.c GetGrids.c \
 			AdvancedFileSupport.c \
+			NclAdvancedFile.c NclAdvancedGroup.c \
 			InitData.c Memory.c NclAtt.c NclCCM.c \
 			NclCoordVar.c NclData.c NclGroup.c NclFile.c NclFileVar.c \
 			NclGRIB.c NclHDF.c NclMultiDValnclfileData.c \
@@ -432,6 +433,7 @@ GEN_MATH_OBJS   =       MathFuncs.o
 STATIC_IO_OBJS  =       AddFileFormats.o AttSupport.o DataSupport.o \
 			FileSupport.o Formats.o GetGrids.o \
 			AdvancedFileSupport.o \
+			NclAdvancedFile.o NclAdvancedGroup.o \
 			InitData.o Memory.o NclAtt.o NclCCM.o \
 			NclCoordVar.o NclData.o NclGroup.o NclFile.o NclFileVar.o \
 			NclGRIB.o NclMultiDValnclfileData.o \
