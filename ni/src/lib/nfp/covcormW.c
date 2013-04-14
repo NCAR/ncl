@@ -99,7 +99,7 @@ NhlErrorTypes covcorm_W( void )
 /*
  * Allocate space for input/output arrays.
  */
-  if(!iopt[0]) {
+  if(!iopt[1]) {
     size_vcm      = lvcm;
     ndims_vcm     = 1;
     dsizes_vcm    = (ng_size_t*)malloc(sizeof(ng_size_t));
@@ -141,15 +141,19 @@ NhlErrorTypes covcorm_W( void )
 
 
 /*
- * Depending on iopt[0], call one of two Fortran routines.
+ * Depending on iopt[1], call one of two Fortran routines.
+ *    iopt[0]=0 --> covariance
+ *    iopt[0]=1 --> correlation 
+ *    iopt[1]=0 --> 1D array (symmetric storage)
+ *    iopt[1]=1 --> 2D array
  */
-  if(!iopt[0]) {
+  if(!iopt[1]) {
     NGCALLF(dcovcormssm,DCOVCORMSSM)(&intim,&invar,dx,&missing_dx.doubleval,
-                                     &iopt[1],dvcm,&ilvcm,dtrace,&ier);
+                                     &iopt[0],dvcm,&ilvcm,dtrace,&ier);
   }
   else {
     NGCALLF(dcovcorm,DCOVCORM)(&intim,&invar,dx,&missing_dx.doubleval,
-                               &iopt[1],dvcm,&ilvcm,dtrace,&ier);
+                               &iopt[0],dvcm,&ilvcm,dtrace,&ier);
   }
 
   if(type_vcm == NCL_float) {

@@ -41,7 +41,7 @@ c     will calculate covariance or correlation matrices
 c     x        - input data array  ( unchanged on output)
 c     ntim,nvar- exact dimensions of x in calling routine
 c     xmsg     - missing data code (if none set to some no. not encountered)
-c     iopt     - =0 return
+c     iopt     - 0 ==> covariance, 1 ==> correlation
 c     vcm      - var-cov matrix
 c     trace    - sum of diagonal elements
 c                                              ! input
@@ -79,6 +79,7 @@ c     will calculate covariance or correlation matrices
 c     x        - input data array  ( unchanged on output)
 c     ntim,nvar- exact dimensions of x in calling routine
 c     xmsg     - missing data code (if none set to some no. not encountered)
+c     iopt     - 0 ==> covariance, 1 ==> correlation
 c     vcm      - var-cov matrix
 c     lvcm     - not used
 c                                              ! input
