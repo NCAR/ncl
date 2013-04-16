@@ -2172,6 +2172,8 @@ procedure ESMF_regrid_gen_weights(srcGridFile[1]:string, dstGridFile[1]:string, 
                            wgtFile[1]:string, opt[1]:logical)
 local DEBUG, NumProc, Executer, ESMFCMD, ESMF_exec, interp_method, pole, opt
 begin
+  valid_interp_methods = (/"bilinear","patch","conserve", \
+                           "nearestdtos","neareststod"/)
 ;
 ; Some attribute options cannot both be set if they have
 ; different values.  Check for them here.
@@ -2281,8 +2283,9 @@ begin
       interp_method = str_lower(opt2@method)
     end if
     if (isvar("interp_method")) then
-      if(.not.any(interp_method.eq.(/"bilinear","patch","conserve"/))) then
-        print("ESMF_regrid_gen_weights: the InterpMethod must be 'bilinear', 'patch', or 'conserve'")
+      if(.not.any(interp_method.eq.valid_interp_methods)) then
+        print("ESMF_regrid_gen_weights: InterpMethod must be one of " + \
+              str_join(valid_interp_methods,", "))
         exit
       end if
       ESMFCMD = ESMFCMD + " --method " + interp_method
@@ -2297,8 +2300,8 @@ begin
     if (isatt(opt2,"pole")) then
       pole = str_lower(opt2@pole)
     end if
-    if(isvar("interp_method").and.isvar("pole").and.\
-       interp_method.eq."conserve".and.pole.eq."all") then
+    if(isvar("interp_method").and.isvar("pole").and.pole.eq."all".and.\
+       any(interp_method.eq.(/"conserve","neareststod","nearestdtos"/))) then
       print("ESMF_regrid_gen_weights: warning: 'Pole' cannot be set to 'all' when") 
       print("                  using 'conserve' method. Defaulting to 'none'.")
       pole = "none"      
