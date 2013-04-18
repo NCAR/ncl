@@ -1893,6 +1893,7 @@ static NhlIsoLine *CnStdGetIsoLines
 	int             count;
 	int             i;
 	NhlIsoLine      *isolines, *ilp;
+	int             ezmap = 0;
 
 	Cnl = cnl;
 	Cnp = cnp;
@@ -1920,6 +1921,7 @@ static NhlIsoLine *CnStdGetIsoLines
 			       NhlNtrOutOfRangeF, &cnp->out_of_range_val,
 			       NULL);
 		c_cpsetr("ORV",cnp->out_of_range_val);
+		ezmap = 1;
 	}
 
 	if (cnp->sfp->missing_value_set)
@@ -2021,6 +2023,8 @@ static NhlIsoLine *CnStdGetIsoLines
 		ilp->x = ilp->y = NULL;
 		ilp->start_point = ilp->n_points = NULL;
 		while (! done) {
+			float out_of_range = 1e30;
+			int mystatus;
 			subret = _NhlCpcltr(cnp->data,cnp->fws,cnp->iws,clvp[i],
 					    &flag,&xloc,&yloc,&npoints,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -2039,8 +2043,66 @@ static NhlIsoLine *CnStdGetIsoLines
 				ilp->x = NhlRealloc(ilp->x, sizeof(float) * (current_point_count + npoints));
 				ilp->y = NhlRealloc(ilp->y, sizeof(float) * (current_point_count + npoints));
 			}
+			
+			if ( tfp->overlay_trans_obj && tfp->overlay_trans_obj != tfp->trans_obj && ! ezmap) {
+				if (tfp->overlay_trans_obj->base.layer_class->base_class.class_name ==
+				    NhlirregularTransObjClass->base_class.class_name) {
+					subret = _NhlCompcToData(tfp->overlay_trans_obj,xloc,yloc,npoints,xloc,yloc,
+								 &mystatus,&out_of_range,&out_of_range);
+				}
+				else {
+					subret = _NhlWinToData(tfp->overlay_trans_obj,xloc,yloc,npoints,xloc,yloc,
+							       &mystatus,&out_of_range,&out_of_range);
+				}
+			}
+			else {
+				subret = _NhlWinToData(tfp->trans_obj,xloc,yloc,npoints,xloc,yloc,
+						       &mystatus,&out_of_range,&out_of_range);
+			}
 			memcpy((char*)(ilp->x + current_point_count),xloc, npoints * sizeof(float)); 
 			memcpy((char*)(ilp->y + current_point_count),yloc, npoints * sizeof(float)); 
+
+			if (ezmap) { /* points need to be transformed back into map coordinates */
+				double xlon, ylat,last_xlon;
+				int mod_360 = 0;
+				int j, k = current_point_count;
+				int first = 1;
+				for (j = current_point_count; j < current_point_count + npoints; j++) {
+					c_mdptri((double)ilp->x[j],(double)ilp->y[j],&ylat,&xlon);
+					if (xlon > 1e10) 
+						continue;
+					if (first) {
+						last_xlon = xlon;
+						first = 0;
+					}
+					switch (mod_360) {
+					case 0:
+					default:
+						if (last_xlon - xlon < -180) {
+							mod_360 = -1;
+						}
+						else if (last_xlon - xlon > 180) {
+							mod_360 = 1;
+						}
+						break;
+					case 1:
+						if (xlon - last_xlon > 180) {
+							mod_360 = 0;
+						}
+						break;
+					case -1:
+						if (xlon - last_xlon < -180) {
+							mod_360 = 0;
+						}
+						break;
+					}
+					ilp->x[k] = (float)xlon + mod_360 * 360;
+					ilp->y[k] = (float)ylat;
+					last_xlon = xlon;
+					k++;
+				}
+				npoints = k - current_point_count;
+			}
 
 			if (current_seg == 0) {
 				ilp->n_points = NhlMalloc(sizeof(int) * current_seg_alloc);
