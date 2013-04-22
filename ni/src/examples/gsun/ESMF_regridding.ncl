@@ -2037,6 +2037,7 @@ begin
 
   lat = fwgt->yc_b(0::mlon)
   lon = fwgt->xc_b(0:mlon-1)
+
   if(.not.is_rectilinear) then
 ;---Test for "rectilinear-ness"
      if (all(lat.eq.fwgt->yc_b(nlat/2::mlon)).and. \
@@ -2765,6 +2766,28 @@ begin
   delete(fid)    ; close weight file before it gets opened again
   ESMF_copy_varmeta(srcData,dstData,wgtFile,opt)
 
+;----------------------------------------------------------------------
+; Clean up, add, and remove attributes.
+;
+; Note that due to standards for the weights file, the map_method
+; attribute will say "Bilinear remapping" for both bilinear and patch
+; methods. If this routine is called by ESMF_regrid, then that routine
+; will set FixMapMethodForPatch to True so this routine knows to fix
+; the "remap" attribute. Otherwise if ESMF_regrid_with_weights is
+; called directly, there's no way to tell if patch or bilinear was
+; used.
+;----------------------------------------------------------------------
+  if (.not.isatt(dstData,"remap")) then
+    if(isatt_logical_true(opt,"FixMapMethodForPatch")) then
+      dstData@remap = "remapped via ESMF_regrid_with_weights: " + \
+                       str_sub_str(map_method,"Bilinear","Patch")
+    else
+      dstData@remap = "remapped via ESMF_regrid_with_weights: " + \
+                      map_method
+    end if
+  end if
+
+;---Check for missing value attributes and fix them if necessary
   if(.not.isatt(dstData,"missing_value")) then
     dstData@missing_value = dstData@_FillValue
   else
@@ -2773,6 +2796,13 @@ begin
       delete(dstData@missing_value)
       dstData@missing_value = tmp_msg
     end if
+  end if
+
+  if(isatt(dstData,"_FillValue_original")) then
+    delete(dstData@_FillValue_original)
+  end if
+  if(isatt(dstData,"missing_value_original")) then
+    delete(dstData@missing_value_original)
   end if
 
   if(PrintTimings) then
