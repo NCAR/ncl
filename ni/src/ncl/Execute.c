@@ -2529,6 +2529,8 @@ void CallJMP_SCALAR_TRUE_OP(void) {
 								if(estatus != NhlFATAL) {
 									estatus =  _NclPush(data1);
 								}
+								if (data.u.data_obj->obj.status != PERMANENT)
+									_NclDestroyObj((NclObj)data.u.data_obj);
 								return;
 							}
 						}
@@ -2573,6 +2575,8 @@ void CallJMP_SCALAR_FALSE_OP(void) {
 								if(estatus != NhlFATAL) {
 									estatus =  _NclPush(data1);
 								}
+								if (data.u.data_obj->obj.status != PERMANENT)
+									_NclDestroyObj((NclObj)data.u.data_obj);
 								return;
 							}
 						}

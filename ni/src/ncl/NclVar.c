@@ -1440,7 +1440,7 @@ NclSelectionRecord *sel_ptr;
 						NULL,
 						1,
 						miss_dim_sizes,
-						PERMANENT,
+						TEMPORARY,
 						NULL,
 						thevalue->multidval.type);
 					if(self_var->var.att_id == -1) {

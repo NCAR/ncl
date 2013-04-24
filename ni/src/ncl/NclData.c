@@ -596,7 +596,7 @@ NclStatus requested;
 
 int debug_obj_table = 0;
 static int current_id = 0;
-#define  OBJ_LIST_START_SIZE 8192
+#define  OBJ_LIST_START_SIZE 32768
 static struct _NclObjList objs[OBJ_LIST_START_SIZE];
 static int current_size = OBJ_LIST_START_SIZE;
 static long long total_obj_count = 0;
@@ -633,7 +633,7 @@ NclObj self;
 		/*return*/;
 	}
 #endif
-#if 0
+#if 1
 	if (debug_obj_table) 
 		printf("%d obj unregistered: obj_type %d status %d ref_count %d\n",self->obj.id,(int) self->obj.obj_type,(int)self->obj.status,self->obj.ref_count);
 #endif
@@ -915,7 +915,7 @@ NclObj self;
 	ptr->obj_type = self->obj.obj_type;
 	ptr->obj_type_mask = self->obj.obj_type_mask;
 	ptr->theobj = self;
-#if 0
+#if 1
 	if (debug_obj_table) 
 		printf("%d obj registered: obj_type %d status %d ref_count %d\n",current_id,(int) self->obj.obj_type,(int)self->obj.status,self->obj.ref_count);
 #endif
