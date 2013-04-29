@@ -415,7 +415,7 @@ c .   for the corner pts
                       IF (X(ML,NL-1).NE.XMSG .AND.
      +                    X(ML,NL-2).NE.XMSG .AND.
      +                    X(ML-1,NL).NE.XMSG .AND.
-     +                    X(ML-1,NL).NE.XMSG) THEN
+     +                    X(ML-2,NL).NE.XMSG) THEN
                           X(ML,NL) = (2.D0*X(ML,NL-2)-X(ML,NL-2)+
      +                               2.D0*X(ML-1,NL)-X(ML-2,NL))*0.5D0
                       END IF
