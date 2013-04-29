@@ -2726,18 +2726,6 @@ begin
     dstData@_FillValue = default_fillvalue(typeof(dstData))
   end if
 
-;---Apply frac_b only for conservative interpolation.
-  if(isatt(fid,"map_method").and.\
-     fid@map_method.eq."Conservative remapping") then
-    if(DEBUG)
-      print("ESMF_regrid_with_weights: dividing results by frac_b...")
-      print("                          (for conserve interpolation only)")
-    end if
-    frac_b            = reshape(fid->frac_b,dimsizes(dstData))
-    frac_b@_FillValue = default_fillvalue(typeof(frac_b))
-    dstData = dstData/where(frac_b.eq.0,frac_b@_FillValue,frac_b)
-  end if
-
 ;---Check if we need to remap the values onto a larger 2D grid.
   if(RemapIndexes) then
     if(DEBUG)
