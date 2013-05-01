@@ -244,6 +244,22 @@ begin
     res@mpMaxLatF = max(data&$data!0$)
     res@mpMinLonF = min(data&$data!1$)
     res@mpMaxLonF = max(data&$data!1$)
+    res@mpCenterLonF = (res@mpMinLatF+res@mpMaxLonF)/2.
+
+;---Determine cyclicness
+    mx         = dimsizes(data&$data!1$)
+    first_val  = data&$data!1$(0)
+    second_val = data&$data!1$(1)
+    last_val   = data&$data!1$(mx-1)
+    delta      = second_val - first_val
+    range      = last_val - first_val
+    if(range.ge.360.) then
+      res@gsnAddCyclic = False
+    end if
+    if(any((range+delta).lt.359.)) then
+      res@gsnAddCyclic = False
+    end if
+
     plot = gsn_csm_contour_map(wks,data,res)
 ;---Special lat2d/lon2d attributes
   else if (is_valid_latlon2d_attr(data,"lat2d").and. \
@@ -252,12 +268,15 @@ begin
     res@mpMaxLatF = max(data@lat2d)
     res@mpMinLonF = min(data@lon2d)
     res@mpMaxLonF = max(data@lon2d)
+    res@mpCenterLonF = (res@mpMinLatF+res@mpMaxLonF)/2.
+    res@gsnAddCyclic = False    ; For now, make this False always
 ;---Check for a WRF file.
   else if(.not.any(ismissing(vardims)).and.\
           any(vardims(0).eq.(/"south_north","south_north_stag"/)).and.\
           any(vardims(1).eq.(/"west_east","west_east_stag"/))) then
     res = wrf_map_resources(f,res) 
     res@tfDoNDCOverlay = get_res_value(res,"tfDoNDCOverlay",True)
+    res@gsnAddCyclic   = False    ; For now, make this False always
     delete([/res@start_lat,res@start_lon,res@end_lat,res@end_lon,res@mpNestTime/])
     plot = gsn_csm_contour_map(wks,data,res)
 ;---"data" contains "coordinates" attribute
