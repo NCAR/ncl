@@ -16,8 +16,7 @@
 #include <ncarg/hlu/hlu.h>
 #include "pageutil.h"
 
-const int DEFAULT_LR_MARGIN = 36;
-const int DEFAULT_TB_MARGIN = 126;
+const int DEFAULT_MARGIN = 36;    /* "0.5 */
 
 /* encodes definitions of standard page/paper sizes */
 typedef struct {
@@ -146,11 +145,29 @@ const int nhlGetPaperSize(NhlPageInfo* pageInfo)
         pageInfo->paperHeightIn = pageInfo->pageHeightPts / 72.;
     }
 
-    /* compute page margins... */
-    pageInfo->leftMargin = DEFAULT_LR_MARGIN;
-    pageInfo->bottomMargin = DEFAULT_TB_MARGIN;
-    pageInfo->rightMargin = pageInfo->pageWidthPts - DEFAULT_LR_MARGIN;
-    pageInfo->topMargin = pageInfo->pageHeightPts - DEFAULT_TB_MARGIN;
+    /* compute page margins; attempt to apply the default margin to smallest dimension, then compute a margin 
+     * for the longer dimension that yields an NDC square.
+     */
+    if (pageInfo->pageWidthPts < pageInfo->pageHeightPts) {
+        int ndcDimensions = pageInfo->pageWidthPts - (2 * DEFAULT_MARGIN);
+        if (ndcDimensions <= 0) ndcDimensions = pageInfo->pageWidthPts;
+        int actualMargin = (pageInfo->pageWidthPts - ndcDimensions) / 2;
+        pageInfo->leftMargin = actualMargin;
+        pageInfo->rightMargin = pageInfo->leftMargin + ndcDimensions;
+        actualMargin = (pageInfo->pageHeightPts - ndcDimensions) / 2;
+        pageInfo->bottomMargin = actualMargin;
+        pageInfo->topMargin = pageInfo->bottomMargin + ndcDimensions;
+    }
+    else {
+        int ndcDimensions = pageInfo->pageHeightPts - (2 * DEFAULT_MARGIN);
+        if (ndcDimensions <= 0) ndcDimensions = pageInfo->pageHeightPts;
+        int actualMargin = (pageInfo->pageHeightPts - ndcDimensions) / 2;
+        pageInfo->bottomMargin = actualMargin;
+        pageInfo->topMargin = pageInfo->bottomMargin + ndcDimensions;        
+        actualMargin = (pageInfo->pageWidthPts - ndcDimensions) / 2;
+        pageInfo->leftMargin = actualMargin;
+        pageInfo->rightMargin = pageInfo->leftMargin + ndcDimensions;
+    }
 
     return ret;
 }
