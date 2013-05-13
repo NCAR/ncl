@@ -1637,6 +1637,8 @@ NclFileAttRecord *_NclFileAttAlloc(int n_atts)
 
 void _NclFileAttRealloc(NclFileAttRecord **att_rec)
 {
+    int n;
+    NclFileAttNode *attnode;
     /*
     *fprintf(stderr, "\nEnter _NclFileAttRealloc, file: %s, line: %d\n", __FILE__, __LINE__);
     *fprintf(stderr, "\tstart with att_rec->n_atts = %d\n", att_rec->n_atts);
@@ -1650,6 +1652,12 @@ void _NclFileAttRealloc(NclFileAttRecord **att_rec)
         (*att_rec)->att_node = (NclFileAttNode *)NclRealloc((*att_rec)->att_node,
                     (*att_rec)->max_atts * sizeof(NclFileAttNode));
         assert((*att_rec)->att_node);
+
+        for(n = (*att_rec)->n_atts; n < (*att_rec)->max_atts; ++n)
+        {
+            attnode = &((*att_rec)->att_node[n]);
+            memset(attnode, 0, sizeof(NclFileAttNode));
+        }
     }
 
     /*
