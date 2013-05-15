@@ -276,7 +276,7 @@ char	*_CtGetResource( database, parentname, parentclass, name, class, def )
 	char		*type;	
 	XrmValue	value;
 	char		*string;
-	char		buffer[1024];
+	char		*buffer;
 	char		fullname[1024];
 	char		fullclass[1024];
 	int		len;
@@ -291,7 +291,7 @@ char	*_CtGetResource( database, parentname, parentclass, name, class, def )
 		string = def;
 		len = strlen(string);
 	}
-	len = len < sizeof(buffer) ? len : sizeof(buffer) - 1;
+        buffer = (char*) malloc(len + 1);
 	(void) strncpy(buffer, string, len);
 	buffer[len] = '\0';
 

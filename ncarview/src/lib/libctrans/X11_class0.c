@@ -421,6 +421,8 @@ CGMC *c;
 			);
 		}
 		strncpy(geom_string, geometry, sizeof(geom_string) -1);
+		if (!x11_opts.Geometry)
+			free(geometry);	
 
 		/*
 		 *	load the font to use. See section 10.2 & 6.5.1
@@ -432,6 +434,7 @@ CGMC *c;
 				);
 
 			fontstruct = XLoadQueryFont(dpy, logo_font);
+			free(logo_font);
 		}
 
 		drawable = create_window(

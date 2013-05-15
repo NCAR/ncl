@@ -734,8 +734,9 @@ PIX_OpenWorkstation
 		}
         }
         if (! xi->filename) {
-		xi->filename = malloc(5 * sizeof(char));
-	        strcpy(xi->filename,"gmeta");
+                const char* gmetaStr = "gmeta";
+		xi->filename = malloc(sizeof(char)*strlen(gmetaStr)+1);
+	        strcpy(xi->filename,gmetaStr);
 	}
         xi->scr = xwa.screen;
         xi->vis = xwa.visual;

@@ -88,7 +88,7 @@ ictrans_args(unit, args)
 		init++;
 	}
 
-	if (Args[unit]) free((Voidptr) Args);
+	if (Args[unit]) free((Voidptr) Args[unit]);
 
 	Args[unit] = malloc((unsigned) (strlen(args) + 1));
 
