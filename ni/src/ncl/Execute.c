@@ -5762,9 +5762,34 @@ void CallFILE_VARVAL_OP(void) {
 						if(value != NULL) 
 							file = (NclFile)_NclGetObj((int)*(obj*)value->multidval.val);
 						if((file != NULL)&&((index = _NclFileIsVar(file,var)) != -1)) {
-							for(i = 0 ; i < file->file.var_info[index]->num_dimensions; i++) {
-								dim_is_ref[i] = 0;
+
+							memset(dim_is_ref, 0, NCL_MAX_DIMENSIONS*sizeof(int));
+							/*
+							if(1 == file->file.advanced_file_structure)
+							{
+								NclAdvancedFile advancedfile = (NclAdvancedFile)file;
+								NclFileVarNode *varnode = NULL;
+								varnode = _getVarNodeFromNclFileGrpNode(advancedfile->advancedfile.grpnode, var);
+								if(NULL == varnode)
+								{
+									NHLPERROR((NhlFATAL,NhlEUNKNOWN,"variable (%s) is not in file (%s)",
+										NrmQuarkToString(var),
+										NrmQuarkToString(advancedfile->advancedfile.grpnode->path)));
+								}
+
+								if(NULL != varnode->dim_rec)
+								{
+									for (i = 0; i < varnode->dim_rec->n_dims; ++i)
+										dim_is_ref[i] = 0;
+								}
 							}
+							else
+							{
+								for(i = 0 ; i < file->file.var_info[index]->num_dimensions; i++) {
+									dim_is_ref[i] = 0;
+								}
+							}
+							*/
 
 							if((nsubs != 0)&&(nsubs ==  file->file.var_info[index]->num_dimensions)){
 								sel_ptr = (NclSelectionRecord*)NclMalloc (sizeof(NclSelectionRecord));
