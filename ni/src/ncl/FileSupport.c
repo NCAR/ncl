@@ -71,7 +71,7 @@
 NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_advanced_file_structure);
 void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *varnode);
 
-NhlErrorTypes _NclBuildFileCoordRSelection
+NhlErrorTypes _NclBuildOriginalFileCoordRSelection
 #if	NhlNeedProto
 (struct _NclFileRec *file,NclQuark var,struct _NclRangeRec * range, struct _NclSelection* sel,int  dim_num, char * dim_name)
 #else
@@ -310,6 +310,334 @@ NhlErrorTypes _NclBuildFileCoordRSelection
 	return(NhlNOERROR);
 }
 
+#ifdef USE_NETCDF4_FEATURES
+NhlErrorTypes _NclBuildAdvancedFileCoordRSelection(struct _NclFileRec* file,
+                                                   NclQuark var, struct _NclRangeRec* range,
+                                                   struct _NclSelection* sel,
+                                                   int dim_num, char* dim_name)
+{
+    NclAdvancedFile advfile = (NclAdvancedFile) file;
+    NclQuark cname;
+    NclMultiDValData tmp_md = NULL;
+    NclMultiDValData coord_md = NULL;
+    NclObjTypes the_type;
+
+    NclFileGrpNode *grpnode = advfile->advancedfile.grpnode;
+    NclFileVarNode *varnode;
+    NclFileDimNode *dimnode;
+
+    char* v_name;
+    char* f_name;
+    
+    int i;
+
+    NclCoordVar cvar = NULL;
+
+/*
+* Preconditions: subscripts are SCALAR and integer guarenteed!!!!
+*/
+    v_name = NrmQuarkToString(var);
+    f_name = NrmQuarkToString(advfile->advancedfile.fname);
+
+  /*
+   *fprintf(stderr, "\nEnter _NclBuildAdvancedFileCoordRSelection, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tf_name: <%s>, var: <%s>, dim_name: <%s>, dim_num = %d\n", 
+   *                   f_name, v_name, dim_name, dim_num);
+   */
+
+    if(range != NULL)
+    {
+        varnode = _getVarNodeFromNclFileGrpNode(grpnode, var);
+        if(dim_name != NULL)
+        {
+            cname = NrmStringToQuark(dim_name);
+
+            if(NULL != varnode)
+            {
+                for(i = 0 ; i < varnode->dim_rec->n_dims; ++i)
+                {
+                    dimnode = &(varnode->dim_rec->dim_node[i]);
+
+                    if(cname == dimnode->name)
+                    {
+                      /*
+                       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+                       *fprintf(stderr, "\tfound dim_name: <%s>, at i = %d\n", dim_name, i);
+                       */
+                        sel->dim_num = i;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                         "(%s) is not a dimension name in variable (%s->%s), could not determine dimension number",
+                         dim_name,f_name,v_name);
+                return(NhlFATAL);
+            }
+        }
+        else
+        {
+            dimnode = &(varnode->dim_rec->dim_node[dim_num]);
+            cname = dimnode->name;
+            sel->dim_num = dim_num;
+        }
+
+        dimnode = _getDimNodeFromNclFileGrpNode(grpnode, cname);
+        if(NULL == dimnode)
+        {
+            NhlPError(NhlFATAL,NhlEUNKNOWN,
+                      "Dimension (%s) of file (%s) does not have an associated coordinate variable",
+                       NrmQuarkToString(cname),f_name);
+            return(NhlFATAL);
+        }
+
+        sel->u.sub.is_single = range->is_single;
+        if((range->start == NULL)&&(range->finish == NULL))
+        {
+            sel->sel_type = Ncl_SUB_ALL;
+            sel->u.sub.start = 0;
+            sel->u.sub.finish = 0;
+            sel->u.sub.stride = 1;
+
+        }
+        else if(range->start == NULL)
+        {
+            sel->sel_type = Ncl_SUB_DEF_VAL;
+            sel->u.sub.start = 0;
+            sel->u.sub.stride = 1;
+        
+            cvar = (NclCoordVar)_NclFileReadCoord(file,cname,NULL);
+            coord_md = _NclVarValueRead((NclVar)cvar,NULL,NULL);
+            the_type = _NclGetVarRepValue((NclVar)cvar);
+            if(!(the_type & range->finish->multidval.type->type_class.type))
+            {
+                tmp_md = _NclCoerceData(range->finish,the_type,NULL);
+                if(tmp_md == NULL)
+                {
+                    NhlPError(NhlFATAL,NhlEUNKNOWN,
+                              "Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",
+                              dim_num);
+                    return(NhlFATAL);
+                }
+                else
+                {
+                    if(range->finish->obj.status != PERMANENT)
+                        _NclDestroyObj((NclObj)range->finish);
+
+                    range->finish = tmp_md;
+                }
+            }
+
+            if(_NclGetCoordRange(coord_md,NULL,range->finish->multidval.val,&sel->u.sub.start,&sel->u.sub.finish) == NhlFATAL)
+            {
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not obtain coordinate indexes, unable to perform subscript");
+                return(NhlFATAL);
+            }
+        }
+        else if(range->finish == NULL)
+        {
+            sel->sel_type = Ncl_SUB_VAL_DEF;
+            sel->u.sub.finish = 0;
+            sel->u.sub.stride = 1;
+
+            cvar = (NclCoordVar)_NclFileReadCoord(file,cname,NULL);
+            coord_md = _NclVarValueRead((NclVar)cvar,NULL,NULL);
+            the_type = _NclGetVarRepValue((NclVar)cvar);
+
+            if(!(the_type & range->start->multidval.type->type_class.type))
+            {
+                tmp_md = _NclCoerceData(range->start,the_type,NULL);
+                if(tmp_md == NULL)
+                {
+                    if(cvar->obj.status != PERMANENT)
+                        _NclDestroyObj((NclObj)cvar);
+
+                    if(coord_md->obj.status != PERMANENT)
+                        _NclDestroyObj((NclObj)coord_md);
+
+                    NhlPError(NhlFATAL,NhlEUNKNOWN,
+                              "Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",
+                              dim_num);
+                    return(NhlFATAL);
+
+                }
+                else
+                {
+                    if(range->start->obj.status != PERMANENT)
+                        _NclDestroyObj((NclObj)range->start);
+
+                    range->start= tmp_md;
+                }
+            }
+
+            if(_NclGetCoordRange(coord_md,range->start->multidval.val,NULL,&sel->u.sub.start,&sel->u.sub.finish) == NhlFATAL)
+            {
+                if(cvar->obj.status != PERMANENT)
+                    _NclDestroyObj((NclObj)cvar);
+
+                if(coord_md->obj.status != PERMANENT)
+                    _NclDestroyObj((NclObj)coord_md);
+
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not obtain coordinate indexes, unable to perform subscript (%d)",dim_num);
+                return(NhlFATAL);
+            }
+        }
+        else if(range->start == range->finish)
+        {
+            sel->sel_type = Ncl_SUBSCR;
+            cvar = (NclCoordVar)_NclFileReadCoord(file,cname,NULL);
+            coord_md = _NclVarValueRead((NclVar)cvar,NULL,NULL);
+            the_type = _NclGetVarRepValue((NclVar)cvar);
+
+            if(!(the_type & range->start->multidval.type->type_class.type))
+            {
+                tmp_md = _NclCoerceData(range->start,the_type,NULL);
+                if(tmp_md == NULL)
+                {
+                    if(cvar->obj.status != PERMANENT)
+                        _NclDestroyObj((NclObj)cvar);
+
+                    if(coord_md->obj.status != PERMANENT)
+                        _NclDestroyObj((NclObj)coord_md);
+
+                    NhlPError(NhlFATAL,NhlEUNKNOWN,
+                              "Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",
+                               dim_num);
+                    return(NhlFATAL);
+                }
+                else
+                {
+                    if(range->start->obj.status != PERMANENT)
+                        _NclDestroyObj((NclObj)range->start);
+
+                    range->finish = range->start= tmp_md;
+                }
+            }
+
+            if(_NclGetCoordRange(coord_md,range->start->multidval.val,range->finish->multidval.val,&sel->u.sub.start,&sel->u.sub.finish) == NhlFATAL)
+            {
+                if(cvar->obj.status != PERMANENT)
+                        _NclDestroyObj((NclObj)cvar);
+
+                if(coord_md->obj.status != PERMANENT)
+                        _NclDestroyObj((NclObj)coord_md);
+
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not obtain coordinate indexes, unable to perform subscript");
+                return(NhlFATAL);
+            }
+
+            sel->u.sub.stride = 1;
+        }
+        else
+        {
+            sel->sel_type = Ncl_SUBSCR;
+            cvar = (NclCoordVar)_NclFileReadCoord(file,cname,NULL);
+            coord_md = _NclVarValueRead((NclVar)cvar,NULL,NULL);
+            the_type = _NclGetVarRepValue((NclVar)cvar);
+
+            if(!(the_type & range->start->multidval.type->type_class.type))
+            {
+                tmp_md = _NclCoerceData(range->start,the_type,NULL);
+                if(tmp_md == NULL)
+                {
+                    if(cvar->obj.status != PERMANENT)
+                        _NclDestroyObj((NclObj)cvar);
+
+                    NhlPError(NhlFATAL,NhlEUNKNOWN,
+                              "Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",
+                              dim_num);
+                    return(NhlFATAL);
+                }
+                else
+                {
+                    if(range->start->obj.status != PERMANENT) {
+                        _NclDestroyObj((NclObj)range->start);
+                    }
+                    range->start= tmp_md;
+                }
+            }
+
+            tmp_md = NULL;
+            if(!(the_type & range->finish->multidval.type->type_class.type))
+            {
+                tmp_md = _NclCoerceData(range->finish,the_type,NULL);
+                if(tmp_md == NULL)
+                {
+                    if(cvar->obj.status != PERMANENT)
+                        _NclDestroyObj((NclObj)cvar);
+
+                    NhlPError(NhlFATAL,NhlEUNKNOWN,
+                              "Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",
+                              dim_num);
+                    return(NhlFATAL);
+                }
+                else
+                {
+                    if(range->finish->obj.status != PERMANENT)
+                        _NclDestroyObj((NclObj)range->finish);
+
+                    range->finish = tmp_md;
+                }
+            }
+
+            if(_NclGetCoordRange(coord_md,range->start->multidval.val,range->finish->multidval.val,&sel->u.sub.start,&sel->u.sub.finish) == NhlFATAL)
+            {
+                if(cvar->obj.status != PERMANENT)
+                    _NclDestroyObj((NclObj)cvar);
+
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not obtain coordinate indexes, unable to perform subscript");
+                return(NhlFATAL);
+            }
+
+            sel->u.sub.stride = 1;
+        }
+
+        if(range->stride != NULL)
+        {
+            if(!_NclScalarCoerce(range->stride->multidval.val,
+                                 range->stride->multidval.data_type,
+                                 &(sel->u.sub.stride),NCL_long))
+            {
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce subscript value to long data type");
+                return(NhlFATAL);
+            }
+
+        } 
+    } 
+
+    if(cvar->obj.status != PERMANENT)
+        _NclDestroyObj((NclObj)cvar);
+
+  /*
+   *fprintf(stderr, "Leave _NclBuildAdvancedFileCoordRSelection, file: %s, line: %d\n\n", __FILE__, __LINE__);
+   */
+
+    return(NhlNOERROR);
+}
+#endif
+
+NhlErrorTypes _NclBuildFileCoordRSelection
+#if	NhlNeedProto
+(struct _NclFileRec *file,NclQuark var,struct _NclRangeRec * range, struct _NclSelection* sel,int  dim_num, char * dim_name)
+#else
+(file,var,range,sel,dim_num,dim_name)
+	struct _NclFileRec *file;
+	NclQuark var;
+	struct _NclRangeRec* range;
+	struct _NclSelection* sel;
+	int dim_num;
+	char * dim_name;
+#endif
+{
+#ifdef USE_NETCDF4_FEATURES
+    if(file->file.advanced_file_structure)
+        return _NclBuildAdvancedFileCoordRSelection(file,var,range,sel,dim_num,dim_name);
+    else
+#endif
+        return _NclBuildOriginalFileCoordRSelection(file,var,range,sel,dim_num,dim_name);
+}
 
 NhlErrorTypes  _NclBuildFileCoordVSelection
 #if	NhlNeedProto
@@ -447,18 +775,154 @@ NhlErrorTypes  _NclBuildFileCoordVSelection
 		return(NhlFATAL);
 	}
 }
-NhlErrorTypes _NclBuildFileRSelection
-#if	NhlNeedProto
-(struct _NclFileRec *file,NclQuark var,struct _NclRangeRec * range, struct _NclSelection* sel,int  dim_num, char * dim_name)
-#else
-(file,var,range,sel,dim_num,dim_name)
-	struct _NclFileRec *file;
-	NclQuark var;
-	struct _NclRangeRec* range;
-	struct _NclSelection* sel;
-	int dim_num;
-	char * dim_name;
-#endif
+
+NhlErrorTypes _NclBuildAdvancedFileRSelection(struct _NclFileRec *file,
+                                              NclQuark var,
+                                              struct _NclRangeRec* range,
+                                              struct _NclSelection* sel,
+                                              int dim_num, char* dim_name)
+{
+    NclAdvancedFile advfile = (NclAdvancedFile) file;
+    NclFileGrpNode *grpnode = advfile->advancedfile.grpnode;
+    NclFileVarNode *varnode;
+    NclFileDimNode *dimnode;
+
+    char* v_name;
+    char* f_name;
+
+    int i;
+    
+/*
+* Preconditions: subscripts are SCALAR and integer guarenteed!!!!
+*/
+    v_name = NrmQuarkToString(var);
+    f_name = NrmQuarkToString(advfile->advancedfile.fname);
+
+  /*
+   *fprintf(stderr, "\nEnter _NclBuildAdvancedFileRSelection, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tf_name: <%s>, var: <%s>, dim_name: <%s>, dim_num = %d\n",
+   *                   f_name, v_name, dim_name, dim_num);
+   */
+
+    if(range != NULL)
+    {
+        if(dim_name != NULL)
+        {
+            NclQuark cname = NrmStringToQuark(dim_name);
+            varnode = _getVarNodeFromNclFileGrpNode(grpnode, var);
+
+            if(NULL != varnode)
+            {
+                for(i = 0 ; i < varnode->dim_rec->n_dims; ++i)
+                {
+                    dimnode = &(varnode->dim_rec->dim_node[i]);
+
+                    if(cname == dimnode->name)
+                    {
+                        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+                        fprintf(stderr, "\tfound dim_name: <%s>, at i = %d\n", dim_name, i);
+                        sel->dim_num = i;
+                        break;
+                    }
+                }
+            }
+        }
+        else
+        {
+            sel->dim_num = dim_num;
+        }
+
+        sel->u.sub.is_single = range->is_single;
+        if((range->start == NULL)&&(range->finish == NULL))
+        {
+            sel->sel_type = Ncl_SUB_ALL;
+            sel->u.sub.start = 0;
+            sel->u.sub.finish = 0;
+            sel->u.sub.stride = 1;
+
+        }
+        else if(range->start == NULL)
+        {
+            sel->sel_type = Ncl_SUB_DEF_VAL;
+            sel->u.sub.start = 0;
+
+            if(!_NclScalarCoerce(range->finish->multidval.val,
+                                 range->finish->multidval.data_type,
+                                 &(sel->u.sub.finish),NCL_long))
+            {
+/*
+* This shouldn't happen but it can't hurt to have an extra check here
+*/
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce subscript value to long data type");
+                return(NhlFATAL);
+            }
+
+            sel->u.sub.stride = 1;
+
+        }
+        else if(range->finish == NULL)
+        {
+            sel->sel_type = Ncl_SUB_VAL_DEF;
+
+            if(!_NclScalarCoerce(range->start->multidval.val,
+                                 range->start->multidval.data_type,
+                                 &(sel->u.sub.start),NCL_long))
+            {
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce subscript value to long data type");
+                return(NhlFATAL);
+            }
+
+            sel->u.sub.finish = 0;
+            sel->u.sub.stride = 1;
+        }
+        else
+        {
+            sel->sel_type = Ncl_SUBSCR;
+
+            if(!_NclScalarCoerce(range->start->multidval.val,
+                                 range->start->multidval.data_type,
+                                 &(sel->u.sub.start),NCL_long))
+            {
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce subscript value to long data type");
+                return(NhlFATAL);
+            }
+
+            if(!_NclScalarCoerce(range->finish->multidval.val,
+                                 range->finish->multidval.data_type,
+                                 &(sel->u.sub.finish),NCL_long))
+            {
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce subscript value to long data type");
+                return(NhlFATAL);
+            }
+
+            sel->u.sub.stride = 1;
+
+        }
+
+        if(range->stride != NULL)
+        {
+            if(!_NclScalarCoerce(range->stride->multidval.val,
+                                 range->stride->multidval.data_type,
+                                 &(sel->u.sub.stride),NCL_long))
+            {
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce subscript value to long data type");
+                return(NhlFATAL);
+            }
+        } 
+    } 
+
+  /*
+   *fprintf(stderr, "Leave _NclBuildAdvancedFileRSelection, file: %s, line: %d\n\n", __FILE__, __LINE__);
+   */
+
+    return(NhlNOERROR);
+}
+
+NhlErrorTypes _NclBuildOriginalFileRSelection(struct _NclFileRec *file,
+                                              NclQuark var,
+                                              struct _NclRangeRec* range,
+                                              struct _NclSelection* sel,
+                                              int dim_num, char* dim_name)
 {
 	char * v_name;
 	char * f_name;
@@ -563,6 +1027,26 @@ NhlErrorTypes _NclBuildFileRSelection
 	return(NhlNOERROR);
 }
 
+NhlErrorTypes _NclBuildFileRSelection
+#if	NhlNeedProto
+(struct _NclFileRec *file,NclQuark var,struct _NclRangeRec * range, struct _NclSelection* sel,int  dim_num, char * dim_name)
+#else
+(file,var,range,sel,dim_num,dim_name)
+	struct _NclFileRec *file;
+	NclQuark var;
+	struct _NclRangeRec* range;
+	struct _NclSelection* sel;
+	int dim_num;
+	char * dim_name;
+#endif
+{
+#ifdef USE_NETCDF4_FEATURES
+    if(file->file.advanced_file_structure)
+        return _NclBuildAdvancedFileRSelection(file,var,range,sel,dim_num,dim_name);
+    else
+#endif
+        return _NclBuildOriginalFileRSelection(file,var,range,sel,dim_num,dim_name);
+}
 
 NhlErrorTypes  _NclBuildFileVSelection
 #if	NhlNeedProto

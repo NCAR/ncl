@@ -4672,13 +4672,14 @@ static struct _NclVarRec *AdvancedFileReadVar(NclFile infile, NclQuark var_name,
                         coordvarname = NrmStringToQuark(cvn);
                     }
 
-                    coordnode = _getCoordVarNodeFromNclFileGrpNode(thefile->advancedfile.grpnode, coordvarname);
+                    coordnode = _getCoordVarNodeFromNclFileGrpNode(thefile->advancedfile.grpnode,
+                                                                   coordvarname);
 
                     if(NULL != coordnode)
                     {
                         tmp_sel.selection[0] = sel[i];
                         tmp_sel.selection[0].dim_num = 0;
-                        tmp_var = _NclFileReadCoord((NclFile)thefile,coordvarname,NULL);
+                        tmp_var = _NclFileReadCoord((NclFile)thefile,coordvarname,&tmp_sel);
                         if(tmp_var != NULL)
                         {
                             if(sel[i].sel_type == Ncl_VECSUBSCR)
