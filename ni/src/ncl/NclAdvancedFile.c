@@ -547,7 +547,9 @@ void _printNclFileAttRecord(FILE *fp, NclAdvancedFile thefile, NclFileAttRecord 
   /*
    *_justPrintTypeVal(fp, NCL_char, "\n", 0);
    */
-    _printNclTypeVal(fp, NCL_char, "attributes:", 1);
+    _printNclTypeVal(fp, NCL_char, "Number of Attributes:", 0);
+    _printNclTypeVal(fp, NCL_int, &attrec->n_atts, 1);
+
     _increaseNclPrintIndentation();
 
   /*
@@ -875,7 +877,7 @@ void _printNclFileVarDimRecord(FILE *fp, NclFileDimRecord *dim_rec)
         dimnode = &(dim_rec->dim_node[i]);
 
         if(i)
-            _justPrintTypeVal(fp, NCL_char, ", ", 0);
+            _justPrintTypeVal(fp, NCL_char, " x ", 0);
 
         llv = dimnode->size;
         _justPrintTypeVal(fp, NCL_int64, &llv, 0);
@@ -892,7 +894,16 @@ void _printNclFileVarDimRecord(FILE *fp, NclFileDimRecord *dim_rec)
 
 void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *varnode)
 {
+    NclFileDimRecord* dim_rec;
+    NclFileDimNode* dimnode;
+    NclFileVarNode* dimvarnode;
+    long long total_size = 1;
+    float sval = 0.0;
+    float eval = 0.0;
+    float* fptr;
+    double* dptr;
     char type_str[32];
+    int i;
     
     if(NULL == varnode)
         return;
@@ -910,18 +921,101 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
        */
     }
 
-    _printNclTypeVal(fp, NCL_string, &(varnode->name), 0);
-    _justPrintTypeVal(fp, NCL_char, ": <", 0);
-    _justPrintTypeVal(fp, NCL_char, type_str, 0);
-    
-    _justPrintTypeVal(fp, NCL_char, ">", 0);
+    _justPrintTypeVal(fp, NCL_char, "Variable: ", 0);
+    _printNclTypeVal(fp, NCL_string, &(varnode->name), 1);
 
-    _printNclFileVarDimRecord(fp, varnode->dim_rec);
+    _justPrintTypeVal(fp, NCL_char, "Type: ", 0);
+    _justPrintTypeVal(fp, NCL_char, type_str, 1);
+  
+    dim_rec = varnode->dim_rec;
 
-    if(varnode->is_chunked)
+    if(NULL != dim_rec)
     {
-        _printNclTypeVal(fp, NCL_char, "    Chunking Info:", 0);
-        _printNclFileVarDimRecord(fp, varnode->chunk_dim_rec);
+        for(i = 0; i < dim_rec->n_dims; i++)
+        {
+            dimnode = &(dim_rec->dim_node[i]);
+            total_size *= dimnode->size;
+        }
+
+        _printNclTypeVal(fp, NCL_char, "Total Size: ", 0);
+        _justPrintTypeVal(fp, NCL_int64, &total_size, 0);
+        _justPrintTypeVal(fp, NCL_char, " values", 1);
+
+        total_size *= _NclSizeOf(varnode->type);
+        _printNclTypeVal(fp, NCL_char, "            ", 0);
+        _justPrintTypeVal(fp, NCL_int64, &total_size, 0);
+        _justPrintTypeVal(fp, NCL_char, " bytes", 1);
+
+        _printNclTypeVal(fp, NCL_char, "Number of Dimensions: ", 0);
+        _justPrintTypeVal(fp, NCL_int, &dim_rec->n_dims, 1);
+
+        _printNclTypeVal(fp, NCL_char, "Dimensions and sizes:", 0);
+        _printNclFileVarDimRecord(fp, varnode->dim_rec);
+
+        if(varnode->is_chunked)
+        {
+            _printNclTypeVal(fp, NCL_char, "Chunking Info:", 0);
+            _printNclFileVarDimRecord(fp, varnode->chunk_dim_rec);
+        }
+
+        _printNclTypeVal(fp, NCL_char, "Coordinates:", 1);
+        for(i = 0; i < dim_rec->n_dims; i++)
+        {
+            dimnode = &(dim_rec->dim_node[i]);
+            dimvarnode = _getVarNodeFromNclFileGrpNode(thefile->advancedfile.grpnode, dimnode->name);
+
+            if(NULL != dimvarnode)
+            {
+                if(NULL != dimvarnode->value)
+                {
+                    if(NCL_float == dimvarnode->type)
+                    {
+                        fptr = (float *) dimvarnode->value;
+                        sval = fptr[0];
+                        eval = fptr[dimnode->size - 1];
+                    }
+                    else if(NCL_double == dimvarnode->type)
+                    {
+                        dptr = (double *) dimvarnode->value;
+                        sval = (float) dptr[0];
+                        eval = (float) dptr[dimnode->size - 1];
+                    }
+                }
+                else
+                {
+                    NclMultiDValData tmp_md = NULL;
+                    NclDimRec dim_info[NCL_MAX_DIMENSIONS];
+                    tmp_md = MyAdvancedFileReadVarValue((NclFile) thefile, dimnode->name, NULL, dim_info, FILE_VAR_ACCESS);
+
+                    if(NULL != tmp_md)
+                    {
+                        memcpy(dimvarnode->value, tmp_md->multidval.val, tmp_md->multidval.totalsize);
+                        if(NCL_float == tmp_md->multidval.data_type)
+                        {
+                            fptr = (float *) tmp_md->multidval.val;
+                            sval = fptr[0];
+                            eval = fptr[dimnode->size - 1];
+                        }
+                        else if(NCL_double == tmp_md->multidval.data_type)
+                        {
+                            dptr = (double *) tmp_md->multidval.val;
+                            sval = (float) dptr[0];
+                            eval = (float) dptr[dimnode->size - 1];
+                        }
+
+                        _NclDestroyObj((NclObj)tmp_md);
+                    }
+                }
+
+                _printNclTypeVal(fp, NCL_char, "            ", 0);
+                _justPrintTypeVal(fp, NCL_char, NrmQuarkToString(dimnode->name), 0);
+                _justPrintTypeVal(fp, NCL_char, ": [", 0);
+                _justPrintTypeVal(fp, NCL_float, &sval, 0);
+                _justPrintTypeVal(fp, NCL_char, "..", 0);
+                _justPrintTypeVal(fp, NCL_float, &eval, 0);
+                _justPrintTypeVal(fp, NCL_char, "]", 1);
+            }
+        }
     }
 
     _increaseNclPrintIndentation();
