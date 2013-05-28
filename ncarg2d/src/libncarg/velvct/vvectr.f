@@ -1046,18 +1046,20 @@ C which will cause all the glyphs to have the same basic length.
 C 
       IF (IAST.GE.2) THEN
          VFL = 1.0
+         RMG = UVMX
       ELSE
          VFL = MIN(1.0, VFRC)
+         RMG = VRMG
       END IF
 C
 C If the field is uniform, special conditions apply
 C
       IF (UVMX - UVMN .LE. 0.0) THEN
-         IF (VRLN .GT. 0.0 .AND. VRMG .GT. 0.0) THEN
+         IF (VRLN .GT. 0.0 .AND. RMG .GT. 0.0) THEN
             DRL=VRLN*FW2W
-            DVMX=DRL*UVMX/VRMG
-         ELSE IF (VRMG .GT. 0.0) THEN
-            DRL=DVMX*VRMG/UVMX
+            DVMX=DRL*UVMX/RMG
+         ELSE IF (RMG .GT. 0.0) THEN
+            DRL=DVMX*RMG/UVMX
          ELSE IF (VRLN .GT. 0.0) THEN
             DVMX=VRLN*FW2W
             DRL=DVMX
@@ -1068,7 +1070,7 @@ C
 C If no reference magnitude specified, the maximum magnitude
 C is used as the reference magnitude
 C
-      ELSE IF (VRMG .LE. 0.0) THEN
+      ELSE IF (RMG .LE. 0.0) THEN
          IF (VRLN .GT. 0.0) THEN
             DVMX=VRLN*FW2W
          END IF
@@ -1087,17 +1089,17 @@ C the fractional size is ignored if a reference length is also
 C specified. Otherwise, the fractional size determines not the
 C minimum magnitude length, but the reference magnitude length.
 C
-      ELSE IF (VRMG .LE. UVMN) THEN
+      ELSE IF (RMG .LE. UVMN) THEN
          IAV=1
          IF (VRLN .GT. 0.0) THEN
             DRL=VRLN*FW2W
-            DVMX=DRL*UVMX/VRMG
+            DVMX=DRL*UVMX/RMG
          ELSE IF (VFL .GT. 0.0) THEN
             DRL=DVMX*VFL
          ELSE
-            DRL=DVMX*VRMG/UVMX
+            DRL=DVMX*RMG/UVMX
          END IF
-         DVMN=DRL*UVMN/VRMG
+         DVMN=DRL*UVMN/RMG
          VFR=DVMN
 C
 C A reference magnitude is specified, as well as a fractional
@@ -1114,9 +1116,9 @@ C
             DRL=VRLN*FW2W
             VFR=VFL*DRL
             DVMN=VFR
-            DVMX=DVMN+(DRL-DVMN)*(UVMX-UVMN)/(VRMG-UVMN)
+            DVMX=DVMN+(DRL-DVMN)*(UVMX-UVMN)/(RMG-UVMN)
          ELSE
-            RAT=(VRMG-UVMN)/(UVMX-UVMN)
+            RAT=(RMG-UVMN)/(UVMX-UVMN)
             DRL=DVMX*RAT/(1.0-VFL+VFL*RAT)
             VFR=VFL*DRL
             DVMN=VFR
@@ -1132,11 +1134,11 @@ C
       ELSE
          IF (VRLN .GT. 0.0) THEN
             DRL=VRLN*FW2W
-            DVMX=DRL*UVMX/VRMG
-            VFR=DRL*UVMN/VRMG
+            DVMX=DRL*UVMX/RMG
+            VFR=DRL*UVMN/RMG
             DVMN=VFR
          ELSE
-            DRL=DVMX*VRMG/UVMX
+            DRL=DVMX*RMG/UVMX
             VFR=DVMX*UVMN/UVMX
             DVMN=VFR
          END IF
