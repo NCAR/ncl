@@ -3783,7 +3783,7 @@ NhlErrorTypes _NhlTriMeshRasterFill
  *      initialize cell array with the missing value.
  */      
 	grid_fill_ix = MAX(Cnp->missing_val.gks_fcolor, Cnp->grid_bound.gks_fcolor);
-	grid_fill_ix = grid_fill_ix < 0 ? NhlBACKGROUND : grid_fill_ix;
+	grid_fill_ix = grid_fill_ix < 0 ? NhlTRANSPARENT_CI : grid_fill_ix;
 	for (j = 0; j < ican; j++) {
 		for (i = 0; i < icam; i++) {
 			*(cell + j * ica1 + i) = grid_fill_ix;
@@ -3793,7 +3793,7 @@ NhlErrorTypes _NhlTriMeshRasterFill
 /*
  * Now overwrite out-of-range areas with the out-of-range color
  */
-	grid_fill_ix = Cnp->out_of_range.gks_fcolor < 0 ? NhlBACKGROUND : Cnp->out_of_range.gks_fcolor;
+	grid_fill_ix = Cnp->out_of_range.gks_fcolor < 0 ? NhlTRANSPARENT_CI : Cnp->out_of_range.gks_fcolor;
 	if (Tmp->ezmap) {
 		imap = -map;
 		zval = 0;
@@ -4564,13 +4564,16 @@ void  (_NHLCALLF(hluctscae,HLUCTSCAE))
 			 ind1,ind2,icaf,iaid);
 		return;
 	}
+
 	/* no support in cell arrays for transparent, so it's necessary
-	   to reset transparent color indexes to background */
+	 *  to reset transparent color indexes to background
+	 * 5-29-2013 - this is no longer true. Replace NhlTRANSPARENT with a transparent color index.
+	 */
 	   
 
 	if (*iaid > 99 && *iaid < 100 + Cnp->fill_count) {
 		col_ix = Cnp->gks_fill_colors[*iaid - 100];
-		if (col_ix < 0) col_ix = NhlBACKGROUND;
+		if (col_ix < 0) col_ix = NhlTRANSPARENT_CI;
 	}
 	else if (*iaid == 99) {
 #if 0
@@ -4580,12 +4583,12 @@ void  (_NHLCALLF(hluctscae,HLUCTSCAE))
 		if (col_ix <= 0 && Cnp->grid_bound.gks_fcolor > 0) 
 			col_ix = Cnp->grid_bound.gks_fcolor;
 		if (col_ix < 0)
-			col_ix = NhlBACKGROUND;
+			col_ix = NhlTRANSPARENT_CI;
 	}
 	else if (*iaid == 97) {
 		col_ix = Cnp->out_of_range.gks_fcolor;
 		if (col_ix < 0)
-			col_ix = NhlBACKGROUND;
+			col_ix = NhlTRANSPARENT_CI;
 #if 0
 		printf("hluctscae iaid = %d\n",*iaid);
 #endif
@@ -4594,7 +4597,7 @@ void  (_NHLCALLF(hluctscae,HLUCTSCAE))
 #if 0
 		printf("hluctscae iaid = %d\n",*iaid);
 #endif
-		col_ix = NhlBACKGROUND;
+		col_ix = NhlTRANSPARENT_CI;
 	}
 	*(icra + ((*ind2 - 1) * *ica1 + (*ind1 - 1))) = col_ix;
 

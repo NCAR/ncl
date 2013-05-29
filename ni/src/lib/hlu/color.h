@@ -4,6 +4,10 @@
 
 #include <stdint.h>
 
+/* this is fully transparent black -- one of many possible transparent color indexes */
+
+#define NhlTRANSPARENT_CI  1073741824  
+
 extern const uint32_t ALPHA_MASK;
 extern const uint32_t ALPHA_OPAQUE;
 

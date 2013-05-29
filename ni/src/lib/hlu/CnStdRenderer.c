@@ -2321,28 +2321,32 @@ void  (_NHLCALLF(hlucpscae,HLUCPSCAE))
 			 ind1,ind2,icaf,iaid);
 		return;
 	}
+
 	/* no support in cell arrays for transparent, so it's necessary
-	   to reset transparent color indexes to background */
+	 * to reset transparent color indexes to background.
+	 * 5-29-2013 - this is no longer true. Replace NhlTRANSPARENT with a transparent color index.
+	 */
+
 	   
 
 	if (*iaid > 99 && *iaid < 100 + Cnp->fill_count) {
 		col_ix = Cnp->gks_fill_colors[*iaid - 100];
-		if (col_ix < 0) col_ix = NhlBACKGROUND;
+		if (col_ix < 0) col_ix = NhlTRANSPARENT_CI;
 	}
 	else if (*iaid == 99) {
 		col_ix = Cnp->grid_bound.gks_fcolor;
-		if (col_ix < 0) col_ix = NhlBACKGROUND;
+		if (col_ix < 0) col_ix = NhlTRANSPARENT_CI;
 	}
 	else if (*iaid == 98) {
 		col_ix = Cnp->missing_val.gks_fcolor;
-		if (col_ix < 0) col_ix = NhlBACKGROUND;
+		if (col_ix < 0) col_ix = NhlTRANSPARENT_CI;
 	}
 	else if (*iaid == 97) {
 		col_ix = Cnp->out_of_range.gks_fcolor;
-		if (col_ix < 0) col_ix = NhlBACKGROUND;
+		if (col_ix < 0) col_ix = NhlTRANSPARENT_CI;
 	}
 	else {
-		col_ix = NhlBACKGROUND;
+		col_ix = NhlTRANSPARENT_CI;
 	}
 	*(icra + ((*ind2 - 1) * *ica1 + (*ind1 - 1))) = col_ix;
 
@@ -3592,7 +3596,7 @@ NhlErrorTypes _NhlMeshFill
  *      initialize cell array with the missing value.
  */      
 	grid_fill_ix = Cnp->grid_bound.gks_fcolor;
-	grid_fill_ix = grid_fill_ix < 0 ? NhlBACKGROUND : grid_fill_ix;
+	grid_fill_ix = grid_fill_ix < 0 ? NhlTRANSPARENT_CI : grid_fill_ix;
 	for (j = 0; j < ican; j++) {
 		for (i = 0; i < icam; i++) {
 			*(cell + j * ica1 + i) = grid_fill_ix;
@@ -3605,7 +3609,7 @@ NhlErrorTypes _NhlMeshFill
 /*
  * Now overwrite out-of-range areas with the out-of-range color
  */
-	grid_fill_ix = Cnp->out_of_range.gks_fcolor < 0 ? NhlBACKGROUND : Cnp->out_of_range.gks_fcolor;
+	grid_fill_ix = Cnp->out_of_range.gks_fcolor < 0 ? NhlTRANSPARENT_CI : Cnp->out_of_range.gks_fcolor;
 	if (Tmp->ezmap) {
 		imap = -map;
 		zval = 0;
