@@ -781,7 +781,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 								}
 								else
 								{
-									for (i = 0; i < var_ndims; ++i)
+									for (i = 1; i < var_ndims; ++i) /* dim 0 does not need to match */
 									{
 										if(varnode->dim_rec->dim_node[i].size != var_dim_sizes[i])
 										{
@@ -884,57 +884,138 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
 				if (thefile && var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
 					int bad = 0;
-					struct _NclFVarRec *var_info = thefile->file.var_info[index];
-					if (first) { /* save the dimension sizes */
-						var_ndims = var_info->num_dimensions;
-						for (i = 0; i < var_info->num_dimensions; i++) {
-							var_dim_sizes[i] = thefile->file.file_dim_info[var_info->file_dim_num[i]]->dim_size;
+#ifdef USE_NETCDF4_FEATURES
+					if(thefile->file.advanced_file_structure)
+					{
+						NclAdvancedFile advancedfile = (NclAdvancedFile)thefile;
+						NclFileVarNode *varnode = NULL;
+						varnode = _getVarNodeFromNclFileGrpNode(advancedfile->advancedfile.grpnode, var);
+						if(NULL == varnode)
+						{
+							NHLPERROR((NhlFATAL,NhlEUNKNOWN,"variable (%s) is not in file (%s)",
+								   NrmQuarkToString(var),
+								   NrmQuarkToString(advancedfile->advancedfile.grpnode->path)));
 						}
-						first = 0;
-					}
-					else {
-						if (var_info->num_dimensions != var_ndims) {
-							NhlPError(NhlWARNING,NhlEUNKNOWN,"File %s dimension count for variable  does not conform to others in list; skipping file",
-								  NrmQuarkToString(thefile->file.fpath));
-							bad = 1;
+						if(first && (NULL != varnode->dim_rec))
+						{
+							var_ndims = varnode->dim_rec->n_dims;
+							for (i = 0; i < var_ndims; ++i)
+							{
+								var_dim_sizes[i] = varnode->dim_rec->dim_node[i].size;
+							}
+							first = 0;
 						}
-						else {
-							for (i = 1; i < var_info->num_dimensions; i++) { /* dim 0 does not need to match */
-								if (thefile->file.file_dim_info[var_info->file_dim_num[i]]->dim_size != var_dim_sizes[i]) {
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"File %s dimension sizes do not conform to others in list; skipping file",
-										  NrmQuarkToString(thefile->file.fpath));
-									bad = 1;
-									break;
+						if(NULL != varnode->dim_rec)
+						{
+							if(varnode->dim_rec->n_dims != var_ndims)
+							{
+								NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+									   "File %s dimension count for variable does not conform to others in list; skipping file",
+									   NrmQuarkToString(advancedfile->advancedfile.fpath)));
+								bad = 1;
+							}
+							else
+							{
+								for (i = 1; i < var_ndims; ++i) /* Wei 05/24/2013, Guess the first dimension does not need to match. */
+								{
+									if(varnode->dim_rec->dim_node[i].size != var_dim_sizes[i])
+									{
+										NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+											   "File %s dimension sizes do not conform to others in list; skipping file",
+											   NrmQuarkToString(advancedfile->advancedfile.fpath)));
+										bad = 1;
+										break;
+									}
 								}
 							}
 						}
-					}
-					if (bad) {
-						files[list_index] = NULL;
-						agg_dim_count[list_index] = 0;
-						units[list_index] = NrmNULLQUARK;
-						calendar[list_index] = NrmNULLQUARK;
-						list_index--;
-					}
-					else {
-						NclMultiDValData tmd;
-						agg_dim = thefile->file.var_info[index]->file_dim_num[0];
-						agg_dim_name = thefile->file.file_dim_info[agg_dim]->dim_name_quark;
-						total_agg_dim_size += thefile->file.file_dim_info[agg_dim]->dim_size;
-						agg_dim_count[list_index] = thefile->file.file_dim_info[agg_dim]->dim_size;
-						if (_NclFileVarIsAtt(thefile,agg_dim_name,NrmStringToQuark("units")) != -1) {
-							tmd = _NclFileReadVarAtt(thefile,agg_dim_name,NrmStringToQuark("units"),NULL);
-							units[list_index] = *(NrmQuark *) tmd->multidval.val;
+						else
+						{
+							bad = 1;
 						}
-						if (_NclFileVarIsAtt(thefile,agg_dim_name,NrmStringToQuark("calendar")) != -1) {
-							tmd = _NclFileReadVarAtt(thefile,agg_dim_name,NrmStringToQuark("calendar"),NULL);
-							calendar[list_index] = *(NrmQuark *) tmd->multidval.val;
-						}
-						files[list_index] = thefile;
-						good_file_count++;
-						list_index--;
 
+						if (bad) {
+							files[list_index] = NULL;
+							agg_dim_count[list_index] = 0;
+							units[list_index] = NrmNULLQUARK;
+							calendar[list_index] = NrmNULLQUARK;
+							list_index--;
+						}
+						else {
+							NclMultiDValData tmd;
+							agg_dim_name = varnode->dim_rec->dim_node[0].name;
+							total_agg_dim_size += varnode->dim_rec->dim_node[0].size;
+							agg_dim_count[list_index] = varnode->dim_rec->dim_node[0].size;
+							if (_NclFileVarIsAtt(thefile,agg_dim_name,NrmStringToQuark("units")) != -1) {
+								tmd = _NclFileReadVarAtt(thefile,agg_dim_name,NrmStringToQuark("units"),NULL);
+								units[list_index] = *(NrmQuark *) tmd->multidval.val;
+							}
+							if (_NclFileVarIsAtt(thefile,agg_dim_name,NrmStringToQuark("calendar")) != -1) {
+								tmd = _NclFileReadVarAtt(thefile,agg_dim_name,NrmStringToQuark("calendar"),NULL);
+								calendar[list_index] = *(NrmQuark *) tmd->multidval.val;
+							}
+							files[list_index] = thefile;
+							good_file_count++;
+							list_index--;
+
+						}
 					}
+					else 
+#endif
+					{
+						struct _NclFVarRec *var_info = thefile->file.var_info[index];
+						if (first) { /* save the dimension sizes */
+							var_ndims = var_info->num_dimensions;
+							for (i = 0; i < var_info->num_dimensions; i++) {
+								var_dim_sizes[i] = thefile->file.file_dim_info[var_info->file_dim_num[i]]->dim_size;
+							}
+							first = 0;
+						}
+						else {
+							if (var_info->num_dimensions != var_ndims) {
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"File %s dimension count for variable  does not conform to others in list; skipping file",
+									  NrmQuarkToString(thefile->file.fpath));
+								bad = 1;
+							}
+							else {
+								for (i = 1; i < var_info->num_dimensions; i++) { /* dim 0 does not need to match */
+									if (thefile->file.file_dim_info[var_info->file_dim_num[i]]->dim_size != var_dim_sizes[i]) {
+										NhlPError(NhlWARNING,NhlEUNKNOWN,"File %s dimension sizes do not conform to others in list; skipping file",
+											  NrmQuarkToString(thefile->file.fpath));
+										bad = 1;
+										break;
+									}
+								}
+							}
+						}
+
+						if (bad) {
+							files[list_index] = NULL;
+							agg_dim_count[list_index] = 0;
+							units[list_index] = NrmNULLQUARK;
+							calendar[list_index] = NrmNULLQUARK;
+							list_index--;
+						}
+						else {
+							NclMultiDValData tmd;
+							agg_dim = thefile->file.var_info[index]->file_dim_num[0];
+							agg_dim_name = thefile->file.file_dim_info[agg_dim]->dim_name_quark;
+							total_agg_dim_size += thefile->file.file_dim_info[agg_dim]->dim_size;
+							agg_dim_count[list_index] = thefile->file.file_dim_info[agg_dim]->dim_size;
+							if (_NclFileVarIsAtt(thefile,agg_dim_name,NrmStringToQuark("units")) != -1) {
+								tmd = _NclFileReadVarAtt(thefile,agg_dim_name,NrmStringToQuark("units"),NULL);
+								units[list_index] = *(NrmQuark *) tmd->multidval.val;
+							}
+							if (_NclFileVarIsAtt(thefile,agg_dim_name,NrmStringToQuark("calendar")) != -1) {
+								tmd = _NclFileReadVarAtt(thefile,agg_dim_name,NrmStringToQuark("calendar"),NULL);
+								calendar[list_index] = *(NrmQuark *) tmd->multidval.val;
+							}
+							files[list_index] = thefile;
+							good_file_count++;
+							list_index--;
+
+						}
+					}					
 				}
 				else {
 					files[list_index] = NULL;
@@ -5762,9 +5843,9 @@ void CallFILE_VARVAL_OP(void) {
 						if(value != NULL) 
 							file = (NclFile)_NclGetObj((int)*(obj*)value->multidval.val);
 						if((file != NULL)&&((index = _NclFileIsVar(file,var)) != -1)) {
-
 							memset(dim_is_ref, 0, NCL_MAX_DIMENSIONS*sizeof(int));
 							/*
+#ifdef USE_NETCDF4_FEATURES
 							if(1 == file->file.advanced_file_structure)
 							{
 								NclAdvancedFile advancedfile = (NclAdvancedFile)file;
@@ -5784,6 +5865,7 @@ void CallFILE_VARVAL_OP(void) {
 								}
 							}
 							else
+#endif
 							{
 								for(i = 0 ; i < file->file.var_info[index]->num_dimensions; i++) {
 									dim_is_ref[i] = 0;
