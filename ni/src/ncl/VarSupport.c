@@ -867,11 +867,11 @@ NhlErrorTypes _NclReplaceAtt(struct _NclVarRec *self, char* attname,
 
 struct _NclMultiDValDataRec *_NclReadAtt
 #if	NhlNeedProto
-(struct _NclVarRec *self, char    *attname, struct  _NclSelectionRecord * sel_ptr)
+(struct _NclVarRec *self, const char *attname, struct  _NclSelectionRecord * sel_ptr)
 #else
 (self, attname, sel_ptr)
 struct _NclVarRec *self;
-char    *attname;
+const char *attname;
 struct  _NclSelectionRecord* sel_ptr;
 #endif
 {

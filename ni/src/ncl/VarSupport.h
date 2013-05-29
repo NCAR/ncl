@@ -133,7 +133,7 @@ struct  _NclSelectionRecord * /*sel_ptr*/
 extern struct _NclMultiDValDataRec *_NclReadAtt(
 #if     NhlNeedProto
 struct _NclVarRec * /*self*/,
-char    *       /*attname*/,
+const char *        /*attname*/,
 struct  _NclSelectionRecord * /*sel_ptr*/
 #endif
 );
