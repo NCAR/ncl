@@ -163,16 +163,19 @@ void CROpict_init(GKSC *gksc) {
      *  Get the background color and set the source to the background color.
      */
     cval = unpack_argb(psa->ctable, 0);
-    cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, ALPHA_BLEND(cval.alpha, psa->background_alpha));
-    cairo_set_operator(context, CAIRO_OPERATOR_SOURCE);
     
-#if 0    /* Save this for Wei; transparent background can now be had via wkBackgroundOpacityF resource */
+    /* Save this for Wei; transparent background can now be had via wkBackgroundOpacityF resource */
     if(CQT == psa->wks_type)
+    {
         cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, 0.0);
+    }
     else
-        cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, cval.alpha);
-#endif
-    
+    {
+        cairo_set_source_rgba(context, cval.red, cval.green, cval.blue,
+                              ALPHA_BLEND(cval.alpha, psa->background_alpha));
+        cairo_set_operator(context, CAIRO_OPERATOR_SOURCE);
+    }
+
     /* NOTE: This is likely not quite right, but I don't understand the use of the clipping rectangle below. In any case,
      * the code that does the Right Thing for PS/PDF does not result in a complete fill for image-based formats,
      * so we proceed differently  --RLB
@@ -1773,7 +1776,7 @@ int cro_Text(GKSC *gksc) {
     cairo_t* context = getContext(psa->wks_id);
 
     trace("Got to cro_Text");
-    
+
     cairo_text_extents(context, sptr, &textents);
 
     cairo_get_font_matrix(context, &fmatrix);
