@@ -5880,12 +5880,6 @@ static NhlErrorTypes PrepareAnnoString
 
 	*changed = False;
 
-	if (! vcp->data_changed && ! vcp->levels_set && 
-	    (value == old_value) &&
-	    (*new_string == *old_string)) {
-		return NhlNOERROR;
-	}
-
 	if (init || ! *new_string ||
 	    *new_string != *old_string) {
 		int strsize = *new_string == NULL ? 
@@ -6061,25 +6055,31 @@ static NhlErrorTypes ManageVecAnno
 
 	entry_name = (init) ? InitName : SetValuesName;
 
-	subret = PrepareAnnoString(vcp,ovcp,init,
-				   ilp->aap->real_vec_mag,
-				   oilp->aap->real_vec_mag,
-				   &ilp->string1,&oilp->string1,
-				   def_string1,&ilp->text1,
-				   ilp->fcode[0],
-				   &text_changed,entry_name);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-	if (text_changed) oilp->text1 = NULL;
+	if (vcp->data_changed || vcp->levels_set ||
+	    (ilp->aap->real_vec_mag != oilp->aap->real_vec_mag) ||
+	    (ilp->string1 != oilp->string1) ||
+	    (vcp->mag_scale.scale_factor != ovcp->mag_scale.scale_factor) ||
+	    (vcp->svalue_scale.scale_factor != ovcp->svalue_scale.scale_factor)) {
+		subret = PrepareAnnoString(vcp,ovcp,init,
+					   ilp->aap->real_vec_mag,
+					   oilp->aap->real_vec_mag,
+					   &ilp->string1,&oilp->string1,
+					   def_string1,&ilp->text1,
+					   ilp->fcode[0],
+					   &text_changed,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		if (text_changed) oilp->text1 = NULL;
 
-	subret = PrepareAnnoString(vcp,ovcp,init,
-				   ilp->aap->real_vec_mag,
-				   oilp->aap->real_vec_mag,
-				   &ilp->string2,&oilp->string2,
-				   def_string2,&ilp->text2,
-				   ilp->fcode[0],
-				   &text_changed,entry_name);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-	if (text_changed) oilp->text2 = NULL;
+		subret = PrepareAnnoString(vcp,ovcp,init,
+					   ilp->aap->real_vec_mag,
+					   oilp->aap->real_vec_mag,
+					   &ilp->string2,&oilp->string2,
+					   def_string2,&ilp->text2,
+					   ilp->fcode[0],
+					   &text_changed,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		if (text_changed) oilp->text2 = NULL;
+	}
 
         switch(vcp->glyph_style) {
             default:
