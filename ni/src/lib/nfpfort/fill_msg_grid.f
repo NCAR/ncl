@@ -115,7 +115,7 @@ c                                      only work on missing value locations
    	         im1 = i-1
        	         ip1 = i+1
 c                                      cyclic in x           
-    	         if (i.eq.1  .and. gtype.eq.1) im1 = il-1 
+    	         if (i.eq.1  .and. gtype.eq.1) im1 = il 
     	         if (i.eq.il .and. gtype.eq.1) ip1 = 1
 c                                      not cyclic in x           
     	         if (i.eq.1  .and. gtype.eq.0) im1 = 2
