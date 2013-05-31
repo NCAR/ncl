@@ -31,6 +31,9 @@
 typedef struct _NhlGraphicStyleLayerPart{
 
 	NhlBoolean      clip_on;
+	NhlGenArray     colors;
+	NhlGenArray     segments;
+
 	/* private fields */
 
 	int		line_style_id;

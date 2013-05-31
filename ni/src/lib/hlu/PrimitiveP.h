@@ -31,7 +31,6 @@ typedef struct _NhlPrimitiveLayerPart{
 
 	NhlGenArray		x_arr;
 	NhlGenArray		y_arr;
-	NhlGenArray		start_arr;
 	NhlPolyType		poly_type;
 	NhlLayer		graphic_style;
 

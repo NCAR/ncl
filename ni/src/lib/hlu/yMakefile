@@ -143,14 +143,14 @@ FSRCS		= DATACOMMF.f ERRORF.f HLUF.f PLOTMANAGERF.f RLGEN.f RLSET.f \
 		DATAITEMF.f APPF.f dashchar.f\
 		coeff1.f interp.f sdot.f sgesl.f trip.f fitpack.f isamax.f \
 		search.f sscal.f saxpy.f sgefa.f terp1.f gerhnd.f \
-		trmrectgrid.f gproj.f
+		trmrectgrid.f gproj.f map_util.f
 
 FOBJS		= DATACOMMF.o ERRORF.o HLUF.o PLOTMANAGERF.o RLGEN.o RLSET.o \
 		RLGET.o TRANSFORMF.o VIEWF.o WORKSPACEF.o WORKSTATIONF.o \
 		DATAITEMF.o APPF.o dashchar.o \
 		coeff1.o interp.o sdot.o sgesl.o trip.o fitpack.o isamax.o \
 		search.o sscal.o saxpy.o sgefa.o terp1.o gerhnd.o \
-		trmrectgrid.o gproj.o
+		trmrectgrid.o gproj.o map_util.o
 
 LIBHOBJS	= $(HLUCOBJS) $(FOBJS)
 

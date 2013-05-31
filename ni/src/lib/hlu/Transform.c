@@ -34,6 +34,7 @@
 #include <ncarg/hlu/TransObjP.h>
 #include <ncarg/hlu/MapTransObj.h>
 #include <ncarg/hlu/ConvertersP.h>
+#include <ncarg/hlu/color.h>
 
 static _NhlRawObjCB callbacks[] = {
 	{_NhlCBtfOverlayStatus,
@@ -62,10 +63,6 @@ static NhlResource resources[] = {
 	{NhlNtfPolyDrawOrder,NhlCtfPolyDrawOrder,NhlTDrawOrder,
 		 sizeof(NhlDrawOrder),Oset(poly_draw_order),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlPOSTDRAW),0,NULL},
-	{NhlNtfPolyStartArray,NhlCtfPolyStartArray,NhlTIntegerGenArray,
-         	sizeof(NhlPointer),Oset(poly_start_array),
-	        NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,
-         	(NhlFreeFunc)NhlFreeGenArray},
 
 /* End-documented-resources */
 
@@ -391,7 +388,6 @@ NhlTransformClassRec NhltransformClassRec = {
 NhlClass NhltransformClass = (NhlClass)&NhltransformClassRec;
 
 static NrmQuark Qpolydrawlist;
-static NrmQuark Qpolystartarray;
 
 
 /*
@@ -490,7 +486,6 @@ TransformClassPartInit
 			= sc->trans_class.ndc_polymarker;
 
 	Qpolydrawlist = NrmStringToQuark(NhlNtfPolyDrawList);
-	Qpolystartarray = NrmStringToQuark(NhlNtfPolyStartArray);
 
 	_NhlInitializeClass(NhltransObjClass);
         
@@ -613,9 +608,6 @@ TransformInitialize
 		tfp->poly_draw_list = 
 			_NhlCopyGenArray(tfp->poly_draw_list,True);
 
-	if (tfp->poly_start_array)
-		tfp->poly_start_array = 
-			_NhlCopyGenArray(tfp->poly_start_array,True);
 	tfp->poly_clip_on = True;
 	
         return NhlNOERROR;
@@ -746,17 +738,6 @@ static NhlErrorTypes TransformSetValues
 		}
 		NhlFreeGenArray(otfp->poly_draw_list);
 	}
-	if (tfp->poly_start_array != otfp->poly_start_array){
-		NhlGenArray gen = tfp->poly_start_array;
-		if (gen) {
-			tfp->poly_start_array = _NhlCopyGenArray(gen,True);
-			if(gen && ! tfp->poly_start_array){
-				NHLPERROR((NhlFATAL,ENOMEM,NULL));
-				return NhlFATAL;
-			}
-		}
-		NhlFreeGenArray(otfp->poly_start_array);
-	}
 
         return NhlNOERROR;
 }
@@ -806,9 +787,6 @@ static NhlErrorTypes    TransformGetValues
                 if(args[i].quark == Qpolydrawlist) {
                         ga = tfp->poly_draw_list;
                 }
-                if(args[i].quark == Qpolystartarray) {
-                        ga = tfp->poly_start_array;
-                }
                 if (ga != NULL) {
                         if ((ga = _NhlCopyGenArray(ga,True)) == NULL) {
                                 e_text = "%s: error copying %s GenArray";
@@ -851,7 +829,6 @@ NhlLayer inst;
         NhlTransformLayerPart *tfp = &(tfl->trans);
 
 	NhlFreeGenArray(tfp->poly_draw_list);
-	NhlFreeGenArray(tfp->poly_start_array);
 	return NhlNOERROR;
 }
 
@@ -1122,18 +1099,33 @@ static NhlErrorTypes TransformDataPolyline
 	int			i;
 	NhlBoolean		ismaptrans = False;
 	NhlBoolean		isirtrans = False;
-	int                     *start_array = NULL;
+	int                     *segments = NULL;
+	int                     *colors = NULL;
+	int                     segment_count = 0, len_colors = 0;
 	int                     start_ix;
-	int                     start_count = 0;
+	NhlGenArray             segment_ga, color_ga;
+	int                     gsid, line_color;
 
 	if (n < 2) {
 		e_text = "%s, not enough points for a line";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
 		return NhlWARNING;
 	}
-	if (tfp->poly_start_array != NULL) {
-		start_array = (int *) tfp->poly_start_array->data;
-		start_count = tfp->poly_start_array->num_elements;
+	NhlVAGetValues(tl->base.wkptr->base.id,
+		       _NhlNwkGraphicStyle,    &gsid,
+		       NULL);
+	NhlVAGetValues(gsid,
+		       NhlNgsSegments, &segment_ga,
+		       NhlNgsColors,    &color_ga,
+		       NULL);
+
+	if (segment_ga) {
+		segments = segment_ga->data;
+		segment_count = segment_ga->num_elements;
+		if (color_ga) {
+			colors = color_ga->data;
+			len_colors = color_ga->num_elements;
+		}
 	}
 
 /* 
@@ -1171,7 +1163,6 @@ static NhlErrorTypes TransformDataPolyline
 		return(ret);
 	}
 
-	_NhlSetLineInfo(tl->base.wkptr, plot);
 
 /* Set the transformation */
 
@@ -1193,18 +1184,33 @@ static NhlErrorTypes TransformDataPolyline
 
 /* Do a pen up to the first point */
 
+	if (len_colors > 0) {
+		line_color = colors[0];
+		NhlVASetValues(gsid,
+			       NhlNgsLineColor, line_color,
+			       NULL);
+	}
+	_NhlSetLineInfo(tl->base.wkptr, plot);
 	subret = _NhlDataLineTo((NhlLayer)top,*x++,*y++,1);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
-/* Pen down for the remaining lines */
-	if (start_count > 1) {
+/* Pen down until the next value of the segment array - note the first element of the
+   segment array is always 0 */
+	if (segment_count > 1) {
 		start_ix = 1;
 		for (i = 1; i < n; i++) { 
-			if (i == start_array[start_ix]) {
+			if (i == segments[start_ix]) {
+				if (len_colors > 0) {
+					line_color = colors[i % len_colors];
+					NhlVASetValues(gsid,
+						       NhlNgsLineColor, line_color,
+						       NULL);
+					_NhlSetLineInfo(tl->base.wkptr, plot);
+				}
 				subret = _NhlDataLineTo((NhlLayer)top,*x++,*y++,1);
-				if (start_ix < start_count -1) start_ix++;
+				if (start_ix < segment_count -1) start_ix++;
 			}
 			else {
 				subret = _NhlDataLineTo((NhlLayer)top,*x++,*y++,0);
@@ -1239,6 +1245,11 @@ static NhlErrorTypes TransformDataPolyline
 		gset_clip_ind(GIND_NO_CLIP);
 
         subret = _NhlDeactivateWorkstation(tl->base.wkptr);
+
+	if (color_ga)
+		NhlFreeGenArray(color_ga);
+	if (segment_ga)
+		NhlFreeGenArray(segment_ga);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error deactivating workstation";
@@ -1284,17 +1295,32 @@ static NhlErrorTypes TransformNDCPolyline
 	NhlTransformLayerPart	*tfp = &(tl->trans);
 	NhlTransObjLayer		top;
 	int			i;
-	int                     *start_array = NULL;
-	int                     start_ix, start_count;
+	int                     *segments = NULL;
+	int			*colors = NULL;
+	NhlGenArray             segment_ga, color_ga;
+	int                     start_ix, segment_count = 0, len_colors = 0;
+	int 			line_color, gsid;
 
 	if (n < 2) {
 		e_text = "%s, not enough points for a line";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
 		return NhlWARNING;
 	}
-	if (tfp->poly_start_array != NULL) {
-		start_array = (int *) tfp->poly_start_array->data;
-		start_count = tfp->poly_start_array->num_elements;
+	NhlVAGetValues(tl->base.wkptr->base.id,
+		       _NhlNwkGraphicStyle,    &gsid,
+		       NULL);
+	NhlVAGetValues(gsid,
+		       NhlNgsSegments, &segment_ga,
+		       NhlNgsColors,    &color_ga,
+		       NULL);
+
+	if (segment_ga) {
+		segments = segment_ga->data;
+		segment_count = segment_ga->num_elements;
+		if (color_ga) {
+			colors = color_ga->data;
+			len_colors = color_ga->num_elements;
+		}
 	}
 
 /* 
@@ -1324,6 +1350,13 @@ static NhlErrorTypes TransformNDCPolyline
 		return(ret);
 	}
 
+	if (len_colors > 0) {
+		line_color = colors[0];
+		NhlVASetValues(gsid,
+			       NhlNgsLineColor, line_color,
+			       NULL);
+	}
+
 	_NhlSetLineInfo(tl->base.wkptr, plot);
 
 /* Not sure if a set trans is required */
@@ -1346,17 +1379,24 @@ static NhlErrorTypes TransformNDCPolyline
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
-	/* If there is a start_array (indicating multiple polylines) -- do pen ups as required. */
+	/* If there is a segment array (indicating multiple polylines) -- do pen ups as required. */
 
-	if (start_count > 1) {
+	if (segment_count > 1) {
 		start_ix = 1;
 		for (i = 1; i < n; i++) { 
-			if (i == start_array[start_ix]) {
+			if (i == segments[start_ix]) {
+				if (len_colors > 0) {
+					line_color = colors[i % len_colors];
+					NhlVASetValues(gsid,
+						       NhlNgsLineColor, line_color,
+						       NULL);
+					_NhlSetLineInfo(tl->base.wkptr, plot);
+				}
 				subret = _NhlNDCLineTo((NhlLayer)top,*x++,*y++,1);
-				if (start_ix < start_count -1) start_ix++;
+				if (start_ix < segment_count -1) start_ix++;
 			}
 			else {
-				subret = _NhlDataLineTo((NhlLayer)top,*x++,*y++,0);
+				subret = _NhlNDCLineTo((NhlLayer)top,*x++,*y++,0);
 			}
 			if ((ret = MIN(ret,subret)) < NhlWARNING) 
 				return ret;
@@ -1380,6 +1420,11 @@ static NhlErrorTypes TransformNDCPolyline
 	if (tfp->poly_clip_on)
 		gset_clip_ind(GIND_NO_CLIP);
 
+
+	if (color_ga)
+		NhlFreeGenArray(color_ga);
+        if (segment_ga)
+                NhlFreeGenArray(segment_ga);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error drawing polyline";
@@ -1436,22 +1481,24 @@ static NhlErrorTypes TransformDataPolygon
 	char			*entry_name = "TransformDataPolygon";
 	NhlBoolean		ismaptrans = False;
 	NhlBoolean		isirtrans = False;
-	int                     *start_array = NULL;
 	int                     start_count = 0;
 	int			gsid;
 	int			ldash,lcolor,edash,ecolor;
 	float			ldash_seglen,lthick,edash_seglen,ethick;
 	char			*lstring;
 	NhlBoolean		edges_on = False;
+	int                     cmap_len;
+	int                     *colors = NULL;
+	int                     len_colors = 0;
+	NhlGenArray             color_ga = NULL;
+	NhlGenArray             segment_ga = NULL;
+	int                     *segments = NULL;
+	float                   fill_opacity;
 
 	if (n < 3) {
 		e_text = "%s, not enough points for a polygon";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
 		return NhlWARNING;
-	}
-	if (tfp->poly_start_array != NULL) {
-		start_array = (int *) tfp->poly_start_array->data;
-		start_count = tfp->poly_start_array->num_elements;
 	}
 
 /* 
@@ -1481,6 +1528,25 @@ static NhlErrorTypes TransformDataPolygon
 	    NhlirregularTransObjClass->base_class.class_name) 
 		isirtrans = True;
 
+	NhlVAGetValues(tl->base.wkptr->base.id,
+		       _NhlNwkGraphicStyle,    &gsid,
+		       NhlNwkColorMapLen,&cmap_len,
+		       NULL);
+
+	NhlVAGetValues(gsid,
+		       NhlNgsSegments, &segment_ga,
+		       NhlNgsColors,    &color_ga,
+		       NhlNgsFillOpacityF,    &fill_opacity,
+		       NULL);
+
+	if (segment_ga) {
+		segments = segment_ga->data;
+		start_count = segment_ga->num_elements;
+		if (color_ga) {
+			colors = color_ga->data;
+			len_colors = color_ga->num_elements;
+		}
+	}
 
 	if (ismaptrans) {
 /*
@@ -1495,9 +1561,6 @@ static NhlErrorTypes TransformDataPolygon
  * are on, and, if so, temporarily reset a number of the attributes,
  * and restore them after finishing.
  */
-		NhlVAGetValues(tl->base.wkptr->base.id,
-			       _NhlNwkGraphicStyle,    &gsid,
-			       NULL);
 
 		NhlVAGetValues(gsid,
 			       NhlNgsLineDashPattern, &ldash,
@@ -1524,10 +1587,12 @@ static NhlErrorTypes TransformDataPolygon
 			NhlVASetValues(tl->base.wkptr->base.id,
 				       _NhlNwkGraphicStyle,    gsid,
 				       NULL);
+			_NhlSetLineInfo(tl->base.wkptr, plot);
 		}
 
 		NGCALLF(setdashchar,SETDASHCHAR)();
 	}
+
 
 	subret = _NhlActivateWorkstation(tl->base.wkptr);
 
@@ -1538,6 +1603,7 @@ static NhlErrorTypes TransformDataPolygon
 	}
 
 	_NhlSetFillInfo(tl->base.wkptr, plot);
+	_NhlSetFillOpacity(tl->base.wkptr,fill_opacity);
 
 /* Set the transformation */
 
@@ -1551,7 +1617,7 @@ static NhlErrorTypes TransformDataPolygon
 
 	if (tfp->poly_clip_on || ismaptrans || isirtrans)
 		gset_clip_ind(GIND_CLIP);
-	if (! start_count) {
+	if (start_count < 2) {
 		subret = _NhlDataPolygon((NhlLayer)top,x,y,n);
 		if (edges_on) {
 			int i;
@@ -1570,11 +1636,19 @@ static NhlErrorTypes TransformDataPolygon
 		int bix, eix, ln,i,j;
 		float tmpx,tmpy;
 		int status;
+		int fill_color;
 		for (i = 1; i < start_count; i++) {
 			int one_at_least = 0;
-			bix = start_array[i-1];
-			eix = start_array[i];
-			ln = eix - bix;
+			bix = segments[i-1];
+			eix = segments[i] - 1;
+			while (x[eix] == x[eix - 1] && y[eix] == y[eix-1]) {
+				if (eix == bix)
+					break;
+				eix--;
+			}
+			ln = eix - bix + 1;
+			if (ln < 3)
+				continue;
 			for (j = bix; j < eix; j++) {
 				subret = _NhlDataToWin((NhlLayer)top,&x[j],&y[j],1,&tmpx,&tmpy,&status,NULL,NULL);
 				if (! status)  {/* at least one point inside the domain */
@@ -1584,6 +1658,13 @@ static NhlErrorTypes TransformDataPolygon
 			}
 			if (! one_at_least) /* skip this polygon */
 				continue;
+
+			if (len_colors > 0) {
+				fill_color = colors[(i-1) % len_colors];
+				NhlVASetValues(gsid,
+					       NhlNgsFillColor, fill_color,
+					       NULL);
+			}
 			subret = _NhlDataPolygon((NhlLayer)top,&(x[bix]),&(y[bix]),ln);
 			if ((ret = MIN(ret,subret)) < NhlWARNING)
 				break;
@@ -1623,7 +1704,11 @@ static NhlErrorTypes TransformDataPolygon
 			       NULL);
 		NhlFree(lstring);
 	}			
-
+	if (color_ga)
+		NhlFreeGenArray(color_ga);
+	if (segment_ga)
+		NhlFreeGenArray(segment_ga);
+		
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error deactivating workstation";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
@@ -1667,6 +1752,14 @@ static NhlErrorTypes TransformNDCPolygon
 	NhlTransformLayer		tl = (NhlTransformLayer) plot;
 	NhlTransformLayerPart	*tfp = &(tl->trans);
 	NhlTransObjLayer		top;
+	int 			gsid;
+	int                     cmap_len;
+	int                     *colors = NULL;
+	int                     len_colors = 0, start_count = 0;
+	NhlGenArray             color_ga = NULL;
+	NhlGenArray             segment_ga = NULL;
+	int                     *segments = NULL;
+	float                   fill_opacity;
 
 	if (n < 3) {
 		e_text = "%s, not enough points for a polygon";
@@ -1693,6 +1786,26 @@ static NhlErrorTypes TransformNDCPolygon
 	        }
 	}
 
+	NhlVAGetValues(tl->base.wkptr->base.id,
+		       _NhlNwkGraphicStyle,    &gsid,
+		       NhlNwkColorMapLen,&cmap_len,
+		       NULL);
+
+	NhlVAGetValues(gsid,
+		       NhlNgsSegments, &segment_ga,
+		       NhlNgsColors,    &color_ga,
+		       NhlNgsFillOpacityF,    &fill_opacity,
+		       NULL);
+
+	if (segment_ga) {
+		segments = segment_ga->data;
+		start_count = segment_ga->num_elements;
+		if (color_ga) {
+			colors = color_ga->data;
+			len_colors = color_ga->num_elements;
+		}
+	}
+
 	subret = _NhlActivateWorkstation(tl->base.wkptr);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -1715,9 +1828,43 @@ static NhlErrorTypes TransformNDCPolygon
 
 	if (tfp->poly_clip_on)
 		gset_clip_ind(GIND_CLIP);
-	subret = _NhlWorkstationFill(tl->base.wkptr,x,y,n);
+	if (start_count < 2) {
+		subret = _NhlWorkstationFill(tl->base.wkptr,x,y,n);
+	}
+	else {
+		int bix, eix, ln, i;
+		int fill_color;
+		for (i = 1; i < start_count; i++) {
+			bix = segments[i-1];
+			eix = segments[i];
+			ln = eix - bix;
+			while (x[eix] == x[eix - 1] && y[eix] == y[eix-1]) {
+				if (eix == bix)
+					break;
+				eix--;
+			}
+			ln = eix - bix + 1;
+			if (ln < 3)
+				continue;
+			NhlVASetValues(tl->base.wkptr->base.id,
+				       _NhlNwkFillColor, fill_color,
+				       NULL);
+			if (len_colors > 0) {
+				fill_color = colors[(i-1) % len_colors];
+				NhlVASetValues(gsid,
+					       NhlNgsFillColor, fill_color,
+					       NULL);
+			}
+			subret = _NhlWorkstationFill(tl->base.wkptr,&(x[bix]),&(y[bix]),ln);
+		}
+	}
 	if (tfp->poly_clip_on)
 		gset_clip_ind(GIND_NO_CLIP);
+
+	if (color_ga)
+		NhlFreeGenArray(color_ga);
+	if (segment_ga)
+		NhlFreeGenArray(segment_ga);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error drawing polygon";
@@ -2013,7 +2160,7 @@ static NhlErrorTypes PolyDraw
 
 	for (i = 0; i < tfp->poly_draw_list->num_elements; i++) {
 		NhlLayer l = _NhlGetLayer(poly_ids[i]);
-		NhlGenArray x_arr = NULL,y_arr = NULL, start_arr = NULL;
+		NhlGenArray x_arr = NULL,y_arr = NULL;
 		float *x,*y;
 		int tmp_gs,count;
 
@@ -2027,14 +2174,10 @@ static NhlErrorTypes PolyDraw
 		NhlVAGetValues(l->base.id,
 			       NhlNprXArray,&x_arr,
 			       NhlNprYArray,&y_arr,
-			       NhlNprStartArray,&start_arr,
 			       NhlNprPolyType,&ptype,
 			       NhlNprGraphicStyle,&tmp_gs,
 			       NULL);
-		if (tfp->poly_start_array != NULL) {
-			NhlFreeGenArray(tfp->poly_start_array);
-		}
-		tfp->poly_start_array = start_arr;
+
 		if (_NhlGetLayer(tmp_gs))
 			gs = tmp_gs;
 		else if (gs == NhlNULLOBJID) {

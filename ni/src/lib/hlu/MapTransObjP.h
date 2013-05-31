@@ -104,6 +104,7 @@ typedef struct _NhlMapTransObjLayerPart{
 	float		satellite_angle_2;
 	NhlBoolean	elliptical_boundary;
 	NhlBoolean	great_circle_lines_on;
+	NhlMapPolyMode	map_poly_mode;
 
 	float		actual_min_lat;
 	float		actual_max_lat;

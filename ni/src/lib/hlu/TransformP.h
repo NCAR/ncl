@@ -64,7 +64,6 @@ typedef struct NhlTransformLayerPart {
 	NhlBoolean		line_interpolation_on;
 	NhlGenArray		poly_draw_list;
 	NhlDrawOrder		poly_draw_order;
-	NhlGenArray             poly_start_array;
 	NhlBoolean		x_min_set;
 	float 			x_min;
 	NhlBoolean		x_max_set;

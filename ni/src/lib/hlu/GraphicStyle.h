@@ -24,6 +24,14 @@
 
 #include <ncarg/hlu/Style.h>
 
+/* shared resources */
+
+#define NhlNgsColors		"gsColors"
+#define NhlNgsSegments		"gsSegments"
+#define NhlCgsColors		"GsColors"
+#define NhlCgsSegments		"GsSegments"
+
+
 /* line style resources */
 
 #define NhlNgsLineDashPattern		"gsLineDashPattern"

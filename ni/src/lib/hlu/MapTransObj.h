@@ -38,6 +38,12 @@ typedef enum _NhlProjection {
 
 #define NhlTProjection	"Projection"
 
+typedef enum _NhlMapPolyMode {
+	NhlAUTOPOLY = 0, NhlFASTPOLY, NhlSTANDARDPOLY
+	 } NhlMapPolyMode;
+
+#define NhlTMapPolyMode	"MapPolyMode"
+
 #include <ncarg/hlu/TransObj.h>
 
 #define	NhlNmpProjection		"mpProjection"
@@ -107,6 +113,7 @@ typedef enum _NhlProjection {
 #define NhlNmpSatelliteAngle2F		"mpSatelliteAngle2F"
 #define NhlNmpEllipticalBoundary	"mpEllipticalBoundary"
 #define NhlNmpGreatCircleLinesOn	"mpGreatCircleLinesOn"
+#define NhlNmpPolyMode	                "mpPolyMode"
 
 #define NhlNmpDataMinLonF		"mpDataMinLonF"
 #define NhlNmpDataMaxLonF		"mpDataMaxLonF"
@@ -180,6 +187,7 @@ typedef enum _NhlProjection {
 #define NhlCmpSatelliteAngle2F		"MpSatelliteAngle2F"
 #define NhlCmpEllipticalBoundary	"MpEllipticalBoundary"
 #define NhlCmpGreatCircleLinesOn	"MpGreatCircleLinesOn"
+#define NhlCmpPolyMode	                "MpPolyMode"
 
 #define NhlCmpDataMinLonF		"MpDataMinLonF"
 #define NhlCmpDataMaxLonF		"MpDataMaxLonF"

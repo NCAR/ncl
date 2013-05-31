@@ -997,7 +997,7 @@ CvtStringToColorIndex
 								s1,&rgb) &&
 		FindCIMatch(wl,rgb,&tmp))
 			set = True;
-//******* NOT SURE WHAT CASE THIS WAS INTENDED TO HANDLE ?????
+******* NOT SURE WHAT CASE THIS WAS INTENDED TO HANDLE ?????
 	if(!set){
 		sgen = _NhlStringToStringGenArray(s1);
 		if(sgen){
