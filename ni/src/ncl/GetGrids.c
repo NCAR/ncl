@@ -7350,6 +7350,7 @@ GribParamList* thevarrec;
 						}
 						index++;
 					}
+					if (index == grid_size) break;
 				}
 				else {
 					for (j = 0; j < num_per_subsection; j++) {
@@ -7375,6 +7376,7 @@ GribParamList* thevarrec;
 						cix = tbits / 8;
 						bit_offset = tbits % 8;
 						index++;
+						if (index == grid_size) break;
 					}
 				}
 			}
@@ -8592,10 +8594,59 @@ int* nrotatts;
 	int idir;
 
 	if((thevarrec->thelist != NULL)&&(thevarrec->thelist->rec_inq != NULL)) {
-			
+
+		/* we may need the number of latitudes if the grid is thinned in longitude */
 		*n_dims_lat = 1;
 		*dimsizes_lat = malloc(sizeof(ng_size_t));
 		(*dimsizes_lat)[0] = (int)UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[8]));
+
+		/* do longitude first because the information may be needed for calculating latitude correctly */
+
+		tmpc[0] = thevarrec->thelist->rec_inq->gds[13] & (char)0177;
+		tmpc[1] = thevarrec->thelist->rec_inq->gds[14];
+		tmpc[2] = thevarrec->thelist->rec_inq->gds[15];
+		ilo1 = ((thevarrec->thelist->rec_inq->gds[13] & (char)0200) ? -1:1)*(int)UnsignedCnvtToDecimal(3,tmpc);
+		tmpc[0] = thevarrec->thelist->rec_inq->gds[20] & (char)0177;
+		tmpc[1] = thevarrec->thelist->rec_inq->gds[21];
+		tmpc[2] = thevarrec->thelist->rec_inq->gds[22];
+		ilo2 = ((thevarrec->thelist->rec_inq->gds[20] & (char)0200) ? -1:1)*(int)UnsignedCnvtToDecimal(3,tmpc);
+		
+		*n_dims_lon = 1;
+		*dimsizes_lon = malloc(sizeof(ng_size_t));
+		nlon = CnvtToDecimal(2,&thevarrec->thelist->rec_inq->gds[6]);
+		idir = ((char)0200 & thevarrec->thelist->rec_inq->gds[27]) ? -1 : 1;
+
+		if (nlon == 0xffff) {
+			is_thinned_lon = 1;
+			GetThinnedLonParams(thevarrec->thelist->rec_inq->gds,
+					    (*dimsizes_lat)[0],ilo1,ilo2,idir,&nlon,&loinc);
+		} else if (nlon == 1) {
+			loinc = ((double)CnvtToDecimal(2,&((thevarrec->thelist->rec_inq->gds)[23])));
+		}
+		else {
+			if (idir == 1) {
+				int ti = ilo2;
+				while (ti < ilo1) {
+					ti += 360000;
+				}
+				loinc = (ti - ilo1) / (double) (nlon - 1);
+			}
+			else {
+				int ti = ilo1;
+				while (ti < ilo2) {
+					ti += 360000;
+				}
+				loinc = (ti - ilo2) / (double) (nlon - 1);
+			}
+
+		}
+		(*dimsizes_lon)[0] = nlon;
+		*lon = malloc(sizeof(float)*nlon);
+		for(i = 0; i < (*dimsizes_lon)[0]; i++) {
+			(*lon)[i] = (ilo1 + i*idir*loinc)/1000.0;
+		}
+
+
 		
 		nlat = 2 * UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[25]));
 		
@@ -8609,12 +8660,6 @@ int* nrotatts;
  			NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"GdsGAGrid: Invalid value for Gaussian LatLon grid in GDS octets 26-27; inferring N from octets 9-10 (See GRIB Section 2 documentation)");
 		}
-
-		theta = (double*)NclMalloc(sizeof(double)*nlat);
-		wts = (double*)NclMalloc(sizeof(double)*nlat);
-		lwork = 4 * nlat*(nlat+1)+2;
-		work = (double*)NclMalloc(sizeof(double)*lwork);
-		*lat = (float*)NclMalloc(sizeof(float)*nlat);
 /*
  * These come out south to north
  */
@@ -8627,6 +8672,20 @@ int* nrotatts;
 		tmpc[1] = thevarrec->thelist->rec_inq->gds[18];
 		tmpc[2] = thevarrec->thelist->rec_inq->gds[19];
 		ila2 = ((thevarrec->thelist->rec_inq->gds[17] & (char)0200) ? -1:1)*(int)UnsignedCnvtToDecimal(3,tmpc);
+
+		if (nlat == (*dimsizes_lat)[0] && (fabs (ila1 / 1000.0) < 85.0 || fabs (ila1 / 1000.0) < 85.0)) {
+			/* not a global grid but the value of N must have been set as if it were ;
+			   therefore try to infer N from the longitude increment (this should work even when the longitude is not global)
+			*/
+			int global_nlon = (int) (360000 / loinc + 0.5);
+			nlat = global_nlon / 2;
+		}
+			
+		theta = (double*)NclMalloc(sizeof(double)*nlat);
+		wts = (double*)NclMalloc(sizeof(double)*nlat);
+		lwork = 4 * nlat*(nlat+1)+2;
+		work = (double*)NclMalloc(sizeof(double)*lwork);
+		*lat = (float*)NclMalloc(sizeof(float)*nlat);
 
 		NGCALLF(gaqdnio,GAQDNIO)(&nlat,theta,wts,work,&lwork,&ierror);
 
@@ -8793,51 +8852,6 @@ int* nrotatts;
 		NclFree(wts);
 		NclFree(theta);
 
-
-		tmpc[0] = thevarrec->thelist->rec_inq->gds[13] & (char)0177;
-		tmpc[1] = thevarrec->thelist->rec_inq->gds[14];
-		tmpc[2] = thevarrec->thelist->rec_inq->gds[15];
-		ilo1 = ((thevarrec->thelist->rec_inq->gds[13] & (char)0200) ? -1:1)*(int)UnsignedCnvtToDecimal(3,tmpc);
-		tmpc[0] = thevarrec->thelist->rec_inq->gds[20] & (char)0177;
-		tmpc[1] = thevarrec->thelist->rec_inq->gds[21];
-		tmpc[2] = thevarrec->thelist->rec_inq->gds[22];
-		ilo2 = ((thevarrec->thelist->rec_inq->gds[20] & (char)0200) ? -1:1)*(int)UnsignedCnvtToDecimal(3,tmpc);
-		
-			
-		*n_dims_lon = 1;
-		*dimsizes_lon = malloc(sizeof(ng_size_t));
-		nlon = CnvtToDecimal(2,&thevarrec->thelist->rec_inq->gds[6]);
-		idir = ((char)0200 & thevarrec->thelist->rec_inq->gds[27]) ? -1 : 1;
-
-		if (nlon == 0xffff) {
-			is_thinned_lon = 1;
-			GetThinnedLonParams(thevarrec->thelist->rec_inq->gds,
-					    nlat,ilo1,ilo2,idir,&nlon,&loinc);
-		} else if (nlon == 1) {
-			loinc = ((double)CnvtToDecimal(2,&((thevarrec->thelist->rec_inq->gds)[23])));
-		}
-		else {
-			if (idir == 1) {
-				int ti = ilo2;
-				while (ti < ilo1) {
-					ti += 360000;
-				}
-				loinc = (ti - ilo1) / (double) (nlon - 1);
-			}
-			else {
-				int ti = ilo1;
-				while (ti < ilo2) {
-					ti += 360000;
-				}
-				loinc = (ti - ilo2) / (double) (nlon - 1);
-			}
-
-		}
-		(*dimsizes_lon)[0] = nlon;
-		*lon = malloc(sizeof(float)*nlon);
-		for(i = 0; i < (*dimsizes_lon)[0]; i++) {
-			(*lon)[i] = (ilo1 + i*idir*loinc)/1000.0;
-		}
 	} else {
 		*lat = NULL;
 		*n_dims_lat = 0;
