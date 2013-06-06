@@ -7135,7 +7135,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(1);
-    SetArgTemplate(args, nargs, "float", 2, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "float", 0, NclANY);  nargs++;
     NclRegisterFunc(rgba_to_color_index_W, args, "rgba_to_color_index", nargs);
 
 /*

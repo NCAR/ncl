@@ -93,8 +93,11 @@ NhlErrorTypes rgba_to_color_index_W( void )
   int i, *ci;
   float *rgba;
   ng_size_t dsizes[2];
+  int ndims;
   int has_alpha;
   int stride;
+  int rgba_dim;
+  ng_size_t ncolors;
 
 /*
  * Retrieve parameters
@@ -107,16 +110,29 @@ NhlErrorTypes rgba_to_color_index_W( void )
  * Retrieve argument #1
  */
 
-  rgba  = (float *) NclGetArgValue(0,1,NULL,dsizes,NULL,NULL,
+  rgba  = (float *) NclGetArgValue(0,1,&ndims,dsizes,NULL,NULL,
 				   NULL,DONT_CARE);
 
-/* ndims must be 2, dsizes[0] can be any number; dsizes[1] must be 3 or 4 */
+/* ndims must be 1 or 2, dsizes[0] can be any number; dsizes[1] must be 3 or 4 */
 
-  if (dsizes[1] == 3) {
+  if (ndims == 1) {
+	  rgba_dim = 0;
+	  ncolors = 1;
+  }
+  else if (ndims == 2) {
+	  rgba_dim = 1;
+	  ncolors = dsizes[0];
+  }
+  else {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,
+		    "rgba_to_color_index: the input array must have either 1 or 2 dimensions");
+	  return(NhlFATAL);
+  }
+  if (dsizes[rgba_dim] == 3) {
 	  has_alpha = 0;
 	  stride = 3;
   }
-  else if (dsizes[1] == 4) {
+  else if (dsizes[rgba_dim] == 4) {
 	  has_alpha = 1;
 	  stride = 4;
   }
@@ -126,14 +142,13 @@ NhlErrorTypes rgba_to_color_index_W( void )
 	  return(NhlFATAL);
   }
 
-  ci =  (int*)calloc(dsizes[0],sizeof(int));
-  
+  ci =  (int*)calloc(ncolors,sizeof(int));
 
-  for(i = 0; i < dsizes[0]; i++) {
+  for(i = 0; i < ncolors; i++) {
 	  ci[i] = _NhlRGBAToColorIndex(rgba + i * stride,has_alpha);
   }
 
-  return(NclReturnValue( (void *) ci, 1, &(dsizes[0]), NULL, NCL_int, 0));
+  return(NclReturnValue( (void *) ci, 1, &ncolors, NULL, NCL_int, 0));
 }
 
 NhlErrorTypes color_index_to_rgba_W( void )
