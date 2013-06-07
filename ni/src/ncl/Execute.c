@@ -5603,6 +5603,151 @@ void CallVAR_COORD_OP(void) {
 				}
 			}
 
+void CallREASSIGN_VAR_COORD_OP(void) {
+				NclStackEntry *var = NULL,cvar;
+				NclStackEntry data;
+				NclSymbol* thesym = NULL;
+				char *coord_name = NULL;
+				int nsubs = 0;
+				NhlErrorTypes ret = NhlNOERROR;
+				NclSelectionRecord *sel_ptr = NULL;
+				NclMultiDValData thevalue = NULL;
+				int id;
+				
+				cvar = _NclPop();
+				switch(cvar.kind) {
+				case NclStk_VAL: 
+					thevalue = cvar.u.data_obj;
+					break;
+				case NclStk_VAR:
+					thevalue = _NclVarValueRead(cvar.u.data_var,NULL,NULL);
+					break;
+				default:
+					thevalue = NULL;
+					estatus = NhlFATAL;
+					break;
+				}
+
+				if((thevalue == NULL)||((thevalue->multidval.kind != SCALAR)&&(thevalue->multidval.type != (NclTypeClass)nclTypestringClass))) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable Attribute names must be scalar string values can't continue");
+					estatus = NhlFATAL;
+				} else {
+					coord_name = NrmQuarkToString(*(NclQuark*)thevalue->multidval.val);
+					if(cvar.u.data_obj->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)cvar.u.data_obj);
+					}
+				}
+				thevalue = NULL;
+
+				ptr++;lptr++;fptr++;
+				thesym = (NclSymbol*)*ptr;
+/*
+				ptr++;lptr++;fptr++;
+				coord_name = NrmQuarkToString(*ptr);
+*/
+				ptr++;lptr++;fptr++;
+				nsubs = *(int*)ptr;
+
+				var = _NclRetrieveRec(thesym,WRITE_IT);
+				if((var == NULL)||(var->u.data_var == NULL)) {
+					estatus = NhlFATAL;
+				} else if(_NclIsDim(var->u.data_var,coord_name) == -1) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a named dimension in variable (%s).",coord_name,thesym->name);
+					estatus = NhlFATAL;
+				} else {
+					if(nsubs == 0) {
+						sel_ptr = NULL;
+					} else if(nsubs == 1){
+						sel_ptr = _NclGetVarSelRec(var->u.data_var);
+						sel_ptr->n_entries = 1;
+						data =_NclPop();
+						if(data.u.sub_rec.name != NULL) {
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with coordinate variables since only one dimension applies");
+							estatus = NhlWARNING;
+						}
+						switch(data.u.sub_rec.sub_type) {
+						case INT_VECT:
+/*
+* Need to free some stuff here
+*/						
+							ret = _NclBuildVSelection(var->u.data_var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
+							break;
+						case INT_SINGLE:
+						case INT_RANGE:
+/*
+* Need to free some stuff here
+*/							
+							ret = _NclBuildRSelection(var->u.data_var,&data.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
+							break;
+						case COORD_VECT:
+						case COORD_SINGLE:
+						case COORD_RANGE:
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with coordinate variables ");
+							NclFree(sel_ptr);
+							sel_ptr = NULL;
+							estatus = NhlFATAL;
+							break;
+						}
+						_NclFreeSubRec(&data.u.sub_rec);
+						if(ret < NhlWARNING)
+							estatus = NhlFATAL;
+
+					} else {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate variables have only one dimension, %d subscripts on left hand side of assignment",nsubs);
+						_NclCleanUpStack(nsubs);
+						estatus = NhlFATAL;
+					}
+
+					if(estatus != NhlFATAL) {
+						data = _NclPop();
+						switch(data.kind) {
+						case NclStk_VAL: 
+							thevalue = data.u.data_obj;
+							break;
+						case NclStk_VAR:
+							thevalue = _NclVarValueRead(data.u.data_var,NULL,NULL);
+							break;
+						default:
+							thevalue = NULL;
+							estatus = NhlFATAL;
+						break;
+						}
+					
+						if(thevalue != NULL) {
+							id = thevalue->obj.id;
+							ret = _NclReplaceCoordVar(var->u.data_var,thevalue,coord_name,sel_ptr);
+							if(data.kind == NclStk_VAR) {
+								_NclAttCopyWrite(_NclReadCoordVar(var->u.data_var,coord_name,NULL),data.u.data_var);
+							}
+							if(ret<estatus){
+								estatus = ret;
+							}
+						} else {
+							id = -1;
+							estatus = NhlFATAL;
+						}
+/* _NclWriteCoordVar destroys non-permanent input so the following is not needed
+* Rather than fix _NclWriteCoordVar to not free it was just easier to 
+* comment the followign out.
+*/
+						switch(data.kind) {
+						case NclStk_VAL: 
+							if( (_NclGetObj(id)!= NULL)&&(data.u.data_obj->obj.status != PERMANENT))
+								_NclDestroyObj((NclObj)data.u.data_obj);
+							break;
+						case NclStk_VAR:
+							if(data.u.data_obj->obj.status != PERMANENT) 
+								_NclDestroyObj((NclObj)data.u.data_var);
+							break;
+						default:
+							break;
+						}
+					} else {	
+						_NclCleanUpStack(1);
+					}
+				}
+			}
+
 void CallASSIGN_FILE_VAR_OP(void) {
 /*
 * Changed to a two operand function 1/30
@@ -8219,6 +8364,10 @@ NclExecuteReturnStatus _NclExecute
 			case PARAM_VAR_COORD_OP:
 			case VAR_COORD_OP : {
 				CallVAR_COORD_OP();
+			}
+			break;
+			case REASSIGN_VAR_COORD_OP : {
+				CallREASSIGN_VAR_COORD_OP();
 			}
 			break;
 			case ASSIGN_FILE_VAR_OP : {

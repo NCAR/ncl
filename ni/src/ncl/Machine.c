@@ -202,6 +202,7 @@ static void SetUpOpsStrings() {
 	ops_strings[REASSIGN_VAR_VAR_OP]= "REASSIGN_VAR_VAR_OP";
 
 	ops_strings[REASSIGN_VARATT_OP] = "REASSIGN_VARATT_OP";
+	ops_strings[REASSIGN_VAR_COORD_OP] = "REASSIGN_VAR_COORD_OP";
 }
 
 static NhlErrorTypes IncreaseStackSize
@@ -1362,6 +1363,7 @@ void _NclPrintMachine
 			case VARVAL_COORD_OP:
 			case ASSIGN_VAR_COORD_OP:
 			case PARAM_VAR_COORD_OP:
+			case REASSIGN_VAR_COORD_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
