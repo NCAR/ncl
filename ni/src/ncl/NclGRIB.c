@@ -72,6 +72,11 @@
 #include "fsl2_gtb.h"
 #include "fnmoc_gtb.h"
 #include "jma_3_gtb.h"
+#include "jra55_gtb.h"
+#include "mpi_128_gtb.h"
+#include "mpi_180_gtb.h"
+#include "mpi_181_gtb.h"
+#include "mpi_199_gtb.h"
 
 #define NCL_GRIB_CACHE_SIZE  150
 /* 
@@ -1761,10 +1766,13 @@ int GdsCompare(unsigned char *gds1,int gds_size1,unsigned char *gds2,int gds_siz
 	}
 	if (gds1[3] > 0 || gds2[3] > 0) {
 		int top1,top2;
-		if ((gds_size1 - (int)gds1[3] * 4  != gds_size2 - (int)gds2[3] * 4) ||
-		    (gds1[4] != gds2[4])) 
+		int size;
+		if ((gds_size1 - (int)gds1[3] * 4  != gds_size2 - (int)gds2[3] * 4))
 			return 0;
-		for( i = 4; i < (int)gds1[4] - 1 ; i++) {
+		/* we only need to compare up to the beginning of the level values */
+		/* gds[4] (octet 5) does not need to be the same */
+		size = gds_size1 - (int)gds1[3] * 4;
+		for( i = 5; i < size - 1 ; i++) {
 			switch (i) {
 			case 16:
 				break;
@@ -1775,6 +1783,8 @@ int GdsCompare(unsigned char *gds1,int gds_size1,unsigned char *gds2,int gds_siz
 				break;
 			}
 		}
+/*
+                I don't think this is needed.
 		top1 = gds1[4] + gds1[3] * 4;
 		top2 = gds2[4] + gds2[3] * 4;
 		if (top1 < gds_size1) {
@@ -1785,6 +1795,7 @@ int GdsCompare(unsigned char *gds1,int gds_size1,unsigned char *gds2,int gds_siz
 					return(0);
 				}
 		}
+*/
 		return(1);
 	}
 	return 0;
@@ -6490,114 +6501,136 @@ int wr_status;
 
 					switch(lcenter) {
 					case 98:           /* ECMWF */
-						switch (ptable_version) {
-						case 0:
-						case 128:
-							ptable = &ecmwf_128_params[0];
-							ptable_count = sizeof(ecmwf_128_params)/sizeof(TBLE2);
-							break;
-						case 129:
-							ptable = &ecmwf_129_params[0];
-							ptable_count = sizeof(ecmwf_129_params)/sizeof(TBLE2);
-							break;
-						case 130:
-							ptable = &ecmwf_130_params[0];
-							ptable_count = sizeof(ecmwf_130_params)/sizeof(TBLE2);
-							break;
-						case 131:
-							ptable = &ecmwf_131_params[0];
-							ptable_count = sizeof(ecmwf_131_params)/sizeof(TBLE2);
-							break;
-						case 132:
-							ptable = &ecmwf_132_params[0];
-							ptable_count = sizeof(ecmwf_132_params)/sizeof(TBLE2);
-							break;
-						case 133:
-							ptable = &ecmwf_133_params[0];
-							ptable_count = sizeof(ecmwf_133_params)/sizeof(TBLE2);
-							break;
-						case 140:
-							ptable = &ecmwf_140_params[0];
-							ptable_count = sizeof(ecmwf_140_params)/sizeof(TBLE2);
-							break;
-						case 150:
-							ptable = &ecmwf_150_params[0];
-							ptable_count = sizeof(ecmwf_150_params)/sizeof(TBLE2);
-							break;
-						case 151:
-							ptable = &ecmwf_151_params[0];
-							ptable_count = sizeof(ecmwf_151_params)/sizeof(TBLE2);
-							break;
-						case 160:
-							ptable = &ecmwf_160_params[0];
-							ptable_count = sizeof(ecmwf_160_params)/sizeof(TBLE2);
-							break;
-						case 162:
-							ptable = &ecmwf_162_params[0];
-							ptable_count = sizeof(ecmwf_162_params)/sizeof(TBLE2);
-							break;
-						case 170:
-							ptable = &ecmwf_170_params[0];
-							ptable_count = sizeof(ecmwf_170_params)/sizeof(TBLE2);
-							break;
-						case 171:
-							ptable = &ecmwf_171_params[0];
-							ptable_count = sizeof(ecmwf_171_params)/sizeof(TBLE2);
-							break;
-						case 172:
-							ptable = &ecmwf_172_params[0];
-							ptable_count = sizeof(ecmwf_172_params)/sizeof(TBLE2);
-							break;
-						case 173:
-							ptable = &ecmwf_173_params[0];
-							ptable_count = sizeof(ecmwf_173_params)/sizeof(TBLE2);
-							break;
-						case 174:
-							ptable = &ecmwf_174_params[0];
-							ptable_count = sizeof(ecmwf_174_params)/sizeof(TBLE2);
-							break;
-						case 175:
-							ptable = &ecmwf_175_params[0];
-							ptable_count = sizeof(ecmwf_175_params)/sizeof(TBLE2);
-							break;
+						if (subcenter == 232) {  /*MPI (Max Planck Institute for Meteorology)*/
+							switch (ptable_version) {
+							case 128:
+								ptable = &mpi_128_params[0];
+								ptable_count = sizeof(mpi_128_params)/sizeof(TBLE2);
+								break;
+							case 180:
+								ptable = &mpi_180_params[0];
+								ptable_count = sizeof(mpi_180_params)/sizeof(TBLE2);
+								break;
+							case 181:
+								ptable = &mpi_181_params[0];
+								ptable_count = sizeof(mpi_181_params)/sizeof(TBLE2);
+								break;
+							case 199:
+								ptable = &mpi_199_params[0];
+								ptable_count = sizeof(mpi_199_params)/sizeof(TBLE2);
+								break;
+							}
+						}
+						else {
+							switch (ptable_version) {
+							case 0:
+							case 128:
+								ptable = &ecmwf_128_params[0];
+								ptable_count = sizeof(ecmwf_128_params)/sizeof(TBLE2);
+								break;
+							case 129:
+								ptable = &ecmwf_129_params[0];
+								ptable_count = sizeof(ecmwf_129_params)/sizeof(TBLE2);
+								break;
+							case 130:
+								ptable = &ecmwf_130_params[0];
+								ptable_count = sizeof(ecmwf_130_params)/sizeof(TBLE2);
+								break;
+							case 131:
+								ptable = &ecmwf_131_params[0];
+								ptable_count = sizeof(ecmwf_131_params)/sizeof(TBLE2);
+								break;
+							case 132:
+								ptable = &ecmwf_132_params[0];
+								ptable_count = sizeof(ecmwf_132_params)/sizeof(TBLE2);
+								break;
+							case 133:
+								ptable = &ecmwf_133_params[0];
+								ptable_count = sizeof(ecmwf_133_params)/sizeof(TBLE2);
+								break;
+							case 140:
+								ptable = &ecmwf_140_params[0];
+								ptable_count = sizeof(ecmwf_140_params)/sizeof(TBLE2);
+								break;
+							case 150:
+								ptable = &ecmwf_150_params[0];
+								ptable_count = sizeof(ecmwf_150_params)/sizeof(TBLE2);
+								break;
+							case 151:
+								ptable = &ecmwf_151_params[0];
+								ptable_count = sizeof(ecmwf_151_params)/sizeof(TBLE2);
+								break;
+							case 160:
+								ptable = &ecmwf_160_params[0];
+								ptable_count = sizeof(ecmwf_160_params)/sizeof(TBLE2);
+								break;
+							case 162:
+								ptable = &ecmwf_162_params[0];
+								ptable_count = sizeof(ecmwf_162_params)/sizeof(TBLE2);
+								break;
+							case 170:
+								ptable = &ecmwf_170_params[0];
+								ptable_count = sizeof(ecmwf_170_params)/sizeof(TBLE2);
+								break;
+							case 171:
+								ptable = &ecmwf_171_params[0];
+								ptable_count = sizeof(ecmwf_171_params)/sizeof(TBLE2);
+								break;
+							case 172:
+								ptable = &ecmwf_172_params[0];
+								ptable_count = sizeof(ecmwf_172_params)/sizeof(TBLE2);
+								break;
+							case 173:
+								ptable = &ecmwf_173_params[0];
+								ptable_count = sizeof(ecmwf_173_params)/sizeof(TBLE2);
+								break;
+							case 174:
+								ptable = &ecmwf_174_params[0];
+								ptable_count = sizeof(ecmwf_174_params)/sizeof(TBLE2);
+								break;
+							case 175:
+								ptable = &ecmwf_175_params[0];
+								ptable_count = sizeof(ecmwf_175_params)/sizeof(TBLE2);
+								break;
 
-						case 180:
-							ptable = &ecmwf_180_params[0];
-							ptable_count = sizeof(ecmwf_180_params)/sizeof(TBLE2);
-							break;
-						case 190:
-							ptable = &ecmwf_190_params[0];
-							ptable_count = sizeof(ecmwf_190_params)/sizeof(TBLE2);
-							break;
-						case 200:
-							ptable = &ecmwf_200_params[0];
-							ptable_count = sizeof(ecmwf_200_params)/sizeof(TBLE2);
-							break;
-						case 201:
-							ptable = &ecmwf_201_params[0];
-							ptable_count = sizeof(ecmwf_201_params)/sizeof(TBLE2);
-							break;
-						case 210:
-							ptable = &ecmwf_210_params[0];
-							ptable_count = sizeof(ecmwf_210_params)/sizeof(TBLE2);
-							break;
-						case 211:
-							ptable = &ecmwf_211_params[0];
-							ptable_count = sizeof(ecmwf_211_params)/sizeof(TBLE2);
-							break;
-						case 228:
-							ptable = &ecmwf_228_params[0];
-							ptable_count = sizeof(ecmwf_228_params)/sizeof(TBLE2);
-							break;
-						case 230:
-							ptable = &ecmwf_230_params[0];
-							ptable_count = sizeof(ecmwf_230_params)/sizeof(TBLE2);
-							break;
-						case 234:
-							ptable = &ecmwf_234_params[0];
-							ptable_count = sizeof(ecmwf_234_params)/sizeof(TBLE2);
-							break;
+							case 180:
+								ptable = &ecmwf_180_params[0];
+								ptable_count = sizeof(ecmwf_180_params)/sizeof(TBLE2);
+								break;
+							case 190:
+								ptable = &ecmwf_190_params[0];
+								ptable_count = sizeof(ecmwf_190_params)/sizeof(TBLE2);
+								break;
+							case 200:
+								ptable = &ecmwf_200_params[0];
+								ptable_count = sizeof(ecmwf_200_params)/sizeof(TBLE2);
+								break;
+							case 201:
+								ptable = &ecmwf_201_params[0];
+								ptable_count = sizeof(ecmwf_201_params)/sizeof(TBLE2);
+								break;
+							case 210:
+								ptable = &ecmwf_210_params[0];
+								ptable_count = sizeof(ecmwf_210_params)/sizeof(TBLE2);
+								break;
+							case 211:
+								ptable = &ecmwf_211_params[0];
+								ptable_count = sizeof(ecmwf_211_params)/sizeof(TBLE2);
+								break;
+							case 228:
+								ptable = &ecmwf_228_params[0];
+								ptable_count = sizeof(ecmwf_228_params)/sizeof(TBLE2);
+								break;
+							case 230:
+								ptable = &ecmwf_230_params[0];
+								ptable_count = sizeof(ecmwf_230_params)/sizeof(TBLE2);
+								break;
+							case 234:
+								ptable = &ecmwf_234_params[0];
+								ptable_count = sizeof(ecmwf_234_params)/sizeof(TBLE2);
+								break;
 
+							}
 						}
 						break;
 					case 78: /* DWD */
@@ -6648,11 +6681,16 @@ int wr_status;
 						}
 						break;
 					case 34: /* JMA */
-						if (ptable_version == 3) {
+						switch (ptable_version) {
+						case 3:
 							ptable = &jma_3_params[0];
 							ptable_count = sizeof(jma_3_params)/sizeof(TBLE2);
+							break;
+						case 200:  /* JMA 55 year reanalysis (JRA55)*/
+							ptable = &jra55_params[0];
+							ptable_count = sizeof(jra55_params)/sizeof(TBLE2);
+							break;
 						}
-						break;
 					case 8:
 					case 9: /* NCEP reanalysis */
 						ptable = &ncep_reanal_params[0];

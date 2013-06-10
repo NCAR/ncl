@@ -256,7 +256,8 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			ecmwf_230_gtb.h ecmwf_234_gtb.h fnmoc_gtb.h \
 			fsl0_gtb.h fsl1_gtb.h fsl2_gtb.h ncep_opn_gtb.h \
 			ncep_reanal_gtb.h ncep_128_gtb.h ncep_129_gtb.h  ncep_130_gtb.h \
-			ncep_131_gtb.h  ncep_133_gtb.h  ncep_140_gtb.h  ncep_141_gtb.h 	jma_3_gtb.h
+			ncep_131_gtb.h  ncep_133_gtb.h  ncep_140_gtb.h  ncep_141_gtb.h 	jma_3_gtb.h \
+			jra55_gtb.h mpi_128_gtb.h mpi_180_gtb.h mpi_199_gtb.h mpi_181_gtb.h 
 
 
 INSTALL_HDRS	= 	ApiRecords.h AttSupport.h DataSupport.h FileSupport.h HluClasses.h \
@@ -302,7 +303,8 @@ NIO_NCL_HDR_FILES = ApiRecords.h AttSupport.h DataSupport.h		\
 		ecmwf_200_gtb.h ecmwf_201_gtb.h ecmwf_210_gtb.h ecmwf_211_gtb.h \
 		ecmwf_228_gtb.h ecmwf_230_gtb.h ecmwf_234_gtb.h  \
 		fnmoc_gtb.h fsl0_gtb.h fsl1_gtb.h fsl2_gtb.h		\
-		jma_3_gtb.h ncep_128_gtb.h ncep_129_gtb.h		\
+		jma_3_gtb.h jra55_gtb.h mpi_128_gtb.h mpi_180_gtb.h \
+		mpi_199_gtb.h mpi_181_gtb.h ncep_128_gtb.h ncep_129_gtb.h \
 		ncep_130_gtb.h ncep_131_gtb.h ncep_133_gtb.h		\
 		ncep_140_gtb.h ncep_141_gtb.h ncep_opn_gtb.h		\
 		ncep_reanal_gtb.h tables.h
