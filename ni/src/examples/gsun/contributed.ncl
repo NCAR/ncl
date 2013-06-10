@@ -5649,18 +5649,33 @@ end
 ; Mark Stevens
 ; will choose a color to fill in a poly(line/gon/marker) based upon
 ; secondary scalar field.
-
+;
+; This function was updated 6/10/2013 to allow n x 3 or
+; n x 4 (RGBA) arrays.
+;
 undef("GetFillColor")
-function GetFillColor(cnlvls[*]:numeric,cmap[*][3]:numeric,data:numeric)
-local ncn, nclr, color, n
+function GetFillColor(cnlvls[*]:numeric,cmapt,data:numeric)
+local dims, ncn, nclr, color, n
 begin
+
+ if(isstring(cmapt)) then
+    cmap = read_colormap_file(cmapt)
+ else if(isnumeric(cmapt)) then
+   dims = dimsizes(cmapt)
+   if(dims(0).lt.3.or.dims(0).gt.256.or..not.any(dims(1).ne.(/3,4/))) then
+     print ("Error: GetFillColors: cmap must be an n x 3 or n x 4 array of RGB or RGBA values, or a valid color map name")
+     return(new(3,"float"))    ; return a missing value
+   end if
+   cmap = cmapt
+ else
+   print ("Error: GetFillColors: cmap must be an n x 3 or n x 4 array of RGB or RGBA values, or a valid color map name")
+ end if
+ end if
 
  ncn = dimsizes (cnlvls)
  nclr = dimsizes (cmap(:,0))
- color = new (3,"float",-1.0)
-
  if (nclr-2 .lt. ncn+1) then 
-   print ("Not enough colors in colormap for number of contour levels")
+   print ("Error: GetFillColors: Not enough colors in colormap for number of contour levels")
    return (color)
  end if
 
