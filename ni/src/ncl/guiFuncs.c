@@ -58,7 +58,7 @@
 NclFile NclCreateFile(const char *path)
 {
     NclQuark qpath = NrmStringToQuark(path);
-    return (_NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,qpath,-1));
+    return (_NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,qpath,1));
 }
 
 NclAdvancedFile NclCreateAdvancedFile(const char *path)
@@ -183,9 +183,17 @@ char **guiGetNclFileAttNames(NclFile thefile, int *num_atts)
     return attnames;
 }
 
-NclMultiDValData guiGetVarAtt(NclVar the_var, char *attname)
+NclMultiDValData guiGetVarAtt(NclVar the_var, const char *attname)
 {
     return _NclReadAtt(the_var, attname, NULL);
+}
+
+NclMultiDValData guiGetVarAttMV(NclFile thefile, const char* varname, const char *attname)
+{
+    NclQuark varquark = NrmStringToQuark(varname);
+    NclQuark attquark = NrmStringToQuark(attname);
+
+    return (_NclFileReadVarAtt(thefile,varquark,attquark,NULL));
 }
 
 void getNclFileVarInfo(NclFile thefile, int *ndims, int **dimsizes, char ***dimnames, long *type)
@@ -634,7 +642,7 @@ void guiNhlRLSetStringArray(int id, char *resname, char **data, int nelem)
     NhlRLSetStringArray(id, resname, data, num_elements);
 }
 
-struct _NclMultiDValDataRec *guiGetFileAtt(NclFile thefile, char *attname)
+struct _NclMultiDValDataRec *guiGetFileAtt(NclFile thefile, const char *attname)
 {
     NclQuark qn = NrmStringToQuark(attname);
     return (_NclFileReadAtt(thefile, qn, NULL));

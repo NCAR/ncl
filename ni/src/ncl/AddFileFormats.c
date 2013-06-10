@@ -46,6 +46,7 @@ extern NclFormatFunctionRecPtr NewHE5AddFileFormat(void);
 #endif
 
 #ifdef BuildHDF5
+extern NclFormatFunctionRecPtr H5AddFileFormat(void);
 extern NclFormatFunctionRecPtr HDF5AddFileFormat(void);
 #endif
 
@@ -107,6 +108,9 @@ void _NclAddFileFormats
 	_NclRegisterFormat(HDFEOS5AddFileFormat,"he5");
 #endif
 #ifdef BuildHDF5
+        _NclRegisterFormat(H5AddFileFormat,"h5");
+        _NclRegisterFormat(H5AddFileFormat,"hdf5");
+
         _NclRegisterFormat(HDF5AddFileFormat,"h5");
         _NclRegisterFormat(HDF5AddFileFormat,"hdf5");
 #endif

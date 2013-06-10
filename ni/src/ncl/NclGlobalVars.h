@@ -12,6 +12,8 @@ short   NCLoldBehavior = 0;     /* retain former behavior for certain backwards-
 short   NCLnewfs = 0;           /* Use new file structure */
 short	NCLdebug_on = 0;	/* Use for debug when NCLDEBUG is defined */
 
+short   NCLusesOpenCL = 0;	/* Uses OpenCL (when run with '-c' and build with BuildOpenCL) */
+
 #ifdef NCLDEBUG
 NclMemoryRecord ncl_memory_record;
 #endif

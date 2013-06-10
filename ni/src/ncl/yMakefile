@@ -102,8 +102,8 @@ HDFEOS5_OBJS = NclHDFEOS5.o NclNewHDFEOS5.o
 
 #ifdef BuildHDF5
 HDF5_DEFS = -DBuildHDF5
-HDF5_SRCS = NclNewHDF5.c
-HDF5_OBJS = NclNewHDF5.o
+HDF5_SRCS = NclNewHDF5.c NclHDF5.c h5reader.c h5writer.c
+HDF5_OBJS = NclNewHDF5.o NclHDF5.o h5reader.o h5writer.o
 #else
 #define HDF5_SRCS
 #define HDF5_OBJS

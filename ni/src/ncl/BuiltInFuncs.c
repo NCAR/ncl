@@ -20749,8 +20749,9 @@ NhlErrorTypes _NclISetFileOption(void)
 
 	NrmQuark all_quark = NrmStringToQuark("all");
 	NrmQuark  nc_quark = NrmStringToQuark("nc");
-	NrmQuark shp_quark = NrmStringToQuark("shp");
+	NrmQuark  h5_quark = NrmStringToQuark("h5");
 	NrmQuark he5_quark = NrmStringToQuark("he5");
+	NrmQuark shp_quark = NrmStringToQuark("shp");
 
 	NrmQuark fso;
 
@@ -20869,14 +20870,37 @@ NhlErrorTypes _NclISetFileOption(void)
                         	}
 			}
 		}
+		else if(h5_quark == filetype_lower)
+		{
+			if(fs_quark == option_lower)
+			{
+				if(ad_lower_quark == fso)
+				{
+					NCLadvancedFileStructure[_NclNewHDF5] = 1;
+					NCLadvancedFileStructure[_NclHDF5] = 1;
+				}
+				else
+				{
+					NCLadvancedFileStructure[_NclNewHDF5] = 0;
+					NCLadvancedFileStructure[_NclHDF5] = 0;
+				}
+			}
+
+		}
 		else if(he5_quark == filetype_lower)
 		{
 			if(fs_quark == option_lower)
 			{
 				if(ad_lower_quark == fso)
+				{
 					NCLadvancedFileStructure[_NclHDFEOS5] = 1;
+					NCLadvancedFileStructure[_NclNewHE5] = 1;
+				}
 				else
+				{
 					NCLadvancedFileStructure[_NclHDFEOS5] = 0;
+					NCLadvancedFileStructure[_NclNewHE5] = 0;
+				}
 			}
 
 		}
@@ -20890,8 +20914,6 @@ NhlErrorTypes _NclISetFileOption(void)
 					NCLadvancedFileStructure[_NclAdvancedOGR] = 0;
 			}
     		}
-		else
-			NCLadvancedFileStructure[_NclHDF5] = 1;
     	}
 
 #ifdef USE_NETCDF4_FEATURES

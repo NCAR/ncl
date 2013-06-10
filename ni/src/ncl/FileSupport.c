@@ -3198,7 +3198,12 @@ struct _NclMultiDValDataRec *value;
 	NclFileClass fc = NULL;
 
 #ifdef USE_NETCDF4_FEATURES
-	if(NCLadvancedFileStructure[0] || NCLadvancedFileStructure[_NclNETCDF] || NCLadvancedFileStructure[_NclNETCDF4])
+	if(NCLadvancedFileStructure[0] ||
+	   NCLadvancedFileStructure[_NclNewHDF5] ||
+	   NCLadvancedFileStructure[_NclNewHE5] ||
+	   NCLadvancedFileStructure[_NclAdvancedOGR] ||
+	   NCLadvancedFileStructure[_NclNETCDF] ||
+	   NCLadvancedFileStructure[_NclNETCDF4])
 		fc = (NclFileClass) &nclAdvancedFileClassRec;
 	else
 #endif
@@ -3264,7 +3269,12 @@ NclQuark option;
 	int i = 5;
 
 #ifdef USE_NETCDF4_FEATURES
-	if(NCLadvancedFileStructure[0] || NCLadvancedFileStructure[_NclNETCDF] || NCLadvancedFileStructure[_NclNETCDF4])
+	if(NCLadvancedFileStructure[0] ||
+	   NCLadvancedFileStructure[_NclNewHDF5] ||
+	   NCLadvancedFileStructure[_NclNewHE5] ||
+	   NCLadvancedFileStructure[_NclAdvancedOGR] ||
+	   NCLadvancedFileStructure[_NclNETCDF] ||
+	   NCLadvancedFileStructure[_NclNETCDF4])
 		fc = (NclFileClass) &nclAdvancedFileClassRec;
 	else
 #endif
@@ -3482,7 +3492,9 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 #ifdef BuildHDF5
 	else if(0 == strcmp(fext, "hdf5"))
 	{
-		*use_advanced_file_structure = 1;
+		*use_advanced_file_structure = NCLadvancedFileStructure[_NclHDF5]
+                                             + NCLadvancedFileStructure[_NclNewHDF5]
+                                             + NCLadvancedFileStructure[0];
 		ori_file_ext_q = NrmStringToQuark("h5");
 	}
 #endif
@@ -3495,6 +3507,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 	{
 		ori_file_ext_q = NrmStringToQuark("he5");
 		*use_advanced_file_structure = NCLadvancedFileStructure[_NclHDFEOS5]
+					     + NCLadvancedFileStructure[_NclNewHE5]
 					     + NCLadvancedFileStructure[0];
 	}
 #endif
@@ -3811,8 +3824,12 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 #ifndef NIO_LIB_ONLY
 
-	if(NrmStringToQuark("h5") == file_ext_q)
-		use_advanced_file_structure = 1;
+      /*Make h5 works for two file strucuture.
+
+       *if(NrmStringToQuark("h5") == file_ext_q)
+       *	use_advanced_file_structure = 1;
+       *Wei 06/10/2013
+       */
 
 	/*Use Advanced File Strucuture, when:
 	*1. The local use_advanced_file_structure is true.
@@ -3827,12 +3844,15 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 		  NCLadvancedFileStructure[_NclAdvancedOGR] ||
 		  NCLadvancedFileStructure[_NclHDFEOS5] ||
 		  NCLadvancedFileStructure[_NclNewHE5] ||
+		  NCLadvancedFileStructure[_NclNewHDF5] ||
 		  NCLadvancedFileStructure[_NclNETCDF4]) &&
 		((NrmStringToQuark("nc") == file_ext_q) ||
-		 (NrmStringToQuark("nc4") == file_ext_q) ||
 		 (NrmStringToQuark("nc3") == file_ext_q) ||
+		 (NrmStringToQuark("nc4") == file_ext_q) ||
 		 (NrmStringToQuark("cdf") == file_ext_q) ||
 		 (NrmStringToQuark("shp") == file_ext_q) ||
+		 (NrmStringToQuark("h5") == file_ext_q) ||
+		 (NrmStringToQuark("hdf5") == file_ext_q) ||
 		 (NrmStringToQuark("he5") == file_ext_q) ||
 		 (NrmStringToQuark("hdfeos5") == file_ext_q) ||
 		 (NrmStringToQuark("netcdf") == file_ext_q))))

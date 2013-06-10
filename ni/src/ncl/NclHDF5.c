@@ -68,7 +68,7 @@ static NrmQuark Qfill_val;
 #define H5_CACHE_PREEMPTION_OPT  4
 #define H5_NUM_OPTIONS           5
 
-void *_Ncl2HDF5type(NclBasicDataTypes type);
+void *_Ncl2H5type(NclBasicDataTypes type);
 
 typedef struct _HDF5compound_component_t HDF5compound_component_t;
 typedef struct _HDF5compound_t HDF5compound_t;
@@ -453,7 +453,7 @@ int n_dims;
       /*
        *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
        *fprintf(stderr, "\tvar_info->name: <%s>", NrmQuarkToString(var_inq->name));
-       *fprintf(stderr, "\tvar_info->type: <%s>", (char *)_Ncl2HDF5type(var_inq->type));
+       *fprintf(stderr, "\tvar_info->type: <%s>", (char *)_Ncl2H5type(var_inq->type));
        *fprintf(stderr, "\tcompound->nom: <%d>\n", var_inq->compound->nom);
        */
         var_info->num_compounds = var_inq->compound->nom;
@@ -462,7 +462,7 @@ int n_dims;
         {
           /*
            *fprintf(stderr, "\tvar_info->component_name[%d]: <%s>\n", n, NrmQuarkToString(var_inq->compound->member[n].name));
-           *fprintf(stderr, "\tvar_info->component_type[%d]: <%s>\n", n, (char *)_Ncl2HDF5type(var_inq->compound->member[n].type));
+           *fprintf(stderr, "\tvar_info->component_type[%d]: <%s>\n", n, (char *)_Ncl2H5type(var_inq->compound->member[n].type));
            */
             var_info->component_name[n] = var_inq->compound->member[n].name;
             var_info->component_type[n] = var_inq->compound->member[n].type;
@@ -696,66 +696,66 @@ static NclBasicDataTypes _HDF52Ncl_type(const char *type_name)
     return type;
 }
 
-void *_Ncl2HDF5type(NclBasicDataTypes type)
+void *_Ncl2H5type(NclBasicDataTypes type)
 { 
-    char *HDF5type;
+    char *H5type;
 
     switch(type)
     {
         case NCL_float:
-            HDF5type = strdup("float");
+            H5type = strdup("float");
             break;
         case NCL_double:
-            HDF5type = strdup("double");
+            H5type = strdup("double");
             break;
         case NCL_string:
           /*Need to return NULL, as NclFile.c which check for NCL_string again.
            *Wei, 3/31/2010
-           *HDF5type = strdup("string");
+           *H5type = strdup("string");
            */
             return(NULL);
             break;
         case NCL_int64:
-            HDF5type = strdup("int64");
+            H5type = strdup("int64");
             break;
         case NCL_uint64:
-            HDF5type = strdup("uint64");
+            H5type = strdup("uint64");
             break;
         case NCL_long:
-            HDF5type = strdup("long");
+            H5type = strdup("long");
             break;
         case NCL_ulong:
-            HDF5type = strdup("ulong");
+            H5type = strdup("ulong");
             break;
         case NCL_int:
-            HDF5type = strdup("int");
+            H5type = strdup("int");
             break;
         case NCL_uint:
-            HDF5type = strdup("uint");
+            H5type = strdup("uint");
             break;
         case NCL_short:
-            HDF5type = strdup("short");
+            H5type = strdup("short");
             break;
         case NCL_ushort:
-            HDF5type = strdup("ushort");
+            H5type = strdup("ushort");
             break;
         case NCL_char:
-            HDF5type = strdup("char");
+            H5type = strdup("char");
             break;
         case NCL_byte:
-            HDF5type = strdup("byte");
+            H5type = strdup("byte");
             break;
         case NCL_ubyte:
-            HDF5type = strdup("ubyte");
+            H5type = strdup("ubyte");
             break;
         case NCL_compound:
-            HDF5type = strdup("compound");
+            H5type = strdup("compound");
             break;
         default:
             return(NULL);
     }
     
-    return (void *)HDF5type;
+    return (void *)H5type;
 }
 
 static NclQuark *HDF5GetGrpAttNames_inGroup
@@ -3980,7 +3980,7 @@ long *stride;
                     no_stride = 0;
             }
 
-            typename = (char *)_Ncl2HDF5type(thelist->var_inq->type);
+            typename = (char *)_Ncl2H5type(thelist->var_inq->type);
 
             if(thelist->var_inq->n_chunk_dims)
             {
@@ -4209,7 +4209,7 @@ long* dim_sizes;
             rec->open = 1;
         }
 
-        typename = (char *)_Ncl2HDF5type(data_type);
+        typename = (char *)_Ncl2H5type(data_type);
 /*
 * All dimensions are correct dimensions for the file
 */
@@ -4493,7 +4493,7 @@ void *data;
                     hsize_t rank = 1;
                     hsize_t dims[1];
                     dims[0] = stepal->att_inq->n_elem;
-                    buffer = (char *)_Ncl2HDF5type(stepal->att_inq->type);
+                    buffer = (char *)_Ncl2H5type(stepal->att_inq->type);
                     ret = (hid_t) _add_attr2group(rec->id, rank, dims, (void*)data,
                           buffer, NrmQuarkToString(theatt),
                           "/", rec->h5_group);
@@ -4579,7 +4579,7 @@ static NhlErrorTypes HDF5AddAtt
 
     if(rec->wr_status <= 0)
     {
-        typename = (char *)_Ncl2HDF5type(data_type);
+        typename = (char *)_Ncl2H5type(data_type);
         if(typename != NULL)
         {
             if (rec->open)
@@ -4683,7 +4683,7 @@ static NhlErrorTypes HDF5AddVarAtt
     
     if(rec->wr_status <= 0)
     {
-        typename = (char *)_Ncl2HDF5type(data_type);
+        typename = (char *)_Ncl2H5type(data_type);
         if(typename != NULL)
         {
             if (rec->open)
@@ -5489,7 +5489,7 @@ NclFormatFunctionRec HDF5Rec = {
 /* NclAddAttFunc            add_att; */            HDF5AddAtt,
 /* NclAddVarAttFunc         add_var_att; */        HDF5AddVarAtt,
 /* NclMapFormatTypeToNcl    map_format_type_to_ncl; */    NULL,
-/* NclMapNclTypeToFormat    map_ncl_type_to_format; */    _Ncl2HDF5type,
+/* NclMapNclTypeToFormat    map_ncl_type_to_format; */    _Ncl2H5type,
 /* NclDelAttFunc            del_att; */            HDF5DelAtt,
 /* NclDelVarAttFunc         del_var_att; */        NULL,
 /* NclGetGrpNamesFunc       get_grp_names; */      HDF5GetGrpNames,
@@ -5500,7 +5500,7 @@ NclFormatFunctionRec HDF5Rec = {
 /* NclSetOptionFunc         set_option;  */        HDF5SetOption
 };
 
-NclFormatFunctionRecPtr HDF5AddFileFormat 
+NclFormatFunctionRecPtr H5AddFileFormat 
 #if    NhlNeedProto
 (void)
 #else 
