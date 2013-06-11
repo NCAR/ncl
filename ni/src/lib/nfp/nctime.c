@@ -30,9 +30,6 @@
 #include <string.h>
 #include <strings.h>
 #include <stdarg.h>
-
-#include <netcdf.h>
-
 #include "nctime.h"
 
 int cuErrOpts = 1;			     /* Error options */
@@ -216,7 +213,6 @@ CdDayOfYear(CdTime *date, int *doy)
 	return;
 }
 
-#if 0
 /* Convert epochal time (hours since 00 jan 1, 1970)
  *   to human time (structured)
  * 
@@ -278,10 +274,6 @@ Cde2h(double etime, CdTimeType timeType, long baseYear, CdTime *htime)
 
         return;
 }
-#endif
-
-void Cde2h(double etime, CdTimeType timeType, long baseYear, CdTime *htime);
-void Cdh2e(CdTime *htime, double *etime);
 
 /* Add 'nDel' times 'delTime' to epochal time 'begEtm',
  * return the result in epochal time 'endEtm'.
@@ -293,6 +285,9 @@ CdAddDelTime(double begEtm, long nDel, CdDeltaTime delTime, CdTimeType timeType,
 	double delHours;
 	long delMonths, delYears;
 	CdTime bhtime, ehtime;
+
+	extern void Cde2h(double etime, CdTimeType timeType, long baseYear, CdTime *htime);
+	extern void Cdh2e(CdTime *htime, double *etime);
 
 	switch(delTime.units){
 	  case CdYear:
@@ -350,7 +345,6 @@ CdAddDelTime(double begEtm, long nDel, CdDeltaTime delTime, CdTimeType timeType,
 	return;
 }
 
-#if 0
 /* Parse relative units, returning the unit and base component time. */
 /* Function returns 1 if error, 0 on success */
 int
@@ -458,7 +452,6 @@ cdParseRelunits(cdCalenType timetype, char* relunits, cdUnitTime* unit, cdCompTi
 
 	return 0;
 }
-#endif
 
 /* ca - cb in Gregorian calendar */
 /* Result is in hours. */
@@ -538,6 +531,8 @@ CdDivDelTime(double begEtm, double endEtm, CdDeltaTime delTime, CdTimeType timeT
 	long delMonths, range;
 	CdTime bhtime, ehtime;
 	int hoursInYear;
+	
+	extern void Cde2h(double etime, CdTimeType timeType, long baseYear, CdTime *htime);
 
 	switch(delTime.units){
 	  case CdYear:
@@ -677,7 +672,6 @@ cdToOldTimetype(cdCalenType newtype, CdTimeType* oldtype)
 	return 0;
 }
 
-#if 0
 /* Convert human time to epochal time (hours since 00 jan 1, 1970)
  * 
  * Input: htime = human time representation
@@ -724,7 +718,6 @@ Cdh2e(CdTime *htime, double *etime)
 	*etime	= (double) (day_cnt + doy - 1) * 24. + htime->hour;
         return;
 }
-#endif
 
 /* Validate the component time, return 0 if valid, 1 if not */
 int
@@ -745,7 +738,6 @@ cdValidateTime(cdCalenType timetype, cdCompTime comptime)
 	return 0;
 }
 
-#if 0
 void
 cdChar2Comp(cdCalenType timetype, char* chartime, cdCompTime* comptime)
 {
@@ -834,7 +826,6 @@ cdChar2Comp(cdCalenType timetype, char* chartime, cdCompTime* comptime)
 	(void)cdValidateTime(timetype,*comptime);
 	return;
 }
-#endif
 
 /* Convert ct to relunits (unit, basetime) */
 /* in the mixed Julian/Gregorian calendar. */
