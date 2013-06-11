@@ -6,12 +6,6 @@
 
 TBLE2 mpi_128_params[] = {
 {4, "total precipitation", "kg m-2 s-1", "precip"},
-{21, "Time-mean relative humidity", "-", "rhacc"},
-{22, "Time-mean specific humidity", "kg/kg", "qacc"},
-{23, "Time-mean cloud liquid water", "kg/kg", "xlacc"},
-{24, "Time-mean cloud ice", "kg/kg", "xiacc"},
-{25, "Time-mean temperature", "K", "tacc"},
-{26, "Time-mean surface pressure", "Pa", "psacc"},
 {34, "low cloud", "-", "low_cld"},
 {35, "mid cloud", "-", "mid_cld"},
 {36, "high cloud", "-", "hih_cld"},
@@ -184,15 +178,5 @@ TBLE2 mpi_128_params[] = {
 {236, "ipcc ozone", "kg m-2", "ao3"},
 {237, "WMO defined tropopause height", "Pa", "tropo"},
 {238, "stddev virt pot temp at halflev klevm1", "K", "thvsig"},
-{239, "potential temperature", "K", "tpot"},
-{243, "3D cloud fraction input to ISCCP simulator", "-", "isccp_cld3d"},
-{244, "3D cloud optical depth input to ISCCP simulator", "-", "isccp_tau3d"},
-{245, "ISCCP sunlit fraction", "-", "isccp_sunlitfrac"},
-{246, "ISCCP total cloud fraction", "-", "isccp_totalcld"},
-{247, "ISCCP mean cloud top pressure", "hPa", "isccp_meanptop"},
-{248, "ISCCP mean cloud albedo", "-", "isccp_meanalbcld"},
-{249, "ISCCP radiative-mean cloud optical thickness", "-", "isccp_meantaucld"},
-{251, "frequency of deep convection", "-", "fconv_deep"},
-{252, "frequency of shallow convection", "-", "fconv_sh"},
-{253, "frequency of mid-level convection", "-", "fconv_mid"}
+{239, "potential temperature", "K", "tpot"}
 };
