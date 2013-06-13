@@ -48,6 +48,7 @@ static char *getIndexedOutputFilename(int, const char*, int, const char*, const 
 static void setSurfaceTransform(CROddp *psa);
 static void CROinit(CROddp *, int *);
 static void CROpict_init(GKSC *gksc);
+static void CROInitCairoContext(CROddp* psa, cairo_t* context, cairo_surface_t* surface);
 static unsigned int pack_argb(struct color_value);
 static struct color_value unpack_argb(unsigned int*, unsigned int);
 static int ccompar(const void *p1, const void *p2);
@@ -550,7 +551,6 @@ int cro_ClearWorkstation(GKSC *gksc) {
 
     if (psa->wks_type == CPS || psa->wks_type == CPDF || psa->wks_type == CEPS) {
         cairo_surface_flush(getSurface(psa->wks_id));
-
     }
     else if (psa->wks_type == CPNG) {
         outputFile = getIndexedOutputFilename(psa->wks_id, psa->output_file, psa->frame_count,
@@ -560,8 +560,7 @@ int cro_ClearWorkstation(GKSC *gksc) {
             ret = ERR_CRO_OPN;
         psa->frame_count++;
         free(outputFile);
-    }
-
+    } 
 #ifdef __JIRA1530__ 
     else if (psa->wks_type == CX11) {
         cairo_push_group(context);
@@ -575,6 +574,36 @@ int cro_ClearWorkstation(GKSC *gksc) {
         psa->frame_count++;
         free(outputFile);
     }
+
+    else if (psa->wks_type == CSVG) {
+        /* At this point, we know we need to write the SVG file; create an appropriately named SVG file/surface,
+         * and replay the recording surface into it. As there seems to be no way to clear a recording surface, 
+         * delete it and create a new one for the next frame (if there is one -- we have no way of knowing in 
+         * advance).
+         */
+        outputFile = getIndexedOutputFilename(psa->wks_id, psa->output_file, psa->frame_count,
+            "", ".svg");
+        cairo_surface_t *surface = cairo_svg_surface_create(outputFile, psa->paper_width, psa->paper_height);
+        if (surface == NULL)
+            return (ERR_NO_DISPLAY);
+        cairo_t* svgContext = cairo_create(surface);
+        cairo_set_source_surface (svgContext, getSurface(psa->wks_id), 0.0, 0.0);
+        cairo_paint(svgContext);
+        cairo_destroy(svgContext);
+        cairo_surface_destroy(surface);
+        
+        /* reset the recording surface... */
+        cairo_surface_destroy(getSurface(psa->wks_id));
+        removeCairoEnv(psa->wks_id);
+        cairo_surface_t* recSurface = cairo_recording_surface_create(CAIRO_CONTENT_COLOR_ALPHA, NULL);
+        cairo_t* recContext = cairo_create(recSurface);
+        saveCairoEnv(psa->wks_id, recContext, recSurface);        
+        CROInitCairoContext(psa, recContext, recSurface);
+        
+        psa->frame_count++;
+        free(outputFile);
+    }
+
 
 #ifdef BuildQtEnabled
     else if (psa->wks_type == CQT)
@@ -965,7 +994,6 @@ int cro_OpenWorkstation(GKSC *gksc) {
     char *ctmp;
     int *pint;
     extern int orig_wks_id;
-    static CROClipRect rect;
 
     trace("Got to cro_OpenWorkstation");
     
@@ -1046,7 +1074,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
     }
 
     else if (psa->wks_type == CX11) {
-        surface= croCreateNativeDisplaySurface(psa);
+        surface = croCreateNativeDisplaySurface(psa);
         if (surface == NULL)
             return (ERR_NO_DISPLAY);
         context = cairo_create(surface);
@@ -1055,6 +1083,29 @@ int cro_OpenWorkstation(GKSC *gksc) {
         psa->image_height = cairo_xlib_surface_get_height(surface);
     }
 
+    else if (psa->wks_type == CSVG) {
+        /*
+         * Create a SVG workstation.  
+         * Although SVG can support multiple pages per file, virtually no viewer/browser supports such a beast at this time.
+         * So we'll create a file per frame/plot, similarly to PNGs or TIFFs. This gets messy, because when the 
+         * cairo SVG-surface is created, it creates an initially empty file. When cro_ClearWorkstation
+         * is later called, the file should written and a new surface created in anticipation of a subsequent 
+         * frame/plot. But we have no way of knowing in advance that there will be other frames/plots, and we don't want
+         * to leave an empty and spurious file laying around (nor want to keep track of it a ensure it gets deleted).
+         * 
+         * So the strategy is to create a recording surface, and in cro_CloseWorkstation, replay the recording 
+         * surface into a proper SVG surface. Then we re-create another recording surface for any subsequent frame/plot.
+         * Since this is memory-based, the last one will simply get dropped on the floor. This admittedly incurs 
+         * overhead, but it seems to be acceptable.
+         */
+        psa->output_file = getIndexedOutputFilename(psa->wks_id, sptr, psa->frame_count, "", ".svg");
+        surface = cairo_recording_surface_create(CAIRO_CONTENT_COLOR_ALPHA, NULL);
+        if (surface == NULL)
+            return (ERR_NO_DISPLAY);
+        context = cairo_create(surface);
+        saveCairoEnv(orig_wks_id, context, surface);
+    }
+    
     else if (psa->wks_type == CQT)
     {
         double width  = (double) qt_screen_width;
@@ -1090,6 +1141,19 @@ int cro_OpenWorkstation(GKSC *gksc) {
         psa->image_width  = qt_screen_width;
     }
 
+    CROInitCairoContext(psa, context, surface);
+
+    return (0);
+}
+
+/*
+ * CROInitCairoContext()
+ * 
+ * This originally appeared in cro_OpenWorkstation();  was refactored into this static method when SVG support was
+ * added because we have to create a new SVG surface for each plot-frame that gets created.
+ * 
+ */
+void CROInitCairoContext(CROddp* psa, cairo_t* context, cairo_surface_t* surface) {
     /*
      *  Set fill rule to even/odd.
      */
@@ -1119,8 +1183,6 @@ int cro_OpenWorkstation(GKSC *gksc) {
     cairo_line_to(context, psa->dspace.llx, psa->dspace.lly + psa->dspace.yspan);
     cairo_line_to(context, psa->dspace.llx, psa->dspace.lly);
     cairo_clip(context);
-
-    rect = GetCROClipping(psa);
 
     setSurfaceTransform(psa);
 
@@ -1159,10 +1221,8 @@ int cro_OpenWorkstation(GKSC *gksc) {
         cairo_push_group(context);
     }
 #endif
-
-    return (0);
+    
 }
-
 
 int cro_Polyline(GKSC *gksc) {
     CROPoint *pptr = (CROPoint *) gksc->p.list;
@@ -2282,8 +2342,8 @@ char* getRegularOutputFilename(int wks_id, const char* file_name, const char* en
 char* getIndexedOutputFilename(int wks_id, const char* file_name, int frameNumber,
 		const char* envVar, const char* suffix)
 {
-	/* get a root name... */
-	const char* root = getFileNameRoot(wks_id, file_name, envVar);
+    /* get a root name... */
+    const char* root = getFileNameRoot(wks_id, file_name, envVar);
     int rootLen = strlen(root);
 
     /* we append a suffix; remove it if already present on file_name */
@@ -2312,12 +2372,12 @@ char* getIndexedOutputFilename(int wks_id, const char* file_name, int frameNumbe
             /* have to rename the first file that was written so that it has a sequence number */
 
             /* reconstruct old name... */
-        	char* oldName = (char*) calloc(rootLen + suffixLen+1, 1); /* room for suffix + null */
-        	strncpy(oldName, root, rootLen);
+            char* oldName = (char*) calloc(rootLen + suffixLen+1, 1); /* room for suffix + null */
+            strncpy(oldName, root, rootLen);
             strcat(oldName, suffix);
 
             /* new name... */
-        	sprintf(seqNum, ".%06d", 1);
+            sprintf(seqNum, ".%06d", 1);
             strncpy(name, root, rootLen);
             strcat(name, seqNum);
             strcat(name, suffix);

@@ -3501,13 +3501,28 @@ begin
 end
 
 ;***********************************************************************;
+; Function to determine if a cairo SVG is being requested.              ;
+;***********************************************************************;
+undef("is_cairo_svg")
+function is_cairo_svg(wtype)
+local lwtype
+begin
+  lwtype = lower_case(wtype)
+  if (lwtype.eq."svg") then
+    return(True)
+  else
+    return(False)
+  end if
+end
+
+;***********************************************************************;
 ; Function to determine if a cairo workstation is being requested.      ;
 ;***********************************************************************;
 undef("is_cairo_wks")
 function is_cairo_wks(wtype)
 begin
   if (is_cairo_ps(wtype).or.is_cairo_pdf(wtype).or.is_cairo_png(wtype).or. \
-       is_cairo_eps(wtype)) then
+       is_cairo_eps(wtype).or.is_cairo_svg(wtype)) then
     return(True)
   else
     return(False)
@@ -3736,9 +3751,9 @@ begin
     end if
 
 ;
-; We need to distinguish between PS/PDF versus image-based output formats
+; We need to distinguish between document-based versus image-based output formats
 ;
-    if (is_cairo_ps(type).or.is_cairo_pdf(type).or.is_cairo_eps(type)) then
+    if (is_cairo_ps(type).or.is_cairo_pdf(type).or.is_cairo_eps(type).or.is_cairo_svg(type)) then
         cairo = create_graphic(res_file, "documentWorkstationClass", "defaultapp", wkres)
     else
 	cairo = create_graphic(res_file, "imageWorkstationClass", "defaultapp", wkres)

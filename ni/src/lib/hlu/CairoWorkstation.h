@@ -53,13 +53,14 @@
 #define    NhlTCairoFormat   "CairoFormat"
 
 typedef enum _NhlCairoFormat {
-    NhlCPS = 0,
-    NhlCPNG = 1,
-    NhlCPDF = 2,
+    NhlCPS   = 0,
+    NhlCPNG  = 1,
+    NhlCPDF  = 2,
     NhlCTIFF = 3,
-    NhlCX11 = 4,
-    NhlCEPS = 5,
-    NhlCQT = 6
+    NhlCX11  = 4,
+    NhlCEPS  = 5,
+    NhlCQT   = 6,
+    NhlCSVG  = 7        
 } NhlCairoFormat;
 
 extern NhlClass NhlcairoDocumentWorkstationClass;

@@ -21,6 +21,7 @@
 # define    CX11        (44)
 # define    CEPS        (45)
 # define    CQT         (46)
+# define    CSVG        (47)
 
 /* We are creating distinct workstation objects for PS/PDF versus image-based cairo output formats.
  * However, we'll use common methods and structs. In the struct below, some fields are applicable

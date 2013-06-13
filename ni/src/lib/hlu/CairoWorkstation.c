@@ -7,7 +7,6 @@
 #include   <ncarg/hlu/CairoWorkstationP.h>
 #include   <ncarg/hlu/ConvertersP.h>
 #include   <ncarg/hlu/pageutil.h>
-
 #include "hlu.h"
 #include "CairoWorkstation.h"
 
@@ -559,13 +558,14 @@ CairoWorkstationClassInitialize(void) {
             {NhlCPS, "NEWPS"},
             {NhlCPDF, "PDF"},
             {NhlCPDF, "NEWPDF"},
-            {NhlCEPS, "EPS"}
+            {NhlCEPS, "EPS"},
+            {NhlCSVG, "SVG"}
         };
 
         _NhlEnumVals imageFormats[] = {
             {NhlCPNG, "NEWPNG"},
             {NhlCPNG, "PNG"},
-            {NhlCTIFF, "TIFF"}
+            {NhlCTIFF, "TIFF"},
         };
 
         _NhlEnumVals windowFormats[] = {
@@ -647,6 +647,11 @@ CairoDocumentWorkstationInitialize(NhlClass lclass, NhlLayer req, NhlLayer new, 
             newCairo->work.gkswkstype = CEPS;
             suffix = "eps";
             break;
+            
+        case NhlCSVG:
+            newCairo->work.gkswkstype = CSVG;
+            suffix = "svg";
+            break;            
 
         default:
             NhlPError(NhlWARNING, NhlEUNKNOWN,
@@ -700,7 +705,7 @@ CairoImageWorkstationInitialize(NhlClass lclass, NhlLayer req, NhlLayer new, _Nh
             newCairo->work.gkswkstype = CTIFF;
             suffix = "tif";
             break;
-
+            
         default:
             NhlPError(NhlWARNING, NhlEUNKNOWN,
                     "%s: Invalid format \"%d\" defaulting to PNG",
