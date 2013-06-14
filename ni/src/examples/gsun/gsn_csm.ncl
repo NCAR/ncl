@@ -2711,16 +2711,6 @@ begin
       dum               = get_res_value(res2,"gsnXYBelowFillColors",-1)
       dum               = get_res_value(res2,"gsnXYRightFillColors",-1)
       dum               = get_res_value(res2,"gsnXYLeftFillColors",-1)
-      if(isatt(res2,"gsnXYFillOpacityF")) then
-        fill_opacs = conform(above_fill_colors, \
-                             get_res_value(res2,"gsnXYFillOpacityF",1.0), \
-                             -1)
-      else if(isatt(res2,"gsnXYFillOpacities")) then
-        fill_opacs = get_res_value(res2,"gsnXYFillOpacities",1.0)
-      else
-        fill_opacs = conform(above_fill_colors,1.0,-1)
-      end if
-      end if
       nfo = dimsizes(fill_opacs)
       naf = dimsizes(above_fill_colors)
       if(dimsizes(nfo).ne.dimsizes(naf).or..not.all(nfo.eq.naf)) then
@@ -2738,9 +2728,20 @@ begin
         above_fill_colors = get_res_value(res2,"gsnXYAboveFillColors",-1)
         below_fill_colors = get_res_value(res2,"gsnXYBelowFillColors",-1)
       end if
+      fill_opacs = conform(above_fill_colors,1.0,-1)
+    end if
+
+    if(isatt(res2,"gsnXYFillOpacityF")) then
+      fill_opacs = conform(above_fill_colors, \
+                           get_res_value(res2,"gsnXYFillOpacityF",1.0), \
+                           -1)
+    else if(isatt(res2,"gsnXYFillOpacities")) then
+      fill_opacs = get_res_value(res2,"gsnXYFillOpacities",1.0)
+    else
+      fill_opacs = conform(above_fill_colors,1.0,-1)
+    end if
     end if
   end if
-
   nacol = dimsizes(above_fill_colors)
   nbcol = dimsizes(below_fill_colors)
 
