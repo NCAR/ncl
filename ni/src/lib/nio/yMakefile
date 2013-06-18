@@ -63,8 +63,8 @@ HDFEOS_OBJS = NclHDFEOS.o
 
 #ifdef BuildHDF5
 HDF5_DEFS = -DBuildHDF5
-HDF5_SRCS = NclNewHDF5.c
-HDF5_OBJS = NclNewHDF5.o
+HDF5_SRCS = NclHDF5.c h5reader.c h5writer.c
+HDF5_OBJS = NclHDF5.o h5reader.o h5writer.o
 #else
 #define HDF5_SRCS
 #define HDF5_OBJS
@@ -197,7 +197,7 @@ GEN_SRCS	=	$(GEN_TYPE_SRCS)
 
 CSRCS		=	$(STATIC_SRCS) $(HDFEOS_SRCS) $(HDF4_SRCS) $(HDFEOS5_SRCS) $(HDF5_SRCS) $(GRIB2_SRCS) $(GDAL_SRCS)
 
-OPT_CSRCS	=	NclHDF.c NclHDFEOS.c NclHDFEOS5.c NclNewHDF5.c NclGRIB2.c NclOGR.c
+OPT_CSRCS	=	NclHDF.c NclHDFEOS.c NclHDFEOS5.c NclHDF5.c NclGRIB2.c NclOGR.c h5reader.c h5writer.c
 
 FSRCS		=	qu2reg3.f rowina3.f scm0.f ncepcode.f
 
