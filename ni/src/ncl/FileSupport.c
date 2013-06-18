@@ -3599,7 +3599,9 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 			{
         			file_ext_q = cur_ext_q;
 				found = 1;
-       				*use_advanced_file_structure = 1;
+				*use_advanced_file_structure = NCLadvancedFileStructure[_NclHDF5]
+                                             		     + NCLadvancedFileStructure[_NclNewHDF5]
+                                             		     + NCLadvancedFileStructure[0];
 				break;
 			}
 			else
