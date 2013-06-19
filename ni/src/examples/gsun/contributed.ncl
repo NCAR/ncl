@@ -11505,7 +11505,7 @@ begin
   end if
                 ; fix an incorrect documention issue
                 ; allow 'npts' or 'N'
-  if (opt .and. (isatt(opt,"npts") .or. isatt(opt,"N")) then
+  if (opt .and. (isatt(opt,"npts") .or. isatt(opt,"N"))) then
      if (isatt(opt,"N")) then
          N = opt@N
      else
