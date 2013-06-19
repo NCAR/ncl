@@ -30806,6 +30806,29 @@ NhlErrorTypes _Nclset_default_fillvalue
 
 }
 
+NhlErrorTypes _Nclget_wall_time(void)
+{
+        ng_size_t dimsize = 1;
+		double wtime;
+		int retval;
+
+		retval = NclGetWTime(&wtime);
+		if(retval != NhlNOERROR){
+			NhlPError(NhlWARNING, NhlEUNKNOWN, "unable to get process wall time");
+			return(NhlWARNING);
+		}
+
+        return(NclReturnValue(
+                &wtime,
+                1,
+                &dimsize,
+                NULL,
+                NCL_double,
+                1
+        ));
+
+}
+
 NhlErrorTypes _Nclget_cpu_time(void)
 {
         ng_size_t dimsize = 1;

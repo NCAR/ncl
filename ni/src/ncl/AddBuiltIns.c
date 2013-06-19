@@ -1067,6 +1067,8 @@ void
 #endif
 );
 
+NhlErrorTypes _Nclget_wall_time(void);
+
 NhlErrorTypes _NclCreateGraphic(
 #if NhlNeedProto
 void
@@ -2643,6 +2645,7 @@ void _NclAddBuiltIns
     NclRegisterProc(_Nclset_default_fillvalue,args,"set_default_fillvalue",nargs);
 
 	NclRegisterFunc(_Nclget_cpu_time,NULL,"get_cpu_time",0);
+	NclRegisterFunc(_Nclget_wall_time,NULL,"get_wall_time",0);
 /*
 	nargs = 0;
 	args = NewArgs(1);
