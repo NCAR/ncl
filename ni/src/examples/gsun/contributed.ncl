@@ -11503,9 +11503,14 @@ begin
   if (opt .and. isatt(opt,"std_span")) then
       spn = opt@std_span
   end if
-
-  if (opt .and. isatt(opt,"npts")) then
-      N = opt@npts
+                ; fix an incorrect documention issue
+                ; allow 'npts' or 'N'
+  if (opt .and. (isatt(opt,"npts") .or. isatt(opt,"N")) then
+     if (isatt(opt,"N")) then
+         N = opt@N
+     else
+         N = opt@npts
+     end if
   else
       N = 101
   end if
