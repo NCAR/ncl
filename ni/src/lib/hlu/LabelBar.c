@@ -28,6 +28,7 @@
 #include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/hluutil.h>
+#include <ncarg/hlu/Transform.h>
 
 static char lbDefTitle[] = "NOTHING";
 
@@ -268,7 +269,11 @@ static NhlResource resources[] = {
 	
 	{NhlNlbBoxLinesOn,NhlClbBoxLinesOn,NhlTBoolean, 
 	 sizeof(NhlBoolean),
-	 NhlOffset(NhlLabelBarLayerRec,labelbar.box_line_on),
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.box_lines_on),
+	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNlbBoxSeparatorLinesOn,NhlClbBoxSeparatorLinesOn,NhlTBoolean, 
+	 sizeof(NhlBoolean),
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.box_separator_lines_on),
 	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNlbBoxLineColor, NhlCLineColor, NhlTColorIndex, 
 	 sizeof(NhlColorIndex),
@@ -4397,6 +4402,7 @@ static NhlErrorTypes    LabelBarDraw
 	char *entry_name = "LabelBarDraw";
 	float xpoints[5];
 	float ypoints[5];
+	int edges_on;
 
 	if (! lb_p->labelbar_on)
 		return(ret);
@@ -4469,8 +4475,9 @@ static NhlErrorTypes    LabelBarDraw
  * Set the values that remain constant for all boxes
  */
 
+	edges_on = lb_p->box_lines_on && lb_p->box_separator_lines_on;
 	NhlVASetValues(lbl->base.wkptr->base.id,
-		     _NhlNwkEdgesOn, lb_p->box_line_on,
+		     _NhlNwkEdgesOn, edges_on,
 		     _NhlNwkEdgeDashPattern, lb_p->box_line_dash_pattern,
 		     _NhlNwkEdgeThicknessF, lb_p->box_line_thickness,
 		     _NhlNwkEdgeDashSegLenF, lb_p->box_line_dash_seglen,
@@ -4488,6 +4495,7 @@ static NhlErrorTypes    LabelBarDraw
 	else {
 		DrawFilledBoxes(lbl,False);
 	}
+		
 
 	if (lbl->view.use_segments) {
 
@@ -4509,6 +4517,32 @@ static NhlErrorTypes    LabelBarDraw
 		if (lb_p->labels_on )
 			NhlDraw(lb_p->labels_id);
 	}
+
+	if (lb_p->box_lines_on && ! lb_p->box_separator_lines_on) {
+		int gsid;
+		/* draw around the edge of all the boxes */
+		xpoints[0] = lb_p->adj_bar.l;
+		ypoints[0] = lb_p->adj_bar.b;
+		xpoints[1] = lb_p->adj_bar.r;
+		ypoints[1] = lb_p->adj_bar.b;
+		xpoints[2] = lb_p->adj_bar.r;
+		ypoints[2] = lb_p->adj_bar.t;
+		xpoints[3] = lb_p->adj_bar.l;
+		ypoints[3] = lb_p->adj_bar.t;
+		xpoints[4] = lb_p->adj_bar.l;
+		ypoints[4] = lb_p->adj_bar.b;
+		NhlVAGetValues(lbl->base.wkptr->base.id,
+			       NhlNwkDefGraphicStyleId,    &gsid,
+			       NULL);
+		NhlVASetValues(gsid,
+			       NhlNgsLineDashPattern, lb_p->box_line_dash_pattern,
+			       NhlNgsLineThicknessF, lb_p->box_line_thickness,
+			       NhlNgsLineDashSegLenF, lb_p->box_line_dash_seglen,
+			       NhlNgsLineColor, lb_p->box_line_color,
+			       NhlNgsLineLabelString, "",
+			       NULL);
+		NhlNDCPolyline(lbl->base.wkptr->base.id,gsid,xpoints,ypoints,5);
+	}		
 
 	return(ret);
 }

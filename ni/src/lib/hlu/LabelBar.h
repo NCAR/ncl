@@ -115,6 +115,7 @@ typedef enum _NhllbBoxSizingMode {
 #define NhlNlbBoxLineThicknessF		"lbBoxLineThicknessF"
 #define NhlNlbBoxLineDashPattern	"lbBoxLineDashPattern"
 #define NhlNlbBoxLineDashSegLenF	"lbBoxLineDashSegLenF"
+#define NhlNlbBoxSeparatorLinesOn	"lbBoxSeparatorLinesOn"
 
 #define NhlNlbPerimOn			"lbPerimOn"
 #define NhlNlbPerimColor		"lbPerimColor"
@@ -174,6 +175,7 @@ typedef enum _NhllbBoxSizingMode {
 
 #define NhlClbBoxLinesOn		"LbBoxLinesOn"
 #define NhlClbRasterFillOn		"LbRasterFillOn"
+#define NhlClbBoxSeparatorLinesOn	"LbBoxSeparatorLinesOn"
 
 
 

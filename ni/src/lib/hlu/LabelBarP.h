@@ -116,7 +116,8 @@ typedef struct _NhlLabelBarLayerPart {
 	float	title_const_spacing;
 	char	title_func_code;
 
-	int	box_line_on;
+	int	box_lines_on;
+	int	box_separator_lines_on;
 	int	box_line_color;
 	float	box_line_thickness;
 	int	box_line_dash_pattern;
