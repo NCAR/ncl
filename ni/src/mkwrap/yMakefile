@@ -35,13 +35,7 @@ LEX 		= 	flex
 YACC		=	yacc
 
 EXTRA_DEFINES = $(OS1_DEF) $(MAJOR_DEF)
-#if (defined(IRIX) || defined(IRIX64) || defined(AIX))
 SYS_LIBS        = -ll
-#else
-SYS_LIBS	= -lfl
-#endif
-
-
 
 HDRS		=	$(GEN_HDRS) $(STATIC_HDRS) 
 
