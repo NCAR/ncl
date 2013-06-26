@@ -2696,6 +2696,7 @@ begin
 ;    gsnXYBelowFillColors
 ;    gsnXYRightFillColors
 ;    gsnXYLeftFillColors
+;    gsnXYFillOpacities
 ;
 ; If the first one is set, it overwrites the others. If
 ; none of them are set, then no fill color will be used.
@@ -2711,15 +2712,6 @@ begin
       dum               = get_res_value(res2,"gsnXYBelowFillColors",-1)
       dum               = get_res_value(res2,"gsnXYRightFillColors",-1)
       dum               = get_res_value(res2,"gsnXYLeftFillColors",-1)
-      nfo = dimsizes(fill_opacs)
-      naf = dimsizes(above_fill_colors)
-      if(dimsizes(nfo).ne.dimsizes(naf).or..not.all(nfo.eq.naf)) then
-        print("fill_bw_xy: Warning: the opacity value(s) specified must")
-        print("     either be a scalar (gsnXYFillOpacityF) or the same")
-        print("     dimensionality as gsnXYFillColors (gsnXYFillOpacities).")
-        print("     Opacity will default to 1.0")
-        fill_opacs := conform(above_fill_colors,1.0,-1)
-      end if
     else
       if(fill_x) then
         above_fill_colors = get_res_value(res2,"gsnXYRightFillColors",-1)
@@ -2728,7 +2720,6 @@ begin
         above_fill_colors = get_res_value(res2,"gsnXYAboveFillColors",-1)
         below_fill_colors = get_res_value(res2,"gsnXYBelowFillColors",-1)
       end if
-      fill_opacs = conform(above_fill_colors,1.0,-1)
     end if
 
     if(isatt(res2,"gsnXYFillOpacityF")) then
@@ -4434,7 +4425,7 @@ begin
 ; Check if filling between curves is desired. This can be
 ; specified via gsnXYFillColors, gsnXYAboveFillColors,  
 ; gsnXYBelowFillColors, gsnXYLeftFillColors, gsnXYRightFillColors.
-
+; gsnXYFillOpacities
       fill_atts = (/"gsnXYFillColors", "gsnXYAboveFillColors", \
                     "gsnXYBelowFillColors","gsnXYLeftFillColors", \
                     "gsnXYRightFillColors","gsnXYFillOpacities", \
