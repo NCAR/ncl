@@ -292,6 +292,7 @@ NIO_NCL_HDR_FILES = ApiRecords.h AttSupport.h DataSupport.h		\
 		TypeSupportMatTemplate.h.sed				\
 		TypeSupportMonoOpTemplate.h.sed				\
 		TypeSupportOpTemplate.h.sed VarSupport.h ccmhdr.h	\
+		h5data_struct.h						\
 		cptec_254_gtb.h date.h defs.h dwd_002_gtb.h		\
 		dwd_201_gtb.h dwd_202_gtb.h dwd_203_gtb.h		\
 		dwd_204_gtb.h dwd_205_gtb.h dwd_206_gtb.h		\
@@ -341,6 +342,7 @@ NIO_NCL_OTHER_FILES = AddFileFormats.c AttSupport.c DataSupport.c	\
 		TypestringCompareOpTemplate.c.sed			\
 		TypestringSelectOpTemplate.c.sed			\
 		VarSupport.c						\
+		h5reader.c h5writer.c                                   \
 		byte_data_c.sh char_data_c.sh ctoiee.c data_h.sh	\
 		date.c double_data_c.sh float_data_c.sh int_data_c.sh	\
 		logical_data_c.sh long_data_c.sh math_funcs.sh		\

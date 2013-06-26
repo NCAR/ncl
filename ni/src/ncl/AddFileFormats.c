@@ -111,8 +111,10 @@ void _NclAddFileFormats
         _NclRegisterFormat(H5AddFileFormat,"h5");
         _NclRegisterFormat(H5AddFileFormat,"hdf5");
 
+#ifndef NIO_LIB_ONLY
         _NclRegisterFormat(HDF5AddFileFormat,"h5");
         _NclRegisterFormat(HDF5AddFileFormat,"hdf5");
+#endif
 #endif
 	_NclRegisterFormat(GribAddFileFormat,"gr");
 	_NclRegisterFormat(GribAddFileFormat,"gr1");
