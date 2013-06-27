@@ -3604,44 +3604,6 @@ NhlErrorTypes _NhlMeshFill
 	
 	}
 
-
-#if 0
-/*
- * Now overwrite out-of-range areas with the out-of-range color
- */
-	grid_fill_ix = Cnp->out_of_range.gks_fcolor < 0 ? NhlTRANSPARENT_CI : Cnp->out_of_range.gks_fcolor;
-	if (Tmp->ezmap) {
-		imap = -map;
-		zval = 0;
-		for (j = 0; j < ican; j++) {
-			if (j == 0)
-				yccf = ycpf + ysoff * cystep;
-			else if (j == ican - 1)
-				yccf = ycpf + (ican - yeoff) * cystep;
-			else
-				yccf = ycpf + (j + ysoff) * cystep;
-			yccd = c_cfuy(yccf);
-			for (i = 0; i < icam; i++) {
-				if (i == 0)
-					xccf = xcpf + xsoff * cxstep;
-				else if (i == icam - 1)
-					xccf = xcpf + (icam - xeoff) * cxstep; 
-				else
-					xccf = xcpf + (i+xsoff) * cxstep;
-				xccd = c_cfux(xccf);
-				(_NHLCALLF(hlucpmpxy,HLUCPMPXY))
-					(&imap,&xccd,&yccd,&zval,&xcci,&ycci);
-				if (xcci == orv) {
-					*(cell + j * ica1 + i) = grid_fill_ix;
-				}
-			}
-		}
-	}
-
-#endif
-
-	/*dcell_loc = (DataCellLoc *) NhlMalloc(sizeof(DataCellLoc) * icam * ican);
-	  memset(dcell_loc,0,sizeof(DataCellLoc) * icam * ican);*/
 #if 0
 	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
 #if 0
@@ -3848,7 +3810,6 @@ NhlErrorTypes _NhlMeshFill
 					}
 					if (p0 > 0)
 						continue;
-					/*iplus = icv % icam;*/
 					iplus = MIN(icv, icam);
 					jplus = jcv;
 					fvali = zdat[ix]; 
@@ -3867,6 +3828,11 @@ NhlErrorTypes _NhlMeshFill
 					if (iaid == -1)
 						iaid = NhlcnAREAID_OFFSET +
 							Cnp->level_count;     
+
+					/* hlucpscae uses 1-based indexing */
+
+					iplus += 1;
+					jplus += 1;
 
 					(_NHLCALLF(hlucpscae,HLUCPSCAE))
 						(cell,&ica1,&icam,&ican,
