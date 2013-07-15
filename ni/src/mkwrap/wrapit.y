@@ -81,7 +81,7 @@ char *NType(int datatype) {
 	case NCL_none:
 		return("NclANY");
 	case NCL_string: 
-		return("string");
+		return("NrmQuark");
 	default:
 		return("void");
 	}
@@ -103,7 +103,7 @@ char *CType(int datatype) {
 	case NCL_long: 
 		return("long");
 	case NCL_string: 
-		return("string");
+		return("NrmQuark");
 	case NCL_none:
 	default:
 		return("void");
