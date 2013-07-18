@@ -5748,9 +5748,10 @@ char * buf;
 #endif
 {
 	int days_per_month[12] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
-	int month, month_days;
+	int month, year;
 	int is_leap = 0;
 	int ix;
+	int use_months = 0;
 	/*
 	 * Negative time periods are considered to be modular values, and converted to
 	 * positive values depending on the units. This is difficult for days, as well
@@ -5769,20 +5770,121 @@ char * buf;
 		break;
 	case 2: /*Day*/
 		/* this oversimplifies and may need attention when there are users of such time periods */
-		/* if time period in days == a month, then switch to months */
+		/* if time period in days == a month, then switch to months in order to allow arrays of like elements */
+		/* may contain unfounded assumptions -- such as that P1 and P2 (pds[18] and pds[19] are always positive values */
 		month = (int) grec->pds[13];
-		month_days = days_per_month[month-1];
-		if (month == 2 && HeisLeapYear(grec->initial_time.year)) {
-			month_days++;
+		ix = month - 1;
+		year = grec->initial_time.year;
+		if (HeisLeapYear(year)) {
+			days_per_month[1] = 29;
 			is_leap = 1;
 		}
-		if (grec->pds[20] == 7 && grec->pds[14] - grec->pds[18] == 1 && grec->pds[14] + grec->pds[19] == month_days) {
-			/* special processing for GODAS -- although maybe it should be universal --
-			   see if we're really talking about a monthly average */
-			sprintf(buf,"1m");
-			time_period = 1;
+		switch ((int) grec->pds[20]) {
+			int start_day, end_day;
+			int start_month_ix, end_month_ix;
+		case 7:
+			start_day = grec->pds[14] - grec->pds[18];
+			end_day = grec->pds[14] + grec->pds[19];
+			start_month_ix = end_month_ix = ix;
+			while (start_day < 0) {
+				if (--start_month_ix < 0) {
+					start_month_ix += 12;
+					year--;
+					days_per_month[1] = HeisLeapYear(year) ? 29 : 28;
+				}
+				start_day += days_per_month[start_month_ix];
+			}
+			year = grec->initial_time.year;
+			while (end_day > days_per_month[end_month_ix]) {
+				end_day -= days_per_month[end_month_ix++];
+				if (end_month_ix == 12) {
+					end_month_ix = 0;
+					year++;
+					days_per_month[1] = HeisLeapYear(year) ? 29 : 28;
+				}
+				end_day -= days_per_month[end_month_ix];
+			}
+			if (end_day - start_day + 1 == days_per_month[ix] ||
+			    (end_day - start_day == 0 && end_month_ix == start_month_ix + 1)) {
+				/* period is equal to the length of the month */
+				sprintf(buf,"1m");
+				time_period = 1;
+				use_months = 1;
+			}
+			break;
+		case 6:
+			start_day = grec->pds[14] - grec->pds[18];
+			end_day = grec->pds[14] - grec->pds[19];
+			start_month_ix = end_month_ix = ix;
+			while (start_day < 0) {
+				if (--start_month_ix < 0) {
+					start_month_ix += 12;
+					year--;
+					days_per_month[1] = HeisLeapYear(year) ? 29 : 28;
+				}
+				start_day += days_per_month[start_month_ix];
+			}
+			year = grec->initial_time.year;
+			while (end_day < 0) {
+				if (--end_month_ix < 0) {
+					end_month_ix += 12;
+					year--;
+					days_per_month[1] = HeisLeapYear(year) ? 29 : 28;
+				}
+				end_day += days_per_month[start_month_ix];
+			}
+			if (end_day - start_day + 1 == days_per_month[ix] ||
+			    (end_day - start_day == 0 && end_month_ix == start_month_ix + 1)) {
+				/* period is equal to the length of the month */
+				sprintf(buf,"1m");
+				time_period = 1;
+				use_months = 1;
+			}
+			break;
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+			start_day = grec->pds[14] + grec->pds[18];
+			end_day = grec->pds[14] + grec->pds[19];
+			start_month_ix = -1;
+			end_month_ix = -1;
+			for (ix = month - 1; ; ix++ ) {
+				if (ix == 12) {
+					ix %= 12;
+					year++;
+					days_per_month[1] = HeisLeapYear(year) ? 29 : 28;
+				}
+				if (start_month_ix < 0) {
+					if (start_day <=  days_per_month[ix]) {
+						start_month_ix = ix;
+					}
+					else {
+						start_day -= days_per_month[ix];
+					}
+				}
+				if (end_month_ix < 0) {
+					if (end_day <=  days_per_month[ix]) {
+						end_month_ix = ix;
+					}
+					else {
+						end_day -= days_per_month[ix];
+					}
+				}
+				if (start_month_ix > -1 && end_month_ix > -1)
+					break;
+			}
+			if (end_day - start_day + 1 == days_per_month[ix] ||
+			    (end_day - start_day == 0 && end_month_ix == start_month_ix + 1)) {
+				sprintf(buf,"1m");
+				time_period = 1;
+				use_months = 1;
+			}
+			break;
+		default:
+			break;
 		}
-		else {
+		if (! use_months)  {
 			ix = month - 1;
 			while (time_period < 0) {
 				if (ix == 1 && is_leap) {
