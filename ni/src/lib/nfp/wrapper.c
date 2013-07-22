@@ -86,6 +86,9 @@ extern NhlErrorTypes wrf_updraft_helicity_W(void);
 extern NhlErrorTypes wrf_ll_to_ij_W(void);
 extern NhlErrorTypes wrf_ij_to_ll_W(void);
 extern NhlErrorTypes wrf_wps_read_nml_W(void);
+extern NhlErrorTypes wrf_plotfmt_open_W(void);
+extern NhlErrorTypes wrf_plotfmt_rdhead_W(void);
+extern NhlErrorTypes wrf_plotfmt_rddata_W(void);
 
 extern NhlErrorTypes cape_thermo_W(void);
 extern NhlErrorTypes gaus_lobat_W(void);
@@ -1710,6 +1713,53 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
         NclRegisterFunc(wrf_ij_to_ll_W,args,"wrf_ij_to_ll",nargs);
+
+/*
+ * Register "wrf_plotfmt_open".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(1);
+
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+
+        NclRegisterFunc(wrf_plotfmt_open_W,args,"wrf_plotfmt_open",nargs);
+
+/*
+ * Register "wrf_plotfmt_rdhead"
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(7);
+
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+
+        NclRegisterProc(wrf_plotfmt_rdhead_W,args,"wrf_plotfmt_rdhead",nargs);
+
+/*
+ * Register "wrf_plotfmt_rddata"
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(3);
+
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+
+        NclRegisterFunc(wrf_plotfmt_rddata_W,args,"wrf_plotfmt_rddata",nargs);
 
 /*
  * Register "wrf_wps_read_nml".

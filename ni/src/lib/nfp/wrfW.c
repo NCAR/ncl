@@ -104,6 +104,22 @@ extern void NGCALLF(dcalcuh,DCALCUH)(int *, int *, int *, int *, double *,
 extern void NGCALLF(plotgrids_var,PLOTGRIDS_VAR)(char *fname, float *plotvar,
                                                  float *pmsg, int);
 
+extern void NGCALLF(plotfmt_open,PLOTFMT_OPEN)(char *cfilename, int *istatus,
+                                               int);
+
+extern void NGCALLF(plotfmt_rdhead,PLOTFMT_RDHEAD)(int *istatus,
+                                                   float *rhead,
+                                                   char *cfield, 
+                                                   char *chdate,
+                                                   char *cunits,
+                                                   char *cmap_source,
+                                                   char *cdesc,
+                                                   int,int,int,int,int);
+
+extern void NGCALLF(plotfmt_rddata,PLOTFMT_RDDATA)(int *istatus,
+                                                   int *nx, int *ny,
+                                                   float *slab);
+
 extern NclDimRec *get_wrf_dim_info(int,int,int,ng_size_t*);
 
 extern void var_zero(double *, ng_size_t);
@@ -10537,6 +10553,302 @@ NhlErrorTypes wrf_eth_W( void )
   return(NhlNOERROR);
 
 }
+
+NhlErrorTypes wrf_plotfmt_open_W( void )
+{
+
+/*
+ * Argument # 0
+ */
+  NrmQuark *filename;
+  char *cfilename;
+/*
+ * Return variable
+ */
+  int *istatus;
+
+/*
+ * Various
+ */
+  int ret, ndims;
+  ng_size_t dsizes[1];
+
+/*
+ * Get argument # 0
+ */
+  filename = (NrmQuark *)NclGetArgValue(
+           0,
+           1,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+/*
+ * Convert to character string.
+ */
+  cfilename = NrmQuarkToString(*filename);
+
+/* 
+ * Allocate space for output array.
+ */
+  ndims     = 1;
+  dsizes[0] = 1;
+
+
+/*  
+ * Allocate return integer
+ */
+  istatus = (int*)calloc(1, sizeof(int));
+/*
+ * Call the Fortran routine.
+ */
+  NGCALLF(plotfmt_open,PLOTFMT_open)(cfilename, istatus,
+                                     strlen(cfilename));
+/*
+ * Return value back to NCL script.
+ */
+  ret = NclReturnValue(istatus,ndims,dsizes,NULL,NCL_int,0);
+  return(ret);
+}
+
+
+NhlErrorTypes wrf_plotfmt_rdhead_W( void )
+{
+
+/*
+ * Argument # 0
+ */
+  int *istatus;
+
+/*
+ * Argument # 1
+ */
+  void *head;
+  float *rhead;
+  NclBasicDataTypes type_head;
+  ng_size_t dsizes_head[1];
+
+/*
+ * Argument # 2
+ */
+  NrmQuark *field;
+  char *cfield;
+
+/*
+ * Argument # 3
+ */
+  NrmQuark *hdate;
+  char *chdate;
+
+/*
+ * Argument # 4
+ */
+  NrmQuark *units;
+  char *cunits;
+
+/*
+ * Argument # 5
+ */
+  NrmQuark *map_source;
+  char *cmap_source;
+
+/*
+ * Argument # 6
+ */
+  NrmQuark *desc;
+  char *cdesc;
+
+/*
+ * Get argument #0
+ */
+  istatus = (int *)NclGetArgValue(
+           0,
+           7,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+
+/*
+ * Get arguments # 1-6
+ */
+  head = (void *)NclGetArgValue(
+           1,
+           7,
+           NULL,
+           dsizes_head,
+           NULL,
+           NULL,
+           &type_head,
+           DONT_CARE);
+
+  rhead = coerce_input_float(head, type_head, dsizes_head[0], 0, 
+                             NULL, NULL);
+
+  field = (NrmQuark *)NclGetArgValue(
+           2,
+           7,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+  hdate = (NrmQuark *)NclGetArgValue(
+           3,
+           7,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+  units = (NrmQuark *)NclGetArgValue(
+           4,
+           7,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+  map_source = (NrmQuark *)NclGetArgValue(
+           5,
+           7,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+  desc = (NrmQuark *)NclGetArgValue(
+           6,
+           7,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+/*
+ * Convert quarks to character string.
+ */
+  cfield      = NrmQuarkToString(*field);
+  chdate      = NrmQuarkToString(*hdate);
+  cunits      = NrmQuarkToString(*units);
+  cmap_source = NrmQuarkToString(*map_source);
+  cdesc       = NrmQuarkToString(*desc);
+
+/*
+ * Call the Fortran routine.
+ */
+  NGCALLF(plotfmt_rdhead,PLOTFMT_RDHEAD)(istatus,rhead,cfield,chdate,
+                                         cunits,cmap_source,cdesc,
+                                         strlen(cfield),strlen(chdate),
+                                         strlen(cunits),strlen(cmap_source),
+                                         strlen(cdesc));
+  return(NhlNOERROR);
+  
+}
+
+NhlErrorTypes wrf_plotfmt_rddata_W( void )
+{
+
+/*
+ * Argument # 0
+ */
+  int *istatus;
+
+/*
+ * Arguments #1-2
+ */
+  void *tmp_nx, *tmp_ny;
+  ng_size_t *nx, *ny;
+  NclBasicDataTypes type_nx, type_ny;
+  int inx, iny;
+
+/*
+ * Return
+ */
+  float *slab;
+  ng_size_t dsizes[2];
+  int ret;
+
+/*
+ * Get argument #0
+ */
+  istatus = (int *)NclGetArgValue(
+           0,
+           3,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+
+/*
+ * Get arguments #1-2
+ */
+  tmp_nx = (void *)NclGetArgValue(
+           1,
+           3,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_nx,
+           DONT_CARE);
+
+  tmp_ny = (void *)NclGetArgValue(
+           2,
+           3,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_ny,
+           DONT_CARE);
+
+/*
+ * Convert the input dimensions to ng_size_t.
+ */
+  nx = get_dimensions(tmp_nx,1,type_nx,"wrf_plotfmt_rddata");
+  ny = get_dimensions(tmp_ny,1,type_ny,"wrf_plotfmt_rddata");
+  if(nx == NULL || ny == NULL) 
+    return(NhlFATAL);
+
+  if((*nx > INT_MAX) || (*ny > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_plotfmt_rddata: nx and/or ny is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inx = (int) *nx;
+  iny = (int) *ny;
+
+  slab = (float*)calloc(inx*iny,sizeof(float));
+  if(slab == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_plotfmt_rddata: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+
+/*
+ * Call the Fortran routine.
+ */
+  NGCALLF(plotfmt_rddata,PLOTFMT_RDDATA)(istatus,&inx,&iny,slab);
+
+/*
+ * Return value back to NCL script.
+ */
+  dsizes[0] = *ny;
+  dsizes[1] = *nx;
+  ret = NclReturnValue(slab,2,dsizes,NULL,NCL_float,0);
+  return(ret);
+}
+
 
 /*
  * This next section contains wrappers for wrf_bint and wrf_iclw.
