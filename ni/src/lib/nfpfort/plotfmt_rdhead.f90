@@ -9,8 +9,7 @@ subroutine plotfmt_rdhead(istatus,head_real,field,hdate, &
 
   integer :: version, nx, ny, iproj
   real :: nlats, xfcst, xlvl, startlat, startlon, deltalat, deltalon
-  real :: dx, dy, xlonc, truelat1, truelat2, earth_radius, starti, startj
-  real,pointer,dimension(:,:) :: slab
+  real :: dx, dy, xlonc, truelat1, truelat2, earth_radius
   logical :: is_wind_grid_rel
   character (len = 8) :: startloc
   character (len = 9) :: field
