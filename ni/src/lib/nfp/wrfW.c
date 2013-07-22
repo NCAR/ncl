@@ -112,7 +112,7 @@ extern void NGCALLF(plotfmt_rdhead,PLOTFMT_RDHEAD)(int *istatus,
                                                    char *cfield, 
                                                    char *chdate,
                                                    char *cunits,
-                                                   char *cmap_source,
+                                                   char *cmapsc,
                                                    char *cdesc,
                                                    int,int,int,int,int);
 
@@ -10639,30 +10639,39 @@ NhlErrorTypes wrf_plotfmt_rdhead_W( void )
  */
   NrmQuark *field;
   char *cfield;
-
+  int FIELD_LEN=9;
 /*
  * Argument # 3
  */
   NrmQuark *hdate;
   char *chdate;
+  int HDATE_LEN=24;
 
 /*
  * Argument # 4
  */
   NrmQuark *units;
   char *cunits;
+  int UNITS_LEN=25;
 
 /*
  * Argument # 5
  */
-  NrmQuark *map_source;
-  char *cmap_source;
+  NrmQuark *mapsc;
+  char *cmapsc;
+  int MAPSC_LEN=32;
 
 /*
  * Argument # 6
  */
   NrmQuark *desc;
   char *cdesc;
+  int DESC_LEN=46;
+
+/*
+ * Various
+ */
+  int i;
 
 /*
  * Get argument #0
@@ -10720,7 +10729,7 @@ NhlErrorTypes wrf_plotfmt_rdhead_W( void )
            NULL,
            NULL,
            DONT_CARE);
-  map_source = (NrmQuark *)NclGetArgValue(
+  mapsc = (NrmQuark *)NclGetArgValue(
            5,
            7,
            NULL,
@@ -10738,25 +10747,54 @@ NhlErrorTypes wrf_plotfmt_rdhead_W( void )
            NULL,
            NULL,
            DONT_CARE);
-/*
- * Convert quarks to character string.
- */
-  cfield      = NrmQuarkToString(*field);
-  chdate      = NrmQuarkToString(*hdate);
-  cunits      = NrmQuarkToString(*units);
-  cmap_source = NrmQuarkToString(*map_source);
-  cdesc       = NrmQuarkToString(*desc);
 
+/*
+ * Allocate space needed for each string
+ */
+  cfield = (char *)malloc((FIELD_LEN+1)*sizeof(char));
+  chdate = (char *)malloc((HDATE_LEN+1)*sizeof(char));
+  cunits = (char *)malloc((UNITS_LEN+1)*sizeof(char));
+  cmapsc = (char *)malloc((MAPSC_LEN+1)*sizeof(char));
+  cdesc  = (char *)malloc((DESC_LEN+1)*sizeof(char));
 /*
  * Call the Fortran routine.
  */
   NGCALLF(plotfmt_rdhead,PLOTFMT_RDHEAD)(istatus,rhead,cfield,chdate,
-                                         cunits,cmap_source,cdesc,
-                                         strlen(cfield),strlen(chdate),
-                                         strlen(cunits),strlen(cmap_source),
-                                         strlen(cdesc));
+                                         cunits,cmapsc,cdesc,
+                                         FIELD_LEN,HDATE_LEN,
+                                         UNITS_LEN,MAPSC_LEN,
+                                         DESC_LEN);
+
+/*
+ * Strip off potential white space at end of each string.
+ */
+  i = FIELD_LEN-1;
+  while(i >=0 && (cfield[i] == ' ' || cfield[i] == '\t')) i--;
+  cfield[i+1] = '\0';
+
+  i = HDATE_LEN-1;
+  while(i >= 0 && (chdate[i] == ' ' || chdate[i] == '\t')) i--;
+  chdate[i+1] = '\0';
+
+  i = UNITS_LEN-1;
+  while( i >= 0 && (cunits[i] == ' ' || cunits[i] == '\t')) i--;
+  cunits[i+1] = '\0';
+
+  i = MAPSC_LEN-1;
+  while( i >= 0 && (cmapsc[i] == ' ' || cmapsc[i] == '\t')) i--;
+  cmapsc[i+1] = '\0';
+
+  i = DESC_LEN-1;
+  while( i >= 0 && (cdesc[i] == ' ' || cdesc[i] == '\t')) i--;
+  cdesc[i+1] = '\0';
+
+  *field = NrmStringToQuark(cfield);
+  *hdate = NrmStringToQuark(chdate);
+  *units = NrmStringToQuark(cunits);
+  *mapsc = NrmStringToQuark(cmapsc);
+  *desc  = NrmStringToQuark(cdesc);
+
   return(NhlNOERROR);
-  
 }
 
 NhlErrorTypes wrf_plotfmt_rddata_W( void )
