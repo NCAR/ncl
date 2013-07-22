@@ -10606,6 +10606,10 @@ NhlErrorTypes wrf_plotfmt_open_W( void )
  */
   NGCALLF(plotfmt_open,PLOTFMT_open)(cfilename, istatus,
                                      strlen(cfilename));
+  if(*istatus != 0) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_plotfmt_open: The input file '%s' could not be opened.\nCheck that it exists and is spelled correctly",cfilename);
+    return(NhlFATAL);
+  }
 /*
  * Return value back to NCL script.
  */
