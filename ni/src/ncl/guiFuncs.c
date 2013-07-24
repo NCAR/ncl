@@ -465,6 +465,7 @@ float* guiGetValue(NclVar _nclvar)
     size_t n = 0;
     float *value;
     double *dp = NULL;
+    short *sp = NULL;
     int *ip = NULL;
     size_t nelm = 1;
     NclMultiDValData tmp_md;
@@ -496,6 +497,11 @@ float* guiGetValue(NclVar _nclvar)
              ip = tmp_md->multidval.val;
              for(n = 0; n < nelm; ++n)
                  value[n] = (float) ip[n];
+             return value;
+        case NCL_short:
+             sp = tmp_md->multidval.val;
+             for(n = 0; n < nelm; ++n)
+                 value[n] = (float) sp[n];
              return value;
         default:
              break;
@@ -537,12 +543,47 @@ int* guiGetIntArray(NclVar _nclvar)
     return NULL;
 }
 
+char* guiGetCharArray(NclVar _nclvar)
+{
+    int i = 0;
+    size_t n = 0;
+    char *value;
+    size_t nelm = 1;
+    NclMultiDValData tmp_md;
+    int _varndims;
+    int _vardimsizes[NCL_MAX_DIMENSIONS];
+
+    _varndims = (int) (_nclvar->var.n_dims);
+    for(i = 0; i < _varndims; ++i)
+    {
+        _vardimsizes[i] = (int)_nclvar->var.dim_info[i].dim_size;
+        nelm *= _vardimsizes[i] ;
+    }
+
+    value = (char *)NclCalloc(nelm+1, sizeof(char));
+
+    tmp_md = (NclMultiDValData) _NclGetObj(_nclvar->var.thevalue_id);
+
+    switch(tmp_md->multidval.data_type)
+    {
+        case NCL_char:
+             memcpy(value, tmp_md->multidval.val, nelm * sizeof(char));
+             return value;
+        default:
+             break;
+    }
+
+    return NULL;
+}
+
 double* guiGetDoubleArray(NclVar _nclvar)
 {
     int i = 0;
     size_t n = 0;
     double* value = NULL;
     float *fp = NULL;
+    short *sp = NULL;
+    int *ip = NULL;
     size_t nelm = 1;
     NclMultiDValData tmp_md;
     int _varndims;
@@ -568,6 +609,49 @@ double* guiGetDoubleArray(NclVar _nclvar)
              fp = tmp_md->multidval.val;
              for(n = 0; n < nelm; ++n)
                  value[n] = (double) fp[n];
+             return value;
+        case NCL_short:
+             sp = tmp_md->multidval.val;
+             for(n = 0; n < nelm; ++n)
+                 value[n] = (double) sp[n];
+             return value;
+        case NCL_int:
+             ip = tmp_md->multidval.val;
+             for(n = 0; n < nelm; ++n)
+                 value[n] = (double) ip[n];
+             return value;
+        default:
+             break;
+    }
+
+    return NULL;
+}
+
+short* guiGetShortArray(NclVar _nclvar)
+{
+    int i = 0;
+    size_t n = 0;
+    short* value = NULL;
+    size_t nelm = 1;
+    NclMultiDValData tmp_md;
+    int _varndims;
+    int _vardimsizes[NCL_MAX_DIMENSIONS];
+
+    _varndims = (int) (_nclvar->var.n_dims);
+    for(i = 0; i < _varndims; ++i)
+    {
+        _vardimsizes[i] = (int)_nclvar->var.dim_info[i].dim_size;
+        nelm *= _vardimsizes[i] ;
+    }
+
+    value = (short*)NclCalloc(nelm, sizeof(short));
+
+    tmp_md = (NclMultiDValData) _NclGetObj(_nclvar->var.thevalue_id);
+
+    switch(tmp_md->multidval.data_type)
+    {
+        case NCL_short:
+             memcpy(value, tmp_md->multidval.val, nelm * sizeof(short));
              return value;
         default:
              break;
