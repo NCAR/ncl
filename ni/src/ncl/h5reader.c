@@ -3030,8 +3030,10 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
                 free(value);
                 H5Tclose(super);
 
-                if (0==nmembs) printf("\n%*s <empty>", ind+4, "");
-                printf("\n%*s}", ind, "");
+              /*
+               *if (0==nmembs) printf("\n%*s <empty>", ind+4, "");
+               *printf("\n%*s}", ind, "");
+               */
             }
             return NclHDF5datatype;
             break;
@@ -3135,15 +3137,21 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
             }
             else if (H5Tequal(type, H5T_STD_REF_DSETREG))
             {
-                fprintf(stderr, "file: %s, line: %d\n\n", __FILE__, __LINE__);
-                fprintf(stderr, "dataset region reference\n");
+              /*
+               *fprintf(stderr, "file: %s, line: %d\n\n", __FILE__, __LINE__);
+               *fprintf(stderr, "dataset region reference\n");
+               */
                 strcpy(NclHDF5datatype->type_name, "dataset region reference");
             }
             else
             {
-                fprintf(stderr, "file: %s, line: %d\n\n", __FILE__, __LINE__);
+              /*
+               *fprintf(stderr, "file: %s, line: %d\n\n", __FILE__, __LINE__);
+               */
                 strcpy(NclHDF5datatype->type_name, "unknown reference");
-                fprintf(stderr, "%lu-byte unknown reference\n", (unsigned long)size);
+              /*
+               *fprintf(stderr, "%lu-byte unknown reference\n", (unsigned long)size);
+               */
                 NclHDF5datatype->bit = (unsigned) (8*size);
             }
 
@@ -3153,10 +3161,14 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
             {
                 char *tag;
 
-                fprintf(stderr, "file: %s, line: %d\n\n", __FILE__, __LINE__);
+              /*
+               *fprintf(stderr, "file: %s, line: %d\n\n", __FILE__, __LINE__);
+               */
                 strcpy(NclHDF5datatype->type_name, "opaque");
                 NclHDF5datatype->bit = (unsigned) (8*size);
-                fprintf(stderr, "%lu-byte opaque type\n", (unsigned long)size);
+              /*
+               *fprintf(stderr, "%lu-byte opaque type\n", (unsigned long)size);
+               */
                 if ((tag=H5Tget_tag(type)))
                 {
                     printf("\n%*s(tag = \"", ind, "");
@@ -3171,10 +3183,14 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
             {
                 hid_t       super;
 
-                fprintf(stderr, "file: %s, line: %d\n\n", __FILE__, __LINE__);
+              /*
+               *fprintf(stderr, "file: %s, line: %d\n\n", __FILE__, __LINE__);
+               */
                 strcpy(NclHDF5datatype->type_name, "vlen");
 
-                fprintf(stderr, "variable length of\n%*s\n", ind+4, "");
+              /*
+               *fprintf(stderr, "variable length of\n%*s\n", ind+4, "");
+               */
                 super = H5Tget_super(type);
                 _NclHDF5get_typename(super, ind+4);
                 H5Tclose(super);
@@ -3199,10 +3215,8 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
                     /* Print dimensions */
                     for (i=0; i<ndims; i++)
                     {
-                        fprintf(stderr, "%s%ld" , i?",":"[", dims[i]);
                         NclHDF5datatype->dims[i] = dims[i];
                     }
-                    putchar(']');
 
                     free(dims);
                 }
@@ -3227,8 +3241,10 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
             strcpy(NclHDF5datatype->endian, NclHDF5datatype->endian);
             NclHDF5datatype->bit = (unsigned) (8*size);
         
-            printf("%lu-bit %s bitfield",
-                   (unsigned long)(8*H5Tget_size(type)), NclHDF5datatype->endian);
+          /*
+           *printf("%lu-bit %s bitfield",
+           *       (unsigned long)(8*H5Tget_size(type)), NclHDF5datatype->endian);
+           */
 #if 0
             display_precision(type, ind);
 #endif
