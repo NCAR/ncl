@@ -345,6 +345,69 @@ void _additionalAttributes(HDFEOSFileRecord* thefile, HDFEOSVarInqRec* thevar,
 	}
 }
 
+void _checkGlobalAttributes(HDFEOSFileRecord* thefile, HDFEOSVarInqRec* thevar,
+			    NclQuark nclvarname, NclQuark suffix)
+{
+	int n = 0;
+	HDFEOSAttInqRecList *stepal = thefile->att_int_list;
+
+	char varname[1024];
+	char sufname[1024];
+	char attname[1024];
+	char* vstr;
+	char* astr;
+	NclQuark attquark;
+	int sl, al;
+
+	/*
+	*fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+	*/
+
+	strcpy(varname, NrmQuarkToString(nclvarname));
+
+	/*
+	*fprintf(stderr, "\tvarname: <%s>\n", varname);
+	*/
+
+	strcpy(sufname, NrmQuarkToString(suffix));
+
+	n = 0;
+	while(stepal != NULL)
+	{
+		strcpy(attname,  NrmQuarkToString(stepal->att_inq->name));
+		vstr = strstr(attname, varname);
+
+		if(NULL != vstr)
+		{
+			/*
+			*fprintf(stderr, "\t\tatt %d: name <%s>\n", n, attname);
+			*/
+
+			sl = strlen(attname) - strlen(sufname);
+			attname[sl] = '\0';
+			astr = attname + strlen(varname) + 1;
+			attquark = NrmStringToQuark(astr);
+
+			if(! _varHasAtt(thevar, attquark))
+			{
+				int attsize = stepal->att_inq->n_elem * _NclSizeOf(stepal->att_inq->type);
+				void* value = NULL;
+				
+				value = (void *)NclMalloc(attsize);
+
+				memcpy(value, stepal->att_inq->value, attsize);
+
+				HDFEOSIntAddAtt(thevar, attquark,
+						(void*)value, 1, stepal->att_inq->type);
+			}
+
+			++n;
+		}
+
+		stepal = stepal->next;
+	}
+}
+
 static void HDFEOSParseName
 #if NhlNeedProto
 (char names_in[], NclQuark **hdf_names, NclQuark **ncl_names, int32 n_names)
@@ -1032,6 +1095,9 @@ int wr_status;
 					_additionalAttributes(the_file, the_file->vars->var_inq, hdf_file,
 								var_ncl_names[j], sw_ncl_names[i]);
 
+					_checkGlobalAttributes(the_file, the_file->vars->var_inq,
+								var_ncl_names[j], sw_ncl_names[i]);
+
 					if(SWgetfillvalue(SWid,NrmQuarkToString(var_hdf_names[j]),&missing) != -1) {
 						tmp_missing = (NclScalar*)NclMalloc(sizeof(NclScalar));
 						*tmp_missing = missing;
@@ -1302,6 +1368,9 @@ int wr_status;
 					_additionalAttributes(the_file, data_var, hdf_file,
 								 var_ncl_names[j], gd_ncl_names[i]);
 
+					_checkGlobalAttributes(the_file, the_file->vars->var_inq,
+								var_ncl_names[j], gd_ncl_names[i]);
+
 					if(GDgetfillvalue(GDid,NrmQuarkToString(var_hdf_names[j]),&missing) != -1) {
 						tmp_missing = (NclScalar*)NclMalloc(sizeof(NclScalar));
 						*tmp_missing = missing;
@@ -1559,6 +1628,10 @@ int wr_status;
 						
 							_additionalAttributes(the_file, the_file->vars->var_inq,
 										hdf_file, var_ncl_names[j], pt_ncl_names[i]);
+
+							_checkGlobalAttributes(the_file, the_file->vars->var_inq,
+										var_ncl_names[j], pt_ncl_names[i]);
+
 							if(HDFEOSunsigned(tmp_type)) {
 								is_unsigned = (int*)NclMalloc(sizeof(int));
 								*is_unsigned = 1;
