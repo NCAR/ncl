@@ -5676,7 +5676,7 @@ begin
  nclr = dimsizes (cmap(:,0))
  if (nclr-2 .lt. ncn+1) then 
    print ("Error: GetFillColors: Not enough colors in colormap for number of contour levels")
-   return (color)
+   return (new(3,float))   ; return missing
  end if
 
  if (data .le. cnlvls(0)) then
