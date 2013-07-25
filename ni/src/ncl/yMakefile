@@ -238,7 +238,7 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			NclMultiDValData.h NclMultiDValHLUObjData.h \
 			OpsFuncs.h OpsList.h SrcTree.h Symbol.h VarSupport.h \
 			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h \
-			NclType.h \
+			NclType.h NclHDF.h \
 			NclDriver.h NclExitCode.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
 			NclOneDValCoordData.h HLUFunctions.h \
@@ -261,7 +261,7 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 
 
 INSTALL_HDRS	= 	ApiRecords.h AttSupport.h DataSupport.h FileSupport.h HluClasses.h \
-			AdvancedFileSupport.h NclAdvancedGroup.h \
+			AdvancedFileSupport.h NclAdvancedGroup.h NclHDF.h \
 			NclApi.h NclAtt.h NclBuiltInSupport.h NclBuiltIns.h NclCallBacksI.h \
 			NclCoordVar.h NclData.h NclDataDefs.h NclDriver.h NclFile.h \
 			NclFileInterfaces.h NclGroup.h NclList.h NclMdInc.h NclMultiDValData.h \
@@ -287,7 +287,7 @@ NIO_NCL_HDR_FILES = ApiRecords.h AttSupport.h DataSupport.h		\
 		NclMultiDValHLUObjData.h NclMultiDVallistData.h		\
 		NclMultiDValnclfileData.h NclOneDValCoordData.h		\
 		NclType.h NclType.h.sed NclTypelist.h NclVar.h		\
-		NclExitCode.h \
+		NclExitCode.h NclHDF.h \
 		OpsList.h Symbol.h TypeSupport.h.sed NclGrpFuncs.null	\
 		TypeSupportMatTemplate.h.sed				\
 		TypeSupportMonoOpTemplate.h.sed				\

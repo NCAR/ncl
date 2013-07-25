@@ -35,96 +35,7 @@
 #include <math.h>
 #include <ctype.h>
 
-/*
- * With newer versions of HDF4 (like 4.2r3), some of macro names now 
- * have an H4 prepended.
- *
- * In order to accommodate multiple versions of HDF, Dave B suggested
- * the following code.
- */
-#ifndef MAX_VAR_DIMS
-#ifdef H4_MAX_VAR_DIMS
-#define MAX_VAR_DIMS H4_MAX_VAR_DIMS
-#define MAX_NC_NAME H4_MAX_NC_NAME
-#define MAX_NC_DIMS H4_MAX_NC_DIMS
-#else
-#define MAX_VAR_DIMS 32
-#define MAX_NC_NAME 256
-#define MAX_NC_DIMS 5000
-#endif
-#endif
-
-typedef struct _HDFFileRecord HDFFileRecord;
-typedef struct _HDFVarInqRec HDFVarInqRec;
-typedef struct _HDFDimInqRec HDFDimInqRec;
-typedef struct _HDFAttInqRec HDFAttInqRec;
-typedef struct _HDFVarInqRecList HDFVarInqRecList;
-typedef struct _HDFDimInqRecList HDFDimInqRecList;
-typedef struct _HDFAttInqRecList HDFAttInqRecList;
-
-struct _HDFVarInqRecList {
-	HDFVarInqRec *var_inq;
-	HDFVarInqRecList *next;
-};
-
-struct _HDFDimInqRecList {
-	HDFDimInqRec *dim_inq;
-	HDFDimInqRecList *next;
-};
-
-struct _HDFAttInqRecList {
-	HDFAttInqRec *att_inq;
-	HDFAttInqRecList *next;
-};
-
-struct _HDFVarInqRec {
-	int varid;
-	int32 id_ref;
-	int32 vg_ref;
-	NclQuark name;
-	NclQuark hdf_name;
-	NclQuark class_name;
-	NclQuark var_path;
-	nc_type	data_type;
-	int     hdf_type;
-	int	n_dims;
-	int	dim[MAX_VAR_DIMS];
-	int	natts;
-	HDFAttInqRecList *att_list;
-};
-
-struct _HDFDimInqRec {
-	int dimid;
-	NclQuark name;
-	NclQuark hdf_name;
-	long size;
-	int is_unlimited;
-};
-	
-struct _HDFAttInqRec {
-	int att_num;
-	NclQuark name;
-	NclQuark hdf_name;
-	int	varid;
-	nc_type data_type;
-	int     hdf_type;
-	int	len;
-	void *value;
-	int attr_ix;
-};
-
-
-struct _HDFFileRecord {
-NclQuark	file_path_q;
-int		wr_status;
-int		n_vars;
-HDFVarInqRecList *vars;
-int		n_dims;
-HDFDimInqRecList *dims;
-int		has_scalar_dim;
-int		n_file_atts;
-HDFAttInqRecList *file_atts;
-};
+#include "NclHDF.h"
 
 static NrmQuark Qmissing_val;
 static NrmQuark Qfill_val;
@@ -785,15 +696,7 @@ NclFileFormatType *format;
 	return (void *) therec;
 }
 
-static void *HDFOpenFile
-#if	NhlNeedProto
-(void *rec,NclQuark path,int wr_status)
-#else
-(rec,path,wr_status)
-void *rec;
-NclQuark path;
-int wr_status;
-#endif
+void *HDFOpenFile(void *rec,NclQuark path,int wr_status)
 {
 	HDFFileRecord *tmp = (HDFFileRecord*) rec;
 	int cdfid;
@@ -1069,13 +972,7 @@ NclQuark path;
 	}
 }
 
-static void HDFFreeFileRec
-#if	NhlNeedProto
-(void* therec)
-#else
-(therec)
-void *therec;
-#endif
+void HDFFreeFileRec(void* therec)
 {
 	HDFFileRecord *rec = (HDFFileRecord*)therec;
 	HDFAttInqRecList *stepal;
