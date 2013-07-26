@@ -12056,11 +12056,14 @@ end
 ; using colors or patterns.                                             ;
 ;                                                                       ;
 ; This function was written by Adam Phillips, 2006                      ;
+;                                                                       ;
+; This function was updated July 2013 to allow any combination of       ;
+; gsnShadeLow, gsnShadeMid, and gsnShadeHigh to be set.                 ;
 ;***********************************************************************;
 undef("gsn_contour_shade")
-function gsn_contour_shade(plot:graphic,nval:numeric,pval:numeric,opt:logical) 
-
-local cnlvls, colist, i, N, shaden, shadep, shadem
+function gsn_contour_shade(plot:graphic,lowval:numeric,highval:numeric,\
+                           opt:logical) 
+local cnlvls, colist, i, N, shaden, shadep, shadem, ovrly_ids, idstring
 begin
 
    getvalues plot
@@ -12082,6 +12085,8 @@ begin
 	    print(cnlvls)
 	 end if
    end if
+
+;---Make sure we have contour levels
    N = dimsizes(cnlvls)
    if (ismissing(N) .or. N.le.0) then
        print ("gsn_contour_shade: dimsizes(cnlvls)="+N+" return (non-fatal)")
@@ -12092,119 +12097,87 @@ begin
       print("gsn_contour_shade: Options list must be used as one of the following option resources must be set: opt@gsnShadeLow, opt@gsnShadeHigh, opt@gsnShadeMid. return (non-fatal)")
    end if
 
-   CC = 0
+;---Error checking on the gsnShadeL/M/H resources
    if (opt.and.(isatt(opt,"gsnShadeLow"))) then
-      shaden = opt@gsnShadeLow
-	 if (typeof(shaden).eq."string") then
-	    CC = 1
-	 end if
+      shaden   = opt@gsnShadeLow
+      col_type = typeof(shaden)
    end if
    if (opt.and.(isatt(opt,"gsnShadeMid"))) then
       shadem = opt@gsnShadeMid
-	 if (typeof(shadem).eq."string") then
-	    CC = 1
-	 end if
+      if(isvar("col_type").and.typeof(shadem).ne.col_type) then
+        print("gsn_contour_shade: the gsnShadeLow/Mid/High resources must all be the same type (a color name or color index value)")
+       return (plot)
+      else
+        col_type = typeof(shadem)
+      end if
    end if
    if (opt.and.(isatt(opt,"gsnShadeHigh"))) then
       shadep = opt@gsnShadeHigh
-	 if (typeof(shadep).eq."string") then
-	    CC = 1
-	 end if
+      if(isvar("col_type").and.typeof(shadep).ne.col_type) then
+        print("gsn_contour_shade: the gsnShadeLow/Mid/High resources must all be the same type (a color name or color index value)")
+       return (plot)
+      else
+        col_type = typeof(shadep)
+      end if
    end if
 
+;---Make sure user actually set one of these resources
+   if (.not.any(isvar((/"shaden","shadep","shadem"/)))) then
+      print("gsn_contour_shade: one or more of the following option resources must be set: opt@gsnShadeLow, opt@gsnShadeHigh, opt@gsnShadeMid. return (non-fatal)")
+      return(plot)
+   end if
+
+;---Error checking on the gsnShadeFillType resource
    if (opt.and.(isatt(opt,"gsnShadeFillType"))) then
-       if (lower_case(opt@gsnShadeFillType).eq."pattern".and.CC.eq.1) 
-	     print("You may not use strings in the option resources opt@gsnShadeLow, opt@gsnShadeHigh, and opt@gsnShadeMid when pattern filling. Please change to integers. return (non-fatal)")
-		return(plot)
+       if (lower_case(opt@gsnShadeFillType).eq."pattern".and.\
+           col_type.eq."string") 
+	     print("gsn_contour_shade: You may not use strings in the option resources opt@gsnShadeLow, opt@gsnShadeHigh, and opt@gsnShadeMid when pattern filling. Please change to integers.")
+             return(plot)
 	  end if
    end if
 
-   if (isvar("shaden").eq.False.and.isvar("shadep").eq.False.and.isvar("shadem").eq.False) then 
-      print("gsn_contour_shade: one or more of the following option resources must be set: opt@gsnShadeLow, opt@gsnShadeHigh, opt@gsnShadeMid. return (non-fatal)")
-	 return(plot)
-   end if
-
-   if (CC.eq.1) then
-       colist  = new(dimsizes(cnlvls)+1,string)  ; Create array for fill 
+;---Create array for fill, , set all to transparent
+   colist = new(N+1,col_type)  
+   if(col_type.eq."string") then
+     colist = "transparent"
    else
-	  colist  = new(dimsizes(cnlvls)+1,integer)  ; Create array for fill 
-   end if
-   colist(:)  = -1    ; color and intitialize, set all to transparent
-
-   if (isvar("shaden").and.isvar("shadep").eq.False.and.isvar("shadem").eq.False) then   ; =~"ShadeLeContour"
-      if (any(cnlvls.le.nval)) then     
-         do i=0,N-1                                ; Fill contour levels 
-	       if (cnlvls(i).le.nval) then   
-               colist(i)   = shaden
-            end if
-         end do
-	    delete(shaden)
-	 end if   
+     colist = -1    
    end if
 
-   if (isvar("shadep").and.isvar("shaden").eq.False.and.isvar("shadem").eq.False) then   ; =~"ShadeGeContour"
-      if (any(cnlvls.ge.pval)) then     
-         do i=0,N-1                                ; Fill contour levels 
-            if (cnlvls(i).ge.pval ) then
-	          colist(i+1) = shadep
-	       end if
-         end do
-	    delete(shadep)
-	 end if
+;---Start filling colist
+   if (isvar("shaden").and.any(cnlvls.le.lowval)) then
+     ii := ind(cnlvls.le.lowval)
+     colist(ii) = shaden
    end if
 
-   if (isvar("shadem").and.isvar("shadep").eq.False.and.isvar("shaden").eq.False) then   ; =~"ShadeGeLeContour"
-      if (any(cnlvls.ge.pval) .or. any(cnlvls.le.nval)) then     
-	    crn = 0
-         do i=0,N-1                                ; Fill contour levels 
-            if (cnlvls(i).ge.nval.and.cnlvls(i).le.pval) then
-		     if (crn.eq.0) then
-	             colist(i+1) = shadem
-			   crn = 1
-			else 
-			   colist(i) = shadem
-			end if
-	       end if
-         end do
-	    delete(crn)
-	    delete(shadem)
-	 end if
+   if (isvar("shadep").and.any(cnlvls.ge.highval)) then     
+     ii := ind(cnlvls.ge.highval)+1
+     colist(ii) = shadep
    end if
 
-   if (isvar("shaden").and.isvar("shadep").and.isvar("shadem").eq.False) then   ; =~"ShadeLeGeContour"   
-      if (any(cnlvls.ge.pval) .or. any(cnlvls.le.nval)) then     
-         do i=0,N-1                                ; Fill contour levels 
-            if (cnlvls(i).ge.pval ) then
-	          colist(i+1) = shadep
-	       end if
-	       if (cnlvls(i).le.nval) then   
-               colist(i)   = shaden
-            end if
-         end do
-	    delete(shadep)
-	    delete(shaden)
-	 end if
+   if (isvar("shadem").and.any(cnlvls.ge.lowval.and.cnlvls.le.highval)) then
+     ii := ind(cnlvls.ge.lowval.and.cnlvls.le.highval)
+     colist(ii(1:)) = shadem    ; Don't include the first value in ii
    end if
 
    if (.not.(isatt(opt,"gsnShadeFillType")).or. \
         lower_case(opt@gsnShadeFillType).eq."color") then
 	 setvalues idstring               
 	    "cnFillOn"          : True
-         "cnMonoFillPattern" : True
-         "cnMonoFillColor"   : False
-         "cnFillColors"      : colist			   
+            "cnMonoFillPattern" : True
+            "cnMonoFillColor"   : False
+            "cnFillColors"      : colist			   
 	 end setvalues
    else
 	 setvalues idstring               
 	    "cnFillOn"          : True
-         "cnMonoFillColor"   : True
-         "cnMonoFillPattern" : False
-         "cnFillPatterns"    : colist	   
+            "cnMonoFillColor"   : True
+            "cnMonoFillPattern" : False
+            "cnFillPatterns"    : colist	   
 	 end setvalues
    end if
    return (plot)
 end
-
 undef("fill_res")
 procedure fill_res(res1:logical,res2:logical,ncr[2]:integer,attnames[*]:string)
 local natts, i, dsizes, rank, success, nrows, ncols
