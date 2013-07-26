@@ -403,6 +403,7 @@ include/ncarg/ncl/NclDriver.h
 include/ncarg/ncl/NclFile.h
 include/ncarg/ncl/NclFileInterfaces.h
 include/ncarg/ncl/NclGroup.h
+include/ncarg/ncl/NclHDF.h
 include/ncarg/ncl/NclList.h
 include/ncarg/ncl/NclMdInc.h
 include/ncarg/ncl/NclMultiDValData.h
