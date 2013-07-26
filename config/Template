@@ -384,7 +384,7 @@ NGCOMM########################################################################
 #endif	/* Cstatic */
 
 #ifndef COptimizeFlag
-#define COptimizeFlag	-g
+#define COptimizeFlag	-O
 #endif	/* COptimizeFlag */
 
 #ifndef	CDebugFlag
@@ -416,7 +416,7 @@ NGCOMM########################################################################
 #endif	/* FLoader */
 
 #ifndef FOptimizeFlag
-#define FOptimizeFlag	-g
+#define FOptimizeFlag	-O
 #endif	/* FOptimizeFlag */
 
 #ifndef	FDebugFlag
