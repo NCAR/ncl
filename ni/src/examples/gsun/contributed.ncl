@@ -8546,7 +8546,11 @@ begin
   res@cnLevelSelectionMode = "ManualLevels"   
   res@cnMinLevelValF       = mnmxint(0)
   res@cnMaxLevelValF       = mnmxint(1)
-  res@cnLevelSpacingF      = mnmxint(2)
+  if (isnan_ieee(mnmxint(2))) then            ; extreme case
+      res@cnLevelSpacingF  = 1.0
+  else
+      res@cnLevelSpacingF  = mnmxint(2)
+  end if
 end
 
 undef("isStrSubset")
@@ -9119,6 +9123,42 @@ begin
 
   return(omega)
 end
+;************************************************************
+; D. Shea 
+;
+; Converts OMEGA (Pa/s) to W (m/s)                          
+; This is a 1st order approximation.
+
+undef("omega_to_w")
+function omega_to_w (omega, p, t)
+; first order conversion: w = -omega/(density*gravity)
+; omega_at_units = "Pa/sec"
+; p_at_units = "Pa"
+; t_at_units = "K"
+
+local rank_omega, rank_t, rank_p, RGAS, GRAV, rho, w
+begin
+   rank_omega = dimsizes( dimsizes(omega) )
+   rank_t = dimsizes( dimsizes( t ) )
+   rank_p = dimsizes( dimsizes( p ) )
+
+   if (rank_omega.ne.rank_t .or. rank_omega.ne.rank_p) then
+       print("omega_to_w: omega, p, t must be the same rank")
+       quit
+   end if
+
+   RGAS = 287.058            ; J/(kg-K) => m2/(s2 K)
+   GRAV = 9.80665            ; m/s2
+   rho  = p/(RGAS*t)         ; density => kg/m3
+   w    = -omega/(rho*GRAV)  ; array operation
+
+   w@long_name = "vertical velocity"
+   w@units     = "m/s"
+   w@info_tag  = "NCL: omega_to_w: -omega/(rho*g): approximation "
+   copy_VarCoords( omega, w)
+   return( w )
+end 
+
 ;************************************************************
 ; D. Shea and S. N. Hameed <U. Hawaii> 
 ;
