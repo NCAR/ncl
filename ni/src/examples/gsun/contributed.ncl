@@ -9131,19 +9131,26 @@ end
 
 undef("omega_to_w")
 function omega_to_w (omega, p, t)
+;
 ; first order conversion: w = -omega/(density*gravity)
-; omega_at_units = "Pa/sec"
-; p_at_units = "Pa"
-; t_at_units = "K"
+;
+; omega: units = "Pa/sec"
+; p    : units = "Pa"
+; t    : units = "K"
 
-local rank_omega, rank_t, rank_p, RGAS, GRAV, rho, w
+local dims_omega, dims_t, dims_p, rank_omega, rank_t, rank_p, RGAS, GRAV, rho, w
 begin
-   rank_omega = dimsizes( dimsizes(omega) )
-   rank_t = dimsizes( dimsizes( t ) )
-   rank_p = dimsizes( dimsizes( p ) )
+   dims_omega = dimsizes( omega )
+   dims_t     = dimsizes( t )
+   dims_p     = dimsizes( p )
 
-   if (rank_omega.ne.rank_t .or. rank_omega.ne.rank_p) then
-       print("omega_to_w: omega, p, t must be the same rank")
+   rank_omega = dimsizes( dims_omega )
+   rank_t     = dimsizes( dims_t ) 
+   rank_p     = dimsizes( dims_p ) 
+
+   if (rank_omega.ne.rank_t .or. rank_omega.ne.rank_p .or. \
+       .not.(all(dims_omega.eq.dims_t) .and. all(dims_omega.eq.dims_p)) ) then
+       print("omega_to_w: omega, p, t must be the same rank & size")
        quit
    end if
 
@@ -9158,6 +9165,48 @@ begin
    copy_VarCoords( omega, w)
    return( w )
 end 
+;************************************************************
+; D. Shea 
+;
+; Converts W (m/s) to OMEGA (Pa/s)                          
+; This is a 1st order approximation.
+
+undef("w_to_omega")
+function w_to_omega (w, p, t)
+;
+; first order conversion: omega= -w*density*gravity
+;
+; w    : units = "m/sec"
+; p    : units = "Pa"
+; t    : units = "K"
+
+local dims_w, dims_t, dims_p, rank_w, rank_t, rank_p, RGAS, GRAV, rho, omega
+begin
+   dims_w = dimsizes( w )
+   dims_t = dimsizes( t )
+   dims_p = dimsizes( p )
+
+   rank_w = dimsizes( dims_w )
+   rank_t = dimsizes( dims_t )
+   rank_p = dimsizes( dims_p )
+
+   if (rank_w.ne.rank_t .or. rank_w.ne.rank_p .or. \
+       .not.(all(dims_w.eq.dims_t) .and. all(dims_w.eq.dims_p)) ) then
+       print("w_to_omega: omega, p, t must be the same rank & size")
+       quit
+   end if
+
+   RGAS = 287.058            ; J/(kg-K) => m2/(s2 K)
+   GRAV = 9.80665            ; m/s2
+   rho  = p/(RGAS*t)         ; density => kg/m3
+   omega    = -w*rho*GRAV    ; array operation
+
+   omega@long_name = "vertical velocity"
+   omega@units     = "Pa/s"
+   omega@info_tag  = "NCL: w_to_omega: omega= -w*rho*g: approximation "
+   copy_VarCoords( w, omega)
+   return( omega )
+end
 
 ;************************************************************
 ; D. Shea and S. N. Hameed <U. Hawaii> 
