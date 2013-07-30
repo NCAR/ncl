@@ -3521,10 +3521,7 @@ begin
       "vpHeightF"    : vphf
       "mpLimitMode"  : limit_mode
     end getvalues
-;
-; We allow either mpLimitMode to be "LatLon" (1) or "Corners" (5)
-;
-    if(limit_mode.eq.1)
+    if(limit_mode.ne.5) then
       getvalues map
         "mpMinLonF"    : min_lon
         "mpMaxLonF"    : max_lon
@@ -3533,18 +3530,13 @@ begin
         "mpCenterLonF" : center_lon
       end getvalues
     else
-      if(limit_mode.eq.5)
-        getvalues map
-          "mpLeftCornerLonF"  : min_lon
-          "mpRightCornerLonF" : max_lon
-          "mpLeftCornerLatF"  : min_lat
-          "mpRightCornerLatF" : max_lat
-          "mpCenterLonF"      : center_lon
-        end getvalues
-      else
-        print("add_map_tickmarks: Warning: you cannot use mpLimitMode=" + limit_mode + " with the gsm_csm_map routines")
-        return 
-      end if
+      getvalues map
+        "mpLeftCornerLonF"  : min_lon
+        "mpRightCornerLonF" : max_lon
+        "mpLeftCornerLatF"  : min_lat
+        "mpRightCornerLatF" : max_lat
+        "mpCenterLonF"      : center_lon
+      end getvalues
     end if
 
 ; Create tickmark values for lat/lon labels.
@@ -4425,7 +4417,7 @@ begin
 ; Check if filling between curves is desired. This can be
 ; specified via gsnXYFillColors, gsnXYAboveFillColors,  
 ; gsnXYBelowFillColors, gsnXYLeftFillColors, gsnXYRightFillColors.
-; gsnXYFillOpacities
+
       fill_atts = (/"gsnXYFillColors", "gsnXYAboveFillColors", \
                     "gsnXYBelowFillColors","gsnXYLeftFillColors", \
                     "gsnXYRightFillColors","gsnXYFillOpacities", \
@@ -5621,7 +5613,7 @@ function gsn_csm_map_ce(wks:graphic,resources:logical)
 local i, res, map_object, tickmark_object, calldraw, callframe, \
 left_string, center_string, right_string, main_zone, min_lat, max_lat, \
 min_lon, max_lon, res2, tmres, ticks_on, display_mode, rel_c_lat, rel_c_lon, \
-center_lon, center_lat
+center_lon, center_lat, lon_range, lat_range, font_height
 begin
 ; Initialize.
     main_zone     = 2         ; Zone for main title (may change later)
@@ -5696,99 +5688,6 @@ begin
     rel_c_lon    = get_res_value(res2, "mpRelativeCenterLon", False)
     shape_mode   = get_res_value(res2,"mpShapeMode","FixedAspectFitBB")
     limit_mode   = get_res_value(res2,"mpLimitMode","LatLon")
-    if((typeof(limit_mode).eq."integer".and.(limit_mode.ne.1.and. \
-                                             limit_mode.ne.5)).or. \
-       (typeof(limit_mode).eq."string").and.(lower_case(limit_mode).ne. \
-                                             "latlon".and. \
-                                             lower_case(limit_mode).ne. \
-                                             "corners"))
-     print("gsn_csm_map_ce: Warning: you cannot use mpLimitMode=" + limit_mode + " with the gsm_csm_map routines.")
-     return 
-    end if
-;
-; If automatic tick marks are turned on, or if mpCenterLatF != 0
-; (rotated map), then turn off gsn_csm generated tickmarks.
-; 
-    display_mode = get_display_mode(res2,"pmTickMarkDisplayMode","nocreate")
-    if(display_mode.eq.1.or.display_mode.eq.2.or.center_lat.ne.0) then
-      ticks_on = get_res_value(res2,"gsnTickMarksOn",False)
-    else
-      ticks_on = get_res_value(res2,"gsnTickMarksOn",True)
-    end if
-
-;
-; If mpCenterLonF is set, but mpMinLonF/mpLeftCornerLonF and/or 
-; mpMaxLonF/mpRightCornerLonF are not, then we need to set them.
-;
-    if(lower_case(limit_mode).eq."latlon")
-      min_lon_str = "mpMinLonF"
-      max_lon_str = "mpMaxLonF"
-      min_lat_str = "mpMinLatF"
-      max_lat_str = "mpMaxLatF"
-    else
-      if(lower_case(limit_mode).eq."corners")
-        min_lon_str = "mpLeftCornerLonF"
-        max_lon_str = "mpRightCornerLonF"
-        min_lat_str = "mpLeftCornerLatF"
-        max_lat_str = "mpRightCornerLatF"
-      end if
-    end if
-    if(res2.and.isatt(res2,"mpCenterLonF").and.\
-           .not.isatt(res2,min_lon_str).and.\
-           .not.isatt(res2,max_lon_str))
-      res2@$min_lon_str$ = res2@mpCenterLonF - 180
-      res2@$max_lon_str$ = res2@mpCenterLonF + 180
-    end if
-  
-    if(res2.and.isatt(res2,"mpCenterLonF").and..not.isatt(res2,min_lon_str))
-      res2@$min_lon_str$ = res2@mpCenterLonF -  \
-                           (res2@$max_lon_str$-res2@mpCenterLonF)
-    end if
-  
-    if(res2.and.isatt(res2,"mpCenterLonF").and..not.isatt(res2,max_lon_str))
-      res2@$max_lon_str$ = res2@mpCenterLonF + \
-                         (res2@mpCenterLonF-res2@$min_lon_str$)
-    end if
-  
-    min_lon    = get_res_value(res2,min_lon_str,-180)
-    max_lon    = get_res_value(res2,max_lon_str, 180)
-    min_lat    = get_res_value(res2,min_lat_str, -90)
-    max_lat    = get_res_value(res2,max_lat_str,  90)
-
-    if(min_lon.ge.max_lon)
-      print("gsn_csm_map_ce: Fatal: The resources mpMinLonF/mpLeftCornerLonF must be less than the resources mpMaxLonF/mpRightCornerLonF.")
-      print("Execution halted.")
-      exit
-    end if
-
-    if(min_lat.ge.max_lat)
-      print("gsn_csm_map_ce: Fatal: The resources mpMinLatF/mpLeftCornerLatF must be less than the resources mpMaxLatF/mpRightCornerF.")
-      print("Execution halted.")
-      exit
-    end if
-; 
-; Determine what the default width and height should be depending
-; on shape of plot.
-;
-    lat_range = tofloat(max_lat - min_lat)
-    lon_range = tofloat(max_lon - min_lon)
-
-    ratio1 = lat_range/lon_range
-    ratio2 = lon_range/lat_range
-    ratio = min((/ratio1,ratio2/))
-
-    ratios  = (/0.50, 0.75, 1.00/)  ; lat/lon ratios
-    wharray = (/0.80, 0.70, 0.52/)  ; default widths/heights
-
-    wh_ind    = ind(ratio.le.ratios)
-    def_vpwf  = wharray(wh_ind(0))    ; default width for plot
-    def_vphf  = def_vpwf              ; default height for plot
-
-    set_attr(res2,"vpWidthF",min((/lon_range/lat_range,1./)) * def_vpwf)
-
-    set_attr(res2,"vpHeightF",min((/lat_range/lon_range,1./)) * def_vphf)
-    set_attr(res2,"vpXF",(1. - res2@vpWidthF)/2.)
-    set_attr(res2,"vpYF",1. - (1. - res2@vpHeightF)/2.)
     set_attr(res2,"mpGridAndLimbOn", False)
     set_attr(res2,"mpFillOn", True)
     set_attr(res2,"mpFillColors",(/"background","transparent","LightGray",\
@@ -5799,13 +5698,108 @@ begin
 ; then it is set back to True.
 ;
     set_attr(res2,"mpOutlineOn",.not.res2@mpFillOn)
+
+;---Convert limit_mode to string, if necessary.
+    if(typeof(limit_mode).eq."integer") then
+      limit_modes = (/"MaximalArea","LatLon","Angles","NPC","NDC",\
+                      "Corners","Points","Window"/)
+      limit_mode := lower_case(limit_modes(limit_mode))
+    else
+      limit_mode = lower_case(limit_mode)
+    end if
+;
+; If automatic tick marks are turned on, or if mpCenterLatF != 0
+; (rotated map), or if limit_mode is not latlon or corenrs, 
+; then turn off gsn_csm generated tickmarks.
+; 
+    display_mode = get_display_mode(res2,"pmTickMarkDisplayMode","nocreate")
+    if(display_mode.eq.1.or.display_mode.eq.2.or.center_lat.ne.0.or.\
+       (limit_mode.ne."latlon".and.limit_mode.ne."corners")) then
+      ticks_on = get_res_value(res2,"gsnTickMarksOn",False)
+    else
+      ticks_on = get_res_value(res2,"gsnTickMarksOn",True)
+    end if
+
+    if(limit_mode.eq."latlon".or.limit_mode.eq."corners") then
+;
+; If mpCenterLonF is set, but mpMinLonF/mpLeftCornerLonF and/or 
+; mpMaxLonF/mpRightCornerLonF are not, then we need to set them.
+;
+      if(limit_mode.eq."latlon") then
+        min_lon_str = "mpMinLonF"
+        max_lon_str = "mpMaxLonF"
+        min_lat_str = "mpMinLatF"
+        max_lat_str = "mpMaxLatF"
+      else
+        min_lon_str = "mpLeftCornerLonF"
+        max_lon_str = "mpRightCornerLonF"
+        min_lat_str = "mpLeftCornerLatF"
+        max_lat_str = "mpRightCornerLatF"
+      end if
+      if(res2.and.isatt(res2,"mpCenterLonF").and.\
+             .not.isatt(res2,min_lon_str).and.\
+             .not.isatt(res2,max_lon_str))
+        res2@$min_lon_str$ = res2@mpCenterLonF - 180
+        res2@$max_lon_str$ = res2@mpCenterLonF + 180
+      end if
+  
+      if(res2.and.isatt(res2,"mpCenterLonF").and..not.isatt(res2,min_lon_str))
+        res2@$min_lon_str$ = res2@mpCenterLonF -  \
+                             (res2@$max_lon_str$-res2@mpCenterLonF)
+      end if
+  
+      if(res2.and.isatt(res2,"mpCenterLonF").and..not.isatt(res2,max_lon_str))
+        res2@$max_lon_str$ = res2@mpCenterLonF + \
+                           (res2@mpCenterLonF-res2@$min_lon_str$)
+      end if
+  
+      min_lon    = get_res_value(res2,min_lon_str,-180)
+      max_lon    = get_res_value(res2,max_lon_str, 180)
+      min_lat    = get_res_value(res2,min_lat_str, -90)
+      max_lat    = get_res_value(res2,max_lat_str,  90)
+
+      if(min_lon.ge.max_lon)
+        print("gsn_csm_map_ce: Fatal: The resources mpMinLonF/mpLeftCornerLonF must be less than the resources mpMaxLonF/mpRightCornerLonF.")
+        print("Execution halted.")
+        exit
+      end if
+
+      if(min_lat.ge.max_lat)
+        print("gsn_csm_map_ce: Fatal: The resources mpMinLatF/mpLeftCornerLatF must be less than the resources mpMaxLatF/mpRightCornerF.")
+        print("Execution halted.")
+        exit
+      end if
+; 
+; Determine what the default width and height should be depending
+; on shape of plot.
+;
+      lat_range = tofloat(max_lat - min_lat)
+      lon_range = tofloat(max_lon - min_lon)
+
+      ratio1 = lat_range/lon_range
+      ratio2 = lon_range/lat_range
+      ratio = min((/ratio1,ratio2/))
+
+      ratios  = (/0.50, 0.75, 1.00/)  ; lat/lon ratios
+      wharray = (/0.80, 0.70, 0.52/)  ; default widths/heights
+
+      wh_ind    = ind(ratio.le.ratios)
+      def_vpwf  = wharray(wh_ind(0))    ; default width for plot
+      def_vphf  = def_vpwf              ; default height for plot
+
+      set_attr(res2,"vpWidthF",min((/lon_range/lat_range,1./)) * def_vpwf)
+
+      set_attr(res2,"vpHeightF",min((/lat_range/lon_range,1./)) * def_vphf)
+      set_attr(res2,"vpXF",(1. - res2@vpWidthF)/2.)
+      set_attr(res2,"vpYF",1. - (1. - res2@vpHeightF)/2.)
+    end if
 ;    
 ; Create the map object. We have to use this code instead of gsn_map
 ; because we want to set the size of the map.  If we set the size of the
 ; map later with setvalues, as gsn_map would do, then the size wouldn't
 ; be correct.
 ;
-    if(lower_case(limit_mode).eq."latlon")
+    if(limit_mode.eq."latlon") then
       map_object = create "map" mapPlotClass wks
         "vpXF"               : res2@vpXF
         "vpYF"               : res2@vpYF
@@ -5824,35 +5818,34 @@ begin
         "pmTitleDisplayMode" : "Always"
         "pmTitleZone"        : main_zone    ; Zone for main title
       end create
+    else if(limit_mode.eq."corners") then
+      map_object = create "map" mapPlotClass wks
+        "vpXF"                : res2@vpXF
+        "vpYF"                : res2@vpYF
+        "vpWidthF"            : res2@vpWidthF
+        "vpHeightF"           : res2@vpHeightF
+        "mpShapeMode"         : shape_mode
+        "mpLimitMode"         : limit_mode
+        "mpLeftCornerLonF"    : min_lon
+        "mpRightCornerLonF"   : max_lon
+        "mpLeftCornerLatF"    : min_lat
+        "mpRightCornerLatF"   : max_lat
+        "mpCenterLonF"        : center_lon
+        "mpCenterLatF"        : center_lat
+        "mpRelativeCenterLat" : rel_c_lat
+        "mpRelativeCenterLon" : rel_c_lon
+        "pmTitleDisplayMode"  : "Always"
+        "pmTitleZone"         : main_zone    ; Zone for main title
+      end create
     else
-      if(lower_case(limit_mode).eq."corners")
-        map_object = create "map" mapPlotClass wks
-          "vpXF"                : res2@vpXF
-          "vpYF"                : res2@vpYF
-          "vpWidthF"            : res2@vpWidthF
-          "vpHeightF"           : res2@vpHeightF
-          "mpShapeMode"         : shape_mode
-          "mpLimitMode"         : limit_mode
-          "mpLeftCornerLonF"    : min_lon
-          "mpRightCornerLonF"   : max_lon
-          "mpLeftCornerLatF"    : min_lat
-          "mpRightCornerLatF"   : max_lat
-          "mpCenterLonF"        : center_lon
-          "mpCenterLatF"        : center_lat
-          "mpRelativeCenterLat" : rel_c_lat
-          "mpRelativeCenterLon" : rel_c_lon
-          "pmTitleDisplayMode"  : "Always"
-          "pmTitleZone"         : main_zone    ; Zone for main title
-        end create
-      end if
+      map_object = create "map" mapPlotClass wks
+        "pmTickMarkDisplayMode" : display_mode
+        "pmTitleDisplayMode"    : "Always"
+        "pmTitleZone"           : main_zone    ; Zone for main title
+        "mpLimitMode"           : limit_mode
+      end create
     end if
-    delete(min_lon)
-    delete(max_lon)
-    delete(min_lat)
-    delete(max_lat)
-    delete(lon_range)
-    delete(lat_range)
-
+    end if
 ; This section tests for regular resources.
 
     tmres = get_res_eq(res2,"tm")  ; Get tickmark resources
@@ -5882,30 +5875,34 @@ begin
 
 ; Make sure axes labels (if any) are the same size.
 
-    getvalues map_object@tickmarks
-      "tmYLLabelFontHeightF"   : yfontf
-      "tmXBLabelFontHeightF"   : xfontf
-    end getvalues
+    if(isatt(map_object,"tickmarks")) then
+      getvalues map_object@tickmarks
+        "tmYLLabelFontHeightF"   : yfontf
+        "tmXBLabelFontHeightF"   : xfontf
+      end getvalues
 
-    font_height = min((/xfontf,yfontf/))  ; Make label sizes a function of
+      font_height = min((/xfontf,yfontf/))  ; Make label sizes a function of
                                           ; the size of the tickmark labels.
-    font_height = 1.25 * font_height      ; Make fonts 25% bigger.
+      font_height = 1.25 * font_height      ; Make fonts 25% bigger.
 ;
 ; Check if user setting own font heights.
 ;
-    main_font_height = get_res_value_keep(res2,"tiMainFontHeightF", \
-                                          1.3*font_height)
-    main_font = get_res_value_keep(res2,"tiMainFont","helvetica-bold")
+      main_font_height = get_res_value_keep(res2,"tiMainFontHeightF", \
+                                            1.3*font_height)
+      main_font = get_res_value_keep(res2,"tiMainFont","helvetica-bold")
 
-    setvalues map_object
-      "tiMainFontHeightF"  : main_font_height ; main title size
-      "tiMainFont"         : main_font        ; main title font
-    end setvalues
+      setvalues map_object
+        "tiMainFontHeightF"  : main_font_height ; main title size
+        "tiMainFont"         : main_font        ; main title font
+      end setvalues
+    end if
 
 ; Set up three subtitles at top, if they exist.
     subres = get_res_eq(res2,(/"tx","am"/))  ; Get textitem resources
     subres                  = True
-    set_attr(subres,"txFontHeightF",font_height)
+    if(isvar("font_height"))
+      set_attr(subres,"txFontHeightF",font_height)
+    end if
     set_attr(subres,"amOrthogonalPosF",0.05)
     add_subtitles(wks,map_object,left_string,center_string,right_string, \
                   subres)
@@ -7053,10 +7050,11 @@ begin
 ; Retrieve some font heights and make the X/Y axis labels the same
 ; size, and the info label size the same as the tick mark label size.
 
-    getvalues map_object@tickmarks
-      "tmXBLabelFontHeightF" : xbfontf
-    end getvalues
-
+    if(isatt(map_object,"tickmarks")) then
+      getvalues map_object@tickmarks
+        "tmXBLabelFontHeightF" : xbfontf
+      end getvalues
+   end if
     getvalues map_object
       "tiXAxisFontHeightF"   : xfontf
       "tiYAxisFontHeightF"   : yfontf
@@ -7077,16 +7075,18 @@ begin
 
     contour_plot = check_class_name(contour_object,"contour")
 
-    if(.not.isatt(cnres,"cnLineLabelFontHeightF"))
-      setvalues contour_plot
-        "cnLineLabelFontHeightF"    : xbfontf
-      end setvalues
-    end if
+    if(isvar("xbfontf")) then
+      if(.not.isatt(cnres,"cnLineLabelFontHeightF"))
+        setvalues contour_plot
+          "cnLineLabelFontHeightF"    : xbfontf
+        end setvalues
+      end if
 
-    if(.not.isatt(cnres,"cnInfoLabelFontHeightF"))
-      setvalues contour_plot
-        "cnInfoLabelFontHeightF"    : xbfontf
-      end setvalues
+      if(.not.isatt(cnres,"cnInfoLabelFontHeightF"))
+        setvalues contour_plot
+          "cnInfoLabelFontHeightF"    : xbfontf
+        end setvalues
+      end if
     end if
 
 ;---Create a labelbar, or fix an existing one.
@@ -12147,6 +12147,7 @@ begin
       "trYMaxF"              : ymax
       "tiYAxisFontHeightF"   : yaxis_font_height
       "tmYLLabelFontHeightF" : yaxis_label_height
+      "tiYAxisFontColor"     : yaxis_font_color
       "tiXAxisFontHeightF"   : xfontf
       "tiYAxisFontHeightF"   : yfontf
     end getvalues
@@ -12172,6 +12173,7 @@ begin
       rightaxis_string = create "right_axis" textItemClass wks
         "txString"      : "Height (km)"
         "txFontHeightF" : yaxis_font_height
+        "txFontColor"   : yaxis_font_color
         "txAngleF"      : 90.
       end create
 
