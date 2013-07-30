@@ -9151,7 +9151,7 @@ begin
    if (rank_omega.ne.rank_t .or. rank_omega.ne.rank_p .or. \
        .not.(all(dims_omega.eq.dims_t) .and. all(dims_omega.eq.dims_p)) ) then
        print("omega_to_w: omega, p, t must be the same rank & size")
-       quit
+       exit
    end if
 
    RGAS = 287.058            ; J/(kg-K) => m2/(s2 K)
@@ -9193,7 +9193,7 @@ begin
    if (rank_w.ne.rank_t .or. rank_w.ne.rank_p .or. \
        .not.(all(dims_w.eq.dims_t) .and. all(dims_w.eq.dims_p)) ) then
        print("w_to_omega: omega, p, t must be the same rank & size")
-       quit
+       exit
    end if
 
    RGAS = 287.058            ; J/(kg-K) => m2/(s2 K)
