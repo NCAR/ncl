@@ -383,7 +383,7 @@ void _checkGlobalAttributes(HDFEOSFileRecord* thefile, HDFEOSVarInqRec* thevar,
 			*fprintf(stderr, "\t\tatt %d: name <%s>\n", n, attname);
 			*/
 
-			sl = strlen(attname) - strlen(sufname);
+			sl = strlen(attname) - 1 - strlen(sufname);
 			attname[sl] = '\0';
 			astr = attname + strlen(varname) + 1;
 			attquark = NrmStringToQuark(astr);
