@@ -60,7 +60,7 @@ c local
       DOUBLE PRECISION W,VARTOT,EPS
 
       W   = DBLE(NPTS)/ (8.D0*ATAN(1.D0))
-      EPS = 1.D-07
+      EPS = 1.D-12
 
       DO N = 1,NHAR
           A(N) = 0.0D0
@@ -88,10 +88,16 @@ c local
       END DO
 
 
-      IF (VARTOT.GE.EPS) THEN
+      IF (VARTOT.GT.EPS) THEN
           DO N = 1,NHAR
               PCVAR(N) = ((0.5D0*AMP(N)*AMP(N))/VARTOT)*100.D0
           END DO
+      ELSE
+         DO N = 1,NHAR
+            AMP(N)   = 0.0D0
+            PHASE(N) = 0.0D0
+            PCVAR(N) = 0.0D0
+         END DO
       END IF
 
       RETURN
