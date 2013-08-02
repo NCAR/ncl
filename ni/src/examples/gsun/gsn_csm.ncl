@@ -11269,7 +11269,7 @@ begin
 ; of the previous  plot, outside of the tickmarks and labels.
 ;
   if(res3) then
-    res3_new = get_res_ne(res3,(/"am","xy"/))
+    res3_new = get_res_ne(res3,(/"am","xy","gsnXY"/))
   end if
   res3_new = True      ; Make sure this is True.
 
