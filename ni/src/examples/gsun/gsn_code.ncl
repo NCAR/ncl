@@ -4642,17 +4642,23 @@ begin
   end if
 
 ;---Read data off the shapefile
+  geomDims    = getfilevardimsizes(f,"geometry")
+  numFeatures = geomDims(0)
+  if(numFeatures.eq.0) then
+    print("Error: gsn_add_shapefile_polylines: the number of features in this file is 0.")
+    print("       No shapefile information will be added.")
+    return(new(1,graphic))
+  end if
+
   segments = f->segments
   geometry = f->geometry
   segsDims = dimsizes(segments)
-  geomDims = dimsizes(geometry)
 
 ;---Read global attributes  
   geom_segIndex = f@geom_segIndex
   geom_numSegs  = f@geom_numSegs
   segs_xyzIndex = f@segs_xyzIndex
   segs_numPnts  = f@segs_numPnts
-  numFeatures   = geomDims(0)
 
 ;---Create array to hold all polylines
   npoly = sum(geometry(:,geom_numSegs)) 
@@ -4755,17 +4761,23 @@ begin
   end if
 
 ;---Read data off the shapefile
+  geomDims    = getfilevardimsizes(f,"geometry")
+  numFeatures = geomDims(0)
+  if(numFeatures.eq.0) then
+    print("Error: gsn_add_shapefile_polygon: the number of features in this file is 0.")
+    print("       No shapefile information will be added.")
+    return(new(1,graphic))
+  end if
+
   segments = f->segments
   geometry = f->geometry
   segsDims = dimsizes(segments)
-  geomDims = dimsizes(geometry)
 
 ;---Read global attributes  
   geom_segIndex = f@geom_segIndex
   geom_numSegs  = f@geom_numSegs
   segs_xyzIndex = f@segs_xyzIndex
   segs_numPnts  = f@segs_numPnts
-  numFeatures   = geomDims(0)
 
 ;---Create array to hold all polylines
   npoly = sum(geometry(:,geom_numSegs)) 
@@ -4868,17 +4880,23 @@ begin
   end if
 
 ;---Read data off the shapefile
+  geomDims    = getfilevardimsizes(f,"geometry")
+  numFeatures = geomDims(0)
+  if(numFeatures.eq.0) then
+    print("Error: gsn_add_shapefile_polymarkers: the number of features in this file is 0.")
+    print("       No shapefile information will be added.")
+    return(new(1,graphic))
+  end if
+
   segments = f->segments
   geometry = f->geometry
   segsDims = dimsizes(segments)
-  geomDims = dimsizes(geometry)
 
 ;---Read global attributes  
   geom_segIndex = f@geom_segIndex
   geom_numSegs  = f@geom_numSegs
   segs_xyzIndex = f@segs_xyzIndex
   segs_numPnts  = f@segs_numPnts
-  numFeatures   = geomDims(0)
 
 ;---Create array to hold all polymarkers
   npoly = sum(geometry(:,geom_numSegs)) 
@@ -4968,10 +4986,17 @@ begin
   end if
 
 ;---Read data off the shapefile
+  geomDims    = getfilevardimsizes(f,"geometry")
+  numFeatures = geomDims(0)
+  if(numFeatures.eq.0) then
+    print("Error: gsn_add_shapefile_text: the number of features in this file is 0.")
+    print("       No shapefile information will be added.")
+    return(new(1,graphic))
+  end if
+
   segments = f->segments
   geometry = f->geometry
   segsDims = dimsizes(segments)
-  geomDims = dimsizes(geometry)
 
 ;---Read global attributes  
   geom_segIndex = f@geom_segIndex
