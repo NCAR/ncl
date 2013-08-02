@@ -114,6 +114,49 @@ static void _NclPopExecute
                 NclFree(tmp);
         }
 }
+
+#ifdef USE_NETCDF4_FEATURES
+static NclSelectionRecord* _NclAllocateAdvancedFileSelPointer(NclFile file, NclQuark var,
+                                                              int nsubs, NhlErrorTypes* estatus)
+{
+    NclAdvancedFile advancedfile = (NclAdvancedFile)file;
+    NclFileVarNode *varnode = NULL;
+    NclSelectionRecord* sel_ptr = NULL;
+
+    *estatus = NhlNOERROR;
+
+    varnode = _getVarNodeFromNclFileGrpNode(advancedfile->advancedfile.grpnode, var);
+    if(NULL == varnode)
+    {
+        NHLPERROR((NhlFATAL,NhlEUNKNOWN,"variable (%s) is not in file (%s)",
+                   NrmQuarkToString(var),NrmQuarkToString(advancedfile->advancedfile.grpnode->path)));
+        _NclCleanUpStack(nsubs);
+        *estatus = NhlFATAL;
+        return sel_ptr;
+    }
+
+    if(0 == nsubs)
+    {
+        sel_ptr = NULL;
+    }
+    else if(nsubs == varnode->dim_rec->n_dims)
+    {
+        sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
+        sel_ptr->n_entries = nsubs;
+    }
+    else
+    {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                 "Number of subscripts do not match number of dimensions of variable, (%d) subscripts used, (%d) subscripts expected",
+                  nsubs,varnode->dim_rec->n_dims);
+        _NclCleanUpStack(nsubs);
+        *estatus = NhlFATAL;
+     }
+
+     return sel_ptr;
+}
+#endif
+
 void CallLIST_ASSIGN_VERIFY_SUB (void) {
 	NclStackEntry *data_ptr;
 
@@ -6018,16 +6061,34 @@ void CallFILE_VARVAL_OP(void) {
 							}
 							*/
 
-							if((nsubs != 0)&&(nsubs ==  file->file.var_info[index]->num_dimensions)){
-								sel_ptr = (NclSelectionRecord*)NclMalloc (sizeof(NclSelectionRecord));
-								sel_ptr->n_entries = nsubs;
-							} else if(nsubs==0){
+							if(nsubs==0)
+							{
 								sel_ptr = NULL;
-							} else {
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts do not match number of dimensions of variable, (%d) subscripts used, (%d) subscripts expected",nsubs,file->file.var_info[index]->num_dimensions);
-								estatus = NhlFATAL;
-								_NclCleanUpStack(nsubs);
 							}
+							else
+							{
+#ifdef USE_NETCDF4_FEATURES
+								if(1 == file->file.advanced_file_structure)
+								{
+									sel_ptr = _NclAllocateAdvancedFileSelPointer(file, var, nsubs, &estatus);
+								}
+								else
+#endif
+								{
+									if(nsubs == file->file.var_info[index]->num_dimensions)
+									{
+										sel_ptr = (NclSelectionRecord*)NclMalloc (sizeof(NclSelectionRecord));
+										sel_ptr->n_entries = nsubs;
+									}
+									else
+									{
+										NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts do not match number of dimensions of variable, (%d) subscripts used, (%d) subscripts expected",nsubs,file->file.var_info[index]->num_dimensions);
+										estatus = NhlFATAL;
+										_NclCleanUpStack(nsubs);
+									}
+								}
+							}
+
 							if(estatus != NhlFATAL) {
 								if(sel_ptr != NULL) {
 									for(i=0;i<sel_ptr->n_entries;i++) {
@@ -6193,42 +6254,17 @@ void CallFILE_VAR_OP(void) {
 #ifdef USE_NETCDF4_FEATURES
 				if(file->file.advanced_file_structure)
 				{
-					NclAdvancedFile advancedfile = (NclAdvancedFile)file;
-					NclFileVarNode *varnode = NULL;
-					varnode = _getVarNodeFromNclFileGrpNode(advancedfile->advancedfile.grpnode, var);
-					if(NULL == varnode)
+					sel_ptr = _NclAllocateAdvancedFileSelPointer(file, var, nsubs, &estatus);
+					if(NhlFATAL == estatus)
 					{
 						NHLPERROR((NhlFATAL,NhlEUNKNOWN,"variable (%s) is not in file (%s)",
 							NrmQuarkToString(var),dfile->name));
-						_NclCleanUpStack(nsubs);
-						estatus = NhlFATAL;
 						out_var.kind = NclStk_NOVAL;	
 						out_var.u.data_obj = NULL;
 						return;
 					}
 
-					for(i = 0 ; i < varnode->dim_rec->n_dims; i++)
-						dim_is_ref[i] = 0;
-
-					if(0 == nsubs)
-					{
-						sel_ptr = NULL;
-					}
-					else if(nsubs == varnode->dim_rec->n_dims)
-					{
-						sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
-						sel_ptr->n_entries = nsubs;
-					}
-					else
-					{
-						NhlPError(NhlFATAL,NhlEUNKNOWN,
-							"Number of subscripts do not match number of dimensions of variable, (%d) subscripts used, (%d) subscripts expected",
-							nsubs,varnode->dim_rec->n_dims);
-						estatus = NhlFATAL;
-						_NclCleanUpStack(nsubs);
-						return;
-					}
-
+					memset(dim_is_ref, 0, NCL_MAX_DIMENSIONS * sizeof(int));
 				}
 				else
 #endif

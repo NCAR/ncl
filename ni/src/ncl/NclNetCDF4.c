@@ -2473,8 +2473,8 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
         NC4GetDimVals(fid, grpnode);
 
   /*
+   *CloseOrSync(grpnode, fid, 0);
    */
-    CloseOrSync(grpnode, fid, 0);
     return((void*)grpnode);
 }
 
@@ -3234,8 +3234,8 @@ found_component:
             }
         }
       /*
+       *CloseOrSync(grpnode, fid, 0);
        */
-        CloseOrSync(grpnode, fid, 0);
 
         if(ret == -1)
         {
@@ -3723,8 +3723,8 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
             }
     
           /*
+           *CloseOrSync(grpnode,fid,0);
            */
-            CloseOrSync(grpnode,fid,0);
 
             if(ret == -1)
             {
@@ -3846,8 +3846,8 @@ static NhlErrorTypes NC4WriteAtt(void *therec, NclQuark theatt, void *data)
             {
                 EndNC4DefineMode(grpnode, fid);
               /*
+               *CloseOrSync(grpnode,fid,0);
                */
-                CloseOrSync(grpnode,fid,0);
             }
                     
             if(ret == -1)
@@ -3931,8 +3931,8 @@ static NhlErrorTypes NC4DelAtt(void *therec, NclQuark theatt)
                 {
                     EndNC4DefineMode(grpnode, fid);
                   /*
+                   *CloseOrSync(grpnode, fid, 0);
                    */
-                    CloseOrSync(grpnode, fid, 0);
                 }
             }
 
@@ -4164,8 +4164,8 @@ static NhlErrorTypes NC4WriteVarAtt(void *therec, NclQuark thevar,
         {
             EndNC4DefineMode(grpnode, fid);
           /*
+           *CloseOrSync(grpnode, fid, 0);
            */
-            CloseOrSync(grpnode, fid, 0);
         }
 
         if(ret == -1)
@@ -4526,8 +4526,8 @@ static NhlErrorTypes NC4AddDim(void* therec, NclQuark thedim,
             {
                 EndNC4DefineMode(grpnode, fid);
               /*
+               *CloseOrSync(grpnode, fid, 0);
                */
-                CloseOrSync(grpnode, fid, 0);
             }
 
             if(nc_ret != NC_NOERR)
@@ -4819,8 +4819,8 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
             {
                 EndNC4DefineMode(grpnode, fid);
               /*
+               *CloseOrSync(grpnode, fid, 0);
                */
-                CloseOrSync(grpnode, fid, 0);
             }
     
             _addNclVarNodeToGrpNode(grpnode, thevar, var_id, data_type,
@@ -4860,8 +4860,8 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
             {
                 EndNC4DefineMode(grpnode, fid);
               /*
+               *CloseOrSync(grpnode, fid, 0);
                */
-                CloseOrSync(grpnode, fid, 0);
             }
         }
     }
@@ -4938,8 +4938,8 @@ static NhlErrorTypes NC4RenameDim(void* therec, NclQuark from, NclQuark to)
             {
                 EndNC4DefineMode(grpnode, fid);
               /*
+               *CloseOrSync(grpnode, fid, 0);
                */
-                CloseOrSync(grpnode, fid, 0);
             }
 
             if(ret == -1)
@@ -5046,8 +5046,8 @@ static NhlErrorTypes NC4AddAtt(void *therec, NclQuark theatt,
             {
                 EndNC4DefineMode(grpnode, fid);
               /*
+               *CloseOrSync(grpnode,fid,0);
                */
-                CloseOrSync(grpnode,fid,0);
             }
         } 
     }
@@ -5161,8 +5161,8 @@ static NhlErrorTypes NC4AddVarAtt(void *therec, NclQuark thevar, NclQuark theatt
                 {
                     EndNC4DefineMode(grpnode, fid);
                   /*
+                   *CloseOrSync(grpnode, fid, 0);
                    */
-                    CloseOrSync(grpnode, fid, 0);
                 }
             } 
         } 
@@ -5437,8 +5437,8 @@ static NhlErrorTypes NC4AddVlenVar(void* therec, NclQuark thevar,
             {
                 EndNC4DefineMode(grpnode, fid);
               /*
+               *CloseOrSync(grpnode, fid, 0);
                */
-                CloseOrSync(grpnode, fid, 0);
             }
     
             _addNclVarNodeToGrpNode(grpnode, thevar, var_id, NCL_list,
@@ -5664,8 +5664,8 @@ static NhlErrorTypes NC4AddEnumVar(void* therec, NclQuark thevar,
             {
                 EndNC4DefineMode(grpnode, fid);
               /*
+               *CloseOrSync(grpnode, fid, 0);
                */
-                CloseOrSync(grpnode, fid, 0);
             }
     
             _addNclVarNodeToGrpNode(grpnode, thevar, var_id, ncl_type,
@@ -5886,8 +5886,8 @@ static NhlErrorTypes NC4AddOpaqueVar(void* therec, NclQuark thevar,
             {
                 EndNC4DefineMode(grpnode, fid);
               /*
+               *CloseOrSync(grpnode, fid, 0);
                */
-                CloseOrSync(grpnode, fid, 0);
             }
     
             _addNclVarNodeToGrpNode(grpnode, thevar, var_id, NCL_ubyte,
@@ -6089,8 +6089,8 @@ static NclFileVarNode *defNC4CompoundVar(void* therec, NclQuark thevar,
             {
                 EndNC4DefineMode(grpnode, fid);
               /*
+               *CloseOrSync(grpnode, fid, 0);
                */
-                CloseOrSync(grpnode, fid, 0);
             }
     
             _addNclVarNodeToGrpNode(grpnode, thevar, var_id, NCL_ubyte,
