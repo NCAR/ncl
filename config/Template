@@ -315,6 +315,10 @@ NGCOMM########################################################################
 #define	CCompiler	cc
 #endif	/* CCompiler */
 
+#ifndef	CxxCompiler
+#define	CxxCompiler	c++
+#endif	/* CCompiler */
+
 #ifndef CLoader
 #define	CLoader	CCompiler
 #endif	/* CLoader */
