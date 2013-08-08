@@ -2698,11 +2698,24 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
             dimnode = &(grpnode->dim_rec->dim_node[i]);
             chunkdimnode = &(grpnode->chunk_dim_rec->dim_node[i]);
 
+            if(NULL == chunkdimnode)
+            {
+              /*
+               *fprintf(stderr, "dim name: <%s> has no chunk name related.\n",
+               *                 NrmQuarkToString(dimnode->name));
+               *fprintf(stderr, "No more file-wise chunking and compress check.\n");
+               */
+
+                break;
+            }
+
             if(dimnode->name != chunkdimnode->name)
             {
-                fprintf(stderr, "dim name: <%s> and chunk_dim name: <%s> are different.\n",
-                    NrmQuarkToString(dimnode->name), NrmQuarkToString(chunkdimnode->name));
-                fprintf(stderr, "No more file-wise chunking and compress check.\n");
+              /*
+               *fprintf(stderr, "dim name: <%s> and chunk_dim name: <%s> are different.\n",
+               *    NrmQuarkToString(dimnode->name), NrmQuarkToString(chunkdimnode->name));
+               *fprintf(stderr, "No more file-wise chunking and compress check.\n");
+               */
 
                 break;
             }
