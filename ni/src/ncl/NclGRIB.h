@@ -181,6 +181,7 @@ struct _GribParamList {
 	NclOneDValCoordData levels;
 	NclMultiDValData levels0;
 	NclMultiDValData levels1;
+	GribRecordInqRec *ref_rec;   /* pointer to the first non-missing record in the list after the array sort is completed */
 	GribRecordInqRecList *thelist;
 	int n_atts;
 	GribAttInqRecList *theatts;

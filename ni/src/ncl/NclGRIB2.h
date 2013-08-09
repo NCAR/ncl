@@ -610,6 +610,7 @@ struct _Grib2ParamList {
     NclOneDValCoordData levels;
     NclMultiDValData    levels0;
     NclMultiDValData    levels1;
+    Grib2RecordInqRec   *ref_rec;
     Grib2RecordInqRecList   *thelist;
     int n_atts;
     Grib2AttInqRecList  *theatts;

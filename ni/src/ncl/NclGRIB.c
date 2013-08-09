@@ -1674,6 +1674,8 @@ GribFileRecord *therec;
 
 			for (i = 0; i < tstep->n_entries; i++) {
 				GribRecordInqRec *rec = tstep->thelist[i].rec_inq;
+				if (! rec)
+					continue;
 				NclFree(rec->var_name);
 				rec->var_name = (char*)NclMalloc((unsigned)strlen((char*)buffer) + 1);
 				strcpy(rec->var_name,(char*)buffer);
@@ -1858,13 +1860,13 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 	if (! ok)
 		return;
 
-	nv = (int)step->thelist->rec_inq->gds[3];
+	nv = (int)step->ref_rec->gds[3];
 	if(nv == 0) {
 		return;
 	}
-	ix = step->thelist->rec_inq->center_ix;
+	ix = step->ref_rec->center_ix;
 	sprintf(buffer,"lv_HYBL%d_a",tmp_file_dim_number);
-	if ((centers[ix].index == 98 || step->thelist->rec_inq->eff_center == 98) && 
+	if ((centers[ix].index == 98 || step->ref_rec->eff_center == 98) && 
 	    (nv / 2 > dimsizes_level)) {
 		/* 
 		 * ECMWF data - we know that ERA 40 and ERA 15 use level interfaces for A and B 
@@ -1887,13 +1889,13 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 	}
 
 	if((_GribGetInternalVar(therec,NrmStringToQuark(buffer),&test) ==NULL)) {
-		pl = (int)step->thelist->rec_inq->gds[4];
+		pl = (int)step->ref_rec->gds[4];
 		tmpf = (float*)NclMalloc(nv*sizeof(float));
 		the_start_off = 4*nv+(pl-1);
 		for(i = pl-1;i< the_start_off; i+=4) {
-			sign  = (step->thelist->rec_inq->gds[i] & (char) 0200)? 1 : 0;
-			tmpa = (float)(step->thelist->rec_inq->gds[i] & (char)0177);
-			tmpb = (float)CnvtToDecimal(3,&(step->thelist->rec_inq->gds[i+1]));
+			sign  = (step->ref_rec->gds[i] & (char) 0200)? 1 : 0;
+			tmpa = (float)(step->ref_rec->gds[i] & (char)0177);
+			tmpb = (float)CnvtToDecimal(3,&(step->ref_rec->gds[i+1]));
 			tmpf[(i-(pl-1))/4] = tmpb;
 			tmpf[(i-(pl-1))/4] *= (float)pow(2.0,-24.0);
 			tmpf[(i-(pl-1))/4] *= (float)pow(16.0,(double)(tmpa - 64));
@@ -2479,10 +2481,10 @@ GribFileRecord *therec;
 	last = NULL;
 
 	while(step != NULL) {
-
+		step->ref_rec = NULL;
 		for(i = 0; i < step->n_entries; i++) {
 			if(step->thelist[i].rec_inq != NULL) {
-				grib_rec = step->thelist[i].rec_inq;
+				grib_rec = step->ref_rec = step->thelist[i].rec_inq;
 				break;
 			}
 		}
@@ -7294,41 +7296,6 @@ int wr_status;
 				}
 			}
 			qsort((void*)sortar,i,sizeof(GribRecordInqRecList*),record_comp);
-
-#if 0
-		
-			j = 0;
-			i = 0;
-			l = 0;
-			ptr = sortar;
-			start_ptr = sortar;
-			while(j < step->n_entries) {
-				start_ptr = ptr;
-				i = 0;
-				while((j< step->n_entries)&&(date_comp((void*)&(ptr[i]),(void*)start_ptr))==0) {
-					i++;
-					j++;
-				}
-				qsort((void*)ptr,i,sizeof(GribRecordInqRecList*),level_comp);
-#if 0
-				if((*ptr)->rec_inq->level0 != -1) {
-					for(k = 0; k < i-1; k++) {
-						if(!level_comp((void*)&(ptr[k]),(void*)&(ptr[k+1]))) {
-							NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Duplicate GRIB record found, skipping record");
-							ptr[k] = ptr[k+1];
-							l++;
-
-						}
-					}
-				}
-#endif
-				if(j < step->n_entries) {
-					ptr = &(ptr[i]);
-				}
-			}
-
-#endif
-
 
 
 

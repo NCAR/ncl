@@ -547,10 +547,10 @@ int* nrotatts;
 	*dimsizes_lon = NULL;
 	*n_dims_rot = 0;
 	*dimsizes_rot = NULL;
-	if((thevarrec->thelist == NULL)||(thevarrec->thelist->rec_inq == NULL)) 
+	if((thevarrec->thelist == NULL)||(thevarrec->ref_rec == NULL)) 
 		return;
 
-	gds = (G2_GDS *) thevarrec->thelist->rec_inq->gds;
+	gds = (G2_GDS *) thevarrec->ref_rec->gds;
 	if (gds == NULL) {
 		return;
 	}
@@ -638,10 +638,10 @@ void g2GDSCEGrid
     *lon = NULL;
     *n_dims_lon= 0;
     *dimsizes_lon= NULL;
-    if ((thevarrec->thelist == NULL)  ||  (thevarrec->thelist->rec_inq == NULL)) 
+    if ((thevarrec->thelist == NULL)  ||  (thevarrec->ref_rec == NULL)) 
         return;
 
-    gds = (G2_GDS *) thevarrec->thelist->rec_inq->gds;
+    gds = (G2_GDS *) thevarrec->ref_rec->gds;
     if (gds == NULL) {
         return;
     }
@@ -1025,10 +1025,10 @@ void g2GDSRLLGrid
     *lon = NULL;
     *n_dims_lon= 0;
     *dimsizes_lon= NULL;
-    if ((thevarrec->thelist == NULL)  ||  (thevarrec->thelist->rec_inq == NULL)) 
+    if ((thevarrec->thelist == NULL)  ||  (thevarrec->ref_rec == NULL)) 
         return;
 
-    gds = (G2_GDS *) thevarrec->thelist->rec_inq->gds;
+    gds = (G2_GDS *) thevarrec->ref_rec->gds;
     if (gds == NULL) {
         return;
     }
@@ -1385,10 +1385,10 @@ void g2GDSArakawaRLLGrid
     *lon = NULL;
     *n_dims_lon= 0;
     *dimsizes_lon= NULL;
-    if ((thevarrec->thelist == NULL)  ||  (thevarrec->thelist->rec_inq == NULL)) 
+    if ((thevarrec->thelist == NULL)  ||  (thevarrec->ref_rec == NULL)) 
         return;
 
-    gds = (G2_GDS *) thevarrec->thelist->rec_inq->gds;
+    gds = (G2_GDS *) thevarrec->ref_rec->gds;
     if (gds == NULL) {
         return;
     }
@@ -1752,10 +1752,10 @@ void g2GDSMEGrid
     *lon = NULL;
     *n_dims_lon= 0;
     *dimsizes_lon= NULL;
-    if ((thevarrec->thelist == NULL)  ||  (thevarrec->thelist->rec_inq == NULL)) 
+    if ((thevarrec->thelist == NULL)  ||  (thevarrec->ref_rec == NULL)) 
         return;
 
-    gds = (G2_GDS *) thevarrec->thelist->rec_inq->gds;
+    gds = (G2_GDS *) thevarrec->ref_rec->gds;
     if (gds == NULL) {
         return;
     }
@@ -2012,10 +2012,10 @@ int* nrotatts;
 	*lon = NULL;
 	*n_dims_lon= 0;
 	*dimsizes_lon= NULL;
-	if ((thevarrec->thelist == NULL)  ||  (thevarrec->thelist->rec_inq == NULL)) 
+	if ((thevarrec->thelist == NULL)  ||  (thevarrec->ref_rec == NULL)) 
 		return;
 
-	gds = (G2_GDS *) thevarrec->thelist->rec_inq->gds;
+	gds = (G2_GDS *) thevarrec->ref_rec->gds;
 	if (gds == NULL) {
 		return;
 	}
@@ -2260,10 +2260,10 @@ int* nrotatts;
 	*lon = NULL;
 	*n_dims_lon= 0;
 	*dimsizes_lon= NULL;
-	if ((thevarrec->thelist == NULL)  ||  (thevarrec->thelist->rec_inq == NULL)) 
+	if ((thevarrec->thelist == NULL)  ||  (thevarrec->ref_rec == NULL)) 
 		return;
 
-	gds = (G2_GDS *) thevarrec->thelist->rec_inq->gds;
+	gds = (G2_GDS *) thevarrec->ref_rec->gds;
 	if (gds == NULL) {
 		return;
 	}
@@ -2520,10 +2520,10 @@ int* nrotatts;
 	*lon = NULL;
 	*n_dims_lon= 0;
 	*dimsizes_lon= NULL;
-	if ((thevarrec->thelist == NULL)  ||  (thevarrec->thelist->rec_inq == NULL)) 
+	if ((thevarrec->thelist == NULL)  ||  (thevarrec->ref_rec == NULL)) 
 		return;
 
-	gds = (G2_GDS *) thevarrec->thelist->rec_inq->gds;
+	gds = (G2_GDS *) thevarrec->ref_rec->gds;
 	if (gds == NULL) {
 		return;
 	}
@@ -2824,10 +2824,10 @@ int* nrotatts;
 	*lon = NULL;
 	*n_dims_lon= 0;
 	*dimsizes_lon= NULL;
-	if ((thevarrec->thelist == NULL)  ||  (thevarrec->thelist->rec_inq == NULL)) 
+	if ((thevarrec->thelist == NULL)  ||  (thevarrec->ref_rec == NULL)) 
 		return;
 
-	gds = (G2_GDS *) thevarrec->thelist->rec_inq->gds;
+	gds = (G2_GDS *) thevarrec->ref_rec->gds;
 	if (gds == NULL) {
 		return;
 	}
@@ -2912,10 +2912,10 @@ int* nrotatts;
 	*dimsizes_lon = NULL;
 	*n_dims_rot = 0;
 	*dimsizes_rot = NULL;
-	if((thevarrec->thelist == NULL)||(thevarrec->thelist->rec_inq == NULL)) 
+	if((thevarrec->thelist == NULL)||(thevarrec->ref_rec == NULL)) 
 		return;
 
-	gds = (G2_GDS *) thevarrec->thelist->rec_inq->gds;
+	gds = (G2_GDS *) thevarrec->ref_rec->gds;
 	if (gds == NULL) {
 		return;
 	}
@@ -3892,7 +3892,7 @@ Grib2FileRecord *therec;
 				att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
 				att_list_ptr->att_inq->name = NrmStringToQuark("type_of_spatial_processing");
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
+				if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
 						       "4.15.table",grib_rec->spatial_proc,-1,ct) < NhlWARNING) {
 					return;
 				}
@@ -4015,7 +4015,7 @@ Grib2FileRecord *therec;
 			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
 			att_list_ptr->att_inq->name = NrmStringToQuark("type_of_statistical_processing");
 			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-			if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
+			if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
 					       "4.10.table",step->traits.stat_proc_type, -1,ct) < NhlWARNING) {
 				return;
 			}
@@ -4158,7 +4158,7 @@ Grib2FileRecord *therec;
 				att_list_ptr->att_inq->name = NrmStringToQuark("first_level_type");
 			}
 			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-			Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
+			Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
 					   "4.5.table",step->traits.first_level_type,-1,ct);
 			if (ct->descrip) {
 				if (ct->units && strcmp("none",ct->units)) {
@@ -4188,7 +4188,7 @@ Grib2FileRecord *therec;
 			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
 			att_list_ptr->att_inq->name = NrmStringToQuark("second_level_type");
 			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-			Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
+			Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
 					   "4.5.table",step->traits.second_level_type,-1,ct);
 			if (ct->descrip) {
 				if (ct->units && strcmp("none",ct->units)) {
@@ -4240,7 +4240,7 @@ Grib2FileRecord *therec;
 		att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
 		att_list_ptr->att_inq->name = NrmStringToQuark("parameter_discipline_and_category");
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 0, 
+		if (Grib2ReadCodeTable(step->ref_rec->table_source, 0, 
 				       "0.0.table",step->traits.discipline,-1,ct) < NhlWARNING) {
 			return;
 		}
@@ -4251,7 +4251,7 @@ Grib2FileRecord *therec;
 		else {
 			sprintf(buf,"%d, ",step->traits.discipline);
 		}
-		if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
+		if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
 				       "4.2.table",step->traits.discipline,step->traits.param_cat,ct) < NhlWARNING) {
 			return;
 		}
@@ -4279,7 +4279,7 @@ Grib2FileRecord *therec;
 		att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
 		att_list_ptr->att_inq->name = NrmStringToQuark("grid_type");
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 3, 
+		if (Grib2ReadCodeTable(step->ref_rec->table_source, 3, 
 				       "3.1.table",grib_rec->grid_number,-1,ct) < NhlWARNING) {
 			return;
 		}
@@ -4736,6 +4736,8 @@ Grib2FileRecord *therec;
 
 			for (i = 0; i < tstep->n_entries; i++) {
 				Grib2RecordInqRec *rec = tstep->thelist[i].rec_inq;
+				if (! rec) 
+					continue;
 				rec->var_name_q = tstep->var_info.var_name_quark;
 			}
 		}
@@ -6555,9 +6557,10 @@ static void _g2SetFileDimsAndCoordVars
     last = NULL;
 
     while (step != NULL) {
+        step->ref_rec = NULL;
 	for(i = 0; i < step->n_entries; i++) {
 		if(step->thelist[i].rec_inq != NULL) {
-			g2inqrec = step->thelist[i].rec_inq;
+			g2inqrec = step->ref_rec = step->thelist[i].rec_inq;
 			break;
 		}
 	}
@@ -12963,7 +12966,7 @@ static void _g2UpdateGridTypeAttribute
 					continue;
 				}
 				tmp_string = (NrmQuark *) step_att->att_inq->thevalue->multidval.val;
-				if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 3, 
+				if (Grib2ReadCodeTable(step->ref_rec->table_source, 3, 
 						       "3.1.table",step->grid_number,-1,ct) < NhlWARNING) {
 					return;
 				}
