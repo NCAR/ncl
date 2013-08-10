@@ -791,7 +791,8 @@ begin
   ncolors    = dimsizes(rgb_array(:,0))
   rgba_array = new((/ncolors,4/),typeof(rgb_array))
   rgba_array(:,0:2) = rgb_array
-  rgba_array(:,3)   = 1.0
+  rgba_array(:,3) = where(.not.ismissing(rgb_array(:,2)),1.0,\
+                           rgba_array@_FillValue)
   return(rgba_array)
 end
 
