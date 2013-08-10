@@ -772,6 +772,30 @@ begin
 end
 
 ;***********************************************************************;
+; This function returns the RGBA triplets associated with a 
+; given list of named colors.  The "A" value is always returned 
+; as the value of 1.0. This function basically calls namedcolor2rgb and
+; adds the "A" value.
+; 
+; A n x 4 array is returned, where "n" is the number of 
+; named colors input.
+;
+; If a color is not found, missing values are returned for 
+; that color.
+;***********************************************************************;
+undef("namedcolor2rgba")
+function namedcolor2rgba(names[*]:string)
+local rgb_array, rgba_array
+begin
+  rgb_array  = namedcolor2rgb(names)
+  ncolors    = dimsizes(rgb_array(:,0))
+  rgba_array = new((/ncolors,4/),typeof(rgb_array))
+  rgba_array(:,0:2) = rgb_array
+  rgba_array(:,3)   = 1.0
+  return(rgba_array)
+end
+
+;***********************************************************************;
 ; Given two named colors and the number of colors, this
 ; function creates a series of RGB triplets that spans
 ; between the two colors.
