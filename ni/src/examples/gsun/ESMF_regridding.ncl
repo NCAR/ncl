@@ -14,6 +14,13 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Important modifications:
+;       14 Aug 2013:
+;           Added TriangularMesh, so that user can input own 
+;           triangular mesh to unstruct_to_ESMF code. This
+;           is to get around the issue of csstri being slow,
+;           and potentially chewing up memory (need to verify the
+;           memory hog claim).
+;
 ;       25 Oct 2012:
 ;           The LargeFile option is now True by default.
 ;
@@ -946,11 +953,24 @@ begin
       inputFName = "none provided"
     end if
 
-;---Triangulate and get the element connectivity
-    if(DEBUG) then
-      print("unstructured_to_ESMF: triangulating the data ... this can be slow")
+;---Was a triangular mesh provided?
+    if(Opt.and.isatt(Opt,"TriangularMesh")) then
+      dims = dimsizes(Opt@TriangularMesh)
+      if(dims(1).ne.3) then
+        print("unstructured_to_ESMF: TriangularMesh must be an n x 3 array")
+        exit
+      else
+        if(DEBUG) then
+          print("unstructured_to_ESMF: using triangular mesh provided by the user")
+        end if
+        ElementVertices = Opt@TriangularMesh
+      end if
+    else
+      if(DEBUG) then
+        print("unstructured_to_ESMF: triangulating the data ... this can be slow")
+      end if
+      ElementVertices = csstri(lat,lon)       ; Triangulate
     end if
-    ElementVertices = csstri(lat,lon)
     if(DEBUG) then
       print("min/max ElementVertices = " + min(ElementVertices) + "/" + \
                                            max(ElementVertices))
@@ -2879,7 +2899,8 @@ begin
 ; set, like "opt@Overwrite", then ignore the specific
 ; attribute, like "opt@SrcOverwrite".
 ;
-  spc_atts = (/"Mask2D","LargeFile","Title","LLCorner","URCorner", \
+  spc_atts = (/"Mask2D","TriangularMesh","LargeFile",\
+               "Title","LLCorner","URCorner", \
                "Rotation","GridCornerLat","GridCornerLon",\
                "InputFileName","Overwrite","ForceOverwrite"/)
   do i=0,dimsizes(spc_atts)-1
