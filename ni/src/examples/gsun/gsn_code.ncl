@@ -4628,13 +4628,124 @@ begin
 end
 
 ;***********************************************************************;
+; Function : gsn_shapefile_polylines                                    ;
+;                   wks: workstation object                             ;
+;                plotid: plot object                                    ;
+;                 fname: Name of shapefile ("xxxx.shp")                 ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; ANY CHANGES MADE TO THIS CODE SHOULD POTENTIALLY BE MADE TO           ;
+; gsn_add_shapefile_polylines BELOW!!                                   ;
+;                                                                       ;
+; This function draws shapefile polylines on the plot "plotid".         ;
+; See gsn_add_shapefile_polylines if you want to add them instead (this ;
+; can be much slower).                                                  ;
+;                                                                       ;
+; In version 6.1.0, some code was added to add checks if the lat/lon    ;
+; segments are within the range of the map. This works best for a C.E.  ;
+; map. You have to set the special min/max/lat/lon attributes for this  ;
+; to work.  I won't advertise this yet, because the interface could     ;
+; probably be made better.                                              ;
+;***********************************************************************;
+undef("gsn_shapefile_polylines")
+procedure gsn_shapefile_polylines(wks,plot,fname:string,lnres)
+local f, segments, geometry, segsDims, geomDims, geom_segIndex, \
+geom_numSegs, segs_xyzIndex, segs_numPnts, numFeatures, i, lat, lon, \
+startSegment, numSegments, seg, startPT, endPT
+begin
+;---Open the shapefile
+  f = addfile(fname,"r")
+
+;---Error checking
+  if(ismissing(f)) then
+    print("Error: gsn_shapefile_polylines: Can't open shapefile '" + \
+           fname + "'")
+    print("       No shapefile information will be added.")
+    return(new(1,graphic))
+  end if
+
+;---We can't use this routine to plot point data
+  if(.not.any(f@geometry_type.eq.(/"polygon","polyline"/))) then
+    print("Error: gsn_shapefile_polylines: geometry_type attribute must be 'polygon' or 'polyline'")
+    print("       No shapefile information will be added.")
+    return(new(1,graphic))
+  end if
+
+;---Read data off the shapefile
+  geomDims    = getfilevardimsizes(f,"geometry")
+  numFeatures = geomDims(0)
+  if(numFeatures.eq.0) then
+    print("Error: gsn_shapefile_polylines: the number of features in this file is 0.")
+    print("       No shapefile information will be added.")
+    return(new(1,graphic))
+  end if
+
+  segments = f->segments
+  geometry = f->geometry
+  segsDims = dimsizes(segments)
+
+;---Read global attributes  
+  geom_segIndex = f@geom_segIndex
+  geom_numSegs  = f@geom_numSegs
+  segs_xyzIndex = f@segs_xyzIndex
+  segs_numPnts  = f@segs_numPnts
+
+;---Section to attach polylines to plot.
+  lon = f->x
+  lat = f->y
+;
+; Special check for minlat/maxlat/minlon/maxlon attributes.
+;
+; If set, then each lat/lon segment will be checked if it's
+; in the range.  This can speed up plotting, but I need to
+; verify this!
+; 
+  if(isatt(lnres,"minlon").and.isatt(lnres,"maxlon").and.\
+     isatt(lnres,"minlat").and.isatt(lnres,"maxlat")) then
+    do i=0, numFeatures-1  
+       startSegment = geometry(i, geom_segIndex)
+       numSegments  = geometry(i, geom_numSegs)
+       do seg=startSegment, startSegment+numSegments-1
+          startPT = segments(seg, segs_xyzIndex)
+          endPT   = startPT + segments(seg, segs_numPnts) - 1
+          lat_sub = lat(startPT:endPT)
+          lon_sub = lon(startPT:endPT) 
+          if(.not.(all(lon_sub.lt.lnres@minlon).or. \
+                   all(lon_sub.gt.lnres@maxlon).or. \
+                   all(lat_sub.lt.lnres@minlat).or. \
+                   all(lat_sub.gt.lnres@maxlat))) then
+            gsn_polyline(wks, plot, lon_sub, lat_sub, lnres)
+          end if
+          delete([/lat_sub,lon_sub/])
+       end do
+    end do
+  else       ; Don't do any range checking. 
+    do i=0, numFeatures-1  
+       startSegment = geometry(i, geom_segIndex)
+       numSegments  = geometry(i, geom_numSegs)
+       do seg=startSegment, startSegment+numSegments-1
+          startPT = segments(seg, segs_xyzIndex)
+          endPT   = startPT + segments(seg, segs_numPnts) - 1
+          gsn_polyline(wks, plot, lon(startPT:endPT),  \
+                                  lat(startPT:endPT), lnres)
+       end do
+    end do
+  end if
+end
+
+;***********************************************************************;
 ; Function : gsn_add_shapefile_polylines                                ;
 ;                   wks: workstation object                             ;
 ;                plotid: plot object                                    ;
 ;                 fname: Name of shapefile ("xxxx.shp")                 ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
+; ANY CHANGES MADE TO THIS CODE SHOULD POTENTIALLY BE MADE TO           ;
+; gsn_shapefile_polylines ABOVE!!                                       ;
+;                                                                       ;
 ; This function attaches shapefile polylines to the plot "plotid".      ;
+; See gsn_shapefile_polylines if you want to just draw them.            ; 
+; can be much faster).                                                  ;
 ;                                                                       ;
 ; In version 6.1.0, some code was added to add checks if the lat/lon    ;
 ; segments are within the range of the map. This works best for a C.E.  ;
