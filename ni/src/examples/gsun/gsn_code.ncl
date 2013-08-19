@@ -3873,6 +3873,14 @@ begin
       end if
     end if
 
+    ; This 5-line block addresses Jira 1750; we test to make sure the target directory
+    ; exists and is writable.
+    cmdStr = "if [ -w " + res_dir + " ] ; then echo 1 ; else echo 0 ; fi"
+    if (type.ne."x11" .and. systemfunc(cmdStr).ne.1) then
+        print("gsn_open_wks: Error: directory '" + res_dir + "' does not exist or lacks write permissions.");
+        status_exit(1)
+    end if
+
     appid = create res_file appClass defaultapp
         "appDefaultParent" : True
         "appUsrDir"        : res_dir
