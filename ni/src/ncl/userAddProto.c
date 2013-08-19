@@ -184,6 +184,8 @@ void
 #endif
 );
 
+extern NhlErrorTypes _NclgetNbitsFromUint64();
+
 extern NhlErrorTypes _Nclstr_get_comma();
 extern NhlErrorTypes _Nclstr_get_space();
 extern NhlErrorTypes _Nclstr_get_tab();
@@ -421,6 +423,15 @@ void NclAddUserBuiltInFuncs
     SetArgTemplate(args, nargs, "list",   1, dimsizes); nargs++;
     SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
     NclRegisterProc(_Nclwrite_table, args, "write_table", nargs);
+    
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args, nargs, "uint64", 0, NclANY); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes); nargs++;
+    NclRegisterFunc(_NclgetNbitsFromUint64, args, "getNbitsFromUint64", nargs);
 
     return;
 }

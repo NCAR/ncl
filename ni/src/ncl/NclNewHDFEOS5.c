@@ -35,16 +35,16 @@
 
 #include "AdvancedFileSupport.h"
 
-#define HE5_BUF_SIZE 4096
+#define HE5_BUF_SIZE	32768
 #define MAX_SW  4
 #define MAX_GD  4
 #define MAX_PT  4
 #define MAX_ZA  4
 #define MAX_DIM 32
-#define MAX_ATT 32
-#define MAX_FLD 256
+#define MAX_ATT 128
+#define MAX_FLD 1024
 #define MAX_LVL 128
-#define MAX_VAR 256
+#define MAX_VAR 1024
 
 typedef enum {SWATH, POINT, GRID, ZA} HE5Type;
 
@@ -3240,9 +3240,13 @@ static void *_readHE5SwathVar(NclFileGrpNode *grpnode, NclQuark thevar,
     char *tmp_hdf_name;
     hsize_t total_size = 1;
 
+    char path_string[1024];
+    char extension_string[16];
+
   /*
    *fprintf(stderr, "\nEnter _readHE5SwathVar, file: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tthevar: <%s>\n", NrmQuarkToString(thevar));
+   *fprintf(stderr, "\tpath: <%s>\n", NrmQuarkToString(grpnode->path));
    */
 
     varnode = _getVarNodeFromNclFileGrpNode(grpnode, thevar);
@@ -3258,7 +3262,15 @@ static void *_readHE5SwathVar(NclFileGrpNode *grpnode, NclQuark thevar,
     }
 
 #if 1
-    fid = HE5_SWopen(NrmQuarkToString(grpnode->path),H5F_ACC_RDONLY);
+    strcpy(path_string, NrmQuarkToString(grpnode->path));
+    strcpy(extension_string, NrmQuarkToString(grpnode->extension));
+
+    if(NULL == strstr(path_string, extension_string))
+    {
+        strcat(path_string, ".");
+        strcat(path_string, extension_string);
+    }
+    fid = HE5_SWopen(path_string,H5F_ACC_RDONLY);
     tmp_hdf_name = _make_proper_string_end(NrmQuarkToString(varnode->real_name));
     did = HE5_SWattach(fid,tmp_hdf_name);
 #else

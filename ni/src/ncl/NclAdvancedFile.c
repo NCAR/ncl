@@ -193,6 +193,74 @@ void _NclFileEnumRealloc(NclFileEnumRecord **enum_rec)
     }
 }
 
+NclQuark* _NclSplitString(NclQuark str, int *ns)
+{
+    int n;
+
+    char delim[2] = "/";
+    char *tmp_str;
+    char *result = NULL;
+    NclQuark *arraySubString;
+
+    int max_length = 4;
+    
+  /*
+   *fprintf(stderr, "\nEnter _Nclstr_split, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tstr: <%s>\n", NrmQuarkToString(str));
+   */
+
+    arraySubString = (NclQuark *) NclMalloc(max_length * sizeof(NclQuark));
+    if(NULL == arraySubString)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return 0;
+    }
+
+    n = strlen((char *) NrmQuarkToString(str)) + 2;
+    tmp_str = (char *) NclMalloc(n);
+    if(NULL == tmp_str)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return 0;
+    }
+
+    strcpy(tmp_str, (char *) NrmQuarkToString(str));
+    result = strtok(tmp_str, delim);
+    n = 0;
+    while(result != NULL)
+    {
+        arraySubString[n] = NrmStringToQuark(result);
+
+      /*
+       *fprintf(stderr, "\tsubString[%d] = <%s>\n", n, result);
+       */
+        ++n;
+        if(n >= max_length)
+        {
+            max_length *= 2;
+            arraySubString = (NclQuark *) NclRealloc(arraySubString, max_length*sizeof(NclQuark));
+            if(NULL == arraySubString)
+            {
+                NHLPERROR((NhlFATAL,ENOMEM,NULL));
+                return 0;
+            }
+        }
+        result = strtok(NULL, delim);
+    }
+
+    if(n)
+        arraySubString = (NclQuark *) NclRealloc(arraySubString, n*sizeof(NclQuark));
+    else
+    {
+        NclFree(arraySubString);
+        arraySubString = NULL;
+    }
+
+    *ns = n;
+
+    return arraySubString;
+}
+
 char *_getComponentName(const char *fullname, char **structname)
 {
     size_t ns = 1;
@@ -351,20 +419,45 @@ void _printNclTypeVal(FILE *fp, NclBasicDataTypes type, void *val, int newline)
              break;
             }
         case NCL_float:
+        {
+             float *v = (float *)val;
+             nclfprintf(fp, "%s%f", blank_space, v[0]);
+             break;
+            }
         case NCL_double:
         {
              double *v = (double *)val;
              nclfprintf(fp, "%s%f", blank_space, v[0]);
              break;
             }
-        case NCL_byte:
-        case NCL_ubyte:
-        case NCL_short:
-        case NCL_ushort:
         case NCL_int:
         case NCL_uint:
+        {
+             int *v = (int *)val;
+             nclfprintf(fp, "%s%d", blank_space, v[0]);
+             break;
+            }
+        case NCL_byte:
+        case NCL_ubyte:
+        {
+             char *v = (char *)val;
+             nclfprintf(fp, "%s%d", blank_space, (int)v[0]);
+             break;
+            }
+        case NCL_short:
+        case NCL_ushort:
+        {
+             short *v = (short *)val;
+             nclfprintf(fp, "%s%d", blank_space, (int)v[0]);
+             break;
+            }
         case NCL_long:
         case NCL_ulong:
+        {
+             long *v = (long *)val;
+             nclfprintf(fp, "%s%ld", blank_space, v[0]);
+             break;
+            }
         case NCL_int64:
         case NCL_uint64:
         {
@@ -2037,6 +2130,9 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
     char *struct_name = NULL;
     char *component_name = NULL;
 
+    NclQuark *gname = NULL;
+    int gnumb = 0;
+
   /*
    *fprintf(stderr, "\nHit _getVarNodeFromNclFileGrpNode, file: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tgrpname: <%s>\n", NrmQuarkToString(grpnode->name));
@@ -2057,6 +2153,14 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
         free(struct_name);
     }
 
+    gname = _NclSplitString(vn, &gnumb);
+
+    if(gnumb)
+    {
+        vn = gname[gnumb-1];
+        NclFree(gname);
+    }
+
     if(NULL != grpnode->var_rec)
     {
         for(n = 0; n < grpnode->var_rec->n_vars; n++)
@@ -2067,6 +2171,7 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
            *fprintf(stderr, "\tvar no %d, name: <%s>, real_name: <%s>\n", n, 
            *        NrmQuarkToString(varnode->name), NrmQuarkToString(varnode->real_name));
            */
+
             if(NULL == varnode)
                 continue;
 
@@ -4964,6 +5069,14 @@ static struct _NclMultiDValDataRec *AdvancedFileReadVarAtt(NclFile infile,
             AdvancedLoadVarAtts(thefile, var);
 
         tmp_md = _NclGetAtt(varnode->att_rec->id,NrmQuarkToString(attname),sel_ptr);
+
+        if(NULL == tmp_md)
+	{
+    		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+        		"AdvancedFileReadVarAtt: (%s) is not an attribute of (%s)",
+         		NrmQuarkToString(attname),NrmQuarkToString(var)));
+    		return(_NclCreateMissing());
+	}
 
         if (attname != NrmStringToQuark("_FillValue")) 
             return (tmp_md);

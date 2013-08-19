@@ -4865,6 +4865,125 @@ NhlErrorTypes _Nclwrite_table(void)
     return(NhlNOERROR);
 }
 
+NhlErrorTypes _NclgetNbitsFromUint64()
+{
+    unsigned long long *ui64;
+    int *nskip;
+    int *nbits;
+
+    int ndim_ui64;
+    int has_missing_ui64;
+    int has_missing_ret = 0;
+
+    NclScalar missing_ui64;
+    NclScalar ret_missing;
+  
+    ng_size_t dimsz_ui64[NCL_MAX_DIMENSIONS];
+    ng_size_t i;
+
+    unsigned long long *newui64;
+    unsigned long long mask = 1;
+    ng_size_t total_size;
+    
+    ui64 = (unsigned long long *) NclGetArgValue(
+                        0,
+                        3,
+                        &ndim_ui64,
+                        dimsz_ui64,
+                        &missing_ui64,
+                        &has_missing_ui64,
+                        NULL,
+                        DONT_CARE);
+
+    if(NULL == ui64)
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "getNbitsFromUint64: input uint64 array is null.");
+        return NhlFATAL;
+    }
+
+    nskip = (int *) NclGetArgValue(
+                        1,
+                        3,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        DONT_CARE);
+
+    if(NULL == nskip)
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "getNbitsFromUint64: input nskip is null.");
+        return NhlFATAL;
+    }
+
+    nbits = (int *) NclGetArgValue(
+                        2,
+                        3,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        DONT_CARE);
+
+    if(NULL == nbits)
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "getNbitsFromUint64: input nbits is null.");
+        return NhlFATAL;
+    }
+
+    if(has_missing_ui64)
+        ret_missing.uint64val = missing_ui64.uint64val;
+    else
+        ret_missing.uint64val = (uint64) ((NclTypeClass) nclTypeuint64Class)->type_class.default_mis.uint64val;
+
+    total_size = 1;
+    for(i=0; i<ndim_ui64; i++)
+        total_size *= dimsz_ui64[i];
+
+    newui64 = (unsigned long long *) NclMalloc(total_size*sizeof(unsigned long long));
+    if (! newui64)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
+
+    mask = 1;
+    for(i = 1; i < nbits[0]; ++i)
+    {
+        mask = mask << 1;
+        ++mask;
+    }
+
+    if(has_missing_ui64)
+    {
+        for(i=0; i<total_size; i++)
+        {
+            if(ui64[i] == missing_ui64.uint64val)
+            {
+                has_missing_ret = 1;
+	        newui64[i] = ret_missing.uint64val;
+            }
+            else
+            {
+                newui64[i] = (ui64[i] >> nskip[0]) & mask;
+            }
+        }
+    }
+    else
+    {
+        has_missing_ret = 0;
+        for(i=0; i<total_size; i++)
+        {
+            newui64[i] = (ui64[i] >> nskip[0]) & mask;
+        }
+    }
+
+    return NclReturnValue(newui64, ndim_ui64, dimsz_ui64, (has_missing_ret ? &ret_missing : NULL), NCL_uint64, 0);
+
+}
+
 #ifdef __cplusplus
 }
 #endif

@@ -153,7 +153,7 @@ int NclDriver(int argc, char **argv)
                 break;
 
             case 'f':
-                NCLnewfs = 1;
+                NCLuseAFS = 1;
                 break;
 
             case 'h':

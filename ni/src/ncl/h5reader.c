@@ -4290,8 +4290,8 @@ herr_t _NclHDF5search_obj(char *name, H5O_info_t *oinfo,
 herr_t _NclHDF5search_link(char *name, H5O_info_t *oinfo, void *_NclHDF5Rec)
 {
 #if DEBUG_NCL_HDF5
-#endif
     fprintf(stderr, "\nEntering _NclHDF5search_link, name = <%s>, at file: %s, line: %d\n", name, __FILE__, __LINE__);
+#endif
 
 #if 0
     NclHDF5FileRec_t *NclHDF5FileRec = (NclHDF5FileRec_t*)_NclHDF5Rec;
@@ -4381,8 +4381,8 @@ herr_t _NclHDF5search_link(char *name, H5O_info_t *oinfo, void *_NclHDF5Rec)
     }
 #endif
 #if DEBUG_NCL_HDF5
-#endif
     fprintf(stderr, "Leaving _NclHDF5search_link, at file: %s, line: %d\n\n", __FILE__, __LINE__);
+#endif
     return SUCCEED;
 }
 

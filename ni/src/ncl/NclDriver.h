@@ -43,7 +43,7 @@ extern short   NCLnoCopyright;
 extern short   NCLnoPrintElem;
 extern short   NCLnoSysPager;
 extern short   NCLoldBehavior;
-extern short   NCLnewfs;
+extern short   NCLuseAFS;
 extern short   NCLdebug_on;
 
 #ifdef NCLDEBUG
