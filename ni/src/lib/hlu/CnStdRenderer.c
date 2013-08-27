@@ -2013,7 +2013,10 @@ static NhlIsoLine *CnStdGetIsoLines
 		float *xloc = NULL, *yloc = NULL;
 		int current_seg_alloc = 10;
 		int current_point_count = 0;
-		int current_seg = 0;
+		int current_seg = -1;
+		float save_xloc, save_yloc;
+		int same_segment;
+		int npoints_in_cur_segment;
 
 		flag = 0;
 /*
@@ -2035,13 +2038,26 @@ static NhlIsoLine *CnStdGetIsoLines
 
 			if (flag == 0)
 				break;
-			if (current_seg == 0) {
+			if (current_seg == -1) {
 				ilp->x = NhlMalloc(sizeof(float) * npoints);
 				ilp->y = NhlMalloc(sizeof(float) * npoints);
+				save_xloc = xloc[npoints-1];
+				save_yloc = yloc[npoints-1];
+				same_segment = 0;
 			}
 			else {
 				ilp->x = NhlRealloc(ilp->x, sizeof(float) * (current_point_count + npoints));
 				ilp->y = NhlRealloc(ilp->y, sizeof(float) * (current_point_count + npoints));
+				if (xloc[0] == save_xloc && yloc[0] == save_yloc) {
+					same_segment = 1;
+					npoints_in_cur_segment += npoints;
+				}
+				else {
+					same_segment = 0;
+					npoints_in_cur_segment = npoints;
+				}
+				save_xloc = xloc[npoints-1];
+				save_yloc = yloc[npoints-1];
 			}
 			
 			if ( tfp->overlay_trans_obj && tfp->overlay_trans_obj != tfp->trans_obj && ! ezmap) {
@@ -2103,20 +2119,27 @@ static NhlIsoLine *CnStdGetIsoLines
 				}
 				npoints = k - current_point_count;
 			}
-
-			if (current_seg == 0) {
-				ilp->n_points = NhlMalloc(sizeof(int) * current_seg_alloc);
-				ilp->start_point = NhlMalloc(sizeof(int) * current_seg_alloc);
+			if (npoints == 0) 
+				continue;
+			if (same_segment) {
+				ilp->n_points[current_seg] += npoints;
 			}
-			else if (current_seg == current_seg_alloc) {
-				ilp->n_points = NhlRealloc(ilp->n_points,sizeof(int) * current_seg_alloc * 2);
-				ilp->start_point = NhlRealloc(ilp->start_point,sizeof(int) * current_seg_alloc * 2);
-				current_seg_alloc *= 2;
+			else {
+				current_seg++;
+				if (current_seg == 0) {
+					ilp->n_points = NhlMalloc(sizeof(int) * current_seg_alloc);
+					ilp->start_point = NhlMalloc(sizeof(int) * current_seg_alloc);
+				}
+				else if (current_seg == current_seg_alloc) {
+					ilp->n_points = NhlRealloc(ilp->n_points,sizeof(int) * current_seg_alloc * 2);
+					ilp->start_point = NhlRealloc(ilp->start_point,sizeof(int) * current_seg_alloc * 2);
+					current_seg_alloc *= 2;
+				}
+				ilp->n_points[current_seg] = npoints;
+				ilp->start_point[current_seg] = current_point_count; 	
 			}
-			ilp->n_points[current_seg] = npoints; 	
-			ilp->start_point[current_seg] = current_point_count; 	
 			current_point_count += npoints;
-			current_seg++;
+			
 /*				
 			printf("\t%d points: ",npoints);
 			for (j = 0; j < npoints; j++) {
@@ -2126,7 +2149,7 @@ static NhlIsoLine *CnStdGetIsoLines
 */
 		}
 		ilp->point_count = current_point_count;
-		ilp->n_segments = current_seg;
+		ilp->n_segments = current_seg + 1;
 	}
 
 	if (cnp->fws != NULL) {
