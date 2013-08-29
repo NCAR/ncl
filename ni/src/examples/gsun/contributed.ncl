@@ -1408,17 +1408,26 @@ end
 
 undef("get1Dindex")
 function get1Dindex (cv[*],  cvWant[*])
-local nWant, indWant, n
+local nWant, indWant, n, indcv, nMult
+
 begin
   nWant   = dimsizes (cvWant)
   indWant = new (nWant, "integer")
+  nMult   = 0
 
   do n=0,nWant-1
-     indWant(n) = ind( cv.eq.cvWant(n) )
+     indcv     := ind( cv.eq.cvWant(n) ) ; could be multiple values
+     indWant(n) = indcv(0)               ; return the 1st if multiple indcv
+     if (dimsizes(indcv).gt.1) then
+         nMult = nMult + 1
+     end if
   end do
 
-  return (indWant)        
-end
+  indWant@index_info = "Out of nWant="+nWant+" : multiple index occurrences="+nMult
+  indWant@nMultInd   = nMult
+
+  return (indWant)
+end 
 
 ; *******************************************************************
 ; u.utku.turuncoglu@be.itu.edu.tr
