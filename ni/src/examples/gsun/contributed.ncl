@@ -1398,6 +1398,28 @@ begin
   return(uv)
 end
 
+; **************************************************************
+; D. Shea
+; Loops thru a 1D variable [eg, time] and finds
+; the indices which match up with the values of the cvWant 1D array
+; e.g. time_want = (/1948, 1957, 1964, 1965, 1989/)
+; indWant   = get1Dindex (time, time_want)
+; note that the values of cvWant must EXIST in cv
+
+undef("get1Dindex")
+function get1Dindex (cv[*],  cvWant[*])
+local nWant, indWant, n
+begin
+  nWant   = dimsizes (cvWant)
+  indWant = new (nWant, "integer")
+
+  do n=0,nWant-1
+     indWant(n) = ind( cv.eq.cvWant(n) )
+  end do
+
+  return (indWant)        
+end
+
 ; *******************************************************************
 ; u.utku.turuncoglu@be.itu.edu.tr
 ; The following procedure to sorts x,y coordinate pair based on
@@ -1445,28 +1467,6 @@ begin
   end if
 end
 
-
-; **************************************************************
-; D. Shea
-; Loops thru a 1D variable [eg, time] and finds
-; the indices which match up with the values of the cvWant 1D array
-; e.g. time_want = (/1948, 1957, 1964, 1965, 1989/)
-; indWant   = get1Dindex (time, time_want)
-; note that the values of cvWant must EXIST in cv
-
-undef("get1Dindex")
-function get1Dindex (cv[*],  cvWant[*])
-local nWant, indWant, n
-begin
-  nWant   = dimsizes (cvWant)
-  indWant = new (nWant, "integer")
-
-  do n=0,nWant-1
-     indWant(n) = ind( cv.eq.cvWant(n) )
-  end do
-
-  return (indWant)        
-end
 ;********************************************************************
 ; D. Shea
 ; set a _FillValue "automatically" 
