@@ -1459,7 +1459,7 @@ function get1Dindex (cv[*],  cvWant[*])
 local nWant, indWant, n
 begin
   nWant   = dimsizes (cvWant)
-  indWant = new (nWant, typeof(dimsizes(cv)))
+  indWant = new (nWant, "integer")
 
   do n=0,nWant-1
      indWant(n) = ind( cv.eq.cvWant(n) )
