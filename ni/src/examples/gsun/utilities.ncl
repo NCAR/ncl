@@ -248,27 +248,27 @@ begin
 
   ; normalize the values...(oh for true if-elseif!)
   ; this logical taken directly from HLU code in "Palette.c"
-  if (maxValue.lt.256) then
+  if (maxValue.le.1) then
+      cmap(:,3) = where(cmap(:,3).lt.0, 1., cmap(:,3))
+  else if (maxValue.lt.256) then
       cmap(:,3) = where(cmap(:,3).lt.0, 255., cmap(:,3))
       cmap = cmap / 255.
-  else 
-      if (maxValue.eq.256) then
-          cmap(:,3) = where(cmap(:,3).lt.0, 256., cmap(:,3))
-          cmap = cmap / 256.
-      else 
-          if (maxValue.eq.65536) then
-              cmap(:,3) = where(cmap(:,3).lt.0, 65535., cmap(:,3))
-              cmap = cmap / 65535. 
-          else 
-              if (maxValue.eq.65536) then
-                  cmap(:,3) = where(cmap(:,3).lt.0, 65536., cmap(:,3))
-                  cmap = cmap / 65536.
-              else
-                  cmap(:,3) = where(cmap(:,3).lt.0, maxValue, cmap(:,3))
-                  cmap = cmap / maxValue
-              end if
-          end if 
-      end if
+  else if (maxValue.eq.256) then
+      cmap(:,3) = where(cmap(:,3).lt.0, 256., cmap(:,3))
+      cmap = cmap / 256.
+  else if (maxValue.eq.65536) then
+      cmap(:,3) = where(cmap(:,3).lt.0, 65535., cmap(:,3))
+      cmap = cmap / 65535. 
+  else if (maxValue.eq.65536) then
+      cmap(:,3) = where(cmap(:,3).lt.0, 65536., cmap(:,3))
+      cmap = cmap / 65536.
+  else
+      cmap(:,3) = where(cmap(:,3).lt.0, maxValue, cmap(:,3))
+      cmap = cmap / maxValue
+  end if
+  end if 
+  end if
+  end if
   end if
         
   return cmap
