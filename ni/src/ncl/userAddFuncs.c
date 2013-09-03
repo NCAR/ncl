@@ -65,7 +65,6 @@ extern "C" {
 #include "NclFileInterfaces.h"
 #include <signal.h>
 #include <netcdf.h>
-#include <regex.h>
 #include <ctype.h>
 
 #define MAX_PRINT_SPACES	128
@@ -3591,13 +3590,11 @@ NhlErrorTypes _Nclstr_match
     NclBasicDataTypes type;
 
     char *tmp_str;
+    char *tmp_exp;
     NclQuark *output_strs;
     ng_size_t i;
     ng_size_t str_size;
     ng_size_t output_str_size = 0;
-
-    regex_t expr;
-    regmatch_t rm;
 
   /*
    *fprintf(stderr, "in file: %s, line: %d\n", __FILE__, __LINE__);
@@ -3651,46 +3648,6 @@ NhlErrorTypes _Nclstr_match
         return NhlFATAL;
     }
 
-    if(type == NCL_string)
-    {
-        char *reg_exp = NrmQuarkToString(input_expr[0]);
-      /*
-       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\treg_exp: <%s>\n", reg_exp);
-       *fprintf(stderr, "\tstrlen(reg_exp) = %d\n", strlen(reg_exp));
-       */
-
-        if(strlen(reg_exp) > 0)
-        {
-            if(regcomp(&expr,reg_exp,REG_EXTENDED) != 0)
-            {
-                NhlPError(NhlWARNING,NhlEUNKNOWN,"str_match: Invalid expression");
-                return NhlFATAL;
-            }
-        }
-        else
-        {
-            str_size = 1;
-
-            output_strs = (NclQuark *) NclMalloc(str_size*sizeof(NclQuark));
-            if (! output_strs)
-            {
-                NHLPERROR((NhlFATAL,ENOMEM,NULL));
-                return NhlFATAL;
-            }
-            
-            output_str_size = 1;
-            output_strs[0] = ret_missing.stringval;
-            return NclReturnValue(output_strs, 1, &output_str_size,
-                                  &ret_missing, NCL_string, 0);
-        }
-    }
-    else
-    {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match: input expression is not a string.");
-        return NhlFATAL;
-    }
-
     str_size = 1;
     for(i=0; i<ndim_input_strs; i++)
         str_size *= dimsz_input_strs[i];
@@ -3701,6 +3658,11 @@ NhlErrorTypes _Nclstr_match
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
         return NhlFATAL;
     }
+
+    tmp_exp = (char *) NrmQuarkToString(input_expr[0]);
+  /*
+   *fprintf(stderr, "\tinput_expr: <%s>\n", tmp_exp);
+   */
 
     for(i=0; i<str_size; i++)
     {
@@ -3720,7 +3682,7 @@ NhlErrorTypes _Nclstr_match
        *fprintf(stderr, "\tinput_strs[%d]: <%s>\n", i, tmp_str);
        */
 
-        if(regexec(&expr,tmp_str,1,&rm,0) == 0)
+        if(NULL != strstr(tmp_str, tmp_exp))
         {
             output_strs[output_str_size] = input_strs[i];
           /*
@@ -3769,17 +3731,15 @@ NhlErrorTypes _Nclstr_match_ic
     NclBasicDataTypes type;
 
     char *tmp_str;
+    char *tmp_exp;
     NclQuark *output_strs;
-    ng_size_t i;
+    ng_size_t i, n;
     ng_size_t str_size;
     ng_size_t output_str_size = 0;
 
-    regex_t expr;
-    regmatch_t rm;
-
-  /*
-   *fprintf(stderr, "in file: %s, line: %d\n", __FILE__, __LINE__);
-   */
+    ng_size_t nstr = 1024;
+    char *low_str;
+    char *low_exp;
 
     input_strs = (NclQuark *) NclGetArgValue(
                         0,
@@ -3829,27 +3789,36 @@ NhlErrorTypes _Nclstr_match_ic
         return NhlFATAL;
     }
 
-    if(type == NCL_string)
+    tmp_exp = (char *) NrmQuarkToString(input_expr[0]);
+
+    low_exp = (char *)NclMalloc((strlen(tmp_exp) + 1) * sizeof(char));
+    if(NULL == low_exp)
     {
-        char *reg_exp = NrmQuarkToString(input_expr[0]);
-      /*
-       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\treg_exp: <%s>\n", reg_exp);
-       */
-        if(strlen(reg_exp) > 0)
-        {
-            if(regcomp(&expr,reg_exp,REG_ICASE|REG_EXTENDED) != 0)
-            {
-                NhlPError(NhlWARNING,NhlEUNKNOWN,"str_match_ic: Invalid expression");
-                return NhlFATAL;
-            }
-        }
-    }
-    else
-    {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match_ic: input expression is not a string.");
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match_ic: Cannot allocate memory for working string.");
         return NhlFATAL;
     }
+
+    memset(low_exp, 0, strlen(tmp_exp) + 1);
+
+    for(n=0; n<strlen(tmp_exp); n++)
+    {
+        if((tmp_exp[n] >= 'A') && (tmp_exp[n] <= 'Z'))
+            low_exp[n] = tmp_exp[n] + 'a' - 'A';
+        else
+            low_exp[n] = tmp_exp[n];
+    }
+
+    low_str = (char *)NclMalloc(nstr * sizeof(char));
+    if(NULL == low_str)
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match_ic: Cannot allocate memory for working string.");
+        return NhlFATAL;
+    }
+
+  /*
+   *fprintf(stderr, "in file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tlower case input_expr: <%s>\n", low_exp);
+   */
 
     str_size = 1;
     for(i=0; i<ndim_input_strs; i++)
@@ -3876,11 +3845,34 @@ NhlErrorTypes _Nclstr_match_ic
         }
 
         tmp_str = (char *) NrmQuarkToString(input_strs[i]);
+
       /*
-       *fprintf(stderr, "\tinput_strs[%d]: <%s>\n", i, tmp_str);
+       *fprintf(stderr, "in file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tlower case input_str[%d]: <%s>\n", i, low_str);
        */
 
-        if(regexec(&expr,tmp_str,1,&rm,0) == 0)
+        if(nstr <= strlen(tmp_str))
+        {
+            nstr = 1 + strlen(tmp_str);
+            low_str = (char *)NclRealloc(low_str, nstr * sizeof(char));
+            if(NULL == low_str)
+            {
+                NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match_ic: Cannot allocate memory for working string.");
+                return NhlFATAL;
+            }
+        }
+
+        memset(low_str, 0, nstr);
+
+        for(n=0; n<strlen(tmp_str); n++)
+        {
+            if((tmp_str[n] >= 'A') && (tmp_str[n] <= 'Z'))
+                low_str[n] = tmp_str[n] + 'a' - 'A';
+            else
+                low_str[n] = tmp_str[n];
+        }
+
+        if(NULL != strstr(low_str, low_exp))
         {
             output_strs[output_str_size] = input_strs[i];
           /*
@@ -3890,6 +3882,9 @@ NhlErrorTypes _Nclstr_match_ic
             output_str_size ++;
         }
     }
+
+    NclFree(low_str);
+    NclFree(low_exp);
 
     if(output_str_size)
         output_strs = (NclQuark *) NclRealloc(output_strs, output_str_size*sizeof(NclQuark));
@@ -3929,13 +3924,11 @@ NhlErrorTypes _Nclstr_match_ind
     NclBasicDataTypes type;
 
     char *tmp_str;
+    char *tmp_exp;
     int *output_inds;
     ng_size_t i;
     ng_size_t str_size;
     ng_size_t output_ind_size = 0;
-
-    regex_t expr;
-    regmatch_t rm;
 
   /*
    *fprintf(stderr, "in file: %s, line: %d\n", __FILE__, __LINE__);
@@ -3979,23 +3972,11 @@ NhlErrorTypes _Nclstr_match_ind
         return NhlFATAL;
     }
 
-    if(type == NCL_string)
-    {
-        char *reg_exp = NrmQuarkToString(input_expr[0]);
-        if(strlen(reg_exp) > 0)
-        {
-            if(regcomp(&expr,reg_exp,REG_EXTENDED) != 0)
-            {
-                NhlPError(NhlWARNING,NhlEUNKNOWN,"str_match_ind: Invalid expression");
-                return NhlFATAL;
-            }
-        }
-    }
-    else
-    {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match_ind: input expression is not a string.");
-        return NhlFATAL;
-    }
+    tmp_exp = (char *) NrmQuarkToString(input_expr[0]);
+  /*
+   *fprintf(stderr, "in file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tinput_expr: <%s>\n", tmp_exp);
+   */
 
     str_size = 1;
     for(i=0; i<ndim_input_strs; i++)
@@ -4026,7 +4007,7 @@ NhlErrorTypes _Nclstr_match_ind
        *fprintf(stderr, "\tinput_strs[%d]: <%s>\n", i, tmp_str);
        */
 
-        if(regexec(&expr,tmp_str,1,&rm,0) == 0)
+        if(NULL != strstr(tmp_str, tmp_exp))
         {
             output_inds[output_ind_size] = i;
             output_ind_size ++;
@@ -4071,17 +4052,15 @@ NhlErrorTypes _Nclstr_match_ind_ic
     NclBasicDataTypes type;
 
     char *tmp_str;
+    char *tmp_exp;
     int *output_inds;
-    ng_size_t i;
+    ng_size_t i, n;
     ng_size_t str_size;
     ng_size_t output_ind_size = 0;
 
-    regex_t expr;
-    regmatch_t rm;
-
-  /*
-   *fprintf(stderr, "in file: %s, line: %d\n", __FILE__, __LINE__);
-   */
+    ng_size_t nstr = 1024;
+    char *low_str;
+    char *low_exp;
 
     input_strs = (NclQuark *) NclGetArgValue(
                         0,
@@ -4121,23 +4100,36 @@ NhlErrorTypes _Nclstr_match_ind_ic
         return NhlFATAL;
     }
 
-    if(type == NCL_string)
+    tmp_exp = (char *) NrmQuarkToString(input_expr[0]);
+
+    low_exp = (char *)NclMalloc((strlen(tmp_exp) + 1) * sizeof(char));
+    if(NULL == low_exp)
     {
-        char *reg_exp = NrmQuarkToString(input_expr[0]);
-        if(strlen(reg_exp) > 0)
-        {
-            if(regcomp(&expr,reg_exp,REG_ICASE|REG_EXTENDED) != 0)
-            {
-                NhlPError(NhlWARNING,NhlEUNKNOWN,"str_match_ind_ic: Invalid expression");
-                return NhlFATAL;
-            }
-        }
-    }
-    else
-    {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match_ind_ic: input expression is not a string.");
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match_ic: Cannot allocate memory for working string.");
         return NhlFATAL;
     }
+
+    memset(low_exp, 0, strlen(tmp_exp) + 1);
+
+    for(n=0; n<strlen(tmp_exp); n++)
+    {
+        if((tmp_exp[n] >= 'A') && (tmp_exp[n] <= 'Z'))
+            low_exp[n] = tmp_exp[n] + 'a' - 'A';
+        else
+            low_exp[n] = tmp_exp[n];
+    }
+
+    low_str = (char *)NclMalloc(nstr * sizeof(char));
+    if(NULL == low_str)
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match_ic: Cannot allocate memory for working string.");
+         return NhlFATAL;
+     }
+ 
+  /*
+   */
+    fprintf(stderr, "in file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tlower case input_expr: <%s>\n", low_exp);
 
     str_size = 1;
     for(i=0; i<ndim_input_strs; i++)
@@ -4168,7 +4160,28 @@ NhlErrorTypes _Nclstr_match_ind_ic
        *fprintf(stderr, "\tinput_strs[%d]: <%s>\n", i, tmp_str);
        */
 
-        if(regexec(&expr,tmp_str,1,&rm,0) == 0)
+        if(nstr <= strlen(tmp_str))
+        {
+            nstr = 101 + strlen(tmp_str);
+            low_str = (char *)NclRealloc(low_str, nstr * sizeof(char));
+            if(NULL == low_str)
+            {
+                NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match_ic: Cannot allocate memory for working string.");
+                return NhlFATAL;
+            }
+        }
+
+        memset(low_str, 0, nstr);
+
+        for(n=0; n<strlen(tmp_str); n++)
+        {
+            if((tmp_str[n] >= 'A') && (tmp_str[n] <= 'Z'))
+                low_str[n] = tmp_str[n] + 'a' - 'A';
+            else
+                low_str[n] = tmp_str[n];
+        }
+
+        if(NULL != strstr(low_str, low_exp))
         {
             output_inds[output_ind_size] = i;
             output_ind_size ++;
@@ -4187,6 +4200,9 @@ NhlErrorTypes _Nclstr_match_ind_ic
        */
         output_ind_size = 1;
     }
+
+    NclFree(low_str);
+    NclFree(low_exp);
 
     return NclReturnValue(output_inds, 1, &output_ind_size, ( has_missing ? &ret_missing : NULL ), NCL_int, 0);
 }
