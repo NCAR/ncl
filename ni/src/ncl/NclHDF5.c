@@ -1435,7 +1435,7 @@ void _setHDF5AttValue(HDF5AttInqRecList *new_att_list,
                  NclQuark *tmp_quark;
                  int latlon = 0;
 
-                 buffer = (char *)NclMalloc(attr_node->nbytes * sizeof(char));
+                 buffer = (char *)NclMalloc((1 + attr_node->nbytes) * sizeof(char));
                  if(!buffer)
                  {
                      NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for buffer, in file: %s, line: %d\n",

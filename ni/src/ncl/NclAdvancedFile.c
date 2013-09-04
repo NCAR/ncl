@@ -275,7 +275,7 @@ char *_getComponentName(const char *fullname, char **structname)
    */
 
     dot_ptr = strchr(fullname, '.');
-    if(dot_ptr)
+    if(dot_ptr && (NULL == strchr(dot_ptr, '/')))
     {
         ns = dot_ptr - fullname;
         nc = strlen(dot_ptr);
@@ -293,6 +293,11 @@ char *_getComponentName(const char *fullname, char **structname)
        *fprintf(stderr, "\tcname: <%s>\n", cname);
        *fprintf(stderr, "\tsname: <%s>\n", sname);
        */
+    }
+    else
+    {
+        sname = (char *) NclCalloc(strlen(fullname) + 1, sizeof(char));
+        strcpy(sname, fullname);
     }
 
     *structname = sname;
@@ -546,7 +551,11 @@ void _justPrintTypeVal(FILE *fp, NclBasicDataTypes type, void *val, int newline)
             }
         default:
             fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\tUNKNOWN type: 0%o, val (in char): <%s>", type, (char *)val);
+            fprintf(stderr, "\tUNKNOWN type: 0%o\n", type);
+          /*
+            fprintf(stderr, "\tUNKNOWN type: 0%o, val (in char): <%s>\n", type, (char *)val);
+           *_justPrintTypeVal(fp, NCL_char, val, newline);
+           */
             break;
     }
 
@@ -995,7 +1004,7 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
     float eval = 0.0;
     float* fptr;
     double* dptr;
-    char type_str[32];
+    char type_str[1024];
     int i;
     
     if(NULL == varnode)
@@ -1014,10 +1023,10 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
        */
     }
 
-    _justPrintTypeVal(fp, NCL_char, "Variable: ", 0);
-    _printNclTypeVal(fp, NCL_string, &(varnode->name), 1);
+    _printNclTypeVal(fp, NCL_char, "Variable: ", 0);
+    _justPrintTypeVal(fp, NCL_string, &(varnode->name), 1);
 
-    _justPrintTypeVal(fp, NCL_char, "Type: ", 0);
+    _printNclTypeVal(fp, NCL_char, "Type: ", 0);
     _justPrintTypeVal(fp, NCL_char, type_str, 1);
   
     dim_rec = varnode->dim_rec;

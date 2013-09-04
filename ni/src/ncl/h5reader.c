@@ -23,7 +23,10 @@ herr_t _NclHDF5check_obj(const char *filename, NclHDF5group_node_t **HDF5group)
     hid_t fid = FAILED;
     herr_t status = FAILED;
 
-    static char root_name[] = "/";
+  /*
+   *static char root_name[] = "/";
+   */
+    char root_name[4096] = "/";
 
     fid = H5Fopen(filename, H5F_ACC_RDONLY, H5P_DEFAULT);
 
@@ -664,7 +667,7 @@ NclHDF5data_t *_NclHDF5get_data_with_name(hid_t fid, char *dataset_name, NclHDF5
 
         strcpy(the_name, dataset_name);
         dot_ptr = strchr(the_name, '.');
-        if(dot_ptr)
+        if(dot_ptr && (NULL == strchr(dot_ptr, '/')))
         {
             strcpy(component, dot_ptr+1);
             dot_ptr[0] = '\0';
@@ -3171,8 +3174,10 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
                */
                 if ((tag=H5Tget_tag(type)))
                 {
-                    printf("\n%*s(tag = \"", ind, "");
-                    printf("%s\")", tag);
+                  /*
+                   *printf("\n%*s(tag = \"", ind, "");
+                   *printf("%s\")", tag);
+                   */
                     strcpy(NclHDF5datatype->format, tag);
                     free(tag);
                 }
@@ -3614,7 +3619,7 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
                 }
             }
 
-            new_str = NclMalloc(n*sizeof(char));
+            new_str = NclMalloc((n+1)*sizeof(char));
             j = 0;
             for(m = 0; m < attr_node->ndims; m++)
             {
@@ -3629,7 +3634,10 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
                     j++;
                 }
             }
-            new_str[n-1] = '\0';
+            if(j)
+                new_str[j-1] = '\0';
+            else
+                new_str[0] = '\0';
             free(attr_node->value);
             attr_node->value = new_str;
 
@@ -3969,21 +3977,31 @@ herr_t _NclHDF5search_obj(char *name, H5O_info_t *oinfo,
     /* Open the object.  Not all objects can be opened.  If this is the case
      * then return right away.
      */
+
+    if(0 == strcmp(name, "/U-MARF/MSG/Level1.5/METADATA/HEADER/CelestialEvents/EarthEphemeris_ARRAY"))
+    {
+        fprintf(stderr, "\nin file: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tSkip checking: <%s>\n", name);
+        return FAILED;
+    }
+
     obj_id = H5Oopen(id, name, H5P_DEFAULT);
 
     if((obj_type >= 0) && (obj_id < 0))
     {
         fprintf(stderr, "\n\n\n");
-        fprintf(stderr, "**************************************************************\n");
         fprintf(stderr, "FAILED in file: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "**************************************************************\n");
         fprintf(stderr, "\tname: <%s>\n", name);
         fprintf(stderr, "\tid: %d\n", id);
         fprintf(stderr, "\tobj_type: %d\n", obj_type);
         fprintf(stderr, "\tobj_id: %d\n", obj_id);
-        fprintf(stderr, "FAILED in file: %s, line: %d\n", __FILE__, __LINE__);
         fprintf(stderr, "**************************************************************\n");
         fprintf(stderr, "\n\n\n");
-        fprintf(stderr, "Leaving _NclHDF5search_obj, at file: %s, line: %d\n\n", __FILE__, __LINE__);
+
+      /*
+       *fprintf(stderr, "Leaving _NclHDF5search_obj, at file: %s, line: %d\n\n", __FILE__, __LINE__);
+       */
         return FAILED;
     }
 
@@ -4230,14 +4248,14 @@ herr_t _NclHDF5search_obj(char *name, H5O_info_t *oinfo,
             }
             break;
         case H5O_TYPE_NAMED_DATATYPE:
-#if 0
             fprintf(stderr, "\nin file: %s, line: %d\n", __FILE__, __LINE__);
             fprintf(stderr, "\tH5O_TYPE_NAMED_DATATYPE\n");
             fprintf(stderr, "\ttype obj_id   = %d\n", obj_id);
             fprintf(stderr, "\ttype obj_type = %d\n", obj_type);
-            strcpy(NclHDF5group_list->group_node->type_name, "Type");
+          /*
+           *strcpy(NclHDF5group_list->group_node->type_name, "Type");
+           */
             H5Aiterate2(obj_id, H5_INDEX_NAME, H5_ITER_INC, NULL, _NclHDF5check_attr, &curAttrList);
-#endif
             break;
         default:
             strcpy(group_node->type_name, "unknown");
@@ -4461,7 +4479,10 @@ herr_t _NclHDF5recursive_check(hid_t fid, char *grp_name,
             fprintf(stderr, "FAILED in file: %s, line: %d\n", __FILE__, __LINE__);
             fprintf(stderr, "**************************************************************\n");
             fprintf(stderr, "\n\n\n");
-            fprintf(stderr, "Leaving _NclHDF5recursive_check, at file: %s, line: %d\n\n", __FILE__, __LINE__);
+
+          /*
+           *fprintf(stderr, "Leaving _NclHDF5recursive_check, at file: %s, line: %d\n\n", __FILE__, __LINE__);
+           */
 
             return FAILED;
         }

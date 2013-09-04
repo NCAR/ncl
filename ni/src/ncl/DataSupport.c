@@ -688,6 +688,7 @@ NclObjTypes _NclBasicDataTypeToObjType
         case NCL_ulong:
                 return(Ncl_Typeulong);
         case NCL_uint64:
+        case NCL_reference:
                 return(Ncl_Typeuint64);
         case NCL_ubyte:
                 return(Ncl_Typeubyte);
