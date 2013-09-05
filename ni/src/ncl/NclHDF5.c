@@ -3444,7 +3444,7 @@ NclHDF5group_node_t *h5_group;
 
     strcpy(var_str, NrmQuarkToString(thevar));
     dot_ptr = strchr(var_str, '.');
-    if(dot_ptr)
+    if(dot_ptr && (NULL == strchr(dot_ptr, '/')))
     {
         is_compound = 1;
         strcpy(component, dot_ptr);
@@ -3648,7 +3648,7 @@ void* storage;
 
     strcpy(var_str, NrmQuarkToString(thevar));
     dot_ptr = strchr(var_str, '.');
-    if(dot_ptr)
+    if(dot_ptr && (NULL == strchr(dot_ptr, '/')))
     {
         is_compound = 1;
         strcpy(component, dot_ptr);
@@ -3903,7 +3903,7 @@ long *stride;
 
     strcpy(var_str, NrmQuarkToString(thevar));
     dot_ptr = strchr(var_str, '.');
-    if(dot_ptr)
+    if(dot_ptr && (NULL == strchr(dot_ptr, '/')))
     {
         is_compound = 1;
         strcpy(component, dot_ptr);
