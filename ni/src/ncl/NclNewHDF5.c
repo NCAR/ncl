@@ -682,7 +682,7 @@ char *_getH5typeName(hid_t type, int ind)
             {
                 H5T_sign_t  sign;           /* sign scheme value */
                 char  var_name[32];
-#if 0
+#if 1
                 const char  *sign_s=NULL;   /* sign scheme string */
 
                 /* Sign */
