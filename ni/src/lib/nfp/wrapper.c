@@ -589,6 +589,15 @@ extern NhlErrorTypes sparse_matrix_mult_W(void);
 extern NhlErrorTypes dim_gamfit_n_W(void);
 extern NhlErrorTypes dim_spi_n_W(void);
 
+/* added by mabouali */
+/* for the Google Earth Project */
+extern NhlErrorTypes directVincenty_W(void);
+extern NhlErrorTypes rgba2png_W(void);
+extern NhlErrorTypes add_NCL_KML_Arrow_W(void);
+extern NhlErrorTypes add_NCL_KML_2DGrid_W(void);
+extern NhlErrorTypes add_NCL_KML_UnstructGrid_W(void);
+extern NhlErrorTypes TransformCoordinate_W(void);
+
 /* 
  * ESMF regridding functions.
  */
@@ -7838,6 +7847,140 @@ void NclAddUserFuncs(void)
 
     NclRegisterProc(write_matrix_W, args, "write_matrix", nargs);
 
+#ifdef BuildGDAL    
+/*
+ * Register "directVincenty".
+ *
+ * Create private argument array.
+ */
+ 
+        nargs = 0;
+        args = NewArgs(8);
+        SetArgTemplate(args,nargs,"double",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",0,NclANY);nargs++;
+        dimsizes[0]=1;
+        SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+        NclRegisterProc(directVincenty_W,args,"directVincenty",nargs);
+
+/*
+ * Register "rgba2png".
+ *
+ * Create private argument array.
+ */
+ 
+        nargs = 0;
+        args = NewArgs(8);
+        dimsizes[0]=1;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"uint",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"uint",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"uint",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"uint",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"uint",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"uint",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"uint",1,dimsizes);nargs++;
+        NclRegisterProc(rgba2png_W,args,"rgba2png",nargs);     
+
+/*
+ * Register "add_NCL_KML_Arrow".
+ *
+ * Create private argument array.
+ */
+ 
+        nargs = 0;
+        args = NewArgs(18);
+        dimsizes[0]=1;
+        SetArgTemplate(args,0,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,1,"uint",1,dimsizes);nargs++;
+        SetArgTemplate(args,2,"uint",1,dimsizes);nargs++;
+        SetArgTemplate(args,3,"float",2,NclANY);nargs++;
+        SetArgTemplate(args,4,"float",2,NclANY);nargs++;
+        SetArgTemplate(args,5,"float",2,NclANY);nargs++;
+        SetArgTemplate(args,6,"float",2,NclANY);nargs++;
+        SetArgTemplate(args,7,"float",2,NclANY);nargs++;
+        SetArgTemplate(args,8,"uint",2,NclANY);nargs++;
+        SetArgTemplate(args,9,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,10,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,11,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,12,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,13,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,14,"uint",1,dimsizes);nargs++;
+        SetArgTemplate(args,15,"logical",1,dimsizes);nargs++;
+        SetArgTemplate(args,16,"logical",1,dimsizes);nargs++;
+        SetArgTemplate(args,17,"logical",1,dimsizes);nargs++;
+
+        NclRegisterProc(add_NCL_KML_Arrow_W,args,"add_NCL_KML_Arrow",nargs);  
+
+
+/*
+ * Register "add_NCL_KML_2DGrid_W".
+ *
+ * Create private argument array.
+ */
+ 
+        nargs = 0;
+        args = NewArgs(9);
+        dimsizes[0]=1;
+        SetArgTemplate(args,0,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,1,"float",2,NclANY);nargs++;
+        SetArgTemplate(args,2,"float",2,NclANY);nargs++;
+        SetArgTemplate(args,3,"float",2,NclANY);nargs++;
+        SetArgTemplate(args,4,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,5,"uint",1,dimsizes);nargs++;
+        SetArgTemplate(args,6,"logical",1,dimsizes);nargs++;
+        SetArgTemplate(args,7,"logical",1,dimsizes);nargs++;
+        SetArgTemplate(args,8,"logical",1,dimsizes);nargs++;
+
+        NclRegisterProc(add_NCL_KML_2DGrid_W,args,"add_NCL_KML_2DGrid",nargs);
+
+
+/*
+ * Register "add_NCL_KML_UnstructGrid_W".
+ *
+ * Create private argument array.
+ */
+ 
+        nargs = 0;
+        args = NewArgs(10);
+        dimsizes[0]=1;
+        SetArgTemplate(args,0,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,1,"uint",2,NclANY);nargs++;
+        SetArgTemplate(args,2,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,3,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,4,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,5,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,6,"uint",1,dimsizes);nargs++;
+        SetArgTemplate(args,7,"logical",1,dimsizes);nargs++;
+        SetArgTemplate(args,8,"logical",1,dimsizes);nargs++;
+        SetArgTemplate(args,9,"logical",1,dimsizes);nargs++;
+
+        NclRegisterProc(add_NCL_KML_UnstructGrid_W,args,"add_NCL_KML_UnstructGrid",nargs);
+
+
+/*
+ * Register "TransformCoordinate_W".
+ *
+ * Create private argument array.
+ */
+ 
+        nargs = 0;
+        args = NewArgs(5);
+        dimsizes[0]=1;
+        SetArgTemplate(args,0,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,0,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,2,"double",0,NclANY);nargs++;
+        SetArgTemplate(args,3,"double",0,NclANY);nargs++;
+        SetArgTemplate(args,4,"double",0,NclANY);nargs++;
+
+        NclRegisterProc(TransformCoordinate_W,args,"transform_coordinate",nargs);
+
+#endif
+        
 /* 
  * ESMF regridding functions.
  */

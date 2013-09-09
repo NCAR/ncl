@@ -22,7 +22,7 @@
 MYNAME          =       libnfp
 
 EXTRA_INCLUDES  = -I../../ncl
-EXTRA_CDEFINES  = $(UDUNITS_DEFS) $(V5D_DEFS) $(GRIDSPEC_DEFS) $(ESMF_DEFS)
+EXTRA_CDEFINES  = $(UDUNITS_DEFS) $(V5D_DEFS) $(GRIDSPEC_DEFS) $(ESMF_DEFS) $(KML_DEFS)
 
 HDRS = wrapper.h nctime.h
 
@@ -53,6 +53,20 @@ ESMF_OBJS = KML_UTILS.o Unstruct2KMLW.o SCRIP2KMLW.o SMMulW.o
 #define ESMF_OBJS
 #endif
 
+#ifdef BuildGDAL
+KML_DEFS = -DBuildGDAL
+KML_SRCS = DirectVincenty.c directVincenty_W.c rgba2png.c rgba2png_W.c KML_Funcs.c \
+	   add_NCL_KML_Arrow_W.c add_NCL_KML_2DGrid_W.c add_NCL_KML_UnstructGrid_W.c \
+	   TransformCoordinate.c TransformCoordinate_W.c
+KML_OBJS = DirectVincenty.o directVincenty_W.o rgba2png.o rgba2png_W.o KML_Funcs.o \
+	   add_NCL_KML_Arrow_W.o add_NCL_KML_2DGrid_W.o add_NCL_KML_UnstructGrid_W.o \
+	   TransformCoordinate.o TransformCoordinate_W.o
+#else
+#define KML_SRCS
+#define KML_OBJS
+#endif
+
+
 CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cancorW.c cdf_dpW.c chiinvW.c         \
         conformW.c csagridW.c cssgridW.c ctwrapW.c cz2ccmW.c datesW.c                   \
         drwvctc.c dsgridW.c dtrendW.c echoW.c eofW.c erfW.c extaperW.c ezfftW.c         \
@@ -73,6 +87,7 @@ CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cancorW.c cdf_dpW.c chiinvW.c 
 	mocloopsW.c spanW.c vinth2pnodesW.c vinth2penodesW.c objanalW.c                 \
 	areaconremapW.c nctime.c cdtimeW.c dimnumrunW.c sparse_matrixW.c \
 	gammaW.c gamfitW.c spiW.c oceanW.c
+	
 
 COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o         \
         conformW.o csagridW.o cssgridW.o ctwrapW.o cz2ccmW.o datesW.o                   \
@@ -93,10 +108,11 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o 
 	covcormW.o kronprodW.o space_timeW.o spcorrW.o bindataW.o tropwmoW.o pdfW.o     \
 	mocloopsW.o spanW.o vinth2pnodesW.o vinth2penodesW.o objanalW.o                 \
 	areaconremapW.o	nctime.o cdtimeW.o dimnumrunW.o sparse_matrixW.o \
-	gammaW.o gamfitW.o spiW.o oceanW.o dgeevxW.o
+	gammaW.o gamfitW.o spiW.o oceanW.o dgeevxW.o 
 
-OBJS = $(COBJS) $(UDUNITS_OBJS) $(V5D_OBJS) $(ESMF_OBJS)
-SRCS = $(CSRCS) $(UDUNITS_SRCS) $(V5D_SRCS) $(ESMF_SRCS)
+
+OBJS = $(COBJS) $(UDUNITS_OBJS) $(V5D_OBJS) $(ESMF_OBJS) $(KML_OBJS)
+SRCS = $(CSRCS) $(UDUNITS_SRCS) $(V5D_SRCS) $(ESMF_SRCS) $(KML_SRCS)
 
 BuildSharedLibTarget(libNGnfp,$(OBJS),1,0,$(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
 LibraryTarget($(MYNAME),$(OBJS))
