@@ -748,10 +748,10 @@ void CallLIST_READ_FILEVAR_OP(void) {
          */
 	agg_coord_var = NULL; /* use to test for presence of coordinate variable */
 	agg_coord_var_md = NULL;
-	agg_dim_count = NclMalloc(sizeof(long) * newlist->list.nelem);
-	units = NclMalloc(sizeof(NrmQuark) * newlist->list.nelem);
-	calendar = NclMalloc(sizeof(NrmQuark) * newlist->list.nelem);
-	files = NclMalloc (sizeof(NclFile) * newlist->list.nelem);
+	agg_dim_count = NclCalloc(newlist->list.nelem, sizeof(long));
+	units = NclCalloc(newlist->list.nelem, sizeof(NrmQuark));
+	calendar = NclCalloc(newlist->list.nelem, sizeof(NrmQuark));
+	files = NclCalloc(newlist->list.nelem, sizeof(NclFile));
 	if (! (agg_dim_count && files && units && calendar)) {
 		NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
 		estatus = NhlFATAL;
