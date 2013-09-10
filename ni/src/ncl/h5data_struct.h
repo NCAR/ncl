@@ -46,7 +46,7 @@ extern char *strdup(const char *s);
 
 #define HDF5_BUF_SIZE	1024
 #define HDF5_NAME_LEN	1024
-#define MAX_COMPOUND_COMPONENTS		128
+#define MAX_COMPOUND_COMPONENTS		256
 
 #define HDF5_EXT_LINK		0
 #define HDF5_GROUP		1

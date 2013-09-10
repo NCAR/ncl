@@ -1012,16 +1012,17 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
 
     strcpy(type_str, _NclBasicDataTypeToName(varnode->type));
 
-    if(0 == strcmp("compound", type_str))
-    {
-        NclFileCompoundRecord *comprec = (NclFileCompoundRecord *)varnode->comprec;
+  /*
+   *if(0 == strcmp("compound", type_str))
+   *{
+   *    NclFileCompoundRecord *comprec = (NclFileCompoundRecord *)varnode->comprec;
 
-        strcpy(type_str, NrmQuarkToString(comprec->name));
-      /*
-       *fprintf(stderr, "\nin _printNclFileVarRecord, file: %s, line: %d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\tNEED TO HANDLE _printNCLVarRecord of compound.\n\n");
-       */
-    }
+   *    strcpy(type_str, NrmQuarkToString(comprec->name));
+
+   *   *fprintf(stderr, "\nin _printNclFileVarRecord, file: %s, line: %d\n", __FILE__, __LINE__);
+   *   *fprintf(stderr, "\tNEED TO HANDLE _printNCLVarRecord of compound.\n\n");
+   *}
+  */
 
     _printNclTypeVal(fp, NCL_char, "Variable: ", 0);
     _justPrintTypeVal(fp, NCL_string, &(varnode->name), 1);

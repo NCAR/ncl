@@ -57,10 +57,6 @@
 #define MAX_NCL_BUFFER_LENGTH    1048576
 #endif
 
-#ifndef MAX_COMPOUND_COMPONENTS
-#define MAX_COMPOUND_COMPONENTS    64
-#endif
-
 #include "AdvancedFileSupport.h"
 #include "NclData.h"
 
@@ -653,14 +649,6 @@ char *_getH5typeName(hid_t type, int ind)
                 strcpy(attTypeName, "compound");
 
                 nmembs=H5Tget_nmembers(type);
-
-                if (nmembs > MAX_COMPOUND_COMPONENTS)
-                {
-                    fprintf(stderr, "nmembs[%d] > MAX_COMPOUND_COMPONENTS[%d], in file: %s, line: %d\n",
-                            nmembs, MAX_COMPOUND_COMPONENTS, __FILE__, __LINE__);
-                    fprintf(stderr, "INCREASE MAX_COMPOUND_COMPONENTS in file: <%s>\n", __FILE__);
-                    return NULL;
-                }
 
                 for (i=0; i<nmembs; i++)
                 {
@@ -2328,14 +2316,6 @@ herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode **node)
 
         nmembs=H5Tget_nmembers(type);
 
-        if (nmembs > MAX_COMPOUND_COMPONENTS)
-        {
-            fprintf(stderr, "nmembs[%d] > MAX_COMPOUND_COMPONENTS[%d], in file: %s, line: %d\n",
-                    nmembs, MAX_COMPOUND_COMPONENTS, __FILE__, __LINE__);
-            fprintf(stderr, "INCREASE MAX_COMPOUND_COMPONENTS.\n");
-            return FAILED;
-        }
-
       /*
        *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
        *fprintf(stderr, "\tid: %d, name: <%s>\n", dset, name);
@@ -2657,6 +2637,7 @@ herr_t _searchH5obj(char *name, H5O_info_t *oinfo,
                *fprintf(stderr, "\tname: <%s>\n", name);
                *fprintf(stderr, "\tobj_type: %d\n", obj_type);
                *fprintf(stderr, "\tH5O_TYPE_DATASET: %d\n", H5O_TYPE_DATASET);
+               *fprintf(stderr, "\tqdn: <%s>, qpn: <%s>\n", h5grplvl.short_name[0], h5grplvl.parent_name[0]);
                */
 
                 qdn = _string2quark(h5grplvl.short_name[0]);
