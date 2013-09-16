@@ -55,17 +55,31 @@
 #include "HLUFunctions.h"
 #include "NclGlobalVars.h"
 
+NclAdvancedFile _NclCreateAdvancedFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
+                                       unsigned int obj_type_mask, NclStatus status,
+                                       NclQuark path, int rw_status);
+
 NclFile NclCreateFile(const char *path)
 {
     NclQuark qpath = NrmStringToQuark(path);
     return (_NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,qpath,1));
 }
 
+#if 1
+NclFile NclCreateAdvancedFile(const char *path)
+{
+    NclAdvancedFile nclfile;
+    NclQuark qpath = NrmStringToQuark(path);
+    nclfile = _NclCreateAdvancedFile(NULL,NULL,Ncl_File,0,TEMPORARY,qpath,-1);
+    return (NclFile) nclfile;
+}
+#else
 NclAdvancedFile NclCreateAdvancedFile(const char *path)
 {
     NclQuark qpath = NrmStringToQuark(path);
     return (_NclCreateAdvancedFile(NULL,NULL,Ncl_File,0,TEMPORARY,qpath,-1));
 }
+#endif
 
 void guiSetAdvancedFileStructure(const char *format)
 {
@@ -244,9 +258,9 @@ void getNclFileVarInfo(NclFile thefile, int *ndims, int **dimsizes, char ***dimn
     else
     {
       /*
+       *fprintf(stderr, "file %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tnumber of vars = %d\n", thefile->file.n_vars);
        */
-        fprintf(stderr, "file %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tnumber of vars = %d\n", thefile->file.n_vars);
 
         for(i = 0; i < thefile->file.n_vars; ++i)
         {
@@ -513,7 +527,6 @@ float* guiGetValue(NclVar _nclvar)
 int* guiGetIntArray(NclVar _nclvar)
 {
     int i = 0;
-    size_t n = 0;
     int *value;
     size_t nelm = 1;
     NclMultiDValData tmp_md;
@@ -546,7 +559,6 @@ int* guiGetIntArray(NclVar _nclvar)
 char* guiGetCharArray(NclVar _nclvar)
 {
     int i = 0;
-    size_t n = 0;
     char *value;
     size_t nelm = 1;
     NclMultiDValData tmp_md;
@@ -576,29 +588,16 @@ char* guiGetCharArray(NclVar _nclvar)
     return NULL;
 }
 
-double* guiGetDoubleArray(NclVar _nclvar)
+double* _readDoubleFromMD(NclMultiDValData tmp_md, size_t nelm)
 {
-    int i = 0;
     size_t n = 0;
     double* value = NULL;
     float *fp = NULL;
     short *sp = NULL;
     int *ip = NULL;
-    size_t nelm = 1;
-    NclMultiDValData tmp_md;
-    int _varndims;
-    int _vardimsizes[NCL_MAX_DIMENSIONS];
-
-    _varndims = (int) (_nclvar->var.n_dims);
-    for(i = 0; i < _varndims; ++i)
-    {
-        _vardimsizes[i] = (int)_nclvar->var.dim_info[i].dim_size;
-        nelm *= _vardimsizes[i] ;
-    }
 
     value = (double*)NclCalloc(nelm, sizeof(double));
-
-    tmp_md = (NclMultiDValData) _NclGetObj(_nclvar->var.thevalue_id);
+    assert(value);
 
     switch(tmp_md->multidval.data_type)
     {
@@ -621,6 +620,162 @@ double* guiGetDoubleArray(NclVar _nclvar)
                  value[n] = (double) ip[n];
              return value;
         default:
+             break;
+    }
+
+    return NULL;
+}
+
+double* guiGetDoubleArray(NclVar _nclvar)
+{
+    int i = 0;
+    double* value = NULL;
+    size_t nelm = 1;
+    NclMultiDValData tmp_md;
+    int _varndims;
+    int _vardimsizes[NCL_MAX_DIMENSIONS];
+
+    _varndims = (int) (_nclvar->var.n_dims);
+    for(i = 0; i < _varndims; ++i)
+    {
+        _vardimsizes[i] = (int)_nclvar->var.dim_info[i].dim_size;
+        nelm *= _vardimsizes[i] ;
+    }
+
+    tmp_md = (NclMultiDValData) _NclGetObj(_nclvar->var.thevalue_id);
+    value = _readDoubleFromMD(tmp_md, nelm);
+
+    return value;
+}
+
+static NclObj _popListObj(NclList thelist)
+{
+    NclListObjList *tmp_list;
+    NclObj tmp, ret_obj;
+
+    if(NULL == thelist)
+        return NULL;
+
+    if((NULL == thelist->list.first) && (NULL == thelist->list.last))
+        return NULL;
+
+    if(thelist->list.list_type & NCL_FIFO)
+    {
+        tmp_list = thelist->list.last;
+
+        if(tmp_list == thelist->list.current_item)
+            thelist->list.current_item = tmp_list->next;
+
+        if(thelist->list.last->prev != NULL)
+            thelist->list.last->prev->next = NULL;
+
+        thelist->list.last = thelist->list.last->prev;
+
+        if(thelist->list.nelem == 1) 
+            thelist->list.first = thelist->list.last;
+    }
+    else
+    {
+        tmp_list = thelist->list.first;
+
+        if(tmp_list == thelist->list.current_item)
+            thelist->list.current_item = tmp_list->prev;
+
+        if(thelist->list.first->next != NULL)
+            thelist->list.first->next->prev = NULL;
+
+        thelist->list.first = thelist->list.first->next;
+
+        if(thelist->list.nelem == 1)
+            thelist->list.last = thelist->list.first;
+    }
+
+    --thelist->list.nelem;
+
+    tmp = _NclGetObj(tmp_list->obj_id);
+    if(NULL == tmp)
+        return NULL;
+
+    _NhlCBDelete(tmp_list->cb);
+#if 1
+     tmp->obj.status = TEMPORARY;
+     ret_obj = (NclObj)_NclStripVarData((NclVar)tmp);
+
+    _NclDestroyObj(tmp);
+#else
+    if(tmp_list->orig_type & Ncl_MultiDValData)
+    {
+        tmp->obj.status = TEMPORARY;
+        ret_obj = (NclObj)_NclStripVarData((NclVar)tmp);
+
+        _NclDestroyObj(tmp);
+    }
+    else
+    {
+        ret_obj = _NclGetObj(tmp->obj.id);
+        _NclDelParent(tmp, (NclObj) thelist);
+    }
+#endif
+
+    NclFree(tmp_list);
+
+    return ret_obj;
+}
+
+double** guiGetListArray(NclVar _nclvar, int** itemsizes)
+{
+    int i = 0;
+    size_t n = 0;
+    double** value = NULL;
+    int *ip = NULL;
+    size_t nelm = 1;
+    NclMultiDValData tmp_md;
+    int _varndims;
+    int _vardimsizes[NCL_MAX_DIMENSIONS];
+    int* length;
+    NclList thelist = NULL;
+    NclListObjList *tmp_list = NULL;
+    NclObj tmp, tmp_obj;
+
+  /*
+   *fprintf(stderr, "\nfile %s, line: %d\n", __FILE__, __LINE__);
+   */
+
+    tmp_md = (NclMultiDValData) _NclGetObj(_nclvar->var.thevalue_id);
+
+    switch(tmp_md->multidval.data_type)
+    {
+        case NCL_list:
+             thelist = (NclList) _NclGetObj(*(int*)tmp_md->multidval.val);
+             nelm = thelist->list.nelem;
+             ip = (int *) NclCalloc(nelm, sizeof(int));
+             assert(ip);
+             value = (double **) NclCalloc(nelm, sizeof(double *));
+             assert(value);
+
+           /*
+            *fprintf(stderr, "\nfile %s, line: %d\n", __FILE__, __LINE__);
+            *fprintf(stderr, "\tnelm = %d\n", nelm);
+            */
+
+             for(n = 0; n < nelm; ++n)
+             {
+                 tmp_obj = _popListObj(thelist);
+                 if(NULL == tmp_obj)
+                     continue;
+
+                 tmp_md = (NclMultiDValData) _NclGetObj(tmp_obj->obj.id);
+                 ip[n] = tmp_md->multidval.dim_sizes[1];
+               /*
+                *fprintf(stderr, "\tip[%ld] = %d\n", n, ip[n]);
+                */
+                 value[n] = _readDoubleFromMD(tmp_md, 2*ip[n]);
+             }
+
+             *itemsizes = ip;
+             return value;
+        default:
+             *itemsizes = ip;
              break;
     }
 
