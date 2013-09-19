@@ -2135,6 +2135,8 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
                         NclQuark varname)
 {
     int n;
+    NclFileGrpNode *newgrpnode;
+    NclFileGrpNode *tmpgrpnode;
     NclFileVarNode *varnode = NULL;
     NclQuark vn = varname;
     char *struct_name = NULL;
@@ -2165,48 +2167,30 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
 
     gname = _NclSplitString(vn, &gnumb);
 
-    if(gnumb)
+    if(1 < gnumb)
     {
+        tmpgrpnode = grpnode;
+        for(n = 0; n < gnumb - 1; ++n)
+        {
+            newgrpnode = _getGrpNodeFromNclFileGrpNode(tmpgrpnode, gname[n]);
+            tmpgrpnode = newgrpnode;
+        }
         vn = gname[gnumb-1];
         NclFree(gname);
     }
+    else
+        newgrpnode = grpnode;
 
-    if(NULL != grpnode->var_rec)
+    if(NULL != newgrpnode->var_rec)
     {
-        for(n = 0; n < grpnode->var_rec->n_vars; n++)
+        for(n = 0; n < newgrpnode->var_rec->n_vars; n++)
         {
-            varnode = &(grpnode->var_rec->var_node[n]);
+            varnode = &(newgrpnode->var_rec->var_node[n]);
           /*
            *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
            *fprintf(stderr, "\tvar no %d, name: <%s>, real_name: <%s>\n", n, 
            *        NrmQuarkToString(varnode->name), NrmQuarkToString(varnode->real_name));
            */
-
-            if(NULL == varnode)
-                continue;
-
-            if((vn == varnode->name) || (vn == varnode->real_name))
-                return varnode;
-        }
-    }
-
-#if 0
-  /*Do we want to search all the groups below?*/
-    {
-        char *varstr;
-        varstr = NrmQuarkToString(vn);
-        if(NULL == strchr(varstr, "/"))
-        {
-            return NULL;
-        }
-    }
-#endif
-
-    if(NULL != grpnode->grp_rec)
-    {
-        for(n = 0; n < grpnode->grp_rec->n_grps; n++)
-        {
-            varnode = _getVarNodeFromNclFileGrpNode(grpnode->grp_rec->grp_node[n], vn);
 
             if(NULL == varnode)
                 continue;

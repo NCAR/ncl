@@ -8476,15 +8476,20 @@ NclExecuteReturnStatus _NclExecute
 				}
 				break;
 			case FILE_GROUPVAL_OP :
-				/*
+				/*We do not suport group operator (other than read group/variable yet).
 				{
 					CallFILE_GROUPVAL_OP();
 				}
 				*/
-				fprintf(stdout, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
-				fprintf(stdout, "\tstop *ptr: %ld\n", (long)*ptr);
-				fprintf(stdout, "\tstop FILE_GROUPVAL_OP: %d\n", FILE_GROUPVAL_OP);
-				exit ( -1 );
+				fprintf(stderr, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
+				fprintf(stderr, "\tExecute: Error occurred at or near line %d\n",(cmd_line ? (*lptr): *lptr));
+				fprintf(stderr, "\tSTOP at FILE_GROUPVAL_OP: %d\n", FILE_GROUPVAL_OP);
+				fprintf(stderr, "\tWe are not surpose to reach here.\n");
+				fprintf(stderr, "\tThe reason could be that the group we are trying to access have special characters.\n");
+				fprintf(stderr, "\tCheck the script, maybe try to change the script to something like:\n");
+				fprintf(stderr, "\tgn = \"the-group-name\"\n");
+				fprintf(stderr, "\tg = f=>$gn$\n\n");
+				NHLPERROR((estatus,NhlEUNKNOWN,"Execute: Error occurred at or near line %d\n",(cmd_line ? (*lptr): *lptr)));
 				break;
 			case PARAM_FILE_GROUP_OP:
 				fprintf(stdout, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
