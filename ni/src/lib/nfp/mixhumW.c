@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include "wrapper.h"
 
-extern void NGCALLF(dmixhum1,DMIXHUM1)(double *,double *,double *,int *,
-                                       double *);
+extern void NGCALLF(dmixhum1,DMIXHUM1)(double *,double *,double *,int *,double *);
 
-extern void NGCALLF(dwmrq,DWMRQ)(double *,double *,double *,int *,
-                                 double *,int *);
+extern void NGCALLF(dwmrq,DWMRQ)(double *,double *,double *,double *,int *,
+                                 double *,double *,int *);
 
 extern void NGCALLF(ddewtemp,DDEWTEMP)(double *,double *,double *);
 
@@ -33,14 +32,15 @@ NhlErrorTypes mixhum_ptrh_W( void )
   NclBasicDataTypes type_p, type_tk, type_rh;
   NclScalar missing_p, missing_tk, missing_rh;
   NclScalar missing_dp, missing_dtk, missing_drh;
-  int found_missing_p, found_missing_tk, found_missing_rh, any_missing;
 /*
  * Output array variables
  */
   void *qw;
   double *tmp_qw = NULL;
   NclBasicDataTypes type_qw;
-  NclScalar missing_qw;
+  NclScalar missing_qw, missing_dqw;
+  int has_missing_qw;
+
 /*
  * Random variables.
  */
@@ -155,21 +155,26 @@ NhlErrorTypes mixhum_ptrh_W( void )
  * Coerce missing values to double if necessary.
  */
   coerce_missing(type_tk,has_missing_tk,&missing_tk,&missing_dtk,NULL);
-  coerce_missing(type_p,has_missing_p,&missing_p,&missing_dp,NULL);
+  coerce_missing(type_p, has_missing_p, &missing_p, &missing_dp, NULL);
   coerce_missing(type_rh,has_missing_rh,&missing_rh,&missing_drh,NULL);
 
   if(has_missing_tk || has_missing_p || has_missing_rh) {
     if(type_qw == NCL_double) {
-      missing_qw.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+      missing_qw.doubleval  = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+      missing_dqw.doubleval = missing_qw.doubleval;
     }
     else {
-      missing_qw.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      missing_qw.floatval   = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      missing_dqw.doubleval = (double)missing_qw.floatval;
     }
+    has_missing_qw = 1;
+  }
+  else {
+    has_missing_qw = 0;
   }
 /*
  * Call the Fortran version of this routine.
  */
-  any_missing = 0;
   for( i = 0; i < size_input; i++ ) {
     if(type_p != NCL_double) {
 /*
@@ -210,30 +215,19 @@ NhlErrorTypes mixhum_ptrh_W( void )
 
     if(type_qw == NCL_double) tmp_qw = &((double*)qw)[i];
 
-/*
- * Test for missing values.
- */
-    found_missing_p  = (*tmp_p  == missing_dp.doubleval)  ? 1 : 0;
-    found_missing_tk = (*tmp_tk == missing_dtk.doubleval) ? 1 : 0;
-    found_missing_rh = (*tmp_rh == missing_drh.doubleval) ? 1 : 0;
-
-    if(found_missing_p || found_missing_tk || found_missing_rh) {
-      any_missing = 1;
-      if(type_qw == NCL_double) {
-        set_subset_output_missing(qw,i,type_qw,1,missing_qw.doubleval);
-      }
-      else {
-        set_subset_output_missing(qw,i,type_qw,1,(double)missing_qw.floatval);
-      }
+    if(has_missing_qw && (*tmp_p  == missing_dp.doubleval  ||
+                          *tmp_tk == missing_dtk.doubleval ||  
+                          *tmp_rh == missing_drh.doubleval)) {
+      *tmp_qw = missing_dqw.doubleval;
     }
     else {
       NGCALLF(dmixhum1,DMIXHUM1)(tmp_p,tmp_tk,tmp_rh,iswit,tmp_qw);
+    }
 /*
  * Copy output values from temporary tmp_qw to qw.
  */
-      if(type_qw != NCL_double) {
-        ((float*)qw)[i] = (float)(*tmp_qw);
-      }
+    if(type_qw != NCL_double) {
+      ((float*)qw)[i] = (float)(*tmp_qw);
     }
   }
 /*
@@ -244,8 +238,7 @@ NhlErrorTypes mixhum_ptrh_W( void )
   if(type_rh != NCL_double) NclFree(tmp_rh);
   if(type_qw != NCL_double) NclFree(tmp_qw);
 
-  if(any_missing) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"mixhum_ptrh: one or more sets of input values contained a missing value. No mixing ratio/specific humidity calculated for these sets of values.");
+  if(has_missing_qw) {
     return(NclReturnValue(qw,ndims_p,dsizes_p,&missing_qw,type_qw,0));
   }
   else {
@@ -270,14 +263,15 @@ NhlErrorTypes dewtemp_trh_W( void )
   NclBasicDataTypes type_tk, type_rh;
   NclScalar missing_tk, missing_rh;
   NclScalar missing_dtk, missing_drh;
-  int found_missing_tk, found_missing_rh, any_missing;
 /*
  * Output array variables
  */
   void *tdk;
   double *tmp_tdk = NULL;
   NclBasicDataTypes type_tdk;
-  NclScalar missing_tdk;
+  NclScalar missing_tdk, missing_dtdk;
+  int has_missing_tdk;
+
 /*
  * Random variables.
  */
@@ -370,16 +364,21 @@ NhlErrorTypes dewtemp_trh_W( void )
 
   if(has_missing_tk || has_missing_rh) {
     if(type_tdk == NCL_double) {
-      missing_tdk.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+      missing_tdk.doubleval  = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+      missing_dtdk.doubleval = missing_tdk.doubleval;
     }
     else {
-      missing_tdk.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      missing_tdk.floatval   = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      missing_dtdk.doubleval = (double)missing_tdk.floatval;
     }
+    has_missing_tdk = 1;
+  }
+  else {
+    has_missing_tdk = 0;
   }
 /*
  * Call the Fortran version of this routine.
  */
-  any_missing = 0;
   for( i = 0; i < size_input; i++ ) {
     if(type_tk != NCL_double) {
 /*
@@ -408,29 +407,18 @@ NhlErrorTypes dewtemp_trh_W( void )
 
     if(type_tdk == NCL_double) tmp_tdk = &((double*)tdk)[i];
 
-/*
- * Test for missing values.
- */
-    found_missing_tk = (*tmp_tk == missing_dtk.doubleval) ? 1 : 0;
-    found_missing_rh = (*tmp_rh == missing_drh.doubleval) ? 1 : 0;
-
-    if(found_missing_tk || found_missing_rh) {
-      any_missing = 1;
-      if(type_tdk == NCL_double) {
-        set_subset_output_missing(tdk,i,type_tdk,1,missing_tdk.doubleval);
-      }
-      else {
-        set_subset_output_missing(tdk,i,type_tdk,1,(double)missing_tdk.floatval);
-      }
+    if(has_missing_tdk && (*tmp_tk == missing_dtk.doubleval ||  
+                           *tmp_rh == missing_drh.doubleval)) {
+      *tmp_tdk = missing_dtdk.doubleval;
     }
     else {
       NGCALLF(ddewtemp,DDEWTEMP)(tmp_tk,tmp_rh,tmp_tdk);
+    }
 /*
  * Copy output values from temporary tmp_tdk to tdk.
  */
-      if(type_tdk != NCL_double) {
-        ((float*)tdk)[i] = (float)(*tmp_tdk);
-      }
+    if(type_tdk != NCL_double) {
+      ((float*)tdk)[i] = (float)(*tmp_tdk);
     }
   }
 /*
@@ -440,8 +428,7 @@ NhlErrorTypes dewtemp_trh_W( void )
   if(type_rh != NCL_double) NclFree(tmp_rh);
   if(type_tdk != NCL_double) NclFree(tmp_tdk);
 
-  if(any_missing) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"dewtemp_trh: one or more sets of input values contained a missing value. No mixing ratio/specific humidity calculated for these sets of values.");
+  if(has_missing_tdk) {
     return(NclReturnValue(tdk,ndims_tk,dsizes_tk,&missing_tdk,type_tdk,0));
   }
   else {
@@ -471,14 +458,14 @@ NhlErrorTypes lclvl_W( void )
   NclBasicDataTypes type_p, type_tk, type_tdk;
   NclScalar missing_p, missing_tk, missing_tdk;
   NclScalar missing_dp, missing_dtk, missing_dtdk;
-  int found_missing_p, found_missing_tk, found_missing_tdk, any_missing;
 /*
  * Output array variables
  */
   void *plcl;
   double *tmp_plcl = NULL;
   NclBasicDataTypes type_plcl;
-  NclScalar missing_plcl;
+  NclScalar missing_plcl, missing_dplcl;
+  int has_missing_plcl;
 /*
  * Random variables.
  */
@@ -583,22 +570,27 @@ NhlErrorTypes lclvl_W( void )
 /*
  * Coerce missing values to double if necessary.
  */
-  coerce_missing(type_tk,has_missing_tk,&missing_tk,&missing_dtk,NULL);
-  coerce_missing(type_p,has_missing_p,&missing_p,&missing_dp,NULL);
+  coerce_missing(type_tk, has_missing_tk, &missing_tk, &missing_dtk, NULL);
+  coerce_missing(type_p,  has_missing_p,  &missing_p,  &missing_dp,  NULL);
   coerce_missing(type_tdk,has_missing_tdk,&missing_tdk,&missing_dtdk,NULL);
 
   if(has_missing_tk || has_missing_p || has_missing_tdk) {
     if(type_plcl == NCL_double) {
-      missing_plcl.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+      missing_plcl.doubleval  = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+      missing_dplcl.doubleval = missing_plcl.doubleval;
     }
     else {
-      missing_plcl.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      missing_plcl.floatval   = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      missing_dplcl.doubleval = (double)missing_plcl.floatval;
     }
+    has_missing_plcl = 1;
+  }
+  else {
+    has_missing_plcl = 0;
   }
 /*
  * Call the Fortran version of this routine.
  */
-  any_missing = 0;
   for( i = 0; i < size_input; i++ ) {
     if(type_p != NCL_double) {
 /*
@@ -639,30 +631,19 @@ NhlErrorTypes lclvl_W( void )
 
     if(type_plcl == NCL_double) tmp_plcl = &((double*)plcl)[i];
 
-/*
- * Test for missing values.
- */
-    found_missing_p   = (*tmp_p   == missing_dp.doubleval)   ? 1 : 0;
-    found_missing_tk  = (*tmp_tk  == missing_dtk.doubleval)  ? 1 : 0;
-    found_missing_tdk = (*tmp_tdk == missing_dtdk.doubleval) ? 1 : 0;
-
-    if(found_missing_p || found_missing_tk || found_missing_tdk) {
-      any_missing = 1;
-      if(type_plcl == NCL_double) {
-        set_subset_output_missing(plcl,i,type_plcl,1,missing_plcl.doubleval);
-      }
-      else {
-        set_subset_output_missing(plcl,i,type_plcl,1,(double)missing_plcl.floatval);
-      }
+    if(has_missing_plcl && (*tmp_p   == missing_dp.doubleval  ||
+                            *tmp_tk  == missing_dtk.doubleval ||  
+                            *tmp_tdk == missing_dtdk.doubleval)) {
+      *tmp_plcl = missing_dplcl.doubleval;
     }
     else {
       NGCALLF(dlclprs,DLCLPRS)(tmp_p,tmp_tk,tmp_tdk,tmp_plcl);
+    }
 /*
  * Copy output values from temporary tmp_plcl to plcl.
  */
-      if(type_plcl != NCL_double) {
-        ((float*)plcl)[i] = (float)(*tmp_plcl);
-      }
+    if(type_plcl != NCL_double) {
+      ((float*)plcl)[i] = (float)(*tmp_plcl);
     }
   }
 /*
@@ -673,8 +654,7 @@ NhlErrorTypes lclvl_W( void )
   if(type_tdk  != NCL_double) NclFree(tmp_tdk);
   if(type_plcl != NCL_double) NclFree(tmp_plcl);
 
-  if(any_missing) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"lclvl: one or more sets of input values contained a missing value. No mixing ratio/specific humidity calculated for these sets of values.");
+  if(has_missing_plcl) {
     return(NclReturnValue(plcl,ndims_p,dsizes_p,&missing_plcl,type_plcl,0));
   }
   else {
@@ -701,14 +681,14 @@ NhlErrorTypes mixhum_ptd_W( void )
   NclBasicDataTypes type_p, type_tdk;
   NclScalar missing_p, missing_tdk;
   NclScalar missing_dp, missing_dtdk;
-  int found_missing_p, found_missing_tdk, any_missing;
 /*
  * Output array variables
  */
   void *q;
   double *tmp_q = NULL;
   NclBasicDataTypes type_q;
-  NclScalar missing_q;
+  NclScalar missing_q, missing_dq;
+  int has_missing_q;
 /*
  * Random variables.
  */
@@ -821,24 +801,30 @@ NhlErrorTypes mixhum_ptd_W( void )
  * Coerce missing values to double if necessary.
  */
   coerce_missing(type_tdk,has_missing_tdk,&missing_tdk,&missing_dtdk,NULL);
-  coerce_missing(type_p,has_missing_p,&missing_p,&missing_dp,NULL);
+  coerce_missing(type_p,  has_missing_p,  &missing_p,  &missing_dp,  NULL);
 
   if(has_missing_tdk || has_missing_p) {
     if(type_q == NCL_double) {
-      missing_q.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+      missing_q.doubleval  = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+      missing_dq.doubleval = missing_q.doubleval;
     }
     else {
-      missing_q.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      missing_q.floatval   = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      missing_dq.doubleval = (double)missing_q.floatval;
     }
+    has_missing_q = 1;
+  }
+  else {
+    has_missing_q = 0;
   }
 /*
  * Call the Fortran version of this routine.
  */
-  index = any_missing = 0;
+  index = 0;
   for( i = 0; i < size_leftmost; i++ ) {
     if(type_p != NCL_double) {
 /*
- * Coerce one value of p (tmp_p) to double.
+ * Coerce one subsection of p (tmp_p) to double.
  */
       coerce_subset_input_double(p,tmp_p,index,type_p,nmax,0,NULL,NULL);
     }
@@ -850,7 +836,7 @@ NhlErrorTypes mixhum_ptd_W( void )
     }
     if(type_tdk != NCL_double) {
 /*
- * Coerce one value of tk (tmp_tdk) to double.
+ * Coerce one subsection of tk (tmp_tdk) to double.
  */
       coerce_subset_input_double(tdk,tmp_tdk,index,type_tdk,nmax,0,NULL,NULL);
     }
@@ -862,30 +848,15 @@ NhlErrorTypes mixhum_ptd_W( void )
     }
 
     if(type_q == NCL_double) tmp_q = &((double*)q)[index];
-/*
- * Test for missing values.
- */
-    found_missing_p   = (*tmp_p  == missing_dp.doubleval)  ? 1 : 0;
-    found_missing_tdk = (*tmp_tdk == missing_dtdk.doubleval) ? 1 : 0;
 
-    if(found_missing_p || found_missing_tdk) {
-      any_missing = 1;
-      if(type_q == NCL_double) {
-        set_subset_output_missing(q,index,type_q,nmax,missing_q.doubleval);
-      }
-      else {
-        set_subset_output_missing(q,index,type_q,nmax,(double)missing_q.floatval);
-      }
-    }
-    else {
-      NGCALLF(dwmrq,DWMRQ)(tmp_p,tmp_tdk,&missing_dtdk.doubleval,&inmax,tmp_q,
-                           iswit);
+    NGCALLF(dwmrq,DWMRQ)(tmp_p,tmp_tdk,&missing_dp.doubleval,
+                         &missing_dtdk.doubleval,&inmax,tmp_q,
+                         &missing_dq.doubleval,iswit);
 /*
  * Copy output values from temporary tmp_q to q.
  */
-      if(type_q != NCL_double) {
-        coerce_output_float_only(q,tmp_q,nmax,index);
-      }
+    if(type_q != NCL_double) {
+      coerce_output_float_only(q,tmp_q,nmax,index);
     }
     index += nmax;
   }
@@ -896,8 +867,7 @@ NhlErrorTypes mixhum_ptd_W( void )
   if(type_tdk != NCL_double) NclFree(tmp_tdk);
   if(type_q   != NCL_double) NclFree(tmp_q);
 
-  if(any_missing) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"mixhum_ptd: one or more sets of input values contained a missing value. No mixing ratio/specific humidity calculated for these sets of values.");
+  if(has_missing_q) {
     return(NclReturnValue(q,ndims_p,dsizes_p,&missing_q,type_q,0));
   }
   else {

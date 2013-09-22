@@ -1,9 +1,9 @@
 C NCLFORTSTART
-      SUBROUTINE DWMRQ (P,TD,TDMSG,NMAX,WMR,ISWIT)
+      SUBROUTINE DWMRQ (P,TD,PMSG,TDMSG,NMAX,WMR,WMRMSG,ISWIT)
       IMPLICIT NONE
       INTEGER  NMAX, ISWIT
-      DOUBLE PRECISION P(NMAX), TD(NMAX),TDMSG
-      DOUBLE PRECISION WMR(NMAX)
+      DOUBLE PRECISION P(NMAX), TD(NMAX),PMSG,TDMSG
+      DOUBLE PRECISION WMR(NMAX),WMRMSG
 C NCLEND    
       DOUBLE PRECISION DWMRSKEWT 
       EXTERNAL DWMRSKEWT
@@ -21,10 +21,10 @@ C mixing ratio (kg/kg)
 c the function wants hPA (mb) and degrees centigrade
       
       DO N=1,NMAX
-         IF (TD(N).NE.TDMSG) then
-             WMR(N) = DWMRSKEWT(P(N)*PA2MB,(TD(N)-T0))*0.001d0  
+         IF (TD(N).EQ.TDMSG.or.P(N).EQ.PMSG) then
+             WMR(N) = WMRMSG
          ELSE
-             WMR(N) = TDMSG
+             WMR(N) = DWMRSKEWT(P(N)*PA2MB,(TD(N)-T0))*0.001d0  
          END IF
       END DO
 
@@ -32,7 +32,7 @@ c if ISWIT=2 calculate specific humidity (kg/kg)
       
       IF (ABS(ISWIT).EQ.2) THEN
           DO N=1,NMAX
-             IF (WMR(N).NE.TDMSG) THEN
+             IF (WMR(N).NE.WMRMSG) THEN
                  WMR(N) = (WMR(N)/(WMR(N)+1.d0))
              END IF 
          END DO
@@ -42,7 +42,7 @@ c if ISWIT < 0 then return g/kg
       
       IF (ISWIT.LT.0) THEN
           DO N=1,NMAX
-             IF (WMR(N).NE.TDMSG) THEN
+             IF (WMR(N).NE.WMRMSG) THEN
                  WMR(N) = WMR(N)*1000.d0
              END IF 
          END DO

@@ -29,7 +29,6 @@ c    rh     - rel hum in percent
 c    iswit  - if iswit=1 qw will contain mix ratio
 c                iswit=2 qw will contain spc humidity
 c                if iswit is negative the units will be kg/kg else g/kg
-c    {p,tk,rh}msg   - msg code
 
 c output-
 c    qw     - mixing ratio or specific hum
