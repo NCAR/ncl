@@ -2600,7 +2600,7 @@ Unneeded translations
 			case Ncl_REWRITEIT:
 #if 1
                                 fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-                                fprintf(stderr, "\tReassgin to group is not supported in NCL.\n");
+                                fprintf(stderr, "\tReassigning to group is not supported in NCL.\n");
 				exit (-1);
 #else
 				_NclTranslate(filegroup->filegroupnode,fp);
