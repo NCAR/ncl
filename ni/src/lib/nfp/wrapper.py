@@ -177,7 +177,7 @@ while not valid:
 
 valid = False
 while not valid:
-  wrapper_name = raw_input("\nEnter name you want to give the wrapper C file (without the '.c') " +\
+  wrapper_name = raw_input("\nEnter name you want to give the wrapper C file (without the 'W.c') " +\
                            ": ")
   if wrapper_name == "":
     print "Invalid name for wrapper name, reenter."

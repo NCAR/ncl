@@ -120,6 +120,7 @@ extern NhlErrorTypes gc_inout_W(void);
 extern NhlErrorTypes gc_inout_mask_func_W(void);
 extern NhlErrorTypes gc_inout_mask_proc_W(void);
 extern NhlErrorTypes gc_onarc_W(void);
+extern NhlErrorTypes area_poly_sphere_W(void);
 
 extern NhlErrorTypes dv2uvf_W(void);
 extern NhlErrorTypes dv2uvg_W(void);
@@ -1967,6 +1968,20 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     NclRegisterFunc(gc_onarc_W,args,"gc_onarc",nargs);
+
+/*
+ * Register "area_poly_sphere".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(3);
+
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    NclRegisterFunc(area_poly_sphere_W,args,"area_poly_sphere",nargs);
 
 /*
  * Register "gc_pnt2gc".
