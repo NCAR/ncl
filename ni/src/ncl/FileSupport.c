@@ -819,8 +819,10 @@ NhlErrorTypes _NclBuildAdvancedFileRSelection(struct _NclFileRec *file,
 
                     if(cname == dimnode->name)
                     {
-                        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-                        fprintf(stderr, "\tfound dim_name: <%s>, at i = %d\n", dim_name, i);
+                      /*
+                       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+                       *fprintf(stderr, "\tfound dim_name: <%s>, at i = %d\n", dim_name, i);
+                       */
                         sel->dim_num = i;
                         break;
                     }
