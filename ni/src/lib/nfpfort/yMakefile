@@ -34,8 +34,8 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	area_conremap.o varimax_JiangLing_dp.o wrf_relhl.o calc_uh.o runknt.o \
 	gamma_interface.o dtrend_lsq_msg_dp.o gamfitd3.o spid.o \
 	xy1pdf77.o potmp_dpth2pres.o ocean.o plotgrids_var.o \
-	covcorm_xy_matrix_ncl.o dgeevx_interface.o \
-	plotfmt_open.o plotfmt_rdhead.o plotfmt_rddata.o spareapoly.o
+	covcorm_xy_matrix_ncl.o dgeevx_interface.o plotfmt_open.o \
+	plotfmt_rdhead.o plotfmt_rddata.o spareapoly.o KS2.o
  
 LibraryTarget($(MYNAME),$(FOBJS))
 
