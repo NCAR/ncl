@@ -4127,9 +4127,9 @@ NhlErrorTypes _Nclstr_match_ind_ic
      }
  
   /*
+   *fprintf(stderr, "in file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tlower case input_expr: <%s>\n", low_exp);
    */
-    fprintf(stderr, "in file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tlower case input_expr: <%s>\n", low_exp);
 
     str_size = 1;
     for(i=0; i<ndim_input_strs; i++)
