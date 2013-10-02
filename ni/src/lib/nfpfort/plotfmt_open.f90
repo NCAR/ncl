@@ -6,7 +6,6 @@ subroutine plotfmt_open(fname,istatus)
   character(*) :: fname
 
   integer :: io_status
-  logical :: is_used
 
   istatus = 0
 
@@ -19,3 +18,16 @@ subroutine plotfmt_open(fname,istatus)
   return
 
 end subroutine plotfmt_open
+
+subroutine plotfmt_close()
+
+  implicit none
+  integer :: funit
+
+  ! Close file
+  funit = 10
+  close(funit)
+
+  return
+
+end subroutine plotfmt_close
