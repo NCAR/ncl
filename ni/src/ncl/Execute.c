@@ -424,8 +424,58 @@ void CallLIST_READ_OP(void) {
 	
 	return;
 }
+int HasTimeUnits(NrmQuark units)
+{
+	char *str_units = NrmQuarkToString(units);
+	int ok_so_far = 0;
+
+	/* make sure the string has a minimum length of 6 (I don't think it is possible to have time units with less than
+	   6 total characters -- this prevents a short string from causing overrun with these tests 
+	if (strlen(str_units) < 6)
+	return 0; */
+
+	
+	if(!strncasecmp(str_units,"sec",3) || !strcasecmp(str_units,"s")){
+		ok_so_far = 1;
+        }
+        else if(!strncasecmp(str_units,"min",3) || !strcasecmp(str_units,"mn")){
+		ok_so_far = 1;
+        }
+        else if(!strncasecmp(str_units,"hour",4) || !strcasecmp(str_units,"hr")){
+		ok_so_far = 1;
+        }
+        else if(!strncasecmp(str_units,"day",3) || !strcasecmp(str_units,"dy")){
+		ok_so_far = 1;
+        }
+        else if(!strncasecmp(str_units,"week",4) || !strcasecmp(str_units,"wk")){
+		ok_so_far = 1;
+        }
+        else if(!strncasecmp(str_units,"month",5) || !strcasecmp(str_units,"mo")){
+		ok_so_far = 1;
+        }
+        else if(!strncasecmp(str_units,"season",6)){
+		ok_so_far = 1;
+        }
+        else if(!strncasecmp(str_units,"year",4) || !strcasecmp(str_units,"yr")){
+		ok_so_far = 1;
+        }
+	if (! ok_so_far) {
+		return 0;
+	}
+	/* Since some of the unit abbreviations such as "s" cannot really be considered a very good test of whether the
+	   unit string represents time, also check for the presence of an equivalent to "since" */
+	
+	if (! strcasestr(str_units,"since") || 
+	    !  strcasestr(str_units,"after") ||
+	    ! strcasestr(str_units,"ref")  ||
+	    ! strcasestr(str_units,"from")) {
+		return 1;
+	}
+	return 0;
+}
 
 extern int cuErrorOccurred;
+
 NhlErrorTypes FixAggCoord(NclOneDValCoordData agg_coord_md, long *agg_dim_count, NrmQuark *units, NrmQuark *calendar, int nfiles)
 {
 	int i;
@@ -1768,15 +1818,20 @@ void CallLIST_READ_FILEVAR_OP(void) {
 
 	if (agg_coord_var && agg_coord_var_md &&
 	    (! _Nclis_mono(agg_coord_var_md->multidval.type, agg_coord_var_md->multidval.val, NULL, agg_coord_var_md->multidval.totalelements))) {
-		FixAggCoord((NclOneDValCoordData)agg_coord_var_md,agg_dim_count,units,calendar,newlist->list.nelem);
-		if (agg_coord_var->var.var_quark == var1->var.var_quark && var1->var.n_dims == 1) {  
-			NclMultiDValData tmd = (NclMultiDValData)_NclGetObj(var1->var.thevalue_id);
-			if (!tmd || tmd->multidval.data_type != agg_coord_var_md->multidval.data_type || tmd->multidval.totalsize != agg_coord_var_md->multidval.totalsize) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"Error attempting to conform coordinate variable data to initial file's time units");
+		if (HasTimeUnits(units[0])) {
+			FixAggCoord((NclOneDValCoordData)agg_coord_var_md,agg_dim_count,units,calendar,newlist->list.nelem);
+			if (agg_coord_var->var.var_quark == var1->var.var_quark && var1->var.n_dims == 1) {  
+				NclMultiDValData tmd = (NclMultiDValData)_NclGetObj(var1->var.thevalue_id);
+				if (!tmd || tmd->multidval.data_type != agg_coord_var_md->multidval.data_type || tmd->multidval.totalsize != agg_coord_var_md->multidval.totalsize) {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"Error attempting to conform coordinate variable data to initial file's time units");
+				}
+				else {
+					memcpy(tmd->multidval.val,agg_coord_var_md->multidval.val,agg_coord_var_md->multidval.totalsize);
+				}
 			}
-			else {
-				memcpy(tmd->multidval.val,agg_coord_var_md->multidval.val,agg_coord_var_md->multidval.totalsize);
-			}
+		}
+		else {
+			NhlPError(NhlWARNING, NhlEUNKNOWN,"Non-monotonic coordinate array generated -- check validity of the aggregated (leftmost) dimension");
 		}
 	}
 
