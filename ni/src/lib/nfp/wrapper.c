@@ -89,6 +89,7 @@ extern NhlErrorTypes wrf_wps_read_nml_W(void);
 extern NhlErrorTypes wrf_plotfmt_open_W(void);
 extern NhlErrorTypes wrf_plotfmt_rdhead_W(void);
 extern NhlErrorTypes wrf_plotfmt_rddata_W(void);
+extern NhlErrorTypes wrf_plotfmt_read_W(void);
 
 extern NhlErrorTypes cape_thermo_W(void);
 extern NhlErrorTypes gaus_lobat_W(void);
@@ -410,6 +411,7 @@ extern NhlErrorTypes cfftf_frq_reorder_W(void);
 extern NhlErrorTypes fft2df_W(void);
 extern NhlErrorTypes fft2db_W(void);
 extern NhlErrorTypes lspoly_W(void);
+extern NhlErrorTypes lspoly_n_W(void);
 extern NhlErrorTypes fourier_info_W(void);
 extern NhlErrorTypes stdatmus_z2tdp_W(void);
 extern NhlErrorTypes stdatmus_p2tdz_W(void);
@@ -1770,6 +1772,19 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
         NclRegisterFunc(wrf_plotfmt_rddata_W,args,"wrf_plotfmt_rddata",nargs);
+
+/*
+ * Register "wrf_plotfmt_read".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(1);
+
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+
+        NclRegisterFunc(wrf_plotfmt_read_W,args,"wrf_plotfmt_read",nargs);
 
 /*
  * Register "wrf_wps_read_nml".
@@ -6012,6 +6027,23 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(lspoly_W,args,"lspoly",nargs);
+
+/*
+ * Register "lspoly_n".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(5);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(lspoly_n_W,args,"lspoly_n",nargs);
 /*
  * Register "fourier_info".
  *

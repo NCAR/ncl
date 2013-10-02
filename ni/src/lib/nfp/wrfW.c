@@ -107,6 +107,8 @@ extern void NGCALLF(plotgrids_var,PLOTGRIDS_VAR)(char *fname, float *plotvar,
 extern void NGCALLF(plotfmt_open,PLOTFMT_OPEN)(char *cfilename, int *istatus,
                                                int);
 
+extern void NGCALLF(plotfmt_close,PLOTFMT_CLOSE)();
+
 extern void NGCALLF(plotfmt_rdhead,PLOTFMT_RDHEAD)(int *istatus,
                                                    float *rhead,
                                                    char *cfield, 
@@ -10889,6 +10891,399 @@ NhlErrorTypes wrf_plotfmt_rddata_W( void )
   dsizes[1] = *nx;
   ret = NclReturnValue(slab,2,dsizes,NULL,NCL_float,0);
   return(ret);
+}
+
+
+NhlErrorTypes wrf_plotfmt_read_W( void )
+{
+
+/*
+ * Argument # 0
+ */
+  NrmQuark *filename;
+  char *cfilename;
+
+/*
+ * Return values.  The slab will be returned, along with a bunch
+ * of attributes depending on the projection.
+ */
+  int NHEAD=14, FIELD_LEN=9, HDATE_LEN=24, UNITS_LEN=25;
+  int MAPSC_LEN=32, DESCR_LEN=46;
+  float *slab, *rhead, *slab_s;
+  float rhead_s[NHEAD];
+  ng_size_t dsizes_slab[3], dsizes_rhead[2], dsizes_field[1], dsizes_hdate[1];
+  ng_size_t dsizes_units[1], dsizes_mapsc[1], dsizes_descr[1];
+  NrmQuark *field, *hdate, *units, *mapsc, *descr;
+  char *cfield, *chdate, *cunits, *cmapsc, *cdescr;
+  NclScalar missing_slab;
+/*
+ * Various 
+ */
+  int i, j, n, istatus, nx, ny, nxny, max_nx, max_ny, nfields;
+  int index_slab, index_rhead; 
+
+/*
+ * Attribute variables
+ */
+  int att_id;
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+
+
+/*
+ * Get argument #0
+ */
+  filename = (NrmQuark *)NclGetArgValue(
+           0,
+           1,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+
+/*
+ * Convert to character string.
+ */
+  cfilename = NrmQuarkToString(*filename);
+
+/*
+ * Call the Fortran routine to open the file
+ */
+  NGCALLF(plotfmt_open,PLOTFMT_open)(cfilename, &istatus,
+                                     strlen(cfilename));
+  if(istatus != 0) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_plotfmt_read: The input file '%s' could not be opened.\nCheck that it exists and is spelled correctly",cfilename);
+    return(NhlFATAL);
+  }
+
+  cfield = (char *)malloc((FIELD_LEN+1)*sizeof(char));
+  chdate = (char *)malloc((HDATE_LEN+1)*sizeof(char));
+  cunits = (char *)malloc((UNITS_LEN+1)*sizeof(char));
+  cmapsc = (char *)malloc((MAPSC_LEN+1)*sizeof(char));
+  cdescr = (char *)malloc((DESCR_LEN+1)*sizeof(char));
+
+/*
+ *  Read each field so we can count how many there are.
+ */
+  nfields = 0;
+  while (istatus == 0) {
+    /* Read the header */
+
+    NGCALLF(plotfmt_rdhead,PLOTFMT_RDHEAD)(&istatus,&rhead_s[0],cfield,
+                                           chdate,cunits,cmapsc,cdescr,
+                                           FIELD_LEN,HDATE_LEN,
+                                           UNITS_LEN,MAPSC_LEN,
+                                           DESCR_LEN);
+
+    if(istatus == 0) {
+      nx = (int)rhead_s[3];
+      ny = (int)rhead_s[4];
+      slab_s = (float*)calloc(nx*ny,sizeof(float));
+      if(slab_s == NULL) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_plotfmt_read: Unable to allocate memory for output array");
+        return(NhlFATAL);
+      }
+      if(nfields == 0) {
+        max_nx = nx;
+        max_ny = ny;
+      }
+      else {
+        max_nx = max(max_nx,nx);
+        max_ny = max(max_ny,ny);
+      }
+    /* Read the data */
+      NGCALLF(plotfmt_rddata,PLOTFMT_RDDATA)(&istatus,&nx,&ny,slab_s);
+      NclFree(slab_s);
+      if(istatus == 0) nfields++; 
+    }
+  }
+  nxny = max_nx * max_ny;
+
+  /* Allocate the return arrays */
+  rhead  = (float*)calloc(nfields*NHEAD,sizeof(float));
+  slab   = (float*)calloc(nfields*nxny,sizeof(float));
+  field  = (NclQuark*)NclMalloc(nfields*sizeof(NclQuark));
+  hdate  = (NclQuark*)NclMalloc(nfields*sizeof(NclQuark));
+  units  = (NclQuark*)NclMalloc(nfields*sizeof(NclQuark));
+  mapsc  = (NclQuark*)NclMalloc(nfields*sizeof(NclQuark));
+  descr  = (NclQuark*)NclMalloc(nfields*sizeof(NclQuark));
+
+  if(rhead == NULL || slab == NULL || field == NULL || hdate == NULL ||
+     units == NULL || mapsc == NULL || descr == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_plotfmt_read: Unable to allocate memory for output array and attributes");
+    return(NhlFATAL);
+  }
+
+  /* Close and reopen file. */
+  NGCALLF(plotfmt_close,PLOTFMT_CLOSE)();
+  NGCALLF(plotfmt_open,PLOTFMT_open)(cfilename, &istatus,
+                                     strlen(cfilename));
+
+  missing_slab.floatval = -1e30;
+  index_slab = index_rhead = 0;
+
+  /* Now loop through again and fill up the output arrays */
+
+  for(n = 0; n < nfields; n++) {
+
+    /* Read the header into allocated arrays */
+    NGCALLF(plotfmt_rdhead,PLOTFMT_RDHEAD)(&istatus,&rhead[index_rhead],
+                                           cfield,chdate,cunits,
+                                           cmapsc,cdescr,
+                                           FIELD_LEN,HDATE_LEN,
+                                           UNITS_LEN,MAPSC_LEN,
+                                           DESCR_LEN);
+/*
+ * Strip off potential white space at end of each string.
+ */
+    i = FIELD_LEN-1;
+    while(i >=0 && (cfield[i] == ' ' || 
+                    cfield[i] == '\t')) i--;
+    cfield[i+1] = '\0';
+    
+    i = HDATE_LEN-1;
+    while(i >= 0 && (chdate[i] == ' ' || 
+                     chdate[i] == '\t')) i--;
+    chdate[i+1] = '\0';
+    
+    i = UNITS_LEN-1;
+    while( i >= 0 && (cunits[i] == ' ' || 
+                      cunits[i] == '\t')) i--;
+    cunits[i+1] = '\0';
+    
+    i = MAPSC_LEN-1;
+    while( i >= 0 && (cmapsc[i] == ' ' || 
+                      cmapsc[i] == '\t')) i--;
+    cmapsc[i+1] = '\0';
+    
+    i = DESCR_LEN-1;
+    while( i >= 0 && (cdescr[i] == ' ' || 
+                      cdescr[i] == '\t')) i--;
+    cdescr[i+1] = '\0';
+    
+    field[n] = NrmStringToQuark(cfield);
+    hdate[n] = NrmStringToQuark(chdate);
+    units[n] = NrmStringToQuark(cunits);
+    mapsc[n] = NrmStringToQuark(cmapsc);
+    descr[n] = NrmStringToQuark(cdescr);
+
+/*
+ * We have to get nx and ny every time in the loop, because they 
+ * can be different sizes.
+ */
+    nx = (int)rhead[index_rhead+3];
+    ny = (int)rhead[index_rhead+4];
+    slab_s = (float*)calloc(nx*ny,sizeof(float));
+    if(slab_s == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_plotfmt_read: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+    /* Read data into temporary array */
+    NGCALLF(plotfmt_rddata,PLOTFMT_RDDATA)(&istatus,&nx,&ny,&slab_s[0]);
+
+    /* Copy slab subset back out to big slab array */
+    for(i = 0; i < ny; i++) {
+      for(j = 0; j < nx; j++) {
+        slab[index_slab+(i*max_nx)+j] = slab_s[(i*nx)+j];
+      }
+    /* Fill rest with missing values */
+      for(j = nx; j < max_nx; j++) {
+        slab[index_slab+(i*max_nx)+j] = missing_slab.floatval;
+      }
+    }
+
+    /* For next time through loop */
+    index_slab  += nxny;
+    index_rhead += NHEAD;
+  }
+
+  free(slab_s);
+  free(cfield);
+  free(chdate);
+  free(cunits);
+  free(cmapsc);
+  free(cdescr);
+
+/*
+ * Return slab and attributes back to NCL script.
+ */
+  dsizes_slab[0]  = nfields;
+  dsizes_slab[1]  = max_ny;
+  dsizes_slab[2]  = max_nx;
+  dsizes_rhead[0] = nfields;
+  dsizes_rhead[1] = NHEAD;
+  dsizes_field[0] = nfields;
+  dsizes_hdate[0] = nfields;
+  dsizes_units[0] = nfields;
+  dsizes_mapsc[0] = nfields;
+  dsizes_descr[0] = nfields;
+
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            (void*)slab,
+                            &missing_slab,
+                            3,
+                            dsizes_slab,
+                            TEMPORARY,
+                            NULL,
+                            nclTypefloatClass
+                            );
+/*
+ * Set up attributes to return.
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)field,
+                         NULL,
+                         1,
+                         dsizes_field,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "field",
+             att_md,
+             NULL
+             );
+    
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)hdate,
+                         NULL,
+                         1,
+                         dsizes_hdate,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "hdate",
+             att_md,
+             NULL
+             );
+    
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)units,
+                         NULL,
+                         1,
+                         dsizes_units,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "units",
+             att_md,
+             NULL
+             );
+    
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)mapsc,
+                         NULL,
+                         1,
+                         dsizes_mapsc,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "map_source",
+             att_md,
+             NULL
+             );
+    
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)descr,
+                         NULL,
+                         1,
+                         dsizes_descr,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "description",
+             att_md,
+             NULL
+             );
+    
+
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)rhead,
+                         NULL,
+                         2,
+                         dsizes_rhead,
+                         TEMPORARY,
+                         NULL,
+                         nclTypefloatClass
+                         );
+
+  _NclAddAtt(
+             att_id,
+             "rhead",
+             att_md,
+             NULL
+             );
+
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+
+  return(NhlNOERROR);
 }
 
 
