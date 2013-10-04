@@ -1630,6 +1630,8 @@ static NhlErrorTypes TransformDataPolygon
 				subret = _NhlDataLineTo((NhlLayer)top,x[0],y[0],0);
 			}
 			ret = MIN(subret,ret);
+                        c_mapiqd();
+                        c_plotif(0.0,0.0,2);
 		}
 	}
 	else {
@@ -1681,7 +1683,8 @@ static NhlErrorTypes TransformDataPolygon
 					subret = _NhlDataLineTo((NhlLayer)top,x[bix],y[bix],0);
 				}
 				ret = MIN(subret,ret);
-
+				c_mapiqd();
+				c_plotif(0.0,0.0,2);
 			}
 		}
 	}
