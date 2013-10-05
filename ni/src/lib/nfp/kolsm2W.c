@@ -204,7 +204,7 @@ NhlErrorTypes kolsm2_n_W( void )
         return(NhlFATAL);
       }
       size_rightmost *= dsizes_x[i];
-      dsizes_prob[np] = dsizes_x[dims[i]];
+      dsizes_prob[np] = dsizes_x[i];
       np++;
     }
   }
