@@ -7667,7 +7667,10 @@ static NhlErrorTypes AdvancedFileWriteVarVar(NclFile infile, NclQuark lhs_var,
                         continue;
                 }
 
-                sprintf(buffer,"ncl%d",thefile->advancedfile.grpnode->dim_rec->n_dims);
+                if(NULL != thefile->advancedfile.grpnode->dim_rec)
+                    sprintf(buffer,"ncl%d",thefile->advancedfile.grpnode->dim_rec->n_dims);
+                else
+                    sprintf(buffer,"ncl%d",0);
                 ret = AdvancedFileAddDim(infile,NrmStringToQuark(buffer),tmp_var->var.dim_info[i].dim_size,False);
                 dim_names[i] = NrmStringToQuark(buffer);
             }
