@@ -86,10 +86,10 @@ extern NhlErrorTypes wrf_updraft_helicity_W(void);
 extern NhlErrorTypes wrf_ll_to_ij_W(void);
 extern NhlErrorTypes wrf_ij_to_ll_W(void);
 extern NhlErrorTypes wrf_wps_read_nml_W(void);
-extern NhlErrorTypes wrf_plotfmt_open_W(void);
-extern NhlErrorTypes wrf_plotfmt_rdhead_W(void);
-extern NhlErrorTypes wrf_plotfmt_rddata_W(void);
-extern NhlErrorTypes wrf_plotfmt_read_W(void);
+extern NhlErrorTypes wrf_wps_open_int_W(void);
+extern NhlErrorTypes wrf_wps_rdhead_int_W(void);
+extern NhlErrorTypes wrf_wps_rddata_int_W(void);
+extern NhlErrorTypes wrf_wps_read_int_W(void);
 
 extern NhlErrorTypes cape_thermo_W(void);
 extern NhlErrorTypes gaus_lobat_W(void);
@@ -1728,7 +1728,7 @@ void NclAddUserFuncs(void)
         NclRegisterFunc(wrf_ij_to_ll_W,args,"wrf_ij_to_ll",nargs);
 
 /*
- * Register "wrf_plotfmt_open".
+ * Register "wrf_wps_open_int".
  *
  * Create private argument array
  */
@@ -1738,10 +1738,10 @@ void NclAddUserFuncs(void)
         dimsizes[0] = 1;
         SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
 
-        NclRegisterFunc(wrf_plotfmt_open_W,args,"wrf_plotfmt_open",nargs);
+        NclRegisterFunc(wrf_wps_open_int_W,args,"wrf_wps_open_int",nargs);
 
 /*
- * Register "wrf_plotfmt_rdhead"
+ * Register "wrf_wps_rdhead_int"
  *
  * Create private argument array
  */
@@ -1757,10 +1757,10 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
 
-        NclRegisterProc(wrf_plotfmt_rdhead_W,args,"wrf_plotfmt_rdhead",nargs);
+        NclRegisterProc(wrf_wps_rdhead_int_W,args,"wrf_wps_rdhead_int",nargs);
 
 /*
- * Register "wrf_plotfmt_rddata"
+ * Register "wrf_wps_rddata_int"
  *
  * Create private argument array
  */
@@ -1772,10 +1772,10 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
-        NclRegisterFunc(wrf_plotfmt_rddata_W,args,"wrf_plotfmt_rddata",nargs);
+        NclRegisterFunc(wrf_wps_rddata_int_W,args,"wrf_wps_rddata_int",nargs);
 
 /*
- * Register "wrf_plotfmt_read".
+ * Register "wrf_wps_read_int".
  *
  * Create private argument array
  */
@@ -1785,7 +1785,7 @@ void NclAddUserFuncs(void)
         dimsizes[0] = 1;
         SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
 
-        NclRegisterFunc(wrf_plotfmt_read_W,args,"wrf_plotfmt_read",nargs);
+        NclRegisterFunc(wrf_wps_read_int_W,args,"wrf_wps_read_int",nargs);
 
 /*
  * Register "wrf_wps_read_nml".

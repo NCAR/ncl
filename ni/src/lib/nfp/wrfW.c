@@ -10556,7 +10556,7 @@ NhlErrorTypes wrf_eth_W( void )
 
 }
 
-NhlErrorTypes wrf_plotfmt_open_W( void )
+NhlErrorTypes wrf_wps_open_int_W( void )
 {
 
 /*
@@ -10609,7 +10609,7 @@ NhlErrorTypes wrf_plotfmt_open_W( void )
   NGCALLF(plotfmt_open,PLOTFMT_open)(cfilename, istatus,
                                      strlen(cfilename));
   if(*istatus != 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_plotfmt_open: The input file '%s' could not be opened.\nCheck that it exists and is spelled correctly",cfilename);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_open_int: The input file '%s' could not be opened.\nCheck that it exists and is spelled correctly",cfilename);
     return(NhlFATAL);
   }
 /*
@@ -10620,7 +10620,7 @@ NhlErrorTypes wrf_plotfmt_open_W( void )
 }
 
 
-NhlErrorTypes wrf_plotfmt_rdhead_W( void )
+NhlErrorTypes wrf_wps_rdhead_int_W( void )
 {
 
 /*
@@ -10799,7 +10799,7 @@ NhlErrorTypes wrf_plotfmt_rdhead_W( void )
   return(NhlNOERROR);
 }
 
-NhlErrorTypes wrf_plotfmt_rddata_W( void )
+NhlErrorTypes wrf_wps_rddata_int_W( void )
 {
 
 /*
@@ -10861,13 +10861,13 @@ NhlErrorTypes wrf_plotfmt_rddata_W( void )
 /*
  * Convert the input dimensions to ng_size_t.
  */
-  nx = get_dimensions(tmp_nx,1,type_nx,"wrf_plotfmt_rddata");
-  ny = get_dimensions(tmp_ny,1,type_ny,"wrf_plotfmt_rddata");
+  nx = get_dimensions(tmp_nx,1,type_nx,"wrf_wps_rddata_int");
+  ny = get_dimensions(tmp_ny,1,type_ny,"wrf_wps_rddata_int");
   if(nx == NULL || ny == NULL) 
     return(NhlFATAL);
 
   if((*nx > INT_MAX) || (*ny > INT_MAX)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_plotfmt_rddata: nx and/or ny is greater than INT_MAX");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_rddata_int: nx and/or ny is greater than INT_MAX");
     return(NhlFATAL);
   }
   inx = (int) *nx;
@@ -10875,7 +10875,7 @@ NhlErrorTypes wrf_plotfmt_rddata_W( void )
 
   slab = (float*)calloc(inx*iny,sizeof(float));
   if(slab == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_plotfmt_rddata: Unable to allocate memory for output array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_rddata_int: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 
@@ -10894,7 +10894,7 @@ NhlErrorTypes wrf_plotfmt_rddata_W( void )
 }
 
 
-NhlErrorTypes wrf_plotfmt_read_W( void )
+NhlErrorTypes wrf_wps_read_int_W( void )
 {
 
 /*
@@ -10955,7 +10955,7 @@ NhlErrorTypes wrf_plotfmt_read_W( void )
   NGCALLF(plotfmt_open,PLOTFMT_open)(cfilename, &istatus,
                                      strlen(cfilename));
   if(istatus != 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_plotfmt_read: The input file '%s' could not be opened.\nCheck that it exists and is spelled correctly",cfilename);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_read_int: The input file '%s' could not be opened.\nCheck that it exists and is spelled correctly",cfilename);
     return(NhlFATAL);
   }
 
@@ -10983,7 +10983,7 @@ NhlErrorTypes wrf_plotfmt_read_W( void )
       ny = (int)rhead_s[4];
       slab_s = (float*)calloc(nx*ny,sizeof(float));
       if(slab_s == NULL) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_plotfmt_read: Unable to allocate memory for output array");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_read_int: Unable to allocate memory for output array");
         return(NhlFATAL);
       }
       if(nfields == 0) {
@@ -11013,7 +11013,7 @@ NhlErrorTypes wrf_plotfmt_read_W( void )
 
   if(rhead == NULL || slab == NULL || field == NULL || hdate == NULL ||
      units == NULL || mapsc == NULL || descr == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_plotfmt_read: Unable to allocate memory for output array and attributes");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_read_int: Unable to allocate memory for output array and attributes");
     return(NhlFATAL);
   }
 
@@ -11078,7 +11078,7 @@ NhlErrorTypes wrf_plotfmt_read_W( void )
     ny = (int)rhead[index_rhead+4];
     slab_s = (float*)calloc(nx*ny,sizeof(float));
     if(slab_s == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_plotfmt_read: Unable to allocate memory for output array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_read_int: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
     /* Read data into temporary array */
