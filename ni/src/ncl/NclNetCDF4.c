@@ -2881,7 +2881,7 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
 
         out_data = storage;
 
-        if (grpnode->open)
+        if(grpnode->open)
         {
             fid = grpnode->gid;
             EndNC4DefineMode(grpnode,fid);
@@ -2901,6 +2901,11 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
         }
         else
         {
+          /*
+           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tgrpnode->path: <%s>\n", NrmQuarkToString(grpnode->path));
+           */
+
             nc_ret = nc__open(NrmQuarkToString(grpnode->path),NC_NOWRITE,&ChunkSizeHint,&fid);
             grpnode->define_mode = 0;
             grpnode->fid = fid;
@@ -2910,7 +2915,7 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
         if(nc_ret != NC_NOERR)
         {
             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                          "%s: Could not reopen the file (%s) for reading, at line: %d\n",
                           __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
             return(NULL);
         }
