@@ -10556,6 +10556,20 @@ NhlErrorTypes wrf_eth_W( void )
 
 }
 
+/*
+ * The wrf_wps_xxx_int functions that follow are for reading
+ * WRF WPS intermediate files.  You can use wrf_wps_read_int
+ * as an "all-in-one" function that creates one 3D variable
+ * with all the data and attributes attached, or you can 
+ * use the three individual functions, wrf_wps_open_int, 
+ * wrf_wps_rdhead_int, and wrf_wps_rddata_int that allows you
+ * to read the data in one 2D slab at a time.
+ */
+
+/*
+ * This function simply opens the WRF/WPS intermediate file
+ * and returns a status.
+ */
 NhlErrorTypes wrf_wps_open_int_W( void )
 {
 
@@ -10620,6 +10634,12 @@ NhlErrorTypes wrf_wps_open_int_W( void )
 }
 
 
+/*
+ * This function takes an open WRF/WPS intermediate file,
+ * and reads header information. This header information
+ * then gives you the info needed to read the slab via
+ * wrf_wps_rddata_int.
+ */
 NhlErrorTypes wrf_wps_rdhead_int_W( void )
 {
 
@@ -10799,6 +10819,10 @@ NhlErrorTypes wrf_wps_rdhead_int_W( void )
   return(NhlNOERROR);
 }
 
+/*
+ * This function takes an open WRF/WPS intermediate file,
+ * and reads a 2D slab. 
+ */
 NhlErrorTypes wrf_wps_rddata_int_W( void )
 {
 
@@ -10894,6 +10918,13 @@ NhlErrorTypes wrf_wps_rddata_int_W( void )
 }
 
 
+/*
+ * This function is a "3-in-1" function that does the
+ * work of wrf_wps_open_int, wrf_wps_rdhead_int, and 
+ * wrf_wps_rddata_int. It returns a 3D float array 
+ * that contains all the necessary data and attributes.
+ * 
+ */
 NhlErrorTypes wrf_wps_read_int_W( void )
 {
 
