@@ -51,17 +51,17 @@ static int  *V5DNumLevels = NULL;
 
 NhlErrorTypes v5d_create_W(void)
 {
-    NclQuark    *outfileQ;
+    NrmQuark    *outfileQ;
     char        *outfile;
     int *NumTimes,
         *NumVars,
         *Nr,
         *Nc,
         *Nl;
-    int dsizes[NCL_MAX_DIMENSIONS];
+    ng_size_t dsizes[NCL_MAX_DIMENSIONS];
     int i;
     char    *tstr;
-    NclQuark    *VarNameQ;
+    NrmQuark    *VarNameQ;
     const char  VarName[MAXVARS][10];
     int *TimeStamp,
         *DateStamp,
@@ -80,7 +80,7 @@ NhlErrorTypes v5d_create_W(void)
     }
 
     /* filename */
-    outfileQ = (NclQuark *) NclGetArgValue(0, 14, NULL, NULL, NULL, NULL, NULL, 0);
+    outfileQ = (NrmQuark *) NclGetArgValue(0, 14, NULL, NULL, NULL, NULL, NULL, 0);
     outfile = NrmQuarkToString(*outfileQ);
 
     /* NumTimes */
@@ -116,7 +116,7 @@ NhlErrorTypes v5d_create_W(void)
     }
 
     /* VarName */
-    VarNameQ = (NclQuark *) NclGetArgValue(6, 14, NULL, dsizes, NULL, NULL, NULL, 0);
+    VarNameQ = (NrmQuark *) NclGetArgValue(6, 14, NULL, dsizes, NULL, NULL, NULL, 0);
     if (dsizes[0] != *NumVars){
         NhlPError(NhlFATAL, NhlEUNKNOWN,
         "v5d_create: VarNames must be size[NumVars]");
@@ -257,7 +257,7 @@ NhlErrorTypes v5d_create_W(void)
  */
 NhlErrorTypes v5d_write_W(void)
 {
-    int dsizes[NCL_MAX_DIMENSIONS];
+    ng_size_t dsizes [NCL_MAX_DIMENSIONS];
     int *it,
         *iv;
     float   *data;
@@ -305,7 +305,7 @@ NhlErrorTypes v5d_write_W(void)
  */
 NhlErrorTypes v5d_write_var_W(void)
 {
-    int dsizes[NCL_MAX_DIMENSIONS];
+    ng_size_t dsizes [NCL_MAX_DIMENSIONS];
     float   *data;
     int i;
 
