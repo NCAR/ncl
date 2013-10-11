@@ -431,7 +431,7 @@ NhlErrorTypes _Nclstr_split
 
     if (strs == NULL)
     {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_get_field: input string is null.");
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_split: input string is null.");
         return NhlFATAL;
     }
 
