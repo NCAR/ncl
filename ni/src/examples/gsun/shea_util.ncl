@@ -2700,7 +2700,7 @@ begin
        x = dtrend(x,False)             ; step 1: detrend
    end if
                                        ; step 2: Calculate input sample variance 
-   xVaro = variance(x)*(N-1.)/N        ; variance after pre-whitening
+   xVaro = variance(x)*(N-1.)/N        ; population variance after pre-whitening
 
    x     = taper (x,pct,0)             ; step 3: taper the series
                                        ; tapering correction factor
@@ -4286,6 +4286,7 @@ end
 undef("area_global_rectilinear_grid")
 function area_global_rectilinear_grid (lat[*]:numeric, lon[*], opt[1]:logical)
 ; Area (approximate) of a global rectilinear grid cells.
+; Actually, the rectilinear grid must be equally spaced: 1x1, 1x2, 3x5
 ; This could be modified for non-global grids by adding
 ;     the left and right and left dx.
 local rearth, nlat, mlon, pi, rad, rr, dlon, dx, dy
