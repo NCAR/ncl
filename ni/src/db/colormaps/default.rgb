@@ -1,4 +1,4 @@
-# this is the default hlu colormap
+# This is the old default NCL color table
 ncolors = 30
 
 #  r   g   b

@@ -3,7 +3,9 @@
 #
 FILES		= \
 		3gauss.ncmap  \
+		3gauss.rgb  \
 		3saw.ncmap \
+		3saw.rgb \
 		BkBlAqGrYeOrReViWh200.gp \
 		BkBlAqGrYeOrReViWh200.rgb \
 		BlAqGrYeOrRe.gp \
@@ -23,6 +25,7 @@ FILES		= \
 		WhBlGrYeRe.gp \
 		WhBlGrYeRe.rgb \
 		WhBlReWh.gp \
+		WhBlReWh.rgb \
 		WhViBlGrYeOrRe.gp \
 		WhViBlGrYeOrRe.rgb \
 		WhViBlGrYeOrReWh.gp \
@@ -33,13 +36,19 @@ FILES		= \
 		cosam12.rgb \
 		default.rgb \
 		detail.ncmap \
+		detail.rgb \
 		extrema.ncmap \
+		extrema.rgb \
 		helix.ncmap \
+		helix.rgb \
 		helix1.ncmap \
+		helix1.rgb \
 		gui_default.rgb \
 		hlu_default.rgb \
 		hotres.ncmap \
+		hotres.rgb \
 		ncview_default.ncmap \
+		ncview_default.rgb \
 		nrl_sirkes.rgb \
 		nrl_sirkes_nowhite.rgb \
 		posneg_1.rgb \
@@ -50,11 +59,17 @@ FILES		= \
 		radar.rgb \
 		radar_1.rgb \
 		rainbow.gp \
+		rainbow.rgb \
 		rainbow+gray.gp \
+		rainbow+gray.rgb \
 		rainbow+white.gp \
+		rainbow+white.rgb \
 		rainbow+white+gray.gp \
+		rainbow+white+gray.rgb \
 		so4_21.gp \
+		so4_21.rgb \
 		so4_23.gp \
+		so4_23.rgb \
 		tbrAvg1.rgb \
 		tbrStd1.gp \
 		tbrStd1.rgb \
@@ -70,6 +85,7 @@ FILES		= \
 		thelix.rgb \
                 wgne15.rgb \
 		wh-bl-gr-ye-re.gp \
+		wh-bl-gr-ye-re.rgb \
 		wxpEnIR.rgb \
 		BlueDarkOrange18.rgb \
 		BlueDarkRed18.rgb \
@@ -124,6 +140,19 @@ FILES		= \
 		cb_rainbow.rgb \
 		cb_rainbow_inv.rgb
 
+# Note: these are file representations of the 9 built-in colormaps.
+# They are not being installed yet, because of backwards 
+# incompatibilities with the background/foreground colors.
+BUILTIN_FILES		= \
+		cyclic.rgb \
+		example.rgb \
+		gscyclic.rgb \
+		gsdtol.rgb \
+		gsltod.rgb \
+		ncl_default.rgb \
+		psgcap.rgb \
+		temp1.rgb \
+		uniform.rgb
 
 CMPATH	= $(LIBNCARGPATH)/colormaps
 INSTALL_CM = $(INSTALL_DB)
@@ -132,4 +161,3 @@ InstallTarget($(FILES),$(INSTALL_CM),$(CMPATH))
 #ifdef BuildPyNGL
 InstallTarget($(FILES),$(INSTALL_CM),$(PYNGLNCARGPATH)/colormaps)
 #endif
-

@@ -1,3 +1,7 @@
+======================================================================
+This directory contains a few different styles of color maps that
+end in ".rgb", ".gp", or ".ncmap".
+======================================================================
 Adding a new colormap to NCL.
 
  1. Decide what you are going to call this color table and create a
