@@ -2555,33 +2555,35 @@ int vtype;
 	NclScalar missing_value;
 	int has_missing = 0;
 	void *val = NULL;
-	int index;
-	long start[NCL_MAX_DIMENSIONS];
-	long finish[NCL_MAX_DIMENSIONS];
-	long stride[NCL_MAX_DIMENSIONS];
-	long real_stride[NCL_MAX_DIMENSIONS];
+	int index;   /* index of variable in file */
+	ng_size_t start[NCL_MAX_DIMENSIONS];
+	ng_size_t finish[NCL_MAX_DIMENSIONS];
+	ng_size_t stride[NCL_MAX_DIMENSIONS];
+	ng_size_t real_stride[NCL_MAX_DIMENSIONS];
 	int i,j,k,done = 0,inc_done = 0;
 	int n_dims_input;
-        long  n_elem = 1;
+        ng_size_t  n_elem = 1;
 	int n_dims_output = 1;
-	long total_elements = 1;
+	ng_size_t total_elements = 1;
 	int has_vectors = 0;
 	int has_stride = 0;
 	int has_reverse = 0;
 	int has_reorder = 0;
-	int to = 0,block_read_limit = 1,n_elem_block;
+	ng_size_t to = 0;
+	int block_read_limit = 1;
+	ng_size_t n_elem_block;
 	
-	long multiplier_input[NCL_MAX_DIMENSIONS];
+	ng_size_t multiplier_input[NCL_MAX_DIMENSIONS];
 	int compare_sel[NCL_MAX_DIMENSIONS];
-	long current_index[NCL_MAX_DIMENSIONS];
-	long current_finish[NCL_MAX_DIMENSIONS];
+	ng_size_t current_index[NCL_MAX_DIMENSIONS];
+	ng_size_t current_finish[NCL_MAX_DIMENSIONS];
 	int index_map[NCL_MAX_DIMENSIONS];
 	ng_size_t output_dim_sizes[NCL_MAX_DIMENSIONS];
 	int keeper[NCL_MAX_DIMENSIONS];
 	NclSelection *sel;
 	float tmpf;
-	long tmpi;
-	int swap_size;
+	ng_size_t tmpi;
+	ng_size_t swap_size;
 	void *swap_space = NULL;
 /*
 * By the the time it gets here the file suport routines in that build the selection
