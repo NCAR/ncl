@@ -125,9 +125,11 @@ int NclDriver(int argc, char **argv)
                 NCLecho = 1;
                 break;
 
+#ifdef NCLDEBUG
             case 'm':
                 NCLdebug_on = 1;
                 break;
+#endif
 
             case 'd':
                 NCLdebug_on = 2;
@@ -160,7 +162,9 @@ int NclDriver(int argc, char **argv)
                 (void) fprintf(stdout, "Usage: ncl -fhnpxV <args> <file.ncl>\n");
                 (void) fprintf(stdout, "\t -f: Use New File Structure, and NetCDF4 features\n");
                 (void) fprintf(stdout, "\t -n: don't enumerate values in print()\n");
+#ifdef NCLDEBUG
                 (void) fprintf(stdout, "\t -m: turns on memory debug.\n");
+#endif
                 (void) fprintf(stdout, "\t -d: turns on detailed memory debug.\n");
                 (void) fprintf(stdout, "\t -g: turns on deep detailed memory debug.\n");
                 (void) fprintf(stdout, "\t -p: don't page output from the system() command\n");
