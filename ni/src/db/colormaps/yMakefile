@@ -138,12 +138,7 @@ FILES		= \
 		GHRSST_anomaly.rgb \
 		cb_9step.rgb \
 		cb_rainbow.rgb \
-		cb_rainbow_inv.rgb
-
-# Note: these are file representations of the 9 built-in colormaps.
-# They are not being installed yet, because of backwards 
-# incompatibilities with the background/foreground colors.
-BUILTIN_FILES		= \
+		cb_rainbow_inv.rgb \
 		cyclic.rgb \
 		example.rgb \
 		gscyclic.rgb \

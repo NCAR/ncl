@@ -1039,20 +1039,22 @@ static NhlColor	ncl_default[] = {
 
 
 /*
- * List of all pre-defined colormaps.  Eventually, I would like to add
- * a dynamic list, so the user can add thier own cmap's.
+ * List of all old pre-defined colormaps, but with "_old" appended to
+ * the name. As of 10/21/2013, these colormaps have been converted to 
+ * .rgb files for consistency. They are kept here just in case, but 
+ * probably can be removed.
  */
 static _NhlPalCmap cmaps[] = {
-	{"default",	def,		NhlNumber(def)},
-	{"cyclic",	cyclic,		NhlNumber(cyclic)},
-	{"gscyclic",	gscyclic,	NhlNumber(gscyclic)},
-	{"gsltod",	gsld,		NhlNumber(gsld)},
-	{"gsdtol",	gsdl,		NhlNumber(gsdl)},
-	{"uniform",	uniform,	NhlNumber(uniform)},
-	{"temp1",	temp1,		NhlNumber(temp1)},
-	{"psgcap",	psgcap,		NhlNumber(psgcap)},
-	{"example",	example,	NhlNumber(example)},
-	{"ncl_default",	ncl_default,	NhlNumber(ncl_default)},
+	{"default_old",	def,		NhlNumber(def)},
+	{"cyclic_old",	cyclic,		NhlNumber(cyclic)},
+	{"gscyclic_old",gscyclic,	NhlNumber(gscyclic)},
+	{"gsltod_old",	gsld,		NhlNumber(gsld)},
+	{"gsdtol_old",	gsdl,		NhlNumber(gsdl)},
+	{"uniform_old",	uniform,	NhlNumber(uniform)},
+	{"temp1_old",	temp1,		NhlNumber(temp1)},
+	{"psgcap_old",	psgcap,		NhlNumber(psgcap)},
+	{"example_old",	example,	NhlNumber(example)},
+	{"ncl_default_old",ncl_default,	NhlNumber(ncl_default)},
 	{NULL,		NULL,		0}
 };
 
