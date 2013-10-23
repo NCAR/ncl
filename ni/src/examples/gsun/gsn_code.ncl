@@ -1002,16 +1002,15 @@ begin
 end
 
 ;----------------------------------------------------------------------
-; Given an array of numeric levels (like contour or vector levels) 
-; and a color map, this function returns an array of index values
-; that nicely span the full colormap. 
+; Given a color map and the number of desired colors, this function 
+; returns an array of index values that nicely span the full colormap. 
 ;
 ; If you give it a named color map, then it will not use color indexes
 ; 0 and 1, since NCL uses these indexes for the background and 
 ; foreground colors. Hence, the first index returned will be index 2.
 ;
 ; If you use RGB or RGBA arrays, then no assumption is made about 
-; the first two colors, and it will include them in the span.
+; the first two colors, and the first index returned will be 0.
 ;
 ; This function is very similar to the span_color_rgb function,
 ; except it returns index values into the color map, rather
@@ -1021,8 +1020,8 @@ end
 ; of RGB (n x 3) or RGBA (n x 4) values.
 ;----------------------------------------------------------------------
 undef("span_color_indexes")
-function span_color_indexes(cnlvls[*]:numeric,cmapt)
-local ncols, lcount, fmin, fmax, fcols, icols, cmap
+function span_color_indexes(cmapt,ncolors)
+local ncols, fmin, fmax, fcols, icols, cmap
 begin
   if(isstring(cmapt)) then
      cmap = read_colormap_file(cmapt)
@@ -1039,7 +1038,6 @@ begin
   end if
 
   ncols  = dimsizes(cmap(:,0))
-  lcount = dimsizes(cnlvls)
 ;
 ; Start at index 0 and end at ncols-1 (the full range of the
 ; color map.
@@ -1051,7 +1049,7 @@ begin
   fmax = new(1,float)
   fmin = minix
   fmax = maxix
-  fcols = fspan(fmin,fmax,lcount+1)
+  fcols = fspan(fmin,fmax,ncolors)
   icols = tointeger(fcols + 0.5)
   if(isstring(cmapt)) then
     return(icols+2)
@@ -1061,10 +1059,11 @@ begin
 end
 
 ;----------------------------------------------------------------------
-; Given an array of contour levels and a color map, return
-; an array of RGB[A] values that nicely span the full colormap.
+; Given a color map and the number of desired colors, this function 
+; returns an array of RGB[A] values that nicely span the full colormap.
 ;
-; For a named colormap, the first two color values are not used.
+; For a named colormap, the first two color values are not used,
+; because these are the foreground/background colors.
 ;
 ; This function is very similar to the span_color_indexes function,
 ; except it returns RGBA values rather than index values. This 
@@ -1074,10 +1073,10 @@ end
 ; of RGB (n,3) or RGBA (n,4).
 ;----------------------------------------------------------------------
 undef("span_color_rgba")
-function span_color_rgba(cnlvls[*]:numeric,cmapt)
+function span_color_rgba(cmapt,ncolors)
 local icols, cmap, fmsg
 begin
-  icols = span_color_indexes(cnlvls,cmapt)
+  icols = span_color_indexes(cmapt,ncolors)
   fmsg = new(3,float)          ; missing value
   if(any(ismissing(icols)))
     return(fmsg)
@@ -1109,7 +1108,7 @@ end
 ; This function replaces the deprecated GetFillColor.
 ;----------------------------------------------------------------------
 undef("get_color_index")
-function get_color_index(cnlvls[*]:numeric,cmapt,value[1]:numeric)
+function get_color_index(cmap,cnlvls[*]:numeric,value[1]:numeric)
 local cmap, dims, ncn, nclr, color, n, col_indexes, ncoli
 begin
 
@@ -1174,7 +1173,7 @@ end
 ; of RGB (n,3) or RGBA (n,4).
 ;----------------------------------------------------------------------
 undef("get_color_rgba")
-function get_color_rgba(cnlvls[*]:numeric,cmapt,value[1]:numeric)
+function get_color_rgba(cmapt,cnlvls[*]:numeric,value[1]:numeric)
 local fmsg, icol, cmap
 begin
  fmsg = new(3,float)          ; missing value
