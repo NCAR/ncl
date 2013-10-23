@@ -1001,6 +1001,199 @@ begin
   return(rgb_array)
 end
 
+;----------------------------------------------------------------------
+; Given an array of numeric levels (like contour or vector levels) 
+; and a color map, this function returns an array of index values
+; that nicely span the full colormap. 
+;
+; If you give it a named color map, then it will not use color indexes
+; 0 and 1, since NCL uses these indexes for the background and 
+; foreground colors. Hence, the first index returned will be index 2.
+;
+; If you use RGB or RGBA arrays, then no assumption is made about 
+; the first two colors, and it will include them in the span.
+;
+; This function is very similar to the span_color_rgb function,
+; except it returns index values into the color map, rather
+; than RGBA values.
+;
+; The colormap can be a named colormap, like "rainbow", or an array
+; of RGB (n x 3) or RGBA (n x 4) values.
+;----------------------------------------------------------------------
+undef("span_color_indexes")
+function span_color_indexes(cnlvls[*]:numeric,cmapt)
+local ncols, lcount, fmin, fmax, fcols, icols, cmap
+begin
+  if(isstring(cmapt)) then
+     cmap = read_colormap_file(cmapt)
+  else if(isnumeric(cmapt)) then
+    dims = dimsizes(cmapt)
+    if(dims(0).lt.3.or.dims(0).gt.256.or..not.any(dims(1).ne.(/3,4/))) then
+      print ("Error: span_color_indexes: cmap must be an n x 3 or n x 4 array of RGB or RGBA values, or a valid color map name")
+      return(new(1,integer))   ; return missing
+    end if
+    cmap = cmapt
+  else
+    print ("Error: span_color_indexes: cmap must be an n x 3 or n x 4 array of RGB or RGBA values, or a valid color map name")
+  end if
+  end if
+
+  ncols  = dimsizes(cmap(:,0))
+  lcount = dimsizes(cnlvls)
+;
+; Start at index 0 and end at ncols-1 (the full range of the
+; color map.
+;
+  minix = 0
+  maxix = ncols-1
+
+  fmin = new(1,float)    ; to make sure we get a missing value (?)
+  fmax = new(1,float)
+  fmin = minix
+  fmax = maxix
+  fcols = fspan(fmin,fmax,lcount+1)
+  icols = tointeger(fcols + 0.5)
+  if(isstring(cmapt)) then
+    return(icols+2)
+  else
+    return(icols)
+  end if
+end
+
+;----------------------------------------------------------------------
+; Given an array of contour levels and a color map, return
+; an array of RGB[A] values that nicely span the full colormap.
+;
+; For a named colormap, the first two color values are not used.
+;
+; This function is very similar to the span_color_indexes function,
+; except it returns RGBA values rather than index values. This 
+; function actually uses span_color_indexes.
+;
+; The colormap can be a named colormap, like "rainbow", or an array
+; of RGB (n,3) or RGBA (n,4).
+;----------------------------------------------------------------------
+undef("span_color_rgba")
+function span_color_rgba(cnlvls[*]:numeric,cmapt)
+local icols, cmap, fmsg
+begin
+  icols = span_color_indexes(cnlvls,cmapt)
+  fmsg = new(3,float)          ; missing value
+  if(any(ismissing(icols)))
+    return(fmsg)
+  end if
+
+ if(isstring(cmapt)) then
+   cmap = read_colormap_file(cmapt)
+   icols = icols - 2                 ; read_colormap_file returns array 
+                                     ; with indexes 0 and 1 dropped off
+ else 
+   cmap = cmapt
+ end if
+
+ return(cmap(icols,:))
+end
+
+;----------------------------------------------------------------------
+; Given an array of contour levels,  a color map, and a single
+; value, this function returns an index value into the colormap
+; to use for representing the single value
+;
+; This function is very similar to the get_color_rgb function,
+; except it returns the index value into the color map, rather
+; than an RGBA value.
+;
+; The colormap can be a named colormap, like "rainbow", or an array
+; of RGB (n,3) or RGBA (n,4).
+;
+; This function replaces the deprecated GetFillColor.
+;----------------------------------------------------------------------
+undef("get_color_index")
+function get_color_index(cnlvls[*]:numeric,cmapt,value[1]:numeric)
+local cmap, dims, ncn, nclr, color, n, col_indexes, ncoli
+begin
+
+ if(isstring(cmapt)) then
+    cmap = read_colormap_file(cmapt)
+ else if(isnumeric(cmapt)) then
+   dims = dimsizes(cmapt)
+   if(dims(0).lt.3.or.dims(0).gt.256.or..not.any(dims(1).ne.(/3,4/))) then
+     print ("Error: get_color_index: cmap must be an n x 3 or n x 4 array of RGB or RGBA values, or a valid color map name")
+     return(new(3,"float"))    ; return a missing value
+   end if
+   cmap = cmapt
+ else
+   print ("Error: get_color_index: cmap must be an n x 3 or n x 4 array of RGB or RGBA values, or a valid color map name")
+ end if
+ end if
+
+ ncn  = dimsizes (cnlvls)
+ nclr = dimsizes (cmap(:,0))
+ imsg = new(1,integer)          ; missing value
+
+ if (nclr-2 .lt. ncn+1) then 
+   print ("Warning: get_color_index: Not enough colors in colormap for number of contour levels")
+   print ("         Colors will be repeated")
+ end if
+ if (ismissing(value)) then
+   print ("Error: get_color_index: Input value is missing")
+   return (imsg)
+ end if
+ if (any(ismissing(cnlvls))) then
+   print ("Error: get_color_index: One or more input contour levels are missing")
+   return (imsg)
+ end if
+
+;---Get nice span of indexes throughout the color map
+ col_indexes = span_color_indexes(cnlvls,cmap)
+ ncoli       = dimsizes(col_indexes)    ; should be ncn+1
+
+ do n = 0, ncn-1
+   if (value .le. cnlvls(n)) then
+     return(col_indexes(n))
+     break
+   end if
+ end do
+ if(isstring(cmapt)) then
+   return(col_indexes(ncn)+2)    ; Account for 0/1 index being dropped
+  else
+   return(col_indexes(ncn))
+ end if
+end
+
+;----------------------------------------------------------------------
+; Given an array of contour levels,  a color map, and a single
+; value, this function returns an RGB[A] value in the colormap
+; to use for representing the single value
+;
+; This function uses get_color_index, and is very similar to this
+; function except it returns the actual RGB[A] value, rather 
+; than an index value.
+;
+; The colormap can be a named colormap, like "rainbow", or an array
+; of RGB (n,3) or RGBA (n,4).
+;----------------------------------------------------------------------
+undef("get_color_rgba")
+function get_color_rgba(cnlvls[*]:numeric,cmapt,value[1]:numeric)
+local fmsg, icol, cmap
+begin
+ fmsg = new(3,float)          ; missing value
+ icol = get_color_index(cnlvls,cmapt,value)
+
+ if (ismissing(icol)) then
+   return (fmsg)
+ end if
+
+ if(isstring(cmapt)) then
+   cmap = read_colormap_file(cmapt)
+   return(cmap(icol-2,:))    ; Indexes start at 2
+ else
+   cmap = cmapt
+   return(cmap(icol,:))
+ end if
+end
+
+
 ;***********************************************************************;
 ; Function : spread_colors                                              ;
 ;                wks:graphic                                            ;
