@@ -14,6 +14,10 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Important modifications:
+;       23 Oct 2013:
+;         Added RemovePETLog option to ESMF_regrid so user can
+;         ask to have the PET0.RegridWeightGen.Log file removed.
+;
 ;       14 Aug 2013:
 ;           Added TriangularMesh, so that user can input own 
 ;           triangular mesh to unstruct_to_ESMF code. This
@@ -2227,7 +2231,8 @@ begin
     start_time = get_start_time()
   end if
 
-  DEBUG = isatt_logical_true(opt2,"Debug")
+  DEBUG          = isatt_logical_true(opt2,"Debug")
+  REMOVE_PET_LOG = isatt_logical_true(opt2,"RemovePETLog")
 
 ;---Check if the source grid file is a SCRIP file.
   if (.not.(isatt_logical_true(opt2,"SrcESMF")).and. \
@@ -2375,6 +2380,10 @@ begin
 ;---Execute the regridding command
   RegridOut = systemfunc(ESMFCMD)
         
+  if(REMOVE_PET_LOG) then
+    system("rm -rf PET0.RegridWeightGen.Log")
+  end if
+
   if(DEBUG) then
     print("ESMF_regrid_gen_weights: output from '" + ESMF_exec + "':")
     print("     " + RegridOut)
