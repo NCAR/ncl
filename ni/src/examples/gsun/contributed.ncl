@@ -12049,17 +12049,22 @@ begin
 end
 ;****************************************************************************
 ; Calculate a 'bunch' of dispersion statistics 
-; This can be slow for big 'x'
+; This was originally developed for looking at satellite swath data
+; which has many points but, often, many missing values and outliers.
+; It can be used to ascertain the best values to use for
+; contour resources: min/max/interval
 ; 
+; *This can be slow for big 'x'*
+;
 undef("stat_dispersion")
 function stat_dispersion (x:numeric, opt[1]:logical )
 ; Robust dispersion statistics
 ; 
-local nStat, nx, sFillV, nFill, one, statx, work, nwork, x1d, ivalid, allFill
+local nStat, nx, sFillV, nFill, one, statx, work, nwork, x1d, ivalid, allFill, nValid
 begin
    nx      = product( dimsizes(x) )
-   nFill   = 0
    nStat   = 30
+   nFill   = 0
    allFill = False 
 
    if (typeof(x).eq."double") then
@@ -12089,56 +12094,81 @@ begin
 
    if (typeof(x).eq."double") then
        one    = 1.0d
+       moment = (/0.0d, 0.0d ,0.0d ,0.0d /)
    else
        one    = 1.0
+       moment = (/0.0 , 0.0  ,0.0  ,0.0  /)
    end if
 
+   nValid   = 0l                    ; force 'long' int
+   nValid   = nx-nFill
+
+   nwork    = 0l                    ; force nwork as 'long' int
+   nwork    = dimsizes(work)        
+
    statx    = new ( nStat, typeof(sFillV), sFillV) 
-   if (.not.allFill) then
-       nwork    = 0l                    ; force nwork as 'long' int
-       nwork    = dimsizes(work)        ; so (say) 3*nwork will work
+   if (nwork.gt.1) then
       ;statx(0) = avg(x)                ; mean
       ;statx(1) = stddev(x)             ; std. deviation
        moment   = dim_stat4( work ) 
        statx(0) = moment(0)             ; mean
        statx(1) = moment(1)             ; std. deviation
        
-       if (nwork.ge.10) then 
-           qsort( work )                    ; sort into ascending order
-           statx(2) = min ( work )
+       qsort( work )                    ; sort into ascending order
+       statx(2) = work(0)               ; min ( work )
+
+; Daniel Leuenberger (Meteo Swiss) suggested the small 
+;      sample size granularity (10/2013)
                                             ; -1 ... NCL zero based 
-           statx(3) = work( nwork/10-1 )    ; lower dectile
-           statx(4) = work( nwork/8 -1 )    ; lower octtile
-           statx(5) = work( nwork/6 -1 )    ; lower sextile
-           statx(6) = work( nwork/4 -1 )    ; lower quartile
-           statx(7) = work( nwork/3 -1 )    ; lower 3tile
-           if (nwork%2 .eq.0) then          ; median even
-               statx(8) = (work(nwork/2-1)+work(nwork/2))*0.5  
-           else
-               statx(8) = work( nwork/2   ) ; median odd  
-           end if
-           statx(9) = work((nwork*2)/3 -1)  ; upper 3tile
-           statx(10)= work((nwork*3)/4 -1)  ; upper quartile
-           statx(11)= work((nwork*5)/6 -1)  ; upper sextile
-           statx(12)= work((nwork*7)/8 -1)  ; upper octtile
-           statx(13)= work((nwork*9)/10-1)  ; upper dectile
-           statx(14)= max ( work )      
-           statx(15)= statx(14)-statx(2)    ; range
-           if (statx(1).gt.0) then
+       if (nwork.ge.10) then 
+         statx(3) = work( nwork/10-1 )    ; lower dectile
+         statx(13)= work((nwork*9)/10-1)  ; upper dectile
+       end if
+
+       if (nwork.ge.8) then
+         statx(4) = work( nwork/8 -1 )    ; lower octtile
+         statx(12)= work((nwork*7)/8 -1)  ; upper octtile
+       end if
+
+       if (nwork.ge.6) then
+         statx(5) = work( nwork/6 -1 )    ; lower sextile
+         statx(11)= work((nwork*5)/6 -1)  ; upper sextile
+       end if
+
+       if (nwork.ge.4) then
+         statx(6) = work( nwork/4 -1 )    ; lower quartile
+         statx(10)= work((nwork*3)/4 -1)  ; upper quartile
+       end if
+ 
+       if (nwork.ge.3) then
+         statx(7) = work( nwork/3 -1 )    ; lower 3tile
+         statx(9) = work((nwork*2)/3 -1)  ; upper 3tile
+       end if
+
+       if (nwork.ge.2) then
+         if (nwork%2 .eq.0) then          ; median even
+           statx(8) = (work(nwork/2-1)+work(nwork/2))*0.5  
+         else
+           statx(8) = work( nwork/2   ) ; median odd  
+         end if
+       end if 
+
+       statx(14)= work(nwork-1)         ; max ( work )      
+       statx(15)= statx(14)-statx(2)    ; range
+       if (statx(1).gt.0) then
+       if (.not.ismissing(statx(1)) .and. statx(1).gt.0) then
                statx(16)= statx(15)/statx(1); a measure of dispersion
            end if
            statx(17)= sqrt(sum((work-statx(0))^2)/nwork) ; root mean sq anomaly
        end if                               ; nwork.ge.10
-   else                             
-       nwork    = 0
    end if                                   ; .not.allFill
    statx(18)= nx
-   statx(19)= nwork
+   statx(19)= nValid
    statx(20)= nFill
    statx(21)= 100*(one - (one*(nx-nFill))/nx)
 
-;;;if (nwork.gt.1000) then
-        ;JBuzan BEGIN
+   if (nwork.gt.1000) then
+        ;JBuzan [Purdue] 
        statx(22) = work( max((/ 0, nwork/1000-1 /)) ) ; lower 99.9% 
        statx(23) = work( max((/ 0, nwork/100-1  /)) ) ; lower 99.%  
        statx(24) = work( max((/ 0, nwork/20-1   /)) ) ; lower 95%   
@@ -12146,14 +12176,13 @@ begin
        statx(25) = work( min((/nwork-1, (nwork*19)/20-1    /)) ) ; upper 95%
        statx(26) = work( min((/nwork-1, (nwork*99)/100-1   /)) ) ; upper 99.%
        statx(27) = work( min((/nwork-1, (nwork*999)/1000-1 /)) ) ; upper 99.9%
-        ;JBuzan END
-;;;end if
+        ;JBuzan
+   end if
 
-        ;Arne Melsom
+        ;Arne Melsom (Norwegian Meteorological Institute)
    statx(28)  = moment(2)                   ; skewness
    statx(29)  = moment(3)                   ; kurtosis
         ;Arne Melsom
-
 
    statx@long_name = "Robust Dispersion Statistics"
    if (isatt(x,"long_name")) then
@@ -13053,16 +13082,20 @@ function pattern_cor2 (x[*][*],y[*][*],w, opt:integer)
 ; (lat,lon)  .... wgt(lat)
 
 local dimx, dimy, dimw, wgt, WGT, sumWGT, xAvgArea, xAnom, yAnom \
-    , i, j, W1D, z1d, xyCov, xAnom2, yAnom2, r
+    , i, j, W1D, z1d, xyCov, xAnom2, yAnom2, r, rFill 
 begin
   if (isatt(x,"_FillValue")) then
       if (all(ismissing(x))) then
-          return(x@_FillValue)
+          rFill = (/ x@_FillValue /)
+          rFill@_FillValue = rFill
+          return(rFill)
       end if
   end if
   if (isatt(y,"_FillValue")) then
       if (all(ismissing(y))) then
-          return(y@_FillValue)
+          rFill = (/ y@_FillValue /)
+          rFill@_FillValue = rFill
+          return(rFill)
       end if
   end if
                              ; x and y must have the same sizes
@@ -13166,16 +13199,20 @@ function pattern_cor (x, y, w, opt:integer)
 ; between two fields
 ; (lat,lon)  .... wgt(1) or wgt(lat) or wgt(lat,lon)
 
-local dimx, dimy, rankx, ranky, nt, kl, xc, rpc
+local dimx, dimy, rankx, ranky, nt, kl, xc, rpc, rFill
 begin
   if (isatt(x,"_FillValue")) then
       if (all(ismissing(x))) then
-          return(x@_FillValue)
+          rFill = (/ x@_FillValue /)
+          rFill@_FillValue = rFill
+          return(rFill)
       end if
   end if
   if (isatt(y,"_FillValue")) then
       if (all(ismissing(y))) then
-          return(y@_FillValue)
+          rFill = (/ y@_FillValue /)
+          rFill@_FillValue = rFill
+          return(rFill)
       end if
   end if
                              ; x and y must have the same sizes
