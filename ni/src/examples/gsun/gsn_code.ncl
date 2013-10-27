@@ -1027,7 +1027,8 @@ begin
      cmap = read_colormap_file(cmapt)
   else if(isnumeric(cmapt)) then
     dims = dimsizes(cmapt)
-    if(dims(0).lt.3.or.dims(0).gt.256.or..not.any(dims(1).ne.(/3,4/))) then
+   if(dimsizes(dims).ne.2.or.dims(0).lt.3.or.dims(0).gt.256.or.\
+       .not.any(dims(1).ne.(/3,4/))) then
       print ("Error: span_color_indexes: cmap must be an n x 3 or n x 4 array of RGB or RGBA values, or a valid color map name")
       return(new(1,integer))   ; return missing
     end if
@@ -1077,7 +1078,7 @@ function span_color_rgba(cmapt,ncolors)
 local icols, cmap, fmsg
 begin
   icols = span_color_indexes(cmapt,ncolors)
-  fmsg = new(3,float)          ; missing value
+  fmsg = new(4,float)          ; missing value
   if(any(ismissing(icols)))
     return(fmsg)
   end if
@@ -1108,7 +1109,7 @@ end
 ; This function replaces the deprecated GetFillColor.
 ;----------------------------------------------------------------------
 undef("get_color_index")
-function get_color_index(cmap,cnlvls[*]:numeric,value[1]:numeric)
+function get_color_index(cmapt,cnlvls[*]:numeric,value[1]:numeric)
 local cmap, dims, ncn, nclr, color, n, col_indexes, ncoli
 begin
 
@@ -1116,7 +1117,8 @@ begin
     cmap = read_colormap_file(cmapt)
  else if(isnumeric(cmapt)) then
    dims = dimsizes(cmapt)
-   if(dims(0).lt.3.or.dims(0).gt.256.or..not.any(dims(1).ne.(/3,4/))) then
+   if(dimsizes(dims).ne.2.or.dims(0).lt.3.or.dims(0).gt.256.or.\
+       .not.any(dims(1).ne.(/3,4/))) then
      print ("Error: get_color_index: cmap must be an n x 3 or n x 4 array of RGB or RGBA values, or a valid color map name")
      return(new(3,"float"))    ; return a missing value
    end if
@@ -1144,19 +1146,18 @@ begin
  end if
 
 ;---Get nice span of indexes throughout the color map
- col_indexes = span_color_indexes(cnlvls,cmap)
+ col_indexes = span_color_indexes(cmap,dimsizes(cnlvls)+1)
  ncoli       = dimsizes(col_indexes)    ; should be ncn+1
 
  do n = 0, ncn-1
-   if (value .le. cnlvls(n)) then
-     return(col_indexes(n))
+   if (value .lt. cnlvls(n)) then
      break
    end if
  end do
  if(isstring(cmapt)) then
-   return(col_indexes(ncn)+2)    ; Account for 0/1 index being dropped
+   return(col_indexes(n)+2)    ; Account for 0/1 index being dropped
   else
-   return(col_indexes(ncn))
+   return(col_indexes(n))
  end if
 end
 
@@ -1176,8 +1177,8 @@ undef("get_color_rgba")
 function get_color_rgba(cmapt,cnlvls[*]:numeric,value[1]:numeric)
 local fmsg, icol, cmap
 begin
- fmsg = new(3,float)          ; missing value
- icol = get_color_index(cnlvls,cmapt,value)
+ fmsg = new(4,float)          ; missing value
+ icol = get_color_index(cmapt,cnlvls,value)
 
  if (ismissing(icol)) then
    return (fmsg)
