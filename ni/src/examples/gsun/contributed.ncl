@@ -13492,3 +13492,80 @@ begin
   return(X)
   
 end
+;----------------------------------------------------------
+undef("mode_stat")
+function mode_stat(A[*]:numeric)
+;
+; A need not be in ascending order. The sunction wil sort.
+; Care should be used when A is type float or double.
+; A value of 12.34567 is not the same as 12.34568 
+; A suggestion is to preprocess the data. Say that 
+; 2 decimal places is 'close enough'. 
+;   scale = 100.0, A = toint(A*scale)/scale 
+;        or        A = round(A*scale, 0)/scale
+;
+; a1     = (/ -1, 7, 7, 2, 2, 2, -1, 7, -3, -3 /)
+; nmode1 = mode_stat(a1) ===> nmode1= 2, nmode@mode_count=3
+; a2     = (/  1, 1, 1, 1, 1, 0,  2, 2,  2,  2 /)
+; nmode2 = mode_stat(a2) ===> nmode2= 1, nmode@mode_count=5
+; a3     = (/  0, 0,-1,-1, 9, 9,  3, 3,  7,  7 /)
+; nmode3 = mode_stat(a3) ===> nmode3= 5, nmode@mode_count=2
+; a4     = ispan(1,10,1)
+; nmode4 = mode_stat(a3) ===> nmode3=10, nmode@mode_count=1
+;
+local i, ni, a, na, freq, FREQ, n, nm, ii, nseq, nmode
+begin
+  i    = ind(.not.ismissing(A))
+  if (ismissing(i(0))) then
+      nmode = -999
+      nmode@freq = -999
+      nmode@_FillValue = -999
+      return (nmode)
+  end if
+
+  ni   = dimsizes(i)
+  if (ni.eq.1) then
+      nmode = 1
+      nmode@freq = 1
+      return (nmode)
+  end if
+
+  a    = A(i)           ; local
+  na   = ni             ; # of sorted non-missing value
+  qsort( a )
+
+
+  freq = new (na, "integer", -999)
+  nm   = new (na, "integer", -999)
+  
+  freq = 1      ; initialize (array syntax)
+  nm   = 0    
+  ii   = 0      ; index
+
+  do n=1,na-1
+     if (a(n-1).eq.a(n)) then
+         freq(ii) = freq(ii) + 1
+     else
+         nm(ii) =  n-1
+         ii     = ii+1
+     end if
+  end do
+
+  nm(ii) = n -1
+  nseq   = ii+1
+  
+ ;print("=========")
+ ;print("ii="+ii)
+ ;print("nseq="+nseq)
+ ;print("freq(:ii)="+freq(:ii))
+ ;print("nm(:ii)="+nm(:ii))
+ ;print("=========")
+
+  FREQ      = freq(:ii)          ; convenience
+  mode_cnt  = max(FREQ)
+  nmode     = num(FREQ.eq.mode_cnt)
+  nmode@mode_count = mode_cnt
+
+  return(nmode)
+end
+
