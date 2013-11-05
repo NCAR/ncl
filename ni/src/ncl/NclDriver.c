@@ -13,8 +13,8 @@ int quark_comp(const void *q1, const void *q2)
 
 char *preload_scripts[4] = {"$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl",
                             "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl",
-                            "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl",
-                            "$NCARG_ROOT/lib/ncarg/nclscripts/utilities.ncl"};
+                            "$NCARG_ROOT/lib/ncarg/nclscripts/utilities.ncl",
+                            "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"};
 
 int NclDriver(int argc, char **argv)
 {
