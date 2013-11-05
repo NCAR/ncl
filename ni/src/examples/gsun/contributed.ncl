@@ -13496,6 +13496,11 @@ end
 undef("stat_mode")
 function stat_mode(A[*]:numeric)
 ;
+; returns mode value(s) with attributes which indicate the
+;                       number of modes (@nmode)
+;                       count of mode values (@count)
+;                       number o non-missing values (@npts)
+;---
 ; A need not be in ascending order. The function will sort.
 ; Care should be used when A is type float or double.
 ; A value of 12.34567 is not the same as 12.34568 
@@ -13505,6 +13510,8 @@ function stat_mode(A[*]:numeric)
 ;         A = toint(A*scale)/scale 
 ;       or
 ;         A = round(A*scale, 0)/scale
+;---
+; Examples: 
 ;
 ; a0     = (/ -1, 7, 7, 2, 2, 2, -1, 7, -3, -3 /)
 ; mode0  = (/2,7/), mode0@nmode=2, mode0@count=3, mode0@npts=10
