@@ -13493,41 +13493,58 @@ begin
   
 end
 ;----------------------------------------------------------
-undef("mode_stat")
-function mode_stat(A[*]:numeric)
+undef("stat_mode")
+function stat_mode(A[*]:numeric)
 ;
-; A need not be in ascending order. The sunction wil sort.
+; A need not be in ascending order. The function will sort.
 ; Care should be used when A is type float or double.
 ; A value of 12.34567 is not the same as 12.34568 
 ; A suggestion is to preprocess the data. Say that 
 ; 2 decimal places is 'close enough'. 
-;   scale = 100.0, A = toint(A*scale)/scale 
-;        or        A = round(A*scale, 0)/scale
+;         scale = 100.0
+;         A = toint(A*scale)/scale 
+;       or
+;         A = round(A*scale, 0)/scale
 ;
-; a1     = (/ -1, 7, 7, 2, 2, 2, -1, 7, -3, -3 /)
-; nmode1 = mode_stat(a1) ===> nmode1= 2, nmode@mode_count=3
+; a0     = (/ -1, 7, 7, 2, 2, 2, -1, 7, -3, -3 /)
+; mode0  = (/2,7/), mode0@nmode=2, mode0@count=3, mode0@npts=10
+;
+; a1     = (/123, -1, 7, 7, 2, 2, 2, -1, 7, -3, -3, -456 /)
+; mode1  = (/2,7/), mode1@nmode=2, mode1@count=3, mode1@npts=12
+;
 ; a2     = (/  1, 1, 1, 1, 1, 0,  2, 2,  2,  2 /)
-; nmode2 = mode_stat(a2) ===> nmode2= 1, nmode@mode_count=5
-; a3     = (/  0, 0,-1,-1, 9, 9,  3, 3,  7,  7 /)
-; nmode3 = mode_stat(a3) ===> nmode3= 5, nmode@mode_count=2
-; a4     = ispan(1,10,1)
-; nmode4 = mode_stat(a3) ===> nmode3=10, nmode@mode_count=1
+; mode2  = 1      , mode2@nmode=1, mode1@count=5, mode1@npts=10
 ;
-local i, ni, a, na, freq, FREQ, n, nm, ii, nseq, nmode
+; a3     = (/  0, 0,-1,-1, 9, 9,  3, 3,  7,  7 /)
+; mode3  = (/-1, 0, 3, 7, 9/), mode3@nmode=5, mode3@count=2, mode3@npts=10
+;
+; a4     = ispan(1,10,1)
+; mode4  = (/1,2,3,4,5,6,7,8,9,10/), mode4@nmode=10, mode4@count=1, mode4@npts=10
+;
+; a5     = (/1,2,3,4,5,5,7,8,9,10/)
+; mode5  = 5, mode5@nmode=a0, mode5@count=1, mode5@npts=10
+;
+local i, ni, a, na, freq, FREQ, n, nm, ii, nseq \
+    , node, nmode, mode_count, val, ifmx
 begin
-  i    = ind(.not.ismissing(A))
-  if (ismissing(i(0))) then
-      nmode = -999
-      nmode@freq = -999
-      nmode@_FillValue = -999
-      return (nmode)
+
+  if (all(ismissing(A))) then
+      mode       = -999
+      mode@npts  = 0
+      mode@nmode = -999
+      mode@freq  = -999
+      mode@_FillValue = -999
+      return (mode)
   end if
 
+  i    = ind(.not.ismissing(A))
   ni   = dimsizes(i)
   if (ni.eq.1) then
-      nmode = 1
-      nmode@freq = 1
-      return (nmode)
+      mode       = A(i(0)) 
+      mode@npts  = 1
+      mode@nmode = 1
+      mode@count = 1
+      return (mode)
   end if
 
   a    = A(i)           ; local
@@ -13535,37 +13552,39 @@ begin
   qsort( a )
 
 
-  freq = new (na, "integer", -999)
-  nm   = new (na, "integer", -999)
+  freq = new (na, "integer","No_FillValue")
+  nm   = new (na, "integer","No_FillValue")
+  val  = new (na, typeof(a),"No_FillValue")
   
   freq = 1      ; initialize (array syntax)
-  nm   = 0    
+  nm   = 0      ; number of unique numbers
   ii   = 0      ; index
+  
 
   do n=1,na-1
      if (a(n-1).eq.a(n)) then
          freq(ii) = freq(ii) + 1
+         val(ii)  = a(n)
      else
          nm(ii) =  n-1
          ii     = ii+1
      end if
   end do
 
-  nm(ii) = n -1
-  nseq   = ii+1
+  nm(ii)     = n -1
+  nseq       = ii+1
+
+  FREQ       = freq(:ii)          ; convenience
+  mode_cnt   = max(FREQ)
+  ifmx       = ind(FREQ.eq.mode_cnt)       
+  if (all(FREQ.eq.1)) then
+      mode   = a
+  else
+     mode    = val(ifmx)          ; mode values
+  end if
+  mode@npts  = na                 ; number of pts used
+  mode@nmode = dimsizes(mode)     ; num(FREQ.eq.mode_cnt)
+  mode@count = mode_cnt
   
- ;print("=========")
- ;print("ii="+ii)
- ;print("nseq="+nseq)
- ;print("freq(:ii)="+freq(:ii))
- ;print("nm(:ii)="+nm(:ii))
- ;print("=========")
-
-  FREQ      = freq(:ii)          ; convenience
-  mode_cnt  = max(FREQ)
-  nmode     = num(FREQ.eq.mode_cnt)
-  nmode@mode_count = mode_cnt
-
-  return(nmode)
+  return(mode)
 end
-
