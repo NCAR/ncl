@@ -5684,6 +5684,7 @@ begin
     mlon_spacing = get_res_value(res2,"gsnMinorLonSpacing",0.)
     center_lon   = get_res_value_keep(res2, "mpCenterLonF",  0)
     center_lat   = get_res_value_keep(res2, "mpCenterLatF",  0)
+    center_rot   = get_res_value_keep(res2, "mpCenterRotF",  0)
     rel_c_lat    = get_res_value(res2, "mpRelativeCenterLat", False)
     rel_c_lon    = get_res_value(res2, "mpRelativeCenterLon", False)
     shape_mode   = get_res_value(res2,"mpShapeMode","FixedAspectFitBB")
@@ -5708,14 +5709,16 @@ begin
       limit_mode = lower_case(limit_mode)
     end if
 ;
-; If automatic tick marks are turned on, or if mpCenterLatF != 0
-; (rotated map), or if limit_mode is not latlon or corenrs, 
-; then turn off gsn_csm generated tickmarks.
+; If automatic tick marks are turned on, or if mpCenterLatF != 0,
+; or if mpCenterRotF != 0 (rotated map), or if limit_mode is not 
+; latlon or corners, then turn off gsn_csm generated tickmarks.
 ; 
     display_mode = get_display_mode(res2,"pmTickMarkDisplayMode","nocreate")
-    if(display_mode.eq.1.or.display_mode.eq.2.or.center_lat.ne.0.or.\
+    if(display_mode.eq.1.or.display_mode.eq.2.or.\
+        center_lat.ne.0.or.center_rot.ne.0.or.\
        (limit_mode.ne."latlon".and.limit_mode.ne."corners")) then
-      ticks_on = get_res_value(res2,"gsnTickMarksOn",False)
+      ticks_on = get_res_value(res2,"gsnTickMarksOn",False)   ; Do this to remove
+      ticks_on = False                                        ; gsnTickMarksOn as an attribute
     else
       ticks_on = get_res_value(res2,"gsnTickMarksOn",True)
     end if
