@@ -865,6 +865,7 @@ int X11_FillArea(gksc)
                         break;
 
                 case    SOLID_FILL:
+                case    SOLID_TEXT_FILL:
                         XFillPolygon(dpy, win, gc, pptr, n, 
                                                 Complex, CoordModeOrigin);
                         break;

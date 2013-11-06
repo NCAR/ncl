@@ -123,6 +123,7 @@
 #define	SOLID_FILL	1
 #define	PATTERN_FILL	2
 #define	HATCH_FILL	3
+#define SOLID_TEXT_FILL 4     /* added for Jira1667 */
 
 /*
  *	hatch styles

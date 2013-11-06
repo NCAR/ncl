@@ -23,9 +23,10 @@ C
       CALL GZCKST(8,ESFAIS,IER)
       IF (IER .NE. 0) RETURN
 C
-C  Check that INTS is in range.
+C  Check that INTS is in range.  Range extended 10/2013 in support of 
+C  Jira1667.
 C
-      IF (INTS.LT.0 .OR. INTS.GT.3) THEN
+      IF (INTS.LT.0 .OR. INTS.GT.4) THEN
         ERS = 1
         CALL GERHND(2000,ESFAIS,ERF)
         ERS = 0

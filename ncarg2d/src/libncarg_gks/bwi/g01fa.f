@@ -60,6 +60,8 @@ C  GKS FILL AREA INTERIOR STYLE, send CGM INTERIOR STYLE.
 C
             NBYTES = 1+(MEFW-1)/8
             CALL GPUTNI (CLINTS, IDINTS, NBYTES,  RERR)
+C  Patch for Jira1667: intercept code for SOLID_TEXT_FILL, replace by SOLID_FILL
+            if (MRFAIS .EQ. 4) MRFAIS = 1
             CALL GPUTPR (MRFAIS, MEFW,  1, RERR)
             IF (RERR .NE. 0) RETURN
 C

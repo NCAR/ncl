@@ -2781,7 +2781,7 @@ int ps_FillArea(gksc)
         /*
          *  Set up the line attributes to be used.
          */
-        if ((psa->attributes.fill_int_style != SOLID_FILL) ||
+        if ((psa->attributes.fill_int_style != SOLID_FILL && psa->attributes.fill_int_style != SOLID_TEXT_FILL) ||
                         (npoints >= PathSize)) {
                 fprintf(psa->file_pointer, "I\n");
                 fprintf(psa->file_pointer, "H\n");
@@ -2800,6 +2800,7 @@ int ps_FillArea(gksc)
             fprintf(psa->file_pointer, "K\n");
             break;
         case SOLID_FILL:
+        case SOLID_TEXT_FILL:
             if (npoints < StackSize) {           /* Short form PS fill */
               PSprint_points((PSddp *) gksc->ddp, pptr, npoints, POLY_FILL);
             }
@@ -2860,7 +2861,7 @@ int ps_FillArea(gksc)
         /*
          *  Restore line attributes.
          */
-        if ((psa->attributes.fill_int_style != SOLID_FILL) ||
+        if ((psa->attributes.fill_int_style != SOLID_FILL && psa->attributes.fill_int_style != SOLID_TEXT_FILL) ||
                         (npoints >= PathSize)) {
                 fprintf(psa->file_pointer, "W ");
                 fprintf(psa->file_pointer, "D\n");

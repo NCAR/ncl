@@ -496,6 +496,7 @@ int ctxt_SetFillAreaInteriorStyle(gksc)
                 (void) printf("hollow\n");
                 break;
         case    SOLID_FILL:
+        case    SOLID_TEXT_FILL:
                 (void) printf("top\n");
                 break;
         case    PATTERN_FILL:

@@ -2599,7 +2599,7 @@ int PDFFillArea(GKSC *gksc)
  *  Save the current graphics state and set up the line 
  *  attributes to be used.
  */
-  if (psa->attributes.fill_int_style != SOLID_FILL) {
+  if (psa->attributes.fill_int_style != SOLID_FILL && psa->attributes.fill_int_style != SOLID_TEXT_FILL) {
     bump_page_lines();
     sprintf(page_lines[num_page_lines],"q\n");
     stream_size += 2;
@@ -2626,6 +2626,7 @@ int PDFFillArea(GKSC *gksc)
     stream_size += 2;
     break;
   case SOLID_FILL:
+  case SOLID_TEXT_FILL:    /* Jira1667 */
     for (i = 0; i < npoints; i++) {
       if (i == 0) {
         PDFprint_points((PDFddp *) gksc->ddp, pptr+i, 1, MOVETO);
@@ -2685,7 +2686,7 @@ int PDFFillArea(GKSC *gksc)
 /*
  *  Restore line attributes.
  */
-  if (psa->attributes.fill_int_style != SOLID_FILL) {
+  if (psa->attributes.fill_int_style != SOLID_FILL && psa->attributes.fill_int_style != SOLID_TEXT_FILL) {
     bump_page_lines();
     sprintf(page_lines[num_page_lines],"Q\n");
     stream_size += 2;

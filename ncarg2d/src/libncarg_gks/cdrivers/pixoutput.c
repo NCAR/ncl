@@ -865,6 +865,7 @@ int PIX_FillArea(gksc)
                         break;
 
                 case    SOLID_FILL:
+                case    SOLID_TEXT_FILL:
                         XFillPolygon(dpy, xi->pix, gc, pptr, n, 
                                                 Complex, CoordModeOrigin);
                         break;

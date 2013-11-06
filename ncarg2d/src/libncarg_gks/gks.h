@@ -104,7 +104,8 @@ typedef enum {                     /* fill area interior style */
     GSTYLE_HOLLOW,
     GSTYLE_SOLID,
     GSTYLE_PAT,
-    GSTYLE_HATCH
+    GSTYLE_HATCH,
+            GSTYLE
 } Gfill_int_style;
 
 typedef enum {                     /* horizontal text alignment */

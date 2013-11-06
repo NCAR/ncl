@@ -1715,9 +1715,10 @@ C
                 ELSE
 C
                   IF (NCRA.GT.2) THEN
-                    IF (ICIS.EQ.0) THEN
-                      CALL GSFAIS (1)
-                      ICIS=1
+C ... Jira1667: use new SOLID_TEXT_FILL (4), rather than SOLID_FILL (1)
+                    IF (ICIS.NE.4) THEN
+                      CALL GSFAIS (4)
+                      ICIS=4
                     END IF
                     CALL GFA (NCRA,XCRA,YCRA)
                   END IF

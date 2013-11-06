@@ -861,6 +861,7 @@ int cro_FillArea(GKSC *gksc) {
         cairo_stroke(context);
         break;
     case SOLID_FILL:
+    case SOLID_TEXT_FILL:
         cairo_move_to(context, 
                 pptr[0].x * (double) psa->dspace.xspan, 
                 pptr[0].y * (double) psa->dspace.yspan);
@@ -875,17 +876,20 @@ int cro_FillArea(GKSC *gksc) {
         
         /* Intended to address Jira 1593:  Previously we just performed a fill on the path.
          * Now, we perform a preserving-fill followed by a stroke of the path.
+         * But not for text (Jira1667).
          */
-        if (cval.alpha < 1.0 || psa->attributes.fill_alpha < 1.0) {
+        if (psa->attributes.fill_int_style == SOLID_TEXT_FILL ||
+            cval.alpha < 1.0 || psa->attributes.fill_alpha < 1.0) 
+        {
             cairo_fill(context);
         } else {
-            float saveLineWidth = cairo_get_line_width(context);
-            cairo_set_line_width(context, 1.0);
-            cairo_set_dash(context, (double*)NULL, 0, 0.);  /* don't save; cro_polyline always sets this how it needs it */
-            cairo_fill_preserve(context);
-            cairo_stroke(context);	    
-            cairo_set_line_width(context, saveLineWidth);
-        }
+	  cairo_save(context);
+	  cairo_clip_preserve(context);
+	  cairo_set_line_width(context, 2.0);
+	  cairo_fill_preserve(context);
+	  cairo_stroke(context);
+	  cairo_restore(context);
+	}
         break;
     case PATTERN_FILL: /* currently not implemented, issue polyline */
         cairo_move_to(context, 
