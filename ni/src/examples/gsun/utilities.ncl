@@ -273,11 +273,19 @@ begin
   return cmap
 end
 
-; than RGBA values.
+;***********************************************************************;
+; Given a color map and the number of desired colors, this function 
+; returns an array of color indexes that nicely span the full colormap.
+;
+; For a named colormap, the first two color values are not used,
+; because these are the foreground/background colors.
+;
+; This function is very similar to the span_color_rgba function,
+; which returns RGBA values. 
 ;
 ; The colormap can be a named colormap, like "rainbow", or an array
-; of RGB (n x 3) or RGBA (n x 4) values.
-;***********************************************************************;
+; of RGB (n,3) or RGBA (n,4).
+;***********************************************************************
 undef("span_color_indexes")
 function span_color_indexes(cmapt,ncolors)
 local ncols, fmin, fmax, fcols, icols, cmap
