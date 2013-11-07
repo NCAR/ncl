@@ -49,8 +49,6 @@
 #include "ListSupport.h"
 #endif
 
-short _ItIsNclReassign = 0;
-
 static NhlErrorTypes VarWrite(
 #if 	NhlNeedProto
 	struct _NclVarRec * /* self */,
@@ -433,7 +431,6 @@ FILE *fp;
 	NclVar cvar= NULL;
 	NclMultiDValData tmp_md = NULL;
 	char *v_name;
-	/*char v_type[256];*/
 	int i;
 	NclMultiDValData thevalue = NULL;
 	int ret;
@@ -1323,6 +1320,7 @@ NclSelectionRecord *sel_ptr;
 	NclSelectionRecord mysel;
 	int theval_ndims, tmpmd_ndims;
 
+
 /*
 * Preconditions value is a NclMultiDValData
 * self is an NclVar
@@ -1400,12 +1398,6 @@ NclSelectionRecord *sel_ptr;
 			 */
 
 			for (i = 0, theval_ndims = 0; i < thevalue->multidval.n_dims; i++) {
-				if(_ItIsNclReassign)
-				{
-					thevalue->multidval.dim_sizes[i] = value->multidval.dim_sizes[i];
-					self->var.dim_info[i].dim_size = value->multidval.dim_sizes[i];
-				}
-
 				if (thevalue->multidval.dim_sizes[i] > 1) {
 					theval_ndims++;
 				}
@@ -1418,38 +1410,21 @@ NclSelectionRecord *sel_ptr;
 
 			if((tmpmd_ndims == theval_ndims)|| (tmp_md->multidval.kind == SCALAR)){
 				if (tmp_md->multidval.kind != SCALAR) {
-					if(_ItIsNclReassign)
-					{
-						for(i = 0, j = 0; i< thevalue->multidval.n_dims;i++)
-						{
-							thevalue->multidval.dim_sizes[i] = tmp_md->multidval.dim_sizes[i];
-
-							if (thevalue->multidval.dim_sizes[i] == 1)
-								continue;
-							while (tmp_md->multidval.dim_sizes[j] == 1)
-								j++;
-						
+					for(i = 0, j = 0; i< thevalue->multidval.n_dims;i++) {
+						if (thevalue->multidval.dim_sizes[i] == 1)
+							continue;
+						while (tmp_md->multidval.dim_sizes[j] == 1)
 							j++;
-						}
-					}
-					else
-					{
-						for(i = 0, j = 0; i< thevalue->multidval.n_dims;i++) {
-							if (thevalue->multidval.dim_sizes[i] == 1)
-								continue;
-							while (tmp_md->multidval.dim_sizes[j] == 1)
-								j++;
 						
-							if(tmp_md->multidval.dim_sizes[j] != thevalue->multidval.dim_sizes[i]) {
-								NhlPError(NhlFATAL,NhlEUNKNOWN,
-									  "Dimension sizes of left hand side and right hand side of assignment do not match");
-								if((tmp_md!=value) &&(tmp_md->obj.status == TEMPORARY)) {
-									_NclDestroyObj((NclObj)tmp_md);
-								}
-								return(NhlFATAL);
+						if(tmp_md->multidval.dim_sizes[j] != thevalue->multidval.dim_sizes[i]) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,
+								  "Dimension sizes of left hand side and right hand side of assignment do not match");
+							if((tmp_md!=value) &&(tmp_md->obj.status == TEMPORARY)) {
+								_NclDestroyObj((NclObj)tmp_md);
 							}
-							j++;
+							return(NhlFATAL);
 						}
+						j++;
 					}
 				}
 				if (! thevalue->multidval.missing_value.has_missing &&
@@ -3032,7 +3007,6 @@ if(rhs_md->multidval.totalelements !=1) {
 		}
 		
 	}
-
 	return(ret);
 }
 
@@ -3042,10 +3016,6 @@ static NhlErrorTypes VarReplaceCoord(struct _NclVarRec* self,
 				     struct _NclSelectionRecord *sel_ptr)
 {
 	int index;
-	/*
-	NclDimRec tmp;
-	NclObj tmp_obj;
-	*/
 
 	index = VarIsADim(self,coord_name);
 	if((index>=0)&&(index < self->var.n_dims))
