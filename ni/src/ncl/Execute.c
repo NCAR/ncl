@@ -78,7 +78,7 @@ char **fptr;
 NclValue *machine;
 NhlErrorTypes estatus = NhlNOERROR;
 static int level = 0;
-
+static short _ItIsNclReassign = 0;
 
 static void _NclPushExecute
 #if     NhlNeedProto
@@ -7689,7 +7689,8 @@ void performASSIGN_VAR_VAR_OP(NclStackEntry *lhs_var, NclStackEntry *rhs_var,
         estatus = NhlFATAL;
     }
 
-    if((estatus!=NhlFATAL)&&(lhs_var != NULL)&&(lhs_var->kind == NclStk_NOVAL))
+    /*if((estatus!=NhlFATAL)&&(lhs_var != NULL)&&(lhs_var->kind == NclStk_NOVAL))*/
+    if(((estatus!=NhlFATAL)&&(lhs_var != NULL)&&(lhs_var->kind == NclStk_NOVAL)) || _ItIsNclReassign)
     {
         if(lhs_nsubs != 0)
         {
