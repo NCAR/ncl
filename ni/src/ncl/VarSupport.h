@@ -260,6 +260,10 @@ NclObj self, FILE *fp
 #endif
 );
 
+NhlErrorTypes _NclReplaceAtt(struct _NclVarRec *self, char* attname,
+                             struct _NclMultiDValDataRec *value,
+                             struct _NclSelectionRecord *sel_ptr);
+
 #endif /* _VarSupport_h */
 
 

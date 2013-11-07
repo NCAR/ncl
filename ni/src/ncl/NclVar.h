@@ -24,6 +24,8 @@
 #define NclVar_h
 #include "NclData.h"
 
+extern short _ItIsNclReassign;
+
 typedef NhlErrorTypes (*NclAssignFunction)(
 #if	NhlNeedProto
 	struct _NclVarRec * /*self*/,
@@ -249,4 +251,8 @@ NhlArgVal /*udata*/
 #endif
 );
 
+NhlErrorTypes _NclReplaceCoordVar(struct _NclVarRec *self,
+                                  struct _NclMultiDValDataRec *value,
+                                  char *coord_name,
+                                  struct _NclSelectionRecord *sel_ptr);
 #endif /* NclVar_h */

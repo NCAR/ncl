@@ -40,6 +40,7 @@
 #include "NclTypechar.h"
 
 extern short    NCLnoPrintElem;     /* for multiple element print() stmts */
+extern short	_ItIsNclReassign;
 
 INSERTHERE
 
@@ -486,12 +487,18 @@ static NhlErrorTypes MultiDVal_md_WriteSection
                 }
         }
 
+	if(_ItIsNclReassign)
+		n_dims_target = value_md->multidval.n_dims;
+
 	for(i = 0 ; i < n_dims_target; i++) {
 		switch(sel_ptr->sel_type) {
 		case Ncl_SUB_ALL:
 			sel_ptr->u.sub.start = 0;
 		case Ncl_SUB_VAL_DEF:
-			sel_ptr->u.sub.finish = (long)target_md->multidval.dim_sizes[sel_ptr->dim_num] - 1;
+			if(_ItIsNclReassign)
+				sel_ptr->u.sub.finish = (long)value_md->multidval.dim_sizes[sel_ptr->dim_num] - 1;
+			else
+				sel_ptr->u.sub.finish = (long)target_md->multidval.dim_sizes[sel_ptr->dim_num] - 1;
 		case Ncl_SUB_DEF_VAL:
 			if(sel_ptr->sel_type != Ncl_SUB_VAL_DEF)
 				sel_ptr->u.sub.start = 0;
@@ -647,6 +654,22 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 		cpy_count *= output_dim_sizes[i];
 	}
 
+	if(_ItIsNclReassign)
+	{
+		target_md->multidval.n_dims = value_md->multidval.n_dims;
+
+        	for(i = 0; i < value_md->multidval.n_dims; i++)
+                	target_md->multidval.dim_sizes[i] = value_md->multidval.dim_sizes[i];
+
+		if(target_md->multidval.totalsize != value_md->multidval.totalsize)
+			target_md->multidval.val = NclRealloc(target_md->multidval.val, value_md->multidval.totalsize);
+
+		target_md->multidval.totalsize = value_md->multidval.totalsize;
+		target_md->multidval.totalelements = value_md->multidval.totalelements;
+		memcpy(target_md->multidval.val, value_md->multidval.val, value_md->multidval.totalsize);
+	}
+	else
+	{
 	val = value_md->multidval.val;
 	from = 0;
 	while(!done) {
@@ -742,6 +765,7 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 			break;
 		}
 		from += cpy_count;
+	}
 	}
 
 	if(chckmiss) {

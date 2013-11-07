@@ -485,8 +485,8 @@ NhlErrorTypes FixAggCoord(NclOneDValCoordData agg_coord_md, long *agg_dim_count,
 	cdCompTime base_cdcomptime, cdcomptime;
 	ng_size_t agg_ix = 0;
 	NrmQuark qbase_unit;
-	NclBasicDataTypes coord_type;
-	int increasing;
+	/*NclBasicDataTypes coord_type;*/
+	/*int increasing;*/
 	void *val;
 	double dx,dx_out,dx_diff;
 	ng_size_t tsize;
@@ -498,8 +498,10 @@ NhlErrorTypes FixAggCoord(NclOneDValCoordData agg_coord_md, long *agg_dim_count,
 
 	val = agg_coord_md->multidval.val;
 	tsize = agg_coord_md->multidval.type->type_class.size;
-	coord_type = agg_coord_md->multidval.data_type;
+	/*coord_type = agg_coord_md->multidval.data_type;*/
 	diff = NclMalloc(tsize);
+
+	/*
 	switch (agg_coord_md->onedval.mono_type) {
 	case NclINCREASING:
 		increasing = 1;
@@ -511,6 +513,7 @@ NhlErrorTypes FixAggCoord(NclOneDValCoordData agg_coord_md, long *agg_dim_count,
 		NhlPError(NhlWARNING, NhlEUNKNOWN,"non-monotonic coordinate in first aggregated file -- cannot be repaired automatically");
 		return NhlWARNING;
 	}
+	*/
 		
 	for (i = 0; i < nfiles; i++) {
 		if (agg_dim_count[i] == 0) /* indicates a bad files */
@@ -2874,8 +2877,10 @@ void CallINTRINSIC_FUNC_CALL(void) {
 */
 				caller_level = _NclFinishFrame();	
 				if(((NclSymbol*)*ptr)->u.bfunc != NULL) {
+#ifdef ENABLE_PROFILING
 					NclSymbol *func = (NclSymbol *)(*ptr);
 					NCL_PROF_PFENTER(func->name);
+#endif
 					ret = (*((NclSymbol*)*ptr)->u.bfunc->thefunc)();
 					NCL_PROF_PFEXIT(func->name);
 /*
@@ -2931,8 +2936,10 @@ void CallINTRINSIC_PROC_CALL(void) {
 */
 				caller_level = _NclFinishFrame();	
 				if(((NclSymbol*)*ptr)->u.bproc != NULL) {
+#ifdef ENABLE_PROFILING
 					NclSymbol *proc = (NclSymbol *)(*ptr);
 					NCL_PROF_PFENTER(proc->name);
+#endif
 					ret = (*((NclSymbol*)*ptr)->u.bproc->theproc)();
 					NCL_PROF_PFEXIT(proc->name);
 					if(ret < NhlWARNING) {
@@ -3143,7 +3150,6 @@ void CallLOOP_INC_OP(void) {
 					NclStackEntry *tmp_ptr;
 					NclStackEntry *data_ptr;
 					NclMultiDValData tmp_md;
-					NclMultiDValData tmp2_md;
 					NclSymbol *l_inc;
 					NclSymbol *l_dir;
 					NclMultiDValData end_md = NULL;;
@@ -4019,18 +4025,9 @@ static void performASSIGN_VAR(NclSymbol *sym, int nsubs, NclStackEntry *lhs_var)
 
 void CallASSIGN_VAR_OP(void)
 {
-	NclStackEntry rhs;
-	NclStackEntry data;
 	NclStackEntry *lhs_var = NULL;
-	NclMultiDValData rhs_md = NULL;
-	NclMultiDValData tmp_md = NULL;
-	NclSelectionRecord *sel_ptr = NULL;
 	int nsubs;	
-	ng_size_t i;
 	NclSymbol *sym = NULL;
-	NhlErrorTypes ret = NhlNOERROR;
-	NhlArgVal udata;
-			
 
 	ptr++;lptr++;fptr++;
 	sym = (NclSymbol*)(*ptr);
@@ -4050,7 +4047,6 @@ NhlErrorTypes ClearDataBeforeReassign(NclStackEntry *data)
     int sub_sel = 0;
     NclObj tmp,pobj;
     NclRefList *rlist = NULL;
-    int obj_id;
     NhlErrorTypes ret = NhlNOERROR;
 
     switch(data->kind)
@@ -4219,17 +4215,9 @@ NhlErrorTypes ClearDataBeforeReassign(NclStackEntry *data)
 
 void CallREASSIGN_VAR_OP(void)
 {
-    NclStackEntry rhs;
-    NclStackEntry data;
     NclStackEntry *lhs_var = NULL;
-    NclMultiDValData rhs_md = NULL;
-    NclMultiDValData tmp_md = NULL;
-    NclSelectionRecord *sel_ptr = NULL;
     int nsubs;    
-    ng_size_t i;
     NclSymbol *sym = NULL;
-    NhlErrorTypes ret = NhlNOERROR;
-    NhlArgVal udata;
 
     ptr++;lptr++;fptr++;
     sym = (NclSymbol*)(*ptr);
@@ -6743,7 +6731,7 @@ void CallASSIGN_FILEVAR_COORD_ATT_OP(void) {
 				NclMultiDValData file_md;
 				NclSymbol *file_sym;
 				NclQuark coord_name = NrmNULLQUARK;
-				NclQuark var_name = NrmNULLQUARK;
+				/*NclQuark var_name = NrmNULLQUARK;*/
 				NclQuark att_name = NrmNULLQUARK;
 				int nsubs = 0;
 				NclSelectionRecord *sel_ptr = NULL;
@@ -6813,7 +6801,7 @@ void CallASSIGN_FILEVAR_COORD_ATT_OP(void) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"File Variable names must be scalar string values can't continue");
 					estatus = NhlFATAL;
 				} else {
-					var_name = *(NclQuark*)thevalue->multidval.val;
+					/*var_name = *(NclQuark*)thevalue->multidval.val;*/
 					if(fvar.u.data_obj->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)fvar.u.data_obj);
 					}
@@ -7248,7 +7236,7 @@ void CallPARAM_FILEVAR_COORD_ATT_OP(void) {
 				NclStackEntry *file_ptr,fvar,avar,cvar;
 				NclMultiDValData file_md,thevalue = NULL;
 				NclFile	file;
-				NclQuark coord_name = NrmNULLQUARK,att_name = NrmNULLQUARK,var_name = NrmNULLQUARK;
+				NclQuark coord_name = NrmNULLQUARK,att_name = NrmNULLQUARK; /*var_name = NrmNULLQUARK;*/
 				int nsubs = 0;
 				NclSelectionRecord* sel_ptr = NULL;
 				NclStackEntry out_data;
@@ -7318,7 +7306,7 @@ void CallPARAM_FILEVAR_COORD_ATT_OP(void) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"File Variable names must be scalar string values can't continue");
 					estatus = NhlFATAL;
 				} else {
-					var_name = *(NclQuark*)thevalue->multidval.val;
+					/*var_name = *(NclQuark*)thevalue->multidval.val;*/
 					if(fvar.u.data_obj->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)fvar.u.data_obj);
 					}
@@ -8084,10 +8072,21 @@ void CallREASSIGN_VAR_VAR_OP(void)
     ptr++;lptr++;fptr++;
     lhs_nsubs = *(int*)ptr;
 
-    ClearDataBeforeReassign(lhs_var);
+    if(0 == strcmp(lhs_sym->name, rhs_sym->name))
+    {
+        _ItIsNclReassign = 1;
 
-    performASSIGN_VAR_VAR_OP(lhs_var, rhs_var, lhs_nsubs, rhs_nsubs,
-                             lhs_sym, rhs_sym);
+        performASSIGN_VAR_VAR_OP(lhs_var, rhs_var, lhs_nsubs, rhs_nsubs,
+                                   lhs_sym, rhs_sym);
+        _ItIsNclReassign = 0;
+    }
+    else
+    {
+        ClearDataBeforeReassign(lhs_var);
+
+        performASSIGN_VAR_VAR_OP(lhs_var, rhs_var, lhs_nsubs, rhs_nsubs,
+                                 lhs_sym, rhs_sym);
+    }
 }
 
 void CallPUSHNULL(void) {
