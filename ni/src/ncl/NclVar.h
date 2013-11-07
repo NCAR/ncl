@@ -24,8 +24,6 @@
 #define NclVar_h
 #include "NclData.h"
 
-extern short _ItIsNclReassign;
-
 typedef NhlErrorTypes (*NclAssignFunction)(
 #if	NhlNeedProto
 	struct _NclVarRec * /*self*/,
