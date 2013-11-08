@@ -651,6 +651,18 @@ begin
         end if 
       end if 
 ;
+; Check for function codes
+;
+      if(isatt(res,"gsnLeftStringFuncCode")) then
+        left@gsnLeftStringFuncCode = get_res_value(res, \
+                                        "gsnLeftStringFuncCode",0.0)
+      else
+        if(isatt(res,"gsnStringFuncCode")) then
+          left@gsnLeftStringFuncCode = get_res_value_keep(res, \
+                                          "gsnStringFuncCode",0.0)
+        end if 
+      end if 
+;
 ; Check for font color
 ;
       if(isatt(res,"gsnLeftStringFontColor")) then
@@ -695,6 +707,18 @@ begin
         if(isatt(res,"gsnStringFontHeightF")) then
           center@gsnCenterStringFontHeightF = get_res_value_keep(res, \
                                              "gsnStringFontHeightF",0.0)
+        end if 
+      end if 
+;
+; Check for function codes
+;
+      if(isatt(res,"gsnCenterStringFuncCode")) then
+        center@gsnCenterStringFuncCode = get_res_value(res, \
+                                           "gsnCenterStringFuncCode",0.0)
+      else
+        if(isatt(res,"gsnStringFuncCode")) then
+          center@gsnCenterStringFuncCode = get_res_value_keep(res, \
+                                             "gsnStringFuncCode",0.0)
         end if 
       end if 
 ;
@@ -744,6 +768,18 @@ begin
         end if 
       end if 
 ;
+; Check for function codes.
+;
+      if(isatt(res,"gsnRightStringFuncCode")) then
+        right@gsnRightStringFuncCode = get_res_value(res, \
+                                         "gsnRightStringFuncCode",0.0)
+      else
+        if(isatt(res,"gsnStringFuncCode")) then
+          right@gsnRightStringFuncCode = get_res_value_keep(res, \
+                                           "gsnStringFuncCode",0.0)
+        end if 
+      end if 
+;
 ; Check for font color
 ;
       if(isatt(res,"gsnRightStringFontColor")) then
@@ -760,6 +796,9 @@ begin
   end if
   if(isatt(res,"gsnStringFontHeightF")) then
     delete(res@gsnStringFontHeightF)
+  end if
+  if(isatt(res,"gsnStringFuncCode")) then
+    delete(res@gsnStringFuncCode)
   end if
   if(isatt(res,"gsnStringFontColor")) then
     delete(res@gsnStringFontColor)
@@ -1000,6 +1039,10 @@ begin
                        "gsnLeftStringFontHeightF",      \
                        "gsnCenterStringFontHeightF",    \
                        "gsnRightStringFontHeightF",     \
+                       "gsnStringFuncCode",      \
+                       "gsnLeftStringFuncCode",      \
+                       "gsnCenterStringFuncCode",    \
+                       "gsnRightStringFuncCode",     \
                        "gsnLeftStringParallelPosF",     \
                        "gsnCenterStringParallelPosF",   \
                        "gsnRightStringParallelPosF",    \
@@ -1790,6 +1833,7 @@ begin
 
   just         = (/"left","center","right"/)
   fhghts       = (/0.,0.,0./)
+  fcodes       = (/"~","~","~"/)
   strings      = (/"","",""/)  
   colors       = True  ;  We can't set to an array, because colors could
                        ; be integers or strings. Instead, we'll use
@@ -1804,12 +1848,16 @@ begin
     strings(0) = left_string@sub_string
     if(isatt(left_string,"gsnLeftStringFontHeightF")) then
       fhghts(0) = get_res_value_keep(left_string,"gsnLeftStringFontHeightF",0.)
+    else if(isatt(left_string,"gsnStringFontHeightF")) then
+      fhghts(0) = get_res_value_keep(left_string,"gsnStringFontHeightF",0.)
     else
-      if(isatt(left_string,"gsnStringFontHeightF")) then
-        fhghts(0) = get_res_value_keep(left_string,"gsnStringFontHeightF",0.)
-      else
-        fhghts(0) = get_res_value_keep(txres,"txFontHeightF",0.0)
-      end if
+      fhghts(0) = get_res_value_keep(txres,"txFontHeightF",0.0)
+    end if
+    end if
+    if(isatt(left_string,"gsnLeftStringFuncCode")) then
+      fcodes(0) = get_res_value_keep(left_string,"gsnLeftStringFuncCode",0.)
+    else
+      fcodes(0) = get_res_value_keep(left_string,"gsnStringFuncCode",0.)
     end if
     if(isatt(left_string,"gsnLeftStringFontColor")) then
       colors@s0 = get_res_value_keep(left_string,"gsnLeftStringFontColor",1)
@@ -1824,12 +1872,16 @@ begin
     strings(1) = center_string@sub_string
     if(isatt(center_string,"gsnCenterStringFontHeightF")) then
       fhghts(1) = get_res_value_keep(center_string,"gsnCenterStringFontHeightF",0.)
+    else if(isatt(center_string,"gsnStringFontHeightF")) then
+      fhghts(1) = get_res_value_keep(center_string,"gsnStringFontHeightF",0.)
     else
-      if(isatt(center_string,"gsnStringFontHeightF")) then
-        fhghts(1) = get_res_value_keep(center_string,"gsnStringFontHeightF",0.)
-      else
-        fhghts(1) = get_res_value_keep(txres,"txFontHeightF",0.0)
-      end if
+      fhghts(1) = get_res_value_keep(txres,"txFontHeightF",0.0)
+    end if
+    end if
+    if(isatt(center_string,"gsnCenterStringFuncCode")) then
+      fcodes(1) = get_res_value_keep(center_string,"gsnCenterStringFuncCode",0.)
+    else
+      fcodes(1) = get_res_value_keep(center_string,"gsnStringFuncCode",0.)
     end if
     if(isatt(center_string,"gsnCenterStringFontColor")) then
       colors@s1 = get_res_value_keep(center_string,"gsnCenterStringFontColor",1)
@@ -1844,12 +1896,16 @@ begin
     strings(2) = right_string@sub_string
     if(isatt(right_string,"gsnRightStringFontHeightF")) then
       fhghts(2) = get_res_value_keep(right_string,"gsnRightStringFontHeightF",0.)
+    else if(isatt(right_string,"gsnStringFontHeightF")) then
+      fhghts(2) = get_res_value_keep(right_string,"gsnStringFontHeightF",0.)
     else
-      if(isatt(right_string,"gsnStringFontHeightF")) then
-        fhghts(2) = get_res_value_keep(right_string,"gsnStringFontHeightF",0.)
-      else
-        fhghts(2) = get_res_value_keep(txres,"txFontHeightF",0.0)
-      end if
+      fhghts(2) = get_res_value_keep(txres,"txFontHeightF",0.0)
+    end if
+    end if
+    if(isatt(right_string,"gsnRightStringFuncCode")) then
+      fcodes(2) = get_res_value_keep(right_string,"gsnRightStringFuncCode",0.)
+    else
+      fcodes(2) = get_res_value_keep(right_string,"gsnStringFuncCode",0.)
     end if
     if(isatt(right_string,"gsnRightStringFontColor")) then
       colors@s2 = get_res_value_keep(right_string,"gsnRightStringFontColor",1)
@@ -1882,6 +1938,7 @@ begin
         text_object = create just(i)+"string" textItemClass wks
           "txString"      : strings(i)
           "txFontHeightF" : fhghts(i)
+          "txFuncCode"    : fcodes(i)
           "txFontColor"   : colors@$ss$
         end create
 
