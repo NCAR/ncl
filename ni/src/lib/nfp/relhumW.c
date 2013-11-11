@@ -24,7 +24,6 @@ NhlErrorTypes relhum_W( void )
   NclScalar missing_t, missing_dt;
   NclScalar missing_w, missing_dw;
   NclScalar missing_p, missing_dp;
-  NclScalar missing_drh, missing_rrh;
   NclBasicDataTypes type_t, type_w, type_p;
 /*
  * Output variables
@@ -32,6 +31,7 @@ NhlErrorTypes relhum_W( void )
   void *rh;
   double *tmp_rh = NULL;
   NclBasicDataTypes type_rh;
+  NclScalar missing_rh, missing_drh;
 /*
  * Various.
  */
@@ -95,18 +95,20 @@ NhlErrorTypes relhum_W( void )
     type_rh = NCL_double;
   }
 /*
- * If one _FillValue attribute is set, then all of them must be set.
+ * Prior to V6.2.0, this function required all input arrays to have missing
+ * values, but it only used t's missing value as the return missing value.
+ * This requirement has been dropped in V6.2.0, and the default missing
+ * value for the type being returned is now the missing value.
  */
-  if(has_missing_t || has_missing_w || has_missing_p) {
-    if(!(has_missing_t && has_missing_w && has_missing_p)) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"relhum: If one _FillValue attribute is set, then all of them must be set.");
-      return(NhlFATAL);
-    }
-/*
- * Set the return missing value to T's missing value.
- */
-    coerce_missing(type_rh,1,&missing_t,&missing_drh,&missing_rrh);
+  if(type_rh == NCL_double) {
+    missing_rh.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    missing_drh.doubleval = missing_rh.doubleval;
   }
+  else {
+    missing_rh.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    missing_drh.doubleval = (double)missing_rh.floatval;
+  }
+
 /*
  * Coerce missing values, if any.
  */
@@ -249,18 +251,8 @@ NhlErrorTypes relhum_W( void )
 /*
  * Return.
  */
-  if(has_missing_t) {
-/*
- * Return values with _FillValue set.
- */
-    if(type_rh == NCL_double) { 
-      return(NclReturnValue(rh,ndims_t,dsizes_t,&missing_drh,
-                            type_rh,0));
-    }
-    else {
-      return(NclReturnValue(rh,ndims_t,dsizes_t,&missing_rrh,
-                            type_rh,0));
-    }
+  if(has_missing_t || has_missing_w || has_missing_p) {
+    return(NclReturnValue(rh,ndims_t,dsizes_t,&missing_rh,type_rh,0));
   }
   else {
     return(NclReturnValue(rh,ndims_t,dsizes_t,NULL,type_rh,0));
