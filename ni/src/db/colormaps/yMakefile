@@ -1,7 +1,7 @@
 #
 #       $Id: yMakefile,v 1.10 2009-11-08 19:55:46 haley Exp $
 #
-FILES		= \
+ORIG_FILES	= \
 		3gauss.ncmap  \
 		3gauss.rgb  \
 		3saw.ncmap \
@@ -47,8 +47,6 @@ FILES		= \
 		hlu_default.rgb \
 		hotres.ncmap \
 		hotres.rgb \
-		ncview_default.ncmap \
-		ncview_default.rgb \
 		nrl_sirkes.rgb \
 		nrl_sirkes_nowhite.rgb \
 		posneg_1.rgb \
@@ -148,6 +146,146 @@ FILES		= \
 		psgcap.rgb \
 		temp1.rgb \
 		uniform.rgb
+
+GFDL_FILES = \
+                nice_gfdl.rgb
+
+
+GMT_FILES = \
+		GMT_cool.rgb \
+		GMT_copper.rgb \
+		GMT_drywet.rgb \
+		GMT_gebco.rgb \
+		GMT_globe.rgb \
+		GMT_gray.rgb \
+		GMT_haxby.rgb \
+		GMT_hot.rgb \
+		GMT_jet.rgb \
+		GMT_nighttime.rgb \
+		GMT_no_green.rgb \
+		GMT_ocean.rgb \
+		GMT_paired.rgb \
+		GMT_panoply.rgb \
+		GMT_polar.rgb \
+		GMT_red2green.rgb \
+		GMT_relief.rgb \
+		GMT_relief_oceanonly.rgb \
+		GMT_seis.rgb \
+		GMT_split.rgb \
+		GMT_topo.rgb \
+		GMT_wysiwyg.rgb \
+		GMT_wysiwygcont.rgb
+
+GRADS_FILES = \
+		grads_default.rgb \
+		grads_rainbow.rgb
+
+MPL_FILES = \
+		Accent_mpl.rgb \
+		Blues_mpl.rgb \
+		BrBG_mpl.rgb \
+		BuGn_mpl.rgb \
+		BuPu_mpl.rgb \
+		Dark2_mpl.rgb \
+		GnBu_mpl.rgb \
+		Greens_mpl.rgb \
+		OrRd_mpl.rgb \
+		Oranges_mpl.rgb \
+		PRGn_mpl.rgb \
+		Paired_mpl.rgb \
+		Pastel1_mpl.rgb \
+		Pastel2_mpl.rgb \
+		PiYG_mpl.rgb \
+		PuBuGn_mpl.rgb \
+		PuBu_mpl.rgb \
+		PuOr_mpl.rgb \
+		PuRd_mpl.rgb \
+		Purples_mpl.rgb \
+		RdBu_mpl.rgb \
+		RdGy_mpl.rgb \
+		RdPu_mpl.rgb \
+		RdYlBu_mpl.rgb \
+		RdYlGn_mpl.rgb \
+		Reds_mpl.rgb \
+		Set1_mpl.rgb \
+		Set2_mpl.rgb \
+		Set3_mpl.rgb \
+		Spectral_mpl.rgb \
+		StepSeq_mpl.rgb \
+		YlGnBu_mpl.rgb \
+		YlGn_mpl.rgb \
+		YlOrBr_mpl.rgb \
+		YlOrRd_mpl.rgb \
+		afmhot_mpl.rgb \
+		autumn_mpl.rgb \
+		Greys_mpl.rgb \
+		bone_mpl.rgb \
+		brg_mpl.rgb \
+		bwr_mpl.rgb \
+		cool_mpl.rgb \
+		coolwarm_mpl.rgb \
+		copper_mpl.rgb \
+		cubehelix_mpl.rgb \
+		flag_mpl.rgb \
+		gist_earth_mpl.rgb \
+		gist_gray_mpl.rgb \
+		gist_heat_mpl.rgb \
+		gist_ncar_mpl.rgb \
+		gist_rainbow_mpl.rgb \
+		gist_stern_mpl.rgb \
+		gist_yarg_mpl.rgb \
+		gnuplot2_mpl.rgb \
+		gnuplot_mpl.rgb \
+		hot_mpl.rgb \
+		hsv_mpl.rgb \
+		jet_mpl.rgb \
+		ocean_mpl.rgb \
+		pink_mpl.rgb \
+		prism_mpl.rgb \
+		rainbow_mpl.rgb \
+		s3pcpn_l_mpl.rgb \
+		s3pcpn_mpl.rgb \
+		seismic_mpl.rgb \
+		spring_mpl.rgb \
+		sstanom_mpl.rgb \
+		summer_mpl.rgb \
+		terrain_mpl.rgb \
+		winter_mpl.rgb
+
+NCVIEW_FILES = \
+		ncview_default.ncmap \
+		ncview_default.rgb \
+		banded_ncview.rgb \
+		blu_red_ncview.rgb \
+		blue_red_ncview.rgb \
+		bright_ncview.rgb \
+		gebco_ncview.rgb \
+		jaisnb_ncview.rgb \
+		jaisnc_ncview.rgb \
+		jaisnd_ncview.rgb \
+		jaison_ncview.rgb \
+		jet_ncview.rgb \
+		manga_ncview.rgb \
+		narccap-precip_ncview.rgb \
+		narccap-temp_ncview.rgb \
+		precip_11lev_202_ncview.rgb \
+		precip_diff_50_ncview.rgb \
+		rainbow2_ncview.rgb \
+		roullet_ncview.rgb \
+		spm7_ncview.rgb
+
+SVG_FILES = \
+		Gallet13_svg.rgb \
+		Lindaa06_svg.rgb \
+		Lindaa07_svg.rgb \
+		bhw3_22_svg.rgb \
+		es_landscape_79_svg.rgb \
+		feb_sunrise_svg.rgb \
+		foggy_sunrise_svg.rgb \
+		fs2006_svg.rgb
+
+
+FILES = $(ORIG_FILES) $(GFDL_FILES) $(GMT_FILES) $(GRADS_FILES) $(MPL_FILES) $(NCVIEW_FILES) $(SVG_FILES)
 
 CMPATH	= $(LIBNCARGPATH)/colormaps
 INSTALL_CM = $(INSTALL_DB)
