@@ -655,11 +655,11 @@ begin
 ;
       if(isatt(res,"gsnLeftStringFuncCode")) then
         left@gsnLeftStringFuncCode = get_res_value(res, \
-                                        "gsnLeftStringFuncCode",0.0)
+                                        "gsnLeftStringFuncCode","~")
       else
         if(isatt(res,"gsnStringFuncCode")) then
           left@gsnLeftStringFuncCode = get_res_value_keep(res, \
-                                          "gsnStringFuncCode",0.0)
+                                          "gsnStringFuncCode","~")
         end if 
       end if 
 ;
@@ -714,11 +714,11 @@ begin
 ;
       if(isatt(res,"gsnCenterStringFuncCode")) then
         center@gsnCenterStringFuncCode = get_res_value(res, \
-                                           "gsnCenterStringFuncCode",0.0)
+                                           "gsnCenterStringFuncCode","~")
       else
         if(isatt(res,"gsnStringFuncCode")) then
           center@gsnCenterStringFuncCode = get_res_value_keep(res, \
-                                             "gsnStringFuncCode",0.0)
+                                             "gsnStringFuncCode","~")
         end if 
       end if 
 ;
@@ -772,11 +772,11 @@ begin
 ;
       if(isatt(res,"gsnRightStringFuncCode")) then
         right@gsnRightStringFuncCode = get_res_value(res, \
-                                         "gsnRightStringFuncCode",0.0)
+                                         "gsnRightStringFuncCode","~")
       else
         if(isatt(res,"gsnStringFuncCode")) then
           right@gsnRightStringFuncCode = get_res_value_keep(res, \
-                                           "gsnStringFuncCode",0.0)
+                                           "gsnStringFuncCode","~")
         end if 
       end if 
 ;
@@ -1855,9 +1855,9 @@ begin
     end if
     end if
     if(isatt(left_string,"gsnLeftStringFuncCode")) then
-      fcodes(0) = get_res_value_keep(left_string,"gsnLeftStringFuncCode",0.)
+      fcodes(0) = get_res_value_keep(left_string,"gsnLeftStringFuncCode","~")
     else
-      fcodes(0) = get_res_value_keep(left_string,"gsnStringFuncCode",0.)
+      fcodes(0) = get_res_value_keep(left_string,"gsnStringFuncCode","~")
     end if
     if(isatt(left_string,"gsnLeftStringFontColor")) then
       colors@s0 = get_res_value_keep(left_string,"gsnLeftStringFontColor",1)
@@ -1879,9 +1879,9 @@ begin
     end if
     end if
     if(isatt(center_string,"gsnCenterStringFuncCode")) then
-      fcodes(1) = get_res_value_keep(center_string,"gsnCenterStringFuncCode",0.)
+      fcodes(1) = get_res_value_keep(center_string,"gsnCenterStringFuncCode","~")
     else
-      fcodes(1) = get_res_value_keep(center_string,"gsnStringFuncCode",0.)
+      fcodes(1) = get_res_value_keep(center_string,"gsnStringFuncCode","~")
     end if
     if(isatt(center_string,"gsnCenterStringFontColor")) then
       colors@s1 = get_res_value_keep(center_string,"gsnCenterStringFontColor",1)
@@ -1903,9 +1903,9 @@ begin
     end if
     end if
     if(isatt(right_string,"gsnRightStringFuncCode")) then
-      fcodes(2) = get_res_value_keep(right_string,"gsnRightStringFuncCode",0.)
+      fcodes(2) = get_res_value_keep(right_string,"gsnRightStringFuncCode","~")
     else
-      fcodes(2) = get_res_value_keep(right_string,"gsnStringFuncCode",0.)
+      fcodes(2) = get_res_value_keep(right_string,"gsnStringFuncCode","~")
     end if
     if(isatt(right_string,"gsnRightStringFontColor")) then
       colors@s2 = get_res_value_keep(right_string,"gsnRightStringFontColor",1)
