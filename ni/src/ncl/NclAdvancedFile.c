@@ -2791,7 +2791,8 @@ NclFile _NclAdvancedFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes ob
 
   /*
    *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tfname_q: <%s>\n", buffer);
+   *fprintf(stderr, "\tfname_q: <%s>\n", NrmQuarkToString(fname_q));
+   *fprintf(stderr, "\tpath: <%s>\n", NrmQuarkToString(path));
    *fprintf(stderr, "\tfile_ext_q: <%s>\n", end_of_name);
    */
 
@@ -2855,7 +2856,14 @@ NclFile _NclAdvancedFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes ob
     if(ret_error)
         return (NULL);
 
-    file_out->advancedfile.grpnode->path = fname_q;
+  /*
+   *file_out->advancedfile.grpnode->path = fname_q;
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tfile_out->advancedfile.grpnode->path: <%s>\n",
+   *                   NrmQuarkToString(file_out->advancedfile.grpnode->path));
+   *fprintf(stderr, "\tpath: <%s>\n", NrmQuarkToString(path));
+   */
+    file_out->advancedfile.grpnode->path = path;
     file_out->advancedfile.grpnode->extension = file_ext_q;
 
     (void)_NclObjCreate((NclObj)file_out,class_ptr,obj_type,(obj_type_mask | Ncl_File),status);
