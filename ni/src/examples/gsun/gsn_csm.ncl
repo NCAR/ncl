@@ -12507,6 +12507,10 @@ end
 ;                                                                       ;
 ; This function behaves like gsn_csm_pres_hgt, only it overlays a       ;
 ; vector plot as well.                                                  ;
+;                                                                       ;
+; As of NCL V6.2.0, vcMapDirection is set to False by default.          ;
+; It was discussed that this is the only vector plotting script that    ;
+; should really have the default changed.                               ;
 ;***********************************************************************;
 undef("gsn_csm_pres_hgt_vector")
 function gsn_csm_pres_hgt_vector(wks:graphic,data[*][*]:numeric, \
@@ -12532,6 +12536,7 @@ begin
   info_para = get_res_value(res2,"cnInfoLabelParallelPosF",0.)
   info_just = get_res_value(res2,"cnInfoLabelJust","TopLeft")
   refanno_on= get_res_value_keep(res2,"vcRefAnnoOn",True)
+  map_dir   = get_res_value_keep(res2,"vcMapDirection",False)
 
   if(refanno_on)
     lbar_zone = get_res_value(res2,"pmLabelBarZone",4)
@@ -12570,6 +12575,7 @@ begin
   vcres@gsnFrame        = False
   vcres@gsnRightString  = ""  ; Use gsnRightString and gsnLeftString
   vcres@gsnLeftString   = ""  ; from contour plot.
+  vcres@vcMapDirection  = map_dir
 
 ;---If pressure values are Pascals, convert them to millibars.
   if(is_valid_coord(u,"y").and.isatt(u&$u!0$,"units").and.\
