@@ -2742,7 +2742,13 @@ begin
   def_orient =  "auto" ; Best possible orientation will be used, by default.
 
 ; Get workstation parent of plot, and retrieve paper size and width.
-  tmp_wks = NhlGetParentWorkstation(plot(0))
+  ii = ind(.not.ismissing(plot))
+  if(all(ismissing(ii))) then
+    print("compute_device_coords: Error: all input plots are missing")
+    status_exit(1)
+  end if
+
+  tmp_wks = NhlGetParentWorkstation(plot(ii(0)))
   getvalues tmp_wks
     "wkPaperWidthF"  : wks_pw
     "wkPaperHeightF" : wks_ph
