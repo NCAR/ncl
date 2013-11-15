@@ -7685,7 +7685,7 @@ void performASSIGN_VAR_VAR_OP(NclStackEntry *lhs_var, NclStackEntry *rhs_var,
 
     if((rhs_var == NULL)||(rhs_var->kind == NclStk_NOVAL))
     {
-        NHLPERROR((NhlFATAL,NhlEUNKNOWN,"performASSIGN_VAR_VAR_OP: %s is undefined",rhs_sym->name));
+        NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s is undefined",rhs_sym->name));
         estatus = NhlFATAL;
     }
 
@@ -7695,7 +7695,7 @@ void performASSIGN_VAR_VAR_OP(NclStackEntry *lhs_var, NclStackEntry *rhs_var,
         if(lhs_nsubs != 0)
         {
             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                      "performASSIGN_VAR_VAR_OP: %s is undefined, can not subscript an undefined variable",
+                      "%s is undefined, can not subscript an undefined variable",
                        lhs_sym->name));
             estatus = NhlFATAL;
             _NclCleanUpStack(lhs_nsubs);
@@ -7847,7 +7847,7 @@ void performASSIGN_VAR_VAR_OP(NclStackEntry *lhs_var, NclStackEntry *rhs_var,
         else
         {
             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                      "performASSIGN_VAR_VAR_OP: Number of subscripts on rhs do not match\n\t\t\t%s: (%d), %s: (%d)\n",
+                      "Number of subscripts on right-hand-side do not match\n\t\t\t%s: (%d), %s: (%d)\n",
                       "number of dimensions of variable", rhs_nsubs, "Subscripts used", rhs_var->u.data_var->var.n_dims));
             estatus = NhlFATAL;
             _NclCleanUpStack(rhs_nsubs);
@@ -7869,7 +7869,7 @@ void performASSIGN_VAR_VAR_OP(NclStackEntry *lhs_var, NclStackEntry *rhs_var,
         else if((estatus != NhlFATAL)&&(rhs_nsubs != rhs_var->u.data_var->var.n_dims))
         {
             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                      "performASSIGN_VAR_VAR_OP: Number of subscripts on rhs do not match\n\t\t\t%s: (%d), %s: (%d)\n",
+                      "Number of subscripts on right-hand-side do not match\n\t\t\t%s: (%d), %s: (%d)\n",
                       "number of dimensions of variable", rhs_nsubs, "Subscripts used", rhs_var->u.data_var->var.n_dims));
             estatus = NhlFATAL;
             _NclCleanUpStack(rhs_nsubs);
@@ -7935,7 +7935,7 @@ void performASSIGN_VAR_VAR_OP(NclStackEntry *lhs_var, NclStackEntry *rhs_var,
         else if((estatus != NhlFATAL)&&(lhs_nsubs != lhs_var->u.data_var->var.n_dims))
         {
             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                      "performASSIGN_VAR_VAR_OP: Number of subscripts on lhs do not match\n\t\t\t%s: (%d),  %s: (%d)\n",
+                      "Number of subscripts on left-hand-side do not match\n\t\t\t%s: (%d),  %s: (%d)\n",
                       "number of dimensions of variable", lhs_nsubs, "Subscripts used", lhs_var->u.data_var->var.n_dims));
             estatus = NhlFATAL;
             _NclCleanUpStack(lhs_nsubs);
