@@ -17192,7 +17192,10 @@ NhlErrorTypes _NclIGetVarDims
 			}
 			else
 			{
-				data = _NclGetFileInfo2(thefile);
+    				if(thefile->file.advanced_file_structure)
+					data = _NclGetFileInfo1(thefile);
+    				else
+					data = _NclGetFileInfo2(thefile);
 				for (i=0; i < data->u.file->n_dims;i++) {
 					names[i] = data->u.file->dim_info[i].dim_quark;
 				}
@@ -17289,7 +17292,10 @@ NhlErrorTypes _NclIGetVarAtts
 				dimsizes = 1;
 				return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
 			}
-			data = _NclGetFileInfo2(thefile);
+			if(thefile->file.advanced_file_structure)
+				data = _NclGetFileInfo1(thefile);
+    			else
+				data = _NclGetFileInfo2(thefile);
 		} else {
 			data = _NclGetFileInfo(name);
 		}
@@ -17379,7 +17385,10 @@ NhlErrorTypes _NclIFileVarDimsizes
 			tmp_md = _NclVarValueRead(val.u.data_var,NULL,NULL);
 		if(tmp_md->obj.obj_type_mask & Ncl_MultiDValnclfileData){
                 	thefile = (NclFile)_NclGetObj(*(int*)tmp_md->multidval.val);
-			data = _NclGetFileVarInfo2(thefile,*name);
+    			if(thefile->file.advanced_file_structure)
+				data = _NclGetFileVarInfo1(thefile,*name);
+    			else
+				data = _NclGetFileVarInfo2(thefile,*name);
 		} else {
 			dimsizes = 1;
 			return(NclReturnValue((void*)&((NclTypeClass)nclTypeintClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypeintClass)->type_class.default_mis, ((NclTypeClass)nclTypeintClass)->type_class.data_type, 1));
@@ -17504,7 +17513,10 @@ NhlErrorTypes _NclIGetFileVarDims
 			thefile = (NclFile)_NclGetObj(*(obj*)tmp_md->multidval.val);
 		}
 		if(thefile != NULL ) {
-			data = _NclGetFileVarInfo2(thefile,*name);
+    			if(thefile->file.advanced_file_structure)
+				data = _NclGetFileVarInfo1(thefile,*name);
+    			else
+				data = _NclGetFileVarInfo2(thefile,*name);
 		} else {
 			dimsizes = 1;
 			return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
@@ -17592,7 +17604,10 @@ NhlErrorTypes _NclIGetFileVarAtts
 			thefile = (NclFile)_NclGetObj(*(obj*)tmp_md->multidval.val);
 		}
 		if(thefile != NULL ) {
-			data = _NclGetFileVarInfo2(thefile,*name);
+    			if(thefile->file.advanced_file_structure)
+				data = _NclGetFileVarInfo1(thefile,*name);
+    			else
+				data = _NclGetFileVarInfo2(thefile,*name);
 		} else {
 			dimsizes = 1;
 			ret = NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
@@ -19109,7 +19124,10 @@ NhlErrorTypes _NclIFileAttDef
 		case Ncl_FileVar:
 			file_md= (NclMultiDValData)_NclVarValueRead(data.u.data_var,NULL,NULL);
 			tmp_file = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
-			tmp = _NclGetFileInfo2(tmp_file);
+    			if(tmp_file->file.advanced_file_structure)
+				tmp = _NclGetFileInfo1(tmp_file);
+    			else
+				tmp = _NclGetFileInfo2(tmp_file);
 			if((tmp!= NULL)&&( tmp->u.file->n_atts > 0 )) {
 				for(j = 0; j < tmp->u.file->n_atts; j++) {
 					ret=_NclFileWriteAtt(thefile,tmp->u.file->attnames[j],_NclFileReadAtt(tmp_file,tmp->u.file->attnames[j],NULL),NULL);
@@ -19218,7 +19236,10 @@ NhlErrorTypes _NclIFileVarAttDef
 		case Ncl_FileVar:
 			file_md= (NclMultiDValData)_NclVarValueRead(data.u.data_var,NULL,NULL);
 			tmp_file = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
-			tmp = _NclGetFileInfo2(tmp_file);
+    			if(tmp_file->file.advanced_file_structure)
+				tmp = _NclGetFileInfo1(tmp_file);
+    			else
+				tmp = _NclGetFileInfo2(tmp_file);
 			if((tmp!=NULL)&&( tmp->u.file->n_atts > 0 )) {
 				for(i = 0; i < dimsize; i++) {
 					for(j = 0; j < tmp->u.file->n_atts; j++) {
