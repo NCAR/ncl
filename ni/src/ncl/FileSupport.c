@@ -38,7 +38,8 @@
 #endif
 
 #ifdef BuildHDF4
-#include <hdf/mfhdf.h>
+#include <dfi.h>
+#include <mfhdf.h>
 #endif
 
 #ifdef BuildHDFEOS5
@@ -3065,6 +3066,79 @@ NclApiDataList *_NclGetFileVarInfoList2
 	return thelist;
 }
 
+NclApiDataList *_NclGetFileVarInfo1(struct _NclFileRec *thefile, NclQuark file_var_name)
+{
+    NclAdvancedFile advfile = (NclAdvancedFile) thefile;
+    NclFileGrpNode *grpnode = advfile->advancedfile.grpnode;
+    NclFileVarNode *varnode;
+    NclFileDimNode *dimnode;
+    NclFileDimNode *grpdimnode;
+
+    int i,j;
+    NclApiDataList *tmp = NULL;
+
+    if(NULL == thefile)
+        return(NULL);
+
+    if(0 == thefile->file.advanced_file_structure)
+        return(NULL);
+
+    varnode = _getVarNodeFromNclFileGrpNode(grpnode, file_var_name);
+    if(NULL == varnode)
+        return(NULL);
+
+    tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
+    tmp->kind = VARIABLE_LIST;
+    tmp->u.var = (NclApiVarInfoRec*)NclMalloc(sizeof(NclApiVarInfoRec));
+    tmp->u.var->name = varnode->name;
+    tmp->u.var->data_type= varnode->type;
+    tmp->u.var->type = FILEVAR;
+
+    if(NULL != varnode->dim_rec)
+    {
+        tmp->u.var->n_dims = varnode->dim_rec->n_dims;
+        tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp->u.var->n_dims);
+        for(i = 0 ; i < varnode->dim_rec->n_dims; ++i)
+        {
+            dimnode = &(varnode->dim_rec->dim_node[i]);
+            tmp->u.var->dim_info[i].dim_quark = dimnode->name;
+            tmp->u.var->dim_info[i].dim_num =  dimnode->id;
+            tmp->u.var->dim_info[i].dim_size =  dimnode->size;
+
+            if(NULL != grpnode->dim_rec)
+            {
+                tmp->u.var->coordnames[i] = -1;
+                for(j = 0 ; j < grpnode->dim_rec->n_dims; ++j)
+                {
+                    grpdimnode = &(grpnode->dim_rec->dim_node[j]);
+                    if(dimnode->name == grpdimnode->name)
+                    {
+                        tmp->u.var->coordnames[j] = grpdimnode->name;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    if(NULL == varnode->att_rec)
+    {
+        tmp->u.var->n_atts = 0;
+        tmp->u.var->attnames = NULL;
+    }
+    else
+    {
+        tmp->u.var->n_atts = varnode->att_rec->n_atts;
+        tmp->u.var->attnames = (NclQuark*)NclMalloc(sizeof(NclQuark)*varnode->att_rec->n_atts);
+        for(j = 0 ; j < varnode->att_rec->n_atts; ++j)
+        {
+            tmp->u.var->attnames[j]= varnode->att_rec->att_node[j].name;
+        }
+    }
+
+    tmp->next = NULL;
+    return(tmp);
+}
 
 NclApiDataList *_NclGetFileVarInfo2
 #if	NhlNeedProto
@@ -3126,6 +3200,79 @@ NclQuark file_var_name;
 		}
 	}
 	return(NULL);
+}
+
+NclApiDataList *_NclGetFileInfo1(NclFile thefile)
+{
+    NclAdvancedFile advfile = (NclAdvancedFile) thefile;
+    NclFileGrpNode *grpnode = advfile->advancedfile.grpnode;
+    NclFileVarNode *varnode;
+    NclFileDimNode *dimnode;
+    NclFileDimNode *grpdimnode;
+
+    NclApiDataList *tmp = NULL;
+    int j;
+
+    if(NULL == thefile)
+        return NULL;
+
+    tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
+    tmp->kind = FILE_LIST;
+    tmp->u.file = (NclApiFileInfoRec*)NclMalloc(sizeof(NclApiFileInfoRec));
+    tmp->u.file->name = grpnode->name;
+    tmp->u.file->path = grpnode->path;
+    tmp->u.file->wr_status = grpnode->status;
+    tmp->u.file->file_format = (int)grpnode->format;
+
+    if(NULL == grpnode->dim_rec)
+    {
+        tmp->u.file->n_dims = 0;
+        tmp->u.file->dim_info = NULL;
+    }
+    else
+    {
+        tmp->u.file->n_dims = grpnode->dim_rec->n_dims;
+        tmp->u.file->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp->u.file->n_dims);
+
+        for(j = 0; j < grpnode->dim_rec->n_dims; ++j)
+        {
+            grpdimnode = &(grpnode->dim_rec->dim_node[j]);
+            tmp->u.file->dim_info[j].dim_num = j;
+            tmp->u.file->dim_info[j].dim_quark = grpdimnode->name;
+            tmp->u.file->dim_info[j].dim_size = grpdimnode->size;
+        }
+    }
+
+    tmp->u.file->n_vars = 0;
+    tmp->u.file->var_names = NULL;
+
+    if(NULL != grpnode->var_rec)
+    {
+        if(grpnode->var_rec->n_vars)
+        {
+            tmp->u.file->n_vars = grpnode->var_rec->n_vars;
+            tmp->u.file->var_names = (NclQuark*)NclMalloc(sizeof(NclQuark)*thefile->file.n_vars);
+            for(j = 0; j < grpnode->var_rec->n_vars; ++j)
+                tmp->u.file->var_names[j] = grpnode->var_rec->var_node[j].name;
+        }
+    }
+
+    tmp->u.file->n_atts = 0;
+    tmp->u.file->attnames = NULL;
+
+    if(NULL != grpnode->att_rec)
+    {
+        if(grpnode->att_rec->n_atts)
+        {
+            tmp->u.file->n_atts = grpnode->att_rec->n_atts;
+            tmp->u.file->attnames = (NclQuark*)NclMalloc(sizeof(NclQuark)*grpnode->att_rec->n_atts);
+            for(j = 0; j < grpnode->att_rec->n_atts; ++j)
+                tmp->u.file->attnames[j] = grpnode->att_rec->att_node[j].name;
+        }
+    }
+
+    tmp->next = NULL;
+    return(tmp);
 }
 
 NclApiDataList *_NclGetFileInfo2

@@ -368,12 +368,15 @@ extern struct _NclApiDataList *_NclGetFileVarInfoList2(
 struct _NclFileRec * /*thefile*/
 #endif
 );
+extern struct _NclApiDataList *_NclGetFileVarInfo1(struct _NclFileRec * /*thefile*/,
+						   NclQuark /*file_var_name*/);
 extern struct _NclApiDataList *_NclGetFileVarInfo2(
 #if     NhlNeedProto
 struct _NclFileRec * /*thefile*/,
 NclQuark /*file_var_name*/
 #endif
 );
+extern struct _NclApiDataList *_NclGetFileInfo1(struct _NclFileRec * /*thefile*/);
 extern struct _NclApiDataList *_NclGetFileInfo2(
 #if NhlNeedProto
 struct _NclFileRec * /*thefile*/
