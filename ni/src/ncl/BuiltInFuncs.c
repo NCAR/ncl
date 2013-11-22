@@ -21476,6 +21476,24 @@ NhlErrorTypes   _NclIVarIsUnlimited
 
     /* get dimension info and check for unlimited */
     if (f != NULL) {
+        if (f->file.advanced_file_structure)
+        {
+            NclAdvancedFile theadvancedfile = (NclAdvancedFile) f;
+            NclFileGrpNode *grpnode = theadvancedfile->advancedfile.grpnode;
+            if (NULL != grpnode->dim_rec)
+            {
+                for (i = 0; i < grpnode->dim_rec->n_dims; ++i)
+                {
+                    if (grpnode->dim_rec->dim_node[i].name == *dname)
+                    {
+                        isunlimited = grpnode->dim_rec->dim_node[i].is_unlimited;
+                        break;
+                    }
+                }
+            }
+        }
+        else
+        {
         if (f->file.n_file_dims > 0) {
             for (i = 0; i < f->file.n_file_dims; i++) {
                 if (f->file.file_dim_info[i]->dim_name_quark == *dname) {
@@ -21483,6 +21501,7 @@ NhlErrorTypes   _NclIVarIsUnlimited
                     break;
                 }
             }
+        }
         }
     }
     else {
