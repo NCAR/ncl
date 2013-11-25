@@ -11245,7 +11245,6 @@ begin
   
   return( pdf )
 end
-
 ;**************************************************************
 ; Calculate the "joint PDF [%]" of arrays "x" and "y"
 ;**************************************************************
@@ -11255,7 +11254,7 @@ local nGood_x, nbinsx, xMin, xMax, mnmxint, binx, binxBound, binxCenter, nbx \
      ,nGood_y, nbinsy, yMin, yMax, ySpace , biny, binyBound, binyCenter, nby \
      ,outside, mnmxint, pdf2, nTot, dimx, dimy, rankx, ranky, x1d, y1d, iy, warnFlag\
      ,xMIN, xMAX, yMIN, yMAX, binxBoundMin, binxBoundMax, binyBoundMin, binyBoundMax\
-     ,nMax, nUse, nxLoOut, nxHiOut, nyLoOut, nyHiOut, popt, fmsg
+     ,nMax, nUse, nxLoOut, nxHiOut, nyLoOut, nyHiOut, popt, fmsg, epsx, epsy
 begin
 
   fmsg = default_fillvalue("float")
@@ -11296,10 +11295,10 @@ begin
   end if              ; warnFlag
 
   xMIN = min(x)*1d0   ; min/max for ENTIRE array             
-  xMAX = max(x)*1d0   ; force "double" [*1d0]
+  xMAX = max(x)*1d0   ; force "double" [*1d0] ... convenience only
   yMIN = min(y)*1d0   
   yMAX = max(y)*1d0  
-                                             ; max number possible
+                      ; max number possible (excludes _FillValue)
   nMax = num(x.ge.xMIN .and. x.le.xMAX .and. \
              y.ge.yMIN .and. y.le.yMAX) 
 
@@ -11391,6 +11390,27 @@ begin
 
   popt          = True
   popt@fraction = False     ; False means to return %
+  
+                      ; -------------------------------------------
+                      ; epsx, epsy:  Nov 2013 for v6.2.0
+		      ; get around:  LastLeftBin <= x,y < LastRightBin 
+		      ; Add eps LastRightBin will *include* xMAX and yMAX
+  if (opt .and. isatt(opt, "bin_max_epsx")) then
+      epsx = opt@bin_max_epsx ; set to 0.0 for pre 6.2.0 results
+  else
+      epsx = 1d-6             ; default (arbitrary)
+  end if
+                      
+  if (opt .and. isatt(opt, "bin_max_epsy")) then
+      epsy = opt@bin_max_epsy
+  else
+      epsy = 1d-6         
+  end if
+                    
+  binxBound(nbinsx)= binxBound(nbinsx) + epsx*binxBound(nbinsx)
+  binyBound(nbinsy)= binxBound(nbinsy) + epsy*binyBound(nbinsy)
+                      ; ------------------------------------------- 
+
   pdf2 = pdfxy_bin(x,y, binxBound,binyBound, popt)
                           ; all NCL [original code]
     ;;x1d  = ndtooned(x)  ; requires more memory
@@ -11407,15 +11427,16 @@ begin
     ;;   delete(iy)      ; size may change
     ;;end do
 
-  if (popt .and. isatt(popt,"fraction") .and. popt@fraction) then
-      pdf2 = 1d2*pdf2                ; frequency [%]
+  if (opt .and. isatt(opt,"fraction") .and. opt@fraction) then
+      pdf2 = pdf2/1d2                ; fraction [0,1]
   end if
 
   pdf2!0   = "y"         ; arbitrary name
   pdf2!1   = "x"
   pdf2&x   =  binxCenter 
   pdf2&y   =  binyCenter
-                                             ; actual number used
+                         ; actual number used, excludes outliers
+					     
   nUse     = num(x.ge.binxBoundMin .and. x.le.binxBoundMax .and. \
                  y.ge.binyBoundMin .and. y.le.binyBoundMax)
 
@@ -13498,10 +13519,10 @@ function stat_mode(A[*]:numeric)
 ;
 ; returns mode value(s) with attributes which indicate the
 ;                       number of modes (@nmode)
-;                       count of mode values (@count)
-;                       number o non-missing values (@npts)
+;                       count of mode occurences (@count)
+;                       number of non-missing values in 'A' (@npts)
 ;---
-; A need not be in ascending order. The function will sort.
+; 'A' need not be in ascending order. The function will sort.
 ; Care should be used when A is type float or double.
 ; A value of 12.34567 is not the same as 12.34568 
 ; A suggestion is to preprocess the data. Say that 
@@ -13528,8 +13549,8 @@ function stat_mode(A[*]:numeric)
 ; a4     = ispan(1,10,1)
 ; mode4  = (/1,2,3,4,5,6,7,8,9,10/), mode4@nmode=10, mode4@count=1, mode4@npts=10
 ;
-; a5     = (/1,2,3,4,5,5,7,8,9,10/)
-; mode5  = 5, mode5@nmode=a0, mode5@count=1, mode5@npts=10
+; a5     = (/1,2,3,4, 5,5, 7,8,9,10/)
+; mode5  = 5, mode5@nmode=1, mode5@count=2, mode5@npts=10
 ;
 local i, ni, a, na, freq, FREQ, n, nm, ii, nseq \
     , node, nmode, mode_count, val, ifmx
