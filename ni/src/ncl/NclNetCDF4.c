@@ -491,17 +491,9 @@ static void *NC4CreateFile(void *rootgrp,NclQuark path)
         grpnode->open = 1;
         grpnode->define_mode = 1;
 
-#if 1
-        return ((void *)grpnode);
-#else
-	if(grpnode->define_mode)
-        {
-            EndNC4DefineMode(grpnode, fid);
-            CloseOrSync(grpnode, fid, 0);
-        }
+        CloseOrSync(grpnode, fid, 0);
 
-        return (NC4OpenFile(rootgrp, path, -1));
-#endif
+        return ((void *)grpnode);
     }
 
     return(NULL);
@@ -2472,9 +2464,8 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
     if(n_dims)
         NC4GetDimVals(fid, grpnode);
 
-  /*
-   *CloseOrSync(grpnode, fid, 0);
-   */
+    CloseOrSync(grpnode, fid, 0);
+
     return((void*)grpnode);
 }
 
@@ -2640,7 +2631,7 @@ void NC4GetDimVals(int ncid, NclFileGrpNode *grpnode)
 
 void CloseOrSync(NclFileGrpNode *rootgrp, int fid, int sync)
 {
-    int ret;
+    int ret = NC_NOERR;
 
     if(sync)
     {
@@ -2651,16 +2642,14 @@ void CloseOrSync(NclFileGrpNode *rootgrp, int fid, int sync)
     }
     else
     {
-        rootgrp->open = 0;
-        rootgrp->pid = -1;
-        rootgrp->fid = -1;
-        rootgrp->gid = -1;
-        ret = ncclose(fid);
-    }
-
-    if(NC_NOERR != ret)
-    {
-        NHLPERROR((NhlWARNING,NhlEUNKNOWN,(char*)nc_strerror(ret)));
+        if((0 == *(int *)(rootgrp->options[Ncl_SUPPRESS_CLOSE].values)) && rootgrp->open)
+        {
+            rootgrp->open = 0;
+            rootgrp->pid = -1;
+            rootgrp->fid = -1;
+            rootgrp->gid = -1;
+            ret = ncclose(fid);
+        }
     }
 
     if(NC_NOERR != ret)
@@ -2886,19 +2875,6 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
             fid = grpnode->gid;
             EndNC4DefineMode(grpnode,fid);
         }
-        else if (no_stride)
-        {
-          /*
-           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-           *fprintf(stderr, "\tgrpnode->path: <%s>\n", NrmQuarkToString(grpnode->path));
-           */
-
-            nc_ret = nc__open(NrmQuarkToString(grpnode->path),NC_NOWRITE,&ChunkSizeHint,&fid);
-            grpnode->define_mode = 0;
-            grpnode->fid = fid;
-            grpnode->gid = fid;
-            /* printf ("got size = %d\n",ChunkSizeHint); */
-        }
         else
         {
           /*
@@ -3057,6 +3033,7 @@ found_component:
 
             free(values);
             ret = 0;
+            return(storage);
         }
         else if(NCL_list == varnode->type)
         {
@@ -3251,9 +3228,8 @@ found_component:
                 }
             }
         }
-      /*
-       *CloseOrSync(grpnode, fid, 0);
-       */
+
+        CloseOrSync(grpnode, fid, 0);
 
         if(ret == -1)
         {
