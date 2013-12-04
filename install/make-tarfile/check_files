@@ -67,11 +67,11 @@ set nclversion = "6.2.0"
 set pwddir  = `pwd`
 
 if ($?NCARGNCL) then
-  echo "Checking files for NCL/NCARG version $nclversion in dir $pwddir..."
+  echo "Checking files for NCL/NCARG version $nclversion in directory NCARG_ROOT=$NCARG_ROOT..."
 else if ($?NCLONLY) then
-  echo "Checking files for NCL version $nclversion in dir $pwddir..."
+  echo "Checking files for NCL version $nclversion in directory NCARG_ROOT=$NCARG_ROOT..."
 else if ($?NCARGONLY) then
-  echo "Checking files for NCAR Graphics version $nclversion in dir $pwddir..."
+  echo "Checking files for NCAR Graphics version $nclversion in directory NCARG_ROOT=$NCARG_ROOT..."
 endif
 
 set that_file_list      = "tmp_that_file_list$$"
@@ -468,6 +468,10 @@ lib/ncarg/colormaps/BlueWhiteOrangeRed.rgb
 lib/ncarg/colormaps/BlueYellowRed.rgb
 lib/ncarg/colormaps/BrownBlue12.rgb
 lib/ncarg/colormaps/Cat12.rgb
+lib/ncarg/colormaps/CBR_coldhot.rgb
+lib/ncarg/colormaps/CBR_drywet.rgb
+lib/ncarg/colormaps/CBR_set3.rgb
+lib/ncarg/colormaps/CBR_wet.rgb
 lib/ncarg/colormaps/GHRSST_anomaly.rgb
 lib/ncarg/colormaps/GMT_cool.rgb
 lib/ncarg/colormaps/GMT_copper.rgb
