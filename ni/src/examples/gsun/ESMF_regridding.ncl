@@ -969,11 +969,25 @@ begin
         end if
         ElementVertices = Opt@TriangularMesh
       end if
+;---Was a quadrilateral mesh provided?
+    else if(Opt.and.isatt(Opt,"QuadrilateralMesh")) then
+      dims = dimsizes(Opt@QuadrilateralMesh)
+      if(dims(1).ne.4) then
+        print("unstructured_to_ESMF: QuadrilateralMesh must be an n x 4 array")
+        exit
+      else
+        if(DEBUG) then
+          print("unstructured_to_ESMF: using quadrilateral mesh provided by the user")
+        end if
+        ElementVertices = Opt@QuadrilateralMesh
+      end if
     else
+;---Create a triangular mesh if no mesh provided
       if(DEBUG) then
         print("unstructured_to_ESMF: triangulating the data ... this can be slow")
       end if
       ElementVertices = csstri(lat,lon)       ; Triangulate
+    end if
     end if
     if(DEBUG) then
       print("min/max ElementVertices = " + min(ElementVertices) + "/" + \
@@ -1004,7 +1018,7 @@ begin
 ;---Define the ESMF dimensions
     nodeCount       = dimsizes(lat)
     elementCount    = ElementVertices_Dim(0)
-    maxNodePElement = 3
+    maxNodePElement = ElementVertices_Dim(1)
     coordDim        = 2
 ;                    0            1               2               3
     FDimNames=(/ "nodeCount","elementCount","maxNodePElement","coordDim" /)
@@ -2333,7 +2347,7 @@ begin
       pole = "none"      
     end if
 
-    if (isatt(opt2,"pole")) then
+    if (isvar("pole")) then
       ESMFCMD = ESMFCMD + " --pole " + pole
     end if
 
