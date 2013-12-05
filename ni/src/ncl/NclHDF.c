@@ -29,7 +29,7 @@
 #endif
 #include "defs.h"
 #define HAVE_NETCDF
-#include <hdf/mfhdf.h>
+#include <mfhdf.h>
 #include "NclData.h"
 #include "NclFileInterfaces.h"
 #include <math.h>

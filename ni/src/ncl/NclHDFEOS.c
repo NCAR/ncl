@@ -28,7 +28,7 @@
 #endif
 #include "defs.h"
 #define HAVE_NETCDF
-#include <hdf/mfhdf.h>
+#include <mfhdf.h>
 #include "NclDataDefs.h"
 #include "NclFileInterfaces.h"
 #include "NclData.h"

@@ -51,9 +51,9 @@
 #include <fcntl.h>
 #include <string.h>
 #include <ncarg/c.h>
-#include <hdf/hdf.h>
-#include <hdf/df.h>
-#include <hdf/dfgr.h>
+#include <hdf.h>
+#include <df.h>
+#include <dfgr.h>
 #include "ncarg_ras.h"
 #include "hdfP.h"
 #include "options.h"
