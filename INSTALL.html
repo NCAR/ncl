@@ -1,14 +1,14 @@
 <html>
 <head>
-<title>How to build NCL and NCAR Graphics version 6.1.2 from source code</title>
+<title>How to build NCL and NCAR Graphics version 6.2.0 from source code</title>
 </head>
 
 </head>
 
-<h1>How to build NCL and NCAR Graphics version 6.1.2 from source code</h1>
+<h1>How to build NCL and NCAR Graphics version 6.2.0 from source code</h1>
 <p>
 
-<i>February 1, 2013</i><p>
+<i>December 7, 2013</i><p>
 
 <b>The latest version of this document can be found at
 <a href="http://www.ncl.ucar.edu/Download/build_from_src.shtml">http://www.ncl.ucar.edu/Download/build_from_src.shtml</a>.</b>
@@ -892,12 +892,9 @@ Download version 4.2.5 or later. (HDF version 5.<i>x.y</i> is a different
 software package).
 <p>
 
-
-<b>Important note:</b> By default, the HDF-4 include files get installed
-to $prefix/include.  Since this could cause some netCDF include files
-to get overwritten, you <i>must</i> use the
-<b>"--includedir"</b> option to install the HDF include files instead
-to <b>$prefix/include/hdf</b>.
+<b>Note:</b> As of NCL V6.2.0, you no longer need to install the HDF
+include files to a special directory (in older versions you
+had to use a special "--includedir" option). 
 <p>
 
 Build and install HDF-4 with:
@@ -905,8 +902,7 @@ Build and install HDF-4 with:
 
 <pre>
  ./configure --prefix=/usr/local --with-zlib=/usr/local \
-       --with-jpeg=/usr/local --includedir=/usr/local/include/hdf \
-       --disable-netcdf
+       --with-jpeg=/usr/local --disable-netcdf
   make all install
 </pre>
 
@@ -1285,18 +1281,18 @@ HREF="http://www.ncl.ucar.edu/Download/">http://www.ncl.ucar.edu/Download/</A>
 <p>
 
 The NCL source code you download will be a single compressed tar
-file (we'll call it "ncl_ncarg-6.1.2.tar.gz"). Move the
-"ncl_ncarg-6.1.2.tar.gz" file to a temporary directory where you
+file (we'll call it "ncl_ncarg-6.2.0.tar.gz"). Move the
+"ncl_ncarg-6.2.0.tar.gz" file to a temporary directory where you
 have plenty of disk space (around 630 megabytes to hold all of the
 source code, object files, binaries, and so on). Then, uncompress and
 untar the file as follows:<P>
 
 <pre>
-  gunzip ncl_ncarg-6.1.2.tar.gz
-  tar -xvf ncl_ncarg-6.1.2.tar
+  gunzip ncl_ncarg-6.2.0.tar.gz
+  tar -xvf ncl_ncarg-6.2.0.tar
 </pre>
 
-The above steps will create a directory called "ncl_ncarg-6.1.2".  For
+The above steps will create a directory called "ncl_ncarg-6.2.0".  For
 convenience, we'll use the notation $NCARG to mean the top level of
 the NCL/NCAR Graphics source tree. Set the environment variable NCARG
 to the full path of this directory.
@@ -1308,21 +1304,21 @@ From tcsh or csh:
 <p>
 
 <pre>
-  setenv NCARG /usr/local/src/ncl_ncarg-6.1.2
+  setenv NCARG /usr/local/src/ncl_ncarg-6.2.0
 </pre>
 
 From ksh or bash:
 <p>
 
 <pre>
-  export NCARG=/usr/local/src/ncl_ncarg-6.1.2
+  export NCARG=/usr/local/src/ncl_ncarg-6.2.0
 </pre>
 
 sh:
 <p>
 
 <pre>
-  NCARG=/usr/local/src/ncl_ncarg-6.1.2
+  NCARG=/usr/local/src/ncl_ncarg-6.2.0
   export NCARG
 </pre>
 <p>
