@@ -71,8 +71,8 @@ void copyAttributes(NclFileAttInfoList **out, NclFileAttInfoList *in)
         new_list->the_att->num_elements   = att_list->the_att->num_elements;
 
       /*
-        fprintf(stdout, "\tnew_list->the_att->att_name_quark: <%s>\n",
-            NrmQuarkToString(new_list->the_att->att_name_quark));
+       *fprintf(stdout, "\tnew_list->the_att->att_name_quark: <%s>\n",
+       *    NrmQuarkToString(new_list->the_att->att_name_quark));
        */
 
         new_list->next = *out;
@@ -323,7 +323,11 @@ NclQuark *_split_string2quark(NclQuark qn, int *ns)
     while(result != NULL)
     {
         sq[n] = NrmStringToQuark(result);
-        fprintf(stdout, "\tsub str %d: <%s>\n", n, result);
+
+      /*
+       *fprintf(stdout, "\tsub str %d: <%s>\n", n, result);
+       */
+
         ++n;
         result = strtok(NULL, delim);
     }
@@ -530,8 +534,10 @@ NclQuark group_name;
     group_out->file.n_grps = n_grps;
     setGroupAttributes(group_out);
 
-    fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tn_grps = %d\n", n_grps);
+  /*
+   *fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tn_grps = %d\n", n_grps);
+   */
 
     for(i = 0; i < file_in->file.n_vars; i++)
     {
@@ -589,9 +595,9 @@ NclQuark group_name;
     NclFree(selected_group);
 
   /*
+   *fprintf(stdout, "\tgroup_out->file.n_vars = %d\n", group_out->file.n_vars);
+   *fprintf(stdout, "\n\nend _NclGroupCreate, file: %s, line:%d\n", __FILE__, __LINE__);
    */
-    fprintf(stdout, "\tgroup_out->file.n_vars = %d\n", group_out->file.n_vars);
-    fprintf(stdout, "\n\nend _NclGroupCreate, file: %s, line:%d\n", __FILE__, __LINE__);
     return(group_out);
 }
 
