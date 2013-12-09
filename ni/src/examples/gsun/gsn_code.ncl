@@ -1884,7 +1884,7 @@ begin
       end getvalues
       if( (lbar_mode.eq.1) .or.\
           (vc_glyphstyle.eq.0.and..not.vc_monolinearrowcolor) .or.\
-          (vc_glyphstyle.eq.1.and..not.vc_monofillarrowcolor) .or. \
+          (vc_glyphstyle.eq.1.and..not.vc_monofillarrowfillcolor) .or. \
           (vc_glyphstyle.eq.2.and..not.vc_monowindbarbcolor)  .or. \
           (vc_glyphstyle.eq.3.and..not.vc_monolinearrowcolor)) then
         found = True
@@ -4642,15 +4642,17 @@ begin
 end
 
 ;***********************************************************************;
-; Function : gsn_shapefile_polylines                                    ;
+; Procedure : gsn_shapefile_polylines                                   ;
 ;                   wks: workstation object                             ;
 ;                plotid: plot object                                    ;
 ;                 fname: Name of shapefile ("xxxx.shp")                 ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; ANY CHANGES MADE TO THIS CODE SHOULD POTENTIALLY BE MADE TO           ;
-; gsn_add_shapefile_polylines BELOW!!                                   ;
-;                                                                       ;
+; gsn_add_shapefile_polylines BELOW!! Note that in V6.2.0, the "add"    ;
+; version of this code was sped up significantly, so this procedure is  ;
+; not needed so much anymore.                                           ;
+;
 ; This function draws shapefile polylines on the plot "plotid".         ;
 ; See gsn_add_shapefile_polylines if you want to add them instead (this ;
 ; can be much slower).                                                  ;
@@ -4659,7 +4661,7 @@ end
 ; segments are within the range of the map. This works best for a C.E.  ;
 ; map. You have to set the special min/max/lat/lon attributes for this  ;
 ; to work.  I won't advertise this yet, because the interface could     ;
-; probably be made better.                                              ;
+; probably be made better. See note about V6.2.0 above.                 ;
 ;***********************************************************************;
 undef("gsn_shapefile_polylines")
 procedure gsn_shapefile_polylines(wks,plot,fname:string,lnres)
@@ -4759,19 +4761,24 @@ end
 ;                                                                       ;
 ; This function attaches shapefile polylines to the plot "plotid".      ;
 ; See gsn_shapefile_polylines if you want to just draw them.            ; 
-; can be much faster).                                                  ;
+;                                                                       ;
+; In version 6.2.0 this function was significantly sped-up via the use  ;
+; of a new resource called "gsSegments". Only one primitive object id   ;
+; is now created. In some cases, we saw speed-ups of 80x (for example,  ;
+; with the France_adm5 shapefile). Because of this speed-up, the code   ;
+; added in V6.1.0 for checking for special minlat/maxlat/minlon/maxlon  ;
+; is no longer needed. It is commented out for now. It may eventually   ;
+; be removed once we are certain it doesn't serve any benefit.          ;
 ;                                                                       ;
 ; In version 6.1.0, some code was added to add checks if the lat/lon    ;
 ; segments are within the range of the map. This works best for a C.E.  ;
 ; map. You have to set the special min/max/lat/lon attributes for this  ;
 ; to work.  I won't advertise this yet, because the interface could     ;
-; probably be made better.                                              ;
+; probably be made better. THIS CODE HAS BEEN COMMENTED OUT in V6.2.0.  ;
 ;***********************************************************************;
 undef("gsn_add_shapefile_polylines")
 function gsn_add_shapefile_polylines(wks,plot,fname:string,lnres)
-local f, segments, geometry, segsDims, geomDims, geom_segIndex, \
-geom_numSegs, segs_xyzIndex, segs_numPnts, numFeatures, i, lat, lon, \
-startSegment, numSegments, seg, startPT, endPT, npoly, npl
+local f, geomDims, numFeatures, lnres2
 begin
 ;---Open the shapefile
   f = addfile(fname,"r")
@@ -4791,6 +4798,8 @@ begin
     return(new(1,graphic))
   end if
 
+  lnres2 = lnres      ; Make a copy so that we don't keep gsSegements
+
 ;---Read data off the shapefile
   geomDims    = getfilevardimsizes(f,"geometry")
   numFeatures = geomDims(0)
@@ -4800,65 +4809,70 @@ begin
     return(new(1,graphic))
   end if
 
-  segments = f->segments
-  geometry = f->geometry
-  segsDims = dimsizes(segments)
+;;  segments = f->segments
+;;  geometry = f->geometry
+;;  segsDims = dimsizes(segments)
+;;
+;;;---Read global attributes  
+;;  geom_segIndex = f@geom_segIndex
+;;  geom_numSegs  = f@geom_numSegs
+;;  segs_xyzIndex = f@segs_xyzIndex
+;;  segs_numPnts  = f@segs_numPnts
+;;
+;;;---Create array to hold all polylines
+;;  npoly = sum(geometry(:,geom_numSegs)) 
+;;  poly  = new(npoly,graphic)
+;;
+;;;---Section to attach polylines to plot.
+;;  lon = f->x
+;;  lat = f->y
+;;  npl = 0     ; polyline counter
+;;;
+;;; Special check for minlat/maxlat/minlon/maxlon attributes.
+;;;
+;;; If set, then each lat/lon segment will be checked if it's
+;;; in the range.  This can speed up plotting, but I need to
+;;; verify this!
+;;; 
+;;  if(isatt(lnres,"minlon").and.isatt(lnres,"maxlon").and.\
+;;     isatt(lnres,"minlat").and.isatt(lnres,"maxlat")) then
+;;    do i=0, numFeatures-1  
+;;       startSegment = geometry(i, geom_segIndex)
+;;       numSegments  = geometry(i, geom_numSegs)
+;;       do seg=startSegment, startSegment+numSegments-1
+;;          startPT = segments(seg, segs_xyzIndex)
+;;          endPT   = startPT + segments(seg, segs_numPnts) - 1
+;;          lat_sub = lat(startPT:endPT)
+;;          lon_sub = lon(startPT:endPT) 
+;;          if(.not.(all(lon_sub.lt.lnres@minlon).or. \
+;;                   all(lon_sub.gt.lnres@maxlon).or. \
+;;                   all(lat_sub.lt.lnres@minlat).or. \
+;;                   all(lat_sub.gt.lnres@maxlat))) then
+;;            poly(npl) = gsn_add_polyline(wks, plot, lon_sub, lat_sub, lnres)
+;;            npl = npl + 1
+;;          end if
+;;          delete([/lat_sub,lon_sub/])
+;;       end do
+;;    end do
+;;  else       ; Don't do any range checking. 
+;;    do i=0, numFeatures-1  
+;;       startSegment = geometry(i, geom_segIndex)
+;;       numSegments  = geometry(i, geom_numSegs)
+;;       do seg=startSegment, startSegment+numSegments-1
+;;          startPT = segments(seg, segs_xyzIndex)
+;;          endPT   = startPT + segments(seg, segs_numPnts) - 1
+;;          poly(npl) = gsn_add_polyline(wks, plot, lon(startPT:endPT),  \
+;;                                       lat(startPT:endPT), lnres)
+;;          npl = npl + 1
+;;       end do
+;;    end do
+;;  end if
+;;  return(poly(0:npl-1))
 
-;---Read global attributes  
-  geom_segIndex = f@geom_segIndex
-  geom_numSegs  = f@geom_numSegs
-  segs_xyzIndex = f@segs_xyzIndex
-  segs_numPnts  = f@segs_numPnts
-
-;---Create array to hold all polylines
-  npoly = sum(geometry(:,geom_numSegs)) 
-  poly  = new(npoly,graphic)
-
-;---Section to attach polylines to plot.
-  lon = f->x
-  lat = f->y
-  npl = 0     ; polyline counter
-;
-; Special check for minlat/maxlat/minlon/maxlon attributes.
-;
-; If set, then each lat/lon segment will be checked if it's
-; in the range.  This can speed up plotting, but I need to
-; verify this!
-; 
-  if(isatt(lnres,"minlon").and.isatt(lnres,"maxlon").and.\
-     isatt(lnres,"minlat").and.isatt(lnres,"maxlat")) then
-    do i=0, numFeatures-1  
-       startSegment = geometry(i, geom_segIndex)
-       numSegments  = geometry(i, geom_numSegs)
-       do seg=startSegment, startSegment+numSegments-1
-          startPT = segments(seg, segs_xyzIndex)
-          endPT   = startPT + segments(seg, segs_numPnts) - 1
-          lat_sub = lat(startPT:endPT)
-          lon_sub = lon(startPT:endPT) 
-          if(.not.(all(lon_sub.lt.lnres@minlon).or. \
-                   all(lon_sub.gt.lnres@maxlon).or. \
-                   all(lat_sub.lt.lnres@minlat).or. \
-                   all(lat_sub.gt.lnres@maxlat))) then
-            poly(npl) = gsn_add_polyline(wks, plot, lon_sub, lat_sub, lnres)
-            npl = npl + 1
-          end if
-          delete([/lat_sub,lon_sub/])
-       end do
-    end do
-  else       ; Don't do any range checking. 
-    do i=0, numFeatures-1  
-       startSegment = geometry(i, geom_segIndex)
-       numSegments  = geometry(i, geom_numSegs)
-       do seg=startSegment, startSegment+numSegments-1
-          startPT = segments(seg, segs_xyzIndex)
-          endPT   = startPT + segments(seg, segs_numPnts) - 1
-          poly(npl) = gsn_add_polyline(wks, plot, lon(startPT:endPT),  \
-                                       lat(startPT:endPT), lnres)
-          npl = npl + 1
-       end do
-    end do
-  end if
-  return(poly(0:npl-1))
+;---This is all that's needed in V6.2.0.
+  lnres2@gsSegments = f->segments(:,0)
+  poly = gsn_add_polyline(wks, plot, f->x, f->y, lnres2)
+  return(poly)
 end
 
 ;***********************************************************************;
@@ -4870,17 +4884,23 @@ end
 ;                                                                       ;
 ; This function attaches shapefile polygons to the plot "plotid".       ;
 ;                                                                       ;
+; In version 6.2.0 this function was significantly sped-up via the use  ;
+; of a new resource called "gsSegments". Only one primitive object id   ;
+; is now created. In some cases, we saw speed-ups of 80x (for example,  ;
+; with the France_adm5 shapefile). Because of this speed-up, the code   ;
+; added in V6.1.0 for checking for special minlat/maxlat/minlon/maxlon  ;
+; is no longer needed. It is commented out for now. It may eventually   ;
+; be removed once we are certain it doesn't serve any benefit.          ;
+;                                                                       ;
 ; In version 6.1.0, some code was added to add checks if the lat/lon    ;
 ; segments are within the range of the map. This works best for a C.E.  ;
 ; map. You have to set the special min/max/lat/lon attributes for this  ;
 ; to work.  I won't advertise this yet, because the interface could     ;
-; probably be made better.                                              ;
+; probably be made better. THIS CODE HAS BEEN COMMENTED OUT in V6.2.0.  ;
 ;***********************************************************************;
 undef("gsn_add_shapefile_polygons")
 function gsn_add_shapefile_polygons(wks,plot,fname:string,gnres)
-local f, segments, geometry, segsDims, geomDims, geom_segIndex, \
-geom_numSegs, segs_xyzIndex, segs_numPnts, numFeatures, i, lat, lon, \
-startSegment, numSegments, seg, startPT, endPT, npoly, npl
+local f, geomDims, numFeatures, gnres2
 begin
 ;---Open the shapefile
   f = addfile(fname,"r")
@@ -4900,15 +4920,7 @@ begin
     return(new(1,graphic))
   end if
 
-;---Get the number of colors
-  if(.not.gnres.or..not.isatt(gnres,"gsFillColor")) then
-    set_fill_color = True
-    getvalues wks
-      "wkColorMapLen"  : cmap_len
-    end getvalues
-  else
-    set_fill_color = False
-  end if
+  gnres2 = gnres      ; Make a copy so that we don't keep gsSegements
 
 ;---Read data off the shapefile
   geomDims    = getfilevardimsizes(f,"geometry")
@@ -4919,74 +4931,89 @@ begin
     return(new(1,graphic))
   end if
 
-  segments = f->segments
-  geometry = f->geometry
-  segsDims = dimsizes(segments)
-
-;---Read global attributes  
-  geom_segIndex = f@geom_segIndex
-  geom_numSegs  = f@geom_numSegs
-  segs_xyzIndex = f@segs_xyzIndex
-  segs_numPnts  = f@segs_numPnts
-
-;---Create array to hold all polylines
-  npoly = sum(geometry(:,geom_numSegs)) 
-  poly  = new(npoly,graphic)
-
-;---Section to attach polygons to plot.
-  lon = f->x
-  lat = f->y
-  npl = 0     ; polyline counter
-;
-; Special check for minlat/maxlat/minlon/maxlon attributes.
-;
-; If set, then each lat/lon segment will be checked if it's
-; in the range.  This can speed up plotting, but I need to
-; verify this!
-; 
-  if(isatt(gnres,"minlon").and.isatt(gnres,"maxlon").and.\
-     isatt(gnres,"minlat").and.isatt(gnres,"maxlat")) then
-    do i=0, numFeatures-1  
-       startSegment = geometry(i, geom_segIndex)
-       numSegments  = geometry(i, geom_numSegs)
-       do seg=startSegment, startSegment+numSegments-1
-          startPT = segments(seg, segs_xyzIndex)
-          endPT   = startPT + segments(seg, segs_numPnts) - 1
-          lat_sub = lat(startPT:endPT)
-          lon_sub = lon(startPT:endPT) 
-          if(set_fill_color) then
-;---Pick a random color 
-            gnres@gsFillColor = toint(random_uniform(2,cmap_len-2,1))
-          end if
-          if(.not.(all(lon_sub.lt.gnres@minlon).or. \
-                   all(lon_sub.gt.gnres@maxlon).or. \
-                   all(lat_sub.lt.gnres@minlat).or. \
-                   all(lat_sub.gt.gnres@maxlat))) then
-;---Attach the line segment
-            poly(npl) = gsn_add_polygon(wks, plot, lon_sub, lat_sub, gnres)
-            npl = npl + 1
-          end if
-          delete([/lat_sub,lon_sub/])
-       end do
-    end do
-  else
-    do i=0, numFeatures-1  
-       startSegment = geometry(i, geom_segIndex)
-       numSegments  = geometry(i, geom_numSegs)
-       do seg=startSegment, startSegment+numSegments-1
-          startPT = segments(seg, segs_xyzIndex)
-          endPT   = startPT + segments(seg, segs_numPnts) - 1
-          if(set_fill_color) then
-;---Pick a random color 
-            gnres@gsFillColor = toint(random_uniform(2,cmap_len-2,1))
-          end if
-;---Attach the line segment
-          poly(npl) = gsn_add_polygon(wks, plot, lon(startPT:endPT),  \
-                                      lat(startPT:endPT), gnres)
-          npl = npl + 1
-       end do
-    end do
+;---Get the number of colors
+  if(.not.gnres2.or.(.not.isatt(gnres2,"gsFillColor").and.\
+                     .not.isatt(gnres2,"gsColors"))) then
+    getvalues wks
+      "wkColorMapLen"  : cmap_len
+    end getvalues
+    gnres2          = True   ; Make sure this is True
+    gnres2@gsColors = toint(random_uniform(2,cmap_len-2,numFeatures))
   end if
+
+;;  segments = f->segments
+;;  geometry = f->geometry
+;;  segsDims = dimsizes(segments)
+;;
+;;;---Read global attributes  
+;;  geom_segIndex = f@geom_segIndex
+;;  geom_numSegs  = f@geom_numSegs
+;;  segs_xyzIndex = f@segs_xyzIndex
+;;  segs_numPnts  = f@segs_numPnts
+;;
+;;;---Create array to hold all polylines
+;;  npoly = sum(geometry(:,geom_numSegs)) 
+;;  poly  = new(npoly,graphic)
+;;
+;;;---Section to attach polygons to plot.
+;;  lon = f->x
+;;  lat = f->y
+;;  npl = 0     ; polyline counter
+;;;
+;;; Special check for minlat/maxlat/minlon/maxlon attributes.
+;;;
+;;; If set, then each lat/lon segment will be checked if it's
+;;; in the range.  This can speed up plotting, but I need to
+;;; verify this!
+;;; 
+;;  if(isatt(gnres,"minlon").and.isatt(gnres,"maxlon").and.\
+;;     isatt(gnres,"minlat").and.isatt(gnres,"maxlat")) then
+;;    do i=0, numFeatures-1  
+;;       startSegment = geometry(i, geom_segIndex)
+;;       numSegments  = geometry(i, geom_numSegs)
+;;       do seg=startSegment, startSegment+numSegments-1
+;;          startPT = segments(seg, segs_xyzIndex)
+;;          endPT   = startPT + segments(seg, segs_numPnts) - 1
+;;          lat_sub = lat(startPT:endPT)
+;;          lon_sub = lon(startPT:endPT) 
+;;          if(set_fill_color) then
+;;;---Pick a random color 
+;;            gnres@gsFillColor = toint(random_uniform(2,cmap_len-2,1))
+;;          end if
+;;          if(.not.(all(lon_sub.lt.gnres@minlon).or. \
+;;                   all(lon_sub.gt.gnres@maxlon).or. \
+;;                   all(lat_sub.lt.gnres@minlat).or. \
+;;                   all(lat_sub.gt.gnres@maxlat))) then
+;;;---Attach the line segment
+;;            poly(npl) = gsn_add_polygon(wks, plot, lon_sub, lat_sub, gnres)
+;;            npl = npl + 1
+;;          end if
+;;          delete([/lat_sub,lon_sub/])
+;;       end do
+;;    end do
+;;  else
+;;    do i=0, numFeatures-1  
+;;       startSegment = geometry(i, geom_segIndex)
+;;       numSegments  = geometry(i, geom_numSegs)
+;;       do seg=startSegment, startSegment+numSegments-1
+;;          startPT = segments(seg, segs_xyzIndex)
+;;          endPT   = startPT + segments(seg, segs_numPnts) - 1
+;;          if(set_fill_color) then
+;;;---Pick a random color 
+;;            gnres@gsFillColor = toint(random_uniform(2,cmap_len-2,1))
+;;          end if
+;;;---Attach the line segment
+;;          poly(npl) = gsn_add_polygon(wks, plot, lon(startPT:endPT),  \
+;;                                      lat(startPT:endPT), gnres)
+;;          npl = npl + 1
+;;       end do
+;;    end do
+;;  end if
+;;  return(poly)
+
+;---This is all that's needed in V6.2.0.
+  gnres2@gsSegments = f->segments(:,0)
+  poly = gsn_add_polygon(wks, plot, f->x, f->y, gnres2)
   return(poly)
 end
 
