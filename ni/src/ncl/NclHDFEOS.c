@@ -357,18 +357,9 @@ void _checkGlobalAttributes(HDFEOSFileRecord* thefile, HDFEOSVarInqRec* thevar,
 	char* vstr;
 	char* astr;
 	NclQuark attquark;
-	int sl, al;
-
-	/*
-	*fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-	*/
+	int sl;
 
 	strcpy(varname, NrmQuarkToString(nclvarname));
-
-	/*
-	*fprintf(stderr, "\tvarname: <%s>\n", varname);
-	*/
-
 	strcpy(sufname, NrmQuarkToString(suffix));
 
 	n = 0;
@@ -379,10 +370,6 @@ void _checkGlobalAttributes(HDFEOSFileRecord* thefile, HDFEOSVarInqRec* thevar,
 
 		if(NULL != vstr)
 		{
-			/*
-			*fprintf(stderr, "\t\tatt %d: name <%s>\n", n, attname);
-			*/
-
 			sl = strlen(attname) - 1 - strlen(sufname);
 			attname[sl] = '\0';
 			astr = attname + strlen(varname) + 1;
@@ -704,7 +691,7 @@ static void HDFEOSIntAddIndexedMapVars
 	int i;
 	char *tcp,*cp,*dim1, *dim2;
 	char name_buf[1024];
-	NrmQuark hdf_name1,ncl_name1,hdf_name2,ncl_name2;
+	NrmQuark hdf_name1,ncl_name1,hdf_name2;
 
 	cp = idxmaps;
 	for (i = 0; i < nmaps; i++) {
@@ -733,7 +720,6 @@ static void HDFEOSIntAddIndexedMapVars
 				*tcp = '_';
 			}
 		}
-		ncl_name2 = NrmStringToQuark(dim2);
 		HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),hdf_name1,ncl_name1,sizes[i],
 				swath_hdf_name,swath_ncl_name,the_file->file_path_q);
 		sprintf(name_buf,"%s_index_mapping",dim2);
@@ -823,7 +809,7 @@ int wr_status;
 	void *tmp_value;
 	int32 att_type;
 	int32 att_size;
-	intn nrc,nfd,nlv;
+	intn nfd,nlv;
 	int32 *fldorder = NULL;
 	int32 *fldtype = NULL;
 	float64 projparm[15];
@@ -837,6 +823,16 @@ int wr_status;
 	int32 *field_ranks;
 	int max_fields = 1024;
 	HDFEOSVarInqRecList *vstep;
+
+	NrmQuark dim_names[6];
+	int32 dim_sizes[6];
+
+	int has_xdim = 0;
+	int has_ydim = 0;
+	int has_xdim_var = 0;
+	int has_ydim_var = 0;
+	NrmQuark xdim_name = NrmNULLQUARK;
+	NrmQuark ydim_name = NrmNULLQUARK;
 
 	HDFFileRecord* hdf_file = (HDFFileRecord *)NclMalloc(sizeof(HDFFileRecord));
 
@@ -1160,9 +1156,14 @@ int wr_status;
 			int k;
 			int32 pixregcode;
 			intn status;
-			int has_xdim_var = 0, has_ydim_var = 0;
-			NrmQuark xdim_name = NrmNULLQUARK, ydim_name = NrmNULLQUARK;
 			NrmQuark qproj_name = NrmNULLQUARK;
+
+			has_xdim = 0;
+			has_ydim = 0;
+			has_xdim_var = 0;
+			has_ydim_var = 0;
+			xdim_name = NrmNULLQUARK;
+			ydim_name = NrmNULLQUARK;
 
 			GDid = GDattach(GDfid,NrmQuarkToString(gd_hdf_names[i]));
 			if(! (GDid > 0) ) {
@@ -1318,6 +1319,12 @@ int wr_status;
 				for(j = 0; j < ndims; j++) {
 					HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),dim_hdf_names[j],dim_ncl_names[j],
 							dimsizes[j],gd_hdf_names[i],gd_ncl_names[i],the_file->file_path_q);
+					dim_names[j] = dim_hdf_names[j];
+					dim_sizes[j] = dimsizes[j];
+					if (dim_hdf_names[j] == NrmStringToQuark("XDim")) 
+						has_xdim = 1;
+					if (dim_hdf_names[j] == NrmStringToQuark("YDim")) 
+						has_ydim = 1;
 				}
 				NclFree(dim_hdf_names);
 				NclFree(dim_ncl_names);
@@ -1337,7 +1344,6 @@ int wr_status;
 			HDFEOSParseName(buffer,&var_hdf_names,&var_ncl_names,ndata);
 
 			for(j = 0; j < ndata; j++) {
-				int has_xdim = 0, has_ydim = 0;
 				HDFEOSVarInqRec *data_var = NULL;
 				if (field_ranks[j] > ndims) {
 					if (ndims == 0)
@@ -1354,9 +1360,9 @@ int wr_status;
 					HDFEOSParseName(buffer,&tmp_names,&tmp_ncl_names,tmp_rank);
 					for(k = 0; k < tmp_rank; k++) {
 						if (tmp_names[k] == NrmStringToQuark("XDim")) 
-							has_xdim = 1;
+							++has_xdim;
 						if (tmp_names[k] == NrmStringToQuark("YDim")) 
-							has_ydim = 1;
+							++has_ydim;
 						HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),tmp_names[k],tmp_ncl_names[k],
 								dimsizes[k],gd_hdf_names[i],gd_ncl_names[i],the_file->file_path_q);
 					}
@@ -1409,28 +1415,23 @@ int wr_status;
 					  NrmQuarkToString(gd_hdf_names[i]));
 			}
 			else {
-				NrmQuark dim_names[2];
-				int32 dim_sizes[2];
-
-				dim_names[1] = NrmStringToQuark("XDim");
-				HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),dim_names[1],dim_names[1],
-						xdimsize,gd_hdf_names[i],gd_ncl_names[i],the_file->file_path_q);
-				dim_names[0] = NrmStringToQuark("YDim");
-				HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),dim_names[0],dim_names[0],
-						ydimsize,gd_hdf_names[i],gd_ncl_names[i],the_file->file_path_q);
+				if((!has_xdim_var) && (has_xdim))
+				{
+					dim_names[1] = NrmStringToQuark("XDim");
+					HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),dim_names[1],dim_names[1],
+							xdimsize,gd_hdf_names[i],gd_ncl_names[i],the_file->file_path_q);
+				}
+				if((!has_ydim_var) && (has_ydim))
+				{
+					dim_names[0] = NrmStringToQuark("YDim");
+					HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),dim_names[0],dim_names[0],
+							ydimsize,gd_hdf_names[i],gd_ncl_names[i],the_file->file_path_q);
+				}
 				dim_sizes[0] = ydimsize;
 				dim_sizes[1] = xdimsize;
 				if (projcode == GCTP_GEO) { /* 1D coordinate */
 					HDFEOSVarInqRec *var = NULL;
-					if (! has_xdim_var) {
-						the_file->n_vars++;
-						HDFEOSIntAddVar(&(the_file->vars),NrmStringToQuark("lon"),NrmStringToQuark("XDim"),
-								the_file->dims,1,&(dim_sizes[1]),DFNT_FLOAT64,&(dim_names[1]),
-								GRID,gd_hdf_names[i],gd_ncl_names[i]);
-						var = the_file->vars->var_inq;
-
-					}
-					else {
+					if (has_xdim_var) {
 						/* some files provide coordinate variables, we don't need to duplicate */
 						for (vstep = the_file->vars; vstep != NULL; vstep = vstep->next) {
 							if (vstep->var_inq->hdf_name == NrmStringToQuark("XDim")) {
@@ -1438,6 +1439,15 @@ int wr_status;
 								break;
 							}
 						}
+					}
+					else if(has_xdim)
+					{
+						the_file->n_vars++;
+						HDFEOSIntAddVar(&(the_file->vars),NrmStringToQuark("lon"),NrmStringToQuark("XDim"),
+								the_file->dims,1,&(dim_sizes[1]),DFNT_FLOAT64,&(dim_names[1]),
+								GRID,gd_hdf_names[i],gd_ncl_names[i]);
+						var = the_file->vars->var_inq;
+
 					}
 					if (var) {
 						tmp_value = (void*)NclMalloc(sizeof(NclQuark));
@@ -1452,14 +1462,7 @@ int wr_status;
 						HDFEOSIntAddAtt(var,NrmStringToQuark("projection"),(void*)tmp_value,1,NCL_string);
 					}
 					var = NULL;
-					if (! has_ydim_var) {
-						the_file->n_vars++;
-						HDFEOSIntAddVar(&(the_file->vars),NrmStringToQuark("lat"),NrmStringToQuark("YDim"),
-								the_file->dims,1,&(dim_sizes[0]),DFNT_FLOAT64,&(dim_names[0]),
-								GRID,gd_hdf_names[i],gd_ncl_names[i]);
-						var = the_file->vars->var_inq;
-					}
-					else {
+					if (has_ydim_var) {
 						/* some files provide coordinate variables, we don't need to duplicate */
 						for (vstep = the_file->vars; vstep != NULL; vstep = vstep->next) {
 							if (vstep->var_inq->hdf_name == NrmStringToQuark("YDim")) {
@@ -1467,6 +1470,15 @@ int wr_status;
 								break;
 							}
 						}
+					}
+					else if(has_ydim)
+					{
+						the_file->n_vars++;
+						HDFEOSIntAddVar(&(the_file->vars),NrmStringToQuark("lat"),NrmStringToQuark("YDim"),
+								the_file->dims,1,&(dim_sizes[0]),DFNT_FLOAT64,&(dim_names[0]),
+								GRID,gd_hdf_names[i],gd_ncl_names[i]);
+						var = the_file->vars->var_inq;
+
 					}
 					if (var) {
 						tmp_value = (void*)NclMalloc(sizeof(NclQuark));
@@ -1575,7 +1587,6 @@ int wr_status;
 			nlv = PTnlevels(PTid);
 			if(nlv > 0) {
 				for(j = 0; j < nlv; j++) {
-					nrc = PTnrecs(PTid,j);
 					nfd = PTnfields(PTid,j,&bsize);
 					if (bsize + 1 > cur_buf_size) {
 						buffer = NclRealloc(buffer,bsize + 1);
@@ -1982,6 +1993,86 @@ NclQuark thevar;
 	return NULL;
 }
 
+void myGDij2ll(int32 xdimsize, int32 ydimsize,
+		float64 upleftpt[], float64 lowrightpt[],
+		int32 npnts, int32 row[], int32 col[],
+		float64 longitude[], float64 latitude[], int32 pixcen, int32 pixcnr)
+{
+	intn            i;		/* Loop index */
+
+	float64         pixadjX;	/* Pixel adjustment (x) */
+	float64         pixadjY;	/* Pixel adjustment (y) */
+	float64         lonrad0;	/* Longitude in radians of upleft point */
+	float64         latrad0;	/* Latitude in radians of upleft point */
+	float64         scaleX;	/* X scale factor */
+	float64         scaleY;	/* Y scale factor */
+	float64         lonrad;	/* Longitude in radians of point */
+	float64         latrad;	/* Latitude in radians of point */
+
+	/* Compute adjustment of position within pixel */
+	if (pixcen == HDFE_CENTER)
+	{
+		/* Pixel defined at center */
+		pixadjX = 0.5;
+		pixadjY = 0.5;
+	}
+	else
+	{
+		switch (pixcnr)
+		{
+			case HDFE_GD_UL:
+				/* Pixel defined at upper left corner */
+				pixadjX = 0.0;
+				pixadjY = 0.0;
+				break;
+			case HDFE_GD_UR:
+				/* Pixel defined at upper right corner */
+				pixadjX = 1.0;
+				pixadjY = 0.0;
+				break;
+			case HDFE_GD_LL:
+				/* Pixel defined at lower left corner */
+				pixadjX = 0.0;
+				pixadjY = 1.0;
+				break;
+			case HDFE_GD_LR:
+				/* Pixel defined at lower right corner */
+				pixadjX = 1.0;
+				pixadjY = 1.0;
+				break;
+		}
+	}
+
+	/* GEO projection */
+
+	/*
+	 * Note: lonrad, lonrad0, latrad, latrad0 are actually in degrees for
+	 * the GEO projection case.
+	 */
+
+	/* Convert upleft and lowright X coords from DMS to degrees */
+	lonrad0 = upleftpt[0];
+	lonrad = lowrightpt[0];
+
+	/* Compute x scale factor */
+	scaleX = (lonrad - lonrad0) / xdimsize;
+
+	/* Convert upleft and lowright Y coords from DMS to degrees */
+	latrad0 = upleftpt[1];
+	latrad = lowrightpt[1];
+
+	/* Compute y scale factor */
+	scaleY = (latrad - latrad0) / ydimsize;
+
+	/* For each point ... */
+	for (i = 0; i < npnts; i++)
+	{
+	    /* Convert to lon/lat (decimal degrees) */
+	    longitude[i] = (col[i] + pixadjX) * scaleX + lonrad0;
+	    latitude[i] = (row[i] + pixadjY) * scaleY + latrad0;
+	}
+}
+
 static int ReadCoordVar
 (int32 GDid, HDFEOSVarInqRec *var, int32 *start, int32 *stride, int32 *edge, void *storage)
 {
@@ -2063,6 +2154,35 @@ static int ReadCoordVar
 
 	GDij2ll(projcode,zonecode,projparm,spherecode,xdimsize,ydimsize,
 		upper_left,lower_right,total,rows,cols,longitude,latitude,pixregcode,origincode);
+
+	if((GCTP_GEO == projcode) &&
+           (1000.0 > fabs(upper_left[0])) && ( 1000.0 > fabs(lower_right[0])) &&
+           (1000.0 > fabs(upper_left[1])) && ( 1000.0 > fabs(lower_right[1])))
+	{
+		short recompute = 0;
+		float64 scale = 0.0;
+		float64 delt = 0.0;
+
+		if(islon)
+		{
+        		scale = (upper_left[0] - lower_right[0]) / xdimsize;
+			delt = longitude[1] - longitude[0];
+		}
+		else
+		{
+        		scale = (upper_left[1] - lower_right[1]) / ydimsize;
+			delt = latitude[1] - latitude[0];
+		}
+
+		if(0.5*fabs(delt) < fabs(fabs(scale) - fabs(delt)))
+			recompute = 1;
+
+		if(recompute)
+		{
+			myGDij2ll(xdimsize,ydimsize,upper_left,lower_right,
+				total,rows,cols,longitude,latitude,pixregcode,origincode);
+		}
+	}
 				
 	if (islon)
 		NclFree(latitude);
@@ -2300,6 +2420,6 @@ NclFormatFunctionRecPtr HDFEOSAddFileFormat
 ()
 #endif
 {
-	
 	return(&HDFEOSRec);
 }
+
