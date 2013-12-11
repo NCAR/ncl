@@ -768,6 +768,7 @@ NclHDF5data_t *_NclHDF5get_data_with_name(hid_t fid, char *dataset_name, NclHDF5
                                                       component,
                                                       &is_str);
                 NclHDF5data->value = (void *) uc_value;
+                NclHDF5data->is_str = is_str;
 
 #if 0
                 _NclHDF5Print_data_value(NclHDF5data->value, NclHDF5data->ndims,

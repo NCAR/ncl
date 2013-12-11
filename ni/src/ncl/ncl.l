@@ -685,6 +685,16 @@ inttype [bBChHiIlLqQ]
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return FVAR;
 }
+"->"{file_grp_var_compound_alnum}+ {
+	char *tmp;
+
+	tmp = yytext + 2;
+
+	strcpy(yylval.str,tmp);
+	printtoken(FVAR,yylval.str);
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+	return FVAR;
+}
 "->"{alnum}+ {
 	char *tmp;
 
