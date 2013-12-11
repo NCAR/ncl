@@ -2,7 +2,7 @@
 # 
 # This script is attempt to make it easier to build and install all the
 # optional and non-optional external software packages needed for
-# NCL/NCAR Graphics V5.2.0.
+# NCL/NCAR Graphics V6.2.0.
 # 
 # You will need to read through the notes below, to:
 # 
@@ -13,50 +13,50 @@
 # Software packages to install:
 # 
 # NCL/NCARG:
-#   zlib-1.2.3             NCL:   required 
-#                          NCARG: optional (needed for PNG, HDF4.2r4,
+#   zlib-x.y.z             NCL:   required 
+#                          NCARG: optional (needed for PNG, HDF4,
 #                                           classic NetCDF-4)
 #
-#   jpeg-6b                NCL:   required 
-#                          NCARG: optional (needed for HDF4.2r4)
+#   jpeg-xx                NCL:   required 
+#                          NCARG: optional (needed for HDF4)
 #      Note: jpeg-7 is being warned against by HDF4 folks
 # 
-#   libpng-1.2.41          NCL:   optional (needed for GRIB2 or PNG support)
+#   libpng-x.y.z           NCL:   optional (needed for GRIB2 or PNG support)
 #                          NCARG: optional (needed for PNG)
 #                          
-#   HDF-4.2.5              NCL:   required
+#   HDF-x.y.z              NCL:   required
 #                          NCARG: optional 
 # 
-#   pkg-config-0.23        NCL/NCARG: optional (needed for cairo support)
-#   expat-2.0.1            NCL/NCARG: optional (needed for cairo support)
-#   freetype-2.3.11        NCL/NCARG: optional (needed for cairo support)
-#   fontconfig-2.8.0       NCL/NCARG: optional (needed for cairo support)
-#   pixman-0.16.4          NCL/NCARG: optional (needed for cairo support)
-#   cairo-1.8.6            NCL/NCARG: optional (needed for cairo support)
+#   pkg-config-x.y         NCL/NCARG: optional (needed for cairo support)
+#   expat-x.y.z            NCL/NCARG: optional (needed for cairo support)
+#   freetype-x.y.z         NCL/NCARG: optional (needed for cairo support)
+#   fontconfig-x.y.z       NCL/NCARG: optional (needed for cairo support)
+#   pixman-x.y.z           NCL/NCARG: optional (needed for cairo support)
+#   cairo-x.y.z            NCL/NCARG: optional (needed for cairo support)
 #
 # NCL only:
-#   hdf5-1.8.6             Required if you want classic NetCDF-4 support
-#   szip-2.1               Required if you want classic NetCDF-4 support
-#   jasper-1.900.1         Required if you want GRIB2 support
-#   g2clib-1.1.9           Required if you want GRIB2 support
-#   gdal-1.6.3             Required if you want GDAL support
-#   netcdf-4.1.2           Required (classic NetCDF-4 support is optional)
-#   proj-4.7.0             Required if you want GDAL support
-#   udunits-2.1.14         Required if you want ut_calendar/ut_inv_calendar
-#   HDF-EOS2.16v1.00       Required if you want HDF-EOS 2 support
-#   HDF-EOS5.1.12          Required if you want HDF-EOS 5 support
-#   vis5d+-1.3.0           Required if you want v5d* functions
+#   hdf5-x.y.z             Required if you want classic NetCDF-4 support
+#   szip-x.y.z             Required if you want classic NetCDF-4 support
+#   curl-x.y.z             Required if you want OPeNDAP support in NetCDF
+#   jasper-x.y.z           Required if you want GRIB2 support
+#   g2clib-x.y.z           Required if you want GRIB2 support
+#   gdal-x.y.z             Required if you want GDAL support
+#   netcdf-x.y.z           Required (classic NetCDF-4 support is optional)
+#   proj-x.y.z             Required if you want GDAL support
+#   udunits-x.y.z          Required if you want ut_calendar/ut_inv_calendar
+#   hdfeos-x.y.z           Required if you want HDF-EOS 2 support
+#   hdfeos5-x.y.z          Required if you want HDF-EOS 5 support
+#   vis5d+-x.y.z           Required if you want v5d* functions
 #
 #   These next packages should no longer be required because NetCDF-4.1
 #   contains OPeNDAP. However, we keep them here because some of
-#   these libraries (like curl and xml2) might be needed by other
+#   these libraries (like xml2) might be needed by other
 #   packages.
 #
-#   openssl-0.9.8l         Required if you want OPeNDAP support
-#   curl-7.19.7            Required if you want OPeNDAP support
-#   libxml2-2.7.6          Required if you want OPeNDAP support
-#   libdap-3.8.2           Required if you want OPeNDAP support
-#   libnc-dap-3.7.4        Required if you want OPeNDAP support
+#   openssl-x.y.z          Required if you want OPeNDAP support
+#   libxml2-x.y.z          Required if you want OPeNDAP support
+#   libdap-x.y.z           Required if you want OPeNDAP support
+#   libnc-dap-x.y.z        Required if you want OPeNDAP support
 
 # Parent location for installing external software
 PREFIX=/usr/local
@@ -66,9 +66,8 @@ export CC=gcc
 export CXX=g++
 export FC=gfortran
 export F77=gfortran
-export F90=""
-# Be sure to include extra flag for Udunits build.
-export CFLAGS='-fPIC -Df2cFortran'
+export F90=gfortran
+export CFLAGS=-fPIC
 export FFLAGS=-fPIC
 export F90FLAGS=-fPIC
 export CXXFLAGS=-fPIC
@@ -81,7 +80,7 @@ export PATH="$PREFIX/bin:$PATH"
 # was one). Only set it if the large file stuff doesn't work with NetCDF4.
 # export CPPFLAGS='-D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_LARGEFILE_SOURCE'.
 
-#CLEAN_BEFORE=1                      # Whether to clean before making
+CLEAN_BEFORE=1                      # Whether to clean before making
 #CLEAN_AFTER=1                       # Whether to clean after making
 
 # Indicate which packages you want. These are listed in the order
@@ -94,30 +93,27 @@ INSTALL_SZIP=1
 INSTALL_HDF5=1
 INSTALL_HDFEOS5=1
 INSTALL_HDF4=1
-#INSTALL_NETCDF=1   # If don't need classic NetCDF-4 support
-INSTALL_NETCDF4=1   # If need classic NetCDF-4 support
+INSTALL_HDFEOS=1
+INSTALL_NETCDF4=1
+INSTALL_NETCDF4_FORTRAN=1
+INSTALL_NETCDF3_CXX=1
 INSTALL_PROJ4=1
 INSTALL_GDAL=1
 INSTALL_G2CLIB=1
 INSTALL_UDUNITS=1
-INSTALL_VIS5DPLUS=1
+#INSTALL_VIS5DPLUS=1
 INSTALL_PKGCONFIG=1
 INSTALL_EXPAT=1
 INSTALL_FREETYPE=1
 INSTALL_FONTCONFIG=1
 INSTALL_PIXMAN=1
 INSTALL_CAIRO=1
+INSTALL_CURL=1
+
 #INSTALL_OPENSSL=1 NOT NEEDED B/C PART OF NETCDF-4.1
-#INSTALL_CURL=1 NOT NEEDED B/C PART OF NETCDF-4.1
 #INSTALL_XML2=1
 #INSTALL_DAP=1 NOT NEEDED B/C PART OF NETCDF-4.1
 #INSTALL_NCDAP=1 NOT NEEDED B/C PART OF NETCDF-4.1
-
-# HDF-EOS cannot be built by this script. It requires running
-# an interactive script, "bin/INSTALL-HDFEOS".  You can't use
-# the "configure" script with HDF-EOS, because it won't work
-# with the way HDF-4 needs to be built (--disable-netcdf).
-# INSTALL_HDFEOS=1
 
 #----------------------------------------------------------------------
 # End of user modification section.
@@ -153,39 +149,39 @@ fi
 # Software directories, sorted alphabetically
 #--------------------------------------------------------------------
 
-G2CLIB_DIR="g2clib-1.1.9"
-GDAL_DIR="gdal-1.6.3"
-HDF4_DIR="hdf-4.2.5"
-HDF5_DIR="hdf5-1.8.6"
-HDFEOS5_DIR="hdfeos5-1.12"
+G2CLIB_DIR="g2clib-1.4.0-patch"
+GDAL_DIR="gdal-1.10.0"
+HDF4_DIR="hdf-4.2.9"
+HDF5_DIR="hdf5-1.8.11"
+HDFEOS_DIR="hdfeos-2.18"
+HDFEOS5_DIR="hdfeos5-1.14"
 JASPER_DIR="jasper-1.900.1"
 JPEG_DIR="jpeg-6b"
-NETCDF_DIR="netcdf-4.1.2"
-PNG_DIR="libpng-1.2.41"
-PROJ4_DIR="proj-4.7.0"
+NETCDF_DIR="netcdf-4.3.0"
+NETCDF4_FORTRAN_DIR="netcdf-fortran-4.2"
+NETCDF3_CXX_DIR="netcdf-cxx-4.2"
+NETCDF_ESMF_DIR="netcdf-4.1.3"
+PNG_DIR="libpng-1.2.50"
+PROJ4_DIR="proj-4.8.0"
 SZIP_DIR="szip-2.1"
-UDUNITS_DIR="udunits-2.1.14"
+UDUNITS_DIR="udunits-2.1.24"
 VIS5DPLUS_DIR="vis5d+-1.3.0"
-ZLIB_DIR="zlib-1.2.3"
-PKGCONFIG_DIR="pkg-config-0.23"
-EXPAT_DIR="expat-2.0.1"
-FREETYPE_DIR="freetype-2.3.11"
-FONTCONFIG_DIR="fontconfig-2.8.0"
-PIXMAN_DIR="pixman-0.16.4"
-CAIRO_DIR="cairo-1.8.8"
-OPENSSL_DIR="openssl-0.9.8l"
-CURL_DIR="curl-7.19.7"
-XML2_DIR="libxml2-2.7.6"
+ZLIB_DIR="zlib-1.2.8"
+PKGCONFIG_DIR="pkg-config-0.30.0"
+EXPAT_DIR="expat-2.1.0"
+FREETYPE_DIR="freetype-2.5.0.1"
+FONTCONFIG_DIR="fontconfig-2.10.93"
+PIXMAN_DIR="pixman-0.30.0"
+CAIRO_DIR="cairo-1.12.16"
+OPENSSL_DIR="openssl-1.0.0c"
+CURL_DIR="curl-7.33.0"
+XML2_DIR="libxml2-2.7.8"
 DAP_DIR="libdap-3.8.2"
 NC_DIR="libnc-dap-3.7.4"
 
-# HDF-EOS cannot be built by this script. It requires running
-# an interactive script, "bin/INSTALL-HDFEOS".
-# HDFEOS_DIR="hdfeos-1.16"
-#
-# Also, on LINUX systems, you will need to do one of :
+# On LINUX systems, you will need to do one of:
 # export LINUX_BRAND linux32
-# export LINUX_BRAND linux64
+export LINUX_BRAND linux64
 
 #
 # The following section should not need any modification by 
@@ -207,7 +203,7 @@ if [ $INSTALL_ZLIB ]
       make clean
     fi
     echo "Building $ZLIB_DIR..."
-    ./configure --prefix\=$PREFIX
+    ./configure --prefix\=$PREFIX --static
     make all install
     if [ $? ]
     then
@@ -324,7 +320,8 @@ if [ $INSTALL_JASPER ]
       make clean
     fi
     echo "Building $JASPER_DIR..."
-    ./configure --prefix\=$PREFIX
+# Need --includedir to point to jpeg include files.      
+    ./configure --prefix\=$PREFIX --includedir\=$PREFIX/include
     make all install
     if [ $? ]
     then
@@ -435,10 +432,11 @@ if [ $INSTALL_HDFEOS5 ]
       make clean
     fi
     echo "Building $HDFEOS5_DIR..."
-    export CFLAGS_HE5="$CFLAGS -DH5_USE_16_API"
+# Might need this on a Mac and other systems?
 #    ./configure --enable-static --with-hdf\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
 #    ./configure --with-hdf5\=$PREFIX CFLAGS\=$CFLAGS_HE5 --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
-    ./configure CC\=$PREFIX/bin/h5cc CFLAGS\=$CFLAGS_HE5 --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
+#    export CFLAGS_HE5="$CFLAGS -DH5_USE_16_API"
+    ./configure CC\=$PREFIX/bin/h5cc --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
     make all install
     cp include/HE5_HdfEosDef.h include/HE5_GctpFunc.h $PREFIX/include/.
     if [ $? ]
@@ -477,11 +475,11 @@ if [ $INSTALL_HDF4 ]
     fi
     echo "Building $HDF4_DIR..."
     ./configure  --disable-netcdf --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX --includedir\=$PREFIX/include/hdf
-# This is for MacOS 10.6 systems
-#    export MACOSX_DEPLOYMENT_TARGET=10.6
-#    export CFLAGS_HDF4="$CFLAGS -Os -arch i386 -arch ppc -arch x86_64 -arch ppc64"
-#    export CFLAGS_HDF4="$CFLAGS -Os -arch x86_64"
-#    ./configure --disable-netcdf --disable-dependency-tracking CFLAGS\=$CFLAGS_\HDF4 --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX --includedir\=\$PREFIX/include/hdf
+# This is for MacOS 10.8 systems
+#    export MACOSX_DEPLOYMENT_TARGET=10.8
+#    export CFLAGSHDF4="$CFLAGS -Os -arch i386 -arch ppc -arch x86_64 -arch ppc64"
+#    export CFLAGSHDF4="$CFLAGS -Os -arch x86_64"
+#    ./configure --disable-netcdf --disable-dependency-tracking CFLAGS\=$CFLAGSHDF4 --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX --includedir\=\$PREFIX/include/hdf
     make all install
     if [ $? ]
     then
@@ -503,9 +501,48 @@ else
   echo "Not building HDF4..."
 fi
 
+#--------------------------------------------------------------------
+# HDF-EOS 2
+#--------------------------------------------------------------------
+if [ $INSTALL_HDFEOS ]
+  then
+  if [ -d "$HDFEOS_DIR" ]
+  then
+    cd $HDFEOS_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $HDFEOS_DIR before making..."
+      make distclean
+      make clean
+    fi
+    echo "Building $HDFEOS_DIR..."
+#    export CFLAGSHE2="$CFLAGS -I$PREFIX/include/hdf"
+#    ./configure --with-hdf4\=$PREFIX --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX CFLAGS\=$CFLAGSHE2
+    ./configure CC\=$PREFIX/bin/h4cc --with-hdf4\=$PREFIX --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX
+    make all install
+    cp include/HdfEosDef.h include/ease.h include/cfortHdf.h $PREFIX/include/.
+    if [ $? ]
+    then
+      echo "$HDFEOS_DIR build successful."
+      if [ $CLEAN_AFTER ]
+      then
+        echo "Cleaning $HDFEOS_DIR after making..."
+        make distclean
+        make clean
+      fi
+    else
+      echo "$HDFEOS_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $HDFEOS_DIR doesn't exist"
+  fi
+else
+  echo "Not building HDFEOS..."
+fi
 
 #--------------------------------------------------------------------
-# NetCDF (this section handles regular NetCDF or classic NetCDF-4)
+# NetCDF C interface (this section handles regular NetCDF or classic NetCDF-4)
 #--------------------------------------------------------------------
 if [ "$INSTALL_NETCDF" -o "$INSTALL_NETCDF4" ]
 then
@@ -523,17 +560,14 @@ then
     then
       ./configure --disable-f90 --prefix\=$PREFIX
     else
-# This is for NetCDF 4.1.2.
+# This is for NetCDF 4.2
       export LDFLAGS="-L$PREFIX/lib"
       export CPPFLAGS="-I$PREFIX/include"
-      ./configure --enable-netcdf-4 --enable-opendap --disable-f90 --disable-shared --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX --enable-large-file-tests --enable-dap-remote-tests
-# This is for NetCDF 4.0.1.
-#      ./configure --enable-netcdf-4 --disable-f90 --disable-shared --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
+      ./configure --enable-netcdf-4 --enable-dap --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
     fi
     make all install
 # This extra install needed b/c build sometimes fails on missing TeX pieces.
     make install
-    make check
     if [ $? ]
     then
       if [ $INSTALL_NETCDF ]
@@ -561,7 +595,133 @@ then
     echo "Directory $NETCDF_DIR doesn't exist"
   fi
 else
-  echo "Not building NetCDF..."
+  echo "Not building NetCDF C interface..."
+fi
+
+#--------------------------------------------------------------------
+# NetCDF-fortran (this is for the Fortran interface only, for ESMF)
+#--------------------------------------------------------------------
+if [ "$INSTALL_NETCDF4_FORTRAN" ]
+then
+  if [ -d "$NETCDF4_FORTRAN_DIR" ]
+  then
+    cd $NETCDF4_FORTRAN_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $NETCDF4_FORTRAN_DIR before making..."
+      make distclean
+      make clean
+    fi
+    echo "Building $NETCDF4_FORTRAN_DIR..."
+# This is for NetCDF 4.2
+    export CPPFLAGS="-I$PREFIX/include"
+    export LDFLAGS="-L$PREFIX/lib"
+    ./configure --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
+    make all install
+# This extra install needed b/c build sometimes fails on missing TeX pieces.
+    make install
+    if [ $? ]
+    then
+      echo "$NETCDF4_FORTRAN_DIR build successful."
+      if [ $CLEAN_AFTER ]
+      then
+        echo "Cleaning $NETCDF4_FORTRAN_DIR after making..."
+        make distclean
+        make clean
+      fi
+    else
+      echo "$NETCDF4_FORTRAN_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $NETCDF4_FORTRAN_DIR doesn't exist"
+  fi
+else
+  echo "Not building NetCDF Fortran interface..."
+fi
+
+#--------------------------------------------------------------------
+# NetCDF-CXX (this is for the C++ netcdf-3 interface only, for ESMF)
+#--------------------------------------------------------------------
+if [ "$INSTALL_NETCDF3_CXX" ]
+then
+  if [ -d "$NETCDF3_CXX_DIR" ]
+  then
+    cd $NETCDF3_CXX_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $NETCDF3_CXX_DIR before making..."
+      make distclean
+      make clean
+    fi
+    echo "Building $NETCDF3_CXX_DIR..."
+# This is for NetCDF 4.2
+    export CPPFLAGS="-I$PREFIX/include"
+    export LDFLAGS="-L$PREFIX/lib"
+    ./configure --disable-shared --prefix\=$PREFIX  --enable-large-file-tests
+    make all install
+    if [ $? ]
+    then
+      echo "$NETCDF3_CXX_DIR build successful."
+      if [ $CLEAN_AFTER ]
+      then
+        echo "Cleaning $NETCDF3_CXX_DIR after making..."
+        make distclean
+        make clean
+      fi
+    else
+      echo "$NETCDF3_CXX_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $NETCDF3_CXX_DIR doesn't exist"
+  fi
+else
+  echo "Not building NetCDF C++ interface..."
+fi
+
+#--------------------------------------------------------------------
+# NetCDF interface for ESMF
+#--------------------------------------------------------------------
+if [ "$INSTALL_NETCDF4_FOR_ESMF"]
+then
+  if [ -d "$NETCDF_ESMF_DIR" ]
+  then
+    cd $NETCDF_ESMF_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $NETCDF_ESMF_DIR before making..."
+      make distclean
+      make clean
+    fi
+    echo "Building $NETCDF_ESMF_DIR..."
+    export LDFLAGS="-L$PREFIX/lib"
+    export CPPFLAGS="-I$PREFIX/include"
+    export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
+# Might be needed for other systems, like Macs.
+#    export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto"
+    ./configure --enable-netcdf-4 --enable-dap --disable-shared --prefix\=$PREFIX/esmfnetcdf  --enable-large-file-tests --enable-dap-remote-tests
+    make all install
+# This extra install needed b/c build sometimes fails on missing TeX pieces.
+    make install
+    if [ $? ]
+    then
+      echo "$NETCDF_ESMF_DIR build successful."
+      if [ $CLEAN_AFTER ]
+      then
+        echo "Cleaning $NETCDF_ESMF_DIR after making..."
+        make distclean
+        make clean
+      fi
+    else
+      echo "$NETCDF_ESMF_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $NETCDF_ESMF_DIR doesn't exist"
+  fi
+else
+  echo "Not building NetCDF for ESMF..."
 fi
 
 #--------------------------------------------------------------------
@@ -654,7 +814,7 @@ if [ $INSTALL_GDAL ]
       make clean
     fi
     echo "Building $GDAL_DIR..."
-    ./configure --with-static-proj4\=$PREFIX --prefix\=$PREFIX --without-pam --with-png\=$PREFIX --with-gif=internal --with-libtiff=internal --with-geotiff=internal --with-jpeg\=$PREFIX --with-libz\=$PREFIX --with-sqlite3=no --with-expat=no --with-curl=no --without-ld-shared --with-hdf4=no --with-hdf5=no --with-pg=no --without-grib --disable-shared
+    ./configure --with-static-proj4\=$PREFIX --prefix\=$PREFIX --without-pam --with-png\=$PREFIX --with-gif=internal --with-libtiff=internal --with-geotiff=internal --with-jpeg\=$PREFIX --with-libz\=$PREFIX --with-sqlite3=no --with-expat=no --with-curl=no --without-ld-shared --with-hdf4=no --with-hdf5=no --with-pg=no --without-grib --disable-shared --with-freexl=no --with-geos=no --with-openjpeg=no --with-mysql=no --with-ecw=no --with-fdgb=no --with-odbc=no
     make all install
     make install
     if [ $? ]
@@ -914,6 +1074,7 @@ fi
 # pixman
 #--------------------------------------------------------------------
 if [ $INSTALL_PIXMAN ]
+  export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
   then
   if [ -d "$PIXMAN_DIR" ]
   then
@@ -925,8 +1086,10 @@ if [ $INSTALL_PIXMAN ]
       make clean
     fi
     echo "Building $PIXMAN_DIR..."
-    ./configure --prefix\=$PREFIX --disable-shared
+    ./configure --prefix\=$PREFIX --disable-shared --disable-openmp --disable-arm-iwmmxt --disable-dependency-tracking
     make all install
+# Need this because some test fails with undefined "_lgc_seed"
+    make install
     if [ $? ]
     then
       echo "$PIXMAN_DIR build successful."
@@ -966,7 +1129,6 @@ if [ $INSTALL_CAIRO ]
     ./configure --prefix\=$PREFIX --disable-shared
 # This is for MacOS systems
 #    ./configure --prefix\=$PREFIX --enable-quartz-font=no --enable-quartz=no --enable-shared=no --enable-static=yes
-
     make all install
     if [ $? ]
     then
