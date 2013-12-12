@@ -3290,7 +3290,7 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                        *fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(var_name));
                        *fprintf(stderr, "\tcomponent_name: <%s>, struct_name: <%s>\n",
                        *                   component_name, struct_name);
-                       */
+		       */
 
                         compnode = _getComponentNodeFromVarNode(varnode, component_name);
 
@@ -3300,7 +3300,10 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                        *fprintf(stderr, "\tcompnode->nvals: %d\n", compnode->nvals);
                        */
 
-                        val = (void*)NclMalloc(total_elements * compnode->nvals * _NclSizeOf(compnode->type));
+                        if(NCL_string == compnode->type)
+                            val = (void*)NclMalloc(total_elements * _NclSizeOf(compnode->type));
+                        else
+                            val = (void*)NclMalloc(total_elements * compnode->nvals * _NclSizeOf(compnode->type));
 
                         (*thefile->advancedfile.format_funcs->read_var)
                          (thefile->advancedfile.grpnode,
@@ -4597,9 +4600,17 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                 {
                     i = n_dims_output;
                     (dim_info)[i].dim_num = i;
-                    (dim_info)[i].dim_size = (ng_size_t)compnode->nvals;
                     (dim_info)[i].dim_quark = compnode->name;
-                    output_dim_sizes[i] = compnode->nvals;
+                    if(NCL_string == compnode->type)
+                    {
+                        (dim_info)[i].dim_size = 1;
+                        output_dim_sizes[i] = 1;
+                    }
+                    else
+                    {
+                        (dim_info)[i].dim_size = (ng_size_t)compnode->nvals;
+                        output_dim_sizes[i] = compnode->nvals;
+                    }
                     ++n_dims_output;
                 }
             }

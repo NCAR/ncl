@@ -2344,7 +2344,10 @@ herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode **node)
             subtype = H5Tget_member_type(type, i);
             typename = _getH5typeName(subtype, i+4);
             compnode->type = string2NclType(typename);
-            compnode->nvals = (int) (H5Tget_size(subtype) / _NclSizeOf(compnode->type));
+            if(0 == strcmp("string", typename))
+                compnode->nvals = (int) H5Tget_size(subtype);
+            else
+                compnode->nvals = (int) (H5Tget_size(subtype) / _NclSizeOf(compnode->type));
             compnode->rank = i;
             compnode->sides = NULL;
             compnode->value = NULL;
@@ -3460,15 +3463,13 @@ void *_getH5compoundAsList(hid_t fid, NclFileVarNode *varnode)
 
     NclList complist;
 
-    void *values;
-
     NclVar compvar;
+    void *values;
 
     ng_size_t one = 1;
 
     ng_size_t dimsizes[H5S_MAX_RANK];
     ng_size_t dimnames[H5S_MAX_RANK];
-    char      buffer[MAX_NCL_NAME_LENGTH];
 
     NclMultiDValData comp_md;
     int *id = (int *)NclMalloc(sizeof(int));
@@ -3479,6 +3480,8 @@ void *_getH5compoundAsList(hid_t fid, NclFileVarNode *varnode)
     hid_t datatype_id = -1;
     hid_t component_datasize = 1;
     hid_t str_type = 0;
+
+    int i = 0;
 
   /*
    *fprintf(stderr, "\nEnter _getH5compoundAsList, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -3523,52 +3526,62 @@ void *_getH5compoundAsList(hid_t fid, NclFileVarNode *varnode)
         compnode = &(varnode->comprec->compnode[n]);
 
         component_name = NrmQuarkToString(compnode->name);
-        strcpy(buffer, _NclBasicDataTypeToName(compnode->type));
-
-        component_datasize = _NclSizeOf(compnode->type);
-        datatype_id = H5Tcreate( H5T_COMPOUND, component_datasize);
-        values = (void *)NclCalloc(size, component_datasize);
-        assert(values);
 
         if(NCL_string == compnode->type)
         {
+            char* cstr = (void *)NclCalloc(1 + compnode->nvals, 1);
+            char* carray = (void *)NclCalloc(size * compnode->nvals, 1);
+            NrmQuark* qvals = (void*) NclCalloc(size, sizeof(NrmQuark));
+            assert(qvals);
+            assert(carray);
+            assert(cstr);
+
             str_type = H5Tcopy(H5T_C_S1);
-            status = H5Tset_size(str_type, component_datasize);
+            status = H5Tset_size(str_type, compnode->nvals);
+            datatype_id = H5Tcreate( H5T_COMPOUND, compnode->nvals);
             H5Tinsert(datatype_id, component_name, 0, str_type);
-        }
-        else
-        {
-            H5Tinsert(datatype_id, component_name, 0,
-                      Ncltype2HDF5type(compnode->type));
-        }
 
-        status = H5Dread(did, datatype_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, values);
+            status = H5Dread(did, datatype_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, carray);
 
-        if(0 != status)
-        {
-            fprintf(stderr, "\nError in file: %s, line: %d\n", __FILE__, __LINE__);
-        }
+            for(i = 0; i < size; ++i)
+            {
+                memcpy(cstr, i+carray, compnode->nvals);
+                qvals[i] = NrmStringToQuark(cstr);
+            }
 
-        H5Tclose(datatype_id);
+            NclFree(cstr);
+            NclFree(carray);
 
-        strcpy(buffer, NrmQuarkToString(compnode->name));
-
-        if(NCL_string == compnode->type)
-        {
-            H5Tclose(str_type);
-
-            compvar = _NclCreateVlenVar(buffer, values,
-                                        ndims, dimnames,
-                                        dimsizes, NCL_char);
-        }
-        else
-        {
-            compvar = _NclCreateVlenVar(buffer, values,
+            compvar = _NclCreateVlenVar(component_name, qvals,
                                         ndims, dimnames,
                                         dimsizes, compnode->type);
-        }
 
-        _NclListAppend((NclObj)complist, (NclObj)compvar);
+            H5Tclose(str_type);
+            H5Tclose(datatype_id);
+
+            _NclListAppend((NclObj)complist, (NclObj)compvar);
+        }
+        else
+        {
+            NclVar compvar;
+            void *values;
+
+            component_datasize = _NclSizeOf(compnode->type);
+            values = (void *)NclCalloc(size, component_datasize);
+            assert(values);
+
+            datatype_id = H5Tcreate( H5T_COMPOUND, component_datasize);
+            H5Tinsert(datatype_id, component_name, 0,
+                      Ncltype2HDF5type(compnode->type));
+
+            status = H5Dread(did, datatype_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, values);
+
+            compvar = _NclCreateVlenVar(component_name, values,
+                                        ndims, dimnames,
+                                        dimsizes, compnode->type);
+            H5Tclose(datatype_id);
+            _NclListAppend((NclObj)complist, (NclObj)compvar);
+        }
     }
 
   /*Close the dataspace*/
@@ -3642,22 +3655,40 @@ static void *_getH5CompoundData(hid_t fid, NclFileVarNode *varnode,
 
     if(NCL_string == compnode->type)
     {
+        char* cstr = NULL;
+        NrmQuark qval = -1;
+
         str_type = H5Tcopy(H5T_C_S1);
 
-        component_datasize = _NclSizeOf(compnode->type);
+        cstr = (char*) NclMalloc(compnode->nvals + 1);
 
-        status = H5Tset_size(str_type, component_datasize);
+        status = H5Tset_size(str_type, compnode->nvals);
 
-        datatype_id = H5Tcreate( H5T_COMPOUND, component_datasize);
+        datatype_id = H5Tcreate( H5T_COMPOUND, compnode->nvals);
 
         H5Tinsert(datatype_id, component_name, 0, str_type);
 
-        status = H5Dread(did, datatype_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, storage);
+        status = H5Dread(did, datatype_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, cstr);
 
         if(0 != status)
         {
-            fprintf(stderr, "\nError in file: %s, line: %d\n", __FILE__, __LINE__);
+            NHLPERROR((NhlFATAL, NhlEUNKNOWN,
+                      "\nProblem to read compound: <%s> from: <%s>\n",
+                       component_name, NrmQuarkToString(varnode->real_name)));
+            H5Tclose(str_type);
+            return storage;
         }
+
+        cstr[compnode->nvals] = '\0';
+
+        qval = NrmStringToQuark(cstr);
+
+	if(NULL == storage)
+            storage = (void*)NclMalloc(sizeof(NrmQuark));
+
+        memcpy(storage, &qval, sizeof(NrmQuark));
+
+        NclFree(cstr);
 
         H5Tclose(str_type);
     }
