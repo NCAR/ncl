@@ -14926,10 +14926,16 @@ C
 C
       END
 
-
       FUNCTION ICAPNT (XCRD,YCRD,ZCRD,DVAL,RPNT,LOPN,IPPP,MPPP,NPPP)
 C
-        DIMENSION RPNT(LOPN,MPPP),IPPP(2,MPPP)
+      DIMENSION RPNT(LOPN,MPPP),IPPP(2,MPPP)
+      INTEGER *8 IKEY1,IKEY2
+
+c      save maxdepth,itdepth
+C
+C Modified by dbrown to use mangled integer keys. 
+C Improves performance (same change as made earlier to ICAEDG). 12/11/2013
+C
 C
 C This function, given the X, Y, and Z coordinates of a point and the
 C field data value at that point, searches the point list for a point
@@ -14940,92 +14946,101 @@ C which are kept in the array IPPP.
 C
 C If there are any points in the point list at all, ...
 C
-        IF (NPPP.NE.0)
+c      idepth = 0
+c      if (nppp .eq. 0) then
+c         itdepth = 0
+c      end if
+      IF (NPPP.NE.0) THEN
+C
+         CALL MANGLE(XCRD,YCRD,IKEY1)
 C
 C initialize a search index to point to the first one, and loop.
 C
-          ITMP=1
+        ITMP=1
 C
 C If the search index is of the point we want, return its index.
 C
-  101     IF (XCRD.EQ.RPNT(1,ITMP).AND.
-     +        YCRD.EQ.RPNT(2,ITMP).AND.
-     +        ZCRD.EQ.RPNT(3,ITMP))
+ 101    CALL MANGLE(RPNT(1,ITMP),RPNT(2,ITMP), IKEY2)
+        IF (IKEY1 .EQ. IKEY2) THEN
 C
-            ICAPNT=ITMP
+          ICAPNT=ITMP
 C
-            RETURN
+          RETURN
+        END IF
 C
 C If the point we want would precede the one pointed at by the search
 C index, reset the search index to look at lesser elements (if any),
 C and loop back to continue the search.  If the pointer is null, reset
 C it to point to a new element that we will create.
 C
-          ELSE IF ((XCRD.LT.RPNT(1,ITMP)).OR.
-     +             (XCRD.EQ.RPNT(1,ITMP).AND.
-     +              YCRD.LT.RPNT(2,ITMP)).OR.
-     +             (XCRD.EQ.RPNT(1,ITMP).AND.
-     +              YCRD.EQ.RPNT(2,ITMP).AND.
-     +              ZCRD.LT.RPNT(3,ITMP)))
+c        idepth = idepth + 1
+        IF (IKEY1 .LT. IKEY2) THEN
 C
-            IF (IPPP(1,ITMP).NE.0)
-              ITMP=IPPP(1,ITMP)
-              GO TO 101
-            END IF
+          IF (IPPP(1,ITMP).NE.0) THEN
+            ITMP=IPPP(1,ITMP)
+            GO TO 101
+          END IF
 C
-            IPPP(1,ITMP)=NPPP+1
+          IPPP(1,ITMP)=NPPP+1
 C
 C If the point we want would follow the one pointed at by the search
 C index, reset the search index to look at greater elements (if any),
 C and loop back to continue the search.  If the pointer is null, reset
 C it to point to a new element that we will create.
 C
-          ELSE IF ((XCRD.GT.RPNT(1,ITMP)).OR.
-     +             (XCRD.EQ.RPNT(1,ITMP).AND.
-     +              YCRD.GT.RPNT(2,ITMP)).OR.
-     +             (XCRD.EQ.RPNT(1,ITMP).AND.
-     +              YCRD.EQ.RPNT(2,ITMP).AND.
-     +              ZCRD.GT.RPNT(3,ITMP)))
+        ELSE IF (IKEY1 .GT. IKEY2) THEN
 C
-            IF (IPPP(2,ITMP).NE.0)
-              ITMP=IPPP(2,ITMP)
-              GO TO 101
-            END IF
-C
-            IPPP(2,ITMP)=NPPP+1
-C
+          IF (IPPP(2,ITMP).NE.0) THEN
+            ITMP=IPPP(2,ITMP)
+            GO TO 101
           END IF
 C
+          IPPP(2,ITMP)=NPPP+1
+C
         END IF
+C
+      END IF
+C
+C      output for monitoring performance of the key method
+C
+c      itdepth = itdepth + idepth
+c      if (idepth .gt. maxdepth) then
+c         maxdepth = idepth
+c         write(*,*) 'current maxdepth:', maxdepth,
+c     +              ' avg depth: ', itdepth / (nppp + 1),
+c     +              'point count is: ', (nppp + 1)
+c      else if (mod((nppp+1),100) .eq. 0) then
+c         write(*,*) ' avg depth: ', itdepth, itdepth / (nppp + 1)
+c      end if
 C
 C Create a new point in the point list (if there's room, of course), and
 C return its index to the caller.
 C
-        IF (NPPP.GE.MPPP)
+      IF (NPPP.GE.MPPP) THEN
 C
-          CALL SETER ('ICAPNT - POINT ARRAY IS TOO SMALL',1,1)
-          ICAPNT=-1
-          RETURN
+        CALL SETER ('ICAPNT - POINT ARRAY IS TOO SMALL',1,1)
+        ICAPNT=-1
+        RETURN
 C
-        ELSE
+      ELSE
 C
-          NPPP=NPPP+1
+        NPPP=NPPP+1
 C
-          IPPP(1,NPPP)=0
-          IPPP(2,NPPP)=0
+        IPPP(1,NPPP)=0
+        IPPP(2,NPPP)=0
 C
-          RPNT(1,NPPP)=XCRD
-          RPNT(2,NPPP)=YCRD
-          RPNT(3,NPPP)=ZCRD
-          RPNT(4,NPPP)=DVAL
+        RPNT(1,NPPP)=XCRD
+        RPNT(2,NPPP)=YCRD
+        RPNT(3,NPPP)=ZCRD
+        RPNT(4,NPPP)=DVAL
 C
-          ICAPNT=NPPP
+        ICAPNT=NPPP
 C
-        END IF
+      END IF
 C
 C Done.
 C
-        RETURN
+      RETURN
 C
       END
 
@@ -15212,7 +15227,7 @@ c      save maxdepth,itdepth
 C
 C modified by dbrown to use mangled integer keys. This fixes a problem
 C of the edges centers occasionally giving false equalities with 
-C different edges. Also improves performances. 11/30/2012
+C different edges. Also improves performance. 11/30/2012
 C
 C This function, given the base indices, in the point list, of the two
 C points defining an edge, searches the edge list for an edge matching
