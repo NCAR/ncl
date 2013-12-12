@@ -564,6 +564,10 @@ then
       export LDFLAGS="-L$PREFIX/lib"
       export CPPFLAGS="-I$PREFIX/include"
       export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
+# Needed on a Debian system (k9.rap)
+#     export LIBS='-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl'
+# Might be needed for other systems, like Macs.
+#    export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto"
       ./configure --enable-netcdf-4 --enable-dap --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
     fi
     make all install
@@ -699,6 +703,8 @@ then
     export LDFLAGS="-L$PREFIX/lib"
     export CPPFLAGS="-I$PREFIX/include"
     export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
+# Needed on a Debian system (k9.rap)
+#     export LIBS='-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl'
 # Might be needed for other systems, like Macs.
 #    export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto"
     ./configure --enable-netcdf-4 --enable-dap --disable-shared --prefix\=$PREFIX/esmfnetcdf  --enable-large-file-tests --enable-dap-remote-tests
