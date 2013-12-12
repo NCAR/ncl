@@ -150,7 +150,7 @@ fi
 #--------------------------------------------------------------------
 
 G2CLIB_DIR="g2clib-1.4.0-patch"
-GDAL_DIR="gdal-1.10.0"
+GDAL_DIR="gdal-1.10.1"
 HDF4_DIR="hdf-4.2.9"
 HDF5_DIR="hdf5-1.8.11"
 HDFEOS_DIR="hdfeos-2.18"
@@ -563,6 +563,7 @@ then
 # This is for NetCDF 4.2
       export LDFLAGS="-L$PREFIX/lib"
       export CPPFLAGS="-I$PREFIX/include"
+      export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
       ./configure --enable-netcdf-4 --enable-dap --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
     fi
     make all install
