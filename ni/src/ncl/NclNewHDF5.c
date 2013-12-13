@@ -482,7 +482,10 @@ static int _getH5grpID(NclFileGrpNode *grpnode)
    *                   NrmQuarkToString(grpnode->name), grpnode->gid);
    */
 
-    id = grpnode->fid;
+    if(0 <= grpnode->gid)
+        id = grpnode->gid;
+    else
+        id = grpnode->fid;
 
     if(id <= 0)
     {
@@ -499,6 +502,7 @@ static int _getH5grpID(NclFileGrpNode *grpnode)
             if(grpnode->pid > 0)
             {
                 id = H5Gopen(grpnode->pid, NrmQuarkToString(grpnode->name), H5P_DEFAULT);
+                grpnode->pid = id;
                 grpnode->gid = id;
             }
             else
@@ -511,6 +515,8 @@ static int _getH5grpID(NclFileGrpNode *grpnode)
         {
             id = H5Fopen(NrmQuarkToString(grpnode->path), H5F_ACC_RDWR, H5P_DEFAULT);
             grpnode->fid = id;
+            grpnode->gid = id;
+            grpnode->pid = -1;
         }
 
         if(id < 0)
@@ -2005,7 +2011,7 @@ h5_group_name_struct_t _get_parent_group_name(char *name)
 
     h5grplvl.size = 0;
 
-    while(2 < strlen(fullname))
+    while(1 < strlen(fullname))
     {
         cpntr = rindex(fullname, '/');
         strcpy(h5grplvl.short_name[h5grplvl.size], cpntr+1);
@@ -3221,7 +3227,8 @@ void *H5OpenFile(void *rec, NclQuark path, int status)
         grpnode->open = 1;
         grpnode->define_mode = 0;
         grpnode->fid = fid;
-        grpnode->gid = -1;
+        grpnode->gid = fid;
+        grpnode->pid = -1;
         grpnode->parent = NULL;
     }
 
@@ -4581,13 +4588,14 @@ static void H5FreeFileRec(void* therec)
 
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
 
-    if((grpnode->open) && (0 < grpnode->fid))
+    if((grpnode->open) && (0 <= grpnode->fid))
     {
         H5Fclose(grpnode->fid);
         H5close();
 
         grpnode->open = 0;
         grpnode->fid = -1;
+        grpnode->gid = -1;
     }
 
     FileDestroyGrpNode(grpnode);
@@ -4610,7 +4618,8 @@ static void *H5CreateFile(void *rec, NclQuark path)
     if(fid > 0)
     {
         grpnode->fid = fid;
-        grpnode->gid = -1;
+        grpnode->gid = fid;
+        grpnode->pid = -1;
         grpnode->define_mode = 1;
         grpnode->open = 1;
         grpnode->parent = NULL;
@@ -5479,7 +5488,9 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
         space = H5Screate_simple (rank, dims, NULL);
 
         if(1 == grpnode->open)
+        {
             fid = grpnode->fid;
+        }
         else
         {
             fid = H5Fopen(NrmQuarkToString(grpnode->path), H5F_ACC_RDWR, H5P_DEFAULT);
@@ -6750,6 +6761,7 @@ NhlErrorTypes H5AddGrp(void *rec, NclQuark grpname)
    */
 
     grpnode->gid = gid;
+    grpnode->fid = gid;
     grpnode->pid = fid;
     grpnode->define_mode = 1;
     grpnode->open = 1;
