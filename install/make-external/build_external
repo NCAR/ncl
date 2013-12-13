@@ -34,6 +34,11 @@
 #   pixman-x.y.z           NCL/NCARG: optional (needed for cairo support)
 #   cairo-x.y.z            NCL/NCARG: optional (needed for cairo support)
 #
+# Note on cairo above: We've had problems with cairo-1.12.x (NCL-1860 
+# and NCL-1862), so we've decided to stick with cairo-1.10.2 for 
+# V6.2.0. Also, Rick recommends using the system fontconfig to avoid
+# some quirky problems with that and the high-res map database.
+#
 # NCL only:
 #   hdf5-x.y.z             Required if you want classic NetCDF-4 support
 #   szip-x.y.z             Required if you want classic NetCDF-4 support
@@ -105,7 +110,8 @@ INSTALL_UDUNITS=1
 INSTALL_PKGCONFIG=1
 INSTALL_EXPAT=1
 INSTALL_FREETYPE=1
-INSTALL_FONTCONFIG=1
+#Don't install font-config. Try to use system one instead.
+#INSTALL_FONTCONFIG=1
 INSTALL_PIXMAN=1
 INSTALL_CAIRO=1
 INSTALL_CURL=1
@@ -172,7 +178,7 @@ EXPAT_DIR="expat-2.1.0"
 FREETYPE_DIR="freetype-2.5.0.1"
 FONTCONFIG_DIR="fontconfig-2.10.93"
 PIXMAN_DIR="pixman-0.30.0"
-CAIRO_DIR="cairo-1.12.16"
+CAIRO_DIR="cairo-1.10.2"
 OPENSSL_DIR="openssl-1.0.0c"
 CURL_DIR="curl-7.33.0"
 XML2_DIR="libxml2-2.7.8"
