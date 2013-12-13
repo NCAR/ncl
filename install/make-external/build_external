@@ -37,7 +37,7 @@
 # Note on cairo above: We've had problems with cairo-1.12.x (NCL-1860 
 # and NCL-1862), so we've decided to stick with cairo-1.10.2 for 
 # V6.2.0. Also, Rick recommends using the system fontconfig to avoid
-# some quirky problems with that and the high-res map database.
+# some quirky problems with that and the high-res map database (NCL-1210).
 #
 # NCL only:
 #   hdf5-x.y.z             Required if you want classic NetCDF-4 support
@@ -63,30 +63,77 @@
 #   libdap-x.y.z           Required if you want OPeNDAP support
 #   libnc-dap-x.y.z        Required if you want OPeNDAP support
 
+# Set up file to hold build output.
+dd=`date +'%m%d%y'`
+un=`uname -n`
+um=`uname -m`
+os=`uname -s`
+make_output_file="make-output.$un.$dd"
+
 # Parent location for installing external software
 PREFIX=/usr/local
 
+
 # Set environment variables for building software
-export CC=gcc
-export CXX=g++
-export FC=gfortran
-export F77=gfortran
-export F90=gfortran
-export CFLAGS=-fPIC
-export FFLAGS=-fPIC
-export F90FLAGS=-fPIC
-export CXXFLAGS=-fPIC
+export CC=/usr/local/bin/gcc
+export CXX=/usr/local/bin/g++
+export FC=/usr/local/bin/gfortran
+export F77=/usr/local/bin/gfortran
+export F90=/usr/local/bin/gfortran
+if [ "$os" == "Darwin" ]
+then
+  export CFLAGS='-fPIC -m64 -Df2cFortran'
+  export FFLAGS='-m64 -fPIC'
+  export F90FLAGS='-m64 -fPIC'
+  export CXXFLAGS='-m64 -fPIC'
+else
+  export CFLAGS=-fPIC
+  export FFLAGS=-fPIC
+  export F90FLAGS=-fPIC
+  export CXXFLAGS=-fPIC
+fi
 
-# These two might be needed for cairo stuff.
-export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
-export PATH="$PREFIX/bin:$PATH"
+if [ "$os" == "Linux" ] ; then
+  if [ "$um" == "x86_64" ] ; then
+    export LINUX_BRAND linux64
+  else
+    export LINUX_BRAND linux32
+  fi
+fi  
 
-# This setting for CPPFLAGS may be needed for some systems (Linux 32-bit
-# was one). Only set it if the large file stuff doesn't work with NetCDF4.
-# export CPPFLAGS='-D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_LARGEFILE_SOURCE'.
+#--------------------------------------------------------------------
+# Software directories, sorted alphabetically
+#--------------------------------------------------------------------
 
-CLEAN_BEFORE=1                      # Whether to clean before making
-#CLEAN_AFTER=1                       # Whether to clean after making
+G2CLIB_DIR="g2clib-1.4.0-patch"
+GDAL_DIR="gdal-1.10.1"
+HDF4_DIR="hdf-4.2.9"
+HDF5_DIR="hdf5-1.8.11"
+HDFEOS_DIR="hdfeos-2.18"
+HDFEOS5_DIR="hdfeos5-1.14"
+JASPER_DIR="jasper-1.900.1"
+JPEG_DIR="jpeg-6b"
+NETCDF_DIR="netcdf-4.3.0"
+NETCDF4_FORTRAN_DIR="netcdf-fortran-4.2"
+NETCDF3_CXX_DIR="netcdf-cxx-4.2"
+NETCDF_ESMF_DIR="netcdf-4.1.3"
+PNG_DIR="libpng-1.2.50"
+PROJ4_DIR="proj-4.8.0"
+SZIP_DIR="szip-2.1"
+UDUNITS_DIR="udunits-2.1.24"
+VIS5DPLUS_DIR="vis5d+-1.3.0"
+ZLIB_DIR="zlib-1.2.8"
+PKGCONFIG_DIR="pkg-config-0.28"
+EXPAT_DIR="expat-2.1.0"
+FREETYPE_DIR="freetype-2.5.0.1"
+FONTCONFIG_DIR="fontconfig-2.10.93"
+PIXMAN_DIR="pixman-0.30.0"
+CAIRO_DIR="cairo-1.10.2"
+OPENSSL_DIR="openssl-1.0.0c"
+CURL_DIR="curl-7.33.0"
+XML2_DIR="libxml2-2.7.8"
+DAP_DIR="libdap-3.8.2"
+NC_DIR="libnc-dap-3.7.4"
 
 # Indicate which packages you want. These are listed in the order
 # they should generally be built in.
@@ -116,19 +163,26 @@ INSTALL_PIXMAN=1
 INSTALL_CAIRO=1
 INSTALL_CURL=1
 
-#INSTALL_OPENSSL=1 NOT NEEDED B/C PART OF NETCDF-4.1
+# These four shouldn't be needed if you use NetCDF's opendap library
+#INSTALL_OPENSSL=1
 #INSTALL_XML2=1
-#INSTALL_DAP=1 NOT NEEDED B/C PART OF NETCDF-4.1
-#INSTALL_NCDAP=1 NOT NEEDED B/C PART OF NETCDF-4.1
+#INSTALL_DAP=1
+#INSTALL_NCDAP=1
+
+# Needed for cairo stuff.
+export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
+export PATH="$PREFIX/bin:$PATH"
+
+# This setting for CPPFLAGS may be needed for some systems (Linux 32-bit
+# was one). Only set it if the large file stuff doesn't work with NetCDF4.
+# export CPPFLAGS='-D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_LARGEFILE_SOURCE'.
+
+CLEAN_BEFORE=1                      # Whether to clean before making
+#CLEAN_AFTER=1                       # Whether to clean after making
 
 #----------------------------------------------------------------------
 # End of user modification section.
 #----------------------------------------------------------------------
-
-# Set up file to hold build output.
-dd=`date +'%m%d%y'`
-un=`uname -n`
-make_output_file="make-output.$un.$dd"
 
 if [ ! -d "$PREFIX/lib" ]
 then
@@ -151,43 +205,106 @@ then
   mkdir $PREFIX/man/man1
 fi
 
-#--------------------------------------------------------------------
-# Software directories, sorted alphabetically
-#--------------------------------------------------------------------
-
-G2CLIB_DIR="g2clib-1.4.0-patch"
-GDAL_DIR="gdal-1.10.1"
-HDF4_DIR="hdf-4.2.9"
-HDF5_DIR="hdf5-1.8.11"
-HDFEOS_DIR="hdfeos-2.18"
-HDFEOS5_DIR="hdfeos5-1.14"
-JASPER_DIR="jasper-1.900.1"
-JPEG_DIR="jpeg-6b"
-NETCDF_DIR="netcdf-4.3.0"
-NETCDF4_FORTRAN_DIR="netcdf-fortran-4.2"
-NETCDF3_CXX_DIR="netcdf-cxx-4.2"
-NETCDF_ESMF_DIR="netcdf-4.1.3"
-PNG_DIR="libpng-1.2.50"
-PROJ4_DIR="proj-4.8.0"
-SZIP_DIR="szip-2.1"
-UDUNITS_DIR="udunits-2.1.24"
-VIS5DPLUS_DIR="vis5d+-1.3.0"
-ZLIB_DIR="zlib-1.2.8"
-PKGCONFIG_DIR="pkg-config-0.30.0"
-EXPAT_DIR="expat-2.1.0"
-FREETYPE_DIR="freetype-2.5.0.1"
-FONTCONFIG_DIR="fontconfig-2.10.93"
-PIXMAN_DIR="pixman-0.30.0"
-CAIRO_DIR="cairo-1.10.2"
-OPENSSL_DIR="openssl-1.0.0c"
-CURL_DIR="curl-7.33.0"
-XML2_DIR="libxml2-2.7.8"
-DAP_DIR="libdap-3.8.2"
-NC_DIR="libnc-dap-3.7.4"
-
-# On LINUX systems, you will need to do one of:
-# export LINUX_BRAND linux32
-export LINUX_BRAND linux64
+if [ $INSTALL_ZLIB ] && [ ! -d $ZLIB_DIR ] ; then
+  echo "$ZLIB_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_ZLIB ] && [ ! -d $ZLIB_DIR ] ; then
+  echo "$ZLIB_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_PNG ] && [ ! -d $PNG_DIR ] ; then
+  echo "$PNG_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_JPEG ] && [ ! -d $JPEG_DIR ] ; then
+  echo "$JPEG_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_JASPER ] && [ ! -d $JASPER_DIR ] ; then
+  echo "$JASPER_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_SZIP ] && [ ! -d $SZIP_DIR ] ; then
+  echo "$SZIP_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_HDF5 ] && [ ! -d $HDF5_DIR ] ; then
+  echo "$HDF5_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_HDFEOS5 ] && [ ! -d $HDFEOS5_DIR ] ; then
+  echo "$HDFEOS5_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_HDF4 ] && [ ! -d $HDF4_DIR ] ; then
+  echo "$HDF4_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_HDFEOS ] && [ ! -d $HDFEOS_DIR ] ; then
+  echo "$HDFEOS_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_NETCDF4 ] && [ ! -d $NETCDF4_DIR ] ; then
+  echo "$NETCDF4_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_NETCDF4_FORTRAN ] && [ ! -d $NETCDF4_FORTRAN_DIR ] ; then
+  echo "$NETCDF4_FORTRAN_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_NETCDF3_CXX ] && [ ! -d $NETCDF3_CXX_DIR ] ; then
+  echo "$NETCDF3_CXX_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_PROJ4 ] && [ ! -d $PROJ4_DIR ] ; then
+  echo "$PROJ4_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_GDAL ] && [ ! -d $GDAL_DIR ] ; then
+  echo "$GDAL_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_G2CLIB ] && [ ! -d $G2CLIB_DIR ] ; then
+  echo "$G2CLIB_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_UDUNITS ] && [ ! -d $UDUNITS_DIR ] ; then
+  echo "$UDUNITS_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_VIS5DPLUS ] && [ ! -d $VIS5DPLUS_DIR ] ; then
+  echo "$VIS5DPLUS_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_PKGCONFIG ] && [ ! -d $PKGCONFIG_DIR ] ; then
+  echo "$PKGCONFIG_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_EXPAT ] && [ ! -d $EXPAT_DIR ] ; then
+  echo "$EXPAT_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_FREETYPE ] && [ ! -d $FREETYPE_DIR ] ; then
+  echo "$FREETYPE_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_FONTCONFIG ] && [ ! -d $FONTCONFIG_DIR ] ; then
+  echo "$FONTCONFIG_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_PIXMAN ] && [ ! -d $PIXMAN_DIR ] ; then
+  echo "$PIXMAN_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_CAIRO ] && [ ! -d $CAIRO_DIR ] ; then
+  echo "$CAIRO_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_CURL ] && [ ! -d $CURL_DIR ] ; then
+  echo "$CURL_DIR does not exist"
+  exit
+fi
 
 #
 # The following section should not need any modification by 
@@ -480,12 +597,12 @@ if [ $INSTALL_HDF4 ]
       make clean
     fi
     echo "Building $HDF4_DIR..."
-    ./configure  --disable-netcdf --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX --includedir\=$PREFIX/include/hdf
-# This is for MacOS 10.8 systems
-#    export MACOSX_DEPLOYMENT_TARGET=10.8
-#    export CFLAGSHDF4="$CFLAGS -Os -arch i386 -arch ppc -arch x86_64 -arch ppc64"
-#    export CFLAGSHDF4="$CFLAGS -Os -arch x86_64"
-#    ./configure --disable-netcdf --disable-dependency-tracking CFLAGS\=$CFLAGSHDF4 --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX --includedir\=\$PREFIX/include/hdf
+    if [ "$os" == "Darwin" ]
+    then
+      ./configure --disable-netcdf --disable-dependency-tracking --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX --includedir\=$PREFIX/include/hdf
+    else
+      ./configure  --disable-netcdf --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX --includedir\=$PREFIX/include/hdf
+    fi
     make all install
     if [ $? ]
     then
@@ -569,12 +686,16 @@ then
 # This is for NetCDF 4.2
       export LDFLAGS="-L$PREFIX/lib"
       export CPPFLAGS="-I$PREFIX/include"
-      export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
-# Needed on a Debian system (k9.rap)
-#     export LIBS='-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl'
-# Might be needed for other systems, like Macs.
-#    export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto"
-      ./configure --enable-netcdf-4 --enable-dap --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
+      if [ "$os" == "Darwin" ]
+      then
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto"
+        ./configure --enable-netcdf-4 --enable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
+      else
+# Might need on a Debian system (k9.rap)
+#       export LIBS='-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl'
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl"
+        ./configure --enable-netcdf-4 --enable-dap --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
+      fi
     fi
     make all install
 # This extra install needed b/c build sometimes fails on missing TeX pieces.
@@ -1087,7 +1208,6 @@ fi
 # pixman
 #--------------------------------------------------------------------
 if [ $INSTALL_PIXMAN ]
-  export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
   then
   if [ -d "$PIXMAN_DIR" ]
   then
@@ -1139,9 +1259,12 @@ if [ $INSTALL_CAIRO ]
       make clean
     fi
     echo "Building $CAIRO_DIR..."
-    ./configure --prefix\=$PREFIX --disable-shared
-# This is for MacOS systems
-#    ./configure --prefix\=$PREFIX --enable-quartz-font=no --enable-quartz=no --enable-shared=no --enable-static=yes
+    if [ "$os" == "Darwin" ]
+    then
+      ./configure --prefix\=$PREFIX --enable-quartz-font=no --enable-quartz=no --enable-shared=no --enable-static=yes
+    else
+      ./configure --prefix\=$PREFIX --disable-shared
+    fi
     make all install
     if [ $? ]
     then
@@ -1353,4 +1476,3 @@ if [ $INSTALL_NCDAP ]
 else
   echo "Not building libncdap..."
 fi
-
