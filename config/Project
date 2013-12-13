@@ -257,7 +257,7 @@
 
 #ifdef BuildGDAL
 #ifndef	GDALlib
-#define	GDALlib   -lgdal -lproj
+#define	GDALlib   -lgdal -lproj -ljpeg -lxml2
 #endif
 #else
 #define GDALlib
@@ -272,7 +272,7 @@
 #endif
 
 #ifndef	GRIB2lib
-#define       GRIB2lib   -lgrib2c -ljasper -lpng -lz
+#define       GRIB2lib   -lgrib2c -ljasper -lpng -lz -ljpeg
 #endif	/* GRIB2lib */
 
 #ifndef	NetCDFlib
