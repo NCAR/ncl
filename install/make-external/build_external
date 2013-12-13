@@ -73,13 +73,12 @@ make_output_file="make-output.$un.$dd"
 # Parent location for installing external software
 PREFIX=/usr/local
 
-
 # Set environment variables for building software
-export CC=/usr/local/bin/gcc
-export CXX=/usr/local/bin/g++
-export FC=/usr/local/bin/gfortran
-export F77=/usr/local/bin/gfortran
-export F90=/usr/local/bin/gfortran
+export CC=gcc
+export CXX=g++
+export FC=gfortran
+export F77=gfortran
+export F90=gfortran
 if [ "$os" == "Darwin" ]
 then
   export CFLAGS='-fPIC -m64 -Df2cFortran'
@@ -599,9 +598,9 @@ if [ $INSTALL_HDF4 ]
     echo "Building $HDF4_DIR..."
     if [ "$os" == "Darwin" ]
     then
-      ./configure --disable-netcdf --disable-dependency-tracking --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX --includedir\=$PREFIX/include/hdf
+      ./configure --disable-netcdf --disable-dependency-tracking --with-zlib\=$PREFIX --with-jpeg\=$PREFIX
     else
-      ./configure  --disable-netcdf --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX --includedir\=$PREFIX/include/hdf
+      ./configure  --disable-netcdf --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX
     fi
     make all install
     if [ $? ]
@@ -639,8 +638,6 @@ if [ $INSTALL_HDFEOS ]
       make clean
     fi
     echo "Building $HDFEOS_DIR..."
-#    export CFLAGSHE2="$CFLAGS -I$PREFIX/include/hdf"
-#    ./configure --with-hdf4\=$PREFIX --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX CFLAGS\=$CFLAGSHE2
     ./configure CC\=$PREFIX/bin/h4cc --with-hdf4\=$PREFIX --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX
     make all install
     cp include/HdfEosDef.h include/ease.h include/cfortHdf.h $PREFIX/include/.
@@ -693,6 +690,8 @@ then
       else
 # Might need on a Debian system (k9.rap)
 #       export LIBS='-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl'
+# Might be needed on yellowstone/caledera/geyser
+#       export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -ldl"           
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl"
         ./configure --enable-netcdf-4 --enable-dap --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
       fi
