@@ -8584,7 +8584,12 @@ NclExecuteReturnStatus _NclExecute
 		estatus = NhlNOERROR;	
 		ptr++;lptr++;fptr++;
 
-		nxt_fileq = (*fptr) ? (NrmStringToQuark(*fptr)) : -1;
+		if (*fptr == cfile) {
+			nxt_fileq = cfileq;
+		}
+		else {
+			nxt_fileq = (*fptr) ? (NrmStringToQuark(*fptr)) : -1;
+		}
 		if(cfile && ((cline != *lptr) || (cfileq != nxt_fileq))){
 			NCL_PROF_LEXIT(cfile, cline);	
 			cline = *lptr;
