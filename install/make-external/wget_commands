@@ -1,0 +1,28 @@
+These are the wget commands used to get external software for NCL V6.2.0
+
+wget http://www.ijg.org/files/jpegsrc.v6b.tar.gz
+wget http://www.hdfgroup.org/ftp/lib-external/szip/2.1/src/szip-2.1.tar.gz
+wget ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-cxx-4.2.tar.gz
+wget http://www.hdfgroup.org/ftp/HDF/HDF_Current/src/hdf-4.2.9.tar.gz
+wget http://download.osgeo.org/proj/proj-4.8.0.tar.gz
+wget http://www.ncl.ucar.edu/Download/files/g2clib-1.4.0-patch.tar.gz
+wget http://pkgconfig.freedesktop.org/releases/pkg-config-0.28.tar.gz
+wget http://sourceforge.net/projects/expat/files/latest/expat-2.1.0.tar.gz
+wget http://download.savannah.gnu.org/releases/freetype/freetype-2.5.0.1.tar.gz
+wget http://cairographics.org/releases/cairo-1.10.2.tar.gz
+wget http://cairographics.org/releases/pixman-0.30.0.tar.gz
+wget http://curl.haxx.se/download/curl-7.33.0.tar.gz
+wget ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4/zlib-1.2.8.tar.gz
+wget ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-fortran-4.2.tar.gz
+wget ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4/hdf5-1.8.11.tar.gz
+wget ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.3.0.tar.gz
+wget http://download.osgeo.org/gdal/1.10.1/gdal-1.10.1.tar.gz
+wget http://www.ece.uvic.ca/~frodo/jasper/software/jasper-1.900.1.zip
+wget ftp://ftp.unidata.ucar.edu/pub/udunits/udunits-2.1.24.tar.gz
+wget http://sourceforge.net/projects/libpng/files/libpng12/1.2.50/libpng-1.2.50.tar.gz
+wget ftp://edhs1.gsfc.nasa.gov/edhs/hdfeos/latest_release/HDF-EOS2.18v1.00.tar.Z
+wget ftp://edhs1.gsfc.nasa.gov/edhs/hdfeos5/latest_release/HDF-EOS5.1.14.tar.Z
+
+# This one should not be needed. Use system fontconfig instead.
+wget http://www.freedesktop.org/software/fontconfig/release/fontconfig-2.10.93.tar.gz
+

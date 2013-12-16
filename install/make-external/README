@@ -1,0 +1,54 @@
+----------------------------------------------------------------------
+cairo notes: There's a PNG bug with cairo 1.12.16 and earlier, so use
+cairo-1.10.2 instead.
+
+It's important to use the correct versions of pixman, fontconfig, and
+freetype with cairo. I think freetype is especially important, and
+maybe pixman too.
+
+I usually check which version of cairo is the latest, see what the
+date is on it, and then make sure I don't update later dates of
+freetype and fontconfig. The cairo download site usually has pixman
+included with it, so I tend to use this.
+
+Rick suggests using the system fontconfig rather than a
+specially-built one.
+----------------------------------------------------------------------
+NetCDF-4 notes: Unidata provides versions of HDF5 and zlib with its
+NetCDF-4 source, so I recommend using this.
+----------------------------------------------------------------------
+HDFEOS notes: Both hdfeos and hdfeos5 source codes have issues
+with the Gctp "cproj.c" file which defines "sign". This conflicts with
+some other "sign" defintion. You may have to edit cproj.c and change
+"sign" to "cproj_sign".
+----------------------------------------------------------------------
+
+See the "wget_commands" file in this directory for the wget commands
+used to retrieve all this software:
+
+Here are the versions I use for everything:
+
+    cairo-1.10.2
+    curl-7.33.0
+    esmf-6.2.0
+    expat-2.1.0
+    freetype-2.5.0.1
+    g2clib-1.4.0-patch
+    gdal-1.10.1
+    hdf-4.2.9
+    hdf5-1.8.11
+    hdfeos-2.18
+    hdfeos5-1.14
+    jasper-1.900.1
+    jpeg-6b
+    libpng-1.2.50
+    netcdf-4.3.0
+    pixman-0.30.0
+    szip-2.1
+    zlib-1.2.8
+    proj-4.8.0
+    
+    netcdf-cxx-4.2 (for ESMF only)
+    netcdf-fortran-4.2 (for ESMF only)
+
+----------------------------------------------------------------------
