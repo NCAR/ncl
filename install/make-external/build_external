@@ -104,7 +104,7 @@ fi
 # Software directories, sorted alphabetically
 #--------------------------------------------------------------------
 
-G2CLIB_DIR="g2clib-1.4.0-patch"
+G2CLIB_DIR="g2clib-1.2.3-patch"
 GDAL_DIR="gdal-1.10.1"
 HDF4_DIR="hdf-4.2.9"
 HDF5_DIR="hdf5-1.8.11"

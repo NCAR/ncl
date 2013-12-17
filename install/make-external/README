@@ -22,7 +22,9 @@ with the Gctp "cproj.c" file which defines "sign". This conflicts with
 some other "sign" defintion. You may have to edit cproj.c and change
 "sign" to "cproj_sign".
 ----------------------------------------------------------------------
-
+g2clib notes: we found a bug with g2clib-1.4.0-patch on 12/17/13 
+(see JIRA NCL-1868). Use 1.2.3-patch instead.
+----------------------------------------------------------------------
 See the "wget_commands" file in this directory for the wget commands
 used to retrieve all this software:
 
@@ -33,7 +35,7 @@ Here are the versions I use for everything:
     esmf-6.2.0
     expat-2.1.0
     freetype-2.5.0.1
-    g2clib-1.4.0-patch
+    g2clib-1.2.3-patch
     gdal-1.10.1
     hdf-4.2.9
     hdf5-1.8.11
