@@ -564,6 +564,7 @@ if [ $INSTALL_HDFEOS5 ]
 #    export CFLAGS_HE5="$CFLAGS -DH5_USE_16_API"
     ./configure CC\=$PREFIX/bin/h5cc --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
     make all install
+    /bin/rm $PREFIX/include/HE5_HdfEosDef.h $PREFIX/include/HE5_GctpFunc.h
     cp include/HE5_HdfEosDef.h include/HE5_GctpFunc.h $PREFIX/include/.
     if [ $? ]
     then
@@ -644,6 +645,7 @@ if [ $INSTALL_HDFEOS ]
     echo "Building $HDFEOS_DIR..."
     ./configure CC\=$PREFIX/bin/h4cc --with-hdf4\=$PREFIX --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX
     make all install
+    /bin/rm $PREFIX/include/HdfEosDef.h $PREFIX/include/ease.h $PREFIX/include/cfortHdf.h
     cp include/HdfEosDef.h include/ease.h include/cfortHdf.h $PREFIX/include/.
     if [ $? ]
     then
