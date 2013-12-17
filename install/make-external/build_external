@@ -564,7 +564,7 @@ if [ $INSTALL_HDFEOS5 ]
 #    export CFLAGS_HE5="$CFLAGS -DH5_USE_16_API"
     ./configure CC\=$PREFIX/bin/h5cc --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
     make all install
-    /bin/rm $PREFIX/include/HE5_HdfEosDef.h $PREFIX/include/HE5_GctpFunc.h
+    /bin/rm -rf $PREFIX/include/HE5_HdfEosDef.h $PREFIX/include/HE5_GctpFunc.h
     cp include/HE5_HdfEosDef.h include/HE5_GctpFunc.h $PREFIX/include/.
     if [ $? ]
     then
@@ -645,7 +645,7 @@ if [ $INSTALL_HDFEOS ]
     echo "Building $HDFEOS_DIR..."
     ./configure CC\=$PREFIX/bin/h4cc --with-hdf4\=$PREFIX --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX
     make all install
-    /bin/rm $PREFIX/include/HdfEosDef.h $PREFIX/include/ease.h $PREFIX/include/cfortHdf.h
+    /bin/rm -rf $PREFIX/include/HdfEosDef.h $PREFIX/include/ease.h $PREFIX/include/cfortHdf.h
     cp include/HdfEosDef.h include/ease.h include/cfortHdf.h $PREFIX/include/.
     if [ $? ]
     then
@@ -953,7 +953,7 @@ if [ $INSTALL_GDAL ]
       make clean
     fi
     echo "Building $GDAL_DIR..."
-    ./configure --with-static-proj4\=$PREFIX --prefix\=$PREFIX --without-pam --with-png\=$PREFIX --with-gif=internal --with-libtiff=internal --with-geotiff=internal --with-jpeg\=$PREFIX --with-libz\=$PREFIX --with-sqlite3=no --with-expat=no --with-curl=no --without-ld-shared --with-hdf4=no --with-hdf5=no --with-pg=no --without-grib --disable-shared --with-freexl=no --with-geos=no --with-openjpeg=no --with-mysql=no --with-ecw=no --with-fdgb=no --with-odbc=no
+    ./configure --with-static-proj4\=$PREFIX --prefix\=$PREFIX --without-pam --with-png\=$PREFIX --with-gif=internal --with-libtiff=internal --with-geotiff=internal --with-jpeg\=$PREFIX --with-libz\=$PREFIX --with-sqlite3=no --with-expat=no --with-curl=no --without-ld-shared --with-hdf4=no --with-hdf5=no --with-pg=no --without-grib --disable-shared --with-freexl=no --with-geos=no --with-openjpeg=no --with-mysql=no --with-ecw=no --with-fdgb=no --with-odbc=no --with-xml2=no
     make all install
     make install
     if [ $? ]
