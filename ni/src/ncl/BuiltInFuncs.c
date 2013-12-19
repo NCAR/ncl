@@ -14322,10 +14322,10 @@ NhlErrorTypes _Nclmask
 	NclMultiDValData tmp_md1 = NULL;
 	NclMultiDValData tmp_md2 = NULL;
 	void **out_val;
-	int j;
-	int nblk = 0 ;
-	int diff;
-    ng_size_t  i, n;
+	ng_size_t j;
+	ng_size_t  nblk = 0 ;
+	int diff;  /* only used for dimensions */
+        ng_size_t  i, n;
 	void *tmp = NULL;
 	logical *tmp0 = NULL;
 	void *mask_grid = NULL;
@@ -14494,7 +14494,7 @@ NhlErrorTypes _Nclwhere
 	NclMultiDValData val_md = NULL;
 	void *out_val;
 	int i;
-    ng_size_t  j;
+	ng_size_t  j;
 	void *tmp = NULL;
 	void *true_val = NULL;
 	void *false_val = NULL;
