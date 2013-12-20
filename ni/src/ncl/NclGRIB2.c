@@ -7439,7 +7439,7 @@ static void _g2SetFileDimsAndCoordVars
 				/* create the "real_imaginary" dimension */
 				sprintf(buffer, "real_imaginary");
 				tmp = (Grib2DimInqRec*)NclMalloc((unsigned) sizeof(Grib2DimInqRec));
-				tmp->dim_number = therec->n_grids;
+				tmp->dim_number = therec->total_dims;
 				tmp->size = 2;
 				tmp->dim_name = NrmStringToQuark(buffer);
 				tmp->grid_number = step->grid_number;
