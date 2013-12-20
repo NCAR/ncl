@@ -15,8 +15,8 @@
 #define CCompiler   gcc
 #define FCompiler   g77
 #define CtoFLibraries   -lg2c -lgcc -lm
-#define CcOptions      -ansi -fPIC
-#define FcOptions      -fPIC -fno-second-underscore
+#define CcOptions      -ansi -fPIC -fopenmp
+#define FcOptions      -fPIC -fno-second-underscore 
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lX11 -lXext

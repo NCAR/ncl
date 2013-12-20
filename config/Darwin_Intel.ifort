@@ -17,8 +17,8 @@
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler      gcc
 #define FCompiler      ifort
-#define CcOptions      -ansi
-#define FcOptions      -m32
+#define CcOptions      -ansi -fopenmp
+#define FcOptions      -m32 -openmp
 #define CtoFLibraries  -lifcore -lsvml -limf -lirc
 #define LdCommand      gcc -bind_at_load
 #define XToolLibrary   -lXt -lSM -lICE

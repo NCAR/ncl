@@ -25,8 +25,8 @@
 #define CCompiler   gcc
 #define FCompiler   gfortran
 #define CtoFLibraries   -lgfortran -lm
-#define CcOptions      -fPIC -ansi
-#define FcOptions      -fPIC
+#define CcOptions      -fPIC -ansi -fopenmp
+#define FcOptions      -fPIC -fopenmp
 
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO

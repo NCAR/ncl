@@ -32,8 +32,8 @@
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   gcc
 #define FCompiler   gfortran
-#define CcOptions      -ansi -fPIC -m64 -Wall
-#define FcOptions      -fPIC -fno-range-check  -m64 -Wall
+#define CcOptions      -ansi -fPIC -m64 -Wall -fopenmp
+#define FcOptions      -fPIC -fno-range-check  -m64 -Wall -fopenmp
 #define CtoFLibraries  -lgfortran
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO

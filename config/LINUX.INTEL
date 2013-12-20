@@ -15,7 +15,8 @@
 #define CCompiler   icc -mp
 #define FCompiler   ifc -mp -Vaxlib
 #define CtoFLibraries   -lCEPCF90 -lF90 -lm
-#define CcOptions      -ansi
+#define CcOptions      -ansi -openmp
+#define FcOptions      -openmp
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext

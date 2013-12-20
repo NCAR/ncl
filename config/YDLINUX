@@ -18,8 +18,8 @@
 #define CppCommand '/usr/bin/cpp -traditional'
 #define	CCompiler	gcc
 #define	FCompiler	g77
-#define	CtoFLibraries	-lg2c -lm
-#define CcOptions      -ansi
+#define	CtoFLibraries	-lg2c -lm 
+#define CcOptions      -ansi -fopenmp
 #define XToolLibrary	-lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext -ldl

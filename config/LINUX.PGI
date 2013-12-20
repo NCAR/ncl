@@ -14,6 +14,8 @@
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler     pgcc
 #define FCompiler     pgf90
+#define CcOptions -mp
+#define FcOptions -mp
 /*
 #define CtoFLibraries -lpgc -lpgf90  -lpgf90_rpm1  -lpgf902 -lpgftnrtl
 */

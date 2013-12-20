@@ -29,8 +29,8 @@
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   gcc
 #define FCompiler   gfortran
-#define CcOptions      -ansi -fPIC -m64
-#define FcOptions      -fPIC  -fno-range-check  -m64 -framework OpenCL
+#define CcOptions      -ansi -fPIC -m64 -fopenmp
+#define FcOptions      -fPIC  -fno-range-check  -m64 -fopenmp -framework OpenCL 
 /*
 #define CtoFLibraries  -L/sw/lib/gcc4.4/lib/x86_64 -lgfortran
 */

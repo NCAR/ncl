@@ -18,8 +18,8 @@
 #define	CCompiler	gcc
 #define	FCompiler	gfortran
 #define	CtoFLibraries	-lgfortran -lm
-#define CcOptions      -ansi
-#define FcOptions      -fno-range-check
+#define CcOptions      -ansi -fopenmp
+#define FcOptions      -fno-range-check -fopenmp
 #define XToolLibrary	-lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext

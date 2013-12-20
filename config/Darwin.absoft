@@ -14,8 +14,8 @@
 #define CCompiler   gcc
 #define CtoFLibraries   -L/Applications/Absoft/lib -lU77 -lfio -lf77math
 #define FCompiler   f90
-#define CcOptions      -DAbsoftProFortran -ansi
-#define FcOptions      -s
+#define CcOptions      -DAbsoftProFortran -ansi -fopenmp
+#define FcOptions      -s 
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext

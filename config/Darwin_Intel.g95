@@ -17,8 +17,8 @@
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   gcc
 #define FCompiler   g95
-#define CcOptions      -ansi -fPIC
-#define FcOptions      -fPIC
+#define CcOptions      -ansi -fPIC -fopenmp
+#define FcOptions      -fPIC 
 #define CtoFLibraries  -lf95
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO

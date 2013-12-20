@@ -25,8 +25,8 @@
 #define CCompiler   icc
 #define FCompiler   ifort
 #define CtoFLibraries   -lm -lifcore -lifport
-#define CcOptions    -ansi  -size_lp64
-#define FcOptions     -size_lp64
+#define CcOptions    -ansi  -size_lp64 -openmp
+#define FcOptions     -size_lp64 -openmp
 #define COptimizeFlag    -O2
 #define FOptimizeFlag    -O2
 #define XToolLibrary    -lXt -lSM -lICE

@@ -14,8 +14,8 @@
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler  pgcc
 #define FCompiler  pgf90
-#define CcOptions   -tp k8-32 -O -Msignextend -Mreentrant -fPIC -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
-#define FcOptions  -tp k8-32 -O -Msignextend -Mreentrant -fPIC -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+#define CcOptions   -tp k8-32 -O -Msignextend -Mreentrant -fPIC -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -mp
+#define FcOptions  -tp k8-32 -O -Msignextend -Mreentrant -fPIC -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -mp
 #define CtoFLibraries -pgf90libs
 #define LdCommand   ld -m elf_i386
 #define XToolLibrary -lXt -lSM -lICE

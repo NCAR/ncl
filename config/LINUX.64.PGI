@@ -14,8 +14,8 @@
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler     pgcc
 #define FCompiler     pgf90
-#define CcOptions -tp k8-64 -O -Msignextend -Mreentrant -fPIC -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
-#define FcOptions  -tp k8-64 -O -Msignextend -Mreentrant -fPIC -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+#define CcOptions -tp k8-64 -O -Msignextend -Mreentrant -fPIC -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -mp
+#define FcOptions  -tp k8-64 -O -Msignextend -Mreentrant -fPIC -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -mp
 /*
  * You can try one of these, if you are using "gcc" as a compiler,
  * instead of pgcc:

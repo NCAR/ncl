@@ -26,8 +26,9 @@
 #define CCompiler   gcc
 #define FCompiler   ifort
 #define CtoFLibraries   -lm -lifcore -lifport
-#define CcOptions    -ansi -fPIC
-#define XToolLibrary    -lXt -lSM -lICE
+#define CcOptions    -ansi -fPIC -fopenmp
+#define FcOptions    -openmp
+#define XToolLibrary    -lXt -lSM -lICE 
 #define BuildShared NO
 #define XLibrary -lX11 -lXext
 #define ExtraExportFlags -rdynamic
