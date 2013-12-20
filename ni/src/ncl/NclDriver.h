@@ -29,6 +29,7 @@
 #include   <ncarg/hlu/Error.h>
 #include   <ncarg/hlu/App.h>
 #include   <netcdf.h>
+#include   <omp.h>
 
 #if defined(HPUX)
 #include   <dl.h>
