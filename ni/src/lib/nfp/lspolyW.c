@@ -222,7 +222,7 @@ NhlErrorTypes lspoly_W( void )
   }
   else {
     coef     = (void*)calloc(total_size_coef,sizeof(float));
-    tmp_coef = (double*)calloc(npts,sizeof(double));
+    tmp_coef = (double*)calloc(*ncoef,sizeof(double));
     if(coef == NULL || tmp_coef == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"lspoly: Unable to allocate memory for output array");
       return(NhlFATAL);
@@ -538,7 +538,7 @@ NhlErrorTypes lspoly_n_W( void )
   else {
     coef = (void*)calloc(total_size_coef,sizeof(float));
   }
-  tmp_coef = (double*)calloc(npts,sizeof(double));
+  tmp_coef = (double*)calloc(*ncoef,sizeof(double));
   if(coef == NULL || tmp_coef == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lspoly_n: Unable to allocate memory for output array");
     return(NhlFATAL);
