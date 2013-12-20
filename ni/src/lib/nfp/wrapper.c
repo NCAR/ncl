@@ -414,6 +414,7 @@ extern NhlErrorTypes fft2db_W(void);
 extern NhlErrorTypes lspoly_W(void);
 extern NhlErrorTypes lspoly_n_W(void);
 extern NhlErrorTypes slatec_lspoly_W(void);
+extern NhlErrorTypes slatec_lspoly_n_W(void);
 extern NhlErrorTypes fourier_info_W(void);
 extern NhlErrorTypes stdatmus_z2tdp_W(void);
 extern NhlErrorTypes stdatmus_p2tdz_W(void);
@@ -6059,6 +6060,23 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(slatec_lspoly_W,args,"slatec_lspoly",nargs);
+
+/*
+ * Register "slatec_lspoly_n".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(5);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(slatec_lspoly_n_W,args,"slatec_lspoly_n",nargs);
 
 /*
  * Register "lspoly_n".
