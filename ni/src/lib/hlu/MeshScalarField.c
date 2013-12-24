@@ -769,6 +769,8 @@ GetDataBounds
 #if	NhlNeedProto
 (
  	NhlMeshScalarFieldLayerPart *sfp,
+	NhlGenArray             xc,
+	NhlGenArray             yc,
 	float			*xmin,
 	float                   *ymin,
 	float                   *xmax,
@@ -776,8 +778,10 @@ GetDataBounds
 	NhlString		entry_name
 )
 #else
-(sfp,xmin, ymin, xmax, ymax,entry_name)
+(sfp,xc,yc,xmin, ymin, xmax, ymax,entry_name)
  	NhlMeshScalarFieldLayerPart *sfp;
+	NhlGenArray             xc;
+	NhlGenArray             yc;
 	float			*xmin;
 	float                   *ymin;
 	float                   *xmax;
@@ -789,18 +793,18 @@ GetDataBounds
 	int             i;
 	float           *cdata;
 
-	cdata = (float*)sfp->x_arr->data;
+	cdata = (float*)xc->data;
 
 	*xmin = *xmax = cdata[0];
-	for (i = 0; i < sfp->d_el_count; i++) {
+	for (i = 0; i < xc->num_elements; i++) {
 		if (cdata[i] > *xmax)
 			*xmax = cdata[i];
 		else if (cdata[i] < *xmin) 
 			*xmin = cdata[i];
 	}
-	cdata = (float*)sfp->y_arr->data;
+	cdata = (float*)yc->data;
 	*ymin = *ymax = cdata[0];
-	for (i = 0; i < sfp->d_el_count; i++) {
+	for (i = 0; i < yc->num_elements; i++) {
 		if (cdata[i] > *ymax)
 			*ymax = cdata[i];
 		else if (cdata[i] < *ymin) 
@@ -1108,6 +1112,8 @@ GetCoordBounds
 #if	NhlNeedProto
 (
  	NhlMeshScalarFieldLayerPart *sfp,
+	NhlGenArray             xc,
+	NhlGenArray             yc,
 	int			*icstart,
 	int			*icend,
 	float			*xmin,
@@ -1117,8 +1123,10 @@ GetCoordBounds
 	NhlString		entry_name
 )
 #else
-( sfp, icstart, icend, xmin, ymin, xmax, ymax, entry_name)
+( sfp, xc, yc, icstart, icend, xmin, ymin, xmax, ymax, entry_name)
  	NhlMeshScalarFieldLayerPart *sfp;
+	NhlGenArray             xc;
+	NhlGenArray             yc;
 	int			*icstart;
 	int			*icend;
 	float			*xmin;
@@ -1134,7 +1142,7 @@ GetCoordBounds
 	if ((ret = MIN(ret,subret))  < NhlWARNING) 
 		return ret;
 
-	subret = GetDataBounds(sfp,xmin,ymin,xmax,ymax,entry_name);
+	subret = GetDataBounds(sfp,xc,yc,xmin,ymin,xmax,ymax,entry_name);
 	if ((ret = MIN(ret,subret))  < NhlWARNING) 
 		return ret;
 	
@@ -1238,14 +1246,14 @@ CvtGenSFObjToFloatSFObj
  * if defined.
  */
 	sffp->x_arr = NULL;
-	if ((x_arr = GenToFloatGenArray(sfp->x_arr)) == NULL) {
+	if (sfp->x_arr && ((x_arr = GenToFloatGenArray(sfp->x_arr)) == NULL)) {
 		e_text = "%s: error converting %s to float";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,NhlNsfXArray);
 		return(NhlFATAL);
 	}
 
 	sffp->y_arr = NULL;
-	if ((y_arr = GenToFloatGenArray(sfp->y_arr)) == NULL) {
+	if (sfp->y_arr && ((y_arr = GenToFloatGenArray(sfp->y_arr)) == NULL)) {
 		e_text = "%s: error converting %s to float; defaulting";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,NhlNsfYArray);
 		return(NhlFATAL);
@@ -1271,9 +1279,19 @@ CvtGenSFObjToFloatSFObj
 			return(NhlFATAL);
 		}
 	}
-
-	subret = GetCoordBounds(sfp,&istart,&iend,
-				&xmin,&ymin,&xmax,&ymax,entry_name);
+	if (! ((x_arr && y_arr) || (x_cell_bounds && y_cell_bounds))) {
+		e_text = "%s: invalid coordinate data";
+		NhlPError(NhlFATAL,NhlEUNKNOWN, e_text,entry_name);
+		return(NhlFATAL);
+	}
+	if (x_arr) {
+		subret = GetCoordBounds(sfp,x_arr,y_arr,&istart,&iend,
+					&xmin,&ymin,&xmax,&ymax,entry_name);
+	}
+	else {
+		subret = GetCoordBounds(sfp,x_cell_bounds,y_cell_bounds,&istart,&iend,
+					&xmin,&ymin,&xmax,&ymax,entry_name);
+	}
 	if ((ret = MIN(ret,subret))  < NhlWARNING) 
 		return ret;
 
@@ -1339,9 +1357,9 @@ CvtGenSFObjToFloatSFObj
 	sffp->iy_start = sfp->istart;
 	sffp->iy_end = sfp->iend;
 	sffp->yc_is_bounds = sfp->yc_is_bounds;
+	sffp->d_arr = d_arr;
 	sffp->x_arr = x_arr;
 	sffp->y_arr = y_arr;
-	sffp->d_arr = d_arr;
 	sffp->x_cell_bounds = x_cell_bounds;
 	sffp->y_cell_bounds = y_cell_bounds;
 	sffp->element_nodes = sfp->element_nodes;
@@ -1709,11 +1727,11 @@ MeshScalarFieldInitialize
 			sfp->xc_el_count = sfp->d_el_count;
                 }
 	}
-	if (sfp->x_arr == NULL) {
+	if (sfp->x_arr == NULL && sfp->x_cell_bounds == NULL) {
 		e_text = 
-		 "%s:The %s resource must be valid to create a %s object";
+		 "%s:The %s or %s resource must be valid to create a %s object";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-			  entry_name,NhlNsfXArray,_NhlClassName(lc));
+			  entry_name,NhlNsfXArray,NhlNsfXCellBounds,_NhlClassName(lc));
 		return NhlFATAL;
 	}
 
@@ -1745,11 +1763,11 @@ MeshScalarFieldInitialize
 			sfp->yc_el_count = sfp->d_el_count;
                 }
 	}
-	if (sfp->y_arr == NULL) {
+	if (sfp->y_arr == NULL && sfp->y_cell_bounds == NULL) {
 		e_text = 
-		 "%s:The %s resource must be valid to create a %s object";
+		 "%s:The %s or %s resource must be valid to create a %s object";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-			  entry_name,NhlNsfYArray,_NhlClassName(lc));
+			  entry_name,NhlNsfYArray,NhlNsfYCellBounds,_NhlClassName(lc));
 		return NhlFATAL;
 	}
 
@@ -2100,7 +2118,7 @@ MeshScalarFieldSetValues
 	}
 
 
-	if (!sfp->x_arr) {
+	if (!sfp->x_arr && ! sfp->x_cell_bounds) {
 		e_text = "%s: invalid %s value: restoring previous value";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  e_text,entry_name,NhlNsfXArray);
@@ -2146,7 +2164,7 @@ MeshScalarFieldSetValues
                 }
 	}
 
-	if (!sfp->y_arr) {
+	if (!sfp->y_arr && !sfp->y_cell_bounds) {
 		e_text = "%s: invalid %s value: restoring previous value";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  e_text,entry_name,NhlNsfYArray);

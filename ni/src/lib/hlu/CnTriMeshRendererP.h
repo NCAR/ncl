@@ -35,15 +35,27 @@ extern void _NhlSetCnl(
 #endif
 );
 
-typedef struct _NhlCnTriMeshRendererLayerPart {
+
+typedef struct _triblock {
 	float *rpnt;
 	int *iedg;
 	int *itri;
-	int  npnt;
+	int npnt;
 	int nedg;
 	int ntri;
+	float xs,xe,ys,ye;
+	double *points;
+	float *dat;
+	int npnt_alloc;
+} TriBlock;
+
+typedef struct _NhlCnTriMeshRendererLayerPart {
+	TriBlock *tri_block;
+	int nblocks;
+	int nblocks_alloced;
 	NhlBoolean ezmap;
 	int update_mode;
+	int trans_change_count;
 } NhlCnTriMeshRendererLayerPart;
 
 

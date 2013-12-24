@@ -2186,12 +2186,14 @@ ContourPlotInitialize
 	/*
 	 * CellFill is not supported for 1D data arrays
 	 */
+/*
 	if (cnp->sfp && cnp->sfp->d_arr->num_dimensions == 1 
 	    && cnp->fill_mode == NhlCELLFILL) {
 		e_text = "%s: CellFill mode not supported for MeshScalarField data; defaulting to RasterFill";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		cnp->fill_mode = NhlRASTERFILL;
 	}
+*/
 
 /* Set view dependent resources */
 
@@ -2585,12 +2587,14 @@ static NhlErrorTypes ContourPlotSetValues
 	/*
 	 * CellFill is not supported for 1D data arrays
 	 */
+/*
 	if (cnp->sfp && cnp->sfp->d_arr->num_dimensions == 1 
 	    && cnp->fill_mode == NhlCELLFILL) {
 		e_text = "%s: CellFill mode not supported for MeshScalarField data; defaulting to RasterFill";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		cnp->fill_mode = NhlRASTERFILL;
 	}
+*/
 
 /* Set view dependent resources */
 
@@ -2676,7 +2680,10 @@ static NhlErrorTypes ContourPlotSetValues
 	}
 
 	if (cnp->grid_type == NhltrTRIANGULARMESH) {
-		if (cnp->trans_updated)
+		if (cnp->trans_updated || ! cnp->osfp 
+			|| cnp->sfp->element_nodes != cnp->osfp->element_nodes 
+			|| cnp->sfp->x_cell_bounds != cnp->osfp->x_cell_bounds
+			|| cnp->sfp->y_cell_bounds != cnp->osfp->y_cell_bounds)
 			cnp->render_update_mode = TRIMESH_NEWMESH;
 		else if (cnp->data_changed)
 			cnp->render_update_mode = TRIMESH_DATAUPDATE;
@@ -3908,8 +3915,10 @@ static NhlErrorTypes cnDraw
 		}
                 cnp->low_level_log_on = False;
 	}
-        
-        subret = _NhlDeactivateWorkstation(cnl->base.wkptr);
+
+	if (cnp->wk_active) {
+		subret = _NhlDeactivateWorkstation(cnl->base.wkptr);
+	}
 	cnp->wk_active = False;
 	cnp->trans_updated = False;
 	ret = MIN(subret,ret);
@@ -12115,7 +12124,117 @@ NhlErrorTypes CellFill1D
 	return ret;
 }
 
+/*
+ * Function:  CellBoundsFill
+ *
+ * Description: fills data cells using GKS fill  
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
 
+NhlErrorTypes CellBoundsFill
+#if	NhlNeedProto
+(
+	NhlContourPlotLayer     cnl,
+	NhlString    entry_name
+	)
+#else     
+(cnl, entry_name)
+	NhlContourPlotLayer     cnl;
+	NhlString    entry_name;
+#endif
+{
+	NhlContourPlotLayerPart 	  *cnp = &cnl->contourplot;
+	NhlErrorTypes	ret = NhlNOERROR, subret;
+	char *e_text;
+	float *x, *y;
+	ng_size_t ncells;
+	int nvertices;
+	int *segments;
+	int *colors;
+	float *data;
+	float *levels;
+	int *lcols;
+	int i, j;
+	int nlevels;
+	NhlSArg			sargs[16];
+	int			nargs = 0;
+	char			buffer[_NhlMAXRESNAMLEN];
+	int			gsid;
+	NhlGenArray		segments_ga, colors_ga;
+
+	if (cnp->sfp->x_cell_bounds->num_dimensions != 2 || cnp->sfp->y_cell_bounds->num_dimensions != 2 ||
+	    cnp->sfp->x_cell_bounds->len_dimensions[0] != cnp->sfp->y_cell_bounds->len_dimensions[0] ||
+	    cnp->sfp->x_cell_bounds->len_dimensions[1] != cnp->sfp->y_cell_bounds->len_dimensions[1] ||
+	    cnp->sfp->d_arr->num_elements != cnp->sfp->x_cell_bounds->len_dimensions[0]) {
+		e_text = "%s: invalid call to cnCellFill";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(NhlFATAL);
+	}
+
+	x = (float *) cnp->sfp->x_cell_bounds->data;
+	y = (float *) cnp->sfp->y_cell_bounds->data;
+	data = (float *) cnp->sfp->d_arr->data;
+
+	ncells = cnp->sfp->x_cell_bounds->len_dimensions[0];
+	nvertices = cnp->sfp->x_cell_bounds->len_dimensions[1];
+	levels = (float *) cnp->levels->data;
+	nlevels = cnp->levels->num_elements;
+	lcols = (int *) cnp->fill_colors->data;
+
+	segments = NhlMalloc(ncells * sizeof(int));
+	colors = NhlMalloc(ncells * sizeof(int));
+	
+
+	for (i = 0; i < ncells; i++) {
+		segments[i] = i * nvertices;
+		colors[i] = -99;
+		for (j = 0; j < nlevels; j++) {
+			if (data[i] < levels[j]) {
+				colors[i] = lcols[j];
+				break;
+			}
+			colors[i] = lcols[nlevels];
+		}
+	}
+
+	segments_ga = _NhlCreateGenArray(segments,NhlTFloat,sizeof(float),1,&ncells,False);
+	segments_ga->my_data = True;
+	colors_ga = _NhlCreateGenArray(colors,NhlTColorIndex,sizeof(int),1,&ncells,False);
+	colors_ga->my_data = True;
+	NhlSetSArg(&sargs[(nargs)++],NhlNgsSegments,segments_ga);
+	NhlSetSArg(&sargs[(nargs)++],NhlNgsColors,colors_ga);
+	if (cnp->cell_fill_edge_color > NhlTRANSPARENT) {
+		NhlSetSArg(&sargs[(nargs)++],NhlNgsEdgesOn, True);
+		NhlSetSArg(&sargs[(nargs)++],NhlNgsEdgeColor, cnp->cell_fill_edge_color);
+	}
+	NhlSetSArg(&sargs[(nargs)++],NhlNgsFillOpacityF, cnp->fill_opacity);
+		
+	sprintf(buffer,"%s",cnl->base.name);
+	strcat(buffer,".GraphicStyle");
+
+	ret = NhlALCreate(&gsid,buffer,NhlgraphicStyleClass,
+			     cnl->base.wkptr->base.id,sargs,nargs);
+/*
+	nargs = 0;
+	NhlSetSArg(&sargs[(nargs)++],NhlNtrLineInterpolationOn, False);
+	ret = NhlALSetValues(cnp->trans_obj->base.id,sargs,nargs);
+*/
+
+	subret = NhlDataPolygon(cnl->base.id,gsid,x,y,ncells*nvertices);
+	ret = MIN(ret,subret);
+
+	NhlDestroy(gsid);
+	
+	
+	return ret;
+}
 
 /*
  * Function:  _NhlCellFill
@@ -12158,7 +12277,10 @@ NhlErrorTypes _NhlCellFill
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(NhlFATAL);
         }
-	if (cnp->sfp->x_arr && cnp->sfp->x_arr->num_dimensions == 2) {
+	if (cnp->sfp->x_cell_bounds && cnp->sfp->y_cell_bounds) {
+		ret = CellBoundsFill(Cnl,entry_name);
+	}
+	else if (cnp->sfp->x_arr && cnp->sfp->x_arr->num_dimensions == 2) {
 		if (! (cnp->sfp->y_arr && 
 		       cnp->sfp->y_arr->num_dimensions == 2)) {
 			e_text = "%s: invalid call to cnCellFill";

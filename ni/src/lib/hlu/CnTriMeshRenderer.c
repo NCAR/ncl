@@ -23,13 +23,14 @@
 #include <stdlib.h>
 #include <math.h>
 #include <ctype.h>
+#include <omp.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/CnTriMeshRendererP.h>
 #include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/hlu/MapTransObj.h>
 #include <ncarg/hlu/IrregularTransObjP.h>
 #include <ncarg/hlu/TriMeshTransObj.h>
-#include <ncarg/hlu/WorkspaceI.h>
+#include <ncarg/hlu/WorkspaceP.h>
 #include <ncarg/hlu/color.h>
 
 #ifdef BuildTRIANGLE
@@ -271,6 +272,11 @@ static NhlIsoLine *CnTriMeshGetIsoLines(
 #endif
 	);
 
+static void FreeTriBlockContents (
+	TriBlock *tri_block,
+	int *count;
+	);
+
 NhlCnTriMeshRendererClassRec NhlcnTriMeshRendererClassRec = {
 	{
 /* class_name 		*/      "cnTriMeshRendererClass",
@@ -356,6 +362,7 @@ static NhlCnTriMeshRendererLayerPart   *Tmp = NULL;
 static int Lopn = 4;
 static int Loen = 5;
 static int Lotn = 4;
+static TriBlock *Tbp;
 
 
 /*
@@ -454,13 +461,9 @@ static NhlErrorTypes BuildTriangularMesh
 	int npnt,nedg,ntri;
 	float *rlat,*rlon,*rdat;
 	int i,j;
+	TriBlock *tbp;
 
-	if (tmp->npnt > 0)
-		NhlFree(tmp->rpnt);
-	if (tmp->nedg > 0)
-		NhlFree(tmp->iedg);
-	if (tmp->ntri > 0)
-		NhlFree(tmp->itri);
+	FreeTriBlockContents(tmp->tri_block,&(tmp->nblocks));
 
 	iscr = NhlMalloc(4 * idim * jdim * sizeof(int));
 	rpnt = NhlMalloc(mpnt * sizeof(float));
@@ -620,13 +623,15 @@ static NhlErrorTypes BuildTriangularMesh
 		NhlFree(rlat);
 	}
 
-	tmp->npnt = npnt;
-	tmp->nedg = nedg;
-	tmp->ntri = ntri;
-	tmp->rpnt = rpnt;
-	tmp->iedg = iedg;
-	tmp->itri = itri;
+	tbp = &(tmp->tri_block[0]);
+	tbp->npnt = npnt;
+	tbp->nedg = nedg;
+	tbp->ntri = ntri;
+	tbp->rpnt = rpnt;
+	tbp->iedg = iedg;
+	tbp->itri = itri;
 	tmp->update_mode = TRIMESH_NOUPDATE;
+	tmp->nblocks = 1;
 
 	return NhlNOERROR;
 
@@ -673,13 +678,9 @@ static NhlErrorTypes BuildNativeMesh
 	int err_num;
 	char *e_msg;
 	char *e_text;
-	
-	if (tmp->npnt > 0)
-		NhlFree(tmp->rpnt);
-	if (tmp->nedg > 0)
-		NhlFree(tmp->iedg);
-	if (tmp->ntri > 0)
-		NhlFree(tmp->itri);
+	TriBlock *tbp;
+
+	FreeTriBlockContents(tmp->tri_block,&(tmp->nblocks));
 
 	rpnt = NhlMalloc(mpnt * sizeof(float));
 	iedg = NhlMalloc(medg * sizeof(int));
@@ -779,12 +780,16 @@ static NhlErrorTypes BuildNativeMesh
 			return NhlFATAL;
 		}
 	}
-	tmp->npnt = npnt;
-	tmp->nedg = nedg;
-	tmp->ntri = ntri;
-	tmp->rpnt = rpnt;
-	tmp->iedg = iedg;
-	tmp->itri = itri;
+
+	tbp = &(tmp->tri_block[0]);
+	tbp->npnt = npnt;
+	tbp->nedg = nedg;
+	tbp->ntri = ntri;
+	tbp->rpnt = rpnt;
+	tbp->iedg = iedg;
+	tbp->itri = itri;
+
+	tmp->nblocks = 1;
 	tmp->update_mode = TRIMESH_NOUPDATE;
 	NhlFree(ippp);
 	NhlFree(ippe);
@@ -1029,13 +1034,9 @@ static NhlErrorTypes BuildNativeMeshFromBounds
 	int err_num;
 	char *e_msg;
 	char *e_text;
-	
-	if (tmp->npnt > 0)
-		NhlFree(tmp->rpnt);
-	if (tmp->nedg > 0)
-		NhlFree(tmp->iedg);
-	if (tmp->ntri > 0)
-		NhlFree(tmp->itri);
+	TriBlock *tbp;
+
+	FreeTriBlockContents(tmp->tri_block,&(tmp->nblocks));
 
 	el = GetTriangleNodes(cnp->sfp->x_arr,cnp->sfp->y_arr,
 			      cnp->sfp->x_cell_bounds,cnp->sfp->y_cell_bounds,
@@ -1142,12 +1143,16 @@ static NhlErrorTypes BuildNativeMeshFromBounds
 			return NhlFATAL;
 		}
 	}
-	tmp->npnt = npnt;
-	tmp->nedg = nedg;
-	tmp->ntri = ntri;
-	tmp->rpnt = rpnt;
-	tmp->iedg = iedg;
-	tmp->itri = itri;
+
+	tbp = &(tmp->tri_block[0]);
+	tbp->npnt = npnt;
+	tbp->nedg = nedg;
+	tbp->ntri = ntri;
+	tbp->rpnt = rpnt;
+	tbp->iedg = iedg;
+	tbp->itri = itri;
+
+	tmp->nblocks = 1;
 	tmp->update_mode = TRIMESH_NOUPDATE;
 	NhlFree(ippp);
 	NhlFree(ippe);
@@ -1159,7 +1164,46 @@ static NhlErrorTypes BuildNativeMeshFromBounds
 }
 
 #ifdef BuildTRIANGLE
-		 
+
+/* these are the shewchuk structures */
+
+typedef struct _stri {
+  int nodes[3];  /* vertex node ids */
+} Stri;
+
+typedef struct _snode {  /* a vertex node */
+  double x;
+  double y;
+} Snode;
+
+typedef struct _sedge {
+  int nodes[2];   /* vertex nodes */
+} Sedge;
+
+/* conpackt structures */
+
+typedef struct _cpoint {   /* a point node */
+  float x;
+  float y;
+  float z;
+  float dat;
+} Cpoint;
+
+typedef struct _cedge {
+  int pix_1;   /* base index of edge point 1  - Lopn (4)  * (cpoint index + 1) (for Fortran indexing) */
+  int pix_2;
+  int trix_l;   /* base index of triangle to the left (Lotn (4)  * ctri index + 1) */
+  int trix_r;   /* base index of triangle to the right (Lotn (4) * ctri index + 1) */
+  int flag;
+} Cedge;
+
+typedef struct _ctri {
+  int edge[3]; /* base index of edges of the triangle (Loen (5)  * cedge index + edge number) */
+  int flag;
+} Ctri;
+
+#if 0
+/* this is the old code --keeping it around for now */
 static NhlErrorTypes BuildDelaunayMesh 
 #if	NhlNeedProto
 (
@@ -1204,15 +1248,10 @@ static NhlErrorTypes BuildDelaunayMesh
 	char *e_text;
 	struct triangulateio in,out;
 	char *flags;
-	
-	if (dyp->npnt > 0)
-		NhlFree(dyp->rpnt);
-	if (dyp->nedg > 0)
-		NhlFree(dyp->iedg);
-	if (dyp->ntri > 0)
-		NhlFree(dyp->itri);
+	TriBlock *tbp;
 
-	    
+	FreeTriBlockContents(dyp->tri_block,&(dyp->nblocks));
+
 	rlat = (float*)cnp->sfp->y_arr->data;
 	rlon = (float*)cnp->sfp->x_arr->data;
 	rdat = (float*)cnp->sfp->d_arr->data;
@@ -1339,12 +1378,16 @@ static NhlErrorTypes BuildDelaunayMesh
 			return NhlFATAL;
 		}
 	}
-	dyp->npnt = npnt;
-	dyp->nedg = nedg;
-	dyp->ntri = ntri;
-	dyp->rpnt = rpnt;
-	dyp->iedg = iedg;
-	dyp->itri = itri;
+
+	tbp = &(dyp->tri_block[0]);
+	tbp->npnt = npnt;
+	tbp->nedg = nedg;
+	tbp->ntri = ntri;
+	tbp->rpnt = rpnt;
+	tbp->iedg = iedg;
+	tbp->itri = itri;
+
+	dyp->nblocks = 1;
 	dyp->update_mode = TRIMESH_NOUPDATE;
 	NhlFree(ippp);
 	NhlFree(ippe);
@@ -1357,6 +1400,661 @@ static NhlErrorTypes BuildDelaunayMesh
 
 }
 #endif
+static NhlErrorTypes UpdateMeshData
+#if	NhlNeedProto
+(
+	NhlCnTriMeshRendererLayerPart *tmp,
+	NhlContourPlotLayer     cnl,
+	NhlString entry_name
+)
+#else
+(tmp,cnl,entry_name)
+        NhlCnTriMeshRendererLayerPart *tmp;
+	NhlContourPlotLayer     cnl;
+	NhlString entry_name;
+#endif
+{
+	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
+ 	float *rlat,*rlon;
+	float *rdat;
+	int i;
+	int ret = NhlNOERROR;
+	double xtmp,ytmp,xt,yt;
+	int block_ix;
+	int pcount[256];
+	TriBlock *tbp;
+	Cpoint *cpp;
+	float xs,xe,ys,ye;
+
+	rlat = (float*)cnp->sfp->y_arr->data;
+	rlon = (float*)cnp->sfp->x_arr->data;
+	rdat = (float*)cnp->sfp->d_arr->data;
+	memset(pcount,0,sizeof(int) * MIN(tmp->nblocks,256));
+
+	for (i = 0; i < cnp->sfp->fast_len; i++) { 
+		xtmp = (double) rlon[i];
+		ytmp = (double) rlat[i];
+		if (tmp->ezmap) {
+			NGCALLF(mdptra,MDPTRA)(&ytmp,&xtmp,&xt,&yt);
+			if (xt > 1e10 || yt > 1e10)
+				continue;
+		}
+		else {
+			xt = xtmp;
+			yt = ytmp;
+		}
+		for (block_ix = 0; block_ix < tmp->nblocks; block_ix++) {
+			tbp = &(tmp->tri_block[block_ix]);
+			cpp = (Cpoint *) tbp->rpnt;
+			xs = tbp->xs;
+			xe = tbp->xe;
+			ys = tbp->ys;
+			ye = tbp->ye;
+			if (xt < xs || xt > xe || yt < ys || yt > ye) {
+				continue;
+			}
+			if (_NhlCmpFAny2((float)xt,cpp[pcount[block_ix]].x,6,_NhlMIN_NONZERO) == 0 &&
+			    _NhlCmpFAny2((float)yt,cpp[pcount[block_ix]].y,6,_NhlMIN_NONZERO)) {
+				cpp[pcount[block_ix]].dat = rdat[i];
+				pcount[block_ix]++;
+			}
+			if (pcount[block_ix] > tbp->npnt / Lopn) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: internal logic error",entry_name);
+				return NhlFATAL;
+			}
+		}
+	}
+	return ret;
+}
+#if 0  
+typedef struct _PointAndIndex {
+  double x,y;
+  int index;
+} PointAndIndex;
+
+static int hlu_sort(const void *p1, const void *p2)
+{
+  PointAndIndex *pi1 = (PointAndIndex *)p1;
+  PointAndIndex *pi2 = (PointAndIndex *)p2;
+
+  if (pi1->x < pi2->x)
+    return -1;
+  if (pi1->x > pi2->x)
+    return 1;
+  if (pi1->y < pi2->y)
+    return -1;
+  if (pi1->y > pi2->y)
+    return 1;
+  printf("points %d and %d compare as equal\n", pi1->index, pi2->index);
+  return 0;
+}
+
+static double ccw(PointAndIndex* p1, PointAndIndex* p2, PointAndIndex* p3)
+{
+  return (p2->x - p1->x)*(p3->y - p1->y) - (p2->y - p1->y)*(p3->x - p1->x);
+}
+
+static void
+convex_hull(PointAndIndex* points, ng_size_t npoints, PointAndIndex*** out_hull, ng_size_t* out_hullsize)
+{
+  PointAndIndex** hull;
+  ng_size_t i, t, k = 0;
+ 
+  hull = *out_hull;
+ 
+  /* lower hull */
+  for (i = 0; i < npoints; ++i) {
+    while (k >= 2 && ccw(hull[k-2], hull[k-1], &(points[i])) < 0) --k;
+    hull[k++] = &points[i];
+  }
+ 
+  /* upper hull */
+  for (i = npoints-2, t = k+1; i >= 0; --i) {
+    while (k >= t && ccw(hull[k-2], hull[k-1], &(points[i])) < 0) --k;
+    hull[k++] = &points[i];
+  }
+ 
+  *out_hull = hull;
+  *out_hullsize = k;
+}
+
+
+static int* MarkBoundaryPoints(int npnts, int *plist, float *rlon, float *rlat)
+{
+  double ax, ay, bx, by, cx, cy, dx, dy;
+  double x1,x2,y1,y2,tx,ty;
+  int i;
+  int pcount, pix;
+  PointAndIndex *pandi;
+  PointAndIndex **hull;
+  ng_size_t hull_point_count;
+  
+  ax = bx = cx = dx = rlon[plist[0]];
+  ay = by = cy = dy = rlat[plist[0]];
+  x1 = x2 = ax;
+  y1 = y2 = ay;
+
+  pcount = npnts;
+  for (i = 1; i < npnts; i++) {
+    tx = rlon[plist[i]];
+    ty = rlat[plist[i]];
+    if (tx > x1 && tx < x2 && ty > y1 && ty < y2) {
+      plist[i] = -1;
+      pcount--;
+      continue;
+    }
+    if (tx - ty > ax - ay) {
+      ax = tx;
+      ay = ty;
+    }
+    if (tx + ty > bx + by) {
+      bx = tx;
+      by = ty;
+    }
+    if (tx - ty < cx - cy) {
+      cx = tx;
+      cy = ty;
+    }
+    if (tx + ty < dx + dy) {
+      dx = tx;
+      dy = ty;
+    }
+    x1 = MAX(cx,dx);
+    x2 = MIN(ax,bx);
+    y1 = MAX(ay,dy);
+    y2 = MIN(cy,by);
+  }
+  for (i = 0; i < npnts; i++) {
+    if (plist[i] < 0) 
+      continue; /* already removed */
+    tx = rlon[plist[i]];
+    ty = rlat[plist[i]];
+    if (tx > x1 && tx < x2 && ty > y1 && ty < y2) {
+      plist[i] = -1;
+      pcount--;
+      continue;
+    }
+    /*printf("%f,%f\n",tx,ty);*/
+  }
+  printf("points remaining %d\n",pcount);
+  
+  pandi = (PointAndIndex *)  NhlMalloc(pcount * sizeof(PointAndIndex));
+
+  pix = 0;
+  for (i = 0; i < npnts; i++) {
+    if (plist[i] < 0)
+      continue;
+    pandi[pix].x = rlon[plist[i]];
+    pandi[pix].y = rlat[plist[i]];
+    pandi[pix].index = i;  /* now indexing to the current list of points, not the overall list */
+    pix++;
+  }
+  printf("hull candidate point count: %d\n", pix);
+
+  qsort(pandi,pix,sizeof(PointAndIndex),hlu_sort);
+
+  hull = (PointAndIndex **) NhlMalloc(pix * sizeof(PointAndIndex *));
+	
+  convex_hull(pandi,pix,&hull,&hull_point_count);
+
+/*  printf("hull point count: %ld\n", hull_point_count);*/
+
+  /* use plist as the boundary point indicator */
+
+  memset(plist,0,npnts * sizeof(int));
+  for (i = 0; i < hull_point_count; i++) {
+    printf("%f %f\n",hull[i]->x,hull[i]->y);
+    plist[hull[i]->index] = 1;
+  }
+
+  return plist;
+
+}
+    
+
+static NhlErrorTypes AddBoundarySegments
+  (
+   TriBlock *tbp,
+   int *npnt,
+   int *npnt_alloc,
+   double **points,
+   float **dat,
+   int *npnt_added,
+   float missing_value
+   )
+{
+  int nbounds = sqrt(*npnt);
+  int xcount,ycount;
+  double xsize = tbp->xe - tbp->xs;
+  double ysize = tbp->ye - tbp->ys;
+  double xinc, yinc;
+  double xin, yin, xt, yt;
+  int pcount = *npnt;
+  int i;
+  
+  xcount = 2 * nbounds * xsize / (xsize + ysize);
+  ycount = 2 * nbounds * ysize / (xsize + ysize);
+  xinc = xsize / xcount;
+  yinc = ysize / ycount;
+
+  if (*npnt + 4 * nbounds > *npnt_alloc) {
+    *npnt_alloc= *npnt+ 5 * nbounds;
+    *points = (double *)NhlRealloc(*points,2 * *npnt_alloc * sizeof(double));
+    *dat = (float *) NhlRealloc(*dat,*npnt_alloc * sizeof(float));
+  }
+    
+  yin = tbp->ys;
+  if (yin != -90 && yin != 90) {
+	  for (i = 0; i < xcount; i++) {
+		  xin = tbp->xs + i * xinc;
+		  c_mdptra(yin,xin,&xt,&yt);
+		  if (xt > 1e10 || yt > 1e10)
+			  continue;
+		  (*points)[2 * pcount] = xt;
+		  (*points)[2 * pcount + 1] = yt;
+		  pcount++;
+	  }
+  }
+  xin = tbp->xe;
+  for (i = 0; i < ycount; i++) {
+    yin = tbp->ys + i * yinc;
+    c_mdptra(yin,xin,&xt,&yt);
+    if (xt > 1e10 || yt > 1e10)
+      continue;
+    (*points)[2 * pcount] = xt;
+    (*points)[2 * pcount + 1] = yt;
+    pcount++;
+  }
+  yin = tbp->ye;
+  if (yin != -90 && yin != 90) {
+	  for (i = xcount - 1; i >= 0; i--) {
+		  xin = tbp->xs + i * xinc;
+		  c_mdptra(yin,xin,&xt,&yt);
+		  if (xt > 1e10 || yt > 1e10)
+			  continue;
+		  (*points)[2 * pcount] = xt;
+		  (*points)[2 * pcount + 1] = yt;
+		  pcount++;
+	  }
+  }
+  xin = tbp->xs;
+  for (i = ycount - 1; i >= 0; i--) {
+	  yin = tbp->ys + i * yinc;
+	  c_mdptra(yin,xin,&xt,&yt);
+	  if (xt > 1e10 || yt > 1e10)
+		  continue;
+	  (*points)[2 * pcount] = xt;
+	  (*points)[2 * pcount + 1] = yt;
+	  pcount++;
+  }
+  *npnt_added = pcount - *npnt;
+  for (i = *npnt; i < pcount; i++) {
+	  (*dat)[i] = missing_value;
+  }
+  return NhlNOERROR;
+}
+#endif
+
+static NhlErrorTypes BuildDelaunayMesh
+#if	NhlNeedProto
+(
+	NhlCnTriMeshRendererLayerPart *tmp,
+	NhlContourPlotLayer     cnl,
+	NhlString entry_name
+)
+#else
+(tmp,cnl,entry_name)
+        NhlCnTriMeshRendererLayerPart *tmp;
+	NhlContourPlotLayer     cnl;
+	NhlString entry_name;
+#endif
+{
+	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
+	int mnop = cnp->sfp->fast_len;
+	int npnt,nedg;
+	float *rlat,*rlon;
+	float *rdat;
+	int ntri = 0;
+
+	int i,j;
+	struct triangulateio in,out,vout;
+	char *flags;
+	int block_count = 1;
+	int block_size;
+	int threshold_size = 20000000;
+	double xs, xe, ys, ye, xstep,ystep,xspace,yspace;
+	Stri *stris = NULL;
+        Snode *snodes;
+	Sedge *sedges, *vedges;
+        Cpoint *cpoints;
+        Cedge *cedges;
+        Ctri *ctris;
+	int nx_div, ny_div;
+	TriBlock *tbp;
+	int npnt_alloc;
+	int block_ix;
+	float ye_adj,yadd;
+	float xe_adj,xadd;
+	double xt,yt;
+	int tid, nthreads;
+	double xmx,xmn,ymx,ymn;
+	double xtmp,ytmp,deps;
+	float flx,frx,fby,fuy,wlx,wrx,wby,wuy; 
+	int ll;
+
+	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
+#if 0
+	printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
+	       flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
+#endif
+
+	threshold_size = 40000000;
+	FreeTriBlockContents(tmp->tri_block,&(tmp->nblocks));
+
+	rlat = (float*)cnp->sfp->y_arr->data;
+	rlon = (float*)cnp->sfp->x_arr->data;
+	rdat = (float*)cnp->sfp->d_arr->data;
+
+	block_size = mnop;
+        while (block_size > threshold_size) {
+		block_size = block_size / 2 + block_size % 2;
+		block_count *= 2;
+	}
+	nx_div = MAX(1,block_count / 2);
+	ny_div = MAX(1,block_count / 2 + block_count % 2);
+
+	deps = 0.001;
+	
+#pragma omp parallel shared(cnp, tmp, nx_div, ny_div, block_size, mnop, rlat, rlon, rdat,xstep,ystep,block_count,nthreads,deps,yadd,xadd) \
+	private(tbp,block_ix,ys,ye,ye_adj,xs,xe,xe_adj,npnt,ntri,nedg,npnt_alloc,xt,yt,i,j,in,out,vout, \
+		snodes,stris,sedges,vedges,cpoints,cedges,ctris,tid,xmx,xmn,ymx,ymn,ytmp,xtmp)
+	{
+	  tid = omp_get_thread_num();
+	  nthreads = omp_get_num_threads();
+	  if (tid == 0) {
+		  /* printf("%d threads\n",nthreads);*/
+		  if (nthreads > block_count) {
+			  /* block_count = nthreads - nthreads % 2;  accept even numbers only */
+			  block_count = nthreads;
+		  }
+		  if (block_count >= tmp->nblocks_alloced) {
+			  NhlFree(tmp->tri_block);
+			  tmp->tri_block = (TriBlock *) NhlCalloc(block_count, sizeof(TriBlock));
+			  tmp->nblocks_alloced = block_count;
+		  }
+
+		  nx_div = MAX(1,(int) sqrt(block_count));
+		  ny_div = MAX(1,(int) block_count / nx_div);
+		  block_count = nx_div * ny_div;
+		  block_size = mnop / block_count + block_size % block_count;
+		  xspace = wrx - wlx;
+		  yspace = wuy - wby;
+		  /*
+		  point_dist = sqrt(mnop / (xspace * yspace));
+		   try for five point overlap apporximately */
+		  yadd = yspace * 0.01;
+		  xadd = xspace * 0.01;
+		  ys = wby;
+		  ye = ys + (wuy - ys) / ny_div;
+		  ystep = ye - ys;
+		  ye_adj = MIN(ye + yadd,wuy);
+
+		  block_ix = 0;
+		  npnt_alloc = (int) 1.25 * block_size;
+		  for (j = 0; j < ny_div; j++) {
+			  xs = wlx;
+			  xe = xs + (wrx - xs) / nx_div;
+			  xstep = xe - xs;
+			  xe_adj = MIN(xe + xadd, wrx);
+			  for (i = 0; i < nx_div; i++) {
+				  tbp = &(tmp->tri_block[block_ix]);
+				  tbp->xs = xs;
+				  tbp->xe = xe_adj;
+				  tbp->ys = ys;
+				  tbp->ye = ye_adj;
+				  xs = xe;
+				  xe = xs + xstep;
+				  xe_adj = MIN(xe + xadd,wrx);
+				  tbp->points = (double *)NhlMalloc(2 * npnt_alloc * sizeof(double));
+				  tbp->dat = (float *) NhlMalloc(npnt_alloc * sizeof(float));
+				  tbp->npnt = 0;
+				  tbp->npnt_alloc = npnt_alloc;
+				  block_ix++;
+			  }
+			  ys = ye;
+			  ye = ys + ystep;
+			  ye_adj = MIN(ye + yadd, wuy);
+		  }
+		  for (i = 0; i < mnop; i++) {
+			xtmp = (double) rlon[i];
+			ytmp = (double) rlat[i];
+			if (tmp->ezmap) {
+				NGCALLF(mdptra,MDPTRA)(&ytmp,&xtmp,&xt,&yt);
+				if (xt > 1e10 || yt > 1e10)
+					continue;
+			}
+			else {
+				xt = xtmp;
+				yt = ytmp;
+			}
+			for (block_ix = 0; block_ix < block_count; block_ix++) {
+				tbp = &(tmp->tri_block[block_ix]);
+				xs = tbp->xs;
+				xe = tbp->xe;
+				ys = tbp->ys;
+				ye = tbp->ye;
+				if (xt < xs || xt > xe || yt < ys || yt > ye) {
+					continue;
+				}
+				if (tbp->npnt == tbp->npnt_alloc) {
+					tbp->npnt_alloc *= 1.5;
+					tbp->points = (double *)NhlRealloc(tbp->points,2 * tbp->npnt_alloc * sizeof(double));
+					tbp->dat = (float *) NhlRealloc(tbp->dat,tbp->npnt_alloc * sizeof(float));
+				}
+				tbp->points[tbp->npnt * 2] = (double)xt;
+				tbp->points[tbp->npnt * 2 + 1] = (double)yt;
+				tbp->dat[tbp->npnt] = rdat[i];
+				tbp->npnt++;
+			}
+		  }
+	  }
+/*
+	  else {
+		  printf("thread num is %d\n",tid);
+	  }
+*/
+
+#pragma omp barrier
+
+
+#pragma omp for schedule(static,1)
+	  for (block_ix = 0; block_ix < block_count; block_ix++) {
+	    npnt = 0;
+	    ntri = 0;
+	    nedg = 0;
+	    tbp = &(tmp->tri_block[block_ix]);
+	    xs = tbp->xs;
+	    xe = tbp->xe;
+	    ys = tbp->ys;
+	    ye = tbp->ye;
+
+	    if (tbp->npnt == 0) {
+		    tbp->npnt = 0;
+		    tbp->nedg = 0;
+		    tbp->ntri = 0;
+		    tbp->rpnt = NULL;
+		    tbp->iedg = NULL;
+		    tbp->itri = NULL;
+		    NhlFree(tbp->points);
+		    NhlFree(tbp->dat);
+		    continue;
+	    }
+
+#if 0
+	    printf("thread %d chunk x %f %f y %f %f\n",tid,xs,xe,ys,ye);
+
+	    seglist = NhlMalloc(sizeof(int) * npnt_added);
+	    segmarkerlist = NhlMalloc(sizeof(int) * npnt_added / 2);
+	    for (i = 0; i < npnt_added / 2; i++) {
+	      seglist[2 * i] = npnt + i;
+	      seglist[2 * i + 1] = npnt + i + 1;
+	      segmarkerlist[i] = 1;
+	    }
+#endif
+	    memset(&in,0,sizeof(struct triangulateio));
+	    memset(&out,0,sizeof(struct triangulateio));
+	    memset(&vout,0,sizeof(struct triangulateio));
+	    in.numberofpointattributes = 0;
+	    in.numberoftriangles = 0;
+
+	    if (cnp->verbose_triangle_info) {
+	      flags = "IBzveVV";
+	    }
+	    else {
+	      flags = "IBzveQ";
+	    }
+
+	    in.pointlist = tbp->points;
+/*
+	    in.segmentlist = seglist;
+	    in.segmentmarkerlist = segmarkerlist;
+*/
+	    
+	    /*in.pointmarkerlist = blist;*/
+	    out.pointlist = in.pointlist;
+/*
+	    in.numberofpoints = npnt + npnt_added;
+*/
+	    in.numberofpoints = tbp->npnt;
+
+	    triangulate(flags,&in,&out,&vout);
+/*
+	    printf("triangulation completed\n");
+*/
+
+	    stris = (Stri *) out.trianglelist;
+	    sedges = (Sedge *) out.edgelist;
+	    vedges = (Sedge *) vout.edgelist;
+
+	    npnt = out.numberofpoints;
+	    ntri = out.numberoftriangles;
+	    nedg = out.numberofedges;
+	    snodes = (Snode *)tbp->points;
+	    cpoints = NhlMalloc(npnt * sizeof(Cpoint));
+	    cedges = NhlMalloc(nedg * sizeof(Cedge));
+	    ctris = NhlMalloc(ntri * sizeof(Ctri));
+	    memset(ctris,(char) 0,ntri *sizeof(Ctri));
+
+	    xmx = ymx = -999;
+	    xmn = ymn = 9999;
+
+	    for (i = 0; i < npnt; i++) {
+	      cpoints[i].x = (float) snodes[i].x;
+	      cpoints[i].y = (float) snodes[i].y;
+	      cpoints[i].z = 0.0;
+	      cpoints[i].dat = tbp->dat[i];
+#if 0
+	      if (cpoints[i].x > xmx) {
+		xmx = cpoints[i].x;
+		ixmx = i;
+	      }
+	      if (cpoints[i].y > ymx) {
+		ymx = cpoints[i].y;
+		iymx = i;
+	      }
+	      if (cpoints[i].x < xmn) {
+		xmn = cpoints[i].x;
+		ixmn = i;
+	      }
+	      if (cpoints[i].y < ymn) {
+		ymn = cpoints[i].y;
+		iymn = i;
+	      }
+#endif
+	    }
+	    NhlFree(tbp->points);
+	    tbp->points = NULL;
+	    NhlFree(tbp->dat);
+	    tbp->dat = NULL;
+
+	    for (i = 0; i < nedg; i++) {
+	      cedges[i].pix_1 = sedges[i].nodes[0] * Lopn;
+	      cedges[i].pix_2 = sedges[i].nodes[1] * Lopn;
+	      /* the Voronoi edges have the same indexes as the Delaunay triangles (they are duals) */
+	      cedges[i].trix_l =  vedges[i].nodes[0] > -1 ? vedges[i].nodes[0] * Lotn : -1; /* plus edge number within triangle */
+	      cedges[i].trix_r =  vedges[i].nodes[1] > -1 ? vedges[i].nodes[1] * Lotn : -1; /* plus edge number within triangle */
+	      cedges[i].flag = 0;
+	      for (j = 0; j < 3; j++) {
+		if (vedges[i].nodes[0] > -1 && stris[vedges[i].nodes[0]].nodes[j] == sedges[i].nodes[0]) {
+		  ctris[vedges[i].nodes[0]].edge[j] = i * Loen;
+		  cedges[i].trix_l += (j + 1);
+		}
+		if (vedges[i].nodes[1] > -1 && stris[vedges[i].nodes[1]].nodes[j] == sedges[i].nodes[1]) {
+		  ctris[vedges[i].nodes[1]].edge[j] = i * Loen;
+		  cedges[i].trix_r += (j+1);
+		}
+	      }
+	    }
+	    if (cnp->sfp->missing_value_set) {
+		    for (i = 0; i < ntri; i++) {
+			    if (cpoints[cedges[ctris[i].edge[0]/Loen].pix_1/Lopn].dat == cnp->sfp->missing_value ||
+				cpoints[cedges[ctris[i].edge[1]/Loen].pix_1/Lopn].dat == cnp->sfp->missing_value ||
+				cpoints[cedges[ctris[i].edge[2]/Loen].pix_1/Lopn].dat == cnp->sfp->missing_value)
+				    ctris[i].flag = 1;
+		    }
+	    }
+	    else {
+		    for (i = 0; i < ntri; i++) {
+			    if (cpoints[cedges[ctris[i].edge[0]/Loen].pix_1/Lopn].dat >= 1e32 ||
+				cpoints[cedges[ctris[i].edge[1]/Loen].pix_1/Lopn].dat >=  1e32 ||
+				cpoints[cedges[ctris[i].edge[2]/Loen].pix_1/Lopn].dat >= 1e32)
+				    ctris[i].flag = 1;
+		    }
+	    }
+
+	    free(stris);
+	    free(sedges);
+	    free(vedges);
+
+	    tbp->npnt = npnt * Lopn;
+	    tbp->nedg = nedg * Loen;
+	    tbp->ntri = ntri * Lotn;
+	    tbp->rpnt = (float *) cpoints;
+	    tbp->iedg = (int *) cedges;
+	    tbp->itri = (int *) ctris;
+	  }
+
+	}
+
+
+	tmp->nblocks = block_count;
+        tmp->update_mode = TRIMESH_NOUPDATE;
+
+	return NhlNOERROR;
+}
+
+#endif
+
+static void FreeTriBlockContents (
+	TriBlock *tri_block,
+	int *count
+)
+{
+	TriBlock *tb;
+	int i;
+	if (*count == 0) 
+		return;
+
+	for (i = 0; i < *count; i++) {
+		tb = &(tri_block[i]);
+		NhlFree(tb->rpnt);
+		NhlFree(tb->iedg);
+		NhlFree(tb->itri);
+	}
+	*count = 0;
+
+	return;
+}
 
 /*
  * Function:	CnTriMeshRendererInitialize
@@ -1400,16 +2098,18 @@ CnTriMeshRendererInitialize
 	NhlCnTriMeshRendererLayerPart *tmp =  &tml->cntrimeshrenderer;
 	NhlContourPlotLayer     cnl;
 	NhlContourPlotLayerPart	*cnp;
+	static int initial_block_count = 16;
 
 	load_hluct_routines(False);
 	
 	cnl = (NhlContourPlotLayer) tml->base.parent;
 	cnp =  &cnl->contourplot;
 
-	tmp->rpnt = NULL;
-	tmp->iedg = tmp->itri = NULL;
-	tmp->npnt = tmp->nedg = tmp->ntri = 0;
+	/* allowing for multiple blocks -- initialize the block pointers to allow an initial supply */
 
+	tmp->tri_block = (TriBlock *) NhlCalloc(initial_block_count, sizeof (TriBlock));
+	tmp->nblocks = 0;
+	tmp->nblocks_alloced = initial_block_count;
 
         return ret;
 }
@@ -1439,12 +2139,8 @@ NhlLayer inst;
 	NhlCnTriMeshRendererLayer tml = (NhlCnTriMeshRendererLayer) inst;
 	NhlCnTriMeshRendererLayerPart *tmp =  &tml->cntrimeshrenderer;
 
-	if (tmp->npnt > 0)
-		NhlFree(tmp->rpnt);
-	if (tmp->nedg > 0)
-		NhlFree(tmp->iedg);
-	if (tmp->ntri > 0)
-		NhlFree(tmp->itri);
+	FreeTriBlockContents(tmp->tri_block,&(tmp->nblocks));
+	NhlFree(tmp->tri_block);
 
 	return ret;
 }
@@ -2568,6 +3264,21 @@ static NhlErrorTypes cnInitCellArray
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(NhlFATAL);
 	}
+	{
+	  NhlWorkspaceRec *cwsrp = (NhlWorkspaceRec *) cnp->cws;
+	  int *cell = cwsrp->ws_ptr;
+	  int grid_fill_ix, i, j;
+	  grid_fill_ix = MAX(Cnp->missing_val.gks_fcolor, Cnp->grid_bound.gks_fcolor);
+	  grid_fill_ix = grid_fill_ix < 0 ? NhlTRANSPARENT_CI : grid_fill_ix;
+ 	  /*grid_fill_ix = -9999;*/
+	  for (j = 0; j < *nsize; j++) {
+	    for (i = 0; i < *msize; i++) {
+	      *(cell + j * *msize + i) = grid_fill_ix;
+	    }
+
+	  }
+	}
+
 	return ret;
 }
 
@@ -2686,19 +3397,26 @@ static NhlErrorTypes InitMesh
 (
         NhlContourPlotLayer     cnl,
 	NhlCnTriMeshRendererLayerPart	  *tmp,
+	int                     do_ctmesh,
 	NhlString		entry_name
         )
 #else
 (cnl,tmp)
         NhlContourPlotLayer     cnl;
 	NhlCnTriMeshRendererLayerPart	  *tmp;
+	int                     do_ctmesh;
 	NhlString		entry_name;
 #endif
 {
 	NhlContourPlotLayerPart 	  *cnp = &cnl->contourplot;
         NhlErrorTypes ret = NhlNOERROR;
+	TriBlock *tbp;
 
-	if (tmp->update_mode > TRIMESH_NOUPDATE || ! tmp->npnt) {
+	if (tmp->update_mode == TRIMESH_DATAUPDATE && tmp->nblocks > 0 && ! do_ctmesh) {
+		ret = UpdateMeshData(tmp,cnl,entry_name);
+		return ret;
+	}
+	else if (tmp->update_mode > TRIMESH_NOUPDATE || tmp->nblocks == 0) {
 		if (cnp->sfp->grid_type == NhlMESHGRID) {
 			if (cnp->sfp->element_nodes) {
 				ret = BuildNativeMesh(tmp,cnl,entry_name);
@@ -2711,6 +3429,9 @@ static NhlErrorTypes InitMesh
 			else {
 #ifdef BuildTRIANGLE
 				ret = BuildDelaunayMesh(tmp,cnl,entry_name);
+				if (! do_ctmesh) {
+					return ret;
+				}
 #else
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  "Cannot create triangular mesh: supply additional resources or build with Triangle package");
@@ -2723,13 +3444,226 @@ static NhlErrorTypes InitMesh
 		}
 	}
 
-	_NhlCtmesh(tmp->rpnt,tmp->npnt,Lopn,
-		   tmp->iedg,tmp->nedg,Loen,
-		   tmp->itri,tmp->ntri,Lotn,
+	tbp = &(tmp->tri_block[0]);
+	_NhlCtmesh(tbp->rpnt,tbp->npnt,Lopn,
+		   tbp->iedg,tbp->nedg,Loen,
+		   tbp->itri,tbp->ntri,Lotn,
 		   cnp->fws,cnp->iws,entry_name);
 
 	return ret;
 }
+
+static NhlErrorTypes ContourLineRender (
+        NhlContourPlotLayer 	          cnl,
+	NhlCnTriMeshRendererLayerPart	  *tmp,
+	int *                   mesh_inited,
+	NhlString		entry_name
+	)
+{
+	NhlErrorTypes  ret, subret;
+	NhlContourPlotLayerPart   *cnp = &cnl->contourplot;
+	TriBlock *tbp;
+	int i;
+	NhlString e_text;
+
+	if (! *mesh_inited) {
+		ret = InitMesh(cnl,tmp,0,entry_name);
+		if (ret < NhlWARNING) {
+			ContourAbortDraw(cnl);
+			return ret;
+		}
+		*mesh_inited = 1;
+
+	}
+	if (tmp->nblocks > 1) {
+		e_text = "%s: Threading not implemented for contour lines -- set env var OMP_NUM_THREADS to 1";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  e_text,entry_name);
+		ContourAbortDraw(cnl);
+		return NhlFATAL;
+	}
+#if 0
+#pragma omp parallel shared(cnp, tmp,entry_name,Lopn,Loen,Lotn)  \
+  private(tbp,Tbp)							 
+        {
+#pragma omp for schedule(static,1)
+#endif
+	for (i = 0; i < tmp->nblocks; i++) {
+		tbp = &(tmp->tri_block[i]);
+		Tbp = tbp;
+		subret = _NhlCtcldr(tbp->rpnt,tbp->iedg,tbp->itri,
+				    cnp->fws,cnp->iws,entry_name);
+
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		  ContourAbortDraw(cnl);
+		  break;
+		}
+	}
+
+#if 0
+	}
+#endif
+
+	return ret;
+}	
+
+static void SortEdges (
+	TriBlock *tbp
+       )
+{
+  Cpoint *cpoints = (Cpoint *)tbp->rpnt;
+  Cedge  *cedges = (Cedge *) tbp->iedg;
+  int i,tmp;
+  
+  for (i = 0; i < tbp->nedg / Loen; i++) {
+    if (cpoints[cedges[i].pix_1 / Lopn].dat > cpoints[cedges[i].pix_2 / Lopn].dat) {
+      tmp = cedges[i].pix_1;
+      cedges[i].pix_1 = cedges[i].pix_2;
+      cedges[i].pix_2 = tmp;
+      tmp = cedges[i].trix_l;
+      cedges[i].trix_l = cedges[i].trix_r;
+      cedges[i].trix_r = tmp;
+    }
+  }
+}
+
+static NhlErrorTypes RasterFillRender (
+        NhlContourPlotLayer 	          cnl,
+	NhlCnTriMeshRendererLayerPart	  *tmp,
+	int *                   mesh_inited,
+	NhlString		entry_name
+	)
+{
+	int msize,nsize;
+	float min_cell_size;
+	NhlBoundingBox bbox;
+	NhlErrorTypes  ret, subret;
+	NhlContourPlotLayerPart   *cnp = &cnl->contourplot;
+	TriBlock *tbp;
+	int i;
+	int nthreads;
+	int fill_op = 0;
+	NhlString e_text;
+
+	ret = cnInitCellArray(cnl,&msize,&nsize,&bbox,
+				 &min_cell_size,entry_name);
+	if (ret < NhlWARNING) {
+		return ret;
+	}
+
+	if (! *mesh_inited) {
+		ret = InitMesh(cnl,tmp,0,entry_name);
+		if (ret < NhlWARNING) {
+			ContourAbortDraw(cnl);
+			return ret;
+		}
+		*mesh_inited = 1;
+	}
+	if (tmp->nblocks  > 1 && cnp->raster_smoothing_on) {
+		subret = MIN(NhlFATAL,subret);
+		e_text = "%s: Threading not implemented for smoothed raster contouring -- set env var OMP_NUM_THREADS to 1";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  e_text,entry_name);
+		ContourAbortDraw(cnl);
+		return (ret = MIN(subret,ret));
+	}
+
+
+#pragma omp parallel shared(cnp, tmp,entry_name,Lopn,Loen,Lotn,nthreads,bbox,msize,nsize,min_cell_size,fill_op) \
+  private(tbp,i)							 
+	{
+		nthreads = omp_get_num_threads();
+		if (nthreads > 1) fill_op = 2;
+
+#pragma omp for schedule(static,1)
+
+
+		for (i = tmp->nblocks -1 ; i >= 0; i--) {
+/*	for (i = 0; i < tmp->nblocks ; i++) {*/
+			tbp = &(tmp->tri_block[i]);
+			Tbp = tbp;
+			if (tbp->npnt == 0) 
+				continue;
+
+			if (! cnp->raster_smoothing_on) {
+				SortEdges(tbp);
+				subret = _NhlCtcica(tbp->rpnt,tbp->iedg,tbp->itri,
+						    cnp->fws,cnp->iws,cnp->cws,
+						    msize,msize,nsize,
+						    bbox.l,bbox.b,bbox.r,bbox.t,
+						    min_cell_size,
+						    cnp->raster_smoothing_on,
+						    fill_op,
+						    (void *) tbp,
+						    entry_name);
+			}
+			else {
+#pragma omp critical
+
+				_NhlCtmesh(tbp->rpnt,tbp->npnt,Lopn,
+					   tbp->iedg,tbp->nedg,Loen,
+					   tbp->itri,tbp->ntri,Lotn,
+					   cnp->fws,cnp->iws,entry_name);
+
+				subret = _NhlCtcica(tbp->rpnt,tbp->iedg,tbp->itri,
+						    cnp->fws,cnp->iws,cnp->cws,
+						    msize,msize,nsize,
+						    bbox.l,bbox.b,bbox.r,bbox.t,
+						    min_cell_size,
+						    cnp->raster_smoothing_on,
+						    fill_op,
+						    (void *) tbp,
+						    entry_name);
+
+			}
+		}
+	}
+#pragma omp barrier
+
+#if 0   /* for debugging */
+
+	{
+		NhlWorkspaceRec *cwsrp = (NhlWorkspaceRec *) cnp->cws;
+		int *cell = cwsrp->ws_ptr;
+		int j;
+		int grid_fill_ix;
+		int cell_count;
+		grid_fill_ix = MAX(Cnp->missing_val.gks_fcolor, Cnp->grid_bound.gks_fcolor);
+		grid_fill_ix = grid_fill_ix < 0 ? NhlTRANSPARENT_CI : grid_fill_ix;
+
+		cell_count = 0;
+		for (j = 0; j < nsize; j++) {
+			for (i = 0; i < msize; i++) {
+				if (*(cell + j * msize + i) == grid_fill_ix) {
+					printf("cell i %d j %d not initialized\n", i, j);
+					cell_count++;
+				}
+			}
+		}
+		printf("%d cells of %d x %d array not initialized\n",cell_count,msize,nsize);
+	}
+#endif
+
+#if 1
+	subret = _NhlCtcica(NULL,NULL,NULL,
+			    cnp->fws,cnp->iws,cnp->cws,
+			    msize,msize,nsize,
+			    bbox.l,bbox.b,bbox.r,bbox.t,
+			    min_cell_size,
+			    cnp->raster_smoothing_on,
+			    3,
+			    NULL,
+			    entry_name);
+
+#endif
+	if (cnp->cws != NULL) {
+		subret = _NhlIdleWorkspace(cnp->cws);
+		ret = MIN(subret,ret);
+		cnp->cws = NULL;
+	}
+	return ret;
+}
+
 
 static NhlErrorTypes CnTriMeshRender
 #if	NhlNeedProto
@@ -2755,11 +3689,14 @@ static NhlErrorTypes CnTriMeshRender
 	int mesh_inited = 0;
         Gint            err_ind;
         Gclip           clip_ind_rect;
+	TriBlock *tbp;
+	int trans_change_count;
+
+	tbp = &(tmp->tri_block[0]);
 
 	Cnl = cnl;
 	Cnp = cnp;
 	Tmp = tmp;
-
 
 	ginq_clip(&err_ind,&clip_ind_rect);
         gset_clip_ind(GIND_CLIP);
@@ -2767,6 +3704,15 @@ static NhlErrorTypes CnTriMeshRender
 	c_ctrset();
 
 	SetCtParams(cnl,entry_name);
+
+	subret = NhlVAGetValues(cnl->trans.overlay_trans_obj->base.id,
+                                NhlNtrChangeCount,&trans_change_count,
+                                NULL);
+	if (trans_change_count > tmp->trans_change_count) {
+		tmp->update_mode = TRIMESH_NEWMESH;
+		tmp->trans_change_count = trans_change_count;
+	}
+
 /*
  * Only set the ORV parameter if overlaying on EZMAP. It can cause
  * problems otherwise. (Not sure yet whether it is needed in some cases
@@ -2783,7 +3729,7 @@ static NhlErrorTypes CnTriMeshRender
 		    ! (cnp->sfp->element_nodes ||
 		       (cnp->sfp->x_cell_bounds && cnp->sfp->y_cell_bounds))) {
 			c_ctseti("MAP",Nhlcn1DMESHMAPVAL);
-			tmp->update_mode = TRIMESH_NEWMESH;
+
 		}
 		else {
 			c_ctseti("MAP",NhlcnMAPVAL);
@@ -2868,13 +3814,21 @@ static NhlErrorTypes CnTriMeshRender
 		float min_cell_size;
 
 		if (! mesh_inited) {
-			subret = InitMesh(cnl,tmp,entry_name);
+			subret = InitMesh(cnl,tmp,1,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				ContourAbortDraw(cnl);
 				gset_clip_ind(clip_ind_rect.clip_ind);
 				return ret;
 			}
 			mesh_inited = 1;
+		}
+		if (tmp->nblocks > 1) {
+			subret = MIN(NhlFATAL,subret);
+			e_text = "%s: Threading not implemented for gridded data output -- set env var OMP_NUM_THREADS to 1";
+			NhlPError(NhlFATAL,NhlEUNKNOWN, e_text,entry_name);
+			ContourAbortDraw(cnl);
+			gset_clip_ind(clip_ind_rect.clip_ind);
+			return ret;
 		}
 		subret = cnInitDataArray(cnl,&msize,&nsize,&bbox,
 					 &min_cell_size,entry_name);
@@ -2884,7 +3838,7 @@ static NhlErrorTypes CnTriMeshRender
 			return ret;
 		}
 		subret = CnTriMeshWriteCellData
-			(tmp->rpnt,tmp->iedg,tmp->itri,
+			(tbp->rpnt,tbp->iedg,tbp->itri,
 			 msize,nsize,
 			 bbox.l,bbox.b,bbox.r,bbox.t,
 			 entry_name);
@@ -2898,13 +3852,22 @@ static NhlErrorTypes CnTriMeshRender
 
 		if (cnp->fill_mode == NhlAREAFILL) {
 			if (! mesh_inited) {
-				subret = InitMesh(cnl,tmp,entry_name);
+				subret = InitMesh(cnl,tmp,1,entry_name);
 				if ((ret = MIN(subret,ret)) < NhlWARNING) {
 					ContourAbortDraw(cnl);
 					gset_clip_ind(clip_ind_rect.clip_ind);
 					return ret;
 				}
 				mesh_inited = 1;
+			}
+			if (tmp->nblocks > 1) {
+				subret = MIN(NhlFATAL,subret);
+				e_text = "%s: Threading not implemented for AreaFill -- set env var OMP_NUM_THREADS to 1";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				ContourAbortDraw(cnl);
+				gset_clip_ind(clip_ind_rect.clip_ind);
+				return ret;
 			}
 			if (cnp->aws == NULL) {
 				subret = cnInitAreamap(cnl,entry_name);
@@ -2929,7 +3892,7 @@ static NhlErrorTypes CnTriMeshRender
 				return ret;
 			}
 
-			subret = _NhlCtclam(tmp->rpnt,tmp->iedg,tmp->itri,
+			subret = _NhlCtclam(tbp->rpnt,tbp->iedg,tbp->itri,
 					    cnp->fws,cnp->iws,
 					    cnp->aws,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -2954,6 +3917,13 @@ static NhlErrorTypes CnTriMeshRender
 			cnp->aws = NULL;
 		}
 		else if (cnp->fill_mode == NhlCELLFILL) {
+			if (cnp->sfp->x_arr->num_dimensions == 1 &&
+			    ! (cnp->sfp->x_cell_bounds && cnp->sfp->y_cell_bounds)) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  "%s: The CellFill method for non-rectangular Mesh data requires vertices to be explicitly defined using the sf[XY]CellBounds resources",entry_name);
+				ContourAbortDraw(cnl);
+				return NhlFATAL;
+			}
 			_NhlCellFill((NhlLayer)cnl,entry_name);
 		}
 		else if (cnp->fill_mode == NhlMESHFILL) { /* NhlMESHFILL */
@@ -2961,8 +3931,10 @@ static NhlErrorTypes CnTriMeshRender
 			float min_cell_size;
 			NhlBoundingBox bbox;
 
-			NhlPError(NhlWARNING,NhlEUNKNOWN,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: the MeshFill method does not yet produce correct results for unstructured grids\n",entry_name);
+			ContourAbortDraw(cnl);
+			return NhlFATAL;
 
 			subret = cnInitCellArray(cnl,&msize,&nsize,&bbox,
 						 &min_cell_size,entry_name);
@@ -2977,7 +3949,8 @@ static NhlErrorTypes CnTriMeshRender
 					    bbox.l,bbox.b,bbox.r,bbox.t,
 					    min_cell_size,
 					    cnp->raster_smoothing_on,
-					    True,
+					    1,
+					    NULL,
 					    entry_name);
  			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				gset_clip_ind(clip_ind_rect.clip_ind);
@@ -2991,43 +3964,11 @@ static NhlErrorTypes CnTriMeshRender
 			}
 		}
 		else { /* NhlRASTERFILL */
-			int msize,nsize;
-			float min_cell_size;
-			NhlBoundingBox bbox;
-
-			if (! mesh_inited) {
-				subret = InitMesh(cnl,tmp,entry_name);
-				if ((ret = MIN(subret,ret)) < NhlWARNING) {
-					gset_clip_ind(clip_ind_rect.clip_ind);
-					ContourAbortDraw(cnl);
-					return ret;
-				}
-				mesh_inited = 1;
-			}
-			subret = cnInitCellArray(cnl,&msize,&nsize,&bbox,
-						 &min_cell_size,entry_name);
- 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			ret = RasterFillRender(cnl,tmp,&mesh_inited,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				gset_clip_ind(clip_ind_rect.clip_ind);
 				ContourAbortDraw(cnl);
 				return ret;
-			}
-			subret = _NhlCtcica(tmp->rpnt,tmp->iedg,tmp->itri,
-					    cnp->fws,cnp->iws,cnp->cws,
-					    msize,msize,nsize,
-					    bbox.l,bbox.b,bbox.r,bbox.t,
-					    min_cell_size,
-					    cnp->raster_smoothing_on,
-					    False,
-					    entry_name);
- 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				gset_clip_ind(clip_ind_rect.clip_ind);
-				ContourAbortDraw(cnl);
-				return ret;
-			}
-			if (cnp->cws != NULL) {
-				subret = _NhlIdleWorkspace(cnp->cws);
-				ret = MIN(subret,ret);
-				cnp->cws = NULL;
 			}
 		}
 	}
@@ -3038,13 +3979,22 @@ static NhlErrorTypes CnTriMeshRender
 	     cnp->grid_bound.perim_on || cnp->out_of_range.perim_on)) {
 		if (cnp->do_labels && cnp->label_masking) {
 			if (! mesh_inited) {
-				subret = InitMesh(cnl,tmp,entry_name);
+				subret = InitMesh(cnl,tmp,1,entry_name);
 				if ((ret = MIN(subret,ret)) < NhlWARNING) {
 					gset_clip_ind(clip_ind_rect.clip_ind);
 					ContourAbortDraw(cnl);
 					return ret;
 				}
 				mesh_inited = 1;
+			}
+			if (tmp->nblocks > 1) {
+				subret = MIN(NhlFATAL,subret);
+				e_text = "%s: Threading not implemented for contour lines -- set env var OMP_NUM_THREADS to 1";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				gset_clip_ind(clip_ind_rect.clip_ind);
+				ContourAbortDraw(cnl);
+				return ret;
 			}
 			c_ctseti("GIL",5);
 			if (cnp->aws == NULL) {
@@ -3069,7 +4019,7 @@ static NhlErrorTypes CnTriMeshRender
 			c_pcseti("FN",cnp->line_lbls.font);
 			c_pcseti("QU",cnp->line_lbls.quality);
 			c_pcsetc("FC",cnp->line_lbls.fcode);
-			subret = _NhlCtlbam(tmp->rpnt,tmp->iedg,tmp->itri,
+			subret = _NhlCtlbam(tbp->rpnt,tbp->iedg,tbp->itri,
 					    cnp->fws,cnp->iws,
 					    cnp->aws,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -3077,7 +4027,7 @@ static NhlErrorTypes CnTriMeshRender
 				ContourAbortDraw(cnl);
 				return ret;
 			}
-			subret = _NhlCtcldm(tmp->rpnt,tmp->iedg,tmp->itri,
+			subret = _NhlCtcldm(tbp->rpnt,tbp->iedg,tbp->itri,
 					    cnp->fws,cnp->iws,cnp->aws,
 					    (_NHLCALLF(ctdrpl,CTDRPL)),
 					    entry_name);
@@ -3091,17 +4041,7 @@ static NhlErrorTypes CnTriMeshRender
 			cnp->aws = NULL;
 		}
 		else {
-			if (! mesh_inited) {
-				subret = InitMesh(cnl,tmp,entry_name);
-				if ((ret = MIN(subret,ret)) < NhlWARNING) {
-					ContourAbortDraw(cnl);
-					return ret;
-				}
-				mesh_inited = 1;
-			}
-			subret = _NhlCtcldr(tmp->rpnt,tmp->iedg,tmp->itri,
-					    cnp->fws,cnp->iws,entry_name);
-
+			ret = ContourLineRender(cnl,tmp,&mesh_inited,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				gset_clip_ind(clip_ind_rect.clip_ind);
 				ContourAbortDraw(cnl);
@@ -3113,13 +4053,21 @@ static NhlErrorTypes CnTriMeshRender
 	if (! cnp->output_gridded_data &&
 	    cnp->do_labels && cnp->label_order == order) {
 		if (! mesh_inited) {
-			subret = InitMesh(cnl,tmp,entry_name);
+			subret = InitMesh(cnl,tmp,1,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				gset_clip_ind(clip_ind_rect.clip_ind);
 				ContourAbortDraw(cnl);
 				return ret;
 			}
 			mesh_inited = 1;
+		}
+		if (tmp->nblocks > 1) {
+			subret = MIN(NhlFATAL,subret);
+			e_text = "%s: Threading not implemented for contour line labels -- set env var OMP_NUM_THREADS to 1";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			gset_clip_ind(clip_ind_rect.clip_ind);
+			ContourAbortDraw(cnl);
+			return ret;
 		}
 		cnp->line_lbls.count = 0;
 		cnp->high_lbls.count = 0;
@@ -3132,7 +4080,7 @@ static NhlErrorTypes CnTriMeshRender
 		c_pcseti("FN",cnp->line_lbls.font);
 		c_pcseti("QU",cnp->line_lbls.quality);
 		c_pcsetc("FC",cnp->line_lbls.fcode);
-		_NhlCtlbdr(tmp->rpnt,tmp->iedg,tmp->itri,
+		_NhlCtlbdr(tbp->rpnt,tbp->iedg,tbp->itri,
 			 cnp->fws,cnp->iws,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
 			gset_clip_ind(clip_ind_rect.clip_ind);
@@ -3186,6 +4134,7 @@ static NhlIsoLine *CnTriMeshGetIsoLines
 	int             count;
 	int             i;
 	NhlIsoLine      *isolines, *ilp;
+	int trans_change_count;
 
 	Cnl = cnl;
 	Cnp = cnp;
@@ -3197,6 +4146,15 @@ static NhlIsoLine *CnTriMeshGetIsoLines
 	
 	c_ctrset();
 	SetCtParams(cnl,entry_name);
+
+	subret = NhlVAGetValues(cnl->trans.overlay_trans_obj->base.id,
+                                NhlNtrChangeCount,&trans_change_count,
+                                NULL);
+	if (trans_change_count > tmp->trans_change_count) {
+		tmp->update_mode = TRIMESH_NEWMESH;
+		tmp->trans_change_count = trans_change_count;
+	}
+
 /*
  * Only set the ORV parameter if overlaying on EZMAP. It can cause
  * problems otherwise. (Not sure yet whether it is needed in some cases
@@ -3213,7 +4171,6 @@ static NhlIsoLine *CnTriMeshGetIsoLines
 		    ! (cnp->sfp->element_nodes ||
 		       (cnp->sfp->x_cell_bounds && cnp->sfp->y_cell_bounds))) {
 			c_ctseti("MAP",Nhlcn1DMESHMAPVAL);
-			tmp->update_mode = TRIMESH_NEWMESH;
 		}
 		else {
 			c_ctseti("MAP",NhlcnMAPVAL);
@@ -3293,7 +4250,7 @@ static NhlIsoLine *CnTriMeshGetIsoLines
 
 	isolines = (NhlIsoLine *) NhlMalloc(sizeof(NhlIsoLine) * count);
 	if (! mesh_inited) {
-		subret = InitMesh(cnl,tmp,entry_name);
+		subret = InitMesh(cnl,tmp,1,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
 			gset_clip_ind(clip_ind_rect.clip_ind);
 			ContourAbortDraw(cnl);
@@ -3312,6 +4269,7 @@ static NhlIsoLine *CnTriMeshGetIsoLines
 		float save_xloc, save_yloc;
 		int same_segment;
 		int npoints_in_cur_segment;
+		TriBlock *tbp;
 
 		flag = 0;
 /*
@@ -3320,8 +4278,9 @@ static NhlIsoLine *CnTriMeshGetIsoLines
 		ilp->level = clvp[i];
 		ilp->x = ilp->y = NULL;
 		ilp->start_point = ilp->n_points = NULL;
+		tbp = &(tmp->tri_block[0]);
 		while (! done) {
-			subret = _NhlCtcltr(tmp->rpnt,tmp->iedg,tmp->itri,cnp->fws,cnp->iws,clvp[i],
+			subret = _NhlCtcltr(tbp->rpnt,tbp->iedg,tbp->itri,cnp->fws,cnp->iws,clvp[i],
 					    &flag,&xloc,&yloc,&npoints,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				ContourAbortDraw(cnl);
@@ -3553,10 +4512,11 @@ NhlErrorTypes _NhlUnstructuredMeshFill
 	
 	}
 	avg_cells_per_grid_box = (icam * ican) / ((float)cell_count);
-
+/*
 	printf("in unstructured mesh fill\n");
 	printf("avg_cells_per_grid_box = %f\n",avg_cells_per_grid_box);
 	printf("icam %d ican %d\n",icam,ican);
+*/
 
 	mflx = xcpf - (xcqf - xcpf) * .1;
 	mfrx = xcqf + (xcqf - xcpf) * .1;
@@ -3725,6 +4685,7 @@ NhlErrorTypes _NhlTriMeshRasterFill
 	float		ycpf,
 	float		xcqf,
 	float		ycqf,
+	void            *info,
 	char		*entry_name
 )
 #else
@@ -3741,6 +4702,7 @@ NhlErrorTypes _NhlTriMeshRasterFill
 	float		ycpf;
 	float		xcqf;
 	float		ycqf;
+	void            *info;
 	char		*entry_name;
 #endif
 {
@@ -3765,8 +4727,20 @@ NhlErrorTypes _NhlTriMeshRasterFill
 	int             bound1,bound2;
 	int             ibeg,iend,jbeg,jend;
 	int             grid_fill_ix;
+	TriBlock *tbp;
 
-	
+	if (! info) {
+	  tbp = Tbp;
+	}
+	else {
+	  tbp = (TriBlock *) info;
+	}
+/*
+	{
+	int tid = omp_get_thread_num();
+	printf("%d x s&e %f %f y s&e %f %f\n", tid, tbp->xs,tbp->xe,tbp->ys,tbp->ye);
+	}
+*/
         if (Cnp == NULL) {
 		e_text = "%s: invalid call to _NhlRasterFill";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -3775,7 +4749,7 @@ NhlErrorTypes _NhlTriMeshRasterFill
         levels = (float*) Cnp->levels->data;
         
 /* 
- * replacement for CPCICA
+ * replacement for CTCICA
  */
 	c_ctgetr("ORV",&orv);
 	c_ctgeti("CAF",&icaf);
@@ -3796,53 +4770,43 @@ NhlErrorTypes _NhlTriMeshRasterFill
 	tol2 = 0.5 * MIN(Cnl->view.width,Cnl->view.height);
 	
 /*
- *      initialize cell array with the missing value.
- */      
-	grid_fill_ix = MAX(Cnp->missing_val.gks_fcolor, Cnp->grid_bound.gks_fcolor);
-	grid_fill_ix = grid_fill_ix < 0 ? NhlTRANSPARENT_CI : grid_fill_ix;
-	for (j = 0; j < ican; j++) {
-		for (i = 0; i < icam; i++) {
-			*(cell + j * ica1 + i) = grid_fill_ix;
-		}
-	}
-
-/*
  * Now overwrite out-of-range areas with the out-of-range color
  */
-	grid_fill_ix = Cnp->out_of_range.gks_fcolor < 0 ? NhlTRANSPARENT_CI : Cnp->out_of_range.gks_fcolor;
-	if (Tmp->ezmap) {
-		imap = -map;
-		zval = 0;
-		for (j = 0; j < ican; j++) {
-			if (j == 0)
-				yccf = ycpf + ysoff * cystep;
-			else if (j == ican - 1)
-				yccf = ycpf + (ican - yeoff) * cystep;
-			else
-				yccf = ycpf + (j + ysoff) * cystep;
-			yccd = c_cfuy(yccf);
-			for (i = 0; i < icam; i++) {
-				if (i == 0)
-					xccf = xcpf + xsoff * cxstep;
-				else if (i == icam - 1)
-					xccf = xcpf + (icam - xeoff) * cxstep; 
-				else
-					xccf = xcpf + (i+xsoff) * cxstep;
-				xccd = c_cfux(xccf);
-				(_NHLCALLF(hluctmxyz,HLUCTMXYZ))
-					(&imap,&xccd,&yccd,&zval,&xcci,&ycci);
-				if (xcci == orv) {
-					*(cell + j * ica1 + i) = grid_fill_ix;
-				}
-			}
+	    grid_fill_ix = Cnp->out_of_range.gks_fcolor < 0 ? NhlTRANSPARENT_CI : Cnp->out_of_range.gks_fcolor;
+	    if (Tmp->ezmap) {
+	      imap = -map;
+	      zval = 0;
+	      for (j = 0; j < ican; j++) {
+		if (j == 0)
+		  yccf = ycpf + ysoff * cystep;
+		else if (j == ican - 1)
+		  yccf = ycpf + (ican - yeoff) * cystep;
+		else
+		  yccf = ycpf + (j + ysoff) * cystep;
+		yccd = c_cfuy(yccf);
+		for (i = 0; i < icam; i++) {
+		  if (i == 0)
+		    xccf = xcpf + xsoff * cxstep;
+		  else if (i == icam - 1)
+		    xccf = xcpf + (icam - xeoff) * cxstep; 
+		  else
+		    xccf = xcpf + (i+xsoff) * cxstep;
+		  xccd = c_cfux(xccf);
+		  (_NHLCALLF(hluctmxyz,HLUCTMXYZ))
+		    (&imap,&xccd,&yccd,&zval,&xcci,&ycci);
+		  if (xcci == orv) {
+		    *(cell + j * ica1 + i) = grid_fill_ix;
+		  }
 		}
-	}
+	      }
+	    }
 
 /*
  * examine each triangle in turn
  */
 
-	for (n = 0; n <= Tmp->ntri - Lotn; n += Lotn) {
+
+	for (n = 0; n <= tbp->ntri - Lotn; n += Lotn) {
 	     if (itri[n+3] != 0)
 		     continue;
 
@@ -4043,7 +5007,23 @@ NhlErrorTypes _NhlTriMeshRasterFill
 		     }
 	     }
 	}
-
+#if 0
+	{
+		for (j = 0; j < ican; j++) {
+			int found = 0;
+			for (i = 2 ; i < icam; i++) {
+				if (!found && cell[j * icam + i] == 1073741824) {
+					continue;
+				}
+				found = 1;
+				if (cell[j * icam + i] == 1073741824) {
+					printf("row %d last col %d last 2 val %d %d\n", j, i,cell[j * icam + i -1],cell[j * icam + i -2]);
+					break;
+				}
+			}
+		}
+	}
+#endif
 	return ret;
 }
 
@@ -4104,10 +5084,10 @@ NhlErrorTypes CnTriMeshWriteCellData
 	double           tol1,tol2;
 	int             ipp1,ipp2,ipp3;
 	float           xcu1,xcu2,xcu3,ycu1,ycu2,ycu3;
-	double           xcf1,xcf2,xcf3,ycf1,ycf2,ycf3;
-	double           xd12,xd23,xd31,yd12,yd23,yd31;
-	double           fva1,fva2,fva3;
-	double           dn12,dn23,dn31;
+	double          xcf1,xcf2,xcf3,ycf1,ycf2,ycf3;
+	double          xd12,xd23,xd31,yd12,yd23,yd31;
+	double          fva1,fva2,fva3;
+	double          dn12,dn23,dn31;
 	int             bound1,bound2;
 	int             ibeg,iend,jbeg,jend;
 	float           *data;
@@ -4117,8 +5097,9 @@ NhlErrorTypes CnTriMeshWriteCellData
 	int             count;
 	float wlx,wrx,wby,wuy,wxstep,wystep;
 	int licam,lican;
-
+/*
 	printf("in CnWriteCellData\n");
+*/
         if (Cnp == NULL) {
 		e_text = "%s: invalid call to _NhlRasterFill";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -4185,7 +5166,7 @@ NhlErrorTypes CnTriMeshWriteCellData
  * examine each triangle in turn
  */
 
-	for (n = 0; n < Tmp->ntri - Lotn; n += Lotn) {
+	for (n = 0; n < Tbp->ntri - Lotn; n += Lotn) {
 	     if (itri[n+3] != 0)
 		     continue;
 
@@ -4498,9 +5479,9 @@ int (_NHLCALLF(hluctfill,HLUCTFILL))
 			}
                         
                         float fill_opacity;
-                        int ret  = NhlVAGetValues(Cnl->base.wkptr->base.id,
-                                        _NhlNwkFillOpacityF, &fill_opacity, 
-                                        NULL);
+                        NhlVAGetValues(Cnl->base.wkptr->base.id,
+				       _NhlNwkFillOpacityF, &fill_opacity, 
+				       NULL);
                                                 
 			NhlVASetValues(Cnl->base.wkptr->base.id,
 				       _NhlNwkFillIndex, pat_ix,

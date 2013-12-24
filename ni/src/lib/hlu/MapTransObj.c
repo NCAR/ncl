@@ -255,12 +255,18 @@ static NhlResource resources[] = {
 	 NhlTImmediate,_NhlUSET((NhlPointer) True),_NhlRES_PRIVATE,NULL},
 {NhlNmpDumpPolygonAreaMap, NhlCmpDumpPolygonAreaMap,NhlTBoolean,
 	 sizeof(NhlBoolean),NhlOffset(NhlMapTransObjLayerRec,
-				      mptrans.dump_polygon_area_map),
+	 mptrans.dump_polygon_area_map),
 	 NhlTImmediate,_NhlUSET((NhlPointer) False),_NhlRES_PRIVATE,NULL},
 
-	{ NhlNtrOutOfRangeF, NhlCtrOutOfRangeF, NhlTFloat, sizeof(float),
-		NhlOffset(NhlMapTransObjLayerRec,trobj.out_of_range),
-		NhlTString, _NhlUSET("1.0e12"),_NhlRES_PRIVATE,NULL }
+{NhlNtrOutOfRangeF, NhlCtrOutOfRangeF, NhlTFloat, sizeof(float),
+	NhlOffset(NhlMapTransObjLayerRec,trobj.out_of_range),
+		NhlTString, _NhlUSET("1.0e12"),_NhlRES_PRIVATE,NULL },
+
+{NhlNtrLineInterpolationOn,NhlCtrLineInterpolationOn,
+	NhlTBoolean,sizeof(NhlBoolean),
+        NhlOffset(NhlTransObjLayerRec,trobj.line_interpolation_on),
+	NhlTImmediate,
+  	_NhlUSET((NhlPointer)True),0,NULL},
 
 #if 0
 
@@ -2490,11 +2496,20 @@ int upordown;
 		x -= 360.0;
 	else if (xdist < -180)
 		x += 360.0;
-
+       
 	xdist = x - x_last;			
 	ydist = y - y_last;
 	c_maptrn(y,x,&xw,&yw);
 	
+	if (! mpl->mptrans.great_circle_lines_on && ! mpl->trobj.line_interpolation_on) {
+		c_mapitd(y,x,2);
+		x_last = x;
+		y_last = y;
+		xw_last = xw;
+		yw_last = yw;
+		return(NhlNOERROR);
+	}
+
 	uv_dist = sqrt((xw_last - xw) *(xw_last - xw) + (yw_last - yw) * (yw_last - yw));
 
 	if (xw_last > 1e10 || xw > 1e10) 
@@ -2814,7 +2829,7 @@ static double great_circle_distance(float lat1, float lon1, float lat2, float lo
 #define IN 0
 #define OUT 1
 
-static int CyclicClipPolyPoints(float *x,float *y,float *xl,float *yl,float *xl_ret, float *yl_ret, int n, double *pval, int fix, int right)
+static int CyclicClipPolyPoints(float *x,float *y,float *xw,float *yw,float *x_ret, float *y_ret, float *xw_ret, float *yw_ret, int n, double *pval, int fix, int right)
 {
 	int i;
 	int init, status;
@@ -2853,14 +2868,16 @@ static int CyclicClipPolyPoints(float *x,float *y,float *xl,float *yl,float *xl_
 	ix_save = 0;
 	init = fix == 0 ? 1 : 0;
 	last_ix = state == IN ? fix : 0;
-	xu_last = xl[fix-1];
-	yu_last = yl[fix-1];
+	xu_last = xw[fix-1];
+	yu_last = yw[fix-1];
 	plast = pval[fix-1];
 	pnew = pval[fix];
 	status = state == IN ? 1 : 0; /* transition from state at fix -1 to fix */
 	for (i = 0; i < fix; i++) {
-		xl_ret[i] = xl[i];
-		yl_ret[i] = yl[i];
+		xw_ret[i] = xw[i];
+		yw_ret[i] = yw[i];
+		x_ret[i] = x[i];
+		y_ret[i] = y[i];
 	}
 
 	for (i = fix; i <= n; i++) {
@@ -2870,8 +2887,8 @@ static int CyclicClipPolyPoints(float *x,float *y,float *xl,float *yl,float *xl_
 		if (state == OUT) {
 			if (status) {
 				plast = pval[icur];
-				xu_last = xl[icur];
-				yu_last = yl[icur];
+				xu_last = xw[icur];
+				yu_last = yw[icur];
 			}
 			else {
 				init = 0;
@@ -2881,20 +2898,24 @@ static int CyclicClipPolyPoints(float *x,float *y,float *xl,float *yl,float *xl_
 				yd1 = y[icomp];
 				pt0 = pval[icur];
 				pt1 = pval[icomp];
-				xu0 = xl[icur];
-				yu0 = yl[icur];
+				xu0 = xw[icur];
+				yu0 = yw[icur];
 				xu1 = xu_last;
 				yu1 = yu_last;
 				NGCALLF(mditve,MDITVE)(&yd0,&xd0,&pt0,&xu0,&yu0,
 						       &yd1,&xd1,&pt1,&xu1,&yu1,
 						       &yd_ret,&xd_ret,&pt_ret,&xu_ret,&yu_ret);
-				xl_ret[last_ix] = xu_ret;
-				yl_ret[last_ix] = yu_ret;
+				xw_ret[last_ix] = xu_ret;
+				yw_ret[last_ix] = yu_ret;
+				x_ret[last_ix] = xd_ret;
+				y_ret[last_ix] = yd_ret;
 				xu_last = xu0;
 				yu_last = yu0;
 				last_ix++;
-				xl_ret[last_ix] = xu0;
-				yl_ret[last_ix] = yu0;
+				xw_ret[last_ix] = xu0;
+				yw_ret[last_ix] = yu0;
+				x_ret[last_ix] = xd0;
+				y_ret[last_ix] = yd0;
 				last_ix++;
 				plast = pval[icur];
 				state = IN;
@@ -2905,8 +2926,8 @@ static int CyclicClipPolyPoints(float *x,float *y,float *xl,float *yl,float *xl_
 		else {
 			init = 0;
 			if (! status) {
-				xu_last = xl_ret[last_ix] = xl[icur];
-				yu_last = yl_ret[last_ix] = yl[icur];
+				xu_last = xw_ret[last_ix] = xw[icur];
+				yu_last = yw_ret[last_ix] = yw[icur];
 				plast = pval[icur];
 				last_ix++;
 			}
@@ -2919,14 +2940,16 @@ static int CyclicClipPolyPoints(float *x,float *y,float *xl,float *yl,float *xl_
 				pt1 = pval[icur];
 				xu0 = xu_last;
 				yu0 = yu_last;
-				xu1 = xl[icur];
-				yu1 = yl[icur];
+				xu1 = xw[icur];
+				yu1 = yw[icur];
 				NGCALLF(mditve,MDITVE)(&yd0,&xd0,&pt0,&xu0,&yu0,
 						       &yd1,&xd1,&pt1,&xu1,&yu1,
 						       &yd_ret,&xd_ret,&pt_ret,&xu_ret,&yu_ret);
 				plast = pval[icur];
-				xl_ret[last_ix] = xu_ret;
-				yl_ret[last_ix] = yu_ret;
+				xw_ret[last_ix] = xu_ret;
+				yw_ret[last_ix] = yu_ret;
+				x_ret[last_ix] = xd_ret;
+				y_ret[last_ix] = yd_ret;
 				xu_last = xu1;
 				yu_last = yu1;
 				last_ix++;
@@ -2947,7 +2970,7 @@ static int CyclicClipPolyPoints(float *x,float *y,float *xl,float *yl,float *xl_
 	
 	return last_ix; /* this is the new n */
 }
-static int ClipPolyPoints(float *x,float *y,float *xl,float *yl,int n, double *pval, int fix)
+static int ClipPolyPoints(float *x,float *y,float *xw,float *yw,int n, double *pval, int fix)
 {
 	int i;
 	int init, status;
@@ -2966,18 +2989,18 @@ static int ClipPolyPoints(float *x,float *y,float *xl,float *yl,int n, double *p
 		yd1 = y[fix];
 		pt0 = pval[fix-1];
 		pt1 = pval[fix];
-		xu0 = xl[fix-1];
-		yu0 = yl[fix-1];
-		xu1 = xl[fix];
-		yu1 = yl[fix];
+		xu0 = xw[fix-1];
+		yu0 = yw[fix-1];
+		xu1 = xw[fix];
+		yu1 = yw[fix];
 		NGCALLF(mditve,MDITVE)(&yd0,&xd0,&pt0,&xu0,&yu0,
 				       &yd1,&xd1,&pt1,&xu1,&yu1,
 				       &yd_ret,&xd_ret,&pt_ret,&xu_ret,&yu_ret);
 		last_ix = fix;
 		xu_last = xu1;
 		yu_last = yu1;
-		xl[last_ix] = xu_ret;
-		yl[last_ix] = yu_ret;
+		xw[last_ix] = xu_ret;
+		yw[last_ix] = yu_ret;
 		last_ix++;
 	}
 	init = fix == 0 ? 1 : 0;
@@ -3005,13 +3028,13 @@ static int ClipPolyPoints(float *x,float *y,float *xl,float *yl,int n, double *p
 			NGCALLF(mditve,MDITVE)(&yd0,&xd0,&pt0,&xu0,&yu0,
 					       &yd1,&xd1,&pt1,&xu1,&yu1,
 					       &yd_ret,&xd_ret,&pt_ret,&xu_ret,&yu_ret);
-			xl[last_ix] = xu_ret;
-			yl[last_ix] = yu_ret;
+			xw[last_ix] = xu_ret;
+			yw[last_ix] = yu_ret;
 			xu_last = xu0;
 			yu_last = yu0;
 			last_ix++;
-			xl[last_ix] = xu0;
-			yl[last_ix] = yu0;
+			xw[last_ix] = xu0;
+			yw[last_ix] = yu0;
 			last_ix++;
 			plast = pnew;
 			state = IN;
@@ -3019,8 +3042,8 @@ static int ClipPolyPoints(float *x,float *y,float *xl,float *yl,int n, double *p
 		else {
 			init = 0;
 			if (! status) {
-				xu_last = xl[last_ix] = xtmp;
-				yu_last = yl[last_ix] = ytmp;
+				xu_last = xw[last_ix] = xtmp;
+				yu_last = yw[last_ix] = ytmp;
 				last_ix++;
 				continue;
 			}
@@ -3038,8 +3061,8 @@ static int ClipPolyPoints(float *x,float *y,float *xl,float *yl,int n, double *p
 					       &yd1,&xd1,&pt1,&xu1,&yu1,
 					       &yd_ret,&xd_ret,&pt_ret,&xu_ret,&yu_ret);
 			plast = pt1;
-			xl[last_ix] = xu_ret;
-			yl[last_ix] = yu_ret;
+			xw[last_ix] = xu_ret;
+			yw[last_ix] = yu_ret;
 			xu_last = xu1;
 			yu_last = yu1;
 			last_ix++;
@@ -3062,8 +3085,8 @@ static int ClipPolyPoints(float *x,float *y,float *xl,float *yl,int n, double *p
 		NGCALLF(mditve,MDITVE)(&yd0,&xd0,&pt0,&xu0,&yu0,
 				       &yd1,&xd1,&pt1,&xu1,&yu1,
 				       &yd_ret,&xd_ret,&pt_ret,&xu_ret,&yu_ret);
-		xl[last_ix] = xu_ret;
-		yl[last_ix] = yu_ret;
+		xw[last_ix] = xu_ret;
+		yw[last_ix] = yu_ret;
 		last_ix++;
 	}
 	else if (state == IN && fix == 0) {
@@ -3082,8 +3105,8 @@ static int ClipPolyPoints(float *x,float *y,float *xl,float *yl,int n, double *p
 		NGCALLF(mditve,MDITVE)(&yd0,&xd0,&pt0,&xu0,&yu0,
 				       &yd1,&xd1,&pt1,&xu1,&yu1,
 				       &yd_ret,&xd_ret,&pt_ret,&xu_ret,&yu_ret);
-		xl[last_ix] = xu_ret;
-		yl[last_ix] = yu_ret;
+		xw[last_ix] = xu_ret;
+		yw[last_ix] = yu_ret;
 		last_ix++;
 	}
 #if 0
@@ -3091,8 +3114,8 @@ static int ClipPolyPoints(float *x,float *y,float *xl,float *yl,int n, double *p
 	for (i = 0; i < last_ix; i++) {
 		int lix;
 		lix = i == 0 ? last_ix - 1 : i -1;
-		dist = sqrt((xl[i] - xl[lix]) * (xl[i] - xl[lix]) + (yl[i] - yl[lix]) * (yl[i] - yl[lix]));
-		printf("( %f %f ) ", xl[i],yl[i]);
+		dist = sqrt((xw[i] - xw[lix]) * (xw[i] - xw[lix]) + (yw[i] - yw[lix]) * (yw[i] - yw[lix]));
+		printf("( %f %f ) ", xw[i],yw[i]);
 		if (max_d < dist)  max_d = dist;
 	}
 	printf("\n");
@@ -3124,6 +3147,7 @@ static NhlErrorTypes GreatCircleRenderPolygon
 	int malloced = 0;
 	static int tdebug = 0;
 	static int call_count = 0;
+	static float  tx = 0 , ty = 0;
 
 	call_count++;
 	usize = mptrans->mptrans.ur - mptrans->mptrans.ul;
@@ -3152,15 +3176,19 @@ static NhlErrorTypes GreatCircleRenderPolygon
 		if (ymax < yw[i])
 			ymax = yw[i];
 	}
-	if (tdebug)
-		printf("min-max x %f %f y %f %f\n",xmin,xmax,ymin,ymax);
 	xt = xmax - xmin;
 	yt = ymax - ymin;
 	if (xt * yt > .5 * uv_area) {
+		if (tdebug) 
+			printf("skipping %d -- x %f y %f\n", call_count, xt, yt);
 		return NhlNOERROR;
 	}
 
 	len = sqrt(xt * xt + yt * yt);
+#if 0
+	if (len / uv_cut > 20)
+		return NhlNOERROR; 
+#endif
 			 
 	tcount = 0;
 	cix = 0;
@@ -3174,15 +3202,22 @@ static NhlErrorTypes GreatCircleRenderPolygon
 		ybuf = NhlMalloc(current_size * sizeof(float));
 		malloced = 1;
 		for (i = 0; i < nl-1; i++) {
+			float xds, xde, yds, yde;
 			int inext = i+1;
-			int idnext = (inext == nl - 1) ? 0 : inext; 
+			int j;
 			xt = xw[inext] - xw[i];
 			yt = yw[inext] - yw[i];
 			len = sqrt(xt * xt + yt * yt);
-			xbuf[tcount] = x[i];
-			ybuf[tcount] = y[i];
+			xds = x[i];
+			yds = y[i];
+			xde = x[inext % n];
+			yde = y[inext % n];
+			xbuf[tcount] = xw[i];
+			ybuf[tcount] = yw[i];
 			tcount++;
-			if (len > uv_cut) {
+			if (xt == 0 && (xw[i] == mptrans->mptrans.ul || xw[i] == mptrans->mptrans.ur))
+				npoints = 0;
+			else if (len > uv_cut) {
 				npoints = (int) (len / uv_cut + .5);
 			}
 			else {
@@ -3196,24 +3231,60 @@ static NhlErrorTypes GreatCircleRenderPolygon
 				ybuf = NhlRealloc(ybuf,current_size *sizeof(float));
 			}
 			if (npoints > 0) {
-				c_mapgci(y[i],x[i],y[idnext],x[idnext],npoints,ybuf + tcount,xbuf + tcount);
+				c_mapgci(yds,xds,yde,xde,npoints,ybuf + tcount,xbuf + tcount);
+				for (j = tcount; j < tcount + npoints; j++) {
+					c_maptrn(ybuf[j],xbuf[j],&(xbuf[j]),&(ybuf[j]));
+					if (xbuf[j] > 1e8) 
+						return NhlNOERROR;
+				}
 			}
 			tcount += npoints;
 		}
-		xbuf[tcount] = x[0];
-		ybuf[tcount] = y[0];
+		xbuf[tcount] = xbuf[0];
+		ybuf[tcount] = ybuf[0];
 		tcount++;
-		if (tdebug) {
-			printf("# %d\n",call_count);
-			for (i = 0; i < tcount; i++)
-				printf( "( %f %f ) ",xbuf[i],ybuf[i]);
-			printf("\n");
-		}
-		for (i = 0; i < tcount; i++) {
-			c_maptrn(ybuf[i],xbuf[i],&(xbuf[i]),&(ybuf[i]));
-		}
 	}
 
+	if (tdebug) {
+		int doprint = 0;
+		float sx, sy;
+		xmin = xmax = xbuf[0];
+		ymin = ymax = ybuf[0];
+		for (i = 1; i < tcount; i++) {
+			if (xbuf[i] < 1e8 && xmin > xbuf[i]) 
+				xmin = xbuf[i];
+			if (xbuf[i] < 1e8 && xmax < xbuf[i])
+				xmax = xbuf[i];
+			if (xbuf[i] < 1e8 && ymin > ybuf[i]) 
+				ymin = ybuf[i];
+			if (xbuf[i] < 1e8 && ymax < ybuf[i])
+				ymax = ybuf[i];
+		}
+
+
+		/*for (i = 0; i < tcount; i++)
+			printf( "( %f %f ) ",xbuf[i],ybuf[i]);
+			printf("\n");*/
+		if (xmax - xmin > tx) {
+			tx = xmax - xmin;
+			doprint = 1;
+		}
+		if (ymax - ymin > ty) {
+			ty = ymax - ymin;
+			doprint = 1;
+		}
+		sx = xmax - xmin;
+		sy = ymax - ymin;
+		if (doprint) {
+			printf("call # %d -- x %f y %f\n", call_count, tx, ty);
+		}
+		if (tx > 1e8 ||  ty > 1e8) return NhlNOERROR;
+		if (sx * sx + sy * sy > 20 * uv_cut) 
+			return NhlNOERROR;
+
+		printf("max-min x  %f y  %f call #%d\n",sx,sy,call_count);
+
+	}
 	NhlVAGetValues(Wkptr->base.id,
 		       _NhlNwkGraphicStyle, &gsid,
 		       NULL);
@@ -3224,27 +3295,6 @@ static NhlErrorTypes GreatCircleRenderPolygon
 
 
 	NGCALLF(gfa,GFA)(&tcount,xbuf,ybuf);
-	if (tdebug) {
-		xmin = xmax = xbuf[0];
-		ymin = ymax = ybuf[0];
-		for (i = 1; i < tcount; i++) {
-			if (xmin > xbuf[i]) 
-				xmin = xbuf[i];
-			if (xmax < xbuf[i])
-				xmax = xbuf[i];
-			if (ymin > ybuf[i]) 
-				ymin = ybuf[i];
-			if (ymax < ybuf[i])
-				ymax = ybuf[i];
-		}
-
-		printf("min-max x %f %f y %f %f\n",xmin,xmax,ymin,ymax);
-
-		for (i = 0; i < tcount; i++)
-			printf( "( %f %f ) ",xbuf[i],ybuf[i]);
-		printf("\n");
-
-	}
 	if (malloced) {
 		NhlFree(xbuf);
 		NhlFree(ybuf);
@@ -3310,7 +3360,7 @@ int n;
 	NhlMapTransObjLayer mptrans = (NhlMapTransObjLayer) instance;
 	NhlBoolean	closed;
 	int		gsid;
-	float		*xl,*yl;
+	float		*xw,*yw;
 	int		nl,nt;
 	int             status;
 	int             fill_color, fill_index;
@@ -3319,6 +3369,7 @@ int n;
 	int             is_cyclic;
 	int             unprojectable;
 	int             fail_ix;
+	int             use_great_circle = 0;
 
 	Wkptr = mptrans->trobj.wkptr;
 	NhlVAGetValues(Wkptr->base.id,
@@ -3335,17 +3386,21 @@ int n;
 	    (mptrans->mptrans.map_poly_mode == NhlAUTOPOLY && fill_index != NhlSOLIDFILL)) {
 		return StandardMapDataPolygon(instance,x,y,n);
 	}
+	if (mptrans->mptrans.projection == NhlLAMBERTEQUALAREA || 
+	    mptrans->mptrans.projection== NhlAZIMUTHALEQUIDISTANT ||
+	    mptrans->mptrans.great_circle_lines_on)
+		use_great_circle = 1;
 
 	closed = x[0] == x[n-1] && y[0] == y[n-1] ? True : False;
 	if (closed) {
-		xl = (float*)NhlMalloc(sizeof(float) * (n+ 10));
-		yl = (float*)NhlMalloc(sizeof(float) * (n+10));
+		xw = (float*)NhlMalloc(sizeof(float) * (n+ 10));
+		yw = (float*)NhlMalloc(sizeof(float) * (n+10));
 		pval = (double*)NhlMalloc(sizeof(double) * (n+10));
 		nl = n;
 	}
 	else {
-		xl = (float*)NhlMalloc(sizeof(float) * (n+10));
-		yl = (float*)NhlMalloc(sizeof(float) * (n+10));
+		xw = (float*)NhlMalloc(sizeof(float) * (n+10));
+		yw = (float*)NhlMalloc(sizeof(float) * (n+10));
 		pval = (double*)NhlMalloc(sizeof(double) * (n+10));
 		nl = n+1;
 	}
@@ -3355,16 +3410,20 @@ int n;
 	is_cyclic = 0;
 	unprojectable = 0;
 	fail_ix = -1;
-	for (i = 0; i < n; i++) {
+	for (i = 0; i <= n; i++) {
+		if (i > 0) {
+			float gcd = great_circle_distance(y[i%n],x[i%n],y[i-1], x[i-1]);
+			/*printf("gcd %f\n",gcd);*/
+		}
 		if (mptrans->mptrans.map_poly_mode == NhlAUTOPOLY && ! init) {
-			if (great_circle_distance(y[i],x[i],y[i-1], x[i-1]) > 10) {
-				NhlFree(xl);
-				NhlFree(yl);
+			if (great_circle_distance(y[i%n],x[i%n],y[i-1], x[i-1]) > 10) {
+				NhlFree(xw);
+				NhlFree(yw);
 				NhlFree(pval);
 				return StandardMapDataPolygon(instance,x,y,n);
 			}
 		}
-		NGCALLF(map_next_point,MAP_NEXT_POINT)(y + i,x + i, xl + i, yl + i,pval + i,&status,&init);
+		NGCALLF(map_next_point,MAP_NEXT_POINT)(y + (i % n),x + (i % n), xw + i, yw + i,pval + i,&status,&init);
 		if (status == 3) {
 			if (fail_ix < 0) fail_ix = i;
 			is_cyclic = 1;
@@ -3378,10 +3437,13 @@ int n;
 	}
 
 	if (is_cyclic) {
-		float *xl_ret, *yl_ret;
-
-		xl_ret = (float*)NhlMalloc(sizeof(float) * (n+10));
-		yl_ret  = (float*)NhlMalloc(sizeof(float) * (n+10));
+		float *xw_ret, *yw_ret;
+		float *x_ret, *y_ret;
+		/*goto end; */
+		xw_ret = (float*)NhlMalloc(sizeof(float) * (n+10));
+		yw_ret  = (float*)NhlMalloc(sizeof(float) * (n+10));
+		x_ret = (float*)NhlMalloc(sizeof(float) * (n+10));
+		y_ret  = (float*)NhlMalloc(sizeof(float) * (n+10));
                 
 		/*
 		printf("Data locations: ");
@@ -3391,51 +3453,50 @@ int n;
 		printf("\n");
 		printf("Win locations, Pval: ");
 		for (i = 0; i < n; i++) {
-			printf("( %f %f %f ) ", xl[i],yl[i],pval[i]);
+			printf("( %f %f %f ) ", xw[i],yw[i],pval[i]);
 		}
 		printf("\n");
 		*/
 
-		nt = CyclicClipPolyPoints(x,y,xl,yl,xl_ret,yl_ret,n,pval,fail_ix,0);
-		if (nt > 2) 
-			ret = RenderPolygon(xl_ret,yl_ret,nt,closed);
+		nt = CyclicClipPolyPoints(x,y,xw,yw,x_ret,y_ret,xw_ret,yw_ret,n,pval,fail_ix,0);
+		if (nt > 2)
+			ret = use_great_circle ? GreatCircleRenderPolygon(instance,x_ret,y_ret,xw_ret,yw_ret,nt,closed) : RenderPolygon(xw_ret,yw_ret,nt,closed);
+		
 		/*
 		printf("Win locations (after cyclic left): ");
 		for (i = 0; i < nt; i++) {
-			printf("( %f %f) ", xl_ret[i],yl_ret[i]);
+			printf("( %f %f) ", xw_ret[i],yw_ret[i]);
 		}
 		printf("\n");
 		*/
-
-		nt = CyclicClipPolyPoints(x,y,xl,yl,xl_ret,yl_ret,n,pval,fail_ix,1);
+			
+		nt = CyclicClipPolyPoints(x,y,xw,yw,x_ret,y_ret,xw_ret,yw_ret,n,pval,fail_ix,1);
 		if (nt > 2) 
-			ret = RenderPolygon(xl_ret,yl_ret,nt,closed);
+			ret = use_great_circle ? GreatCircleRenderPolygon(instance,x_ret,y_ret,xw_ret,yw_ret,nt,closed) : RenderPolygon(xw_ret,yw_ret,nt,closed);
 		/*
 		printf("Win locations (after cyclic right): ");
 		for (i = 0; i < nt; i++) {
-			printf("( %f %f) ", xl_ret[i],yl_ret[i]);
+			printf("( %f %f) ", xw_ret[i],yw_ret[i]);
 		}
 		printf("\n");
 		*/
 
-		NhlFree(xl_ret);
-		NhlFree(yl_ret);
+		NhlFree(xw_ret);
+		NhlFree(yw_ret);
+		NhlFree(x_ret);
+		NhlFree(y_ret);
 	}
 	else if (unprojectable) {
-		nt = ClipPolyPoints(x,y,xl,yl,n,pval,fail_ix);
+		nt = ClipPolyPoints(x,y,xw,yw,n,pval,fail_ix);
 		if (nt > 2) 
-			ret = RenderPolygon(xl,yl,nt,closed);
+			ret = use_great_circle ? GreatCircleRenderPolygon(instance,x,y,xw,yw,n,closed) : RenderPolygon(xw,yw,nt,closed);
 	}
 	else {
-		if (mptrans->mptrans.projection == NhlLAMBERTEQUALAREA || mptrans->mptrans.projection== NhlAZIMUTHALEQUIDISTANT)
-			ret = GreatCircleRenderPolygon(instance,x,y,xl,yl,n,closed);
-		else 
-			ret = RenderPolygon(xl,yl,n,closed);
-		
+		ret = use_great_circle ? GreatCircleRenderPolygon(instance,x,y,xw,yw,n,closed) : RenderPolygon(xw,yw,n,closed);
 	}       
-
-	NhlFree(xl);
-	NhlFree(yl);
+end:
+	NhlFree(xw);
+	NhlFree(yw);
 	NhlFree(pval);
 	Wkptr = NULL;
 
@@ -3569,10 +3630,12 @@ int n;
 			if (lastsize == 0) {
 				xbuf = NhlMalloc(size*sizeof(float));
 				ybuf = NhlMalloc(size*sizeof(float));
+				lastsize = size;
 			}
 			else if (lastsize < size) {
 				xbuf = NhlRealloc(xbuf,size*sizeof(float));
 				ybuf = NhlRealloc(ybuf,size*sizeof(float));
+				lastsize = size;
 			}
 			if (! xbuf || !ybuf) {
 				e_text = "%s: dynamic memory allocation error";
@@ -3581,7 +3644,6 @@ int n;
 				ret = NhlFATAL;
 				goto err_ret;
 			}
-			lastsize = size;
 			c_mapgci(yl[i],xl[i],
 				 yl[nexti],xl[nexti],size,ybuf,xbuf);
 			for (j = 0; j < size; j++) {
@@ -3598,7 +3660,7 @@ int n;
 		NhlFree(xbuf);
 		NhlFree(ybuf);
 	}
-	else {
+	else if (mptrans->trobj.line_interpolation_on) {
 		for (i = 0; i < n; i++) {
 			nexti = i + 1;
 			if (i == n - 1) {
@@ -3618,6 +3680,15 @@ int n;
 				if ((ret = MIN(subret,ret)) < NhlWARNING)
 					goto err_ret;
 			}
+		}
+	}
+	else {
+		for (i = 1; i <= n ; i++) {
+			if (i == n && closed)
+				break;
+			subret = _NhlMapita(aws,yl[i % n],xl[i % n],2,3,left_id,right_id,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING)
+				goto err_ret;
 		}
 	}
 	

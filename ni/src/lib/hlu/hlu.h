@@ -256,6 +256,13 @@ extern void *NhlMalloc(
 #endif
 );
 
+extern void *NhlCalloc(
+#if	NhlNeedProto
+	ng_usize_t	num,
+	ng_usize_t	size
+#endif
+);
+
 extern void *NhlRealloc(
 #if	NhlNeedProto
 	void*,		/* pointer to copy		*/

@@ -78,6 +78,49 @@ void
 }
 
 /*
+ * Function:	NhlCalloc
+ *
+ * Description:	This function is our interface to the regular calloc
+ *		system call.  We are using it so we can do error handleing
+ *		for memory allocation in one place and so we can impliment
+ *		our own memory management code if we need to.
+ *
+ * In Args:	ng_usize_t	num	number of elements requested
+ * In Args:	ng_usize_t	size	size of each element
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Public
+ * Returns:	pointer to memory of the size requested, each byte of memory is set to 0
+ * Side Effect:	
+ */
+void
+*NhlCalloc
+#if	NhlNeedProto
+(
+	ng_usize_t      num,     /* number of elements */
+	ng_usize_t	size	/* size of each element	*/
+)
+#else
+(num,size)
+	ng_usize_t      num;     /* number of elements */
+	ng_usize_t	size;	/* size of each element	*/
+#endif
+{
+	void *ptr;
+
+	if(size == 0 || num == 0)
+		return NULL;
+
+	ptr = (void *)calloc(num, size);
+
+	if(ptr == NULL)
+		NhlPError(NhlFATAL,errno,"NhlCalloc Failed");
+
+	return(ptr);
+}
+
+/*
  * Function:	NhlRealloc
  *
  * Description:	This function is our interface to the regular realloc

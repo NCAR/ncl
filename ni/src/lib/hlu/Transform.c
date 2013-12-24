@@ -35,6 +35,8 @@
 #include <ncarg/hlu/MapTransObj.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/color.h>
+#include <ncarg/hlu/WorkstationP.h>
+#include <omp.h>
 
 static _NhlRawObjCB callbacks[] = {
 	{_NhlCBtfOverlayStatus,
@@ -1494,6 +1496,7 @@ static NhlErrorTypes TransformDataPolygon
 	NhlGenArray             segment_ga = NULL;
 	int                     *segments = NULL;
 	float                   fill_opacity;
+	int			activated_locally = 0;
 
 	if (n < 3) {
 		e_text = "%s, not enough points for a polygon";
@@ -1594,7 +1597,10 @@ static NhlErrorTypes TransformDataPolygon
 	}
 
 
-	subret = _NhlActivateWorkstation(tl->base.wkptr);
+	if(! wksisact(((NhlWorkstationLayer)tl->base.wkptr)->work.gkswksid)) {
+		subret = _NhlActivateWorkstation(tl->base.wkptr);
+		activated_locally = 1;
+	}
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error activating workstation";
@@ -1635,18 +1641,37 @@ static NhlErrorTypes TransformDataPolygon
 		}
 	}
 	else {
-		int bix, eix, ln,i,j;
+		int bix, eix, ln,i,j,k,ix;
+		int chunk = 100;
 		float tmpx,tmpy;
 		int status;
 		int fill_color;
-		for (i = 1; i < start_count; i++) {
-			int one_at_least = 0;
+		int one_at_least;
+		int done;
+		int tid, nthreads;
+#if 0
+#pragma omp parallel shared(start_count, segments, x, y, top,n,len_colors,colors,gsid) private(i,bix,eix,ln,j,subret,status,tmpx,tmpy,one_at_least,fill_color,k,ix,done) reduction(|:ret) 
+		{
+		  tid = omp_get_thread_num();
+		  if (tid == 0) {
+		    nthreads = omp_get_num_threads();
+		    printf("%d threads\n",nthreads);
+		  }
+		  else {
+		    printf("thread num is %d\n",tid);
+		  }
+#pragma omp for  schedule(static,chunk)
+#endif
+		for (i = 1; i <= start_count; i++) {
 			bix = segments[i-1];
-			eix = segments[i] - 1;
-			while (x[eix] == x[eix - 1] && y[eix] == y[eix-1]) {
+			eix = i == start_count ? n - 1 : segments[i] - 1;
+			one_at_least = 0;
+			done = 0;
+			while (! done && x[eix] == x[eix - 1] && y[eix] == y[eix-1]) {
 				if (eix == bix)
-					break;
-				eix--;
+				  done = 1;
+				else 
+				  eix--;
 			}
 			ln = eix - bix + 1;
 			if (ln < 3)
@@ -1655,27 +1680,27 @@ static NhlErrorTypes TransformDataPolygon
 				subret = _NhlDataToWin((NhlLayer)top,&x[j],&y[j],1,&tmpx,&tmpy,&status,NULL,NULL);
 				if (! status)  {/* at least one point inside the domain */
 					one_at_least = 1;
-					break; 
+					j = eix;
 				}
 			}
 			if (! one_at_least) /* skip this polygon */
 				continue;
-
+#if 1
 			if (len_colors > 0) {
 				fill_color = colors[(i-1) % len_colors];
 				NhlVASetValues(gsid,
 					       NhlNgsFillColor, fill_color,
 					       NULL);
 			}
+#endif
 			subret = _NhlDataPolygon((NhlLayer)top,&(x[bix]),&(y[bix]),ln);
 			if ((ret = MIN(ret,subret)) < NhlWARNING)
-				break;
-			if (edges_on) {
-				int i;
+			  i = start_count + 1;
+			else if (edges_on) {
 				subret = _NhlDataLineTo((NhlLayer)top,x[bix],y[bix],1);
 				ret = MIN(subret,ret);
-				for (i = 1; i < ln; i++) {
-					int ix = bix + i;
+				for (k = 1; k < ln; k++) {
+					ix = bix + k;
 					subret = _NhlDataLineTo((NhlLayer)top,x[ix],y[ix],0);
 					ret = MIN(subret,ret);
 				}
@@ -1687,6 +1712,9 @@ static NhlErrorTypes TransformDataPolygon
 				c_plotif(0.0,0.0,2);
 			}
 		}
+#if 0
+		}
+#endif
 	}
 	if (tfp->poly_clip_on || ismaptrans || isirtrans)
 		gset_clip_ind(GIND_NO_CLIP);
@@ -1694,7 +1722,8 @@ static NhlErrorTypes TransformDataPolygon
 		NGCALLF(resetdashchar,RESETDASHCHAR)();
 	}
 
-        subret = _NhlDeactivateWorkstation(tl->base.wkptr);
+	if (activated_locally) 
+		subret = _NhlDeactivateWorkstation(tl->base.wkptr);
 
 	if (edges_on) {
 		NhlVASetValues(gsid,

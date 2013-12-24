@@ -3864,7 +3864,8 @@ NhlErrorTypes _NhlCtcica
 	float		ycqf,
 	float		min_cell_size,
 	NhlBoolean	smooth,
-	NhlBoolean      use_mesh_fill,
+	int             fill_op,
+	void            *info,
 	char		*entry_name
 )
 #else
@@ -3885,7 +3886,8 @@ NhlErrorTypes _NhlCtcica
 	float		ycqf;
 	float		min_cell_size;
 	NhlBoolean	smooth;
-	NhlBoolean      use_mesh_fill;
+	int             fill_op;
+	void            *info;
 	char		*entry_name;
 #endif
 {
@@ -3911,7 +3913,12 @@ NhlErrorTypes _NhlCtcica
 	int		xedge_ix,yedge_ix;
 	int		count;
 
-	if (use_mesh_fill) {
+	c_entsr(&save_mode,1);
+
+	if (fill_op == 3) 
+	  goto GCA_ONLY;
+
+	if (fill_op == 1  || ! smooth) {
 		if (! (cwsrp && cwsrp->ws_ptr)) {
 			e_text = "%s: invalid workspace";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -3926,7 +3933,6 @@ NhlErrorTypes _NhlCtcica
 			return NhlFATAL;
 		}
 	}
-	c_entsr(&save_mode,1);
 
 	if (cwsrp->cur_size != icam * ican * sizeof(int)) {
 		int amount = (icam * ican) * sizeof(int) - cwsrp->cur_size;
@@ -3939,7 +3945,7 @@ NhlErrorTypes _NhlCtcica
 	lxcqf = smooth ? MIN(1.0,xcqf) : xcqf;
 	lycqf = smooth ? MIN(1.0,ycqf) : ycqf;
 
-	if (use_mesh_fill) {
+	if (fill_op == 1) {
 		ret = _NhlUnstructuredMeshFill(cwsrp->ws_ptr,
 					       ica1,icam,ican,
 					       lxcpf,lycpf,lxcqf,lycqf,
@@ -3952,9 +3958,11 @@ NhlErrorTypes _NhlCtcica
 	else if (! smooth) {
 		ret = _NhlTriMeshRasterFill
 			(rpnt,iedg,itri,cwsrp->ws_ptr,
-			 ica1,icam,ican,lxcpf,lycpf,lxcqf,lycqf,entry_name);
+			 ica1,icam,ican,lxcpf,lycpf,lxcqf,lycqf,info,entry_name);
 		if (ret < NhlWARNING) 
 			return NhlFATAL;
+		if (fill_op == 2)
+		  return ret;
 	}
 	else do {
 		int yes = 1;
@@ -3967,7 +3975,7 @@ NhlErrorTypes _NhlCtcica
 		else {
 			ret = _NhlTriMeshRasterFill
 			(rpnt,iedg,itri,cwsrp->ws_ptr,
-			 ica1,icam,ican,lxcpf,lycpf,lxcqf,lycqf,entry_name);
+			 ica1,icam,ican,lxcpf,lycpf,lxcqf,lycqf,info,entry_name);
 			if (ret < NhlWARNING) 
 				return NhlFATAL;
 		}
@@ -4008,11 +4016,17 @@ NhlErrorTypes _NhlCtcica
 		}
 	} while (! done);
 
+ GCA_ONLY:
 /*
  * Since all the transformations have been applied during the creation of
  * the cell array, it must be placed into the frame using an identity
  * transformation.
  */
+	lxcpf = smooth ? MAX(0.0,xcpf) : xcpf;
+	lycpf = smooth ? MAX(0.0,ycpf) : ycpf;
+	lxcqf = smooth ? MIN(1.0,xcqf) : xcqf;
+	lycqf = smooth ? MIN(1.0,ycqf) : ycqf;
+
 	c_getset(&fl,&fr,&fb,&ft,&wl,&wr,&wb,&wt,&ll);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 

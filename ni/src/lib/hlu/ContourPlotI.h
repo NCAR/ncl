@@ -65,6 +65,7 @@ extern NhlErrorTypes _NhlTriMeshRasterFill(
 	float		ycpf,
 	float		xcqf,
 	float		ycqf,
+	void            *info,
 	char		*entry_name
 #endif        
         );

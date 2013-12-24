@@ -1814,8 +1814,8 @@ int n;
 			ratio = dbuf[i-1] / tdist;
 			lcount = (int) (ratio * (float)npoints);
 			lcount = lcount > 1 ? lcount : 1;
-			xdist = x[i] - x[i-1];
-			ydist = y[i] - y[i-1];
+			xdist = x[i%n] - x[i-1];
+			ydist = y[i%n] - y[i-1];
 			for (j=0; j < lcount; j++) {
 				cx = x[i-1] + xdist * (j+1) / (float)lcount;
 				cy = y[i-1] + ydist * (j+1) / (float)lcount;

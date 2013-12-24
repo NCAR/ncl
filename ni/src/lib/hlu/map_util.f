@@ -46,6 +46,12 @@ C  the lat/lon to window transformation is performed for a particular point. Suc
 C  a crossing of the cyclic boundary. This routine is designed to give that information along with performing the transformation.
 C
       status = 0
+      if (peps .gt. 0.7 * (umax - umin)) then
+         lpeps = .66 * peps
+      else
+         lpeps = peps
+      end if
+
 
       CALL MAPTRN (RLAT,RLON,U,V)
       pval = p
@@ -70,8 +76,9 @@ C
          return
       end if
 
-      if ((.not. pold .gt. 1e10) .AND. ABS(PNEW-POLD).GE.PEPS) then
+      if ((.not. pold .gt. 1e10) .AND. ABS(PNEW-POLD).GE.lpeps) then
          status = 3
+C         print *, lpeps, pnew, pold, status
       end if
 
       pold = pnew

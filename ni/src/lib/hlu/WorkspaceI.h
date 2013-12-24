@@ -305,6 +305,10 @@ NhlErrorTypes _NhlCtlbdr(
 #endif
 );
 
+/* 
+  fill_op: 0 : RasterFill,  1 : MeshFill,  2 : RasterFill - no GCA, 3 GCA only
+*/
+
 NhlErrorTypes _NhlCtcica(
 #if	NhlNeedProto
 	float		*rpnt,
@@ -322,7 +326,8 @@ NhlErrorTypes _NhlCtcica(
 	float		ycqf,
 	float		min_cell_size,
 	NhlBoolean	smooth,
-	NhlBoolean      use_mesh_fill,
+	int             fill_op,
+	void            *info,
 	char		*entry_name
 #endif
 );
