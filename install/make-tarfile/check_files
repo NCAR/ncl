@@ -635,6 +635,7 @@ lib/ncarg/colormaps/hotcold_18lev.rgb
 lib/ncarg/colormaps/hotcolr_19lev.rgb
 lib/ncarg/colormaps/hotres.ncmap
 lib/ncarg/colormaps/hotres.rgb
+lib/ncarg/colormaps/lithology.rgb
 lib/ncarg/colormaps/matlab_hot.rgb
 lib/ncarg/colormaps/matlab_hsv.rgb
 lib/ncarg/colormaps/matlab_jet.rgb
