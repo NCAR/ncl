@@ -1163,23 +1163,6 @@ static NhlErrorTypes BuildNativeMeshFromBounds
 
 }
 
-#ifdef BuildTRIANGLE
-
-/* these are the shewchuk structures */
-
-typedef struct _stri {
-  int nodes[3];  /* vertex node ids */
-} Stri;
-
-typedef struct _snode {  /* a vertex node */
-  double x;
-  double y;
-} Snode;
-
-typedef struct _sedge {
-  int nodes[2];   /* vertex nodes */
-} Sedge;
-
 /* conpackt structures */
 
 typedef struct _cpoint {   /* a point node */
@@ -1201,6 +1184,24 @@ typedef struct _ctri {
   int edge[3]; /* base index of edges of the triangle (Loen (5)  * cedge index + edge number) */
   int flag;
 } Ctri;
+
+#ifdef BuildTRIANGLE
+
+/* these are the shewchuk structures */
+
+typedef struct _stri {
+  int nodes[3];  /* vertex node ids */
+} Stri;
+
+typedef struct _snode {  /* a vertex node */
+  double x;
+  double y;
+} Snode;
+
+typedef struct _sedge {
+  int nodes[2];   /* vertex nodes */
+} Sedge;
+
 
 #if 0
 /* this is the old code --keeping it around for now */
