@@ -128,7 +128,9 @@ NhlErrorTypes _NclBuildOriginalFileCoordRSelection
 			sel->dim_num = dim_num;
 		}
 		if(_NclFileVarIsCoord(file,cname) == -1) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%s) of file (%s) does not have an associated coordinate variable",NrmQuarkToString(cname),f_name);
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"Dimension (%s) of file (%s) does not have an associated coordinate variable",
+				NrmQuarkToString(cname),f_name));
                         return(NhlFATAL);
 
 		}
@@ -388,9 +390,9 @@ NhlErrorTypes _NclBuildAdvancedFileCoordRSelection(struct _NclFileRec* file,
         dimnode = _getDimNodeFromNclFileGrpNode(grpnode, cname);
         if(NULL == dimnode)
         {
-            NhlPError(NhlFATAL,NhlEUNKNOWN,
+            NHLPERROR((NhlFATAL,NhlEUNKNOWN,
                       "Dimension (%s) of file (%s) does not have an associated coordinate variable",
-                       NrmQuarkToString(cname),f_name);
+                       NrmQuarkToString(cname),f_name));
             return(NhlFATAL);
         }
 
@@ -669,15 +671,55 @@ NhlErrorTypes  _NclBuildFileCoordVSelection
 * Preconditions: subscripts are SCALAR and integer guarenteed!!!!
 */
 	v_name = NrmQuarkToString(var);
-	f_name = NrmQuarkToString(file->file.fname);
-	vindex = _NclFileIsVar(file,var);
-
 /*
 * vec is guarenteed to be one dimensional, and of an integer type
 */
 	vect_md = vec->vec;
 
 	if(vect_md != NULL) {
+#ifdef USE_NETCDF4_FEATURES
+		if(file->file.advanced_file_structure)
+		{
+			NclAdvancedFile advancedfile = (NclAdvancedFile) file;
+			NclFileVarNode *varnode;
+			int n, ndims;
+			varnode = _getVarNodeFromNclFileGrpNode(advancedfile->advancedfile.grpnode, var);
+			ndims = varnode->dim_rec->n_dims;
+			sel->dim_num = -1;
+			if(dim_name != NULL)
+			{
+				cname = NrmStringToQuark(dim_name);
+				for(n = 0; n < ndims; ++n)
+				{
+					if(cname == varnode->dim_rec->dim_node[n].name)
+					{
+						sel->dim_num = n;
+						break;
+					}
+				}
+			}
+			else
+			{
+				if((0 <= dim_num) && (dim_num < ndims))
+				{
+					sel->dim_num = dim_num;
+					cname = varnode->dim_rec->dim_node[dim_num].name;
+				}
+			}
+
+			if(0 > sel->dim_num)
+			{
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"(%s) is not a dimension name in variable (%s->%s), could not determine dimension number",
+					dim_name,NrmQuarkToString(advancedfile->advancedfile.grpnode->path),v_name));
+				return(NhlFATAL);
+			}
+		}
+		else
+#endif
+		{
+		f_name = NrmQuarkToString(file->file.fname);
+		vindex = _NclFileIsVar(file,var);
 		if(dim_name != NULL) {
 			cname = NrmStringToQuark(dim_name);
 			index = _NclFileVarIsDim(file,var,cname);
@@ -702,6 +744,7 @@ NhlErrorTypes  _NclBuildFileCoordVSelection
 			}
 			sel->dim_num = dim_num;
 		}
+		}
 /*
 * I don;t think there is anyway to get arround having to allocate the 
 * vector again. Since I don't want to make any assumptions about how
@@ -709,7 +752,9 @@ NhlErrorTypes  _NclBuildFileCoordVSelection
 * arround untill the actual ValueRead happens
 */
 		if(_NclFileVarIsCoord(file,cname) == -1) {
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%s) of file (%s) does not have an associated coordinate variable",NrmQuarkToString(cname),f_name);
+                        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"Dimension (%s) of file (%s) does not have an associated coordinate variable",
+				NrmQuarkToString(cname),f_name));
                         return(NhlFATAL);
 
                 }
