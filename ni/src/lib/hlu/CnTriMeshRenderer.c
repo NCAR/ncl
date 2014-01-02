@@ -1401,72 +1401,6 @@ static NhlErrorTypes BuildDelaunayMesh
 
 }
 #endif
-static NhlErrorTypes UpdateMeshData
-#if	NhlNeedProto
-(
-	NhlCnTriMeshRendererLayerPart *tmp,
-	NhlContourPlotLayer     cnl,
-	NhlString entry_name
-)
-#else
-(tmp,cnl,entry_name)
-        NhlCnTriMeshRendererLayerPart *tmp;
-	NhlContourPlotLayer     cnl;
-	NhlString entry_name;
-#endif
-{
-	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
- 	float *rlat,*rlon;
-	float *rdat;
-	int i;
-	int ret = NhlNOERROR;
-	double xtmp,ytmp,xt,yt;
-	int block_ix;
-	int pcount[256];
-	TriBlock *tbp;
-	Cpoint *cpp;
-	float xs,xe,ys,ye;
-
-	rlat = (float*)cnp->sfp->y_arr->data;
-	rlon = (float*)cnp->sfp->x_arr->data;
-	rdat = (float*)cnp->sfp->d_arr->data;
-	memset(pcount,0,sizeof(int) * MIN(tmp->nblocks,256));
-
-	for (i = 0; i < cnp->sfp->fast_len; i++) { 
-		xtmp = (double) rlon[i];
-		ytmp = (double) rlat[i];
-		if (tmp->ezmap) {
-			NGCALLF(mdptra,MDPTRA)(&ytmp,&xtmp,&xt,&yt);
-			if (xt > 1e10 || yt > 1e10)
-				continue;
-		}
-		else {
-			xt = xtmp;
-			yt = ytmp;
-		}
-		for (block_ix = 0; block_ix < tmp->nblocks; block_ix++) {
-			tbp = &(tmp->tri_block[block_ix]);
-			cpp = (Cpoint *) tbp->rpnt;
-			xs = tbp->xs;
-			xe = tbp->xe;
-			ys = tbp->ys;
-			ye = tbp->ye;
-			if (xt < xs || xt > xe || yt < ys || yt > ye) {
-				continue;
-			}
-			if (_NhlCmpFAny2((float)xt,cpp[pcount[block_ix]].x,6,_NhlMIN_NONZERO) == 0 &&
-			    _NhlCmpFAny2((float)yt,cpp[pcount[block_ix]].y,6,_NhlMIN_NONZERO)) {
-				cpp[pcount[block_ix]].dat = rdat[i];
-				pcount[block_ix]++;
-			}
-			if (pcount[block_ix] > tbp->npnt / Lopn) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: internal logic error",entry_name);
-				return NhlFATAL;
-			}
-		}
-	}
-	return ret;
-}
 #if 0  
 typedef struct _PointAndIndex {
   double x,y;
@@ -3390,6 +3324,73 @@ static NhlErrorTypes cnInitDataArray
                 *nsize = MIN(*nsize,max_nsize);
                 cnp->cell_size = (bbox->r - bbox->l) / (float) *msize;
         }
+	return ret;
+}
+
+static NhlErrorTypes UpdateMeshData
+#if	NhlNeedProto
+(
+	NhlCnTriMeshRendererLayerPart *tmp,
+	NhlContourPlotLayer     cnl,
+	NhlString entry_name
+)
+#else
+(tmp,cnl,entry_name)
+        NhlCnTriMeshRendererLayerPart *tmp;
+	NhlContourPlotLayer     cnl;
+	NhlString entry_name;
+#endif
+{
+	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
+ 	float *rlat,*rlon;
+	float *rdat;
+	int i;
+	int ret = NhlNOERROR;
+	double xtmp,ytmp,xt,yt;
+	int block_ix;
+	int pcount[256];
+	TriBlock *tbp;
+	Cpoint *cpp;
+	float xs,xe,ys,ye;
+
+	rlat = (float*)cnp->sfp->y_arr->data;
+	rlon = (float*)cnp->sfp->x_arr->data;
+	rdat = (float*)cnp->sfp->d_arr->data;
+	memset(pcount,0,sizeof(int) * MIN(tmp->nblocks,256));
+
+	for (i = 0; i < cnp->sfp->fast_len; i++) { 
+		xtmp = (double) rlon[i];
+		ytmp = (double) rlat[i];
+		if (tmp->ezmap) {
+			NGCALLF(mdptra,MDPTRA)(&ytmp,&xtmp,&xt,&yt);
+			if (xt > 1e10 || yt > 1e10)
+				continue;
+		}
+		else {
+			xt = xtmp;
+			yt = ytmp;
+		}
+		for (block_ix = 0; block_ix < tmp->nblocks; block_ix++) {
+			tbp = &(tmp->tri_block[block_ix]);
+			cpp = (Cpoint *) tbp->rpnt;
+			xs = tbp->xs;
+			xe = tbp->xe;
+			ys = tbp->ys;
+			ye = tbp->ye;
+			if (xt < xs || xt > xe || yt < ys || yt > ye) {
+				continue;
+			}
+			if (_NhlCmpFAny2((float)xt,cpp[pcount[block_ix]].x,6,_NhlMIN_NONZERO) == 0 &&
+			    _NhlCmpFAny2((float)yt,cpp[pcount[block_ix]].y,6,_NhlMIN_NONZERO)) {
+				cpp[pcount[block_ix]].dat = rdat[i];
+				pcount[block_ix]++;
+			}
+			if (pcount[block_ix] > tbp->npnt / Lopn) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: internal logic error",entry_name);
+				return NhlFATAL;
+			}
+		}
+	}
 	return ret;
 }
 
