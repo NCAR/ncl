@@ -10,14 +10,15 @@ SHELL=/bin/sh
 #
 #  In addition, INC must include all directories where the above
 #  mentioned include files can be found.
-DEFS=-DUSE_JPEG2000 -DUSE_PNG
-
+# DEFS=-DUSE_JPEG2000 -DUSE_PNG
+DEFS=-DUSE_JPEG2000 -DUSE_PNG -D__64BIT__
 #
 # Please make sure to include all idirectories where include files  
 #     can be found (jasper/*.h and png.h pngconf.h zconf.h zlib.h)
 #
 
-INC=-I/export/lnx102/wd42bv/jasper-1.900.1/src/libjasper/include
+#INC=-I/export/lnx102/wd42bv/jasper-1.900.1/src/libjasper/include
+INC=-I/usr/local/include
 
 #
 #   This "C" source code contains many uses of the C++
