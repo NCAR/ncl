@@ -68,7 +68,6 @@ dd=`date +'%m%d%y'`
 un=`uname -n`
 um=`uname -m`
 os=`uname -s`
-make_output_file="make-output.$un.$dd"
 
 # Parent location for installing external software
 PREFIX=/usr/local
@@ -104,7 +103,7 @@ fi
 # Software directories, sorted alphabetically
 #--------------------------------------------------------------------
 
-G2CLIB_DIR="g2clib-1.2.3-patch"
+G2CLIB_DIR="g2clib-1.5.0-patch"
 GDAL_DIR="gdal-1.10.1"
 HDF4_DIR="hdf-4.2.9"
 HDF5_DIR="hdf5-1.8.11"

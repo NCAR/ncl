@@ -1,0 +1,92 @@
+#!/bin/sh -f
+#
+#----------------------------------------------------------------------
+# This script is for building ESMF software (and hence
+# ESMF_RegridWeightGen) on a Mac or Linux system. This
+# script should work with ESMF 5.2.x or 6.2.x, which can
+# be downloaded from:
+#
+# http://www.earthsystemmodeling.org/download/releases.shtml
+#
+# Note that ESMF installs executables and libraries to 
+# subdirectories under $ESMF_PREFIX:
+#
+#     $ESMF_PREFIX/bin/binO/.../
+#     $ESMF_PREFIX/lib/libO/.../
+#
+# This script attemps to move the ESMF_RegridWeightGen binary to the
+# correct location ($ESMF_PREFIX/bin) after it is built.
+#----------------------------------------------------------------------
+# This script assumes: 
+#
+#   - You are using gfortran/gcc/g++ ( you must have V4.2 or higher)
+
+#   - ESMF source code is in /usr/local/esmf-6.2.0
+#
+#   - You want ESMF software installed in same location as
+#     $NCARG_ROOT
+#
+#   - NetCDF is installed in /usr/local, and that you are linking
+#     against a NetCDF-4 enabled version (not required, since
+#     ESMF doesn't handle NetCDF-4 yet).
+#
+#   - The NCL versions of the lapack and blas libraries
+#     (liblapack_ncl.a and libblas_ncl.a) are installed
+#     to $NCARG_ROOT/lib
+#----------------------------------------------------------------------
+
+# Set up file to hold build output.
+dd=`date +'%m%d%y'`
+un=`uname -n`
+um=`uname -m`
+os=`uname -s`
+
+#
+# Change the environment variables as necessary
+#
+export NCARG_ROOT=/usr/local/ncl-6.2.0
+export ESMF_DIR=/usr/local/src/esmf-6.2.0
+export ESMF_INSTALL_PREFIX=$NCARG_ROOT
+export ESMF_NETCDF_LIBPATH=/usr/local/netcdf-4.3.0/lib
+export ESMF_NETCDF_INCLUDE=/usr/local/netcdf-4.3.0/include
+export ESMF_LAPACK_LIBPATH=$NCARG_ROOT/lib
+export ESMF_LAPACK_LIBS="-llapack_ncl -lblas_ncl"
+export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lsz -lz"
+export ESMF_NETCDF="split"
+export ESMF_LAPACK="netlib"
+export ESMF_COMM=mpiuni
+
+if [ "$um" == "x86_64" ] ; then
+  export ESMF_ABI=64
+else
+  export ESMF_ABI=32
+fi
+
+cd $ESMF_DIR
+
+make distclean
+make clean
+make all install
+
+# This is to get rid of libesmf shared library dependency on Mac systems
+if [ "$os" == "Darwin" ] ; then
+  /bin/rm -rf $ESMF_DIR/lib/libO/$os.gfortran.$ESMF_ABI.mpiuni.default/libesmf.dylib $ESMF_INSTALL_PREFIX/lib/libO/$os.gfortran.$ESMF_ABI.mpiuni.default/libesmf.dylib
+else
+# This is to get rid of libesmf shared library dependency on Linux systems
+  /bin/rm -rf $ESMF_DIR/lib/libO/$os.gfortran.$ESMF_ABI.mpiuni.default/libesmf.so $ESMF_INSTALL_PREFIX/lib/libO/$os.gfortran.$ESMF_ABI.mpiuni.default/libesmf.so
+fi
+
+make install
+
+# Move ESMF_RegridWeightGen to appropriate location
+if [ -f $ESMF_INSTALL_PREFIX/bin/binO/$os.gfortran.$ESMF_ABI.mpiuni.default/ESMF_RegridWeightGen ] ; then
+  /bin/mv $ESMF_INSTALL_PREFIX/bin/binO/$os.gfortran.$ESMF_ABI.mpiuni.default/ESMF_RegridWeightGen $ESMF_INSTALL_PREFIX/bin/.
+  echo "ESMF_RegridWeightGen was built successfully."
+
+# Clean up
+  /bin/rm -rf $ESMF_INSTALL_PREFIX/bin/binO
+  /bin/rm -rf $ESMF_INSTALL_PREFIX/lib/libO
+  /bin/rm -rf $ESMF_INSTALL_PREFIX/include/ESMC*
+else
+  echo "ESMF_RegridWeightGen was not built successfully."
+fi
