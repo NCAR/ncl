@@ -9148,7 +9148,52 @@ Grib2ParamList  *g2plist;
 }
 	
 		
-	
+void _g2_seekgb(FILE *lugb,size_t iseek,size_t mseek,size_t *lskip,g2int *lgrib)
+
+/* taken from the NCEP g2clib and modified by dib at NCAR to support >2GB files */
+
+{
+	g2int  ret;
+	g2int k,k4,nread,lim,start,vers,lengrib;
+	size_t ipos;
+	int    end;
+	unsigned char *cbuf;
+
+	*lgrib=0;
+	cbuf=(unsigned char *)malloc(mseek);
+	nread=mseek;
+	ipos=iseek;
+
+
+	while (*lgrib==0 && nread==mseek) {
+
+		ret=fseek(lugb,ipos,SEEK_SET);
+		nread=fread(cbuf,sizeof(unsigned char),mseek,lugb);
+		lim=nread-8;
+
+
+		for (k=0;k<lim;k++) {
+			gbit(cbuf,&start,(k+0)*8,4*8);
+			gbit(cbuf,&vers,(k+7)*8,1*8);
+			if (start==1196575042 && (vers==1 || vers==2)) {
+
+				if (vers == 1) gbit(cbuf,&lengrib,(k+4)*8,3*8);
+				if (vers == 2) gbit(cbuf,&lengrib,(k+12)*8,4*8);
+				ret=fseek(lugb,ipos+k+lengrib-4,SEEK_SET);
+
+				k4=fread(&end,4,1,lugb);
+				if (k4 == 1 && end == 926365495) { 
+					*lskip=ipos+k;
+					*lgrib=lengrib;
+					break;
+				}
+			}
+		}
+		ipos=ipos+lim;
+	}
+
+	free(cbuf);
+}
 
 
 static void *Grib2OpenFile
@@ -9184,8 +9229,8 @@ static void *Grib2OpenFile
     g2int   expand = 0;
 
     int unpack = 0;
-    g2int   lgrib,
-            lskip,
+    g2int   lgrib;
+    size_t  lskip,
             seek = 0;
 
     ng_size_t  lengrib;
@@ -9288,16 +9333,19 @@ static void *Grib2OpenFile
      */
     t_nrecs = nrecs;
     for (;;) {
-        seekgb(fd, seek, 32 * GBUFSZ_T, &lskip, &lgrib);
+	_g2_seekgb(fd, seek, (size_t)32 * GBUFSZ_T, &lskip, &lgrib);
         /* EOF or other problem? */
         if (lgrib == 0)
             break;
 	total_offset = lskip + lgrib * 2;
+/*
+        DIB: Removed this restriction: 2014-01-06
 	if (total_offset > INT_MAX) {
                 NhlPError(NhlWARNING, NhlEUNKNOWN,
 			  "Grib2OpenFile: GRIB2 files larger than 2GB not supported: records whose end of record position is greater than 2GB will not be read");
 		break;
 	}
+*/
 
         g2buf = (unsigned char *) NclMalloc((ng_size_t) lgrib);
         if (g2buf == NULL) {

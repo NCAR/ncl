@@ -456,7 +456,7 @@ typedef struct _g2Sec7 {
 } G2Sec7;
 
 typedef struct  _g2Rec {
-    off_t offset;
+    size_t offset;
     int rec_size;
     int version;        /* GRIB version */
     char *table_source_name;
@@ -634,7 +634,7 @@ struct _Grib2AttInqRecList {
 
 
 struct _Grib2RecordInqRec {
-    off_t offset;
+    size_t offset;
     int field_num;
     int rec_size;
     int rec_num;
