@@ -28,7 +28,7 @@ INC=-I/usr/local/include
 
 CFLAGS= $(INC) $(DEFS)
 
-CC=cc
+CC=gcc
 
 LIB=libgrib2c.a
 ARFLAGS=
