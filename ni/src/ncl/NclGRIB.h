@@ -224,6 +224,7 @@ struct _GribRecordInqRec {
 	int level_indicator;
 	int level0;
 	int level1;
+	int level_index; /* index into the level string and units tables */
 	unsigned char *pds;
 	int pds_size;
 	char *var_name;

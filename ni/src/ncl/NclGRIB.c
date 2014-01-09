@@ -2913,13 +2913,9 @@ GribFileRecord *therec;
 				tmp->sub_type_id = step->level_indicator;
 				tmp->is_gds = -1;
 				tmp->size = step->levels->multidval.dim_sizes[0];
-				for(i = 0; i < sizeof(level_index)/sizeof(int); i++) {
-					if(level_index[i] == step->level_indicator) {
-						break;
-					}
-				}
-				if(i < sizeof(level_index)/sizeof(int)) {
-					sprintf(buffer,"lv_%s%d",level_str[i],therec->total_dims);
+
+				if(grib_rec->level_index != -1) {
+					sprintf(buffer,"lv_%s%d",level_str[grib_rec->level_index],therec->total_dims);
 				} else {
 					sprintf(buffer,"levels%d",therec->total_dims);
 				}
@@ -2934,16 +2930,16 @@ GribFileRecord *therec;
 				step->var_info.file_dim_num[current_dim] = tmp->dim_number;
 
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				if(i < sizeof(level_index)/sizeof(int)) {
-					*tmp_string = NrmStringToQuark(level_units_str[i]);
+				if(grib_rec->level_index != -1) {
+					*tmp_string = NrmStringToQuark(level_units_str[grib_rec->level_index]);
 				} else {
 					*tmp_string = NrmStringToQuark("unknown");
 				}
 				GribPushAtt(&att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
 
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				if(i < sizeof(level_index)/sizeof(int)) {
-					*tmp_string = NrmStringToQuark(level_str_long_name[i]);
+				if(grib_rec->level_index != -1) {
+					*tmp_string = NrmStringToQuark(level_str_long_name[grib_rec->level_index]);
 				} else {
 					*tmp_string = NrmStringToQuark("unknown");
 				}
@@ -3003,13 +2999,8 @@ GribFileRecord *therec;
 				tmp->dim_number = therec->total_dims;
 				tmp->is_gds = -1;
 				tmp->size = step->levels0->multidval.dim_sizes[0];
-				for(i = 0; i < sizeof(level_index)/sizeof(int); i++) {
-					if(level_index[i] == step->level_indicator) {
-						break;
-					}
-				}
-				if(i < sizeof(level_index)/sizeof(int)) {
-					sprintf(buffer,"lv_%s%d",level_str[i],therec->total_dims);
+				if(grib_rec->level_index != -1) {
+					sprintf(buffer,"lv_%s%d",level_str[grib_rec->level_index],therec->total_dims);
 				} else {
 					sprintf(buffer,"levels%d",therec->total_dims);
 				}
@@ -3025,16 +3016,16 @@ GribFileRecord *therec;
 				sprintf(name_buffer,"%s%s",buffer,"_l0");
 
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				if(i < sizeof(level_index)/sizeof(int)) {
-					*tmp_string = NrmStringToQuark(level_units_str[i]);
+				if(grib_rec->level_index != -1) {
+					*tmp_string = NrmStringToQuark(level_units_str[grib_rec->level_index]);
 				} else {
 					*tmp_string = NrmStringToQuark("unknown");
 				}
 				GribPushAtt(&att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
 
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				if(i < sizeof(level_index)/sizeof(int)) {
-					*tmp_string = NrmStringToQuark(level_str_long_name[i]);
+				if(grib_rec->level_index != -1) {
+					*tmp_string = NrmStringToQuark(level_str_long_name[grib_rec->level_index]);
 				} else {
 					*tmp_string = NrmStringToQuark("unknown");
 				}
@@ -4852,140 +4843,156 @@ int *version;
 	}
 }
 
-static int _GetLevels
+static void SetLevelInfo
 #if NhlNeedProto
-(int *l0,int *l1,int indicator,unsigned char* lv)
+(GribRecordInqRec *grib_rec)
 #else
-(l0,l1,indicator,lv)
-int *l0;
-int *l1;
-int indicator;
-unsigned char *lv;
+(grib_rec)
 #endif
 {
-	if(indicator  < 100) {
-		*l0 = -1;
-		*l1 = -1;
+	int l0;
+	int l1;
+	unsigned char *lv = &(grib_rec->pds[10]);
+
+	grib_rec->level_indicator = (int)grib_rec->pds[9];
+	
+	if(grib_rec->level_indicator  < 100) {
+		l0 = -1;
+		l1 = -1;
 	}
-	switch(indicator) {
+
+	switch(grib_rec->level_indicator) {
 	case 100:
-		*l0 = CnvtToDecimal(2,lv);
-		*l1 = -1;
-		return(1);
+		l0 = CnvtToDecimal(2,lv);
+		l1 = -1;
+		break;
 	case 101:
-		*l0 = (int)lv[0];
-		*l1 = (int)lv[1];
+		l0 = (int)lv[0];
+		l1 = (int)lv[1];
 		break;
 	case 102:
-		*l0 = -1;
-		*l1 = -1;
-		return(1);
+		l0 = -1;
+		l1 = -1;
+		break;
 	case 103:
-		*l0 = CnvtToDecimal(2,lv);
-		*l1 = -1;
+		l0 = CnvtToDecimal(2,lv);
+		l1 = -1;
 		break;
 	case 104:
-		*l0 = (int)lv[0];
-		*l1 = (int)lv[1];
+		l0 = (int)lv[0];
+		l1 = (int)lv[1];
 		break;
 	case 105:
-		*l0 = CnvtToDecimal(2,lv);
-		*l1 = -1;
+		l0 = CnvtToDecimal(2,lv);
+		l1 = -1;
 		break;
 	case 106:
-		*l0 = (int)lv[0];
-		*l1 = (int)lv[1];
+		l0 = (int)lv[0];
+		l1 = (int)lv[1];
 		break;
 	case 107:
-		*l0 = CnvtToDecimal(2,lv);
-		*l1 = -1;
-		*l1 = -1;
+		l0 = CnvtToDecimal(2,lv);
+		l1 = -1;
+		l1 = -1;
 		break;
 	case 108:
-		*l0 = (int)lv[0];
-		*l1 = (int)lv[1];
+		l0 = (int)lv[0];
+		l1 = (int)lv[1];
 		break;
 	case 109:
-		*l0 = CnvtToDecimal(2,lv);
-		*l1 = -1;
+		l0 = CnvtToDecimal(2,lv);
+		l1 = -1;
 		break;
 	case 110:
-		*l0 = (int)lv[0];
-		*l1 = (int)lv[1];
+		l0 = (int)lv[0];
+		l1 = (int)lv[1];
 		break;
 	case 111:
-		*l0 = CnvtToDecimal(2,lv);
-		*l1 = -1;
+		l0 = CnvtToDecimal(2,lv);
+		l1 = -1;
 		break;
 	case 112:
-		*l0 = (int)lv[0];
-		*l1 = (int)lv[1];
+		l0 = (int)lv[0];
+		l1 = (int)lv[1];
 		break;
 	case 113:
-		*l0 = CnvtToDecimal(2,lv);
-		*l1 = -1;
+		l0 = CnvtToDecimal(2,lv);
+		l1 = -1;
 		break;
 	case 114:
-		*l0 = (int)lv[0];
-		*l1 = (int)lv[1];
+		l0 = (int)lv[0];
+		l1 = (int)lv[1];
 		break;
 	case 115:
-		*l0 = CnvtToDecimal(2,lv);
-		*l1 = -1;
+		l0 = CnvtToDecimal(2,lv);
+		l1 = -1;
 		break;
 	case 116:
-		*l0 = (int)lv[0];
-		*l1 = (int)lv[1];
+		l0 = (int)lv[0];
+		l1 = (int)lv[1];
 		break;
 	case 117:
-		*l0 = CnvtToDecimal(2,lv);
-		*l1 = -1;
+		l0 = CnvtToDecimal(2,lv);
+		l1 = -1;
 		break;
 	case 119:
-		*l0 = CnvtToDecimal(2,lv);
-		*l1 = -1;
+		l0 = CnvtToDecimal(2,lv);
+		l1 = -1;
 		break;
 	case 120:
-		*l0 = (int)lv[0];
-		*l1 = (int)lv[1];
+		l0 = (int)lv[0];
+		l1 = (int)lv[1];
 		break;
 	case 121:
-		*l0 = (int)lv[0];
-		*l1 = (int)lv[1];
+		l0 = (int)lv[0];
+		l1 = (int)lv[1];
 		break;
 	case 125:
-		*l0 = CnvtToDecimal(2,lv);
-		*l1 = -1;
+		l0 = CnvtToDecimal(2,lv);
+		l1 = -1;
 		break;
 	case 128:
-		*l0 = (int)lv[0];
-		*l1 = (int)lv[1];
+		l0 = (int)lv[0];
+		l1 = (int)lv[1];
 		break;
 	case 141:
-		*l0 = (int)lv[0];
-		*l1 = (int)lv[1];
+		l0 = (int)lv[0];
+		l1 = (int)lv[1];
 		break;
 	case 160:
-		*l0 = CnvtToDecimal(2,lv);
-		*l1 = -1;
+		l0 = CnvtToDecimal(2,lv);
+		l1 = -1;
 		break;
 	case 200:
-		*l0 = CnvtToDecimal(2,lv);
-		*l1 = -1;
+		l0 = CnvtToDecimal(2,lv);
+		l1 = -1;
 		break;
 	case 201:
-		*l0 = CnvtToDecimal(2,lv);
-		*l1 = -1;
+		l0 = CnvtToDecimal(2,lv);
+		l1 = -1;
 		break;
 	case 1:
-		*l0 = -1;
-		*l1 = -1;
-		return(1);
+		l0 = -1;
+		l1 = -1;
+		break;
 	default: 
-		*l0 = -1;
-		*l1 = -1;
+		l0 = -1;
+		l1 = -1;
 	}
-	return(0);
+	/* JRA55 reanalysis has some special indexes */
+	if (grib_rec->center_ix == 32 && grib_rec->ptable_version == 200 && grib_rec->level_indicator == 213) {
+		l0 = CnvtToDecimal(2,lv);
+		l1 = -1;
+	}
+	else if (grib_rec->center_ix == 98 && grib_rec->level_indicator == 210) {
+		l0 = CnvtToDecimal(2,lv);
+		l1 = -1;
+	}
+		
+	grib_rec->level0 = l0;
+	grib_rec->level1 = l1;
+
+	return;
 }
 
 static void _SetCommonTimeUnit
@@ -6795,6 +6802,7 @@ int wr_status;
 							ptable_count = sizeof(jra55_params)/sizeof(TBLE2);
 							break;
 						}
+						break;
 					case 8:
 					case 9: /* NCEP reanalysis */
 						ptable = &ncep_reanal_params[0];
@@ -6959,7 +6967,7 @@ int wr_status;
 
 
 					grib_rec->level_indicator = (int)grib_rec->pds[9];
-					_GetLevels(&grib_rec->level0,&grib_rec->level1,(int)grib_rec->pds[9],&(grib_rec->pds[10]));
+					SetLevelInfo(grib_rec);        /*->level0,&grib_rec->level1,(int)grib_rec->pds[9],&(grib_rec->pds[10]));*/
 					grib_rec->is_ensemble = 0;
 					memset(&grib_rec->ens,0,sizeof(ENS));
 					/* check for ensemble dimension */
@@ -7050,19 +7058,40 @@ int wr_status;
  					} else {
 						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_%d",grib_rec->grid_number);
 					}
-					for(i = 0; i < sizeof(level_index)/sizeof(int); i++) {
-						if(level_index[i] == (int)grib_rec->pds[9]) { 
-							break;
+					grib_rec->level_index = -1;
+					if (grib_rec->center_ix == 98) { /* look for possible ecmwf local level */
+						for (i = 0; i < sizeof(ecmwf_local_level) / sizeof(int); i++) {
+							if (ecmwf_local_level[i] == (int)grib_rec->pds[9]) {
+							        grib_rec->level_index =  ecmwf_local_start_index + i;
+								break;
+							}
 						}
 					}
-					if(i < sizeof(level_index)/sizeof(int)) {
-						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_%s",level_str[i]);
+					if (grib_rec->level_index == -1 && grib_rec->center_ix == 32 && grib_rec->ptable_version == 200) { /* look for possible jra55 local level */
+						for (i = 0; i < sizeof(jra55_local_level) / sizeof(int); i++) {
+							if (jra55_local_level[i] == (int)grib_rec->pds[9]) {
+							        grib_rec->level_index =  jra55_local_start_index + i;
+								break;
+							}
+						}
+					}
+					if (grib_rec->level_index == -1) {   /* look through the standard levels */
+						for(i = 0; i < sizeof(level_index)/sizeof(int); i++) {
+							if(level_index[i] == (int)grib_rec->pds[9]) { 
+								grib_rec->level_index  = i;
+								break;
+							}
+						}
+					}
+					if (grib_rec->level_index != -1) { 
+						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_%s",level_str[grib_rec->level_index]);
 					} else {
 						if(((int)grib_rec->pds[9]) != 0) {
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_%d",(int)grib_rec->pds[9]);
 						}
 					}
 					grib_rec->time_period = 0;
+					/* printf("time range indicator %d\n",(int)grib_rec->pds[20]); */
 					suffix = (int)(therec->options[GRIB_TIME_PERIOD_SUFFIX_OPT].values);
 					switch((int)grib_rec->pds[20]) {
 						char tpbuf[16];

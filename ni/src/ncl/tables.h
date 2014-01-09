@@ -356,7 +356,13 @@ GribTable models[] = {
 
 int level_index[] = {1,2,3,4,5,6,7,8,9,20,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,
 		     115,116,117,119,120,121,125,128,141,160,200,201,204,206,207,209,210,211,212,213,214,
-		     222,223,224,232,233,234,235,236,237,238,242,243,244,245,246,247,248,249,251,252};
+		     215,216,217,222,223,224,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,251,252};
+
+int ecmwf_local_level[] = {210};
+int ecmwf_local_start_index = sizeof(level_index) / sizeof(int);
+
+int jra55_local_level[] = {211, 212, 213};
+int jra55_local_start_index = sizeof(level_index) / sizeof(int)  + sizeof(ecmwf_local_level) / sizeof(int);
 
 char *level_str[] = {
 	"SFC",		/*1*/
@@ -405,6 +411,9 @@ char *level_str[] = {
 	"LCBL", /*212*/
 	"LCTL", /*213*/
 	"LCY",  /*214*/
+	"CEIL", /*215*/
+	"CBB",  /*216*/
+	"CBT",  /*217*/
 	"MCBL", /*222*/
 	"MCTL", /*223*/
 	"MCY",  /*224*/
@@ -415,6 +424,9 @@ char *level_str[] = {
 	"OLYR", /*236*/
 	"OBML", /*237*/
 	"OBIL", /*238*/
+	"S26CY", /*239*/
+	"OMXL", /*240*/
+	"OSEQD",/*241*/
 	"CCBL", /*242*/
 	"CCTL", /*243*/
 	"CCY",  /*244*/
@@ -424,46 +436,52 @@ char *level_str[] = {
 	"SCBL", /*248*/
 	"SCTL", /*249*/
 	"DCBL", /*251*/
-	"DCTL"  /*252*/
+	"DCTL",  /*252*/
+	/* ecmwf local */
+	"ISBH", /* 210 */
+	/* jra55 local */
+	"ESOIL", /* 211 */
+	"BLSM", /* 212 */
+	"ULN"  /* 213 */
 };
 char *level_units_str[] = {
-	"none" /*"SFC",	1*/,
-	"none" /*"CBL",	2*/,
-	"none" /*"CTL",	3*/,
-	"none" /*"0DEG",	4*/,
-	"none" /*"ADCL",	5*/,
-	"none" /*"MWSL",	6*/,
-	"none" /*"TRO",	7*/,
-	"none" /*"NTAT",	8*/,
-	"none" /*"SEAB",	9*/,
-	"(1/100) K"/*"TMPL",	20*/,
-        "hPa" /*"ISBL", 	100*/,
-        "hPa" /*"ISBY", 	101*/,
-        "hPa" /*"MSL", 	102*/,
-        "m" /*"GPML",	103*/,
-        "hm" /*"GPMY",	104*/,
-        "m" /*"HTGL",	105*/,
-        "hm" /*"HTGY",106*/,
-	"sigma" /*"SIGL",		107*/,
-	"sigma" /*"SIGY",	108*/,
-	"number" /*"HYBL",		109*/ /* If you change this you better change _Get109A in NclGRIB.c */,
-	"number" /*"HYBY", 110*/,
-	"cm" /*"DBLL",	111*/,
-	"cm" /*"DBLY", 112*/,
-	"K" /*"THEL",	113*/,
-	"K" /*"THEY", 114*/,
-	"hPa" /*"SPDL",	115*/,
-	"hPa" /*"SPDY", 116*/,
-	"10^-6Km^2/kgs" /*"PVL", 117*/,
-	"ETA value" /*"ETAL", 119*/,
-	"ETA value" /*"ETAY", 120*/,
-	"hPa" /*"IBYH", 	121*/,
-	"cm" /*"HGLH",	125*/,
-	"1.1 - sigma" /*"SGYH", 128*/,
-	"hPa" /*"IBYM", 141*/,
-	"m" /*"DBSL",	160*/,
-	"none" /*"EATM",	200*/,
-	"none" /*"EOCN",		201*/
+	"none", /*"SFC",	1*/
+	"none", /*"CBL",	2*/
+	"none", /*"CTL",	3*/
+	"none", /*"0DEG",	4*/
+	"none", /*"ADCL",	5*/
+	"none", /*"MWSL",	6*/
+	"none", /*"TRO",	7*/
+	"none", /*"NTAT",	8*/
+	"none", /*"SEAB",	9*/
+	"(1/100) K", /*"TMPL",	20*/
+        "hPa", /*"ISBL", 	100*/
+        "hPa", /*"ISBY", 	101*/
+        "hPa", /*"MSL", 	102*/
+        "m", /*"GPML",	103*/
+        "hm", /*"GPMY",	104*/
+        "m", /*"HTGL",	105*/
+        "hm", /*"HTGY",106*/
+	"sigma", /*"SIGL",		107*/
+	"sigma", /*"SIGY",	108*/
+	"number", /*"HYBL",		109*/ /* If you change this you better change _Get109A in NclGRIB.c */
+	"number", /*"HYBY", 110*/
+	"cm", /*"DBLL",	111*/
+	"cm", /*"DBLY", 112*/
+	"K", /*"THEL",	113*/
+	"K", /*"THEY", 114*/
+	"hPa", /*"SPDL",	115*/
+	"hPa", /*"SPDY", 116*/
+	"10^-6Km^2/kgs", /*"PVL", 117*/
+	"ETA value", /*"ETAL", 119*/
+	"ETA value", /*"ETAY", 120*/
+	"hPa", /*"IBYH", 	121*/
+	"cm", /*"HGLH",	125*/
+	"1.1 - sigma", /*"SGYH", 128*/
+	"hPa", /*"IBYM", 141*/
+	"m", /*"DBSL",	160*/
+	"none", /*"EATM",	200*/
+	"none", /*"EOCN",		201*/
 	"none", /*"HTFL", 204*/
 	"none", /*"GCBL", 206*/
 	"none", /*"GCTL", 207*/
@@ -473,6 +491,9 @@ char *level_units_str[] = {
 	"none", /*"LCBL", 212*/
 	"none", /*"LCTL", 213*/
 	"none", /*"LCY",  214*/
+	"none", /*"CEIL",  215*/
+	"m",    /*"CBB",  216*/
+	"m",    /*"CBT",  217*/
 	"none", /*"MCBL", 222*/
 	"none", /*"MCTL", 223*/
 	"none", /*"MCY",  224*/
@@ -483,6 +504,9 @@ char *level_units_str[] = {
 	"none", /*"OLYR", 236*/
 	"m",    /*"OBML", 237*/
 	"m",    /*"OBIL", 238*/
+        "none", /*S26CY, 239*/
+	"none", /*OMXL, 240*/
+	"none", /*OSEQD, 241*/
 	"none", /*"CCBL", 242*/
 	"none", /*"CCTL", 243*/
 	"none", /*"CCY",  244*/
@@ -492,7 +516,13 @@ char *level_units_str[] = {
 	"none", /*"SCBL", 248*/
 	"none", /*"SCTL", 249*/
 	"none", /*"DCBL", 251*/
-	"none"  /*"DCTL"  252*/
+	"none",  /*"DCTL"  252*/
+	/* ecmwf local */
+	"Pa", /* "ISBH",  210 */
+	/* jra55 local */
+	"none", /* "ESOIL", 211 */
+	"none",  /*"BLSM",  212 */
+	"number" /* "ULN"   213 */
 };
 char *level_str_long_name[] = {    
 	"surface of the earth including sea surface", /*1*/
@@ -514,7 +544,7 @@ char *level_str_long_name[] = {
 	"layer between two height levels above ground",	/*106*/
 	"sigma level",	/*107*/
 	"layer between two sigma levels",	/*108*/
-	"Hybrid level",	/*109*/
+	"hybrid level",	/*109*/
 	"layer between two hybrid levels",	/*110*/
 	"depth below land surface",	/*111*/
 	"layer between two depths below land surface",	/*112*/
@@ -541,6 +571,9 @@ char *level_str_long_name[] = {
 	"low cloud bottom level", /*"LCBL", 212*/
 	"low cloud top level", /*"LCTL", 213*/
 	"low cloud layer", /*"LCY",  214*/
+	"cloud ceiling",  /*"CEIL", 215*/
+	"cumulonimbus base", /*"CBB",216*/
+        "cumulonimbus top", /*CBT,217*/
 	"middle cloud bottom level", /*"MCBL", 222*/
 	"middle cloud top level", /*"MCTL", 223*/
 	"middle cloud layer", /*"MCY",  224*/
@@ -551,6 +584,9 @@ char *level_str_long_name[] = {
 	"layer between two depths below ocean surface", /*"OLYR", 236*/
 	"bottom of ocean mixed layer", /*"OBML", 237*/
 	"bottom of ocean isothermal layer", /*"OBIL", 238*/
+	"layer ocean surface and 26C ocean isothermal level", /*"S26CY", 239*/
+	"ocean mixed layer", /* "OMXL", 240*/
+	"ordered sequence of data", /*"OSEQD",241*/
 	"convective cloud bottom level", /*"CCBL", 242*/
 	"convective cloud top level", /*"CCTL", 243*/
 	"convective cloud layer", /*"CCY",  244*/
@@ -560,6 +596,12 @@ char *level_str_long_name[] = {
 	"shallow convective cloud bottom level", /*"SCBL", 248*/
 	"shallow convective cloud top level", /*"SCTL", 249*/
 	"deep convective cloud bottom level", /*"DCBL", 251*/
-	"deep convective cloud top level"  /*"DCTL"  252*/
+	"deep convective cloud top level",  /*"DCTL"  252*/
+	/* ecmwf local */
+	"isobaric surface (high precision)", /* "ISBH",  210 */
+	/* jra55 local */
+	"entire soil (considered as a single layer)", /* "ESOIL", 211 */
+	"bottom of land surface model",  /*"BLSM",  212 */
+	"underground layer number of land surface model" /* "ULN"   213 */
 };
 	
