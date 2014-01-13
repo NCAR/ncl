@@ -13616,3 +13616,141 @@ begin
   
   return(mode)
 end
+;============================================
+undef ("reg_multlin_driver")
+function reg_multlin_driver(data[*][*]:numeric,opt)
+;
+; Simple driver script that partitions the input 'data' array
+; for input to NCL function 'reg_multlin'. 
+; It returns many other statistical terms.
+;
+; Sample Usage:  
+;      load ".../contributed.ncl
+;
+;      diri    = "./"
+;      fili    = "FOO.txt"
+;      ncol    = numAsciiCol(diri+fili)
+;      data    = readAsciiTable( diri+fili, ncol, "float" , 1)  ; one header 
+;      printVarSummary(data)
+;
+;      preg    =  reg_multlin_driver(data,False) ; partial regression coef
+;      print(preg)
+;         
+local dimd, N, ncol, M, T, X, b, B                       \ ; local is
+    , Yavg, Yvar, Ystd, Xavg, Xvar, Xstd, Yest, n, m     \ ; not necessary
+    , Yres, SST, SSE, SSR, MST, MSE, MSR, SE, Frat, r2, ra, r, fuv
+begin
+       dimd    = dimsizes(data)
+       N       = dimd(0)              ; number of rows     
+       ncol    = dimd(1)              ; number of columns  
+       M       = ncol-1               ; number of variables  
+       
+       if (opt .and. isatt(opt,"print_data")) then
+           write_matrix(data, ncol+"f10.0", False)
+          ; write_table might be better
+          ; http://www.ncl.ucar.edu/Document/Functions/Built-in/write_table.shtml
+       end if
+       
+; create the necessary arrays 
+
+       Y       = data(:,0)
+       X       = new ( (/M+1,N/) , typeof(data),"No_FillValue")
+       X(0,:)  = 1.0
+       do m=1,M
+          X(m,:)  = data(:,m)
+       end do
+
+       b       = reg_multlin(Y,X,False)   ; partial regression coef 
+                                          ; unstandardized...depend on units
+; Assorted calculations
+
+       Yavg    = avg(Y)
+       Yvar    = variance(Y)
+       Ystd    = sqrt(Yvar)
+
+       Xavg    = new(M, typeof(b), "No_FillValue")
+       Xvar    = new(M, typeof(b), "No_FillValue")
+       Xstd    = new(M, typeof(b), "No_FillValue")
+
+       B       = new(M, typeof(b), "No_FillValue") ; standardized regression coef
+                                     ; describe what the partial regression coef. 
+                                     ; would equal if all variables had the same 
+                                     ; standard deviation.
+       do m=1,M
+          Xavg(m-1)   = avg(X(m,:))
+          Xvar(m-1)   = variance(X(m,:))
+          Xstd(m-1)   = sqrt(Xvar(m-1))
+          B(m-1)      = b(m)*Xstd(m-1)/Ystd
+       end do
+
+; Calculate model estimates
+
+       Yest = new(N,typeof(Y),"No_FillValue")
+       do n=0,N-1
+          Yest(n) = b(0) + sum(b(1:)*X(1:,n)) 
+       end do
+
+; ANOVA table info: 
+;       sums of squares , degrees of freedom, mean squares, F statistic
+
+       Yres = Yest-Y               ; residuals
+
+                                   ; SS ==> Sum of Squares 
+       SST  = sum((Y-Yavg)^2)      ; total SS      [dof=N-1]
+       SSE  = sum(Yres^2)          ; residual SS   [dof=N-M-1]
+       SSR  = sum((Yest-Yavg)^2)   ; regression SS [dof=M]
+                                   ; (aka:explained SS)
+
+       MST  = SST/(N-1)
+       MSE  = SSE/(N-M-1)
+       MSR  = SSR/M
+
+       SE   = sqrt(MSE)            ; residual standard error
+                                   
+       Frat = MSR/MSE              ; dof (M,N-M-1)
+
+       r2   = SSR/SST              ; r2 = square of the Pearson correlation 
+                                   ;      coefficient between the observed 
+                                   ;      and modeled (predicted) data values
+                                   ;      of the dependent variable.
+                                   ; biased high, particularly for small N
+
+       ra   = r2-(1-r2)*M/tofloat(N-M-1) ; adjusted r2... better for small N
+       r    = sqrt(r2)             ; multiple (overall) correlation
+       fuv  = 1.0-r2               ; fraction of variance *unexplained* 
+
+       if (opt .and. isatt(opt,"print_anova")) then
+           print(" ")
+           print("------- ANOVA information-------- ")
+           print("SST="+SST+"  SSR="+SSR+"  SSE="+SSE)
+           print("MST="+MST+"  MSR="+MSR+"  MSE="+MSE+"  SE="+SE)
+           print("F-statistic="+Frat +" dof=("+M+","+(N-M-1)+")")
+           print("-------  ")
+           print("r2="+r2+"  r="+r+"  ra="+ra+"  fuv="+fuv)  
+           print(" ")
+       end if
+
+; associate assorted information as attributes of 'b'
+
+       b@N     = N
+       b@M     = M
+       b@B     = B
+       b@SST   = SST
+       b@SSE   = SSE
+       b@SSR   = SSR
+       b@MST   = MST
+       b@MSE   = MSE
+       b@MSR   = MSR
+       b@SE    = SE
+       b@SE_dof= N-M-1
+       
+       b@F     = Frat
+       b@F_dof = (/M,N-M-1/)
+       b@r2    = r2
+       b@r     = r
+       b@ra    = ra
+       b@fuv   = fuv
+       b@Yest  = Yest
+
+       return(b)
+end
