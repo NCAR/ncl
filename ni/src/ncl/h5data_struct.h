@@ -14,8 +14,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern char *strdup(const char *s);
-
 #ifdef NIO_LIB_ONLY
 #include "nioNgSizeT.h"
 #include "niohlu.h"
