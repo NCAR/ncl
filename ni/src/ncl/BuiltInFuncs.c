@@ -14561,14 +14561,14 @@ NhlErrorTypes _Nclwhere
 
 	if (true_val_md->multidval.kind != SCALAR)  {
 		if(cond_md->multidval.n_dims  != true_val_md->multidval.n_dims) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"where: condition variable (parameter 1) dimension mismatch with parameter 2");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"where: condition variable (parameter 0) dimension mismatch with parameter 1");
 			return(NhlFATAL);
 		}
 		else {
 			for(i = 0; i < cond_md->multidval.n_dims; i++) {
 				if(cond_md->multidval.dim_sizes[i] != true_val_md->multidval.dim_sizes[i]) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,
-						  "wherefunc: dimension sizes  of parameter 0 and parameter 1 do not match");
+						  "where: dimension sizes  of parameter 0 and parameter 1 do not match");
 					return(NhlFATAL);
 				}
 			}
@@ -14576,14 +14576,14 @@ NhlErrorTypes _Nclwhere
 	}
 	if (false_val_md->multidval.kind != SCALAR) {
 		if(cond_md->multidval.n_dims  != false_val_md->multidval.n_dims) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"where: condition variable (parameter 1) dimension mismatch with parameter 2");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"where: condition variable (parameter 0) dimension mismatch with parameter 2");
 			return(NhlFATAL);
 		}
 		else {
 			for(i = 0; i < cond_md->multidval.n_dims; i++) {
 				if(cond_md->multidval.dim_sizes[i] != false_val_md->multidval.dim_sizes[i]) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,
-						  "wherefunc: dimension sizes  of parameter 0 and parameter 1 do not match");
+						  "where: dimension sizes  of parameter 0 and parameter 2 do not match");
 					return(NhlFATAL);
 				}
 			}
@@ -14601,7 +14601,7 @@ NhlErrorTypes _Nclwhere
 				      NULL,NULL,(NclTypeClass)true_val_md->multidval.type) == NhlFATAL)  {
 				NclFree(tmp);
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  "wherefunc: parameter 2 and parameter 2 must be the same types or coercible to each other");
+					  "where: parameter 1 and parameter 2 must be the same types or one must be coercible to the other");
 				return(NhlFATAL);
 			} else {
 				false_val = false_val_md->multidval.val;
@@ -14820,8 +14820,7 @@ NhlErrorTypes _Nclwhere
 			       out_val,
 			       cond_md->multidval.n_dims,
 			       cond_md->multidval.dim_sizes,
-			       (val_md->multidval.missing_value.has_missing? &val_md->multidval.missing_value.value:
-				&val_md->multidval.type->type_class.default_mis),
+			       &missing_val,
 			       val_md->multidval.data_type,
 			       0
 			       ));
