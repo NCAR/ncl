@@ -1325,16 +1325,19 @@ NclQuark path;
                     }
                 }
 
-                if (no_fill_value)
-                {
-                    if(HE5_SWgetfillvalue(HE5_SWid,NrmQuarkToString(var_hdf_names[j]),&missing) != -1)
-                    {
-                        tmp_missing = (NclScalar*)NclMalloc(sizeof(NclScalar));
-                        *tmp_missing = missing;
-                        HDFEOS5IntAddAtt(the_file->vars->var_inq,NrmStringToQuark("_FillValue"),
-                                (void*)tmp_missing,1,NCL_string);
-                    }
-                }
+              /*Do not check the fillcalue, if it is not in the attributes, otherwise, it gives error message. Wei Huang, 01/17/2014
+               *
+               *if(no_fill_value)
+               *{
+               *    if(HE5_SWgetfillvalue(HE5_SWid,NrmQuarkToString(var_hdf_names[j]),&missing) != -1)
+               *    {
+               *        tmp_missing = (NclScalar*)NclMalloc(sizeof(NclScalar));
+               *        *tmp_missing = missing;
+               *        HDFEOS5IntAddAtt(the_file->vars->var_inq,NrmStringToQuark("_FillValue"),
+               *                (void*)tmp_missing,1,NCL_string);
+               *    }
+               *}
+               */
             }
         }
 
@@ -1475,18 +1478,19 @@ NclQuark path;
                 }
             }
 
-/*
-            if(no_fill_value)
-            {
-                if(HE5_SWgetfillvalue(HE5_SWid,NrmQuarkToString(var_hdf_names[j]),&missing) != -1)
-                {
-                    tmp_missing = (NclScalar*)NclMalloc(sizeof(NclScalar));
-                    *tmp_missing = missing;
-                    HDFEOS5IntAddAtt(the_file->vars->var_inq,NrmStringToQuark("_FillValue"),
-                            (void*)tmp_missing,1,NCL_string);
-                }
-            }
-*/
+          /*Do not check the fillcalue, if it is not in the attributes, otherwise, it gives error message. Wei Huang, 01/17/2014
+           *
+           *if(no_fill_value)
+           *{
+           *    if(HE5_SWgetfillvalue(HE5_SWid,NrmQuarkToString(var_hdf_names[j]),&missing) != -1)
+           *    {
+           *        tmp_missing = (NclScalar*)NclMalloc(sizeof(NclScalar));
+           *        *tmp_missing = missing;
+           *        HDFEOS5IntAddAtt(the_file->vars->var_inq,NrmStringToQuark("_FillValue"),
+           *                (void*)tmp_missing,1,NCL_string);
+           *    }
+           *}
+           */
         }
 
         if (! (lon_name == NrmNULLQUARK || lat_name == NrmNULLQUARK ||
@@ -2071,15 +2075,18 @@ NclQuark path;
                 }
             }
 
-            if(no_fill_value)
-            {
-                if(HE5_GDgetfillvalue(HE5_GDid,NrmQuarkToString(var_hdf_names[j]),&missing) != -1)
-                {
-                    tmp_missing = (NclScalar*)NclMalloc(sizeof(NclScalar));
-                    *tmp_missing = missing;
-                    HDFEOS5IntAddAtt(the_file->vars->var_inq,NrmStringToQuark("_FillValue"),(void*)tmp_missing,1,NCL_string);
-                }
-            }
+          /*Do not check the fillcalue, if it is not in the attributes, otherwise, it gives error message. Wei Huang, 01/17/2014
+           *
+           *if(no_fill_value)
+           *{
+           *    if(HE5_GDgetfillvalue(HE5_GDid,NrmQuarkToString(var_hdf_names[j]),&missing) != -1)
+           *    {
+           *        tmp_missing = (NclScalar*)NclMalloc(sizeof(NclScalar));
+           *        *tmp_missing = missing;
+           *        HDFEOS5IntAddAtt(the_file->vars->var_inq,NrmStringToQuark("_FillValue"),(void*)tmp_missing,1,NCL_string);
+           *    }
+           *}
+           */
         }
 
       /*
@@ -2125,7 +2132,7 @@ NclQuark path;
                   "NclHDFEOS5: Invalid projection information for GRID (%s); no coordinates will be provided",
                   NrmQuarkToString(gd_hdf_names[i])));
         }
-      /*else*/
+
         {
             NrmQuark dim_names[2];
             hsize_t dim_sizes[2];
@@ -3131,16 +3138,19 @@ NclQuark path;
                 }
             }
 
-            if(no_fill_value)
-            {
-                if(HE5_ZAgetfillvalue(HE5_ZAid,NrmQuarkToString(var_hdf_names[nv]),&missing) != -1)
-                {
-                    tmp_missing = (NclScalar*)NclMalloc(sizeof(NclScalar));
-                    *tmp_missing = missing;
-                    HDFEOS5IntAddAtt(the_file->vars->var_inq,NrmStringToQuark("_FillValue"),
-                            (void*)tmp_missing,1,NCL_string);
-                }
-            }
+          /*Do not check the fillcalue, if it is not in the attributes, otherwise, it gives error message. Wei Huang, 01/17/2014
+           *
+           *if(no_fill_value)
+           *{
+           *    if(HE5_ZAgetfillvalue(HE5_ZAid,NrmQuarkToString(var_hdf_names[nv]),&missing) != -1)
+           *    {
+           *        tmp_missing = (NclScalar*)NclMalloc(sizeof(NclScalar));
+           *        *tmp_missing = missing;
+           *        HDFEOS5IntAddAtt(the_file->vars->var_inq,NrmStringToQuark("_FillValue"),
+           *                (void*)tmp_missing,1,NCL_string);
+           *    }
+           *}
+           */
         }
 
         HE5_ZAdetach(HE5_ZAid);    
