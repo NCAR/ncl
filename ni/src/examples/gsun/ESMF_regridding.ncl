@@ -1133,7 +1133,7 @@ procedure curvilinear_to_SCRIP(FName[1]:string,lat2d[*][*]:numeric,\
 local latlon_dims, nlat, nlon, fid, FileAtt, grid_siz, grid_corners, \
 grid_rank, FDimNames, FDimSizes, FDimUnlim, DummyAtt1, DummyAtt2, \
 GridCornerLat, GridCornerLon, grid_corner_lat, grid_corner_lon, mask2d, \
-DEBUG
+lat_type, lon_type, DEBUG
 begin
 ;---Check for options
     PrintTimings = isatt_logical_true(Opt,"PrintTimings")
@@ -1169,6 +1169,8 @@ begin
 ;---Was a mask provided?
     if(Opt.and.isatt(Opt,"Mask2D")) then
       if(.not.all(dimsizes(Opt@Mask2D).eq.latlon_dims)) then
+print(latlon_dims)
+print(dimsizes(Opt@Mask2D))
         print("curvilinear_to_SCRIP: Opt@Mask2D is not the correct dimensionality")
         exit
       else
@@ -1249,8 +1251,16 @@ begin
         if(DEBUG) then
           print("curvilinear_to_SCRIP: using grid corners provided by user...")
         end if
-        GridCornerLat   = Opt@GridCornerLat
-        GridCornerLon   = Opt@GridCornerLon
+        if(.not.any(typeof(Opt@GridCornerLat).eq.(/"float","double"/))) then
+          GridCornerLat = tofloat(Opt@GridCornerLat)
+        else
+          GridCornerLat = Opt@GridCornerLat
+        end if
+        if(.not.any(typeof(Opt@GridCornerLon).eq.(/"float","double"/))) then
+          GridCornerLon = tofloat(Opt@GridCornerLon)
+        else
+          GridCornerLon = Opt@GridCornerLon
+        end if
         grid_corner_lat = reshape( GridCornerLat,(/ grid_size, grid_corners /))
         grid_corner_lon = reshape( GridCornerLon,(/ grid_size, grid_corners /))
     else
@@ -1258,8 +1268,16 @@ begin
         if(DEBUG) then
           print("curvilinear_to_SCRIP: calculating grid corners...")
         end if
-        grid_corner_lat = new( (/ grid_size, grid_corners /), typeof(lat2d) )
-        grid_corner_lon = new( (/ grid_size, grid_corners /), typeof(lon2d) )
+        lat_type = typeof(lat2d)
+        lon_type = typeof(lon2d)
+        if(.not.any(lat_type.eq.(/"float","double"/))) then
+          lat_type = "float"
+        end if
+        if(.not.any(lon_type.eq.(/"float","double"/))) then
+          lon_type = "float"
+        end if
+        grid_corner_lat = new( (/ grid_size, grid_corners /), lat_type)
+        grid_corner_lon = new( (/ grid_size, grid_corners /), lon_type)
         if(any(fabs(lat2d).eq.90)) then
           if(DEBUG) then
             print("curvilinear_to_SCRIP: one or more lat values are at the")
@@ -2843,6 +2861,335 @@ begin
   return(dstData)
 end     ; of ESMF_regrid_with_weights(...)
 
+;----------------------------------------------------------------------
+; Note: this routine should be combined with "get_dst_grid_info" to
+; make just one "get_grid_info" routine.
+;
+; Given a source data variable, this function returns information 
+; about the source grid, and the lat/lon values, if appropriate.
+
+; The lat/lon values can be provided via:
+;
+;   - SrcGridLat/SrcGridLon
+;
+;   - Coordinate arrays [rectilinear grid] 
+;
+;   - lat2d/lon2d attributes [curvilinear grid] 
+;
+;   - lat1d/lon1d attributes [unstructured grid] 
+;
+;   - By a grid type of "5deg", "1x1", "2x3", etc.
+;----------------------------------------------------------------------
+undef("get_src_grid_info")
+function get_src_grid_info(opt,data)
+local opt2, grid_type_name, grid_lat_name, grid_lon_name, islatlon, \
+      grid_string, lat_vals, lon_vals, lat_dims, lon_dims, slat_dims, slon_dims, \
+      lat_rank, lon_rank, var_dims, var_rank, left_dims, grid_long_string
+begin
+  opt2             = opt
+  grid_string      = "Src"
+  grid_long_string = "source"
+
+  DEBUG = isatt_logical_true(opt2,"Debug")
+
+  var_dims = dimsizes(data)
+  var_rank = dimsizes(var_dims)
+
+;---List of some of the possible attributes attached to "opt".
+  grid_type_name = grid_string + "GridType"
+  grid_lat_name  = grid_string + "GridLat"
+  grid_lon_name  = grid_string + "GridLon"
+
+  grid_type = str_lower(get_att_value(opt2,grid_type_name,"unknown"))
+
+;---Check if SrcGridLat/SrcGridLon were specified.
+  if(isatt(opt2,grid_lat_name).and.isatt(opt2,grid_lon_name)) then
+    islatlon = True
+    lat_vals = opt2@$grid_lat_name$
+    lon_vals = opt2@$grid_lon_name$
+
+;---Curvilinear grid?
+  else if(isatt(data,"lat2d").and.isatt(data,"lon2d")) then
+    if(.not.any(grid_type.eq.(/"unknown","curvilinear"/))) then
+      print("get_src_grid_info: the lat/lon values provided don't match")
+      print("                   the grid type (" + grid_type + ") specified.")
+      exit
+    end if
+    
+    grid_type = "curvilinear"
+    islatlon  = True
+    lat_vals  = data@lat2d
+    lon_vals  = data@lon2d
+    
+;---Rectilinear grid?
+  else if(var_rank.ge.2.and. \
+          isdimnamed(data,var_rank-1).and. \
+          isdimnamed(data,var_rank-2).and. \
+          iscoord(data,data!(var_rank-1)).and. \
+          iscoord(data,data!(var_rank-2))) then
+
+    if(.not.any(grid_type.eq.(/"unknown","rectilinear"/))) then
+      print("get_src_grid_info: the lat/lon values provided don't match")
+      print("               the grid type (" + grid_type + ")")
+      exit
+    end if
+
+    grid_type = "rectilinear"
+    islatlon  = True
+    lat_vals  = data&$data!(var_rank-2)$
+    lon_vals  = data&$data!(var_rank-1)$
+;---Unstructured grid?
+  else if(isatt(data,"lat1d").and.isatt(data,"lon1d")) then
+    if(.not.any(grid_type.eq.(/"unknown","unstructured"/))) then
+      print("get_src_grid_info: the lat/lon values provided don't match")
+      print("                        the grid type (" + grid_type + \
+                                      ") specified.")
+      exit
+    end if
+    
+    grid_type = "unstructured"
+    islatlon  = True
+    lat_vals  = data@lat1d
+    lon_vals  = data@lon1d
+
+;---Better be a grid like "5deg" or "2x3"!
+  else
+    islatlon  = False      ; No lat/lon values specified
+  end if
+  end if
+  end if
+  end if
+
+  if(grid_type.eq."unknown".and..not.islatlon) then
+    print("get_src_grid_info: can't determine what type of " + \
+          grid_long_string + " grid you have.")
+    exit
+  end if
+
+;---rectilinear, curvilinear, and unstructured require lat/lon values.
+  if(any(grid_type.eq.(/"rectilinear","curvilinear","unstructured"/)).and.\
+     .not.islatlon) then
+    print("get_src_grid_info: no lat/lon values provided for type of grid specified (" + grid_type + ").")
+    exit
+  end if
+
+  if(grid_type.eq."unknown".and..not.islatlon) then
+    print("get_src_grid_info: can't determine type of grid you have.")
+    exit
+  end if
+  if(islatlon) then
+    lat_dims  = dimsizes(lat_vals)
+    lon_dims  = dimsizes(lon_vals)
+    lat_rank  = dimsizes(lat_dims)
+    lon_rank  = dimsizes(lon_dims)
+    slat_dims = tostring(lat_dims)
+    slon_dims = tostring(lon_dims)
+
+    if(DEBUG) then
+      print("get_src_grid_info: " + grid_long_string + \
+            " lat dims = (" + str_join(slat_dims,",") + ")")
+      print("get_src_grid_info: " + grid_long_string + \
+            " lon dims = (" + str_join(slon_dims,",") + ")")
+    end if
+
+    if(lat_rank.gt.2.or.lon_rank.gt.2.or.lat_rank.ne.lon_rank) then
+      print("get_src_grid_info: invalid " + grid_long_string + \
+            " lat/lon given.")
+      exit
+    end if
+
+;---If grid_type still unknown at this point, try to guess at it.
+    if(grid_type.eq."unknown") then
+;---Test for rectilinear
+      if(lat_rank.eq.1.and.var_rank.gt.1.and.\
+         var_dims(var_rank-2).eq.lat_dims.and.\
+         var_dims(var_rank-1).eq.lon_dims) then
+        grid_type = "rectilinear"
+;---Test for curvilinear
+      else if(lat_rank.eq.2.and.lon_rank.eq.2.and.\
+              all(lat_dims.eq.lon_dims)) then
+        grid_type = "curvilinear"
+;
+; Test for unstructured (what a mess). The extra long test is to 
+; make sure this is not possibly a rectilinear grid.
+;
+      else if(lat_rank.eq.1.and.lon_rank.eq.1.and.lat_dims.eq.lon_dims.and.\
+              ((var_rank.eq.1.and.var_dims.eq.lat_dims).or.\
+               (var_rank.gt.1.and.var_dims(var_rank-1).eq.lat_dims.and.\
+                var_dims(var_rank-2).ne.var_dims(var_rank-1)))) then
+        grid_type = "unstructured"
+      end if
+      end if
+      end if
+    end if
+  end if
+
+;---If grid_type is still "unknown", then we can't continue.
+  if(grid_type.eq."unknown") then
+    print("get_src_grid_info: " + grid_type_name + " and/or " + \
+          grid_lat_name + "/" + grid_lon_name + " were not set.")
+    print("          Cannot determine the " + grid_long_string + \
+          " grid type.")
+    exit
+  end if
+
+  if(DEBUG) then
+    print("get_src_grid_info: " + grid_long_string + \
+           " grid type is '" + grid_type + "'")
+  end if
+
+  if(grid_type.eq."rectilinear") then
+    latlon_dims = (/lat_dims,lon_dims/)
+    left_rank   = var_rank-2
+  else if(grid_type.eq."curvilinear") then
+    latlon_dims = lat_dims
+    left_rank   = var_rank-2
+  else if(grid_type.eq."unstructured") then
+    latlon_dims = lat_dims
+    left_rank   = var_rank-1
+  else
+    return([/grid_type/])
+  end if
+  end if
+  end if
+
+  if(left_rank.ge.1)
+    left_dims = var_dims(0:left_rank-1)
+  else
+    left_dims = -1
+  end if    
+
+  return([/grid_type,latlon_dims,lat_vals,lon_vals,left_dims/])
+end
+
+;----------------------------------------------------------------------
+; Note: this routine should be combined with "get_src_grid_info" to
+; make just one "get_grid_info" routine.
+;
+; Given an option variable, this function returns information about 
+; the destination grid and the lat/lon values, if appropriate.
+;
+; The lat/lon values can be provided via:
+;
+;   - DstGridLat/DstGridLon
+;
+;   - By a grid type of "5deg", "1x1", "2x3", etc.
+;----------------------------------------------------------------------
+undef("get_dst_grid_info")
+function get_dst_grid_info(opt)
+local opt2, grid_type_name, grid_lat_name, grid_lon_name, islatlon, \
+      grid_string, lat_dims, lon_dims, slat_dims, slon_dims, \
+      lat_rank, lon_rank, grid_long_string
+begin
+  opt2             = opt
+  grid_string      = "Dst"
+  grid_long_string = "destination"
+
+  DEBUG = isatt_logical_true(opt2,"Debug")
+
+;---List of some of the possible attributes attached to "opt".
+  grid_type_name = grid_string + "GridType"
+  grid_lat_name  = grid_string + "GridLat"
+  grid_lon_name  = grid_string + "GridLon"
+
+  grid_type = str_lower(get_att_value(opt2,grid_type_name,"unknown"))
+
+;---Check if DstGridLat/DstGridLon were specified.
+  if(isatt(opt2,grid_lat_name).and.isatt(opt2,grid_lon_name)) then
+    islatlon = True
+    lat_vals = opt2@$grid_lat_name$
+    lon_vals = opt2@$grid_lon_name$
+;---Better be a grid like "5deg" or "2x3"!
+  else
+    islatlon  = False      ; No lat/lon values specified
+  end if
+
+  if(grid_type.eq."unknown".and..not.islatlon) then
+    print("get_dst_grid_info: can't determine what type of " + \
+          grid_long_string + " grid you have.")
+    exit
+  end if
+
+;---rectilinear, curvilinear, and unstructured require lat/lon values.
+  if(any(grid_type.eq.(/"rectilinear","curvilinear","unstructured"/)).and.\
+     .not.islatlon) then
+    print("get_dst_grid_info: no lat/lon values provided for type of grid specified (" + grid_type + ").")
+    exit
+  end if
+
+  if(grid_type.eq."unknown".and..not.islatlon) then
+    print("get_dst_grid_info: can't determine type of grid you have.")
+    exit
+  end if
+  if(islatlon) then
+    lat_dims  = dimsizes(lat_vals)
+    lon_dims  = dimsizes(lon_vals)
+    lat_rank  = dimsizes(lat_dims)
+    lon_rank  = dimsizes(lon_dims)
+    slat_dims = tostring(lat_dims)
+    slon_dims = tostring(lon_dims)
+
+    if(DEBUG) then
+      print("get_dst_grid_info: " + grid_long_string + \
+            " lat dims = (" + str_join(slat_dims,",") + ")")
+      print("get_dst_grid_info: " + grid_long_string + \
+            " lon dims = (" + str_join(slon_dims,",") + ")")
+    end if
+
+    if(lat_rank.gt.2.or.lon_rank.gt.2.or.lat_rank.ne.lon_rank) then
+      print("get_dst_grid_info: invalid " + grid_long_string + \
+            " lat/lon given.")
+      exit
+    end if
+
+;
+; If grid_type still unknown at this point, try to guess at it.
+;
+; Note: if lat_dims and lon_dims are both 1D and equal in length,
+; this can be either an unstructured or rectilinear grid. In
+; this case, the user *must* set "grid_type" to either "rectilinear"
+; or "unstructured" so that it's clear which one this is.
+;
+    if(grid_type.eq."unknown") then
+      if(lat_rank.eq.1.and.lon_rank.eq.1.and.lat_dims.ne.lon_dims) then
+        grid_type = "rectilinear"
+      else if(lat_rank.eq.2.and.lon_rank.eq.2.and.\
+              all(lat_dims.eq.lon_dims)) then
+        grid_type = "curvilinear"
+      end if
+      end if
+    end if
+  end if
+
+;---If grid_type is still "unknown", then we can't continue.
+  if(grid_type.eq."unknown") then
+    if(lat_rank.eq.1.and.lon_rank.eq.1.and.lat_dims.eq.lon_dims) then
+      print("get_dst_grid_info: Error: the lat/lon arrays are both 1D and the same length.")
+      print("   This could be a rectilinear or unstructured grid. Please set 'grid_type'")
+      print("   to 'rectilinear' or 'unstructured'.")
+    else   
+      print("get_dst_grid_info: " + grid_type_name + " and/or " + \
+            grid_lat_name + "/" + grid_lon_name + " were not set.")
+      print("          Cannot determine the " + grid_long_string + \
+            " grid type.")
+    end if
+    exit
+  end if
+
+  if(grid_type.eq."rectilinear") then
+    latlon_dims = (/lat_dims,lon_dims/)
+  else if(grid_type.eq."curvilinear".or.grid_type.eq."unstructured") then
+    latlon_dims = lat_dims
+  end if
+  end if
+
+  if(islatlon) then
+    return([/grid_type,latlon_dims,lat_vals,lon_vals/])
+  else
+    return([/grid_type/])
+  end if
+end
+
 ;======================================================================
 ; This procedure is a generic one that writes the description of a 
 ; source or destination grid to a NetCDF file. It distinguishes 
@@ -2860,7 +3207,7 @@ procedure write_grid_description_file(srcData,which_grid,opt)
 local opt_new, opt2, var_dims, var_rank, grid_type, lat_dims, lon_dims, \
       lat_rank, lon_rank, grid_file_name, grid_lat_name, DEBUG, \
       grid_string, grid_lon_name, grid_type_name, spc_atts, \
-      lat_vals, lon_vals, gen_atts, tmp_att, i
+      lat_vals, lon_vals, gen_atts, tmp_att, i, grid_type
 begin
   opt_new = True  ; For constructing new options list
   opt2    = opt   ; Make a copy so we can modify it
@@ -2881,7 +3228,7 @@ begin
   end if
   end if
   if(grid_string.eq."") then
-    print("write_grid_description: don't recognize value for second " + \
+    print("write_grid_description_file: don't recognize value for second " + \
           "argument: '" + which_grid + "'")
     exit
   end if  
@@ -2893,16 +3240,9 @@ begin
   check_both_atts(opt2,grid_string+"Overwrite","Overwrite",False)
   check_both_atts(opt2,grid_string+"ForceOverwrite","ForceOverwrite",False)
 
-;---Get dimensions and rank of variable to be regridded.
-  var_dims  = dimsizes(srcData)
-  var_rank  = dimsizes(var_dims)
-  svar_dims = tostring(var_dims)
-
 ;---List of some of the possible attributes attached to "opt".
   grid_file_name = grid_string + "FileName"
   grid_type_name = grid_string + "GridType"
-  grid_lat_name  = grid_string + "GridLat"
-  grid_lon_name  = grid_string + "GridLon"
 
 ;
 ; Check for generic attributes to pass through; that is,
@@ -2933,177 +3273,6 @@ begin
     end if
   end do
 
-;----------------------------------------------------------------------
-; This section checks if any lat/lon values have been provided.
-; This can be done via:
-;
-;   - SrcGridLat/SrcGridLon or DstGridLat/DstGridLon
-;
-;   - If a "source" grid, then via coordinate arrays 
-;       [rectilinear grid] 
-;
-;   - If a "source" grid, then lat2d/lon2d attributes.
-;       [curvilinear grid] 
-;
-;   - If a "source" grid, then lat1d/lon1d attributes
-;       [unstructured grid] 
-;
-;----------------------------------------------------------------------
-
-  grid_type = str_lower(get_att_value(opt2,grid_type_name,"unknown"))
-
-;
-; Check if SrcGridLat/SrcGridLon or DstGridLat/DstGridLon
-; were specified.
-;
-  if(isatt(opt2,grid_lat_name).and.isatt(opt2,grid_lon_name)) then
-    lat_vals  = opt2@$grid_lat_name$
-    lon_vals  = opt2@$grid_lon_name$
-    islatlon  = True
-
-;---Curvilinear grid?
-  else if(grid_string.eq."Src".and.isatt(srcData,"lat2d").and. \
-                                   isatt(srcData,"lon2d")) then
-    if(.not.any(grid_type.eq.(/"unknown","curvilinear"/))) then
-      print("write_grid_description: the lat/lon values provided don't match")
-      print("                        the grid type (" + grid_type + \
-                                      ") specified.")
-      exit
-    end if
-    
-    grid_type = "curvilinear"
-    lat_vals  = srcData@lat2d
-    lon_vals  = srcData@lon2d
-    islatlon  = True
-    
-;---Rectilinear grid?
-  else if(grid_string.eq."Src".and.var_rank.ge.2.and. \
-          isdimnamed(srcData,var_rank-1).and. \
-          isdimnamed(srcData,var_rank-2).and. \
-          iscoord(srcData,srcData!(var_rank-1)).and. \
-          iscoord(srcData,srcData!(var_rank-2))) then
-
-    if(.not.any(grid_type.eq.(/"unknown","rectilinear"/))) then
-      print("write_grid_description: the lat/lon values provided don't match")
-      print("                        the grid type (" + grid_type + \
-                                      ") specified.")
-      exit
-    end if
-
-    grid_type = "rectilinear"
-    lat_vals  = srcData&$srcData!(var_rank-2)$
-    lon_vals  = srcData&$srcData!(var_rank-1)$
-    islatlon  = True
-    
-;---Unstructured grid?
-  else if(grid_string.eq."Src".and.isatt(srcData,"lat1d").and. \
-                                   isatt(srcData,"lon1d")) then
-    if(.not.any(grid_type.eq.(/"unknown","unstructured"/))) then
-      print("write_grid_description: the lat/lon values provided don't match")
-      print("                        the grid type (" + grid_type + \
-                                      ") specified.")
-      exit
-    end if
-    
-    grid_type = "unstructured"
-    lat_vals  = srcData@lat1d
-    lon_vals  = srcData@lon1d
-    islatlon  = True
-
-;---Better be a grid like "5deg" or "2x3"!
-  else
-    islatlon  = False      ; No lat/lon values specified
-  end if
-  end if
-  end if
-  end if
-
-  if(grid_type.eq."unknown".and..not.islatlon) then
-    print("write_grid_description: can't determine what type of " + \
-          grid_long_string + " grid you have.")
-    exit
-  end if
-
-;---rectilinear, curvilinear, and unstructured require lat/lon values.
-  if(any(grid_type.eq.(/"rectilinear","curvilinear","unstructured"/)).and.\
-     .not.islatlon) then
-    print("write_grid_description: no lat/lon values provided for type of grid specified (" + grid_type + ").")
-    print("                        Unable to generate grid description file.")
-    exit
-  end if
-
-  if(grid_type.eq."unknown".and..not.islatlon) then
-    print("write_grid_description: can't determine type of grid you have.")
-    exit
-  end if
-  if(islatlon) then
-    lat_dims  = dimsizes(lat_vals)
-    lon_dims  = dimsizes(lon_vals)
-    lat_rank  = dimsizes(lat_dims)
-    lon_rank  = dimsizes(lon_dims)
-    slat_dims = tostring(lat_dims)
-    slon_dims = tostring(lon_dims)
-
-    if(DEBUG) then
-      print("write_grid_description: " + grid_long_string + \
-            " lat dims = (" + str_join(slat_dims,",") + ")")
-      print("write_grid_description: " + grid_long_string + \
-            " lon dims = (" + str_join(slon_dims,",") + ")")
-    end if
-
-    if(lat_rank.gt.2.or.lon_rank.gt.2.or.lat_rank.ne.lon_rank) then
-      print("write_grid_description: invalid " + grid_long_string + \
-            " lat/lon given.")
-      exit
-    end if
-
-;---If grid_type still unknown at this point, try to guess at it.
-    if(grid_type.eq."unknown") then
-;---Test for rectilinear
-      if(grid_string.eq."Src".and.lat_rank.eq.1.and.var_rank.gt.1.and.\
-         var_dims(var_rank-2).eq.lat_dims.and.\
-         var_dims(var_rank-1).eq.lon_dims) then
-        grid_type = "rectilinear"
-;---Another test for rectilinear
-      else if(grid_string.eq."Dst".and.lat_rank.eq.1.and.lon_rank.eq.1.and.\
-         lat_dims.ne.lon_dims) then
-        grid_type = "rectilinear"
-;---Test for curvilinear
-      else if(lat_rank.eq.2.and.lon_rank.eq.2.and.\
-              all(lat_dims.eq.lon_dims)) then
-        grid_type = "curvilinear"
-;
-; Test for unstructured (what a mess). The extra long test is to 
-; make sure this is not possibly a rectilinear grid.
-;
-      else if(grid_string.eq."Src".and.\
-              lat_rank.eq.1.and.lon_rank.eq.1.and.lat_dims.eq.lon_dims.and.\
-              ((var_rank.eq.1.and.var_dims.eq.lat_dims).or.\
-               (var_rank.gt.1.and.var_dims(var_rank-1).eq.lat_dims.and.\
-                var_dims(var_rank-2).ne.var_dims(var_rank-1)))) then
-        grid_type = "unstructured"
-      end if
-      end if
-      end if
-      end if
-    end if
-  end if
-
-;---If grid_type is still "unknown", then we can't continue.
-  if(grid_type.eq."unknown") then
-    print("write_grid_description: " + grid_type_name + " and/or " + \
-          grid_lat_name + "/" + grid_lon_name + " were not set.")
-    print("          Cannot determine the " + grid_long_string + \
-          " grid type.")
-    exit
-  end if
-
-  if(DEBUG) then
-    print("write_grid_description: " + grid_long_string + \
-           " grid type is '" + grid_type + "'")
-  end if
-
-
 ;
 ; Error checking added in V6.1.1 to make sure user doesn't 
 ; accidentally specify SrcFileName or DstFileName to be
@@ -3123,6 +3292,19 @@ begin
      print("    contains your data or destination grid. Use '" + grid_string + "InputFileName'")
      print("    for that purpose.")
      exit
+  end if
+
+  if(grid_string.eq."Src") then
+    grid_info_list = get_src_grid_info(opt2,srcData)
+  else
+    grid_info_list = get_dst_grid_info(opt2)
+  end if
+  nlist     = ListCount(grid_info_list)
+  grid_type = grid_info_list[0]
+  if(nlist.gt.1) then
+    latlon_dims = grid_info_list[1]
+    lat_vals    = grid_info_list[2]
+    lon_vals    = grid_info_list[3]
   end if
 
 ;---Check if user set a filename for the description file
