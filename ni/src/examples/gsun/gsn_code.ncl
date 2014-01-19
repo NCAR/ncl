@@ -6192,6 +6192,24 @@ begin
     end if
   end if
 
+;---Check if "data" contains "lat1d", "lon1d" attributes
+  if(type_xcoord.eq."".and.isatt(data,"lon1d")) then
+    if(draw_lines) then
+      print("gsn_coordinates: cannot draw an unstructured grid using lines")
+      return
+    end if
+    type_xcoord = "data_att"
+    xcoord_1d   = data@lon1d
+  end if
+  if(type_ycoord.eq."".and.isatt(data,"lat1d")) then
+    if(draw_lines) then
+      print("gsn_coordinates: cannot draw an unstructured grid using lines")
+      return
+    end if
+    type_ycoord = "data_att"
+    ycoord_1d   = data@lat1d
+  end if
+
 ;---Error checking
   if(type_xcoord.eq."".or.type_ycoord.eq."") then
     print("gsn_coordinates: no valid X and/or Y coordinate values provided.")
