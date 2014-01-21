@@ -131,6 +131,10 @@ static void getHDFEOS5ZonalAverageData(HDFEOS5FileRecord *the_file, NclQuark pat
 static NrmQuark Qmissing_val;
 static NrmQuark Qfill_val;
 
+/*
+static short need_to_adjust_for_MOP01 = 0;
+*/
+
 static int MyHDFEOS5setOrigincode(double *upper_left, double *lower_right)
 {
     int origincode = HE5_HDFE_GD_UL;
@@ -496,31 +500,31 @@ NclQuark ncl_class_name;
 	{
 		if(step->dim_inq->name == NrmStringToQuark(buffer))
 		{
-#if 0
+                  /*
+		   *if(need_to_adjust_for_MOP01 && (step->dim_inq->size != size))
+		   *{
+                   */
 		    if(step->dim_inq->size != size)
 		    {
-			fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
-			fprintf(stderr, "\tstep->dim_inq->name: <%s>, buffer: <%s>, step->dim_inq->size = %d, size = %d\n",
-					NrmQuarkToString(step->dim_inq->name), buffer, step->dim_inq->size, size);
-		    }
-
-		      /*Correct the dim size, if different from previous read.*/
-		        if(step->dim_inq->size < size)
-			{
-			      /*
-			       *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
-			       *fprintf(stderr, "\tFind: <%s>, old size: %d, new size: %d\n",
-			       *	buffer, step->dim_inq->size, size);
-			       */
-				step->dim_inq->size = size;
-			}
-#endif
                       /*
-                       *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
-                       *fprintf(stderr, "\tFind: <%s>, old size: %d, new size: %d\n",
+                       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+                       *fprintf(stderr, "\tBefore change dim: <%s>, old size: %d, new size: %d\n\n",
                        *                   buffer, step->dim_inq->size, size);
                        */
-			return;
+                        fprintf(stderr, "\nWARNING: NCL has modified dimension <%s> from: %d to %d\n",
+                                            buffer, step->dim_inq->size, size);
+
+                        step->dim_inq->size = size;
+
+                      /*
+		       *need_to_adjust_for_MOP01 = 0;
+                       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+                       *fprintf(stderr, "\tAfter change dim: <%s>, old size: %d, new size: %d\n\n",
+                       *                   buffer, step->dim_inq->size, size);
+                       */
+		    }
+
+                    return;
 		}
 		else
 		{
@@ -532,6 +536,14 @@ NclQuark ncl_class_name;
 	tmp_node->dim_inq = (HDFEOS5DimInqRec*)NclMalloc(sizeof(HDFEOS5DimInqRec));
 	tmp_node->dim_inq->name = NrmStringToQuark(buffer);
 	tmp_node->dim_inq->hdf_name = hdf_name;
+	tmp_node->dim_inq->size = size;
+#if 1
+	if(1 > size)
+	{
+		tmp_node->dim_inq->is_unlimited = 1;
+		tmp_node->dim_inq->size = 0;
+	}
+#else
 	tmp_node->dim_inq->is_unlimited = size == 0 ? 1 : 0;
 	if (! tmp_node->dim_inq->is_unlimited)
 	{
@@ -542,6 +554,7 @@ NclQuark ncl_class_name;
 		/* set to 0 until we find a variable with this dimension  */
 		tmp_node->dim_inq->size = size;
 	}
+#endif
 	tmp_node->dim_inq->ncldim_id = *n_dims;
 	tmp_node->next = *dims;
 	*dims = tmp_node;
@@ -1079,7 +1092,7 @@ NclQuark path;
            */
 
             HDFEOS5IntAddDim(&(the_file->dims),&(the_file->n_dims),dim_hdf_names[j],dim_ncl_names[j],
-                    dimsizes[j],sw_hdf_names[i],sw_ncl_names[i]);
+                              dimsizes[j],sw_hdf_names[i],sw_ncl_names[i]);
         }
 
         /* Dimension mappings */
@@ -1134,6 +1147,11 @@ NclQuark path;
 
         if (ngeofields > 0)
         {
+          /*A temporary solution to adjust MOP01 ntrack (dimension). Wei, 01/17/2014*/
+          /*
+           *need_to_adjust_for_MOP01 = 0;
+           */
+
             if(ngeofields > max_var)
             {
                 while(ngeofields > max_var)
@@ -1199,7 +1217,12 @@ NclQuark path;
                 {
                   /*
                    *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-                   *fprintf(stderr, "\t\tNumber of Dims = %d,  info: <%s>\n", tmp_rank, buffer);
+                   *fprintf(stderr, "\t\tNumber of Dims = %d,  info: <%s>, maxdimlist: <%s>\n", tmp_rank, buffer, maxdimlist);
+                   */
+
+                  /*
+                   *if((0 == strcmp(buffer, "ntrack")) && (0 == strcmp(maxdimlist, "Unlim")))
+                   *    need_to_adjust_for_MOP01 = 1;
                    */
 
                     HDFEOS5ParseName(buffer,tmp_hdf_names,tmp_ncl_names,tmp_rank);
