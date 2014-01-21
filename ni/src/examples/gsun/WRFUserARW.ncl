@@ -2646,18 +2646,18 @@ begin
   opts@cnHighLabelFontColor       = opts@cnLineColor
   opts@cnLowLabelFontColor        = opts@cnLineColor
 
-
 ; Set field Title and levels if available
-  if(isatt(opts,"FieldTitle")) then
-    opts@cnInfoLabelString     = opts@FieldTitle + " Contours: $CMN$ to $CMX$ by $CIU$"
-  else
-    if(isatt(data,"description")) then
-      opts@cnInfoLabelString     = data@description + " Contours: $CMN$ to $CMX$ by $CIU$"
+  if(.not.isatt(opts,"cnInfoLabelString")) then
+    info_string = " Contours: $CMN$ to $CMX$ by $CIU$"
+    if(isatt(opts,"FieldTitle")) then
+      opts@cnInfoLabelString = opts@FieldTitle + info_string
+    else if(isatt(data,"description")) then
+      opts@cnInfoLabelString = data@description + info_string
     else
-      opts@cnInfoLabelString     = " Contours: $CMN$ to $CMX$ by $CIU$"
+      opts@cnInfoLabelString = info_string
+    end if
     end if
   end if
-
 
   return(opts)
 end
