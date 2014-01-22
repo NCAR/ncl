@@ -3639,6 +3639,123 @@ NhlErrorTypes _NhlCtmesh
 	return NhlNOERROR;
 }
 
+/*
+ * Function:	_NhlHLUCtmesh
+ *
+ * Description: modified version of Conpackt routine CTMESH that 
+ *   is optimized for threads.
+ *
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlHLUCtmesh
+#if	NhlNeedProto
+(
+	float		*rpnt,
+	int		npnt,
+	int		lopn,
+	int             *iedg,
+	int             nedg,
+	int             loen,
+	int             *itri,
+	int             ntri,
+	int             lotn,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+	char		*entry_name
+)
+#else
+(rpnt,npnt,lopn,iedg,nedg,loen,itri,ntri,lotn,flt_ws,int_ws,entry_name)
+	float		*rpnt;
+	int		npnt;
+	int		lopn;
+	int             *iedg;
+	int             nedg;
+	int             loen;
+	int             *itri;
+	int             ntri;
+	int             lotn;
+	NhlWorkspace	*flt_ws;
+	NhlWorkspace	*int_ws;
+	char		*entry_name;
+#endif 
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec *fwsrp = (NhlWorkspaceRec *) flt_ws;
+	NhlWorkspaceRec *iwsrp = (NhlWorkspaceRec *) int_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg;
+	char		*cmp_msg1 = "REAL WORKSPACE OVERFLOW";
+	char		*cmp_msg2 = "INTEGER WORKSPACE OVERFLOW";
+	int		err_num;
+
+	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
+	c_entsr(&save_mode,1);
+
+	do {
+		int fw_size, iw_size;
+		fw_size = fwsrp->cur_size/sizeof(float);
+		iw_size = iwsrp->cur_size/sizeof(int);
+		NGCALLF(hluctmesh,HLUCTMESH)(rpnt,&npnt,&lopn,
+					     iedg,&nedg,&loen,
+					     itri,&ntri,&lotn, 
+					     fwsrp->ws_ptr,&fw_size,
+					     iwsrp->ws_ptr,&iw_size);
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			if (strstr(e_msg,cmp_msg1)) {
+#if DEBUG_WS
+				printf("resizing flt_ws old %d",
+				       fwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(fwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", fwsrp->cur_size);
+#endif
+			}
+			else if (strstr(e_msg,cmp_msg2)) {
+#if DEBUG_WS
+				printf("resizing int_ws old %d",
+				       iwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(iwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", iwsrp->cur_size);
+#endif
+			}
+			else {
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+		}
+	} while (! done);
+	
+	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
 
 /*
  * Function:	_NhlCtcldr
@@ -3870,7 +3987,7 @@ NhlErrorTypes _NhlCtcica
 )
 #else
 (rpnt,iedg,itri,flt_ws,int_ws,cell_ws,ica1,icam,ican,
- xcpf,ycpf,xcqf,ycqf,min_cell_size,smooth,use_mesh_fill,entry_name)
+ xcpf,ycpf,xcqf,ycqf,min_cell_size,smooth,fill_op,entry_name)
 	float		*rpnt;
 	int             *iedg;
 	int             *itri;
@@ -3955,7 +4072,8 @@ NhlErrorTypes _NhlCtcica
 		if (ret < NhlWARNING) 
 			return NhlFATAL;
 	}
-	else if (! smooth) {
+	/*else if (! smooth) {   */
+	else {  /* the C routine handles both smooth and unsmooth raster fill now */
 		ret = _NhlTriMeshRasterFill
 			(rpnt,iedg,itri,cwsrp->ws_ptr,
 			 ica1,icam,ican,lxcpf,lycpf,lxcqf,lycqf,info,entry_name);
@@ -3964,6 +4082,7 @@ NhlErrorTypes _NhlCtcica
 		if (fill_op == 2)
 		  return ret;
 	}
+#if 0
 	else do {
 		int yes = 1;
 		if (yes) {
@@ -4015,6 +4134,7 @@ NhlErrorTypes _NhlCtcica
 			}
 		}
 	} while (! done);
+#endif
 
  GCA_ONLY:
 /*

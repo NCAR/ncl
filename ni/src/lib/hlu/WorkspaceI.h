@@ -266,6 +266,24 @@ NhlErrorTypes _NhlCtmesh(
 #endif
 );
 
+/* modified version used to improve threading performance */
+NhlErrorTypes _NhlHLUCtmesh(
+#if	NhlNeedProto
+	float		*rpnt,
+	int		npnt,
+	int		lopn,
+	int             *iedg,
+	int             nedg,
+	int             loen,
+	int             *itri,
+	int             ntri,
+	int             lotn,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+	char		*entry_name
+#endif
+);
+
 NhlErrorTypes _NhlCtcldr(
 #if	NhlNeedProto
 	float		*rpnt,
