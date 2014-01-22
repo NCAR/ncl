@@ -504,7 +504,7 @@ NclQuark ncl_class_name;
 		   *if(need_to_adjust_for_MOP01 && (step->dim_inq->size != size))
 		   *{
                    */
-		    if(step->dim_inq->size != size)
+		    if((step->dim_inq->size != size) && (step->dim_inq->size < size))
 		    {
                       /*
                        *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
