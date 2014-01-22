@@ -4234,6 +4234,553 @@ C
 C
       END
 
+      SUBROUTINE HLUCTMESH (RPNT,KPNT,KOPN,
+     +                   IEDG,KEDG,KOEN,
+     +                   ITRI,KTRI,KOTN,
+     +                   RWRK,KRWK,
+     +                   IWRK,KIWK)
+C
+        DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*)
+C
+C This version of CTMESH eliminates the end-point swap code. For
+C performance reasons sometime the HLU code does the swapping 
+C itself. Other loops, such as the min/max finding loop may also
+C be removed from this version in the future.
+C
+C The routine HLUCTMESH is called to start the process of drawing a
+C contour plot, given data on a triangular mesh.
+C
+C RPNT is a one-dimensional array containing information about the
+C points of the triangular mesh.
+C
+C KPNT is the index of the last element of RPNT containing data.
+C
+C KOPN is the length of a point node in RPNT.
+C
+C IEDG is a one-dimensional array containing information about the
+C edges of the triangular mesh.
+C
+C KEDG is the index of the last element of IEDG.
+C
+C KOEN is the length of an edge node in IEDG.
+C
+C ITRI is a one-dimensional array containing information about the
+C triangles of the triangular mesh.
+C
+C KTRI is the index of the last element of ITRI.
+C
+C KOTN is the length of a triangle node in ITRI.
+C
+C RWRK is a singly-subscripted real work array of length KRWK.
+C
+C KRWK is the dimension of RWRK.
+C
+C IWRK is a singly-subscripted integer work array of length KIWK.
+C
+C KIWK is the dimension of IWRK.
+C
+C
+C Declare all of the CONPACKT common blocks.
+C
+.CALL CTCOMN,/$SAVE-COMMON$/1/
+C
+C Define a variable which will hold a single character.
+C
+        CHARACTER*1 SCHR
+C
+C IXOR(IONE,ITWO) is the exclusive OR of the 12-bit masks IONE and ITWO.
+C
+        IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
+C
+C ITBF(IARG) is non-zero if and only if a triangle with blocking-flag
+C element IARG is blocked by the user.
+C
+        ITBF(IARG)=IAND(IAND(IXOR(IARG,ITBX),ITBA),1)
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('HLUCTMESH - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C If no CONPACKT routine has been called before, initialize required
+C constants.
+C
+        IF (INIT.EQ.0)
+          CALL CTINRC
+          IF (ICFELL('HLUCTMESH',2).NE.0) RETURN
+        END IF
+C
+C Extract the values of ITBX and ITBA.
+C
+        ITBX=IAND(ISHIFT(ITBM,-12),4095)
+        ITBA=IAND(       ITBM     ,4095)
+C
+C Transfer the array dimensions and node lengths to variables in COMMON.
+C
+        NPNT=KPNT
+        LOPN=KOPN
+C
+        NEDG=KEDG
+        LOEN=KOEN
+C
+        NTRI=KTRI
+        LOTN=KOTN
+C
+        LRWK=KRWK
+C
+        LIWK=KIWK
+C
+C Clear all the workspace block lengths.
+C
+        DO (I=1,$NBRW$)
+          LRWS(I)=0
+        END DO
+C
+        DO (I=1,$NBIW$)
+          LIWS(I)=0
+        END DO
+C
+C Zero the internal parameters which keep track of workspace usage.
+C
+        IIWU=0
+        IRWU=0
+C
+C Swap the end points of each edge of the mesh so that the field value
+C at the first point is less than or equal to the field value at the
+C second point.  Because this changes the definitions of "left" and
+C "right" for the edge, the pointers to the triangles to the left and
+C right of the edge must also be swapped.
+C This is performed in the HLU code.
+C
+C        DO (IPTE=0,NEDG-LOEN,LOEN)
+C          IF (RPNT(IEDG(IPTE+1)+4).GT.RPNT(IEDG(IPTE+2)+4))
+C            ITMP=IEDG(IPTE+1)
+C            IEDG(IPTE+1)=IEDG(IPTE+2)
+C            IEDG(IPTE+2)=ITMP
+C            ITMP=IEDG(IPTE+3)
+C            IEDG(IPTE+3)=IEDG(IPTE+4)
+C            IEDG(IPTE+4)=ITMP
+C          END IF
+C        END DO
+C
+C Find the ranges of the X, Y, and Z coordinates, the field values,
+C and the values of the 2D coordinates in the projection plane, over
+C the unblocked portion of the mesh.
+C
+        ITM1=0
+C
+        XMIN=0.
+        XMAX=0.
+        YMIN=0.
+        YMAX=0.
+        ZMIN=0.
+        ZMAX=0.
+        DMIN=0.
+        DMAX=0.
+C
+        ITM2=0
+C
+        UMIN=0.
+        UMAX=0.
+        VMIN=0.
+        VMAX=0.
+C
+        DO (I=0,NTRI-LOTN,LOTN)
+          IF (ITBF(ITRI(I+4)).EQ.0)
+            DO (J=1,3)
+              DO (K=1,2)
+                L=IEDG(ITRI(I+J)+K)
+                IF (ITM1.EQ.0)
+                  ITM1=1
+                  XMIN=RPNT(L+1)
+                  XMAX=RPNT(L+1)
+                  YMIN=RPNT(L+2)
+                  YMAX=RPNT(L+2)
+                  ZMIN=RPNT(L+3)
+                  ZMAX=RPNT(L+3)
+                  DMIN=RPNT(L+4)
+                  DMAX=RPNT(L+4)
+                ELSE
+                  XMIN=MIN(XMIN,RPNT(L+1))
+                  XMAX=MAX(XMAX,RPNT(L+1))
+                  YMIN=MIN(YMIN,RPNT(L+2))
+                  YMAX=MAX(YMAX,RPNT(L+2))
+                  ZMIN=MIN(ZMIN,RPNT(L+3))
+                  ZMAX=MAX(ZMAX,RPNT(L+3))
+                  DMIN=MIN(DMIN,RPNT(L+4))
+                  DMAX=MAX(DMAX,RPNT(L+4))
+                END IF
+                IF (IMPF.EQ.0)
+                  UTMP=RPNT(L+1)
+                  VTMP=RPNT(L+2)
+                ELSE
+                  CALL HLUCTMXYZ (IMPF,RPNT(L+1),RPNT(L+2),RPNT(L+3),
+     +                                                     UTMP,VTMP)
+                  IF (ICFELL('HLUCTMESH',3).NE.0) RETURN
+                  IF (OORV.NE.0..AND.(UTMP.EQ.OORV.OR.VTMP.EQ.OORV))
+     +                                                         GO TO 101
+                END IF
+                IF (ITM2.EQ.0)
+                  ITM2=1
+                  UMIN=UTMP
+                  UMAX=UTMP
+                  VMIN=VTMP
+                  VMAX=VTMP
+                ELSE
+                  UMIN=MIN(UMIN,UTMP)
+                  UMAX=MAX(UMAX,UTMP)
+                  VMIN=MIN(VMIN,VTMP)
+                  VMAX=MAX(VMAX,VTMP)
+                END IF
+  101         END DO
+            END DO
+          END IF
+        END DO
+C
+C If the user has done a SET call, retrieve the arguments; if he hasn't
+C done a SET call, do it for him.
+C
+        IF (ISET.EQ.0)
+C
+          CALL GETSET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+          IF (ICFELL('HLUCTMESH',4).NE.0) RETURN
+C
+        ELSE
+C
+          LNLG=1
+C
+          IF (UWDL.EQ.UWDR)
+            XWDL=UMIN
+            XWDR=UMAX
+          ELSE
+            XWDL=UWDL
+            XWDR=UWDR
+          END IF
+C
+          IF (UWDB.EQ.UWDT)
+            YWDB=VMIN
+            YWDT=VMAX
+          ELSE
+            YWDB=UWDB
+            YWDT=UWDT
+          END IF
+C
+          IF (UVPS.LT.0.)
+            RWTH=ABS(UVPS)
+          ELSE IF (UVPS.EQ.0.)
+            RWTH=(UVPR-UVPL)/(UVPT-UVPB)
+          ELSE IF (UVPS.LE.1.)
+            RWTH=ABS((XWDR-XWDL)/(YWDT-YWDB))
+            IF (MIN(RWTH,1./RWTH).LT.UVPS) RWTH=(UVPR-UVPL)/(UVPT-UVPB)
+          ELSE
+            RWTH=ABS((XWDR-XWDL)/(YWDT-YWDB))
+            IF (MAX(RWTH,1./RWTH).GT.UVPS) RWTH=1.
+          END IF
+C
+          IF (RWTH.LT.(UVPR-UVPL)/(UVPT-UVPB))
+            XVPL=.5*(UVPL+UVPR)-.5*(UVPT-UVPB)*RWTH
+            XVPR=.5*(UVPL+UVPR)+.5*(UVPT-UVPB)*RWTH
+            YVPB=UVPB
+            YVPT=UVPT
+          ELSE
+            XVPL=UVPL
+            XVPR=UVPR
+            YVPB=.5*(UVPB+UVPT)-.5*(UVPR-UVPL)/RWTH
+            YVPT=.5*(UVPB+UVPT)+.5*(UVPR-UVPL)/RWTH
+          END IF
+C
+          CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+          IF (ICFELL('HLUCTMESH',5).NE.0) RETURN
+C
+        END IF
+C
+C Set the flag MIRO, which indicates whether or not the transformations
+C in effect cause mirror imaging.  To do this, we look for an unblocked
+C triangle in the mesh, all of whose vertices are visible under the
+C current mapping, and check to see if its vertices, after mapping, are
+C still in counterclockwise order (in which case we set MIRO=0) or not
+C (in which case we set MIRO=1).  (However, when 'MAP' = 2, saying that
+C TDPACK is being called to do the transformation, MIRO is forced to 0;
+C in that case, the transformation cannot cause mirror imaging.)
+C
+        MIRO=0
+C
+        IF (IMPF.NE.0.AND.IMPF.NE.2)
+C
+          DO (I=0,NTRI-LOTN,LOTN)
+C
+C Use only triangles not blocked by the user.
+C
+            IF (ITBF(ITRI(I+4)).EQ.0)
+C
+C Find the base index of the point that edges 1 and 2 have in common.
+C
+              IF (IEDG(ITRI(I+1)+1).EQ.IEDG(ITRI(I+2)+1).OR.
+     +            IEDG(ITRI(I+1)+1).EQ.IEDG(ITRI(I+2)+2))
+                IPP1=IEDG(ITRI(I+1)+1)
+              ELSE
+                IPP1=IEDG(ITRI(I+1)+2)
+              END IF
+C
+C Find the base index of the point that edges 2 and 3 have in common.
+C
+              IF (IEDG(ITRI(I+2)+1).EQ.IEDG(ITRI(I+3)+1).OR.
+     +            IEDG(ITRI(I+2)+1).EQ.IEDG(ITRI(I+3)+2))
+                IPP2=IEDG(ITRI(I+2)+1)
+              ELSE
+                IPP2=IEDG(ITRI(I+2)+2)
+              END IF
+C
+C Find the base index of the point that edges 3 and 1 have in common.
+C
+              IF (IEDG(ITRI(I+3)+1).EQ.IEDG(ITRI(I+1)+1).OR.
+     +            IEDG(ITRI(I+3)+1).EQ.IEDG(ITRI(I+1)+2))
+                IPP3=IEDG(ITRI(I+3)+1)
+              ELSE
+                IPP3=IEDG(ITRI(I+3)+2)
+              END IF
+C
+C Project point 1; if it's invisible, skip the triangle.
+C
+              CALL HLUCTMXYZ (IMPF,
+     +                        RPNT(IPP1+1),RPNT(IPP1+2),RPNT(IPP1+3),
+     +                                                        XCP1,YCP1)
+              IF (ICFELL('HLUCTMESH',6).NE.0) RETURN
+              IF ((OORV.NE.0.).AND.(XCP1.EQ.OORV.OR.YCP1.EQ.OORV))
+     +                                                         GO TO 102
+C
+C Project point 2; if it's invisible, skip the triangle.
+C
+              CALL HLUCTMXYZ (IMPF,
+     +                        RPNT(IPP2+1),RPNT(IPP2+2),RPNT(IPP2+3),
+     +                                                        XCP2,YCP2)
+              IF (ICFELL('HLUCTMESH',7).NE.0) RETURN
+              IF ((OORV.NE.0.).AND.(XCP2.EQ.OORV.OR.YCP2.EQ.OORV))
+     +                                                         GO TO 102
+C
+C Project point 3; if it's invisible, skip the triangle.
+C
+              CALL HLUCTMXYZ (IMPF,
+     +                        RPNT(IPP3+1),RPNT(IPP3+2),RPNT(IPP3+3),
+     +                                                        XCP3,YCP3)
+              IF (ICFELL('HLUCTMESH',8).NE.0) RETURN
+              IF ((OORV.NE.0.).AND.(XCP3.EQ.OORV.OR.YCP3.EQ.OORV))
+     +                                                         GO TO 102
+C
+C If two points of the triangle are too close to each other, skip it.
+C
+              IF (ABS(XCP1-XCP2).LT..0001*ABS(XWDR-XWDL).AND.
+     +            ABS(YCP1-YCP2).LT..0001*ABS(YWDT-YWDB)) GO TO 102
+              IF (ABS(XCP2-XCP3).LT..0001*ABS(XWDR-XWDL).AND.
+     +            ABS(YCP2-YCP3).LT..0001*ABS(YWDT-YWDB)) GO TO 102
+              IF (ABS(XCP3-XCP1).LT..0001*ABS(XWDR-XWDL).AND.
+     +            ABS(YCP3-YCP1).LT..0001*ABS(YWDT-YWDB)) GO TO 102
+C
+C If two points of the triangle are too far apart, skip it.
+C
+              IF (ABS(XCP1-XCP2).GT..5*ABS(XWDR-XWDL).OR.
+     +            ABS(YCP1-YCP2).GT..5*ABS(YWDT-YWDB)) GO TO 102
+              IF (ABS(XCP2-XCP3).GT..5*ABS(XWDR-XWDL).OR.
+     +            ABS(YCP2-YCP3).GT..5*ABS(YWDT-YWDB)) GO TO 102
+              IF (ABS(XCP3-XCP1).GT..5*ABS(XWDR-XWDL).OR.
+     +            ABS(YCP3-YCP1).GT..5*ABS(YWDT-YWDB)) GO TO 102
+C
+C Use this triangle to make the decision.  If point 1 is to the right
+C of the vector from point 3 to point 2, then the mapping does not
+C cause mirror imaging; otherwise, it does.
+C
+              IF (ABS(XCP2-XCP3).LT.ABS(YCP2-YCP3))
+                IF (XCP1.LT.XCP3+((XCP2-XCP3)/(YCP2-YCP3))*(YCP1-YCP3))
+                  IF (YCP3.LT.YCP2) MIRO=1
+                  GO TO 103
+                ELSE
+                  IF (YCP3.GT.YCP2) MIRO=1
+                  GO TO 103
+                END IF
+              ELSE
+                IF (YCP1.LT.YCP3+((YCP2-YCP3)/(XCP2-XCP3))*(XCP1-XCP3))
+                  IF (XCP3.GT.XCP2) MIRO=1
+                  GO TO 103
+                ELSE
+                  IF (XCP3.LT.XCP2) MIRO=1
+                  GO TO 103
+                END IF
+              END IF
+C
+            END IF
+C
+C End of loop through triangles.
+C
+  102     END DO
+C
+        END IF
+C
+C Zero the count of label positions selected, the count of words used
+C in real workspace number 4 (for informational and high/low label
+C data), and the three indices which indicate where the different kinds
+C of labels are stored.
+C
+  103   NLBS=0
+        NR04=0
+        INIL=0
+        INHL=0
+        INLL=0
+C
+C Initialize the value of the scale factor used.
+C
+        IF (SCFS.LE.0.)
+          SCFU=1.
+        ELSE
+          SCFU=SCFS
+        END IF
+C
+C If contour levels are being chosen by CONPACKT, zero the number of
+C levels and the values of the contour interval and label interval
+C used.  If new levels are not being chosen, force recomputation of
+C the text-extent parameter elements for all existing contour levels,
+C in case the user changes the character-quality parameter of PLOTCHAR.
+C
+        IF (ICLS.NE.0)
+          NCLV=0
+          CINU=0.
+          LINU=0
+        ELSE
+          DO (I=1,NCLV)
+            NCLB(I)=-ABS(NCLB(I))
+          END DO
+        END IF
+C
+C If the field is (effectively) constant, set a flag to indicate that
+C and force the scale factor back to 1.  Otherwise, clear the flag.
+C
+        IF (DMAX-DMIN.LE.10.*EPSI*ABS((DMIN+DMAX)/2.))
+          ICFF=1
+          SCFU=1.
+        ELSE
+          ICFF=0
+        END IF
+C
+C Find the positions of the leftmost significant digits in the largest
+C absolute value in the field and in the difference between the minimum
+C and the maximum values in the field.  If the field is effectively
+C constant, the latter value is set equal to the former.
+C
+        CALL CTNUMB (MAX(ABS(DMIN/SCFU),ABS(DMAX/SCFU)),1,-10000,-1,-1,
+     +                      ' ',' ',' ',0,0,0,0,0,0,SCHR,NCHS,NDGS,IEVA)
+        LSDM=IEVA-1
+C
+        IF (ICFF.EQ.0)
+          CALL CTNUMB ((DMAX-DMIN)/SCFU,1,-10000,-1,-1,
+     +                      ' ',' ',' ',0,0,0,0,0,0,SCHR,NCHS,NDGS,IEVA)
+          LSDD=IEVA-1
+        ELSE
+          LSDD=LSDM
+        END IF
+C
+C Retrieve the current PLOTCHAR function code signal character.
+C
+        CALL PCGETC ('FC',SCHR)
+        IF (ICFELL('HLUCTMESH',9).NE.0) RETURN
+C
+C If highs and lows are to be labelled, attempt to make sure that the
+C string will be treated properly by PLOTCHAR.
+C
+        IF (LTHI.GE.4)
+          IF (TXHI(1:1).EQ.'H'.AND.TXHI(3:3).EQ.'B')
+            DO (I=4,LTHI)
+              IF (TXHI(I:I).EQ.TXHI(2:2)) TXHI(I:I)=SCHR
+            END DO
+            TXHI(2:2)=SCHR
+          END IF
+        END IF
+C
+        IF (LTLO.GE.4)
+          IF (TXLO(1:1).EQ.'L'.AND.TXLO(3:3).EQ.'B')
+            DO (I=4,LTLO)
+              IF (TXLO(I:I).EQ.TXLO(2:2)) TXLO(I:I)=SCHR
+            END DO
+            TXLO(2:2)=SCHR
+          END IF
+        END IF
+C
+C Set up the parameters used in generating numeric labels.  Set the
+C number of significant digits to be used ...
+C
+        IF (NSDL.LT.0)
+          NDGL=ABS(NSDL)
+        ELSE
+          NDGL=MAX(0,LSDM-LSDD)+NSDL
+        END IF
+C
+C ... the leftmost-significant digit flag ...
+C
+        IF (NLSD.EQ.0)
+          LSDL=-10000
+        ELSE
+          LSDL=LSDM
+        END IF
+C
+C ... the numeric exponent type ...
+C
+        IF (NEXT.LE.0)
+          CHEX=' E '
+          LEA1=1
+          LEA2=1
+          LEA3=1
+          LEE1=0
+          LEE2=1
+          LEE3=0
+        ELSE IF (NEXT.EQ.1)
+          CHEX=':L1:410:S::N:'
+          IF (SCHR.NE.':')
+            CHEX( 1: 1)=SCHR
+            CHEX( 4: 4)=SCHR
+            CHEX( 8: 8)=SCHR
+            CHEX(10:10)=SCHR
+            CHEX(11:11)=SCHR
+            CHEX(13:13)=SCHR
+          END IF
+          LEA1=5
+          LEA2=5
+          LEA3=3
+          LEE1=1
+          LEE2=2
+          LEE3=0
+        ELSE
+          CHEX='x10** '
+          LEA1=1
+          LEA2=4
+          LEA3=1
+          LEE1=1
+          LEE2=4
+          LEE3=0
+        END IF
+C
+C ... and the omission flags.
+C
+        JOMA=MOD(MAX(0,MIN(7,NOMF))/4,2)
+        JODP=MOD(MAX(0,MIN(7,NOMF))/2,2)
+        JOTZ=MOD(MAX(0,MIN(7,NOMF))  ,2)
+C
+C If the field is not constant and the scale factor is to be chosen
+C here, do it now.  The parameter which specifies where the leftmost
+C significant digit is assumed to be also must be updated.
+C
+        IF (ICFF.EQ.0.AND.SCFS.LE.0..AND.SCFS.GE.-3.)
+          ITMP=0
+          IF (SCFS.EQ.0..OR.(SCFS.EQ.-3..AND.LSDM.LT.-1)) ITMP=LSDM+1
+          IF (SCFS.EQ.-1.) ITMP=LSDM
+          IF (SCFS.EQ.-2..OR.(SCFS.EQ.-3..AND.LSDM-NDGL.GE.0))
+     +                                                  ITMP=LSDM-NDGL+1
+          SCFU=10.**ITMP
+          IF (LSDL.NE.-10000) LSDL=LSDL-ITMP
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+      END
+
 
       SUBROUTINE CTMVIW (IWKO,IWKN,LWKN)
 C
@@ -6369,6 +6916,147 @@ C
           IPE3=(ICAEDG(IPP3,IPP1,IEDG,LOEN,IPPE,MPPE,NPPE,RPNT)-1)*LOEN
 C
           IF (ICFELL('CTTMTL',6).NE.0) RETURN
+C
+          IF (IEDG(IPE3+1).EQ.IPP3)
+            IEDG(IPE3+3)=NTRI+3
+          ELSE
+            IEDG(IPE3+4)=NTRI+3
+          END IF
+C
+C Add the new triangle to the triangle list.
+C
+          IF (NTRI+LOTN.GT.MTRI)
+            CALL SETER ('CTTMTL - TRIANGLE ARRAY IS TOO SMALL',7,1)
+            RETURN
+          ELSE
+            IPTT=NTRI
+            NTRI=NTRI+LOTN
+            ITRI(IPTT+1)=IPE1
+            ITRI(IPTT+2)=IPE2
+            ITRI(IPTT+3)=IPE3
+            ITRI(IPTT+4)=0
+          END IF
+C
+C Copy the last triangle in the triangle buffer to the vacated slot left
+C by the one just processed.
+C
+          IF (IBUF.NE.NBUF)
+            DO 101 J=1,12
+              TBUF(J,IBUF)=TBUF(J,NBUF)
+  101       CONTINUE
+          END IF
+C
+C Reduce the count of the number of triangles in the buffer.
+C
+          NBUF=NBUF-1
+C
+C Continue looping until NTTO triangles have been processed.
+C
+  102   CONTINUE
+C
+C Set the pointers that tell the caller how many points and edges were
+C created.
+C
+        NPNT=NPPP*LOPN
+        NEDG=NPPE*LOEN
+C
+C Done.
+C
+        RETURN
+C
+      END
+
+      SUBROUTINE HLUCTTMTL (NTTO,TBUF,MBUF,NBUF,
+     +                   IPPP,MPPP,NPPP,
+     +                   IPPE,MPPE,NPPE,
+     +                   RPNT,MPNT,NPNT,LOPN,
+     +                   IEDG,MEDG,NEDG,LOEN,
+     +                   ITRI,MTRI,NTRI,LOTN)
+C
+        DIMENSION TBUF(12,MBUF)
+        DIMENSION IPPP(2,MPPP),IPPE(2,MPPE)
+        DIMENSION RPNT(MPNT),IEDG(MEDG),ITRI(MTRI)
+C
+C This version of CTTMTL uses special fast versions of the ICAEDG and ICAPNT
+C routines. However it is limited to cases where the Z value of the coordinates is 0.
+C
+C
+C The routine CTTMTL is called to process NTTO randomly-selected
+C triangles from among the NBUF stored in the array TBUF, leaving the
+C remaining NBUF-NTTO triangles at the beginning of the array.  New
+C points are added to the point list in the array RPNT, new edges are
+C added to the edge list in the array IEDG, and new triangles are
+C added to the triangle list in the array ITRI.  The arrays IPPP and
+C IPPE are used to keep tree-sorted lists of the points and the edges,
+C respectively, so that no duplicate points or edges will be created.
+C
+        DO 102 I=1,NTTO
+C
+C Pick a value of IBUF between 1 and NTTO, inclusive.  The buffered
+C triangle with index IBUF will be processed.
+C
+          IBUF=1+MAX(0,MIN(NBUF-1,INT(REAL(NBUF)*CTFRAN())))
+C
+C Use the function ICAPNT to get indices for each of the three points
+C of the triangle in the point list and form the base indices (IPP1,
+C IPP2, and IPP3) of the three points in the point list.
+C
+          IPP1=(HLUICAPNT(TBUF( 1,IBUF),
+     +                 TBUF( 2,IBUF),
+     +                 TBUF( 3,IBUF),
+     +                 TBUF( 4,IBUF),
+     +                 RPNT,LOPN,IPPP,MPPP,NPPP)-1)*LOPN
+C
+          IF (ICFELL('HLUCTTMTL',1).NE.0) RETURN
+C
+          IPP2=(HLUICAPNT(TBUF( 5,IBUF),
+     +                 TBUF( 6,IBUF),
+     +                 TBUF( 7,IBUF),
+     +                 TBUF( 8,IBUF),
+     +                 RPNT,LOPN,IPPP,MPPP,NPPP)-1)*LOPN
+C
+          IF (ICFELL('HLUCTTMTL',2).NE.0) RETURN
+C
+          IPP3=(HLUICAPNT(TBUF( 9,IBUF),
+     +                 TBUF(10,IBUF),
+     +                 TBUF(11,IBUF),
+     +                 TBUF(12,IBUF),
+     +                 RPNT,LOPN,IPPP,MPPP,NPPP)-1)*LOPN
+C
+          IF (ICFELL('HLUCTTMTL',3).NE.0) RETURN
+C
+C Use the function ICAEDG to get indices for each of the three edges of
+C the triangle in the edge list and form the base indices (IPE1, IPE2,
+C and IPE3) of the three edges in the edge list.  At the same time, set
+C the pointer from each edge node into the new triangle we're about to
+C create (to the left or to the right, as appropriate).
+C
+          IPE1=(HLUICAEDG(IPP1,IPP2,IEDG,LOEN,
+     +                    IPPE,MPPE,NPPE,RPNT)-1)*LOEN
+C
+          IF (ICFELL('HLUCTTMTL',4).NE.0) RETURN
+C
+          IF (IEDG(IPE1+1).EQ.IPP1)
+            IEDG(IPE1+3)=NTRI+1
+          ELSE
+            IEDG(IPE1+4)=NTRI+1
+          END IF
+C
+          IPE2=(HLUICAEDG(IPP2,IPP3,IEDG,LOEN,
+     +                    IPPE,MPPE,NPPE,RPNT)-1)*LOEN
+C
+          IF (ICFELL('HLUCTTMTL',5).NE.0) RETURN
+C
+          IF (IEDG(IPE2+1).EQ.IPP2)
+            IEDG(IPE2+3)=NTRI+2
+          ELSE
+            IEDG(IPE2+4)=NTRI+2
+          END IF
+C
+          IPE3=(HLUICAEDG(IPP3,IPP1,IEDG,LOEN,
+     +                    IPPE,MPPE,NPPE,RPNT)-1)*LOEN
+C
+          IF (ICFELL('HLUCTTMTL',6).NE.0) RETURN
 C
           IF (IEDG(IPE3+1).EQ.IPP3)
             IEDG(IPE3+3)=NTRI+3
@@ -14926,7 +15614,7 @@ C
 C
       END
 
-      FUNCTION ICAPNT (XCRD,YCRD,ZCRD,DVAL,RPNT,LOPN,IPPP,MPPP,NPPP)
+      FUNCTION HLUICAPNT (XCRD,YCRD,ZCRD,DVAL,RPNT,LOPN,IPPP,MPPP,NPPP)
 C
       DIMENSION RPNT(LOPN,MPPP),IPPP(2,MPPP)
       INTEGER *8 IKEY1,IKEY2
@@ -14963,7 +15651,7 @@ C
  101    CALL MANGLE(RPNT(1,ITMP),RPNT(2,ITMP), IKEY2)
         IF (IKEY1 .EQ. IKEY2) THEN
 C
-          ICAPNT=ITMP
+          HLUICAPNT=ITMP
 C
           RETURN
         END IF
@@ -15012,6 +15700,101 @@ c     +              'point count is: ', (nppp + 1)
 c      else if (mod((nppp+1),100) .eq. 0) then
 c         write(*,*) ' avg depth: ', itdepth, itdepth / (nppp + 1)
 c      end if
+C
+C Create a new point in the point list (if there's room, of course), and
+C return its index to the caller.
+C
+      IF (NPPP.GE.MPPP) THEN
+C
+        CALL SETER ('ICAPNT - POINT ARRAY IS TOO SMALL',1,1)
+        HLUICAPNT=-1
+        RETURN
+C
+      ELSE
+C
+        NPPP=NPPP+1
+C
+        IPPP(1,NPPP)=0
+        IPPP(2,NPPP)=0
+C
+        RPNT(1,NPPP)=XCRD
+        RPNT(2,NPPP)=YCRD
+        RPNT(3,NPPP)=ZCRD
+        RPNT(4,NPPP)=DVAL
+C
+        HLUICAPNT=NPPP
+C
+      END IF
+C
+C Done.
+C
+      RETURN
+C
+      END
+
+      FUNCTION ICAPNT (XCRD,YCRD,ZCRD,DVAL,RPNT,LOPN,IPPP,MPPP,NPPP)
+C
+      DIMENSION RPNT(LOPN,MPPP),IPPP(2,MPPP)
+C
+C This function, given the X, Y, and Z coordinates of a point and the
+C field data value at that point, searches the point list for a point
+C having the same coordinates.  If such a point exists, its index is
+C returned; if not, such a point is created and its index is returned.
+C The search is effected using a tree-sort technique, the pointers for
+C which are kept in the array IPPP.
+C
+C If there are any points in the point list at all, ...
+C
+      IF (NPPP.NE.0) THEN
+C
+C initialize a search index to point to the first one, and loop.
+C
+        ITMP=1
+C
+C If the search index is of the point we want, return its index.
+C
+  101   IF (XCRD.EQ.RPNT(1,ITMP).AND.YCRD.EQ.RPNT(2,ITMP).AND.ZCRD.EQ.RP
+     +NT(3,ITMP)) THEN
+C
+          ICAPNT=ITMP
+C
+          RETURN
+C
+C If the point we want would precede the one pointed at by the search
+C index, reset the search index to look at lesser elements (if any),
+C and loop back to continue the search.  If the pointer is null, reset
+C it to point to a new element that we will create.
+C
+        ELSE IF ((XCRD.LT.RPNT(1,ITMP)).OR.(XCRD.EQ.RPNT(1,ITMP).AND.YCR
+     +D.LT.RPNT(2,ITMP)).OR.(XCRD.EQ.RPNT(1,ITMP).AND.YCRD.EQ.RPNT(2,ITM
+     +P).AND.ZCRD.LT.RPNT(3,ITMP))) THEN
+C
+          IF (IPPP(1,ITMP).NE.0) THEN
+            ITMP=IPPP(1,ITMP)
+            GO TO 101
+          END IF
+C
+          IPPP(1,ITMP)=NPPP+1
+C
+C If the point we want would follow the one pointed at by the search
+C index, reset the search index to look at greater elements (if any),
+C and loop back to continue the search.  If the pointer is null, reset
+C it to point to a new element that we will create.
+C
+        ELSE IF ((XCRD.GT.RPNT(1,ITMP)).OR.(XCRD.EQ.RPNT(1,ITMP).AND.YCR
+     +D.GT.RPNT(2,ITMP)).OR.(XCRD.EQ.RPNT(1,ITMP).AND.YCRD.EQ.RPNT(2,ITM
+     +P).AND.ZCRD.GT.RPNT(3,ITMP))) THEN
+C
+          IF (IPPP(2,ITMP).NE.0) THEN
+            ITMP=IPPP(2,ITMP)
+            GO TO 101
+          END IF
+C
+          IPPP(2,ITMP)=NPPP+1
+C
+        END IF
+C
+      END IF
 C
 C Create a new point in the point list (if there's room, of course), and
 C return its index to the caller.
@@ -15217,7 +16000,7 @@ C
       END
 
 
-      FUNCTION ICAEDG (IPP1,IPP2,IEDG,LOEN,IPPE,MPPE,NPPE,RPNT)
+      FUNCTION HLUICAEDG (IPP1,IPP2,IEDG,LOEN,IPPE,MPPE,NPPE,RPNT)
 C
       DIMENSION IEDG(LOEN,MPPE),IPPE(2,MPPE),RPNT(*)
       INTEGER *8 IKEY1,IKEY2
@@ -15273,7 +16056,7 @@ C
 c        idepth = 0
   101   IF (ITM1.EQ.IEDG(1,ITMP).AND.ITM2.EQ.IEDG(2,ITMP)) THEN
 C
-          ICAEDG=ITMP
+          HLUICAEDG=ITMP
 C
           RETURN
 C
@@ -15323,7 +16106,7 @@ C
         ELSE
 C
                CALL SETER ('ICAEDG - LOGIC ERROR',1,1)
-               ICAEDG=-1
+               HLUICAEDG=-1
                RETURN
 C
         END IF
@@ -15341,6 +16124,127 @@ c     +              'edge count is: ', (nppe + 1)
 c      else if (mod((nppe+1),100) .eq. 0) then
 c         write(*,*) ' avg depth: ', itdepth, itdepth / (nppe + 1)
 c      end if
+C
+C Create a new edge in the edge list (if there's room, of course), and
+C return its index to the caller.
+C
+      IF (NPPE.GE.MPPE) THEN
+C
+        CALL SETER ('ICAEDG - EDGE ARRAY IS TOO SMALL',1,1)
+        HLUICAEDG=-1
+        RETURN
+C
+      ELSE
+C
+        NPPE=NPPE+1
+C
+        IPPE(1,NPPE)=0
+        IPPE(2,NPPE)=0
+C
+        IEDG(1,NPPE)=MIN(IPP1,IPP2)
+        IEDG(2,NPPE)=MAX(IPP1,IPP2)
+        IEDG(3,NPPE)=-1
+        IEDG(4,NPPE)=-1
+        IEDG(5,NPPE)=0
+C
+        HLUICAEDG=NPPE
+C
+      END IF
+C
+      RETURN
+C
+      END
+
+      FUNCTION ICAEDG (IPP1,IPP2,IEDG,LOEN,IPPE,MPPE,NPPE,RPNT)
+C
+      DIMENSION IEDG(LOEN,MPPE),IPPE(2,MPPE),RPNT(*)
+C
+C This function, given the base indices, in the point list, of the two
+C points defining an edge, searches the edge list for an edge matching
+C it.  If such an edge exists, its index is returned; if not, such an
+C edge is created and its index is returned.  The search is effected
+C using a tree-sort technique, the pointers for which are kept in the
+C array IPPE.
+C
+C If there are any edges in the edge list at all, ...
+C
+      IF (NPPE.NE.0) THEN
+C
+C search it.  First, order the pointers to the points in a consistent
+C manner and then find the X, Y, and Z coordinates of the edge's
+C midpoint, which we use to determine the order of the edges in the
+C list.  (Using the values of ITM1 and ITM2 results in very bad
+C behavior by the tree-sort.)
+C
+        ITM1=MIN(IPP1,IPP2)
+        ITM2=MAX(IPP1,IPP2)
+C
+        XNEW=(RPNT(ITM1+1)+RPNT(ITM2+1))/2.
+        YNEW=(RPNT(ITM1+2)+RPNT(ITM2+2))/2.
+        ZNEW=(RPNT(ITM1+3)+RPNT(ITM2+3))/2.
+C
+C Initialize a search index to point to the first element in the sort
+C list.
+C
+        ITMP=1
+C
+C Loop.  If the search index now points at the edge we want, return
+C its index.
+C
+  101   IF (ITM1.EQ.IEDG(1,ITMP).AND.ITM2.EQ.IEDG(2,ITMP)) THEN
+C
+          ICAEDG=ITMP
+C
+          RETURN
+C
+        END IF
+C
+C Find the X, Y, and Z coordinates of this edge's midpoint for
+C comparison with the one we seek.
+C
+        XTMP=(RPNT(IEDG(1,ITMP)+1)+RPNT(IEDG(2,ITMP)+1))/2.
+        YTMP=(RPNT(IEDG(1,ITMP)+2)+RPNT(IEDG(2,ITMP)+2))/2.
+        ZTMP=(RPNT(IEDG(1,ITMP)+3)+RPNT(IEDG(2,ITMP)+3))/2.
+C
+C If the edge we want would precede the one pointed at by the search
+C index, reset the search index to look at lesser elements (if any),
+C and loop back to continue the search.  If the pointer is null, reset
+C it to point to a new element that we will create.
+C
+        IF (XNEW.LT.XTMP.OR.(XNEW.EQ.XTMP.AND.YNEW.LT.YTMP).OR.(XNEW.EQ.
+     +XTMP.AND.YNEW.EQ.YTMP.AND.ZNEW.LT.ZTMP)) THEN
+C
+          IF (IPPE(1,ITMP).NE.0) THEN
+            ITMP=IPPE(1,ITMP)
+            GO TO 101
+          END IF
+C
+          IPPE(1,ITMP)=NPPE+1
+C
+C If the edge we want would follow the one pointed at by the search
+C index, reset the search index to look at greater elements (if any),
+C and loop back to continue the search.  If the pointer is null, reset
+C it to point to a new element that we will create.
+C
+        ELSE IF (XNEW.GT.XTMP.OR.(XNEW.EQ.XTMP.AND.YNEW.GT.YTMP).OR.(XNE
+     +W.EQ.XTMP.AND.YNEW.EQ.YTMP.AND.ZNEW.GT.ZTMP)) THEN
+C
+          IF (IPPE(2,ITMP).NE.0) THEN
+            ITMP=IPPE(2,ITMP)
+            GO TO 101
+          END IF
+C
+          IPPE(2,ITMP)=NPPE+1
+C
+        ELSE
+C
+          CALL SETER ('ICAEDG - LOGIC ERROR',1,1)
+          ICAEDG=-1
+          RETURN
+C
+        END IF
+C
+      END IF
 C
 C Create a new edge in the edge list (if there's room, of course), and
 C return its index to the caller.

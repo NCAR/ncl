@@ -16,7 +16,7 @@ SOURCES = \
 	cttdca.f cttddm.f cttmrg.f cttmtl.f cttmtx.f cttrcl.f cttreg.f \
 	cttroe.f cttrve.f ctwlam.f hluctchcf.f hluctchcl.f hluctchhl.f \
 	hluctchil.f hluctchll.f hluctmxyz.f hluctscae.f icaedg.f       \
-	icapnt.f icapnx.f
+	icapnt.f icapnx.f hlucttmtl.f hluicaedg.f hluicapnt.f hluctmesh.f
 
 OBJECTS = \
 	ctabgc.o ctback.o ctblda.o ctcflb.o ctchcf.o ctchcl.o ctchhl.o \
@@ -30,7 +30,7 @@ OBJECTS = \
 	cttdca.o cttddm.o cttmrg.o cttmtl.o cttmtx.o cttrcl.o cttreg.o \
 	cttroe.o cttrve.o ctwlam.o hluctchcf.o hluctchcl.o hluctchhl.o \
 	hluctchil.o hluctchll.o hluctmxyz.o hluctscae.o icaedg.o       \
-	icapnt.o icapnx.o
+	icapnt.o icapnx.o hlucttmtl.o hluicaedg.o hluicapnt.o hluctmesh.o
 
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
 
