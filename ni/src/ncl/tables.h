@@ -605,3 +605,49 @@ char *level_str_long_name[] = {
 	"underground layer number of land surface model" /* "ULN"   213 */
 };
 	
+int time_range_indicator[] = {0,1,2,3,4,5,6,7,10,51,113,114,115,116,117,118,119,123,124,125,128,129,130,131,132,133,134,135,136,137,138,139,140};
+
+int jra55_local_time_range_indicator[] = {128,129,130,131,132};
+int jra55_local_time_range_indicator_start = sizeof(time_range_indicator) / sizeof(int);
+
+char *time_range_descriptor[] = {
+	"forecast product or uninitialized analysis product", /* 0 */
+	"initialized analysis product", /* 1 */
+	"product with specified valid time range", /* 2 */
+	"average", /* 3 */
+	"accumulation", /* 4 */
+	"difference (value at the end of the time range minus value at the beginning)", /* 5 */
+	"average", /* 6  */
+	"accumulation", /* 7  */
+	"product with specified valid time", /* 10  */
+	"climatological mean value: multiple year averages of quantities which are themselves means over some period of time less than a year", /* 51  */
+	"average of N forecasts (or initialized analyses)", /* 113 */
+	"accumulation of N forecasts (or initialized analyses)", /* 114 */
+	"average of N forecasts all with the same reference time", /* 115 */
+	"accumulation of N forecasts all with the same reference time", /* 116 */
+	"average of N forecasts with the varying initial time, but the same valid time", /* 117 */
+	"temporal variance, or covariance, of N initialized analyses", /* 118 */
+	"standard deviation of N forecasts", /* 119 */
+	"average of N uninitialized analyses", /* 123 */
+	"accumulation of N uninitialized analyses", /* 124 */
+	"standard deviation of N forecasts", /* 125 */
+	"Average of forecast accumulations, forecasts at 24-hour intervals.", /* 128  */
+	"Average of successive forecast accumulations, forecasts at specified intervals.", /* 129  */
+	"Average of forecast averages, forecasts at 24-hour intervals.", /* 130  */
+	"Average of successive forecast averages, forecasts at specified intervals.", /* 131  */
+	"climatological average of N analyses, each a year apart and each of an equal specified duration.", /* 132 */
+	"climatological average of N forecasts, each a year apart and each of an equal specified duration.", /* 133 */
+	"climatological root mean square difference between N forecasts and their verifying analyses, each a year apart, each of an equal specified duration.", /* 134 */
+	"climatological standard deviation of N forecasts from the mean of the same N forecasts, for forecasts one year apart, each of an equal specified duration.", /* 135 */
+	"climatological standard deviation of N analyses from the mean of the same N analyses, for analyses one year apart, each of an equal specified duration.", /* 136 */
+	"average of forecast accumulations, each of an equal specified duration, with 6-hour intervals between forecasts.", /* 137 */
+	"average of forecast averages, each of an equal specified duration, with 6-hour intervals between forecasts.", /* 138 */
+	"average of forecast accumulations, each of an equal specified duration, with 12-hour intervals between forecasts.", /* 139 */
+	"average of forecast averages, each of an equal specified duration, with 12-hour intervals between forecasts.", /* 140 */
+	/* start of JRA55 */
+	"average of N forecast products with a valid time of a specified duration; products have reference times at 24-hour intervals.", /* 128 */
+	"temporal variance of N forecasts; each product has valid time of a specified duration; products have reference times at 24-hour intervals; unit of measurement is square of units given for parameter.", /* 129 */
+	"average of N forecast products; valid time of equal specified duration with all N products covering a continuous time span.", /* 130 */
+	"temporal variance of N forecasts; valid time of equal specified duration with all N products covering a continuous time span; unit of measurement is square of units given for parameter.", /* 131 */
+	"temporal variance of N uninitialized analyses or instantaneous forecasts with valid times at equal specified intervals; unit of measurement is square of units given for parameter." /* 132 */
+};

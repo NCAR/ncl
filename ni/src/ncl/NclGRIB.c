@@ -1265,6 +1265,66 @@ static NrmQuark ForecastTimeUnitsToQuark
 	}
 }
 
+static void SetTimePeriodString
+#if 	NhlNeedProto
+(char *buf, int period, int indicator)
+#else
+(buf,period,indicator)
+char *buf;
+int period;
+int indicator;
+#endif
+{
+	switch (indicator) {
+	case 0:
+		sprintf(buf,"%d minutes",period);
+		return;
+	case  1:
+		sprintf(buf,"%d hours",period);
+		return;
+	case  2:
+		sprintf(buf,"%d days",period);
+		return;
+	case  3:
+		sprintf(buf,"%d months",period);
+		return;
+	case  4:
+		sprintf(buf,"%d years",period);
+		return;
+	case  5:
+		sprintf(buf,"%d decades",period);
+		return;
+	case  6:
+		sprintf(buf,"%d decades",period * 3);
+		return;
+	case  7:
+		sprintf(buf,"%d centuries",period);
+		return;
+	case  10:
+		sprintf(buf,"%d hours",period * 3);
+		return;
+	case  11:
+		sprintf(buf,"%d hours",period * 6);
+		return;
+	case  12:
+		sprintf(buf,"%d hours",period * 12);
+		return;
+	case  13:
+		sprintf(buf,"%d minutes",period * 15);
+		return;
+	case  14:
+		sprintf(buf,"%d minutes",period * 30);
+		return;
+	case  254:
+		sprintf(buf,"%d seconds",period);
+		return;
+	default:
+		sprintf(buf,"%d (unknown units)",period);
+		return;
+	}
+
+}
+
 static void _SetAttributeLists
 #if 	NhlNeedProto
 (GribFileRecord *therec)
@@ -1297,7 +1357,276 @@ GribFileRecord *therec;
 				break;
 			}
 		}
+		if (step->time_range_indicator > 50) { /* climatological and other statistically processed data - not including simple averages and accumulations, etc. */
+			int tr_ix = -1;
+			int num, test_num, need_array = 0;
+			int j, num_found;
+			if (grib_rec->center_ix == 32 && grib_rec->ptable_version == 200) {
+				for (i = 0; i < sizeof(jra55_local_time_range_indicator) / sizeof(int); i++) {
+					if (jra55_local_time_range_indicator[i] == step->time_range_indicator) {
+						tr_ix = jra55_local_time_range_indicator_start + i;
+						break;
+					}
+				}
+			}
+			if (tr_ix == -1) {
+				for (i = 0; i < sizeof(time_range_indicator) /sizeof(int); i++) {
+					if (time_range_indicator[i] == step->time_range_indicator) {
+						tr_ix = i;
+						break;
+					}
+				}
+			}
+			/* r in average -- AKA 'N" in the statistical process descriptors -- assumes that N may be different for different time periods, but that e.g. different levels will have the same N 
+			   this may be proved wrong eventually */
+			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("N");
+			num = CnvtToDecimal(2,&grib_rec->pds[21]);
+			for (i = 0; i < step->n_entries; i++) {
+				test_num = CnvtToDecimal(2,&step->thelist[i].rec_inq->pds[21]);
+				if (test_num != num) {
+					need_array = 1;
+					break;
+				}
+			}
+			if (! need_array) {
+				tmp_int = (int*)NclMalloc(sizeof(int));
+				*tmp_int=  num;
+				att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_int, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypeintClass);
+				step->theatts = att_list_ptr;
+				step->n_atts++;
+			}
+			else {
+				int count = 1;
+				int found = 0;
+				int it_count = 0, ft_count = 0;
+				GIT it_cmp;
+				int ft_cmp;
 
+				/* how many ? 1 for each initial_time * each forecast time */ 
+				if (! step->yymmddhh_isatt) {
+					for (i = 0; i < therec->n_it_dims; i++) {
+						for (j = 0; j < step->var_info.num_dimensions; j++) {
+							if (therec->it_dims[i].dim_inq->dim_number == step->var_info.file_dim_num[j]) {
+								it_count =  step->var_info.dim_sizes[j];
+								found = 1;
+								break;
+							}
+						}
+						if (found) break;
+					}
+				}
+				if (! step->forecast_time_isatt) {
+					found = 0;
+					for (i = 0; i < therec->n_ft_dims; i++) {
+						for (j = 0; j < step->var_info.num_dimensions; j++) {
+							if (therec->ft_dims[i].dim_inq->dim_number == step->var_info.file_dim_num[j]) {
+								ft_count *=  step->var_info.dim_sizes[j];
+								found = 1; 
+								break;
+							}
+						}
+						if (found) break;
+					}
+				}
+				it_cmp = grib_rec->initial_time;
+				ft_cmp = grib_rec->time_offset;
+				if (it_count > 0) count = it_count;
+				if (ft_count > 0) count *= ft_count;
+				tmp_int = (int*)NclMalloc(count * sizeof(int));
+				tmp_int[0] = num;
+				found = 1;
+				for (i = 1; i < step->n_entries; i++) {
+					if (!memcmp(&it_cmp,&step->thelist[i].rec_inq->initial_time,sizeof(GIT)) && ft_cmp == step->thelist[i].rec_inq->time_offset)
+						continue;
+					tmp_int[found] = CnvtToDecimal(2,&step->thelist[i].rec_inq->pds[21]);
+					it_cmp = step->thelist[i].rec_inq->initial_time;
+					ft_cmp = step->thelist[i].rec_inq->time_offset;
+					found++;
+				}
+				tmp_dimsizes = found;
+				att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+					_NclCreateVal(NULL, NULL,
+						      Ncl_MultiDValData, 0, (void *) tmp_int, NULL, 1, &tmp_dimsizes, 
+						      PERMANENT, NULL, nclTypeintClass);
+				step->theatts = att_list_ptr;
+				step->n_atts++;
+				tmp_dimsizes = 1;
+			}
+			/* statistical_process_duration gives the length, starting point, and interval between products for each procuct making up the N products that are proecessed into the end product */
+#if 0
+			for(i = 0; i < step->n_entries; i++) {
+				if(step->thelist[i].rec_inq != NULL) {
+					grib_rec = step->thelist[i].rec_inq;
+					printf("p1 %d p2 %d\n",(int)grib_rec->pds[18],(int)grib_rec->pds[19]);
+				}
+			}
+#endif
+			
+			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("statistical_process_duration");
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			buffer[0] = '\0';
+			if  (grib_rec->center_ix == 32 && grib_rec->ptable_version == 200 && step->time_range_indicator > 127 && step->time_range_indicator < 133) {
+				switch (step->time_range_indicator) {
+				case 128:
+				case 129:
+					if (step->time_period == 0) 
+						sprintf(&buffer[strlen(buffer)],"instantaneous");
+					else
+						SetTimePeriodString(&buffer[strlen(buffer)],step->time_period,step->time_unit_indicator);
+					if ((int)grib_rec->pds[18] == 0) 
+						sprintf(&buffer[strlen(buffer)]," (beginning at reference time at intervals of 24 hours)");
+					else {
+						sprintf(&buffer[strlen(buffer)]," (beginning ");
+						SetTimePeriodString(&buffer[strlen(buffer)],(int)grib_rec->pds[18],step->time_unit_indicator);
+						sprintf(&buffer[strlen(buffer)]," from reference time at intervals of 24 hours)");
+					}
+					break;
+				case 130:
+				case 131:
+					if (step->time_period == 0) 
+						sprintf(&buffer[strlen(buffer)],"instantaneous");
+					else
+						SetTimePeriodString(&buffer[strlen(buffer)],step->time_period,step->time_unit_indicator);
+					if ((int)grib_rec->pds[18] == 0) 
+						sprintf(&buffer[strlen(buffer)]," (beginning at reference time)");
+					else {
+						sprintf(&buffer[strlen(buffer)]," (beginning ");
+						SetTimePeriodString(&buffer[strlen(buffer)],(int)grib_rec->pds[18],step->time_unit_indicator);
+						sprintf(&buffer[strlen(buffer)]," from reference time)");
+					}
+					break;
+				case 132:
+					sprintf(&buffer[strlen(buffer)],"instantaneous");
+					if ((int)grib_rec->pds[18] == 0) {
+						sprintf(&buffer[strlen(buffer)]," (beginning at reference time at intervals of ");
+					}
+					else {
+						sprintf(&buffer[strlen(buffer)]," (beginning ");
+						SetTimePeriodString(&buffer[strlen(buffer)],(int)grib_rec->pds[18],step->time_unit_indicator);
+						sprintf(&buffer[strlen(buffer)]," from reference time at intervals of ");
+					}
+					SetTimePeriodString(&buffer[strlen(buffer)],(int)grib_rec->pds[19],step->time_unit_indicator);
+					sprintf(&buffer[strlen(buffer)],")");
+					break;
+				}
+			}
+			else {
+				switch (step->time_range_indicator) {
+				case 51:
+					SetTimePeriodString(&buffer[strlen(buffer)],step->time_period,step->time_unit_indicator);
+					sprintf(&buffer[strlen(buffer)]," (beginning at reference time at intervals of 1 year)");
+					break;
+					
+				case 113:
+				case 114:
+				case 115:
+				case 116:
+					if (step->time_period == 0) {
+						sprintf(buffer,"instantaneous (intervals of ");
+					}
+					else {
+						SetTimePeriodString(buffer,step->time_period,step->time_unit_indicator);
+						sprintf(&buffer[strlen(buffer)]," (at intervals of ");
+					}
+					SetTimePeriodString(&buffer[strlen(buffer)],(int)grib_rec->pds[19],step->time_unit_indicator);
+					sprintf(&buffer[strlen(buffer)],")");
+					break;
+				case 117:
+					SetTimePeriodString(buffer,step->time_period,step->time_unit_indicator);
+					sprintf(buffer,"(first period: subsequent periods of decreasing length at intervals of ");
+					SetTimePeriodString(buffer,grib_rec->pds[19],step->time_unit_indicator);
+					sprintf(&buffer[strlen(buffer)]," such that all end at the same time");
+					break;
+				case 118:
+				case 119:
+				case 123:
+				case 124:
+				case 125:
+					if (step->time_period == 0) 
+						sprintf(&buffer[strlen(buffer)],"instantaneous");
+					else
+						SetTimePeriodString(&buffer[strlen(buffer)],step->time_period,step->time_unit_indicator);
+					sprintf(&buffer[strlen(buffer)]," (beginning at reference time at intervals of ");
+					SetTimePeriodString(&buffer[strlen(buffer)],(int)grib_rec->pds[19],step->time_unit_indicator);
+					sprintf(&buffer[strlen(buffer)],")");
+					break;
+				case 128:
+				case 130:
+					SetTimePeriodString(&buffer[strlen(buffer)],step->time_period,step->time_unit_indicator);
+					sprintf(&buffer[strlen(buffer)]," (beginning at reference time at intervals of 24 hours)");
+					break;
+				case 137:
+				case 138:
+					SetTimePeriodString(&buffer[strlen(buffer)],step->time_period,step->time_unit_indicator);
+					sprintf(&buffer[strlen(buffer)]," (beginning at reference time at intervals of 6 hours)");
+					break;
+				case 139:
+				case 140:
+					SetTimePeriodString(&buffer[strlen(buffer)],step->time_period,step->time_unit_indicator);
+					sprintf(&buffer[strlen(buffer)]," (beginning at reference time at intervals of 12 hours)");
+					break;
+				case 129:
+				case 131:
+					SetTimePeriodString(&buffer[strlen(buffer)],step->time_period,step->time_unit_indicator);
+					sprintf(&buffer[strlen(buffer)]," (beginning at reference time at intervals of ");
+					SetTimePeriodString(&buffer[strlen(buffer)],step->time_period,step->time_unit_indicator);
+					sprintf(&buffer[strlen(buffer)],")");
+					break;
+				case 132:
+				case 133:
+				case 134:
+				case 135:
+				case 136:
+					SetTimePeriodString(buffer,step->time_period,step->time_unit_indicator);
+					if ((int)grib_rec->pds[18] == 0) {
+						sprintf(&buffer[strlen(buffer)]," (beginnng at reference time at intervals of 1 year)");
+					}
+					else {
+						sprintf(&buffer[strlen(buffer)]," (beginning ");
+						SetTimePeriodString(&buffer[strlen(buffer)],grib_rec->pds[18],step->time_unit_indicator);
+						sprintf(&buffer[strlen(buffer)]," after reference time at intervals of 1 year)");
+					}
+				}
+			}
+
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			*tmp_string = NrmStringToQuark(buffer);
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+				_NclCreateVal(NULL, NULL,
+					      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
+					      PERMANENT, NULL, nclTypestringClass);
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+
+			/* statistical process descriptor -- the text is modified from the GRIB documentation to remove references to P1 and P2 -- these should be accounted for dynamically with
+			   the  statistical_process_duration attribute */
+
+			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("statistical_process_descriptor");
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			if (tr_ix != -1) {
+				sprintf(buffer,"%s",time_range_descriptor[tr_ix]);
+				*tmp_string = NrmStringToQuark(buffer);
+			}
+			else {
+				sprintf(buffer,"statistical process %d (see GRIB table 5)",step->time_range_indicator);
+				*tmp_string = NrmStringToQuark(buffer);
+			}
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+				_NclCreateVal(NULL, NULL,
+					      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
+					      PERMANENT, NULL, nclTypestringClass);
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+		}
 
 /*
 * Handle coordinate attributes,  ensemble, level, initial_time, forecast_time
@@ -5080,6 +5409,20 @@ unsigned char *offset;
 		return 0;
 	case 117:
 		return((int)offset[0]);
+	case 128:
+	case 129:
+	case 130:
+	case 131:
+	case 132:
+	case 133:
+	case 134:
+	case 135:
+	case 136:
+	case 137:
+	case 138:
+	case 139:
+	case 140:
+		return(0); /* for now at least */
 	default:
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown or unsupported time range indicator detected, continuing");
 		return(-1);
@@ -7155,6 +7498,48 @@ int wr_status;
 							if (! suffix) tpbuf[0] = '\0';
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_ave%s",tpbuf);
 						}
+						break;
+					case 51:
+						grib_rec->time_period = (int) grib_rec->pds[19];
+						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_S%d",(int)grib_rec->pds[20]);
+						break;
+					case 113:
+					case 114:
+					case 115:
+					case 116:
+					case 117:
+					case 119:
+					case 125:
+						grib_rec->time_period = (int) grib_rec->pds[18];
+						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_S%d",(int)grib_rec->pds[20]);
+						break;
+					case 118:
+					case 123:
+					case 124:
+						grib_rec->time_period = 0;
+						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_S%d",(int)grib_rec->pds[20]);
+						break;
+					case 132:
+						if  (grib_rec->center_ix == 32 && grib_rec->ptable_version == 200) {
+							grib_rec->time_period = 0;
+							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_S%d",(int)grib_rec->pds[20]);
+							break;
+						}
+						/* else fall through */
+					case 128:
+					case 129:
+					case 130:
+					case 131:
+					case 133:
+					case 134:
+					case 135:
+					case 136:
+					case 137:
+					case 138:
+					case 139:
+					case 140:
+						grib_rec->time_period = (int)grib_rec->pds[19] - (int) grib_rec->pds[18];
+						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_S%d",(int)grib_rec->pds[20]);
 						break;
 					default:
 						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_%d",(int)grib_rec->pds[20]);

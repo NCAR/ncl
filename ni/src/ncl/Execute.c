@@ -434,7 +434,8 @@ int HasTimeUnits(NrmQuark units)
 	if (strlen(str_units) < 6)
 	return 0; */
 
-	
+	if (! str_units) 
+		return 0;
 	if(!strncasecmp(str_units,"sec",3) || !strcasecmp(str_units,"s")){
 		ok_so_far = 1;
         }
