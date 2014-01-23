@@ -2571,7 +2571,9 @@ void NC4GetAttrVal(int ncid, int aid, NclFileAttNode *attnode)
         }
         else
         {
-            attnode->value = NclMalloc(nctypelen(attnode->the_nc_type)*attnode->n_elem);
+            if(1 > attnode->n_elem)
+                attnode->n_elem = 1;
+            attnode->value = NclCalloc(attnode->n_elem, nctypelen(attnode->the_nc_type));
             assert(attnode->value);
             ncattget(ncid,aid,NrmQuarkToString(attnode->name),attnode->value);
         }

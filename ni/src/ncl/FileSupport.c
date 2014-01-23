@@ -3637,18 +3637,20 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 
 	char *fext = NrmQuarkToString(pre_file_ext_q);
 
-	char *ext_list[] = {"nc"
 #ifdef BuildHDF5
-			   , "h5"
+        char *ext_list[] = {"h5"
+                          , "nc"
+#else
+        char *ext_list[] = {"nc"
 #endif
 #ifdef BuildHDFEOS5
 			   , "he5"
 #endif
-#ifdef BuildHDFEOS
-			   , "he2"
-#endif
 #ifdef BuildHDF4
 			   , "hdf"
+#endif
+#ifdef BuildHDFEOS
+			   , "he2"
 #endif
 			   };
 
