@@ -12482,7 +12482,7 @@ begin
 
     xReturn= new ( dAvg , typeof(x), getFillValue(x))
     xMonth = new ( NTIM , typeof(x&time), "No_FillValue")
-    printVarSummary(xMonth)
+  ;;printVarSummary(xMonth)
 
     NT   = -1
     do yr=yrStrt,yrLast
