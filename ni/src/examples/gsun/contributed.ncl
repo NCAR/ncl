@@ -13645,13 +13645,17 @@ begin
        ncol    = dimd(1)              ; number of columns  
        M       = ncol-1               ; number of variables  
        
-       if (opt .and. isatt(opt,"print_data")) then
-           write_matrix(data, ncol+"f10.0", False)
+       if (opt .and. isatt(opt,"print_data") .and. opt@print_data) then
+           write_matrix(data, ncol+"f10.1", False)
           ; write_table might be better
           ; http://www.ncl.ucar.edu/Document/Functions/Built-in/write_table.shtml
        end if
        
-; create the necessary arrays 
+; Create the necessary arrays. X is augmented matrix.
+;   Most multiple regression models include a constant term (augment).
+;   This ensures that the model will be "unbiased"
+;   --i.e., the mean of the residuals will be exactly zero.
+; see Wilks
 
        Y       = data(:,0)
        X       = new ( (/M+1,N/) , typeof(data),"No_FillValue")
@@ -13659,6 +13663,8 @@ begin
        do m=1,M
           X(m,:)  = data(:,m)
        end do
+
+; Calculate the aregression coefficients
 
        b       = reg_multlin(Y,X,False)   ; partial regression coef 
                                           ; unstandardized...depend on units
@@ -13690,7 +13696,7 @@ begin
           Yest(n) = b(0) + sum(b(1:)*X(1:,n)) 
        end do
 
-; ANOVA table info: 
+; ANOVA table (eg: Wilks, Academic Press, 2nd Ed., pg 197) 
 ;       sums of squares , degrees of freedom, mean squares, F statistic
 
        Yres = Yest-Y               ; residuals
@@ -13701,13 +13707,17 @@ begin
        SSR  = sum((Yest-Yavg)^2)   ; regression SS [dof=M]
                                    ; (aka:explained SS)
 
+                                   ; MS ==> Mean Square
        MST  = SST/(N-1)
-       MSE  = SSE/(N-M-1)
+       MSE  = SSE/(N-M-1)          
        MSR  = SSR/M
 
        SE   = sqrt(MSE)            ; residual standard error
                                    
-       Frat = MSR/MSE              ; dof (M,N-M-1)
+       Frat = MSR/MSE              ; dof (M,N-M-1): F-Test is an overall (global)
+                                   ; test of the model’s fit. If at least one
+                                   ; variable has a significant coefficient, then
+                                   ; the model fit should be significant.
 
        r2   = SSR/SST              ; r2 = square of the Pearson correlation 
                                    ;      coefficient between the observed 
@@ -13719,7 +13729,7 @@ begin
        r    = sqrt(r2)             ; multiple (overall) correlation
        fuv  = 1.0-r2               ; fraction of variance *unexplained* 
 
-       if (opt .and. isatt(opt,"print_anova")) then
+       if (opt .and. isatt(opt,"print_anova") .and. opt@print_anova) then
            print(" ")
            print("------- ANOVA information-------- ")
            print("SST="+SST+"  SSR="+SSR+"  SSE="+SSE)
@@ -13730,7 +13740,7 @@ begin
            print(" ")
        end if
 
-; associate assorted information as attributes of 'b'
+; Associate assorted information as attributes of 'b'
 
        b@N     = N
        b@M     = M
