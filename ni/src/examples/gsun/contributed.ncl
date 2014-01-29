@@ -13620,54 +13620,59 @@ end
 undef ("reg_multlin_driver")
 function reg_multlin_driver(data[*][*]:numeric,opt)
 ;
-; Simple driver script that partitions the input 'data' array
-; for input to NCL function 'reg_multlin'. 
+; Driver function that partitions the input 'data' array
+; for input to NCL builtin function 'reg_multlin'. 
 ; It returns many other statistical terms.
 ;
-; Sample Usage:  
-;      load ".../contributed.ncl
+; Same interface as 'reg_multlin'
+; http://www.ncl.ucar.edu/Document/Functions/Built-in/reg_multlin.shtml
 ;
-;      diri    = "./"
-;      fili    = "FOO.txt"
-;      ncol    = numAsciiCol(diri+fili)
-;      data    = readAsciiTable( diri+fili, ncol, "float" , 1)  ; one header 
-;      printVarSummary(data)
-;
-;      preg    =  reg_multlin_driver(data,False) ; partial regression coef
-;      print(preg)
-;         
-local dimd, N, ncol, M, T, X, b, B                       \ ; local is
+local dimd, N, ncol, NP, M, MP1, T, Y, X, b, B           \ ; local is
     , Yavg, Yvar, Ystd, Xavg, Xvar, Xstd, Yest, n, m     \ ; not necessary
-    , Yres, SST, SSE, SSR, MST, MSE, MSR, SE, Frat, r2, ra, r, fuv
+    , Yres, SST, SSE, SSR, MST, MSE, MSR, SE, Frat       \
+    , r2, ra, r, fuv, XXt, XXTi, varcovx, df, stderr, tval, pval \
+    , opt_wm, fmt_XXt, fmt_XXti, fmt_covx, opt_pd, fmt_data
 begin
+
        dimd    = dimsizes(data)
        N       = dimd(0)              ; number of rows     
        ncol    = dimd(1)              ; number of columns  
-       M       = ncol-1               ; number of variables  
-       
+       NP      = ncol-1               ; number of predictor variables  
+
+       M       = NP+1                 ; extra column for augmented matrix
+       MP1     = M+1                  ; used later
+
        if (opt .and. isatt(opt,"print_data") .and. opt@print_data) then
-           write_matrix(data, ncol+"f10.1", False)
-          ; write_table might be better
-          ; http://www.ncl.ucar.edu/Document/Functions/Built-in/write_table.shtml
+           print(" ")
+           opt_pd = True
+           opt_pd@title  = "----- reg_multlin_driver: data -----"
+           fmt_data = "f11.2"
+           if (isatt(opt,"fmt_data")) then
+               fmt_data  = opt@fmt_data
+           end if
+           write_matrix (data, ncol+fmt_data , opt_pd)
        end if
        
-; Create the necessary arrays. X is augmented matrix.
-;   Most multiple regression models include a constant term (augment).
+; Create the necessary arrays. X is "design matrix"  
+;
+; Most multiple regression models include a constant term (augment).
 ;   This ensures that the model will be "unbiased"
 ;   --i.e., the mean of the residuals will be exactly zero.
-; see Wilks
+;   (eg: Wilks, Academic Press, 2nd Ed.)
 
        Y       = data(:,0)
-       X       = new ( (/M+1,N/) , typeof(data),"No_FillValue")
+       X       = new ( (/M,N/) , typeof(data), getFillValue(data))
        X(0,:)  = 1.0
-       do m=1,M
-          X(m,:)  = data(:,m)
+       do m=1,NP  
+          X(m,:)  = data(:,m)             ; m refers to variables
        end do
 
-; Calculate the aregression coefficients
-
+; Calculate the aregression coefficients: b->beta_hat
+                                         
        b       = reg_multlin(Y,X,False)   ; partial regression coef 
                                           ; unstandardized...depend on units
+       delete(b@constant)                 ; extraneous attribute
+
 ; Assorted calculations
 
        Yavg    = avg(Y)
@@ -13678,28 +13683,28 @@ begin
        Xvar    = new(M, typeof(b), "No_FillValue")
        Xstd    = new(M, typeof(b), "No_FillValue")
 
-       B       = new(M, typeof(b), "No_FillValue") ; standardized regression coef
+       bstd    = new(M, typeof(b), "No_FillValue") ; standardized regression coef
                                      ; describe what the partial regression coef. 
                                      ; would equal if all variables had the same 
                                      ; standard deviation.
-       do m=1,M
+       do m=1,NP
           Xavg(m-1)   = avg(X(m,:))
           Xvar(m-1)   = variance(X(m,:))
           Xstd(m-1)   = sqrt(Xvar(m-1))
-          B(m-1)      = b(m)*Xstd(m-1)/Ystd
+          bstd(m-1)    = b(m)*Xstd(m-1)/Ystd
        end do
 
-; Calculate model estimates
+; Calculate model estimates: Yest = b(0) + b(1)*   + b(2)* + .....
 
-       Yest = new(N,typeof(Y),"No_FillValue")
+       Yest = new(N,typeof(Y),getFillValue(Y))
        do n=0,N-1
-          Yest(n) = b(0) + sum(b(1:)*X(1:,n)) 
+          Yest(n) = b(0) + sum(b(1:)*X(1:,n))   ; array syntax 
        end do
 
-; ANOVA table (eg: Wilks, Academic Press, 2nd Ed., pg 197) 
+; ANOVA table info: 
 ;       sums of squares , degrees of freedom, mean squares, F statistic
 
-       Yres = Yest-Y               ; residuals
+       Yres = Yest-Y               ; residuals (array operation)
 
                                    ; SS ==> Sum of Squares 
        SST  = sum((Y-Yavg)^2)      ; total SS      [dof=N-1]
@@ -13707,16 +13712,15 @@ begin
        SSR  = sum((Yest-Yavg)^2)   ; regression SS [dof=M]
                                    ; (aka:explained SS)
 
-                                   ; MS ==> Mean Square
        MST  = SST/(N-1)
-       MSE  = SSE/(N-M-1)          
+       MSE  = SSE/(N-M)            ; (N-M-1) dof 
        MSR  = SSR/M
 
-       SE   = sqrt(MSE)            ; residual standard error
+       RSE  = sqrt(MSE)            ; residual standard error
                                    
-       Frat = MSR/MSE              ; dof (M,N-M-1): F-Test is an overall (global)
+       Frat = MSR/MSE              ; dof (M,N-M-1): F-Test is an overall (global) 
                                    ; test of the model’s fit. If at least one
-                                   ; variable has a significant coefficient, then
+                                   ; variable has a significant coefficient, then 
                                    ; the model fit should be significant.
 
        r2   = SSR/SST              ; r2 = square of the Pearson correlation 
@@ -13729,38 +13733,98 @@ begin
        r    = sqrt(r2)             ; multiple (overall) correlation
        fuv  = 1.0-r2               ; fraction of variance *unexplained* 
 
-       if (opt .and. isatt(opt,"print_anova") .and. opt@print_anova) then
+; Determine (a) standard error of coefficients; (b) t-values; (c)  p-values
+
+       XXt     = X#transpose(X)    ; (M,M); opposite of text books 
+       XXti    = inverse_matrix(XXt)
+       varcovx = MSE*XXti          ; variance-covariance matrix
+                                   ; of estimated regression coefficients
+
+       if (opt .and. isatt(opt,"debug") .and. opt@debug) then
            print(" ")
+           opt_wm = True
+           opt_wm@title  = "-----   XXt  ---------"
+           fmt_XXt = "f11.2"
+           if (isatt(opt,"fmt_XXt")) then
+               fmt_XXt  = opt@fmt_XXt
+           end if
+           write_matrix (XXt, M+fmt_XXt , opt_wm)
+
+           opt_wm@title  = "-----   XXti ---------"
+           fmt_XXti = "f11.2"
+           if (isatt(opt,"fmt_XXti")) then
+               fmt_XXti = opt@fmt_XXti
+           end if
+           write_matrix (XXti, M+fmt_XXti , opt_wm)
+
+           opt_wm@title  = "----- varcovx --------"
+           fmt_covx = "f11.2"
+           if (isatt(opt,"fmt_covx")) then
+               fmt_covx = opt@fmt_covx
+           end if
+           write_matrix (varcovx, M+fmt_covx , opt_wm)
+
+           print(" ")
+       end if
+           
+       stderr = new( M, typeof(Y))
+       tval   = new( M, typeof(Y))
+       pval   = new( M, typeof(Y))
+
+       df  = N-M
+       
+       do m=0,M-1
+          stderr(m) = sqrt(varcovx(m,m))  
+          tval(m)   = b(m)/stderr(m)
+          pval(m)   = betainc( df/(df+tval(m)^2), df/2.0, 0.5)
+       end do
+
+       if (opt .and. isatt(opt,"print_stats") .and. opt@print_stats) then
+           print(" ")
+
            print("------- ANOVA information-------- ")
            print("SST="+SST+"  SSR="+SSR+"  SSE="+SSE)
-           print("MST="+MST+"  MSR="+MSR+"  MSE="+MSE+"  SE="+SE)
+           print("MST="+MST+"  MSR="+MSR+"  MSE="+MSE+" RSE="+RSE)
            print("F-statistic="+Frat +" dof=("+M+","+(N-M-1)+")")
-           print("-------  ")
+           print("          -------                 ")
            print("r2="+r2+"  r="+r+"  ra="+ra+"  fuv="+fuv)  
+           print("          -------                 ")
+           print("stderr, tval, pval: "+stderr+"    "+tval+"    "+pval)
+
            print(" ")
        end if
 
-; Associate assorted information as attributes of 'b'
+; associate assorted information as attributes of 'b'
+
+       b@long_name = "multiple regression coefficients"
+       b@model     = "Yhat = b(0) + b(1)*X1 + b(2)*X2 + ...+b(M)*XM"
 
        b@N     = N
        b@M     = M
-       b@B     = B
+       b@bstd  = bstd
+
        b@SST   = SST
        b@SSE   = SSE
        b@SSR   = SSR
        b@MST   = MST
        b@MSE   = MSE
        b@MSR   = MSR
-       b@SE    = SE
+       b@RSE   = RSE
        b@SE_dof= N-M-1
        
        b@F     = Frat
        b@F_dof = (/M,N-M-1/)
+
        b@r2    = r2
        b@r     = r
        b@ra    = ra
+
        b@fuv   = fuv
        b@Yest  = Yest
+
+       b@stderr = stderr
+       b@tval   = tval 
+       b@pval   = pval
 
        return(b)
 end
