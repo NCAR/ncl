@@ -13642,8 +13642,8 @@ local dimXP, N, NP, NY, M, T, Y, X, b, B                 \ ; local is
 begin
 
        dimXP   = dimsizes(XP)
-       N       = dimXP(0)              ; number of rows (     
-       NP      = dimXP(1)              ; number of columns ( predictor variables)   
+       N       = dimXP(0)              ; number of rows ('observations')    
+       NP      = dimXP(1)              ; number predictor variables   
        NY      = dimsizes(Y)
 
        if (NY.NE.N) then               ; error check
@@ -13675,7 +13675,7 @@ begin
 ;   This ensures that the model will be "unbiased"
 ;   --i.e., the mean of the residuals will be exactly zero.
 
-       M       = NP+1                     ; extra column for augmented matrix
+       M       = NP+1                     ; extra column for design matrix
 
        X       = new ( (/M,N/) , typeof(XP), getFillValue(XP))
        X(0,:)  = 1.0
@@ -13704,7 +13704,6 @@ begin
                                      ; describe what the partial regression coef. 
                                      ; would equal if all variables had the same 
                                      ; standard deviation.
-
        do n=0,NP-1                 
           Xavg(n)   = avg(XP(:,n))              ; =avg(X(n+1,:))
           Xvar(n)   = variance(XP(:,n))         ; =variance(X(n+1,:))
@@ -13726,23 +13725,19 @@ begin
 ; http://reliawiki.org/index.php/ANOVA_Calculations_in_Multiple_Linear_Regression
 ;        Mean squares are obtained by dividing the sum of squares 
 ;        with their associated degrees of freedom. 
-;        That said: There seems to be slightly differing dof.
 
-       dof  = N-M                  ; match 'R'
-       if (opt .and. isatt(opt, "alt_dof") .and. opt@alt_dof) then
-            dof  = N-M-1           ; Thought this would be correcty
-       end if
+       dof  = N-NP-1 
 
        Yres = Yest-Y               ; residuals (array operation)
 
                                    ; SS ==> Sum of Squares 
        SST  = sum((Y-Yavg)^2)      ; total SS      [dof=N-1]
-       SSR  = sum((Yest-Yavg)^2)   ; regression SS [dof=M] ; (aka: model explained SS=>SSM)
-       SSE  = sum(Yres^2)          ; residual SS   [dof=N-M-1]
+       SSR  = sum((Yest-Yavg)^2)   ; regression SS [dof=NP] ; (aka: model explained SS=>SSM)
+       SSE  = sum(Yres^2)          ; residual SS   [dof=N-NP-1]
  
        MST  = SST/(N-1)            ; Mean SST      [dof=N-1]
-       MSR  = SSR/M                ; Mean SSR      [dof=M  ]
-       MSE  = SSE/dof              ; Mean SSE      [dof-(N-M) or (N-M-1)]
+       MSR  = SSR/NP               ; Mean SSR      [dof=NP]
+       MSE  = SSE/dof              ; Mean SSE      [dof=(N-NP-1)] 
 
        RSE  = sqrt(MSE)            ; residual standard error
                                    
@@ -13758,7 +13753,7 @@ begin
                                    ;      of the dependent variable.
                                    ; biased high, particularly for small N
 
-       ra   = r2-(1-r2)*M/tofloat(dof)   ; adjusted r2... better for small N
+       r2a  = r2-(1-r2)*NP/tofloat(dof)   ; adjusted r2... better for small N
        r    = sqrt(r2)             ; multiple (overall) correlation
        fuv  = 1.0-r2               ; fraction of variance *unexplained* 
 
@@ -13802,7 +13797,8 @@ begin
        tval   = new( M, typeof(Y))
        pval   = new( M, typeof(Y))
 
-       df  = N-M
+      ;df  = N-M  
+       df  = N-NP
        
        do m=0,M-1
           stderr(m) = sqrt(varcovx(m,m))  
@@ -13810,29 +13806,28 @@ begin
           pval(m)   = betainc( df/(df+tval(m)^2), df/2.0, 0.5)
        end do
 
-       if (opt .and. isatt(opt,"print_stats") .and. opt@print_stats) then
+       if (opt .and. isatt(opt,"print_anova") .and. opt@print_anova) then
            print(" ")
            print("------- ANOVA information-------- ")
            print(" ")
            print("SST="+SST+"  SSR="+SSR+"  SSE="+SSE)
            print("MST="+MST+"  MSR="+MSR+"  MSE="+MSE+" RSE="+RSE)
-           print("F-statistic="+Frat +" dof=("+M+","+(N-M-1)+")")
+           print("F-statistic="+Frat +" dof=("+NP+","+(N-NP-1)+")")
            print("          -------                 ")
-           print("r2="+r2+"  r="+r+"  ra="+ra+"  fuv="+fuv)  
-           print("          -------                 ")
-           print("stderr, tval, pval: "+stderr+"    "+tval+"    "+pval)
-
+         ;;print("r2="+r2+"  r="+r+"  ra="+ra+"  fuv="+fuv)  
+         ;;print("          -------                 ")
+         ;;print("stderr, tval, pval: "+stderr+"    "+tval+"    "+pval)
            print(" ")
        end if
 
 ; associate assorted information as attributes of 'b'
 
        b@long_name = "multiple regression coefficients"
-       b@model     = "Yhat = b(0) + b(1)*X1 + b(2)*X2 + ...+b(M)*XM"
+       b@model     = "Yest = b(0) + b(1)*X1 + b(2)*X2 + ...+b(M)*XM"
 
        b@N     = N
        b@NP    = NP
-       b@M     = M
+       b@M     = M              ; design matrix
        b@bstd  = bstd
 
        b@SST   = SST
@@ -13848,15 +13843,15 @@ begin
        b@RSE_dof= N-M-1
        
        b@F     = Frat
-       b@F_dof = (/M,dof/)             ; R uses this
+       b@F_dof = (/NP,dof/)  
 
        df1      = b@F_dof(0)
        df2      = b@F_dof(1)
-       b@F_pval = ftest(MSR, df1+1, MSE, df2+1, 0)
+       b@F_pval = ftest(MSR, df1+1, MSE, df2+1, 0)*0.5
 
        b@r2     = r2
        b@r      = r
-       b@ra     = ra
+       b@r2a    = r2a
 
        b@fuv    = fuv
        b@Yest   = Yest
