@@ -13617,57 +13617,74 @@ begin
   return(mode)
 end
 ;============================================
-undef ("reg_multlin_driver")
-function reg_multlin_driver(data[*][*]:numeric,opt)
+undef ("reg_multlin_stats")
+function reg_multlin_stats(Y[*]:numeric, XP[*][*]:numeric, opt)
 ;
-; Driver function that partitions the input 'data' array
-; for input to NCL builtin function 'reg_multlin'. 
-; It returns many other statistical terms.
-;
-; Same interface as 'reg_multlin'
+; Same interface as builtin 'reg_multlin'
 ; http://www.ncl.ucar.edu/Document/Functions/Built-in/reg_multlin.shtml
 ;
-local dimd, N, ncol, NP, M, MP1, T, Y, X, b, B           \ ; local is
+; See: 
+; Wilks, D.S. (2006): Statistical Methods in the Atmospheric Sciences
+;                     Academic Press (2nd Edition)
+; Davis, J.C. (2002): Statistics and Data Analysis in Geology
+;                     Wiley (3rd Edition)   ; pgs 462-470 
+; A very readable discussion:
+; http://reliawiki.org/index.php/Multiple_Linear_Regression_Analysis
+; ---
+; Note: The dof can be a bit confusing. EG: Some use (N-M-1), others (N-M) 
+; ---
+;
+local dimXP, N, NP, NY, M, T, Y, X, b, B                 \ ; local is
     , Yavg, Yvar, Ystd, Xavg, Xvar, Xstd, Yest, n, m     \ ; not necessary
     , Yres, SST, SSE, SSR, MST, MSE, MSR, SE, Frat       \
     , r2, ra, r, fuv, XXt, XXTi, varcovx, df, stderr, tval, pval \
     , opt_wm, fmt_XXt, fmt_XXti, fmt_covx, opt_pd, fmt_data
 begin
 
-       dimd    = dimsizes(data)
-       N       = dimd(0)              ; number of rows     
-       ncol    = dimd(1)              ; number of columns  
-       NP      = ncol-1               ; number of predictor variables  
+       dimXP   = dimsizes(XP)
+       N       = dimXP(0)              ; number of rows (     
+       NP      = dimXP(1)              ; number of columns ( predictor variables)   
+       NY      = dimsizes(Y)
 
-       M       = NP+1                 ; extra column for augmented matrix
-       MP1     = M+1                  ; used later
+       if (NY.NE.N) then               ; error check
+           print("reg_multlin_stats: number of rows of Y and XP  must match")
+           print("                   NY="+NY+"  NXP="+N           )
+           exit
+       end if
 
        if (opt .and. isatt(opt,"print_data") .and. opt@print_data) then
            print(" ")
            opt_pd = True
-           opt_pd@title  = "----- reg_multlin_driver: data -----"
-           fmt_data = "f11.2"
+           opt_pd@title  = "----- reg_multlin_stats: Y, XP -----"
+           data       = new( (/N,NP+1/), typeof(Y))
+           data(:,0)  = Y
+           data(:,1:) = XP
+           fmt_data   = "f11.2"
            if (isatt(opt,"fmt_data")) then
-               fmt_data  = opt@fmt_data
+               fmt_data  = opt@fmt_data        ; eg: "f8.3", "e13.5",....
            end if
-           write_matrix (data, ncol+fmt_data , opt_pd)
+           write_matrix (data, (NP+1)+fmt_data , opt_pd)
+           print(" ")
+           delete(data)        ; not needed
        end if
        
-; Create the necessary arrays. X is "design matrix"  
+; Create the necessary arrays. X is a "design matrix"  
+;       http://en.wikipedia.org/wiki/Design_matrix
 ;
-; Most multiple regression models include a constant term (augment).
+; Most multiple regression models include a constant term.
 ;   This ensures that the model will be "unbiased"
 ;   --i.e., the mean of the residuals will be exactly zero.
-;   (eg: Wilks, Academic Press, 2nd Ed.)
 
-       Y       = data(:,0)
-       X       = new ( (/M,N/) , typeof(data), getFillValue(data))
+       M       = NP+1                     ; extra column for augmented matrix
+
+       X       = new ( (/M,N/) , typeof(XP), getFillValue(XP))
        X(0,:)  = 1.0
-       do m=1,NP  
-          X(m,:)  = data(:,m)             ; m refers to variables
+       do m=0,NP-1  
+          X(m+1,:)  = XP(:,m)             ; m refers to predictor variables
        end do
 
-; Calculate the aregression coefficients: b->beta_hat
+; Calculate the partial regression coefficients: b->beta_hat
+;      b = (X'X)^-1 X'y  (theorettically)
                                          
        b       = reg_multlin(Y,X,False)   ; partial regression coef 
                                           ; unstandardized...depend on units
@@ -13676,22 +13693,23 @@ begin
 ; Assorted calculations
 
        Yavg    = avg(Y)
-       Yvar    = variance(Y)
+       Yvar    = variance(Y)         ; Unbiased estimate the variance 
        Ystd    = sqrt(Yvar)
 
-       Xavg    = new(M, typeof(b), "No_FillValue")
-       Xvar    = new(M, typeof(b), "No_FillValue")
-       Xstd    = new(M, typeof(b), "No_FillValue")
+       Xavg    = new(NP, typeof(b), "No_FillValue")  
+       Xvar    = new(NP, typeof(b), "No_FillValue")
+       Xstd    = new(NP, typeof(b), "No_FillValue")
 
-       bstd    = new(M, typeof(b), "No_FillValue") ; standardized regression coef
+       bstd    = new(M,  typeof(b), "No_FillValue") ; standardized regression coef
                                      ; describe what the partial regression coef. 
                                      ; would equal if all variables had the same 
                                      ; standard deviation.
-       do m=1,NP
-          Xavg(m-1)   = avg(X(m,:))
-          Xvar(m-1)   = variance(X(m,:))
-          Xstd(m-1)   = sqrt(Xvar(m-1))
-          bstd(m-1)    = b(m)*Xstd(m-1)/Ystd
+
+       do n=0,NP-1                 
+          Xavg(n)   = avg(XP(:,n))              ; =avg(X(n+1,:))
+          Xvar(n)   = variance(XP(:,n))         ; =variance(X(n+1,:))
+          Xstd(n)   = sqrt(Xvar(n))
+          bstd(n+1) = b(n+1)*Xstd(n)/Ystd       ; don't do b(0)
        end do
 
 ; Calculate model estimates: Yest = b(0) + b(1)*   + b(2)* + .....
@@ -13701,24 +13719,35 @@ begin
           Yest(n) = b(0) + sum(b(1:)*X(1:,n))   ; array syntax 
        end do
 
-; ANOVA table info: 
-;       sums of squares , degrees of freedom, mean squares, F statistic
+; ANOVA table info. (Eg, Wilks pg 185 & pg 197)
+;       Sums of squares , degrees of freedom, mean squares, F statistic
+;       Other statistics are also calculated.
+;
+; http://reliawiki.org/index.php/ANOVA_Calculations_in_Multiple_Linear_Regression
+;        Mean squares are obtained by dividing the sum of squares 
+;        with their associated degrees of freedom. 
+;        That said: There seems to be slightly differing dof.
+
+       dof  = N-M                  ; match 'R'
+       if (opt .and. isatt(opt, "alt_dof") .and. opt@alt_dof) then
+            dof  = N-M-1           ; Thought this would be correcty
+       end if
 
        Yres = Yest-Y               ; residuals (array operation)
 
                                    ; SS ==> Sum of Squares 
        SST  = sum((Y-Yavg)^2)      ; total SS      [dof=N-1]
+       SSR  = sum((Yest-Yavg)^2)   ; regression SS [dof=M] ; (aka: model explained SS=>SSM)
        SSE  = sum(Yres^2)          ; residual SS   [dof=N-M-1]
-       SSR  = sum((Yest-Yavg)^2)   ; regression SS [dof=M]
-                                   ; (aka:explained SS)
-
-       MST  = SST/(N-1)
-       MSE  = SSE/(N-M)            ; (N-M-1) dof 
-       MSR  = SSR/M
+ 
+       MST  = SST/(N-1)            ; Mean SST      [dof=N-1]
+       MSR  = SSR/M                ; Mean SSR      [dof=M  ]
+       MSE  = SSE/dof              ; Mean SSE      [dof-(N-M) or (N-M-1)]
 
        RSE  = sqrt(MSE)            ; residual standard error
                                    
-       Frat = MSR/MSE              ; dof (M,N-M-1): F-Test is an overall (global) 
+       Frat = MSR/MSE              ; R dof=(M,N-M): others (M,N-M-1) 
+                                   ; F-Test is an overall (global) 
                                    ; test of the model’s fit. If at least one
                                    ; variable has a significant coefficient, then 
                                    ; the model fit should be significant.
@@ -13729,7 +13758,7 @@ begin
                                    ;      of the dependent variable.
                                    ; biased high, particularly for small N
 
-       ra   = r2-(1-r2)*M/tofloat(N-M-1) ; adjusted r2... better for small N
+       ra   = r2-(1-r2)*M/tofloat(dof)   ; adjusted r2... better for small N
        r    = sqrt(r2)             ; multiple (overall) correlation
        fuv  = 1.0-r2               ; fraction of variance *unexplained* 
 
@@ -13742,11 +13771,13 @@ begin
 
        if (opt .and. isatt(opt,"debug") .and. opt@debug) then
            print(" ")
+           print("-----  DEBUG ---------")
+           print(" ")
            opt_wm = True
            opt_wm@title  = "-----   XXt  ---------"
-           fmt_XXt = "f11.2"
+           fmt_XXt = "f11.2"                     
            if (isatt(opt,"fmt_XXt")) then
-               fmt_XXt  = opt@fmt_XXt
+               fmt_XXt  = opt@fmt_XXt            ; "f8.2", "f12.4", "e13.5", ...
            end if
            write_matrix (XXt, M+fmt_XXt , opt_wm)
 
@@ -13781,8 +13812,8 @@ begin
 
        if (opt .and. isatt(opt,"print_stats") .and. opt@print_stats) then
            print(" ")
-
            print("------- ANOVA information-------- ")
+           print(" ")
            print("SST="+SST+"  SSR="+SSR+"  SSE="+SSE)
            print("MST="+MST+"  MSR="+MSR+"  MSE="+MSE+" RSE="+RSE)
            print("F-statistic="+Frat +" dof=("+M+","+(N-M-1)+")")
@@ -13800,27 +13831,35 @@ begin
        b@model     = "Yhat = b(0) + b(1)*X1 + b(2)*X2 + ...+b(M)*XM"
 
        b@N     = N
+       b@NP    = NP
        b@M     = M
        b@bstd  = bstd
 
        b@SST   = SST
        b@SSE   = SSE
        b@SSR   = SSR
+
        b@MST   = MST
        b@MSE   = MSE
+       b@MSE_dof = dof 
        b@MSR   = MSR
+
        b@RSE   = RSE
-       b@SE_dof= N-M-1
+       b@RSE_dof= N-M-1
        
        b@F     = Frat
-       b@F_dof = (/M,N-M-1/)
+       b@F_dof = (/M,dof/)             ; R uses this
 
-       b@r2    = r2
-       b@r     = r
-       b@ra    = ra
+       df1      = b@F_dof(0)
+       df2      = b@F_dof(1)
+       b@F_pval = ftest(MSR, df1+1, MSE, df2+1, 0)
 
-       b@fuv   = fuv
-       b@Yest  = Yest
+       b@r2     = r2
+       b@r      = r
+       b@ra     = ra
+
+       b@fuv    = fuv
+       b@Yest   = Yest
 
        b@stderr = stderr
        b@tval   = tval 
