@@ -78,7 +78,6 @@
 #include "mpi_181_gtb.h"
 #include "mpi_199_gtb.h"
 
-#define NCL_GRIB_CACHE_SIZE  150
 /* 
  * These are the codes in ON388 - Table 4 - for time units arranged in order from 
  * short to long duration. The convert table below is the conversion from
@@ -270,14 +269,11 @@ GribRecordInqRec *current_rec;
         int tg;
         void *val;
         int nvar_dims;
+	int cache_size = MAX(1,(int)(therec->options[GRIB_CACHE_SIZE_OPT].values));
 
         thelist = therec->grib_grid_cache;
         nvar_dims = step->var_info.num_dimensions;
         while(thelist != NULL) {
-		/*      
-                if((thelist->grid_number == step->grid_number)&&(thelist->has_gds ==step->has_gds)
-		   &&(thelist->grid_gds_tbl_index == step->grid_gds_tbl_index)) {
-		*/
                 if (step->var_info.doff == 2) {
                         if (thelist->n_dims != 3 ||
                             thelist->dim_ids[1] != step->var_info.file_dim_num[nvar_dims-2] ||
@@ -293,17 +289,27 @@ GribRecordInqRec *current_rec;
 			continue;
                 }
 
-                if(thelist->n_entries == NCL_GRIB_CACHE_SIZE) {
-                        tmp = thelist->tail;
-                        tmp->rec->the_dat = NULL;
-                        tmp->rec = current_rec;
-                        tmp->prev->next = NULL;
-                        thelist->tail = tmp->prev;
-                        tmp->prev = NULL;
-                        tmp->next = thelist->thelist;
-                        tmp->next->prev = tmp;
-                        thelist->thelist = tmp;
-                        return(tmp->thevalue);
+		while (thelist->n_entries > cache_size) {
+			tmp = thelist->tail;
+			thelist->tail = tmp->prev;
+			if (thelist->tail)
+				thelist->tail->next = NULL;
+			NclFree(tmp);
+			thelist->n_entries--;
+		}
+		if(thelist->n_entries == cache_size) {
+			tmp = thelist->tail;
+			tmp->rec->the_dat = NULL;
+			tmp->rec = current_rec;
+			if (tmp->prev) {
+				tmp->prev->next = NULL;
+				thelist->tail = tmp->prev;
+				tmp->prev = NULL;
+				tmp->next = thelist->thelist;
+				tmp->next->prev = tmp;
+				thelist->thelist = tmp;
+			}
+			return(tmp->thevalue);
                 }
                 if(thelist->n_entries == 0) {
                         thelist->thelist = NclMalloc(sizeof(NclGribCacheRec));
@@ -3366,16 +3372,16 @@ GribFileRecord *therec;
 
 				sprintf(name_buffer,"%s%s",buffer,"_l1");
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				if(i < sizeof(level_index)/sizeof(int)) {
-					*tmp_string = NrmStringToQuark(level_units_str[i]);
+				if(grib_rec->level_index != -1) {
+					*tmp_string = NrmStringToQuark(level_units_str[grib_rec->level_index]);
 				} else {
 					*tmp_string = NrmStringToQuark("unknown");
 				}
 				GribPushAtt(&att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
 
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				if(i < sizeof(level_index)/sizeof(int)) {
-					*tmp_string = NrmStringToQuark(level_str_long_name[i]);
+				if(grib_rec->level_index != -1) {
+					*tmp_string = NrmStringToQuark(level_str_long_name[grib_rec->level_index]);
 				} else {
 					*tmp_string = NrmStringToQuark("unknown");
 				}
@@ -6653,6 +6659,10 @@ GribFileRecord *tmp;
 	options[GRIB_TIME_PERIOD_SUFFIX_OPT].n_values = 1;
 	options[GRIB_TIME_PERIOD_SUFFIX_OPT].values = (void *) 1;
 
+	options[GRIB_CACHE_SIZE_OPT].data_type = NCL_int;
+	options[GRIB_CACHE_SIZE_OPT].n_values = 1;
+	options[GRIB_CACHE_SIZE_OPT].values = (void *) 0;
+
 	tmp->options = options;
 	return 1;
 }
@@ -8789,6 +8799,9 @@ static NhlErrorTypes GribSetOption
 	}
 	if (option ==  NrmStringToQuark("timeperiodsuffix")) {
 		rec->options[GRIB_TIME_PERIOD_SUFFIX_OPT].values = (void*) *(int *)values;
+	}
+	if (option ==  NrmStringToQuark("cachesize")) {
+		rec->options[GRIB_CACHE_SIZE_OPT].values = (void*) *(int *)values;
 	}
 	
 	return NhlNOERROR;

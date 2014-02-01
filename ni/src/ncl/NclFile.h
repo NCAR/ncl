@@ -338,7 +338,8 @@ typedef enum {
 	Ncl_SINGLE_ELEMENT_DIMENSIONS,
 	Ncl_TIME_PERIOD_SUFFIX,
 	Ncl_ADVANCED_FILE_STRUCTURE,
-	Ncl_RECORD_MARKER_SIZE
+	Ncl_RECORD_MARKER_SIZE,
+	Ncl_GRIB_CACHE_SIZE
 } NclFileOptionValues;
 
 typedef struct _NclFileClassPart {

@@ -47,7 +47,6 @@ g2codeTable *ct
 #endif
 );
 
-# define    NCL_GRIB_CACHE_SIZE     150
 #define GRIB2_MISSING_LEVEL_VAL     -9999.0
 
 static void *vbuf;
@@ -2936,6 +2935,7 @@ int* nrotatts;
 
 	return;
 }
+
 
 static void _g2NewGridCache
 #if NhlNeedProto
@@ -8469,6 +8469,10 @@ static int g2InitializeOptions
     g2options[GRIB_TIME_PERIOD_SUFFIX_OPT].n_values = 1;
     g2options[GRIB_TIME_PERIOD_SUFFIX_OPT].values = (void *) 1;
 
+    g2options[GRIB_CACHE_SIZE_OPT].data_type = NCL_int;
+    g2options[GRIB_CACHE_SIZE_OPT].n_values = 1;
+    g2options[GRIB_CACHE_SIZE_OPT].values = (void *) 0;
+
     g2tmp->options = g2options;
     return 1;
 }
@@ -11605,7 +11609,7 @@ static void Grib2FreeFileRec
 			_NclDestroyObj((NclObj)thelist->float_missing_rec);
 		}
 		ctmp = thelist->thelist;
-		while(ctmp!=NULL) {	
+		while(ctmp!=NULL) {
 			ctmp0 = ctmp;
 			ctmp = ctmp->next;
 			NclFree(ctmp0);
@@ -12149,19 +12153,31 @@ Grib2RecordInqRec *current_rec;
 	int i;
 	int tg;
 	void *val;
+	int cache_size = MAX(1,(int)(therec->options[GRIB_CACHE_SIZE_OPT].values));
+
 	thelist = therec->grib_grid_cache;
 	while(thelist != NULL) {
 		if (thelist->grid_index == step->grid_index) {
-			if(thelist->n_entries == NCL_GRIB_CACHE_SIZE) {
+			while (thelist->n_entries > cache_size) {
+				tmp = thelist->tail;
+				thelist->tail = tmp->prev;
+				if (thelist->tail)
+					thelist->tail->next = NULL;
+				NclFree(tmp);
+				thelist->n_entries--;
+			}
+			if(thelist->n_entries == cache_size) {
 				tmp = thelist->tail;
 				tmp->rec->the_dat = NULL;
 				tmp->rec = current_rec;
-				tmp->prev->next = NULL;
-				thelist->tail = tmp->prev;
-				tmp->prev = NULL;
-				tmp->next = thelist->thelist;
-				tmp->next->prev = tmp;
-				thelist->thelist = tmp;
+				if (tmp->prev) {
+					tmp->prev->next = NULL;
+					thelist->tail = tmp->prev;
+					tmp->prev = NULL;
+					tmp->next = thelist->thelist;
+					tmp->next->prev = tmp;
+					thelist->thelist = tmp;
+				}
 				return(tmp->thevalue);
 			} 
 			if(thelist->n_entries == 0) {
@@ -13103,6 +13119,9 @@ static NhlErrorTypes Grib2SetOption
 	}
 	if (option ==  NrmStringToQuark("timeperiodsuffix")) {
 		rec->options[GRIB_TIME_PERIOD_SUFFIX_OPT].values = (void*) *(int *)values;
+	}
+	if (option ==  NrmStringToQuark("cachesize")) {
+		rec->options[GRIB_CACHE_SIZE_OPT].values = (void*) *(int *)values;
 	}
 	
 	return NhlNOERROR;

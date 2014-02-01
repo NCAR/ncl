@@ -1560,6 +1560,7 @@ NclMultiDValData value;
 				found = 1;
 				break;
 			}
+#if 0
 			else if (! (_NclGetFormatFuncs(format) &&
 			       _NclGetFormatFuncs(format) == _NclGetFormatFuncs(fcp->options[i].format)) ) {
 				if (_NclGetLower(format) == NrmStringToQuark("shp"))
@@ -1574,6 +1575,7 @@ NclMultiDValData value;
 					break;
 				}
 			}
+#endif
 		}
 		if (found) {
 			if (! value) {
@@ -1730,7 +1732,8 @@ NclFileOption file_options[] = {
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB single element dimensions */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB time period suffix */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },   /* advanced file-structure */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 4, NULL }  /* Fortran binary file record marker size */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 4, NULL },  /* Fortran binary file record marker size */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },   /* GRIB cache size */
 };
 
 NclFileClassRec nclFileClassRec = {
@@ -2229,6 +2232,21 @@ NhlErrorTypes InitializeFileOptions(NclFileClassPart *fcp)
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
 
+	/*cache size */
+	fcp->options[Ncl_GRIB_CACHE_SIZE].format = NrmStringToQuark("grb");
+	fcp->options[Ncl_GRIB_CACHE_SIZE].name = NrmStringToQuark("cachesize");
+	len_dims = 1;
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 0;
+	fcp->options[Ncl_GRIB_CACHE_SIZE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 0;
+	fcp->options[Ncl_GRIB_CACHE_SIZE].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	fcp->options[Ncl_GRIB_CACHE_SIZE].valid_values = NULL;
 	/* End of options */
 
 	return ret;

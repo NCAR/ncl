@@ -273,7 +273,8 @@ struct _GribAttInqRec {
 #define GRIB_PRINT_RECORD_INFO_OPT 3
 #define GRIB_SINGLE_ELEMENT_DIMENSIONS_OPT 4
 #define GRIB_TIME_PERIOD_SUFFIX_OPT 5
-#define GRIB_NUM_OPTIONS 6
+#define GRIB_CACHE_SIZE_OPT 6
+#define GRIB_NUM_OPTIONS 7
 
 #define GRIB_No_Dims 0
 #define GRIB_All_Dims  0xffffffff

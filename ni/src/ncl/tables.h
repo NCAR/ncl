@@ -393,8 +393,8 @@ char *level_str[] = {
 	"SPDL",	/*115*/
 	"SPDY", /*116*/
 	"PVL", /*117*/
-	"ETAL", /*119*/
-	"ETAY", /*120*/
+	"NAML", /*119*/
+	"NAMY", /*120*/
 	"IBYH", 	/*121*/
 	"HGLH",	/*125*/
 	"SGYH", /*128*/
@@ -473,8 +473,8 @@ char *level_units_str[] = {
 	"hPa", /*"SPDL",	115*/
 	"hPa", /*"SPDY", 116*/
 	"10^-6Km^2/kgs", /*"PVL", 117*/
-	"ETA value", /*"ETAL", 119*/
-	"ETA value", /*"ETAY", 120*/
+	"NAM value in 1/10000", /*"NAML", 119*/
+	"NAM value in 1/100", /*"NAMY", 120*/
 	"hPa", /*"IBYH", 	121*/
 	"cm", /*"HGLH",	125*/
 	"1.1 - sigma", /*"SGYH", 128*/
@@ -553,8 +553,8 @@ char *level_str_long_name[] = {
 	"level at specified pressure difference from ground to level",	/*115*/
 	"layer between two levels at specified pressure difference from ground to level",	/*116*/
 	"potential vorticity (pv) level",	/*117*/
-	"ETA level",	/*119*/
-	"layer between two ETA levels",	/*120*/
+	"NAM level",	/*119*/
+	"layer between two NAM levels",	/*120*/
 	"layer between two isobaric surfaces (high precision)",	/*121*/
 	"height level above ground (high precision)",	/*125*/
 	"layer between two sigma levels (high precision)",	/*128*/
