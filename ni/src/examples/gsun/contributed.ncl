@@ -13618,23 +13618,34 @@ begin
 end
 ;============================================
 undef ("reg_multlin_stats")
-function reg_multlin_stats(Y[*]:numeric, XP[*][*]:numeric, opt)
+function reg_multlin_stats(Y[*]:numeric, XP:numeric, opt)
 ;
-; Same interface as builtin 'reg_multlin'
-; http://www.ncl.ucar.edu/Document/Functions/Built-in/reg_multlin.shtml
+; Nomenclature:
+; Y     - dependent variable (size NY)
+;         missing values (_FillValue) are not allowed.
+; XP    - one [*] or more [*][*] independent variables.
+;         Missing values (_FillValue) are not allowed.
+;         The size of the leftmost dimension of XP must be the
+;         same size as Y[*]. The rightmost dimension for [*][*]
+;         contains the independent variables.
+; opt   - options [type logical: ie, True or False]
+;         opt = False              .... no options               
+;         opt = True
+;         opr@print_data = True    .... print input Y and XP in table form
+;         opr@print_anova= True    .... print ANOVA information
 ;
 ; See: 
 ; Wilks, D.S. (2006): Statistical Methods in the Atmospheric Sciences
 ;                     Academic Press (2nd Edition)
 ; Davis, J.C. (2002): Statistics and Data Analysis in Geology
 ;                     Wiley (3rd Edition)   ; pgs 462-470 
-; A very readable discussion:
+;
+; Very readable discussions:
 ; http://reliawiki.org/index.php/Multiple_Linear_Regression_Analysis
-; ---
-; Note: The dof can be a bit confusing. EG: Some use (N-M-1), others (N-M) 
+; http://homepages.rpi.edu/~tealj2/stat03.pdf
 ; ---
 ;
-local dimXP, N, NP, NY, M, T, Y, X, b, B                 \ ; local is
+local dimXP, N, NP, NY, M, T, Y, X, b, B, rankXP         \ ; local is
     , Yavg, Yvar, Ystd, Xavg, Xvar, Xstd, Yest, n, m     \ ; not necessary
     , Yres, SST, SSE, SSR, MST, MSE, MSR, SE, Frat       \
     , r2, ra, r, fuv, XXt, XXTi, varcovx, df, stderr, tval, pval \
@@ -13642,14 +13653,40 @@ local dimXP, N, NP, NY, M, T, Y, X, b, B                 \ ; local is
 begin
 
        dimXP   = dimsizes(XP)
-       N       = dimXP(0)              ; number of rows ('observations')    
-       NP      = dimXP(1)              ; number predictor variables   
-       NY      = dimsizes(Y)
+       NX      = dimXP(0)              ; number of rows ('observations')    
+       N       = dimsizes(Y)
 
-       if (NY.NE.N) then               ; error check
+       rankXP  = dimsizes(dimXP)
+
+; error checks on input
+
+       if (N.NE.NX) then              
            print("reg_multlin_stats: number of rows of Y and XP  must match")
-           print("                   NY="+NY+"  NXP="+N           )
+           print("                   NY="+N +"  NXP="+NX           )
            exit
+       end if
+
+       if (rankXP.gt.2) then
+           print("reg_multlin_stats: rank of XP > 2: rankXP="+rankXP)
+           exit
+       end if
+
+       if (isatt(Y,"_FillValue")  .and. any(ismissing(Y))) then
+           print("reg_multlin_stats: Y has missing values. Not allowed!")
+           exit
+       end if
+
+       if (isatt(XP,"_FillValue") .and. any(ismissing(XP))) then
+           print("reg_multlin_stats: XP has missing values. Not allowed!")
+           exit
+       end if
+           
+; input OK: onward
+
+       if (rankXP.eq.2) then
+           NP  = dimXP(1)              ; number predictor variables   
+       else
+           NP  = 1                     ; one predictor
        end if
 
        if (opt .and. isatt(opt,"print_data") .and. opt@print_data) then
@@ -13657,8 +13694,14 @@ begin
            opt_pd = True
            opt_pd@title  = "----- reg_multlin_stats: Y, XP -----"
            data       = new( (/N,NP+1/), typeof(Y))
-           data(:,0)  = Y
-           data(:,1:) = XP
+           data(:,0)  = (/ Y /)
+
+           if (NP.eq.1) then
+               data(:,1)  = (/ XP /)
+           else
+               data(:,1:) = (/ XP /)
+           end if
+
            fmt_data   = "f11.2"
            if (isatt(opt,"fmt_data")) then
                fmt_data  = opt@fmt_data        ; eg: "f8.3", "e13.5",....
@@ -13676,15 +13719,21 @@ begin
 ;   --i.e., the mean of the residuals will be exactly zero.
 
        M       = NP+1                     ; extra column for design matrix
-
+                                          ; required ordering for reg_multlin 
        X       = new ( (/M,N/) , typeof(XP), getFillValue(XP))
        X(0,:)  = 1.0
-       do m=0,NP-1  
-          X(m+1,:)  = XP(:,m)             ; m refers to predictor variables
-       end do
+
+       if (NP.eq.1) then
+           X(1,:)  = XP                   ; one predictor
+       else
+           do m=0,NP-1  
+              X(m+1,:)  = XP(:,m)         ; m refers to predictor variables
+           end do
+       end if
 
 ; Calculate the partial regression coefficients: b->beta_hat
-;      b = (X'X)^-1 X'y  (theorettically)
+;      b = (X'X)^-1 X'y  (theoretically)
+; http://www.ncl.ucar.edu/Document/Functions/Built-in/reg_multlin.shtml
                                          
        b       = reg_multlin(Y,X,False)   ; partial regression coef 
                                           ; unstandardized...depend on units
@@ -13705,8 +13754,8 @@ begin
                                      ; would equal if all variables had the same 
                                      ; standard deviation.
        do n=0,NP-1                 
-          Xavg(n)   = avg(XP(:,n))              ; =avg(X(n+1,:))
-          Xvar(n)   = variance(XP(:,n))         ; =variance(X(n+1,:))
+          Xavg(n)   = avg(X(n+1,:))
+          Xvar(n)   = variance(X(n+1,:))
           Xstd(n)   = sqrt(Xvar(n))
           bstd(n+1) = b(n+1)*Xstd(n)/Ystd       ; don't do b(0)
        end do
@@ -13741,16 +13790,20 @@ begin
 
        RSE  = sqrt(MSE)            ; residual standard error
                                    
-       Frat = MSR/MSE              ; R dof=(M,N-M): others (M,N-M-1) 
-                                   ; F-Test is an overall (global) 
-                                   ; test of the model’s fit. If at least one
-                                   ; variable has a significant coefficient, then 
-                                   ; the model fit should be significant.
-
-       r2   = SSR/SST              ; r2 = square of the Pearson correlation 
+       Frat = MSR/MSE              ; R dof=(M,N-NP-1) 
+                                   ; F-Test is an overall (global) test of the model’s fit.
+                                   ; If at least one variable has a significant coefficient,
+                                   ; then the model fit should be significant.
+                                   ; The F-statistic might be interpreted as the variation 
+                                   ; explained by the regression relative to the variation
+                                   ; not explained by the regression.
+                                   
+       r2   = SSR/SST              ; r2 = coefficient of determination. It is
+                                   ;      the square of the Pearson correlation 
                                    ;      coefficient between the observed 
                                    ;      and modeled (predicted) data values
-                                   ;      of the dependent variable.
+                                   ;      of the dependent variable. It is
+                                   ;      another measure of 'goodness of fit.'
                                    ; biased high, particularly for small N
 
        r2a  = r2-(1-r2)*NP/tofloat(dof)   ; adjusted r2... better for small N
@@ -13764,7 +13817,7 @@ begin
        varcovx = MSE*XXti          ; variance-covariance matrix
                                    ; of estimated regression coefficients
 
-       if (opt .and. isatt(opt,"debug") .and. opt@debug) then
+       if (opt .and. isatt(opt,"debug") .and. opt@debug) then ; used for debugging only
            print(" ")
            print("-----  DEBUG ---------")
            print(" ")
@@ -13797,7 +13850,6 @@ begin
        tval   = new( M, typeof(Y))
        pval   = new( M, typeof(Y))
 
-      ;df  = N-M  
        df  = N-NP
        
        do m=0,M-1
@@ -13825,12 +13877,12 @@ begin
        b@long_name = "multiple regression coefficients"
        b@model     = "Yest = b(0) + b(1)*X1 + b(2)*X2 + ...+b(M)*XM"
 
-       b@N     = N
-       b@NP    = NP
-       b@M     = M              ; design matrix
-       b@bstd  = bstd
+       b@N     = N              ; # of 'observations'
+       b@NP    = NP             ; # of predictors
+       b@M     = M              ; design matrix size
+       b@bstd  = bstd           ; standardized coefficients
 
-       b@SST   = SST
+       b@SST   = SST            ; [1]
        b@SSE   = SSE
        b@SSR   = SSR
 
@@ -13839,26 +13891,32 @@ begin
        b@MSE_dof = dof 
        b@MSR   = MSR
 
-       b@RSE   = RSE
-       b@RSE_dof= N-M-1
+       b@RSE   = RSE            ; [1]
+       b@RSE_dof= N-M-1         ; [1]
        
-       b@F     = Frat
-       b@F_dof = (/NP,dof/)  
+       b@F     = Frat           ; [1]
+       b@F_dof = (/NP,dof/)     ; [2]
 
        df1      = b@F_dof(0)
        df2      = b@F_dof(1)
-       b@F_pval = ftest(MSR, df1+1, MSE, df2+1, 0)*0.5
+       b@F_pval = ftest(MSR, df1+1, MSE, df2+1, 0)*0.5   ; [1]
 
-       b@r2     = r2
-       b@r      = r
-       b@r2a    = r2a
+       b@r2     = r2            ; [1]
+       b@r      = r             ; [1]
+       b@r2a    = r2a           ; [1]
 
        b@fuv    = fuv
-       b@Yest   = Yest
 
-       b@stderr = stderr
-       b@tval   = tval 
-       b@pval   = pval
+       b@Yest   = Yest          ; [NY]
+       b@Yavg   = Yavg          ; [1]
+       b@Ystd   = Ystd          ; [1]
+
+       b@Xavg   = Xavg          ; [1]
+       b@Xstd   = Xstd          ; [1]
+
+       b@stderr = stderr        ; [M]
+       b@tval   = tval          ; [M]
+       b@pval   = pval          ; [M]
 
        return(b)
 end
