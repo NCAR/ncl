@@ -621,9 +621,7 @@ NhlErrorTypes _Nclstr_split_csv(void)
         int len_delim = strlen(tmp_delim);
         int len_str = 1 + strlen((char *) NrmQuarkToString(strs[0]));
         int max_str_len = len_str;
-        int cur_pos = 0;
-        char *cur_str = NULL;
-        char *new_str = NULL;
+        int pre_pos = -1;
         char prt_str[4096];
 
         int in_dq = 0;
@@ -644,73 +642,88 @@ NhlErrorTypes _Nclstr_split_csv(void)
 
         strcpy(tmp_str, (char *) NrmQuarkToString(strs[0]));
 
-        cur_str = tmp_str;
-        new_str = tmp_str;
         num_fields = 0;
 
       /*
        *fprintf(stderr, "\n\nfile: %s, line: %d\n", __FILE__, __LINE__);
        *fprintf(stderr, "\toption = %d\n", option);
        *fprintf(stderr, "\tlen_str = %d, len_delim = %d\n", len_str, len_delim);
-       *fprintf(stderr, "\tthe string: <%s>, the delimitor: <%s>\n\n",
-       *                   tmp_str, tmp_delim);
+       *fprintf(stderr, "\tthe string: <%s>\n", tmp_str);
+       *fprintf(stderr, "\tthe delimitor: <%s>\n\n", tmp_delim);
        */
         
         n = 0;
-        cur_pos = 0;
+        pre_pos = 0;
         in_dq = 0;
         in_sq = 0;
 
+      /*
+       *fprintf(stderr, "Input string: <%s>\n", tmp_str);
+       */
+
         while(n < len_str)
         {
-            if('"' == cur_str[0])
-            {
-                in_dq ++;
-                if(in_dq > 1)
-                    in_dq = 0;
-                if(option)
-                    in_dq = 0;
-            }
+          /*
+           *fprintf(stderr, "\tcurrent string %d: <%s>\n", n, tmp_str+n);
+           *fprintf(stderr, "\tstrncmp(<%s>, <%s>, %d) = %d\n",
+           *                   tmp_str+n, tmp_delim, len_delim,
+           *                   strncmp(tmp_str+n, tmp_delim, len_delim));
+           */
 
-            if('\'' == cur_str[0])
+            if(0 == strncmp(tmp_str+n, tmp_delim, len_delim))
             {
-                in_sq ++;
-                if(in_sq > 1)
-                    in_sq = 0;
-                if(option)
-                    in_sq = 0;
-            }
-
-            if((0 == strncmp(cur_str, tmp_delim, len_delim)) &&
-               (! in_sq) && (! in_dq))
-            {
-                if(cur_pos)
+                if(n - pre_pos)
                 {
-                    strncpy(prt_str, new_str, cur_pos);
-                    prt_str[cur_pos] = '\0';
+                    strncpy(prt_str, tmp_str+pre_pos, n - pre_pos);
+                    prt_str[n-pre_pos] = '\0';
+#if 0
                   /*
-                   *fprintf(stderr, "\tnew string %d: <%s>\n", num_fields, prt_str);
                    */
+                    fprintf(stderr, "\tnew string %d: <%s>\n", num_fields, prt_str);
                 }
                 else
                 {
                   /*
-                   *fprintf(stderr, "\tnew string %d is a missing value.\n", num_fields);
                    */
+                    fprintf(stderr, "\tnew string %d: <missing>\n", num_fields);
+#endif
                 }
-                    
-                num_fields ++;
 
-                new_str = cur_str + len_delim;
-                cur_str = new_str;
-                cur_pos = 0;
+                if(in_dq || in_sq)
+                {
+                   ++n;
+                   continue;
+                }
+
+                ++num_fields;
+
                 n += len_delim;
+
+                pre_pos = n;
             }
             else
             {
-                cur_str += 1;
-                cur_pos ++;
-                n ++;
+                if('"' == tmp_str[n])
+                {
+                    if(in_dq)
+                        in_dq = 0;
+                    else
+                        in_dq = 1;
+                    if(0 == option)
+                        in_dq = 0;
+                }
+
+                if('\'' == tmp_str[n])
+                {
+                    if(in_sq)
+                        in_sq = 0;
+                    else
+                        in_sq = 1;
+                    if(0 == option)
+                        in_sq = 0;
+                }
+
+                ++n;
             }
         }
 
@@ -759,64 +772,39 @@ loop_through_strings:
            *fprintf(stderr, "Input string %d: <%s>\n", i, tmp_str);
            */
 
-            cur_str = tmp_str;
-            new_str = tmp_str;
             num_fields = 0;
 
             m = i * max_fields;
             n = 0;
-            cur_pos = 0;
+            pre_pos = 0;
             in_dq = 0;
             in_sq = 0;
 
             while(n < len_str)
             {
-                if('"' == cur_str[0])
+                if(0 == strncmp(tmp_str+n, tmp_delim, len_delim))
                 {
-                    in_dq ++;
-                    if(in_dq > 1)
-                        in_dq = 0;
-                    if(option)
-                        in_dq = 0;
-                }
-
-                if('\'' == cur_str[0])
-                {
-                    in_sq ++;
-                    if(in_sq > 1)
-                        in_sq = 0;
-                    if(option)
-                        in_sq = 0;
-                }
-
-                if((0 == strncmp(cur_str, tmp_delim, len_delim)) &&
-                   (! in_sq) && (! in_dq))
-                {
-                    if(cur_pos)
+                    if(in_dq || in_sq)
                     {
-                        strncpy(prt_str, new_str, cur_pos);
-                        prt_str[cur_pos] = '\0';
+                       ++n;
+                       continue;
+                    }
 
-                        if(strlen(prt_str))
-                        {
-                            return_strs[m] = NrmStringToQuark(prt_str);
-                          /*
-                           *fprintf(stderr, "\tnew string %d: <%s>\n", m, prt_str);
-                           */
-                        }
-                        else
-                        {
-                            has_missing_ret = 1;
-                        }
+                    if(n - pre_pos)
+                    {
+                        strncpy(prt_str, tmp_str+pre_pos, n - pre_pos);
+                        prt_str[n-pre_pos] = '\0';
+
+                        return_strs[m] = NrmStringToQuark(prt_str);
                     }
                     else
                     {
                         has_missing_ret = 1;
                     }
 
-                    m ++;
+                    ++m;
                     
-                    num_fields ++;
+                    ++num_fields;
 
                     if(max_fields < num_fields)
                     {
@@ -824,31 +812,42 @@ loop_through_strings:
                         goto loop_through_strings;
                     }
 
-                    new_str = cur_str + len_delim;
-                    cur_str = new_str;
-                    cur_pos = 0;
                     n += len_delim;
+                    pre_pos = n;
                 }
                 else
                 {
-                    cur_str += 1;
-                    cur_pos ++;
-                    n ++;
+                    if('"' == tmp_str[n])
+                    {
+                        if(in_dq)
+                            in_dq = 0;
+                        else
+                            in_dq = 1;
+                        if(2 != option)
+                            in_dq = 0;
+                    }
+
+                    if('\'' == tmp_str[n])
+                    {
+                        if(in_sq)
+                            in_sq = 0;
+                        else
+                            in_sq = 1;
+                        if(1 != option)
+                            in_sq = 0;
+                    }
+
+                    ++n;
                 }
             }
 
-            if(strlen(new_str))
+            n = len_str - 1;
+            if(n - pre_pos)
             {
-                strcpy(prt_str, new_str);
+                strncpy(prt_str, tmp_str+pre_pos, n - pre_pos);
+                prt_str[n-pre_pos] = '\0';
+
                 return_strs[m] = NrmStringToQuark(prt_str);
-              /*
-               *fprintf(stderr, "\t\tnew string %d: <%s>\n", m, new_str);
-               *fprintf(stderr, "\t\tcur string %d: <%s>\n", cur_pos, cur_str);
-               */
-            }
-            else
-            {
-                has_missing_ret = 1;
             }
         }
 
