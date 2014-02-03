@@ -599,6 +599,11 @@ NhlErrorTypes _Nclstr_split_csv(void)
 
     option = in_option[0];
 
+    if(0 > option)
+        option = 0;
+    else if(3 < option)
+        option = 3;
+
     for(n = 0; n < ndim_strs; n++)
         total_in_strs *= dimsz_strs[n];
 
@@ -709,7 +714,7 @@ NhlErrorTypes _Nclstr_split_csv(void)
                         in_dq = 0;
                     else
                         in_dq = 1;
-                    if(0 == option)
+                    if(option%2)
                         in_dq = 0;
                 }
 
@@ -719,7 +724,7 @@ NhlErrorTypes _Nclstr_split_csv(void)
                         in_sq = 0;
                     else
                         in_sq = 1;
-                    if(0 == option)
+                    if(1 < option)
                         in_sq = 0;
                 }
 
@@ -823,7 +828,7 @@ loop_through_strings:
                             in_dq = 0;
                         else
                             in_dq = 1;
-                        if(2 != option)
+                        if(option%2)
                             in_dq = 0;
                     }
 
@@ -833,7 +838,7 @@ loop_through_strings:
                             in_sq = 0;
                         else
                             in_sq = 1;
-                        if(1 != option)
+                        if(1 < option)
                             in_sq = 0;
                     }
 
