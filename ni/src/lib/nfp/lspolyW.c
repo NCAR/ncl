@@ -282,8 +282,8 @@ NhlErrorTypes lspoly_W( void )
  * coordinate pair, set the weight to 0.0 for that pair. 
  */
     for(j = 0; j < npts; j++) {
-      if((tmp_x[j] == missing_dx.doubleval) || 
-         (tmp_y[j] == missing_dy.doubleval)) {
+      if((has_missing_x && tmp_x[j] == missing_dx.doubleval) || 
+         (has_missing_y && tmp_y[j] == missing_dy.doubleval)) {
         tmp_wgt[j] = 0.0;
       }
     }
@@ -589,8 +589,8 @@ NhlErrorTypes lspoly_n_W( void )
  * coordinate pair, set the weight to 0.0 for that pair. 
  */
       for(k = 0; k < npts; k++) {
-        if((tmp_x[k] == missing_dx.doubleval) || 
-           (tmp_y[k] == missing_dy.doubleval)) {
+        if((has_missing_x && tmp_x[k] == missing_dx.doubleval) || 
+           (has_missing_y && tmp_y[k] == missing_dy.doubleval)) {
           tmp_wgt[k] = 0.0;
         }
       }
@@ -900,8 +900,8 @@ NhlErrorTypes slatec_lspoly_W( void )
  * coordinate pair, set the weight to 0.0 for that pair. 
  */
     for(j = 0; j < npts; j++) {
-      if((tmp_x[j] == missing_dx.doubleval) || 
-         (tmp_y[j] == missing_dy.doubleval)) {
+      if((has_missing_x && tmp_x[j] == missing_dx.doubleval) || 
+         (has_missing_y && tmp_y[j] == missing_dy.doubleval)) {
         tmp_wgt[j] = 0.0;
       }
     }
@@ -1226,8 +1226,8 @@ NhlErrorTypes slatec_lspoly_n_W( void )
  * coordinate pair, set the weight to 0.0 for that pair. 
  */
       for(k = 0; k < npts; k++) {
-        if((tmp_x[k] == missing_dx.doubleval) || 
-           (tmp_y[k] == missing_dy.doubleval)) {
+        if((has_missing_x && tmp_x[k] == missing_dx.doubleval) || 
+           (has_missing_y && tmp_y[k] == missing_dy.doubleval)) {
           tmp_wgt[k] = 0.0;
         }
       }
