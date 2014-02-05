@@ -19331,6 +19331,19 @@ NhlErrorTypes sprinti_W( void )
 	  
   memset(format_buf,0,format_len);
   strncpy(format_buf,NrmQuarkToString(*format_string),format_len);
+
+#if 0
+/*Make sure having leading % in numerical type. Wei, Feb 15, 2014*/
+  pc_loc = strchr(format_buf,'%');
+  if(NULL == pc_loc)
+  {
+      memset(buffer,0,1024);
+      strcpy(buffer, "%");
+      strcat(buffer, format_buf);
+      strcpy(format_buf, buffer);
+      memset(buffer,0,1024);
+  }
+#endif
   
   pc_loc = format_buf;
   while ((pc_loc = strchr(pc_loc,'%'))) {
@@ -19341,7 +19354,12 @@ NhlErrorTypes sprinti_W( void )
 	  else 
 		  break;
   }
-  v_loc = strchr(pc_loc,'V');
+
+  if(NULL == pc_loc)
+      v_loc = NULL;
+  else
+      v_loc = strchr(pc_loc,'V');
+
   memset(format_tail,0,format_len);
   if (v_loc)
 	  strcpy(format_tail,v_loc + 1);
