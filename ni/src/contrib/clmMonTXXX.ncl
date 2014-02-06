@@ -16,7 +16,7 @@ begin
 
 ; This function will work only on arrays up to and including four dimensions.
  if(x_rank.gt.4)then
-   print("clmMonTXXX: ERROR: Expecting at most a 4D array!")
+   print("clmMonTXXX: Error: Expecting at most a 4D array!")
  end if
 
 ; Get the number of time steps.
@@ -24,7 +24,7 @@ begin
 
 ; If the number of time steps is not a multiple of 12, then emit an error.
  if(num_time%12.ne.0)then
-   print("clmMonTXXX: ERROR: The time dimension's length must be a multiple of 12!")
+   print("clmMonTXXX: Error: The time dimension's length must be a multiple of 12!")
    exit
  end if
 

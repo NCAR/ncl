@@ -18,13 +18,13 @@ begin
 
 ; This function will work only on arrays up to and including four dimensions.
  if(x_rank.gt.4.or.x_rank.gt.4)then
-   print("clmMonTXXX: ERROR: Expecting at most a 4D array!")
+   print("calcMonAnomTXXX: Error: Expecting at most a 4D array!")
  end if
 
 ; Check if the non-time dimensions are conformable.
  if(x_rank.ne.1)then
    if(.not.all(x_dims(1:).eq.x_clm_dims(1:)))then
-     print("calcMonAnomTXXX: ERROR: The input arrays' rightmost dimensions must be the same!")
+     print("calcMonAnomTXXX: Error: The input arrays' rightmost dimensions must be the same!")
      exit
    end if
  end if
