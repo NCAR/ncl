@@ -1,26 +1,49 @@
 C NCLFORTSTART
-      subroutine polft(n,x,y,w,maxdeg,ndeg,eps,r,ierr,work,coef
-     +                ,maxdeg1, lwork)
+      subroutine polft(n,x,y,w,xmsg,ymsg,maxdeg,ndeg,eps,r,ierr
+     +                ,work,coef,maxdeg1,lwork,xx,yy,ww)
       implicit none
-c                                                     ; input
+c                                                     ; INPUT
       integer n, maxdeg, maxdeg1, lwork
 ccccc double precision x(n), y(n),w(n),work(3*n+3*maxdeg+3),eps
-      double precision x(n), y(n),w(n),work(lwork),eps
-c                                                     ; output
+      double precision x(n), y(n),w(n),work(lwork),eps,xmsg,ymsg
+c                                                     ; temp work
+      double precision xx(n), yy(n), ww(n)
+c                                                     ; OUTPUT
       integer ndeg, ierr
       double precision r(n), coef(maxdeg1) 
 C NCLEND
+C                                                     ; LOCAL
+      integer i, nn
       double precision c0
 
-      call dpolft (n, x, y, w, maxdeg, ndeg, eps, r, ierr, work)
+c xx, yy, ww will hold non-missing values
 
+      nn = 0
+      do i=1,n
+         if (x(i).ne.xmsg .and. y(i).ne.ymsg) then
+             nn = nn+1
+             xx(nn) = x(i)
+             yy(nn) = y(i)
+             ww(nn) = w(i)
+         end if
+      end do
+ 
       c0 = 0.0
-      call dpcoef (maxdeg, c0, coef, work)
+      if (nn.gt.maxdeg) then
+          call dpolft (nn, xx, yy, ww, maxdeg, ndeg, eps, r, ierr
+     *                ,work,lwork)
+          call dpcoef (maxdeg, c0, coef, work, lwork, maxdeg1)
+      else
+          do i=1,maxdeg1
+             coef(i) = ymsg
+          end do
+      end if
 
       return
       end
 c ---------------------- SLATEC ----------------------------------
-      SUBROUTINE DPOLFT (N, X, Y, W, MAXDEG, NDEG, EPS, R, IERR, A)
+      SUBROUTINE DPOLFT (N, X, Y, W, MAXDEG, NDEG, EPS, R, IERR, A, LA)
+cDJS  SUBROUTINE DPOLFT (N, X, Y, W, MAXDEG, NDEG, EPS, R, IERR, A)
 C***BEGIN PROLOGUE  DPOLFT
 C***PURPOSE  Fit discrete data in a least squares sense by polynomials
 C            in one variable.
@@ -146,9 +169,11 @@ C   920527  Corrected erroneous statements in DESCRIPTION.  (WRB)
 C***END PROLOGUE  DPOLFT
       INTEGER I,IDEGF,IERR,J,JP1,JPAS,K1,K1PJ,K2,K2PJ,K3,K3PI,K4,
      * K4PI,K5,K5PI,KSIG,M,MAXDEG,MOP1,NDEG,NDER,NFAIL
+      INTEGER LA
       DOUBLE PRECISION TEMD1,TEMD2
-      DOUBLE PRECISION A(*),DEGF,DEN,EPS,ETST,F,FCRIT,R(*),SIG,SIGJ,
-     * SIGJM1,SIGPAS,TEMP,X(*),XM,Y(*),YP(1),W(*),W1,W11
+      DOUBLE PRECISION A(LA),DEGF,DEN,EPS,ETST,F,FCRIT,R(N),SIG,SIGJ,
+     * SIGJM1,SIGPAS,TEMP,X(N),XM,Y(N),YP(1),W(N),W1,W11
+cDJS  DOUBLE PRECISION A(*),DEGF,DEN,EPS,ETST,F,FCRIT,R(*),SIG,SIGJ,
 cDJS * SIGJM1,SIGPAS,TEMP,X(*),XM,Y(*),YP,W(*),W1,W11
       DOUBLE PRECISION CO(4,3)
       SAVE CO
@@ -531,7 +556,8 @@ cc   +   'REQUESTED IS NEGATIVE.', 2, 2)
       RETURN
       END
 C--------------------------------------------------------------------------
-      SUBROUTINE DPCOEF (L, C, TC, A)
+cDJS  SUBROUTINE DPCOEF (L, C, TC, A)
+      SUBROUTINE DPCOEF (L, C, TC, A, LA, LTC)
 C***BEGIN PROLOGUE  DPCOEF
 C***PURPOSE  Convert the DPOLFT coefficients to Taylor series form.
 C***LIBRARY   SLATEC
@@ -588,7 +614,9 @@ C   920501  Reformatted the REFERENCES section.  (WRB)
 C***END PROLOGUE  DPCOEF
 C
       INTEGER I,L,LL,LLP1,LLP2,NEW,NR
-      DOUBLE PRECISION A(*),C,FAC,SAVE,TC(*)
+cDJS  DOUBLE PRECISION A(*),C,FAC,SAVE,TC(*)
+      DOUBLE PRECISION A(LA),C,FAC,SAVE,TC(LTC)
+
 C***FIRST EXECUTABLE STATEMENT  DPCOEF
       LL = ABS(L)
       LLP1 = LL + 1
