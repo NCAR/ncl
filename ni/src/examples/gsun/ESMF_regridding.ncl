@@ -14,6 +14,10 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Important modifications:
+;       18 Dec 2013:
+;          Added some code to get ready for automatically setting
+;          SrcMask2D.
+;
 ;       23 Oct 2013:
 ;         Added RemovePETLog option to ESMF_regrid so user can
 ;         ask to have the PET0.RegridWeightGen.Log file removed.
@@ -1169,8 +1173,6 @@ begin
 ;---Was a mask provided?
     if(Opt.and.isatt(Opt,"Mask2D")) then
       if(.not.all(dimsizes(Opt@Mask2D).eq.latlon_dims)) then
-print(latlon_dims)
-print(dimsizes(Opt@Mask2D))
         print("curvilinear_to_SCRIP: Opt@Mask2D is not the correct dimensionality")
         exit
       else
@@ -2863,11 +2865,12 @@ end     ; of ESMF_regrid_with_weights(...)
 
 ;----------------------------------------------------------------------
 ; Note: this routine should be combined with "get_dst_grid_info" to
-; make just one "get_grid_info" routine.
+; make just one "get_grid_info" routine. For now, any changes made to
+; this routine should potentially be done to "get_dst_grid_info".
 ;
 ; Given a source data variable, this function returns information 
 ; about the source grid, and the lat/lon values, if appropriate.
-
+;
 ; The lat/lon values can be provided via:
 ;
 ;   - SrcGridLat/SrcGridLon
@@ -3064,7 +3067,8 @@ end
 
 ;----------------------------------------------------------------------
 ; Note: this routine should be combined with "get_src_grid_info" to
-; make just one "get_grid_info" routine.
+; make just one "get_grid_info" routine. For now, any changes made to
+; this routine should potentially be done to "get_src_grid_info".
 ;
 ; Given an option variable, this function returns information about 
 ; the destination grid and the lat/lon values, if appropriate.
@@ -3204,7 +3208,7 @@ end
 ;======================================================================
 undef("write_grid_description_file")
 procedure write_grid_description_file(srcData,which_grid,opt)
-local opt_new, opt2, var_dims, var_rank, grid_type, lat_dims, lon_dims, \
+local opt_new, opt2, grid_type, lat_dims, lon_dims, \
       lat_rank, lon_rank, grid_file_name, grid_lat_name, DEBUG, \
       grid_string, grid_lon_name, grid_type_name, spc_atts, \
       lat_vals, lon_vals, gen_atts, tmp_att, i, grid_type
@@ -3417,10 +3421,6 @@ begin
     delete(opt2@RemoveWgtFile)
     remove_wgt_file = True
   end if
-
-;---Get dimensions and rank of variable to be regridded.
-  var_dims  = dimsizes(srcData)
-  var_rank  = dimsizes(var_dims)
 
 ;---Write source grid description file
   if(.not.isatt_logical_true(opt2,"SkipSrcGrid")) then
