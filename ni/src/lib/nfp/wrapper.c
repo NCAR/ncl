@@ -411,10 +411,10 @@ extern NhlErrorTypes cfftb_W(void);
 extern NhlErrorTypes cfftf_frq_reorder_W(void);
 extern NhlErrorTypes fft2df_W(void);
 extern NhlErrorTypes fft2db_W(void);
+extern NhlErrorTypes lspoly_old_W(void);
+extern NhlErrorTypes lspoly_n_old_W(void);
 extern NhlErrorTypes lspoly_W(void);
 extern NhlErrorTypes lspoly_n_W(void);
-extern NhlErrorTypes slatec_lspoly_W(void);
-extern NhlErrorTypes slatec_lspoly_n_W(void);
 extern NhlErrorTypes fourier_info_W(void);
 extern NhlErrorTypes stdatmus_z2tdp_W(void);
 extern NhlErrorTypes stdatmus_p2tdz_W(void);
@@ -6030,6 +6030,22 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(fft2db_W,args,"fft2db",nargs);
 
 /*
+ * Register "lspoly_old".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(4);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(lspoly_old_W,args,"lspoly_old",nargs);
+
+/*
  * Register "lspoly".
  *
  * Create private argument array.
@@ -6044,39 +6060,6 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(lspoly_W,args,"lspoly",nargs);
-
-/*
- * Register "slated_lspoly".
- *
- * Create private argument array.
- */
-    nargs = 0;
-    args = NewArgs(4);
-
-    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-
-    NclRegisterFunc(slatec_lspoly_W,args,"slatec_lspoly",nargs);
-
-/*
- * Register "slatec_lspoly_n".
- *
- * Create private argument array.
- */
-    nargs = 0;
-    args = NewArgs(5);
-
-    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-
-    NclRegisterFunc(slatec_lspoly_n_W,args,"slatec_lspoly_n",nargs);
 
 /*
  * Register "lspoly_n".
@@ -6094,6 +6077,23 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(lspoly_n_W,args,"lspoly_n",nargs);
+
+/*
+ * Register "lspoly_n_old".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(5);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(lspoly_n_old_W,args,"lspoly_n_old",nargs);
 /*
  * Register "fourier_info".
  *

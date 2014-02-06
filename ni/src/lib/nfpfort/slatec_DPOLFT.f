@@ -1,11 +1,42 @@
 C NCLFORTSTART
-      subroutine polft(n,x,y,w,xmsg,ymsg,maxdeg,ndeg,eps,r,ierr
-     +                ,work,coef,maxdeg1,lwork,xx,yy,ww)
+      subroutine polft(n,x,y,w,maxdeg,ndeg,eps,r,ierr
+     +                ,work,coef,maxdeg1,lwork,cmsg)
       implicit none
 c                                                     ; INPUT
       integer n, maxdeg, maxdeg1, lwork
 ccccc double precision x(n), y(n),w(n),work(3*n+3*maxdeg+3),eps
-      double precision x(n), y(n),w(n),work(lwork),eps,xmsg,ymsg
+      double precision x(n), y(n),w(n),work(lwork),eps,cmsg
+c                                                     ; OUTPUT
+      integer ndeg, ierr
+      double precision r(n), coef(maxdeg1) 
+C NCLEND
+C                                                     ; LOCAL
+      integer i
+      double precision c0
+
+      c0 = 0.0
+      if (n.gt.maxdeg) then
+          call dpolft (n, x,y, w, maxdeg, ndeg, eps, r, ierr
+     *                ,work,lwork)
+          call dpcoef (maxdeg, c0, coef, work, lwork, maxdeg1)
+      else
+          do i=1,maxdeg1
+             coef(i) = cmsg
+          end do
+      end if
+
+      return
+      end
+
+C NCLFORTSTART
+      subroutine polftmsg(n,x,y,w,xmsg,ymsg,maxdeg,ndeg,eps,r,ierr
+     +                    ,work,coef,maxdeg1,lwork,cmsg,xx,yy,ww)
+      implicit none
+c                                                     ; INPUT
+      integer n, maxdeg, maxdeg1, lwork
+ccccc double precision x(n), y(n),w(n),work(3*n+3*maxdeg+3),eps
+      double precision x(n), y(n),w(n),work(lwork),eps
+      double precision xmsg,ymsg,cmsg
 c                                                     ; temp work
       double precision xx(n), yy(n), ww(n)
 c                                                     ; OUTPUT
@@ -35,7 +66,7 @@ c xx, yy, ww will hold non-missing values
           call dpcoef (maxdeg, c0, coef, work, lwork, maxdeg1)
       else
           do i=1,maxdeg1
-             coef(i) = ymsg
+             coef(i) = cmsg
           end do
       end if
 
