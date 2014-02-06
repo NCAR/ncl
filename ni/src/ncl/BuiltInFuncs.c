@@ -21805,9 +21805,9 @@ NhlErrorTypes _NclItoint
                     {
                         str = NrmQuarkToString(missing.stringval);
                         llval = _Nclstrtoll(str,&end);
-                        if (end == str || errno == ERANGE)
+                        if (strcmp(end, str) == 0)
                         {
-                            ret_missing.intval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.intval;
+                            ret_missing.intval = (int) ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval;
                         }
                         else
                         { 
