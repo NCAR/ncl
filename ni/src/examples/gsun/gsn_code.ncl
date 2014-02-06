@@ -8468,8 +8468,9 @@ end
 undef("hist_columns")
 function hist_columns(wks[1]:graphic,xy[1]:graphic,binvalues:numeric, \
                       barlocs[*][*]:numeric, barwidth[*]:numeric, \
-                      colors[*], compare:logical, gsres:logical)
-local i, nbins, dims, nbinvalues, gsres, xpoints, ypoints, multibars
+                      colors, compare:logical, gsres:logical)
+local i, nbins, dims, nbinvalues, gsres, xpoints, ypoints, multibars,\
+col_dims, col_rank
 begin
   dims       = dimsizes(barlocs)
   nbarsinbin = dims(0)
@@ -8564,10 +8565,15 @@ begin
 ;
 ;  fillindex = min((/max((/max(fillindex),0/)),17/))
 
-  ncolors = dimsizes(colors)
+  col_dims = dimsizes(colors)
+  col_rank = dimsizes(col_dims)
+  ncolors = col_dims(0)
   do i = 0, nbars - 1
-    gsres@gsFillColor = colors(i % ncolors)
-
+    if(col_rank.eq.1) then
+      gsres@gsFillColor = colors(i % ncolors)
+    else
+      gsres@gsFillColor = colors(i % ncolors,:)
+    end if
     if(multibars) 
 ;
 ; Add the remaining histogram bars first, so that they will be drawn
