@@ -3182,8 +3182,10 @@ function advect_gradient (u:numeric, v:numeric, x:numeric \
 ; linear advection of a scalar quantity: UV.GRADIENT(X)
 ;                                      : U*(dX/dlon) + V*(dX/dlat)
 ;
-; Requires that the grid be global cuz spherical harmonics are used
-;             dimension order ([time,[lev,]]lat,lon)
+; Requires:
+;    (1) grid be global cuz spherical harmonics are used
+;    (2) required dimension order ([time,[lev,]]lat,lon)
+;    (3) the input grids *must* be ordered South==>North
 ; 
 ; Nomenclature:
 ;   u, v      - zonal and meridional wind components [m/s]
@@ -3243,6 +3245,18 @@ begin
       print("advect_gradient: variable rank must be at least 2D: ([time,[lev,]]lat,lon)")
       print("advect_gradient: rank="+rankx+"D")
       ier = ier + 1000
+  end if
+
+  dnam  = getvardims(x)             ; dimension names
+  ynam  = dnam(rankx-2)             ; latitude dimension name
+  if (.not.ismissing(ynam) .and. iscoord(x,ynam)) then
+      yord  = isMonotonic(x&$ynam$)
+      if (yord.le.0) then
+          print("advect_gradient: grid is not in South-to-North order.")
+          ier = ier + 10000
+      end if
+  else
+      print("advect_gradient: Warning: No named dimensions. Can not check grid order.")
   end if
 
   if (ier.ne.0) then
