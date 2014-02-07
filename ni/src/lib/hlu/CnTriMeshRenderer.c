@@ -979,7 +979,10 @@ static int *GetTriangleNodes
 				   &verts[i],nmatched+1,ezmap,x,y);
 			tfound++;
 		}
+#if 0
+		/* debugging code */
 		else {
+			
 			printf("unmatched node %d %d %f %f\n",verts[i].node,
 			       verts[i].vert, verts[i].x, verts[i].y);
 			if (nmatched == 1) {
@@ -988,6 +991,8 @@ static int *GetTriangleNodes
 				       verts[i+1].x, verts[i+1].y);
 			}
 		}
+#endif 
+
 		i = j;
 	}
 	NhlFree(verts);
