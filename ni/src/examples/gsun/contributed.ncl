@@ -13641,6 +13641,7 @@ function reg_multlin_stats(Y[*]:numeric, XP:numeric, opt)
 ;                     Wiley (3rd Edition)   ; pgs 462-470 
 ;
 ; Very readable discussions:
+; http://www.ltrr.arizona.edu/~dmeko/notes_11.pdf
 ; http://reliawiki.org/index.php/Multiple_Linear_Regression_Analysis
 ; http://homepages.rpi.edu/~tealj2/stat03.pdf
 ; ---
@@ -13920,3 +13921,56 @@ begin
 
        return(b)
 end
+;============================================
+undef("regline_stats")
+function regline_stats(x[*]:numeric, y[*]:numeric)
+;
+; rc = regline_stats(x, y)
+;
+; Nomenclature:
+; x     - independent variable.
+; y     - dependent variable (same size as <em>x</em>)
+;
+; Missing values (_FillValue) are allowed. They are ignored.
+;
+; See: 
+; Wilks, D.S. (2006): Statistical Methods in the Atmospheric Sciences
+;                     Academic Press (2nd Edition)  ; pgs 180-204
+; Davis, J.C. (2002): Statistics and Data Analysis in Geology
+;                     Wiley (3rd Edition)   ; pgs 215-218 
+
+local nx, ny, ii, RC, rc
+begin
+
+; Get the lengths of the x and y arrays.
+   nx  = dimsizes(x)
+   ny  = dimsizes(y)
+
+; Check if those lengths match.
+   if (nx.ne.ny)then
+       print("regline_stats: x and y must be the same length!")
+       print("               nx="+nx+"   ny="+ny)               
+       exit
+   end if
+
+   if (any(ismissing(x)) .or. any(ismissing(y))) then
+       ii = ind(.not.ismissing(x) .and. .not.ismissing(y))
+       RC  = reg_multlin_stats(y(ii),x(ii),False)
+   else
+       RC  = reg_multlin_stats(y,x,False)
+   end if
+   rc = RC(1)           ; transfers all attributes
+
+   rc@long_name = "simple linear regression"
+   rc@model     = "Yest = b(0) + b(1)*X" 
+
+   rc@nptxy = rc@N      ; attributes for backward compatibility
+   rc@xave  = rc@Xavg   ; with the original 'regline'
+   rc@yave  = rc@Yavg
+   rc@rstd  = rc@RSE
+   rc@yintercept = RC(0)
+   rc@b     = RC
+
+   return(rc)
+end
+
