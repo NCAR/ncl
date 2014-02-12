@@ -1670,7 +1670,6 @@ begin
           T   = nc_file->T
           P   = nc_file->P
           PB  = nc_file->PB
-          QV  = nc_file->QVAPOR
           PH  = nc_file->PH
           PHB = nc_file->PHB
           QV  = nc_file->QVAPOR
@@ -1678,7 +1677,6 @@ begin
           T   = file_handle[:]->T
           P   = file_handle[:]->P
           PB  = file_handle[:]->PB
-          QV  = file_handle[:]->QVAPOR
           PH  = file_handle[:]->PH
           PHB = file_handle[:]->PHB
           QV  = file_handle[:]->QVAPOR
@@ -1688,7 +1686,6 @@ begin
           T   = nc_file->T(time_in,:,:,:)
           P   = nc_file->P(time_in,:,:,:)
           PB  = nc_file->PB(time_in,:,:,:)
-          QV  = nc_file->QVAPOR(time_in,:,:,:)
           PH  = nc_file->PH(time_in,:,:,:)
           PHB = nc_file->PHB(time_in,:,:,:)
           QV  = nc_file->QVAPOR(time_in,:,:,:)
@@ -1696,7 +1693,6 @@ begin
           T   = file_handle[:]->T(time_in,:,:,:)
           P   = file_handle[:]->P(time_in,:,:,:)
           PB  = file_handle[:]->PB(time_in,:,:,:)
-          QV  = file_handle[:]->QVAPOR(time_in,:,:,:)
           PH  = file_handle[:]->PH(time_in,:,:,:)
           PHB = file_handle[:]->PHB(time_in,:,:,:)
           QV  = file_handle[:]->QVAPOR(time_in,:,:,:)
