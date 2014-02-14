@@ -1948,36 +1948,57 @@ GribFileRecord *therec;
 /*
 * center
 */
+		
+		att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+		att_list_ptr->next = step->theatts;
+		att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+		att_list_ptr->att_inq->name = NrmStringToQuark("center");
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		for( i = 0; i < sizeof(centers)/sizeof(GribTable);i++) {
 			if(centers[i].index == (int)grib_rec->pds[4]) {
-				att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
-				att_list_ptr->next = step->theatts;
-				att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
-				att_list_ptr->att_inq->name = NrmStringToQuark("center");
-				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				*tmp_string = NrmStringToQuark(centers[i].name);		
-				att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
-				step->theatts = att_list_ptr;
-				step->n_atts++;
+				break;
 			}
 		}
+		if (i < sizeof(centers)/sizeof(GribTable)) {
+				*tmp_string = NrmStringToQuark(centers[i].name);		
+		}
+		else {
+			*tmp_string = NrmStringToQuark("unknown");
+		}
+		att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
+		step->theatts = att_list_ptr;
+		step->n_atts++;
 /*
 *  sub_center
 */
-		for( i = 0; i < sizeof(sub_centers)/sizeof(GribTable);i++) {
-			if(sub_centers[i].index == (int)grib_rec->pds[25]) {
-				att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
-				att_list_ptr->next = step->theatts;
-				att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
-				att_list_ptr->att_inq->name = NrmStringToQuark("sub_center");
-				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				*tmp_string = NrmStringToQuark(sub_centers[i].name);		
-				att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
-				step->theatts = att_list_ptr;
-				step->n_atts++;
+		if (grib_rec->pds[25] != 0 && grib_rec->pds[25] != 255) {
+			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("sub_center");
+			/* if we can find a name for the sub_center, use it -- otherwise just give the number */
+			if (grib_rec->pds[4] == 7) { 
+				for( i = 0; i < sizeof(sub_centers)/sizeof(GribTable);i++) {
+					if(sub_centers[i].index == (int)grib_rec->pds[25]) {
+						tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+						*tmp_string = NrmStringToQuark(sub_centers[i].name);		
+						break;
+					}
+				}
 			}
+			else if (grib_rec->pds[4] == 98 && grib_rec->pds[25] == 232) {
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				*tmp_string = NrmStringToQuark("Max Plank Institute for Meteorology");
+			}
+			else {
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				sprintf(buffer,"%d",(int)grib_rec->pds[25]);
+				*tmp_string = NrmStringToQuark(buffer);
+			}
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
+			step->theatts = att_list_ptr;
+			step->n_atts++;
 		}
-
 		step = step->next;
 	}
 }
@@ -6485,6 +6506,10 @@ char *name;
 			/* ignore */
 			continue;
 		}
+		else if (! ptable) {
+			/* no header line found yet -- ignore parameter */
+			continue;
+		}
 		param = &(ptable->table[ptable->pcount++]);
 		param->num = index;
 		TOKENSTART(cp);
@@ -6527,8 +6552,12 @@ char *name;
 	if (ptable) {
 		ptable->next = ptables;
 		ptables = ptable;
-		ptable->table = NclRealloc(ptable->table, ptable->pcount * sizeof(TBLE2));
+		ptable->table = NclRealloc(ptable->table, ptable->pcount * sizeof(TBLE2)); /* this might make the table smaller -- never bigger */
 	}
+	else if (table_count == 0) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: %s contains no valid parameter table header row",name);
+	}
+
 	return ptables;
 	
 }
@@ -7263,16 +7292,20 @@ int wr_status;
 							break;
 						}
 					}
+					/*
 					if (ptable == NULL && grib_rec->param_number < 128) {
-						if (ptable_version > 3 && table_warning == 0) {
+					*/
+					if (ptable == NULL) {
+						if (table_warning == 0 && (ptable_version > 3 || grib_rec->param_number > 127)) {
 							NhlPError(NhlWARNING,NhlEUNKNOWN,
-								  "NclGRIB: Unrecognized parameter table (center %d, subcenter %d, table %d), defaulting to NCEP operational table for standard parameters (1-127): variable names and units may be incorrect",
+								  "NclGRIB: Unrecognized parameter table (center %d, subcenter %d, table %d), defaulting to NCEP operational table: variable names and units may be incorrect",
 								  center, subcenter, ptable_version);
 							table_warning = 1;
 						}
 						/* 
 						 * if the ptable_version <= 3 and the parameter # is less than 128 then 
-						 * the NCEP operational table is the legitimate default; 
+						 * the NCEP operational table (same as WMO default ptable) is the legitimate default -- and the warning above should not be given
+						 * Otherwise we still default, but the chances are higher that it is wrong : hence the warning -- this is a change for 6.2.0
 						 */
 						ptable = &ncep_opn_params[0];
 						ptable_count = sizeof(ncep_opn_params)/sizeof(TBLE2);
