@@ -57,7 +57,8 @@ static float *csort_array;
 static void reverse_chrs(char*);
 static int cro_CEsc(CROddp *psa, _NGCesc *cesc);
 
-extern crotiff_writeImage(const char* filename, cairo_surface_t* surface);
+extern int crotiff_writeImage(const char* filename, cairo_surface_t* surface);
+extern void croActivateQt(CROddp *psa);
 
 /* this looks like it should be static, but there's a pattern where the SoftFill() routines
  * are declared external for this, the PS, and the PDF drivers. Leaving it for now.  --RLB 1/2010.
@@ -94,6 +95,8 @@ static int getCairoEnvIndex(int wksId) {
             return i;
         }
     }
+
+    return -1;
 }
 
 cairo_t* getContext(int wksId) {
@@ -380,7 +383,7 @@ static void get_cell_pixel_multiples(int image_width, int image_height,
 }
 
 
-get_cell_index_limits(GKSC *gksc, CROPoint P, CROPoint Q, int nx, int ny,
+void get_cell_index_limits(GKSC *gksc, CROPoint P, CROPoint Q, int nx, int ny,
         int *j_start, int *j_end, int *j_inc, int *i_start, int *i_end,
         int *i_inc, double *x_offset, double *y_offset) {
 
@@ -430,14 +433,14 @@ get_cell_index_limits(GKSC *gksc, CROPoint P, CROPoint Q, int nx, int ny,
 int cro_Cellarray(GKSC *gksc) {
 
     int nx, ny;
-    int i, j, k, l, image_width, image_height, kount, stat;
+    int i, j, k, l, image_width, image_height, kount;
     int j_start, j_end, j_inc, i_start, i_end, i_inc;
     int *rows, *cols;
     unsigned int *iar;
     unsigned char *data;
     cairo_surface_t *cell_image;
 
-    CROPoint P, Q, R;
+    CROPoint P, Q;
 
     CROddp *psa = (CROddp *) gksc->ddp;
     CROPoint *corners = (CROPoint *) gksc->p.list;
@@ -447,8 +450,6 @@ int cro_Cellarray(GKSC *gksc) {
 
     double x_offset, y_offset;
 
-    double tred, tgreen, tblue, talpha;
-    struct color_value cval;
     cairo_pattern_t *pattern;
 
     trace("Got to cro_Cellarray");
@@ -469,7 +470,6 @@ int cro_Cellarray(GKSC *gksc) {
     ny = iptr[1];
     P = corners[0];
     Q = corners[1];
-    R = corners[2];
 
     image_width = RINT(fabs(Q.x - P.x)*(psa->dspace.xspan));
     image_height = RINT(fabs(Q.y - P.y)*(psa->dspace.yspan));
@@ -507,7 +507,6 @@ int cro_Cellarray(GKSC *gksc) {
     data = (unsigned char *) iar;
     cell_image = cairo_image_surface_create_for_data(data, CAIRO_FORMAT_ARGB32,
             image_width, image_height, 4* image_width );
-    stat = cairo_surface_status(cell_image);
 
     cairo_set_source_surface(context, cell_image, x_offset, y_offset);
     cairo_paint(context);
@@ -681,12 +680,9 @@ int cro_Esc(GKSC *gksc) {
     char *sptr = (char *) gksc->s.list, *strng;
     int *iptr = (int *) gksc->i.list;
     _NGCesc *cesc = (_NGCesc*) gksc->native;
-    _NGCPixConfig *pixconf;
-    _NGCAlpha* alphaConfig;
 
     int escape_id = iptr[0], plflag;
-    float rscale, logox, logoy, logos;
-    static int saved_color_index;
+    float rscale;
 
     trace("Got to cro_Esc");
 
@@ -1008,7 +1004,6 @@ int cro_OpenWorkstation(GKSC *gksc) {
 
     char *sptr = (char *) gksc->s.list;
     CROddp *psa;
-    char *ctmp;
     int *pint;
     extern int orig_wks_id;
 
@@ -1297,9 +1292,8 @@ int cro_Polymarker(GKSC *gksc) {
     CROPoint *pptr = (CROPoint *) gksc->p.list;
     CROddp *psa = (CROddp *) gksc->ddp;
     int npoints = gksc->p.num, i;
-    double red, green, blue, alpha;
 
-    int marker_type, current_line_color;
+    int marker_type;
     float marker_size, orig_line_width, xc, yc, mscale;
     struct color_value cval;
     cairo_line_cap_t orig_cap_type;
@@ -1315,12 +1309,6 @@ int cro_Polymarker(GKSC *gksc) {
     marker_type = psa->attributes.marker_type;
     marker_size = ((psa->transform.y_scale) * (psa->attributes.marker_size));
 
-    /*
-     *  Retrieve current line color index so we can reset it
-     *  at the end, since we will be using Polylines for the
-     *  markers.
-     */
-    current_line_color = psa->attributes.line_colr_ind;
     cval = unpack_argb(psa->ctable, psa->attributes.marker_colr_ind);
     cairo_set_source_rgba(context, cval.red, cval.green, cval.blue, 
             ALPHA_BLEND(cval.alpha, psa->attributes.marker_alpha));
@@ -1507,15 +1495,12 @@ int cro_SetCharacterSpacing(GKSC *gksc) {
 
 
 int cro_SetClipIndicator(GKSC *gksc) {
-    CROClipRect rect;
-
     CROddp *psa = (CROddp *) gksc->ddp;
     int *iptr = (int *) gksc->i.list;
     CROPoint *pptr = (CROPoint *) gksc->p.list;
 
     int clip_flag;
     float pllx, purx, plly, pury;
-    float tllx, turx, tlly, tury;
 
     trace("Got to cro_SetClipIndicator");
     
@@ -1569,14 +1554,12 @@ int cro_SetColorRepresentation(GKSC *gksc) {
 
     unsigned index = (unsigned) xptr[0];
     int i;
-    double xl, yt, xr, yb;
-
     struct color_value cval;
 
     trace("Got to cro_SetColorRepresentation");
 
     if ((index & ARGB_MASK) > 0)
-    	return;   /* value is a 32-bit color, not an index */
+    	return 0;   /* value is a 32-bit color, not an index */
 
     if (psa->max_color < index + 1) {
         psa->ctable = (unsigned int*) realloc(psa->ctable, (index + 1)
@@ -1780,9 +1763,6 @@ int cro_SetViewport(GKSC *gksc) {
     CROddp *psa = (CROddp *) gksc->ddp;
     float *fptr = (float *) gksc->f.list;
 
-    CROClipRect *Crect;
-    int rec_chg = 0;
-
     trace("Got to cro_SetViewport");
 
     /*
@@ -1803,9 +1783,6 @@ int cro_SetWindow(GKSC *gksc) {
 
     CROddp *psa = (CROddp *) gksc->ddp;
     float *fptr = (float *) gksc->f.list;
-
-    CROClipRect *Crect;
-    int rec_chg = 0;
 
     trace("Got to cro_SetWindow");
 
@@ -1834,20 +1811,20 @@ int cro_Text(GKSC *gksc) {
     CROPoint *pptr = (CROPoint *) gksc->p.list;
     CROddp *psa = (CROddp *) gksc->ddp;
     char *sptr = (char *) gksc->s.list, *font_path, *font_name, *db_path;
-    char single_char[2], next_char[2];
+    char single_char[2];
     struct color_value cval;
-    float base_mag, tcos, cprod, cang, cspace, up_down_string_width;
+    float base_mag, tcos, cprod, cang, cspace;
     int slen, error, i, char_num_mx;
-    double *dashes, horiz_len, left_space, right_space, maximum_width = 0.;
+    double horiz_len, left_space, right_space, maximum_width = 0.;
 
-    float xc, yc, xpos, ypos, X_height, scl, x_del, y_del;
+    float xc, yc, xpos, ypos, X_height, x_del, y_del;
     static int kount = 0;
 
     static FT_Library library;
     static FT_Face face;
     cairo_font_face_t *font_face;
     cairo_matrix_t fmatrix, scl_matrix;
-    cairo_text_extents_t textents, next_extents;
+    cairo_text_extents_t textents;
     cairo_font_extents_t fextents;
     
     cairo_t* context = getContext(psa->wks_id);
@@ -2418,7 +2395,6 @@ char* getIndexedOutputFilename(int wks_id, const char* file_name, int frameNumbe
 
 
 static void CROinit(CROddp *psa, int *coords) {
-    float rscale;
 
     trace("Got to CROinit");
 
@@ -2497,7 +2473,7 @@ static void CROinit(CROddp *psa, int *coords) {
     _NGCesc *cesc;
     _NGCPixConfig *pixc;
     _NGCXWinConfig *xwinc;
-    while (cesc = _NGGetCEscInit()) {
+    while ((cesc = _NGGetCEscInit())) {
         switch (cesc->type) {
         case NGC_PIXCONFIG:
             pixc = (_NGCPixConfig*) cesc;
@@ -2634,7 +2610,6 @@ void cro_SoftFill(GKSC *gksc, float angle, float spl) {
     int *ind, nnd, nra;
     int jnd, knd, ipt, ipe, indx1, indx2, previous_point, following_point;
     int i, isp, ipx, lnd, ip1, ip2, in1, in2, jn1, jn2, jnt;
-    int ocounter, counter_inc = 3;
     CROPoint *points, opoint;
 
     CROddp *psa;
@@ -2719,7 +2694,6 @@ void cro_SoftFill(GKSC *gksc, float angle, float spl) {
     ipe = ind[nra - 1];
     indx1 = (int) (rst[ipt] / spl) - 1;
     indx2 = (int) (rst[ipe] / spl) + 1;
-    ocounter = 0;
     for (isp = indx1; isp <= indx2; isp++) {
         spi = (float) isp * spl;
 
