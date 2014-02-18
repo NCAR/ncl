@@ -660,7 +660,6 @@ endsw
 
 switch ("$opsys")
 case    CYGWIN:
-case    Darwin:
 echo '#include "Template"' | \
 $cpp $cppopt -I. -D_COMMENT_\#="" -DNGCOMM=\# $defines -DYMAKEFILE=\"$tmp1\" | \
 "$config_dir"/ymake-filter >>$outfile
