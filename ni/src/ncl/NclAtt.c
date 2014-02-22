@@ -461,12 +461,13 @@ NclObj parent;
 /* Preconditions: parent better only be add once */
 	NclRefList *tmp;
 	NclAtt theattobj = (NclAtt) theobj;
+#if 0
 	NhlArgVal selector;
         NhlArgVal udata;
 
 	selector.lngval = 0;
 	udata.intval = parent->obj.id;
-
+#endif
 
 	if(theattobj->obj.parents == NULL) {
 		theattobj->obj.parents = (NclRefList*)NclMalloc(sizeof(NclRefList));
@@ -687,13 +688,15 @@ struct _NclObjRec *parent;
 	NclAtt my_inst;
 	NclObjClass class_ptr;
 
+	InitializeAttClass();
 	if(inst == NULL) {
-		my_inst = (NclAtt)NclMalloc((unsigned)sizeof(NclAttRec));
+		my_inst = (NclAtt)NclCalloc(1, (unsigned)sizeof(NclAttRec));
 	} else {
 		my_inst = (NclAtt)inst; 
 	}
 	if(theclass == NULL) {
-		class_ptr = nclAttClass;
+		/*class_ptr = nclAttClass;*/
+		class_ptr = (NclObjClass)&nclAttClassRec;
 	} else {
 		class_ptr = theclass;
 	}
