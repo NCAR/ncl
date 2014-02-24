@@ -3380,6 +3380,8 @@ int n;
 		       NhlNgsFillIndex, &fill_index,
 		       NULL);
 
+	if (fill_color < 0) 
+		return (NhlNOERROR);
 	gset_fill_colr_ind(fill_color);
 
 	if (mptrans->mptrans.map_poly_mode == NhlSTANDARDPOLY ||

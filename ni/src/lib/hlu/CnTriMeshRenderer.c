@@ -1956,19 +1956,26 @@ static NhlErrorTypes BuildDelaunayMesh
 			  }
 		  }
 		  if (cnp->sfp->missing_value_set) {
+			  /* since there are only 3 values, stored in 6 possible locations, looking at 5 of them should be sufficient */
 			  for (i = 0; i < ntri; i++) {
 				  if (cpoints[cedges[ctris[i].edge[0]/Loen].pix_1/Lopn].dat == cnp->sfp->missing_value ||
 				      cpoints[cedges[ctris[i].edge[1]/Loen].pix_1/Lopn].dat == cnp->sfp->missing_value ||
-				      cpoints[cedges[ctris[i].edge[2]/Loen].pix_1/Lopn].dat == cnp->sfp->missing_value)
+				      cpoints[cedges[ctris[i].edge[2]/Loen].pix_1/Lopn].dat == cnp->sfp->missing_value ||
+				      cpoints[cedges[ctris[i].edge[0]/Loen].pix_2/Lopn].dat == cnp->sfp->missing_value ||
+				      cpoints[cedges[ctris[i].edge[1]/Loen].pix_2/Lopn].dat == cnp->sfp->missing_value) { 
 					  ctris[i].flag = 1;
+				  }
 			  }
 		  }
 		  else {
 			  for (i = 0; i < ntri; i++) {
-				  if (cpoints[cedges[ctris[i].edge[0]/Loen].pix_1/Lopn].dat >= 1e32 ||
-				      cpoints[cedges[ctris[i].edge[1]/Loen].pix_1/Lopn].dat >=  1e32 ||
-				      cpoints[cedges[ctris[i].edge[2]/Loen].pix_1/Lopn].dat >= 1e32)
+				  if (cpoints[cedges[ctris[i].edge[0]/Loen].pix_1/Lopn].dat >= 1e32 || 
+				      cpoints[cedges[ctris[i].edge[1]/Loen].pix_1/Lopn].dat >= 1e32 || 
+				      cpoints[cedges[ctris[i].edge[2]/Loen].pix_1/Lopn].dat >= 1e32 ||
+				      cpoints[cedges[ctris[i].edge[0]/Loen].pix_2/Lopn].dat >= 1e32 ||
+				      cpoints[cedges[ctris[i].edge[1]/Loen].pix_2/Lopn].dat >= 1e32) {
 					  ctris[i].flag = 1;
+				  }
 			  }
 		  }
 
@@ -3416,6 +3423,10 @@ static NhlErrorTypes UpdateMeshData
 				return NhlFATAL;
 			}
 		}
+	}
+	for (block_ix = 0; block_ix < tmp->nblocks; block_ix++) {
+		tbp = &(tmp->tri_block[block_ix]);
+		SortEdges(tbp);
 	}
 	return ret;
 }
@@ -5015,7 +5026,7 @@ NhlErrorTypes _NhlTriMeshRasterFill
 					     continue;
 
 
-				     if (Cnp->smoothing_on) {
+				     if (Cnp->raster_smoothing_on) {
 					     fvali = (fva1 * a1 + 
 						      fva2 * a2 + fva3 * a3) / atot;
 				     }
