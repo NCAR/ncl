@@ -1522,6 +1522,16 @@ static NhlErrorTypes CnStdRender
 			       NhlNtrOutOfRangeF, &cnp->out_of_range_val,
 			       NULL);
 		c_cpsetr("ORV",cnp->out_of_range_val);
+		if (cnp->fill_mode != NhlCELLFILL && cnp->fill_mode != NhlMESHFILL &&
+		    (fabs(tfp->data_xstart) > 540 || fabs(tfp->data_xend) > 540 || fabs(tfp->data_ystart) > 90 || fabs(tfp->data_xend ) > 90)) {
+			char *mode = "AreaFill";
+			if (cnp->fill_mode == NhlRASTERFILL) {
+				mode = "RasterFill";
+			}
+			e_text =  "%s: coordinates are out of range for drawing over a map: standard %s rendering method wil not work;\n consider setting the resouce trGridType to \"TriangularMesh\" if coordinates contain missing values";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,cnp->fill_mode == NhlAREAFILL ? "AreaFill" : "RasterFill");
+			return(NhlFATAL);
+		}
 	}
 
 	if (cnp->sfp->missing_value_set)
