@@ -10,8 +10,8 @@ extern void NGCALLF(dregcoef,DREGCOEF)(double *,double *,int *,double *,
 extern void  NGCALLF(dzregr1,DZREGR1)(int *,int *,int *,double *,double *,
                                       double *,double *,double *,double *,
                                       double *,double *,double *,double *,
-									  double *,double *,double *,double *,
-									  double *,double *);
+                                      double *,double *,double *,double *,
+                                      double *,double *);
 
 NhlErrorTypes regcoef_W( void )
 {
@@ -49,7 +49,7 @@ NhlErrorTypes regcoef_W( void )
  */
   ng_size_t i, j, ly, lx, ln, dimsizes_same;
   ng_size_t total_size_leftmost_x, total_size_leftmost_y; 
-  ng_size_t total_size_x, total_size_y, total_size_rcoef;
+  ng_size_t total_size_rcoef;
   int inpts, ier = 0, ier_count5 = 0, ier_count6 = 0, ret;
 /*
  * Retrieve parameters
@@ -144,11 +144,9 @@ NhlErrorTypes regcoef_W( void )
 
   total_size_leftmost_x = 1;
   for(i = 0; i < ndims_x-1; i++) total_size_leftmost_x *= dsizes_x[i];
-  total_size_x = total_size_leftmost_x * npts;
 
   total_size_leftmost_y = 1;
   for(i = 0; i < ndims_y-1; i++) total_size_leftmost_y *= dsizes_y[i];
-  total_size_y = total_size_leftmost_y * npts;
 
 /* 
  * Get size of output variable, which is equal to the product of all but
@@ -451,9 +449,10 @@ NhlErrorTypes regCoef_W( void )
 /*
  * various
  */
-  ng_size_t i, j, ly, lx, ln, dimsizes_same;
+  ng_size_t i, j, ly, lx, ln;
+  logical dimsizes_same;
   ng_size_t total_size_leftmost_x, total_size_leftmost_y; 
-  ng_size_t total_size_x, total_size_y, total_size_rcoef;
+  ng_size_t total_size_rcoef;
   int inpts, ier = 0, ier_count5 = 0, ier_count6 = 0;
 /*
  * Retrieve parameters
@@ -496,15 +495,15 @@ NhlErrorTypes regCoef_W( void )
  * 64 x 128 x 64 x 128 x (mxlag+1).
  */
   if(ndims_x == ndims_y) {
-    dimsizes_same = 1;
+    dimsizes_same = True;
     for(i = 0; i < ndims_x; i++) {
       if(dsizes_x[i] != dsizes_y[i]) {
-        dimsizes_same = 0;
+        dimsizes_same = False;
       }
     }
   }
   else {
-    dimsizes_same = 0;
+    dimsizes_same = False;
   }
 
 /*
@@ -532,11 +531,9 @@ NhlErrorTypes regCoef_W( void )
 
   total_size_leftmost_x = 1;
   for(i = 0; i < ndims_x-1; i++) total_size_leftmost_x *= dsizes_x[i];
-  total_size_x = total_size_leftmost_x * npts;
 
   total_size_leftmost_y = 1;
   for(i = 0; i < ndims_y-1; i++) total_size_leftmost_y *= dsizes_y[i];
-  total_size_y = total_size_leftmost_y * npts;
 
 /* 
  * Get size of output variable, which is equal to the product of all but
@@ -997,6 +994,646 @@ NhlErrorTypes regCoef_W( void )
 }
 
 
+NhlErrorTypes regCoef_n_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *x, *y;
+  double *tmp_x = NULL;
+  double *tmp_y = NULL;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_y;
+  ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
+  NclScalar missing_x, missing_y, missing_dx, missing_dy, missing_ry;
+  NclBasicDataTypes type_x, type_y;
+  int has_missing_x, has_missing_y;
+  ng_size_t npts;
+/*
+ * Arguments # 3 and 4
+ */
+  int *dims_nx, *dims_ny;
+  ng_size_t dsizes_dims_nx[1], dsizes_dims_ny[1], ndims_n;
+
+/*
+ * Attribute variables
+ */
+  int att_id;
+  ng_size_t dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+/*
+ * Output array variables
+ */
+  void *tval, *yint, *rstd, *rcoef;
+  double *tmp_tval = NULL;
+  double *tmp_yint = NULL;
+  double *tmp_rstd = NULL;
+  double *tmp_rcoef = NULL;
+  double xave, yave;
+  int ndims_rcoef;
+  ng_size_t *dsizes_rcoef;
+  NclBasicDataTypes type_rcoef;
+  int *nptxy;
+/*
+ * various
+ */
+  ng_size_t i, j, k, l, nrnx, nrny;
+  ng_size_t index_x, index_y, index_rcoef, index_nrx, index_nry;
+  logical dimsizes_same;
+  ng_size_t size_leftmost_x, size_rightmost_x, size_rl_x; 
+  ng_size_t size_leftmost_y, size_rightmost_y, size_rl_y; 
+  ng_size_t total_size_rcoef;
+  int inpts, ier = 0, ier_count5 = 0, ier_count6 = 0, nr;
+/*
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+  x = (void*)NclGetArgValue(
+           0,
+           4,
+           &ndims_x, 
+           dsizes_x,
+           &missing_x,
+           &has_missing_x,
+           &type_x,
+           DONT_CARE);
+  y = (void*)NclGetArgValue(
+           1,
+           4,
+           &ndims_y, 
+           dsizes_y,
+           &missing_y,
+           &has_missing_y,
+           &type_y,
+           DONT_CARE);
+
+/*
+ * The x and y coming in can be any dimension, but there are certain rules
+ * about having the same dimensions.
+ */
+  if( ndims_x > ndims_y ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef_n: The input array y must have as many or more dimensions than x");
+    return(NhlFATAL);
+  }
+
+/*
+ * Get arguments #  and 4. These will be a 1D arrays of dimension indexes.
+ */
+  dims_nx = (int*)NclGetArgValue(
+           2,
+           4,
+           NULL,
+           dsizes_dims_nx,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+
+  dims_ny = (int*)NclGetArgValue(
+           3,
+           4,
+           NULL,
+           dsizes_dims_ny,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+
+/*
+ * Make sure dims_nx and dims_ny are valid dimensions. There are 
+ * several tests here because this is a complicated situation.
+ */
+  if(dsizes_dims_nx[0] != dsizes_dims_ny[0]) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef_n: dims_nx and dims_ny must have the same number of indexes.");
+    return(NhlFATAL);
+  }
+  ndims_n = dsizes_dims_nx[0];        /* "ndims_n" easier to remember! */
+
+  if(ndims_n > ndims_x || ndims_n > ndims_y) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef_n: too many input dimensions were given for dims_nx and dims_ny");
+    return(NhlFATAL);
+  }
+
+  npts = 1;
+  for(i = 0; i < ndims_n; i++) {
+    if (dims_nx[i] < 0 || dims_nx[i] >= ndims_x || 
+        dims_ny[i] < 0 || dims_ny[i] >= ndims_y) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef_n: One or more dims_nx and/or dims_ny dimension indexes are invalid");
+      return(NhlFATAL);
+    }
+    if((i > 0) && (((dims_nx[i]-dims_nx[i-1]) != 1) || 
+                    (dims_ny[i]-dims_ny[i-1]) != 1)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef_n: dims_nx/dims_ny dimension sizes must be consecutive and increasing");
+      return(NhlFATAL);
+    }
+
+    if(dsizes_x[dims_nx[i]] != dsizes_y[dims_ny[i]]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef_n: the dimension sizes indicated by dims_nx and dims_ny must match");
+        return(NhlFATAL);
+    }
+    npts *= dsizes_x[dims_nx[i]];
+  }
+  if( npts < 2 ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef_n: The number of points to calculate across must be at least 2");
+    return(NhlFATAL);
+  }  
+
+/*
+ * Check the dimensions of x and y and see if they are the same.
+ *
+ * If all the dimensions of x and y are the same, then we don't treat
+ * the dimensions differently:  i.e. if x is 64 x 128 x 21 and y is
+ * 64 x 128 x 21, then what gets returned will be 64 x 128, and NOT
+ * 64 x 128 x 64 x 128 x (mxlag+1).
+ */
+  if(ndims_x == ndims_y) {
+    dimsizes_same = True;
+    for(i = 0; i < ndims_x; i++) {
+      if(dsizes_x[i] != dsizes_y[i]) {
+        dimsizes_same = False;
+      }
+    }
+  }
+  else {
+    dimsizes_same = False;
+  }
+
+/*
+ * Calculate size of leftmost and rightmost dimensions of x/y
+ * and the number of input points for x and y. 
+ */
+  size_rightmost_x = size_leftmost_x = 1;
+  size_rightmost_y = size_leftmost_y = 1;
+  for( i = 0; i < dims_nx[0]; i++ ) {
+    size_leftmost_x *= dsizes_x[i];
+  }
+  for( i = dims_nx[ndims_n-1]+1; i < ndims_x; i++) {
+    size_rightmost_x *= dsizes_x[i];
+  }
+  if(!dimsizes_same) {
+    for( i = 0; i < dims_ny[0]; i++ ) {
+      size_leftmost_y *= dsizes_y[i];
+    }
+    for( i = dims_ny[ndims_n-1]+1; i < ndims_y; i++) {
+      size_rightmost_y *= dsizes_y[i];
+    }
+    size_rl_y = size_leftmost_y * size_rightmost_y;
+  }
+
+  size_rl_x = size_leftmost_x * size_rightmost_x;
+
+/*
+ * Test input dimension sizes.
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef_n: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+  
+/* 
+ * Get size of output variable, which is equal to the product of all but
+ * the last dimension of x and y (unless the dimension sizes of x and y
+ * are the same, in which case the output will be the product of the all
+ * but the last dimension of x).
+ */
+  if(dimsizes_same) {
+    ndims_rcoef  = max(1,ndims_x-ndims_n);
+    dsizes_rcoef = (ng_size_t*)calloc(ndims_rcoef,sizeof(ng_size_t));
+    if(dsizes_rcoef == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef_n: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+    total_size_rcoef = size_rl_x;
+    if(ndims_x == 1) {
+      dsizes_rcoef[0] = 1;
+    }
+    else {
+      nr = 0;
+      for( i = 0; i < dims_nx[0]; i++ ) {
+        dsizes_rcoef[nr++] = dsizes_x[i];
+      }
+      for( i = dims_nx[ndims_n-1]+1; i < ndims_x; i++) {
+        dsizes_rcoef[nr++] = dsizes_x[i];
+      }
+    }
+  }
+  else {
+    total_size_rcoef = size_rl_x * size_rl_y;
+    ndims_rcoef = max(1,ndims_x + ndims_y - (2*ndims_n));
+    dsizes_rcoef = (ng_size_t*)calloc(ndims_rcoef,sizeof(ng_size_t));
+    if(dsizes_rcoef == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef_n: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+    dsizes_rcoef[0] = 1;
+    
+    nr = 0;
+    for( i = 0; i < dims_nx[0]; i++ ) {
+      dsizes_rcoef[nr++] = dsizes_x[i];
+    }
+    for( i = dims_nx[ndims_n-1]+1; i < ndims_x; i++ ) {
+      dsizes_rcoef[nr++] = dsizes_x[i];
+    }
+    for( i = 0; i < dims_ny[0]; i++ ) {
+      dsizes_rcoef[nr++] = dsizes_y[i];
+    }
+    for( i = dims_ny[ndims_n-1]+1; i < ndims_y; i++ ) {
+      dsizes_rcoef[nr++] = dsizes_y[i];
+    }
+  }
+/*
+ * Coerce x and y missing values to double if necessary.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,&missing_ry);
+/*
+ * Allocate space for temporary x and y input no matter what.
+ */
+  tmp_x = (double*)calloc(npts,sizeof(double));
+  tmp_y = (double*)calloc(npts,sizeof(double));
+  if(tmp_x == NULL || tmp_y == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef_n: Unable to allocate memory for coercing input arrays to double");
+    return(NhlFATAL);
+  }
+
+/* 
+ * Allocate size for output arrays.
+ */
+  if(type_x != NCL_double && type_y != NCL_double) {
+    type_rcoef = NCL_float;
+
+    rcoef     = (float *)calloc(total_size_rcoef,sizeof(float));
+    tval      = (float *)calloc(total_size_rcoef,sizeof(float));
+    yint      = (float *)calloc(total_size_rcoef,sizeof(float));
+    rstd      = (float *)calloc(total_size_rcoef,sizeof(float));
+    nptxy     = (int *)calloc(total_size_rcoef,sizeof(int));
+    tmp_tval  = (double*)calloc(1,sizeof(double));
+    tmp_yint  = (double*)calloc(1,sizeof(double));
+    tmp_rstd  = (double*)calloc(1,sizeof(double));
+    tmp_rcoef = (double *)calloc(1,sizeof(double));
+
+    if(tmp_rcoef == NULL || rcoef == NULL || nptxy == NULL ||
+       tmp_tval  == NULL || tval  == NULL || tmp_yint == NULL ||
+       yint == NULL || tmp_rstd  == NULL || rstd  == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef_n: Unable to allocate memory for output variables");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_rcoef = NCL_double;
+
+    rcoef = (double *)calloc(total_size_rcoef,sizeof(double));
+    tval  = (double *)calloc(total_size_rcoef,sizeof(double));
+    yint  = (double *)calloc(total_size_rcoef,sizeof(double));
+    rstd  = (double *)calloc(total_size_rcoef,sizeof(double));
+    nptxy = (int *)calloc(total_size_rcoef,sizeof(int));
+
+    if(rcoef == NULL || tval == NULL || yint == NULL || rstd == NULL || 
+       nptxy == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef_n: Unable to allocate memory for output variables");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * This is the section that loops across the leftmost and rightmost
+ * dimensions and calls the Fortran routine. There are two possible
+ * looping situations: one where the x and y dimension sizes are the
+ * same, (dimsizes_same=True), and one where they are not.
+ */
+
+  index_rcoef = 0;
+  if(dimsizes_same) {
+    nrnx = npts * size_rightmost_x;
+    for(i = 0; i < size_leftmost_x; i++) {
+      index_nrx = i*nrnx;
+      for( j = 0; j < size_rightmost_x; j++ ) {
+        index_x = index_nrx + j;
+
+        coerce_subset_input_double_step(x,tmp_x,index_x,size_rightmost_x,type_x,npts,
+                                        has_missing_x,&missing_x,&missing_dx);
+        coerce_subset_input_double_step(y,tmp_y,index_x,size_rightmost_x,type_y,npts,
+                                        has_missing_y,&missing_y,&missing_dy);
+        if(type_rcoef == NCL_double) {
+          tmp_tval  = &((double*)tval)[index_rcoef];
+          tmp_yint  = &((double*)yint)[index_rcoef];
+          tmp_rstd  = &((double*)rstd)[index_rcoef];
+          tmp_rcoef = &((double*)rcoef)[index_rcoef];
+        }
+
+        NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+                                   &missing_dy.doubleval,tmp_rcoef,tmp_tval,
+                                   &nptxy[index_rcoef],&xave,&yave,tmp_rstd,tmp_yint,
+                                   &ier);
+
+        if (ier == 5) ier_count5++;
+        if (ier == 6) ier_count6++;
+/*
+ * Coerce output to float if necessary.
+ */
+        if(type_rcoef != NCL_double) {
+          ((float*)tval)[index_rcoef]  = (float)*tmp_tval;
+          ((float*)yint)[index_rcoef]  = (float)*tmp_yint;
+          ((float*)rstd)[index_rcoef]  = (float)*tmp_rstd;
+          ((float*)rcoef)[index_rcoef] = (float)*tmp_rcoef;
+        }
+      }
+      index_rcoef ++;
+    }
+  }
+  else {
+    nrnx = npts * size_rightmost_x;
+    nrny = npts * size_rightmost_y;
+    for(i = 0; i < size_leftmost_x; i++) {
+      index_nrx = i*nrnx;
+      for( j = 0; j < size_rightmost_x; j++ ) {
+        index_x = index_nrx + j;
+
+        coerce_subset_input_double_step(x,tmp_x,index_x,size_rightmost_x,
+                                        type_x,npts,has_missing_x,
+                                        &missing_x,&missing_dx);
+        for(k = 0; k < size_leftmost_y; k++) {
+          index_nry = k*nrny;
+          for( l = 0; l < size_rightmost_y; l++ ) {
+            index_y = index_nry + l;
+
+            coerce_subset_input_double_step(y,tmp_y,index_y,size_rightmost_y,
+                                            type_y,npts,has_missing_y,
+                                            &missing_y,&missing_dy);
+            if(type_rcoef == NCL_double) {
+              tmp_tval  = &((double*)tval)[index_rcoef];
+              tmp_yint  = &((double*)yint)[index_rcoef];
+              tmp_rstd  = &((double*)rstd)[index_rcoef];
+              tmp_rcoef = &((double*)rcoef)[index_rcoef];
+            }
+
+            NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
+                                       &missing_dy.doubleval,tmp_rcoef,tmp_tval,
+                                       &nptxy[index_rcoef],&xave,&yave,tmp_rstd,tmp_yint,
+                                       &ier);
+
+            if (ier == 5) ier_count5++;
+            if (ier == 6) ier_count6++;
+/*
+ * Coerce output to float if necessary.
+ */
+            if(type_rcoef != NCL_double) {
+              ((float*)tval)[index_rcoef]  = (float)*tmp_tval;
+              ((float*)yint)[index_rcoef]  = (float)*tmp_yint;
+              ((float*)rstd)[index_rcoef]  = (float)*tmp_rstd;
+              ((float*)rcoef)[index_rcoef] = (float)*tmp_rcoef;
+            }
+            index_rcoef ++;
+          }
+        }
+      }
+    }
+  }
+
+/*
+ * Handle error messages.
+ */
+  if(ier_count5) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef_n: %i array(s) contained all missing values",ier_count5);
+  }
+  if (ier_count6) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef_n: %i array(s) contained less than 3 non-missing values",ier_count6);
+  }
+/*
+ * free memory.
+ */
+  NclFree(tmp_x);
+  NclFree(tmp_y);
+  if(type_rcoef != NCL_double) {
+    NclFree(tmp_rcoef);
+    NclFree(tmp_tval);
+    NclFree(tmp_yint);
+    NclFree(tmp_rstd);
+  }
+
+  dsizes[0] = total_size_rcoef;
+/*
+ * Get ready to return everything.
+ */
+  if(type_rcoef == NCL_float) {
+/*
+ * Set up return structure.
+ */
+    return_md = _NclCreateVal(
+                      NULL,
+                      NULL,
+                      Ncl_MultiDValData,
+                      0,
+                      rcoef,
+                      &missing_ry,
+                      ndims_rcoef,
+                      dsizes_rcoef,
+                      TEMPORARY,
+                      NULL,
+                      (NclObjClass)nclTypefloatClass
+                      );
+/*
+ * Set up attributes to return.
+ */
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+    att_md = _NclCreateVal(
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   tval,
+                   NULL,
+                   1,                    /*  ndims_rcoef,   */
+                   dsizes,               /*  dsizes_rcoef,  */
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypefloatClass
+                   );
+    _NclAddAtt(
+               att_id,
+               "tval",
+               att_md,
+               NULL
+               );
+    att_md = _NclCreateVal(
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   yint,
+                   NULL,
+                   1,                    /*  ndims_rcoef,   */
+                   dsizes,               /*  dsizes_rcoef,  */
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypefloatClass
+                   );
+    _NclAddAtt(
+               att_id,
+               "yintercept",
+               att_md,
+               NULL
+               );
+    att_md = _NclCreateVal(
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   rstd,
+                   NULL,
+                   1,                    /*  ndims_rcoef,   */
+                   dsizes,               /*  dsizes_rcoef,  */
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypefloatClass
+                   );
+    _NclAddAtt(
+               att_id,
+               "rstd",
+               att_md,
+               NULL
+               );
+  }
+  else {
+/* 
+ * Either x and/or y are double, so return doubles.
+ *
+ * Set up return structure.
+ */
+    return_md = _NclCreateVal(
+                      NULL,
+                      NULL,
+                      Ncl_MultiDValData,
+                      0,
+                      rcoef,
+                      &missing_dy,
+                      ndims_rcoef,
+                      dsizes_rcoef,
+                      TEMPORARY,
+                      NULL,
+                      (NclObjClass)nclTypedoubleClass
+                      );
+/*
+ * Set up attributes to return.
+ */
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+    att_md = _NclCreateVal(
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   tval,
+                   NULL,
+                   1,                    /*  ndims_rcoef,   */
+                   dsizes,               /*  dsizes_rcoef,  */
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypedoubleClass
+                   );
+    _NclAddAtt(
+               att_id,
+               "tval",
+               att_md,
+               NULL
+               );
+
+    att_md = _NclCreateVal(
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   yint,
+                   NULL,
+                   1,                    /*  ndims_rcoef,   */
+                   dsizes,               /*  dsizes_rcoef,  */
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypedoubleClass
+                   );
+    _NclAddAtt(
+               att_id,
+               "yintercept",
+               att_md,
+               NULL
+               );
+
+    att_md = _NclCreateVal(
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   rstd,
+                   NULL,
+                   1,                    /*  ndims_rcoef,   */
+                   dsizes,               /*  dsizes_rcoef,  */
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypedoubleClass
+                   );
+    _NclAddAtt(
+               att_id,
+               "rstd",
+               att_md,
+               NULL
+               );
+  }
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         nptxy,
+                         NULL,
+                         1,                    /*  ndims_rcoef,   */
+                         dsizes,               /*  dsizes_rcoef,  */
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypeintClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "nptxy",
+             att_md,
+             NULL
+             );
+
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Free memory.
+ */
+  NclFree(dsizes_rcoef);
+
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
+}
+
+
 NhlErrorTypes regCoef_shields_W( void )
 {
 /*
@@ -1039,7 +1676,7 @@ NhlErrorTypes regCoef_shields_W( void )
  */
   ng_size_t i, j, ly, lx, ln;
   ng_size_t total_size_leftmost_x, total_size_leftmost_y; 
-  ng_size_t total_size_x, total_size_y, total_size_rcoef;
+  ng_size_t total_size_rcoef;
   int inpts, ier = 0, ier_count5 = 0, ier_count6 = 0;
 /*
  * Retrieve parameters
@@ -1093,14 +1730,12 @@ NhlErrorTypes regCoef_shields_W( void )
   inpts = (int) npts;
 
   total_size_leftmost_x = dsizes_x[0];
-  total_size_x = total_size_leftmost_x * npts;
 /*
  * Don't count first dimension, since this should be the same as the
  * first dimension of x.
  */
   total_size_leftmost_y = 1;
   for(i = 1; i < ndims_y-1; i++) total_size_leftmost_y *= dsizes_y[i];
-  total_size_y = total_size_leftmost_y * npts * dsizes_y[0];
 
 /* 
  * Get size of output variable, which is equal to the product of all but
@@ -2092,8 +2727,8 @@ NhlErrorTypes reg_multlin_W( void )
   ainv         = (double*)calloc(mpts*mpts,sizeof(double));
   s            = (double*)calloc(mpts,sizeof(double));
   if(cnorm == NULL || resid == NULL || tmp_constant == NULL || wk == NULL ||
-	 yy == NULL || cov == NULL || xsd == NULL || xmean == NULL || a == NULL ||
-	 ainv == NULL || s == NULL) {
+         yy == NULL || cov == NULL || xsd == NULL || xmean == NULL || a == NULL ||
+         ainv == NULL || s == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"reg_multlin: Unable to allocate memory for input arrays");
     return(NhlFATAL);
   }

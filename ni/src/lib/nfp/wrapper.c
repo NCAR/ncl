@@ -369,6 +369,7 @@ extern NhlErrorTypes ngezlogo_W(void);
 extern NhlErrorTypes cancor_W(void);
 extern NhlErrorTypes regcoef_W(void);
 extern NhlErrorTypes regCoef_W(void);
+extern NhlErrorTypes regCoef_n_W(void);
 extern NhlErrorTypes regCoef_shields_W(void);
 extern NhlErrorTypes regline_W(void);
 extern NhlErrorTypes reg_multlin_W(void);
@@ -5487,6 +5488,19 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
     NclRegisterFunc(regCoef_W,args,"regCoef",nargs);
+/*
+ * Register "regCoef_n".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+
+    NclRegisterFunc(regCoef_n_W,args,"regCoef_n",nargs);
 /*
  * Register "regCoef_shields".
  *
