@@ -1550,10 +1550,15 @@ NclMultiDValData value;
 		for (i = 0; i < fcp->num_options; i++) {
 			if (fcp->options[i].name != loption)
 				continue;
-			if ((_NclGetFormatFuncs(format) &&
-			     _NclGetFormatFuncs(format) == _NclGetFormatFuncs(fcp->options[i].format)) ) {
-				found = 1;
-				break;
+			if (_NclGetFormatFuncs(format)) {
+				if(_NclGetFormatFuncs(format) == _NclGetFormatFuncs(fcp->options[i].format)) {
+					found = 1;
+					break;
+				}
+				else if (_NclGetLower(fcp->options[i].format) == NrmStringToQuark("all")) {
+					found = 1;
+					break;
+				}
 			}
 			else if (_NclGetLower(format) == NrmStringToQuark("bin") &&
 				 fcp->options[i].format == _NclGetLower(format)) {
