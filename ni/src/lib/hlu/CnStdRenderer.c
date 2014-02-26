@@ -1495,6 +1495,7 @@ static NhlErrorTypes CnStdRender
         NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
         Gint            err_ind;
         Gclip           clip_ind_rect;
+	int            out_of_bounds;
 
 	Cnl = cnl;
 	Cnp = cnp;
@@ -1522,15 +1523,24 @@ static NhlErrorTypes CnStdRender
 			       NhlNtrOutOfRangeF, &cnp->out_of_range_val,
 			       NULL);
 		c_cpsetr("ORV",cnp->out_of_range_val);
-		if (cnp->fill_mode != NhlCELLFILL && cnp->fill_mode != NhlMESHFILL &&
-		    (fabs(tfp->data_xstart) > 540 || fabs(tfp->data_xend) > 540 || fabs(tfp->data_ystart) > 90 || fabs(tfp->data_xend ) > 90)) {
-			char *mode = "AreaFill";
-			if (cnp->fill_mode == NhlRASTERFILL) {
-				mode = "RasterFill";
+
+		out_of_bounds = MAX((double)fabs((double)tfp->data_xstart),(double)fabs((double)tfp->data_xend)) > 541 ||
+			MAX((double)fabs((double)tfp->data_ystart),(double)fabs((double)tfp->data_yend)) > 91;
+		if (out_of_bounds) {
+			if (cnp->fill_on && (cnp->fill_mode == NhlAREAFILL || cnp->fill_mode == NhlRASTERFILL)) {
+				char *mode = "AreaFill";
+				if (cnp->fill_mode == NhlRASTERFILL) {
+					mode = "RasterFill";
+				}
+				e_text =  "%s: coordinates are out of range for drawing over a map: standard %s rendering method will not work;\n consider setting the resource trGridType to \"TriangularMesh\" if coordinates contain missing values";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,cnp->fill_mode == NhlAREAFILL ? "AreaFill" : "RasterFill");
+				return(NhlFATAL);
 			}
-			e_text =  "%s: coordinates are out of range for drawing over a map: standard %s rendering method will not work;\n consider setting the resource trGridType to \"TriangularMesh\" if coordinates contain missing values";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,cnp->fill_mode == NhlAREAFILL ? "AreaFill" : "RasterFill");
-			return(NhlFATAL);
+			else if (cnp->lines_on || cnp->line_lbls.on) {
+				e_text =  "%s: coordinates are out of range for drawing over a map: standard line or line label rendering method will not work;\n consider setting the resource trGridType to \"TriangularMesh\" if coordinates contain missing values";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+				return(NhlFATAL);
+			}
 		}
 	}
 
