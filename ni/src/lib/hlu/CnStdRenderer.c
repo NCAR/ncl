@@ -1528,7 +1528,7 @@ static NhlErrorTypes CnStdRender
 			if (cnp->fill_mode == NhlRASTERFILL) {
 				mode = "RasterFill";
 			}
-			e_text =  "%s: coordinates are out of range for drawing over a map: standard %s rendering method wil not work;\n consider setting the resouce trGridType to \"TriangularMesh\" if coordinates contain missing values";
+			e_text =  "%s: coordinates are out of range for drawing over a map: standard %s rendering method will not work;\n consider setting the resource trGridType to \"TriangularMesh\" if coordinates contain missing values";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,cnp->fill_mode == NhlAREAFILL ? "AreaFill" : "RasterFill");
 			return(NhlFATAL);
 		}
