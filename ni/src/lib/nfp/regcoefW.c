@@ -377,10 +377,10 @@ NhlErrorTypes regcoef_W( void )
  * Handle error messages.
  */
   if(ier_count5) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"regcoef: %i array(s) contained all missing values",ier_count5);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"regcoef: %d array(s) contained all missing values",ier_count5);
   }
   if (ier_count6) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"regcoef: %i array(s) contained less than 3 non-missing values",ier_count6);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"regcoef: %d array(s) contained less than 3 non-missing values",ier_count6);
   }
 /*
  * free memory.
@@ -760,10 +760,10 @@ NhlErrorTypes regCoef_W( void )
  * Handle error messages.
  */
   if(ier_count5) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef: %i array(s) contained all missing values",ier_count5);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef: %d array(s) contained all missing values",ier_count5);
   }
   if (ier_count6) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef: %i array(s) contained less than 3 non-missing values",ier_count6);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef: %d array(s) contained less than 3 non-missing values",ier_count6);
   }
 /*
  * free memory.
@@ -1400,10 +1400,10 @@ NhlErrorTypes regCoef_n_W( void )
  * Handle error messages.
  */
   if(ier_count5) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef_n: %i array(s) contained all missing values",ier_count5);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef_n: %d array(s) contained all missing values",ier_count5);
   }
   if (ier_count6) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef_n: %i array(s) contained less than 3 non-missing values",ier_count6);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef_n: %d array(s) contained less than 3 non-missing values",ier_count6);
   }
 /*
  * free memory.
@@ -1876,10 +1876,10 @@ NhlErrorTypes regCoef_shields_W( void )
  * Handle error messages.
  */
   if(ier_count5) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef_shields: %i array(s) contained all missing values",ier_count5);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef_shields: %d array(s) contained all missing values",ier_count5);
   }
   if (ier_count6) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef_shields: %i array(s) contained less than 3 non-missing values",ier_count6);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef_shields: %d array(s) contained less than 3 non-missing values",ier_count6);
   }
 /*
  * free memory.
