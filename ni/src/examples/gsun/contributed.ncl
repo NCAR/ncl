@@ -2180,14 +2180,14 @@ begin
   end if
   if (t.eq."float") then
       if (opt.eq.0) then
-          return( floattoint(x) )       ; truncate
+          return( toint(x) )       ; truncate
       else
           return( round(x,3) )
       end if
   end if
   if (t.eq."double") then
       if (opt.eq.0) then
-          return( doubletointeger(x) )  ; truncate
+          return( toint(x) )  ; truncate
       else
           return( round(x,3) )
       end if
@@ -4026,32 +4026,51 @@ begin
    ntim  = dimx(0)
    nlat  = dimx(1)
    mlon  = dimx(2)
-   ndys  = 366                                     ; allow for leap year
+   if (isatt(yyyyddd,"calendar")) then
+       if (yyyyddd@calendar.eq."360_day" .or. yyyyddd@calendar.eq."360") then
+           ndys = 360
+       end if
+       if (yyyyddd@calendar.eq."365_day" .or. yyyyddd@calendar.eq."365"      .or. \
+           yyyyddd@calendar.eq."noleap"  .or. yyyyddd@calendar.eq."no_leap") then
+           ndys  = 365
+       end if
+       if (yyyyddd@calendar.eq."366_day" .or. yyyyddd@calendar.eq."366"      .or. \
+           yyyyddd@calendar.eq."allleap" .or. yyyyddd@calendar.eq."all_leap") then
+           ndys  = 366
+       end if
+       if (yyyyddd@calendar.eq."standard" .or. yyyyddd@calendar.eq."gregorian") then
+           ndys  = 366
+       end if
+   else
+       ndys  = 366     ; default
+   end if
 
-   days  = yyyyddd - (yyyyddd/1000)*1000           ; strip year info [yyyy]
-
+   days  = yyyyddd - (yyyyddd/1000)*1000           ; strip year info [ddd]
    clmDay= new((/ndys,nlat,mlon/),typeof(x), getFillValue(x) ) ; daily climatology
+
 ;
 ; Compute averages for each sequential day of the year. 
-; This uses dimension swapping.
 ;
-   do ndy=0,ndys-2                                 ; ndy=0->364 ==> day of year 1->365       
-      indx = ind( days.eq.(ndy+1) )                ; indx:indx Mar 2012, handle 1 element
+   do ndy=0,ndys-1                                 
+      indx = ind( days.eq.(ndy+1) )               
       if (.not.ismissing(indx(0))) then
           nindx = dimsizes(indx)
-        if (nindx.eq.1) then                       ; force 3rd dimension
-         ;clmDay(ndy,:,:) = dim_avg(x(lat|:,lon|:,time|indx:indx))
-          clmDay(ndy,:,:) = dim_avg_n(x(indx:indx,:,:), 0) ; 5 Nov 2009 => dim_avg_n
-        else
-         ;clmDay(ndy,:,:) = dim_avg(x(lat|:,lon|:,time|indx))
-          clmDay(ndy,:,:) = dim_avg_n(x(indx,:,:), 0)  ; 5 Nov 2009 => dim_avg_n
-        end if
+          if (nindx.eq.1) then                       ; force 3rd dimension
+              clmDay(ndy,:,:) = dim_avg_n(x(indx:indx,:,:), 0) 
+          else
+              clmDay(ndy,:,:) = dim_avg_n(x(indx,:,:), 0) 
+          end if
       end if
       delete(indx)                  
    end do
+
+   if (.not.isatt(yyyyddd,"calendar") .or. \
+       isatt(yyyyddd,"calendar") .and. yyyyddd@calendar.eq."standard" .or. \
+                                       yyyyddd@calendar.eq."gregorian") then
                                                    ; nominal day 366 
                                                    ; ave(31 Dec + 1 Jan)=leap
-   clmDay(ndys-1,:,:) = (clmDay(0,:,:) + clmDay(ndys-2,:,:))*0.5
+       clmDay(ndys-1,:,:) = (clmDay(0,:,:) + clmDay(ndys-2,:,:))*0.5
+   end if
 
    nFill = num(ismissing(clmDay))
    if (nFill.eq.0) then
@@ -4077,6 +4096,10 @@ begin
    
    copy_VarCoords(x(0,:,:), clmDay(0,:,:))   ; trick
    delete(clmDay@year_day)                   ; clean up
+
+   if (isatt(yyyyddd,"calendar")) then
+       clmDay@calendar = yyyyddd@calendar 
+   end if
  
    return (clmDay)
 end
@@ -4121,7 +4144,24 @@ begin
    klev  = dimx(1)
    nlat  = dimx(2)
    mlon  = dimx(3)
-   ndys  = 366                                     ; allow for leap year
+   if (isatt(yyyyddd,"calendar")) then
+       if (yyyyddd@calendar.eq."360_day" .or. yyyyddd@calendar.eq."360") then
+           ndys = 360
+       end if
+       if (yyyy@calendar.eq."365_day" .or. yyyy@calendar.eq."365"      .or. \
+           yyyy@calendar.eq."noleap"  .or. yyyy@calendar.eq."no_leap") then
+           ndys  = 365
+       end if
+       if (yyyy@calendar.eq."366_day" .or. yyyy@calendar.eq."366"      .or. \
+           yyyy@calendar.eq."allleap" .or. yyyy@calendar.eq."all_leap") then
+           ndys  = 366
+       end if
+       if (yyyy@calendar.eq."standard" .or. yyyy@calendar.eq."gregorian") then
+           ndys  = 366
+       end if
+   else
+       ndys  = 366     ; default
+   end if
 
    days  = yyyyddd - (yyyyddd/1000)*1000           ; strip year info [yyyy]
 
@@ -4134,17 +4174,22 @@ begin
       indx = ind( days.eq.(ndy+1) )                ; indx:indx Mar 2012, handle 1 element
       if (.not.ismissing(indx(0))) then
           nindx = dimsizes(indx)
-        if (nindx.eq.1) then                       ; force 3rd dimension
-            clmDay(ndy,:,:,:) = dim_avg_n(x(indx:indx,:,:,:), 0)
-        else
-            clmDay(ndy,:,:,:) = dim_avg_n(x(indx,:,:,:), 0)
-        end if
+          if (nindx.eq.1) then                     ; force 3rd dimension
+              clmDay(ndy,:,:,:) = dim_avg_n(x(indx:indx,:,:,:), 0)
+          else
+              clmDay(ndy,:,:,:) = dim_avg_n(x(indx,:,:,:), 0)
+          end if
       end if
       delete(indx)                  
    end do
-                                                   ; nominal day 366 
-                                                   ; ave(31 Dec + 1 Jan)=leap
-   clmDay(ndys-1,:,:,:) = (clmDay(0,:,:,:) + clmDay(ndys-2,:,:,:))*0.5
+
+   if (.not.isatt(yyyyddd,"calendar") .or. \
+       isatt(yyyyddd,"calendar") .and. yyyyddd@calendar.eq."standard" .or. \
+                                       yyyyddd@calendar.eq."gregorian") then
+                                              ; nominal day 366 
+                                              ; ave(31 Dec + 1 Jan)=leap
+      clmDay(ndys-1,:,:,:) = (clmDay(0,:,:,:) + clmDay(ndys-2,:,:,:))*0.5
+   end if
 
    nFill = num(ismissing(clmDay))
    if (nFill.eq.0) then
@@ -4161,7 +4206,6 @@ begin
    clmDay@information = "Raw daily averages across all years"
    clmDay@smoothing   = "None"
 
-
    year_day           = ispan(1,ndys,1)
    year_day@long_name = "day of year"
    year_day@units     = "ddd"
@@ -4171,6 +4215,10 @@ begin
    
    copy_VarCoords(x(0,:,:,:), clmDay(0,:,:,:))   ; trick
    delete(clmDay@year_day)                   ; clean up
+
+   if (isatt(yyyyddd,"calendar")) then
+       clmDay@calendar = yyyyddd@calendar 
+   end if
  
    return (clmDay)
 end
@@ -4197,7 +4245,7 @@ begin
   end if
 
   z  = clmDay($dn(1)$|:,$dn(2)$|:,$dn(0)$|:); reorder make time fastest varying dimension
-  cf = ezfftf( z )                          ; [2] x [nlat] x [mlon] x [183]
+  cf = ezfftf( z )                          ; [2] x [nlat] x [mlon] x [nday/2+1]
 
                                             ; remember NCL is 0-based 
                                             ; cf(:,0:nHarm-1) are retained unaltered
@@ -4262,7 +4310,7 @@ undef("clmDayHr")
 ; It has not been extensively tested and it is not documented.
 ; Consider this unsupported at this time.
 ;
-function clmDayHr(z, yyyymmddhh[*]:integer)
+function clmDayHr(z:numeric, yyyymmddhh[*]:integer)
 begin
   yyyy = yyyymmddhh/1000000
   mdh  = yyyymmddhh%1000000
@@ -4271,18 +4319,49 @@ begin
   dd   = dh/100
   hh   = dh-dd*100
 
+  if (isatt(yyyymmddhh,"calendar")) then
+      yyyy@calendar = yyyymmddhh@calendar     ; needed for 'day_of_year'
+  end if
+
   NTIM   = dimsizes(yyyymmddhh)     ; all time steps
 
   dddhh  = day_of_year(yyyy, mm, dd)*100 + hh
   yyyydddhh = yyyy*100000 +  dddhh
 
+  if (isatt(yyyy,"calendar")) then
+      yyyydddhh@calendar = yyyy@calendar
+  end if
+
   dhh    = hh(1)-hh(0)              ; assume constant 
   nsmp   = 24/dhh                   ; # samples/day                          
 
-  nday   = 365                      ; no leap
-  ntim   = nsmp*nday                ; # non-leap year times
+  if (.not.isatt(yyyy,"calendar") .or. \
+      isatt(yyyy,"calendar") .and. yyyy@calendar.eq."standard" .or. \
+                                   yyyy@calendar.eq."gregorian") then
+      nday   = 365
+      ndayx  = 366                  ; including leap year
+  end if
+  if (isatt(yyyy,"calendar")) then
+      if (yyyy@calendar.eq."none") then
+          print("clmDayHr: yyyy@calendar=none: I have no idea what to do")
+          exit
+      end if
+      if (yyyy@calendar.eq."360_day" .or. yyyy@calendar.eq."360") then
+          nday  = 360
+          ndayx = 360
+      end if
+      if (yyyy@calendar.eq."365_day" .or. yyyy@calendar.eq."365"      .or. \
+          yyyy@calendar.eq."noleap"  .or. yyyy@calendar.eq."no_leap") then
+          nday  = 365
+          ndayx = 365
+      end if
+      if (yyyy@calendar.eq."366_day" .or. yyyy@calendar.eq."366"      .or. \
+          yyyy@calendar.eq."allleap" .or. yyyy@calendar.eq."all_leap") then
+          nday  = 366
+          ndayx = 366
+      end if
+  end if
 
-  ndayx  = 366                      ; including leap year
   ntimx  = nsmp*ndayx
 
   dimz   = dimsizes(z)
@@ -4291,24 +4370,31 @@ begin
 ;---------------------------------------------------------------
 ; Create array to hold climatology and counts.
 ;---------------------------------------------------------------
+  if (typeof(z).eq."double") then
+      zType = "double"
+      zFill =  1d20
+  else
+      zType = "float"
+      zFill =  1e20
+  end if
 
   if (rankz.eq.4) then
       klev   = dimz(1)
       nlat   = dimz(2)
       mlon   = dimz(3)
-      zClm   = new ( (/ntimx,klev,nlat,mlon/), "float", 1e20)
+      zClm   = new ( (/ntimx,klev,nlat,mlon/), zType, zFill)
   end if
   if (rankz.eq.3) then
       nlat   = dimz(1)
       mlon   = dimz(2)
-      zClm   = new ( (/ntimx,nlat,mlon/), "float", 1e20)
+      zClm   = new ( (/ntimx,nlat,mlon/), zType, zFill)
   end if
   if (rankz.eq.2) then
       npts   = dimz(1)
-      zClm   = new ( (/ntimx,npts/), "float", 1e20)
+      zClm   = new ( (/ntimx,npts/), zType, zFill)
   end if
   if (rankz.eq.1) then
-      zClm   = new ( (/ntimx/), "float", 1e20)
+      zClm   = new ( (/ntimx/), zType, zFill)
   end if
 
   yrStrt = yyyy(0)
@@ -4343,23 +4429,26 @@ begin
 ;---------------------------------------------------------------
 ; Fill in climatological day 366 with the average
 ; of Jan 1 (day 1) and 31 Dec (day 365)
+; greorian, standard or no calendar attribute
 ;---------------------------------------------------------------
-  do ns=0,nsmp-1
-
-     if (rankz.eq.4) then
-         zClm(ntim+ns,:,:,:) = 0.5*(zClm(ns,:,:,:)+zClm(ntim-(nsmp-ns),:,:,:))
-     end if
-     if (rankz.eq.3) then
-         zClm(ntim+ns,:,:)   = 0.5*(zClm(ns,:,:)+zClm(ntim-(nsmp-ns),:,:))
-     end if
-     if (rankz.eq.2) then
-         zClm(ntim+ns,:)     = 0.5*(zClm(ns,:)+zClm(ntim-(nsmp-ns),:))
-     end if
-     if (rankz.eq.1) then
-         zClm(ntim+ns)       = 0.5*(zClm(ns)+zClm(ntim-(nsmp-ns)))
-     end if
-
-  end do
+  if (nday.eq.365 .and. ndayx.eq.366) then
+      do ns=0,nsmp-1
+    
+         if (rankz.eq.4) then
+             zClm(ntim+ns,:,:,:) = 0.5*(zClm(ns,:,:,:)+zClm(ntim-(nsmp-ns),:,:,:))
+         end if
+         if (rankz.eq.3) then
+             zClm(ntim+ns,:,:)   = 0.5*(zClm(ns,:,:)+zClm(ntim-(nsmp-ns),:,:))
+         end if
+         if (rankz.eq.2) then
+             zClm(ntim+ns,:)     = 0.5*(zClm(ns,:)+zClm(ntim-(nsmp-ns),:))
+         end if
+         if (rankz.eq.1) then
+             zClm(ntim+ns)       = 0.5*(zClm(ns)+zClm(ntim-(nsmp-ns)))
+         end if
+    
+      end do
+  end if
 
 ;---------------------------------------------------------------
 ; Meta data
@@ -4424,22 +4513,24 @@ function calcDayAnomTLL (x[*][*][*]:numeric, yyyyddd:integer, clmDay[*][*][*]:nu
 
 ; Usage:  xAnom = calcDayAnomTLL (x, yyyyddd, clmDay)
 
-local dimx, ntim, nlat, mlon, ndys, days, xAnom, nt
+local dimx, ntim, nlat, mlon, days, xAnom, nt
 begin
+   if (isatt(yyyyddd,"calendar") .and. isatt(clmDay,"calendar")) then  
+       if (yyyyddd@calendar .ne. clmDay@calendar) then
+           print("calcDayAnomTLL: calendar mismatch")
+           print("                yyyyddd@calendar = "+yyyyddd@calendar)
+           print("                 clmday@calendar = "+ clmDay@calendar)
+           exit
+       end if
+   end if
 
    dimx  = dimsizes (x)
 
    ntim  = dimx(0)
    nlat  = dimx(1)
    mlon  = dimx(2)
-   ndys  = 366                               
 
    days  = yyyyddd - (yyyyddd/1000)*1000      ; strip year info [yyyy]
-
-; quick check [debug]
-  ;if (.not.all(days(0:ndys-2).eq.clmDay&year_day(0:ndys-2))) then
-  ;    print("calcDayAnomTLL: day mismatch")
-  ;end if
 
 ; loop on every day and compute difference. 
 
@@ -4449,114 +4540,126 @@ begin
    end do
 
    if (isatt(x,"long_name")) then
-       xAnom@long_name = "Anomalies: "+x@long_name
-   else
-       xAnom@long_name = "Anomalies from Daily Climatology"
-   end if
-   if (isatt(x,"units")) then
-       xAnom@units = x@units
-   end if
-
-   copy_VarCoords(x, xAnom)
-
-   return(xAnom)
-end
-
-; *******************************************************************
-undef("calcDayAnomTLLL")
-function calcDayAnomTLLL (x[*][*][*][*]:numeric, yyyyddd:integer, clmDay[*][*][*][*]:numeric)   
-
-; Remove the Annual Cycle from daily data. 
-; On return x will consist of deviations from each day's long term mean.
-;
-;              x(time,lev,lat,lon)  <==== input dimension order
-;              x!0 = "time"         <==== time is in days
-;              x!1 = "lev"
-;              x!2 = "lat"
-;              x!3 = "lon"
-;
-;
-;    non-Leap  yyyyddd
-;              1905001 =>  Jan  1, 1905
-;              1905032 =>  Feb  1, 1905
-;              1905059 =>  Feb 28, 1905
-;              1905060 =>  Mar  1, 1905
-;              1905365 =>  Dec 31, 1905
-;
-;    Leap
-;              1908001 =>  Jan  1, 1908]
-;              1908032 =>  Feb  1, 1908]
-;              1908059 =>  Feb 28, 1908]
-;              1908060 =>  Feb 29, 1908]
-;              1908061 =>  Mar  1, 1908]
-;              1908366 =>  Dec 31, 1908]
-
-; Usage:  xAnom = calcDayAnomTLLL (x, yyyyddd, clmDay)
-
-local dimx, ntim, klev,nlat, mlon, ndys, days, xAnom, nt
-begin
-
-   dimx  = dimsizes (x)
-
-   ntim  = dimx(0)
-   klev  = dimx(1)
-   nlat  = dimx(2)
-   mlon  = dimx(3)
-   ndys  = 366                               
-
-   days  = yyyyddd - (yyyyddd/1000)*1000      ; strip year info [yyyy]
-
-; quick check [debug]
-  ;if (.not.all(days(0:ndys-2).eq.clmDay&year_day(0:ndys-2))) then
-  ;    print("calcDayAnomTLL: day mismatch")
-  ;end if
-
-; loop on every day and compute difference. 
-
-   xAnom = (/ x  /)                                 ; create xAnom
-   do nt=0,ntim-1
-      xAnom(nt,:,:,:) = x(nt,:,:,:) - clmDay(days(nt)-1,:,:,:)   ; -1 for 0-based subscript
-   end do
-
-   if (isatt(x,"long_name")) then
-       xAnom@long_name = "Anomalies: "+x@long_name
-   else
-       xAnom@long_name = "Anomalies from Daily Climatology"
-   end if
-   if (isatt(x,"units")) then
-       xAnom@units = x@units
-   end if
-
-   copy_VarCoords(x, xAnom)
-   return(xAnom)
-end
-
-; **********************************************************************
-; D. Shea
-; create different view of variable
-; The undocumented func had 2 arguments (yyyymmdd[*], opt[1]:logical)
-; This was changed when this function was made part of the official 
-; distribution 5.1.1
-
+        xAnom@long_name = "Anomalies: "+x@long_name
+    else
+        xAnom@long_name = "Anomalies from Daily Climatology"
+    end if
+    if (isatt(x,"units")) then
+        xAnom@units = x@units
+    end if
+    if (isatt(yyyyddd,"calendar")) then
+        xAnom@calendar = yyyyddd@calendar
+    end if
+ 
+    copy_VarCoords(x, xAnom)
+ 
+    return(xAnom)
+ end
+ 
+ ; *******************************************************************
+ undef("calcDayAnomTLLL")
+ function calcDayAnomTLLL (x[*][*][*][*]:numeric, yyyyddd:integer, clmDay[*][*][*][*]:numeric)   
+ 
+ ; Remove the Annual Cycle from daily data. 
+ ; On return x will consist of deviations from each day's long term mean.
+ ;
+ ;              x(time,lev,lat,lon)  <==== input dimension order
+ ;              x!0 = "time"         <==== time is in days
+ ;              x!1 = "lev"
+ ;              x!2 = "lat"
+ ;              x!3 = "lon"
+ ;
+ ;
+ ;    non-Leap  yyyyddd
+ ;              1905001 =>  Jan  1, 1905
+ ;              1905032 =>  Feb  1, 1905
+ ;              1905059 =>  Feb 28, 1905
+ ;              1905060 =>  Mar  1, 1905
+ ;              1905365 =>  Dec 31, 1905
+ ;
+ ;    Leap
+ ;              1908001 =>  Jan  1, 1908]
+ ;              1908032 =>  Feb  1, 1908]
+ ;              1908059 =>  Feb 28, 1908]
+ ;              1908060 =>  Feb 29, 1908]
+ ;              1908061 =>  Mar  1, 1908]
+ ;              1908366 =>  Dec 31, 1908]
+ 
+ ; Usage:  xAnom = calcDayAnomTLLL (x, yyyyddd, clmDay)
+ 
+ local dimx, ntim, klev,nlat, mlon, ndys, days, xAnom, nt
+ begin
+    if (isatt(yyyyddd,"calendar") .and. isatt(clmDay,"calendar")) then  
+        if (yyyyddd@calendar .ne. clmDay@calendar) then
+            print("calcDayAnomTLL: calendar mismatch")
+            print("                yyyyddd@calendar = "+yyyyddd@calendar)
+            print("                 clmday@calendar = "+ clmDay@calendar)
+            exit
+        end if
+    end if
+ 
+    dimx  = dimsizes (x)
+ 
+    ntim  = dimx(0)
+    klev  = dimx(1)
+    nlat  = dimx(2)
+    mlon  = dimx(3)
+ 
+    days  = yyyyddd - (yyyyddd/1000)*1000      ; strip year info [yyyy]
+ 
+ ; loop on every day and compute difference. 
+ 
+    xAnom = (/ x  /)                                 ; create xAnom
+    do nt=0,ntim-1
+       xAnom(nt,:,:,:) = x(nt,:,:,:) - clmDay(days(nt)-1,:,:,:)   ; -1 for 0-based subscript
+    end do
+ 
+    if (isatt(x,"long_name")) then
+        xAnom@long_name = "Anomalies: "+x@long_name
+    else
+        xAnom@long_name = "Anomalies from Daily Climatology"
+    end if
+    if (isatt(x,"units")) then
+        xAnom@units = x@units
+    end if
+ 
+    if (isatt(yyyyddd,"calendar")) then
+        xAnom@calendar = yyyyddd@calendar
+    end if
+ 
+    copy_VarCoords(x, xAnom)
+    return(xAnom)
+ end
+ 
+ ; **********************************************************************
+ ; D. Shea
+ ; create different view of variable
+ ; v6.2.0: calendar attribute recognized
+ 
 undef("yyyymmdd_to_yyyyddd")
 function yyyymmdd_to_yyyyddd (yyyymmdd[*]:integer)
 local yyyy, mmdd, mm, dd, yyyyddd
 begin
- yyyy = yyyymmdd/10000
- mmdd = yyyymmdd - (yyyy*10000)
- mm   = mmdd/100
- dd   = mmdd - (mm*100)
+  yyyy = yyyymmdd/10000
+  mmdd = yyyymmdd - (yyyy*10000)
+  mm   = mmdd/100
+  dd   = mmdd - (mm*100)
+ 
+  if (isatt(yyyymmdd,"calendar")) then     ; needed for day_of_year
+      yyyy@calendar = yyyymmdd@calendar
+  end if
+ 
+  yyyyddd  = yyyy*1000 +day_of_year(yyyy, mm, dd)
+  copy_VarMeta(yyyymmdd, yyyyddd)
+  yyyyddd@long_name = "yyyy and day_of_year"
+  yyyyddd@units = "yyyyddd"
 
- yyyyddd  = yyyy*1000 +day_of_year(yyyy, mm, dd)
- copy_VarMeta(yyyymmdd, yyyyddd)
- yyyyddd@long_name = "yyyy and day_of_year"
- yyyyddd@units = "yyyyddd"
- return(yyyyddd)
+  return(yyyyddd)
 end
 
 ; **********************************************************************
 ; D. Shea
-; create different view of variable
+; v6.2.0: calendar attribute recognized
 
 undef("yyyyddd_to_yyyymmdd")
 function yyyyddd_to_yyyymmdd ( yyyyddd[*]:integer )
@@ -4568,15 +4671,31 @@ begin
   nTime    = dimsizes( yyyyddd )
   yyyy     = yyyyddd/1000
   ddd      = yyyyddd - yyyy*1000
-           ; non leap and leap
+           ; non leap and leap [greorian, standard, or no 'calendar' attribute
   days     = (/ (/31,28,31,30,31,30,31,31,30,31,30,31/) \    ; [2] x [12]
               , (/31,29,31,30,31,30,31,31,30,31,30,31/) /)
+
+  if (isatt(yyyyddd,"calendar")) then                        ; retrofit to existing code
+      yyyy@calendar = yyyyddd@calendar                       ; needed for day_of_year
+
+      if (yyyyddd@calendar.eq."365_day" .or. yyyyddd@calendar.eq."365" .or. \
+          yyyyddd@calendar.eq."noleap"  .or. yyyyddd@calendar.eq."no_leap") then
+          days(1,:) = days(0,:)         ; make all non-leap year 
+      end if
+      if (yyyyddd@calendar.eq."366_day" .or. yyyyddd@calendar.eq."366" .or. \
+          yyyyddd@calendar.eq."allleap" .or. yyyyddd@calendar.eq."all_leap") then
+          days(0,:) = days(1,:)         ; make all leap yeary
+      end if
+      if (yyyyddd@calendar.eq."360_day" .or. yyyyddd@calendar.eq."360") then
+          days      = 30                ; make all 30
+      end if
+  end if
 
   yyyymmdd = new (nTime, integer)
 
   do nt=0,nTime-1
      iyr   = 0
-     if (isleapyear(yyyy(nt))) then
+     if (isleapyear(yyyy(nt))) then   ; only has effect for standard, gregorian
          iyr   = 1
      end if
 
@@ -4608,6 +4727,10 @@ begin
    yyyymmdd@long_name = "current date"
    yyyymmdd@units     = "YYYYMMDD" 
    yyyymmdd@info      = "converted from YYYYDDD" 
+
+   if (isatt(yyyyddd,"calendar")) then
+       yyyymmdd@calendar = yyyyddd@calendar
+   end if
 
    return(yyyymmdd) 
 end
@@ -4894,6 +5017,8 @@ end
 ;****************************************************
 ; D. Shea
 ; Take a monthly climatology and make a daily climatology
+; Current for gregorian / standard year.
+;
 ; Supported: leftmost dimension must be 12
 ;            x(12), x(12,N), x(12,N1,N2), x(12,N1,N2,N3)
 ; x must have named dimensions on entry
@@ -7579,12 +7704,12 @@ begin
   if (typeof(yyyymm).eq."double" .or. typeof(mmOffset).eq."double") then 
       xmos = 12.d0                         
       one  = 1.0d0                        
-      YYYYMM = doubletoint(yyyymm)       ; numerical issue
+      YYYYMM = toint(yyyymm)       ; numerical issue
   else                                   
       xmos = 12.0                       
       one  = 1.0                       
       if (typeof(yyyymm).eq."float") then
-          YYYYMM = floattoint(yyyymm)    ; numerical issue
+          YYYYMM = toint(yyyymm)    ; numerical issue
       else
           YYYYMM = yyyymm
       end if
@@ -7609,7 +7734,8 @@ end
 ;
 ; yyyymmdd       - scalar or array of dates
 ; 
-; assumes Gregorian calendar
+; 6.2.0: calendar attribute
+;
 undef ("yyyymmdd2yyyyFrac") 
 function yyyymmdd2yyyyFrac (yyyymmdd:numeric, ddOffset[1]:numeric)
 local year, mmdd, mon, day, dayYear, nDay, yrFrac, n, con, varType, YYYYMMDD
@@ -7619,11 +7745,7 @@ begin
      if (varType.eq."integer") then
          YYYYMMDD = yyyymmdd
      else
-         if (varType.eq."float") then
-             YYYYMMDD = floattointeger(yyyymmdd)
-         else
-             YYYYMMDD = doubletointeger(yyyymmdd)
-         end if
+         YYYYMMDD = toint(yyyymmdd)
      end if
 
      year = YYYYMMDD/10000
@@ -7633,20 +7755,44 @@ begin
      mon  = mmdd/100
      day  = mmdd-mon*100
      delete (mmdd)
+
+     if (isatt(yyyymmdd,"calendar")) then   ; retrofit code for calendar
+         year@calendar = yyyymmdd@calendar  ; check for calendar
+     end if
      
-     dayYear = day_of_year(year, mon, day)  ; Gregorian calendar
-     delete (mon)
-     delete (day)
+     dayYear = day_of_year(year, mon, day)  
+     delete ( [/mon, day /] )
      
-     nDay   = dimsizes(yyyymmdd)
-     if (varType.eq."integer" .or. varType.eq."float") then
-         yrFrac = new( nDay, "float")
-         con    = (/ 365, 366 /)*1.0
-     else
+     nDay   = dimsizes(yyyymmdd)            ; all days 
+     if (varType.eq."double") then
          yrFrac = new( nDay, "double")
-         con    = (/ 365, 366 /)*1d0
+         one    = 1d0
+     else
+         yrFrac = new( nDay, "float")
+         one    = 1.0
      end if
      delete(yrFrac@_FillValue)
+
+     if (isatt(yyyymmdd,"calendar")) then    ; retrofit to existing code
+         yrFrac@calendar = yyyymmdd@calendar
+
+         if (yyyymmdd@calendar.eq."360_day" .or. yyyymmdd@calendar.eq."360") then
+             con = (/ 360, 360 /)*one
+         end if
+         if (yyyymmdd@calendar.eq."365_day" .or. yyyymmdd@calendar.eq."365"    .or. \
+             yyyymmdd@calendar.eq."noleap"  .or. yyyymmdd@calendar.eq."no_leap") then
+             con = (/ 365, 365 /)*one
+         end if
+         if (yyyymmdd@calendar.eq."366_day" .or. yyyymmdd@calendar.eq."366"    .or. \
+             yyyymmdd@calendar.eq."allleap" .or. yyyymmdd@calendar.eq."all_leap") then
+             con = (/ 366, 366 /)*one
+         end if
+         if (yyyymmdd@calendar.eq."gregorian" .or. yyyymmdd@calendar.eq."standard") then
+             con = (/ 365, 366 /)*one 
+         end if
+     else
+         con = (/ 365, 366 /)*one             ; default is gregorian/standard 
+     end if
         
      do n=0,nDay-1
         if (isleapyear(year(n))) then
@@ -7702,11 +7848,7 @@ begin
      if (varType.eq."integer") then
          YYYYMMDDHH = yyyymmddhh
      else
-         if (varType.eq."float") then
-             YYYYMMDDHH = floattointeger(yyyymmddhh)
-         else
-             YYYYMMDDHH = doubletointeger(yyyymmddhh)
-         end if
+         YYYYMMDDHH = toint(yyyymmddhh)
      end if
 
      year   = YYYYMMDDHH/1000000
@@ -7721,19 +7863,43 @@ begin
      hour = ddhh-day*100
      delete (ddhh)
 
-     dayYear = day_of_year(year, mon, day)  ; Gregorian calendar
-     delete (mon)
-     delete (day)
+     if (isatt(yyyymmddhh,"calendar")) then
+         year@calendar = yyyymmddhh@calendar  ; check for calendar
+     end if
+
+     dayYear = day_of_year(year, mon, day)    ; Gregorian calendar
+     delete ([/mon, day/])
 
      nTim   = dimsizes(yyyymmddhh)
-     if (varType.eq."integer" .or. varType.eq."float") then
-         yrFrac = new( nTim, "float")
-         con    = (/ 365, 366, 86400, 3600 /)*1.0
+
+     if (varType.eq."double") then
+         yrFrac = new( nDay, "double", "No_FillValue")
+         one    = 1d0
      else
-         yrFrac = new( nTim, "double")
-         con    = (/ 365, 366, 86400, 3600 /)*1d
+         yrFrac = new( nDay, "float", "No_FillValue")
+         one    = 1.0
      end if
-     delete(yrFrac@_FillValue)
+
+     if (isatt(yyyymmdd,"calendar")) then    ; retrofit to existing code
+         yrFrac@calendar = yyyymmdd@calendar
+
+         if (yyyymmdd@calendar.eq."360_day" .or. yyyymmdd@calendar.eq."360") then
+             con = (/ 360, 360, 86400, 3600 /)*one
+         end if
+         if (yyyymmdd@calendar.eq."365_day" .or. yyyymmdd@calendar.eq."365"    .or. \
+             yyyymmdd@calendar.eq."noleap"  .or. yyyymmdd@calendar.eq."no_leap") then
+             con = (/ 365, 365, 86400, 3600 /)*one
+         end if
+         if (yyyymmdd@calendar.eq."366_day" .or. yyyymmdd@calendar.eq."366"    .or. \
+             yyyymmdd@calendar.eq."allleap" .or. yyyymmdd@calendar.eq."all_leap") then
+             con = (/ 366, 366, 86400, 3600 /)*one
+         end if
+         if (yyyymmdd@calendar.eq."gregorian" .or. yyyymmdd@calendar.eq."standard") then
+             con = (/ 365, 366, 86400, 3600 /)*one 
+         end if
+     else
+         con = (/ 365, 366, 86400, 3600 /)*one   ; default is gregorian/standard
+     end if
 
      do n=0,nTim-1
         if (isleapyear(year(n))) then
@@ -8109,14 +8275,16 @@ begin
   ntim = nyrs*nmos*31 ; make long enough array
   tdum = new ( ntim, TYPE, "No_FillValue" )
 
+  year = 0
+  if (isatt(yrStrt,"calendar")) then
+      year@calendar = yrStrt@calendar
+  end if
+
   n = -1 ; initialize day counter
   do year = yrStrt,yrLast
     do nmo=1,nmos
        YRM  = year*10000 + nmo*100
        nday = days_in_month(year, nmo)
-       if (nmo.eq.2 .and. isatt(yrStrt,"noLeapYear")) then
-           nday = 28
-       end if
       do ndy = 1,nday
          n = n+1
          tdum(n) = YRM + ndy
@@ -8128,8 +8296,8 @@ begin
   time@long_name = "time"
   time@units     = "YYYYMMDD"
 
-  if (isatt(yrStrt,"noLeapYear")) then
-      time@calendar  = "noLeap"
+  if (isatt(yrStrt,"calendar")) then
+      time@calendar  = yrStrt@calendar
   end if
 
   time!0    = "time"
@@ -8148,14 +8316,16 @@ begin
   ntim = nyrs*nmos*nhrd*31       ; make long enough array
   tdum = new ( ntim, TYPE, "No_FillValue" )
 
+  year = 0
+  if (isatt(yrStrt,"calendar")) then
+      year@calendar = yrStrt@calendar   ; needed for days in month
+  end if
+
   n = -1 ; initialize counter index
   do year=yrStrt,yrLast
     do nmo=1,nmos
        YRM  = year*1000000 + nmo*10000
        nday = days_in_month(year, nmo)
-       if (nmo.eq.2 .and. isatt(yrStrt,"noLeapYear") .and. yrStrt@noLeapYear) then
-           nday = 28
-       end if
       do ndy=1,nday
         do nhr=0,23,hrStep
            n = n+1
@@ -8169,8 +8339,8 @@ begin
   time@long_name = "time"
   time@units     = "YYYYMMDDHH"
 
-  if (isatt(yrStrt,"noLeapYear")) then
-      time@calendar  = "noLeap"
+  if (isatt(yrStrt,"calendar")) then
+      time@calendar  = yrStrt@calendar
   end if
 
   time!0    = "time"
@@ -8246,6 +8416,10 @@ begin
     if (iscoord(date,dName)) then
         DATE&$dName$ = date&$dName$
     end if
+  end if
+
+  if (isatt(date,"calendar")) then
+      DATE@calendar  = date@calendar
   end if
 
   return(DATE)
@@ -9594,15 +9768,41 @@ begin
       print("month_to_annual_weighted: ntim="+NTIM+" not multiple of 12")
   end if
 
-  dymon = days_in_month ( yyyy, mm)      ; accounts for leap year
+  if (isatt(yyyymm,"calendar")) then
+      yyyy@calendar = yyyymm@calendar    ; needed for days_in_month
+  end if
+
+  dymon = days_in_month ( yyyy, mm)      ; accounts for calendar attribute
 
   if (typeof(x).eq."double") then
-      wSum_1 = 365d0
-      wSum_2 = 366d0
+      one    = 1d0
   else
-      wSum_1 = 365.
-      wSum_2 = 366.
+      one    = 1.0
   end if
+
+  if (isatt(yyyymmdd,"calendar")) then    ; retrofit to existing code
+      yrFrac@calendar = yyyymmdd@calendar
+
+      if (yyyymmdd@calendar.eq."360_day" .or. yyyymmdd@calendar.eq."360") then
+          con = (/ 360, 360 /)*one
+      end if
+      if (yyyymmdd@calendar.eq."365_day" .or. yyyymmdd@calendar.eq."365"    .or. \
+          yyyymmdd@calendar.eq."noleap"  .or. yyyymmdd@calendar.eq."no_leap") then
+          con = (/ 365, 365 /)*one
+      end if
+      if (yyyymmdd@calendar.eq."366_day" .or. yyyymmdd@calendar.eq."366"    .or. \
+          yyyymmdd@calendar.eq."allleap" .or. yyyymmdd@calendar.eq."all_leap") then
+          con = (/ 366, 366 /)*one
+      end if
+      if (yyyymmdd@calendar.eq."gregorian" .or. yyyymmdd@calendar.eq."standard") then
+          con = (/ 365, 366 /)*one 
+      end if
+  else
+      con = (/ 365, 366 /)*one             ; default is gregorian/standard 
+  end if
+
+  wSum_1 = con(0)
+  wSum_2 = con(1)
 
   if (rankx.eq.1) then
       xAnnual = new ( nyrs, typeof(x), getFillValue(x)) ;  contributed
@@ -9648,6 +9848,10 @@ begin
       end if
       if (isatt(x, "units")) then
           xAnnual@units     = x@units
+      end if
+
+      if (isatt(yyyymm,"calendar")) then
+          xAnnual@calendar = yyyymm@calendar    
       end if
 
       return(xAnnual)
@@ -9804,6 +10008,10 @@ begin
           xAnnual@units     = x@units
       end if
 
+     if (isatt(yyyymm,"calendar")) then
+         xAnnual@calendar = yyyymm@calendar    
+     end if
+
       return(xAnnual)
    end if
 end
@@ -9847,6 +10055,10 @@ begin
   end if
 
   rankx = dimsizes(dimx)                 ; number of dimensions
+
+  if (isatt(yyyymm,"calendar")) then
+      yyyy@calendar = yyyymm@calendar    ; needed for 'day_in_month'
+  end if
 
   dymon = days_in_month ( yyyy, mm)      ; accounts for leap year
 
@@ -10650,16 +10862,16 @@ begin
   type_r2 = typeof(r2)
 
   if (type_r1.eq."double") then
-      return( r1 - (r2 * doubletointeger( r1/r2) ) ) 
+      return( r1 - (r2 * toint( r1/r2) ) ) 
   end if  
 
   if (type_r1.eq."float") then
       if (type_r2.eq."float" .or. type_r2.eq."integer") then
-          return( r1 - (r2 * floattointeger( r1/r2 ) ))
+          return( r1 - (r2 * toint( r1/r2 ) ))
       end if     
 
       if (type_r2.eq."double") then
-          tmp = doubletofloat( r1 - (r2 * doubletointeger( r1/r2 ) ))
+          tmp = doubletofloat( r1 - (r2 * toint( r1/r2 ) ))
           return( tmp )
       end if
   end if  
@@ -10669,12 +10881,12 @@ begin
           return( r1 % r2 ) 
       end if
       if (type_r2.eq."float") then
-          R2 = floattointeger(r2)
-          return( r1 - floattointeger(R2 * (r1/R2)))
+          R2 = toint(r2)
+          return( r1 - toint(R2 * (r1/R2)))
       end if
       if (type_r2.eq."double") then
-          R2 = doubletointeger(r2)
-          return( r1 - doubletointeger(R2 * (r1/R2)))
+          R2 = toint(r2)
+          return( r1 - toint(R2 * (r1/R2)))
       end if
   end if
 
@@ -12446,11 +12658,12 @@ begin
     end if
 
     utc_date = cd_calendar(x&time, 0)
-    year     = floattointeger(utc_date(:,0))   
-    month    = floattointeger(utc_date(:,1))  
-    day      = floattointeger(utc_date(:,2))
-    hour     = floattointeger(utc_date(:,3))
-   ;minute   = floattointeger(utc_date(:,4))
+
+    year     = toint(utc_date(:,0))   
+    month    = toint(utc_date(:,1))  
+    day      = toint(utc_date(:,2))
+    hour     = toint(utc_date(:,3))
+   ;minute   = toint(utc_date(:,4))
    ;second   = utc_date(:,5)
 
     if (rankx.le.4) then
@@ -12913,7 +13126,11 @@ begin
   TIME   = cd_inv_calendar(toint(date(:,0)),toint(date(:,1)) \
                           ,toint(date(:,2)),toint(date(:,3)) \
                           ,toint(date(:,4)),todouble(date(:,5)),new_time_units, 0)
-  TIME@calendar = "gregorian"
+
+  if (isatt(time,"calendar")) then
+      TIME@calendar = time@calendar
+  end if
+
   TIME!0        = "time"
   TIME&time     =  TIME
                           ; delete attributes that may no longer be appropriate
@@ -13431,6 +13648,10 @@ begin
 
   ntimx = dimx(0)              ; # input time steps
   ymdhms= cd_calendar(x&$dnamx(0)$, 0)
+
+  if (isatt(x&$dnamx(0)$, "calendar")) then
+      ymdhms@calendar = x&$dnamx(0)$@calendar
+  end if
  
   yyyy  = toint( ymdhms(:,0) )
   mm    = toint( ymdhms(:,1) )
@@ -13482,6 +13703,10 @@ begin
   TIME@units = tunits
   TIME!0     = dnamx(0)
   TIME&$dnamx(0)$ =  TIME        ; make coordinate variable
+
+  if (isatt(x&$dnamx(0)$, "calendar")) then
+      TIME@calendar = x&$dnamx(0)$@calendar
+  end if
 
   DIMX    = dimx
   DIMX(0) = NTIM
