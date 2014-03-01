@@ -5923,8 +5923,14 @@ GribRecordInqRec *grib_rec;
 
 	if (compare_rec->gds_type != grib_rec->gds_type)
 		return compare_rec->gds_type - grib_rec->gds_type;
-	if (compare_rec->gds_size != grib_rec->gds_size)
-		return compare_rec->gds_size - grib_rec->gds_size;
+	if (compare_rec->gds_size != grib_rec->gds_size) {
+		/* we need to subtract out any difference due to vertical levels */
+		int diff = 0;
+		if (compare_rec->gds[3] != grib_rec->gds[3]) {
+			diff = 4 * (compare_rec->gds[3] - grib_rec->gds[3]);
+		}
+		return compare_rec->gds_size - grib_rec->gds_size - diff;
+	}
 	if (grib_rec->gds_type >= 50 && grib_rec->gds_type < 90)
 		return 0;
 	/* 
