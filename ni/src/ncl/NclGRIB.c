@@ -1410,31 +1410,36 @@ GribFileRecord *therec;
 				int it_count = 0, ft_count = 0;
 				GIT it_cmp;
 				int ft_cmp;
+				GribDimInqRecList *dstep;
 
 				/* how many ? 1 for each initial_time * each forecast time */ 
 				if (! step->yymmddhh_isatt) {
-					for (i = 0; i < therec->n_it_dims; i++) {
+					dstep = therec->it_dims;
+					while (dstep != NULL) {
 						for (j = 0; j < step->var_info.num_dimensions; j++) {
-							if (therec->it_dims[i].dim_inq->dim_number == step->var_info.file_dim_num[j]) {
+							if (dstep->dim_inq->dim_number == step->var_info.file_dim_num[j]) {
 								it_count =  step->var_info.dim_sizes[j];
 								found = 1;
 								break;
 							}
 						}
 						if (found) break;
+						dstep = dstep->next;
 					}
 				}
 				if (! step->forecast_time_isatt) {
 					found = 0;
-					for (i = 0; i < therec->n_ft_dims; i++) {
+					dstep = therec->ft_dims;
+					while (dstep != NULL) {
 						for (j = 0; j < step->var_info.num_dimensions; j++) {
-							if (therec->ft_dims[i].dim_inq->dim_number == step->var_info.file_dim_num[j]) {
-								ft_count *=  step->var_info.dim_sizes[j];
+							if (therec->ft_dims->dim_inq->dim_number == step->var_info.file_dim_num[j]) {
+								ft_count =  step->var_info.dim_sizes[j];
 								found = 1; 
 								break;
 							}
 						}
 						if (found) break;
+						dstep = dstep->next;
 					}
 				}
 				it_cmp = grib_rec->initial_time;
@@ -8113,44 +8118,44 @@ void *therec;
 int *num_dims;
 #endif
 {
-GribFileRecord *thefile = (GribFileRecord*)therec;
-GribDimInqRecList *dstep;
-NclQuark *dims;
-int i,j;
+	GribFileRecord *thefile = (GribFileRecord*)therec;
+	GribDimInqRecList *dstep;
+	NclQuark *dims;
+	int i,j;
 
-dims = (NclQuark*)NclMalloc((unsigned)sizeof(NclQuark)*thefile->total_dims);
-i = 0;
-*num_dims = thefile->total_dims;
-dstep = thefile->scalar_dims;
-for(j=0; j < thefile->n_scalar_dims; j++) {
-	dims[dstep->dim_inq->dim_number] = dstep->dim_inq->dim_name;	
-	dstep = dstep->next;
-}
-dstep = thefile->ensemble_dims;
-for(j=0; j < thefile->n_ensemble_dims; j++) {
-	dims[dstep->dim_inq->dim_number] = dstep->dim_inq->dim_name;	
-	dstep = dstep->next;
-}
-dstep = thefile->it_dims;
-for(j=0; j < thefile->n_it_dims; j++) {
-	dims[dstep->dim_inq->dim_number] = dstep->dim_inq->dim_name;	
-	dstep = dstep->next;
-}
-dstep = thefile->ft_dims;
-for(j=0; j < thefile->n_ft_dims; j++) {
-	dims[dstep->dim_inq->dim_number] = dstep->dim_inq->dim_name;	
-	dstep = dstep->next;
-}
-dstep = thefile->lv_dims;
-for(j=0; j < thefile->n_lv_dims; j++) {
-	dims[dstep->dim_inq->dim_number] = dstep->dim_inq->dim_name;	
-	dstep = dstep->next;
-}
-dstep = thefile->grid_dims;
-for(j=0; j < thefile->n_grid_dims; j++) {
-	dims[dstep->dim_inq->dim_number] = dstep->dim_inq->dim_name;	
-	dstep = dstep->next;
-}
+	dims = (NclQuark*)NclMalloc((unsigned)sizeof(NclQuark)*thefile->total_dims);
+	i = 0;
+	*num_dims = thefile->total_dims;
+	dstep = thefile->scalar_dims;
+	for(j=0; j < thefile->n_scalar_dims; j++) {
+		dims[dstep->dim_inq->dim_number] = dstep->dim_inq->dim_name;	
+		dstep = dstep->next;
+	}
+	dstep = thefile->ensemble_dims;
+	for(j=0; j < thefile->n_ensemble_dims; j++) {
+		dims[dstep->dim_inq->dim_number] = dstep->dim_inq->dim_name;	
+		dstep = dstep->next;
+	}
+	dstep = thefile->it_dims;
+	for(j=0; j < thefile->n_it_dims; j++) {
+		dims[dstep->dim_inq->dim_number] = dstep->dim_inq->dim_name;	
+		dstep = dstep->next;
+	}
+	dstep = thefile->ft_dims;
+	for(j=0; j < thefile->n_ft_dims; j++) {
+		dims[dstep->dim_inq->dim_number] = dstep->dim_inq->dim_name;	
+		dstep = dstep->next;
+	}
+	dstep = thefile->lv_dims;
+	for(j=0; j < thefile->n_lv_dims; j++) {
+		dims[dstep->dim_inq->dim_number] = dstep->dim_inq->dim_name;	
+		dstep = dstep->next;
+	}
+	dstep = thefile->grid_dims;
+	for(j=0; j < thefile->n_grid_dims; j++) {
+		dims[dstep->dim_inq->dim_number] = dstep->dim_inq->dim_name;	
+		dstep = dstep->next;
+	}
 
 return(dims);
 }
