@@ -4798,7 +4798,11 @@ begin
     return(new(1,graphic))
   end if
 
-  lnres2 = lnres      ; Make a copy so that we don't keep gsSegements
+  if(lnres) then
+    lnres2 = lnres      ; Make a copy so that we don't keep gsSegments
+  else
+    lnres2 = True
+  end if
 
 ;---Read data off the shapefile
   geomDims    = getfilevardimsizes(f,"geometry")
@@ -4919,8 +4923,6 @@ begin
     print("       No shapefile information will be added.")
     return(new(1,graphic))
   end if
-
-  gnres2 = gnres      ; Make a copy so that we don't keep gsSegements
 
 ;---Read data off the shapefile
   geomDims    = getfilevardimsizes(f,"geometry")
