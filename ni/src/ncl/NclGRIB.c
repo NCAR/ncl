@@ -2134,8 +2134,12 @@ int GdsCompare(unsigned char *gds1,int gds_size1,unsigned char *gds2,int gds_siz
 			return 0;
 		/* we only need to compare up to the beginning of the level values */
 		/* gds[4] (octet 5) does not need to be the same */
-		size = gds_size1 - (int)gds1[3] * 4;
-		for( i = 5; i < size - 1 ; i++) {
+		/* 2014-03-03: Just compare to the minimum value given by gds[4]: the end of the "regular" part of the GDS.
+		 * (unless gds[4] is 0 or less than the size of the minimum regular GDS size)
+		 */
+		size = MIN(gds1[4],gds2[4]) - 1;
+		if (size < 32) size = 32;
+		for( i = 5; i < size ; i++) {
 			switch (i) {
 			case 16:
 				break;
