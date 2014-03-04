@@ -271,10 +271,11 @@ NhlErrorTypes regcoef_W( void )
       return(NhlFATAL);
     }
   }
-/*
- * Call the f77 version of 'regcoef' with the full argument list.
- */
   if(dimsizes_same) {
+/*
+ * The x/y arrays are the same dimensionality, so loop through 
+ * leftmost x and y at same time.
+ */
     lx = ln = 0;
     for(i = 1; i <= total_size_leftmost_x; i++) {
       if(type_x != NCL_double) {
@@ -325,21 +326,27 @@ NhlErrorTypes regcoef_W( void )
     }
   }
   else {
+/*
+ * The x/y arrays are not the same dimensionality, so loop 
+ * through leftmost x first, then leftmost y.
+ */
     lx = ln = 0;
     for(i = 1; i <= total_size_leftmost_x; i++) {
-      ly = 0;
-      for(j = 1; j <= total_size_leftmost_y; j++) {
-        if(type_x != NCL_double) {
+      if(type_x != NCL_double) {
 /*
  * Coerce npts subsection of x (tmp_x) to double.
  */
-          coerce_subset_input_double(x,tmp_x,lx,type_x,npts,has_missing_x,
-                                     &missing_x,&missing_dx);
-        }
-        else {
-          tmp_x  = &((double*)x)[lx];
-        }
-        
+        coerce_subset_input_double(x,tmp_x,lx,type_x,npts,has_missing_x,
+                                   &missing_x,&missing_dx);
+      }
+      else {
+        tmp_x  = &((double*)x)[lx];
+      }
+/*
+ * Here's the leftmost y loop.
+ */
+      ly = 0;
+      for(j = 1; j <= total_size_leftmost_y; j++) {
         if(type_y != NCL_double) {
 /*
  * Coerce npts subsection of y (tmp_y) to double.
@@ -637,10 +644,11 @@ NhlErrorTypes regCoef_W( void )
       return(NhlFATAL);
     }
   }
-/*
- * Call the f77 version of 'regcoef' with the full argument list.
- */
   if(dimsizes_same) {
+/*
+ * The x/y arrays are the same dimensionality, so loop through 
+ * leftmost x and y at same time.
+ */
     lx = ln = 0;
     for(i = 1; i <= total_size_leftmost_x; i++) {
       if(type_x != NCL_double) {
@@ -700,21 +708,27 @@ NhlErrorTypes regCoef_W( void )
     }
   }
   else {
+/*
+ * The x/y arrays are not the same dimensionality, so loop 
+ * through leftmost x first, then leftmost y.
+ */
     lx = ln = 0;
     for(i = 1; i <= total_size_leftmost_x; i++) {
-      ly = 0;
-      for(j = 1; j <= total_size_leftmost_y; j++) {
-        if(type_x != NCL_double) {
+      if(type_x != NCL_double) {
 /*
  * Coerce npts subsection of x (tmp_x) to double.
  */
-          coerce_subset_input_double(x,tmp_x,lx,type_x,npts,has_missing_x,
-                                     &missing_x,&missing_dx);
-        }
-        else {
-          tmp_x  = &((double*)x)[lx];
-        }
-        
+        coerce_subset_input_double(x,tmp_x,lx,type_x,npts,has_missing_x,
+                                   &missing_x,&missing_dx);
+      }
+      else {
+        tmp_x  = &((double*)x)[lx];
+      }
+/*
+ * Here's the leftmost y loop.
+ */
+      ly = 0;
+      for(j = 1; j <= total_size_leftmost_y; j++) {
         if(type_y != NCL_double) {
 /*
  * Coerce npts subsection of y (tmp_y) to double.
