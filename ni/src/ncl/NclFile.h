@@ -29,7 +29,12 @@
 #define FILE_COORD_VAR_ACCESS 0
 #define FILE_VAR_ACCESS 1
 
+#define NCLFILE_INC -1
+#define NCLFILE_DEC -2
+#define NCLFILE_VEC 0
+
 extern int grib_version;
+
 #ifdef NIO_LIB_ONLY
 short NCLadvancedFileStructure[_NclNumberOfFileFormats];
 #else

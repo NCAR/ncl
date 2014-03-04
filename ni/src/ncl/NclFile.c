@@ -32,10 +32,6 @@
 
 short NCLadvancedFileStructure[_NclNumberOfFileFormats];
 
-#define NCLFILE_INC -1
-#define NCLFILE_DEC -2
-#define NCLFILE_VEC 0
-
 NclQuark FileGetDimName(
 #if	NhlNeedProto
 NclFile /* thefile */,

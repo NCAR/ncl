@@ -3462,7 +3462,7 @@ void _getH5data(hid_t fid, NclFileVarNode *varnode,
 void *_getH5compoundAsList(hid_t fid, NclFileVarNode *varnode)
 {
     hid_t       did = -1;
-    herr_t      status = -1;
+    herr_t      status = 0;
     hsize_t     size  = 1;
     hsize_t     ndims = 0;
 
@@ -3544,11 +3544,11 @@ void *_getH5compoundAsList(hid_t fid, NclFileVarNode *varnode)
             assert(cstr);
 
             str_type = H5Tcopy(H5T_C_S1);
-            status = H5Tset_size(str_type, compnode->nvals);
+            status += H5Tset_size(str_type, compnode->nvals);
             datatype_id = H5Tcreate( H5T_COMPOUND, compnode->nvals);
             H5Tinsert(datatype_id, component_name, 0, str_type);
 
-            status = H5Dread(did, datatype_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, carray);
+            status += H5Dread(did, datatype_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, carray);
 
             for(i = 0; i < size; ++i)
             {
@@ -3581,7 +3581,7 @@ void *_getH5compoundAsList(hid_t fid, NclFileVarNode *varnode)
             H5Tinsert(datatype_id, component_name, 0,
                       Ncltype2HDF5type(compnode->type));
 
-            status = H5Dread(did, datatype_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, values);
+            status += H5Dread(did, datatype_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, values);
 
             compvar = _NclCreateVlenVar(component_name, values,
                                         ndims, dimnames,
@@ -5281,9 +5281,9 @@ herr_t _writeH5variableAttribute(hid_t did, NclFileAttNode *attnode)
 {
     hid_t   aid;                /* Attribute dataspace identifiers */
     hid_t   atype;              /* Attribute type */
-    hid_t   attr;
     herr_t  ret;                /* Return value */
     char    buff[MAX_NCL_BUFFER_LENGTH];
+    char*   tmpstr = NULL;
 
     hsize_t anelem = attnode->n_elem;
     
@@ -5293,7 +5293,15 @@ herr_t _writeH5variableAttribute(hid_t did, NclFileAttNode *attnode)
        *Create string attribute.
        */
         strcpy(buff, NrmQuarkToString(*(NclQuark *)attnode->value));
-        aid   = H5Screate(H5S_SCALAR);
+        if(attnode->n_elem > 1)
+        {
+            aid = H5Screate(H5S_SIMPLE);
+            ret = H5Sset_extent_simple(aid, 1, &anelem, NULL);
+        }
+        else
+        {
+            aid = H5Screate(H5S_SCALAR);
+        }
         atype = H5Tcopy(H5T_C_S1);
                 H5Tset_size(atype, strlen(buff)+1);
                 H5Tset_strpad(atype,H5T_STR_NULLTERM);
@@ -5302,32 +5310,39 @@ herr_t _writeH5variableAttribute(hid_t did, NclFileAttNode *attnode)
     {
       /*
        *Create dataspace for the first attribute.
-       */
-        aid    = H5Screate(H5S_SIMPLE);
         atype  = H5Tcopy(Ncltype2HDF5type(attnode->type));
+       */
+        atype  = Ncltype2HDF5type(attnode->type);
         if(attnode->n_elem > 1)
+        {
+            aid = H5Screate(H5S_SIMPLE);
             ret = H5Sset_extent_simple(aid, 1, &anelem, NULL);
+        }
         else
-            ret = H5Sset_extent_simple(aid, 0, &anelem, NULL);
+        {
+            aid = H5Screate(H5S_SCALAR);
+        }
     }
 
   /*
    *Create attribute.
    */
 
-    attr = H5Acreate(did, NrmQuarkToString(attnode->name),
-                     atype, aid, H5P_DEFAULT, H5P_DEFAULT);
+    if(0 >= attnode->id)
+    {
+        tmpstr = NrmQuarkToString(attnode->name);
+        attnode->id = H5Acreate2(did, tmpstr, atype, aid, H5P_DEFAULT, H5P_DEFAULT);
+    }
     
   /*
    *Write attribute.
    */
-    if(NCL_string == attnode->type)
+    if(0 >= attnode->id)
     {
-        ret = H5Awrite(attr, atype, buff);
-    }
-    else
-    {
-        ret = H5Awrite(attr, atype, attnode->value);
+        if(NCL_string == attnode->type)
+            ret = H5Awrite(attnode->id, atype, buff);
+        else
+            ret = H5Awrite(attnode->id, atype, attnode->value);
     }
 
   /*
@@ -5339,7 +5354,8 @@ herr_t _writeH5variableAttribute(hid_t did, NclFileAttNode *attnode)
   /*
    *Close the attributes.
    */
-    ret = H5Aclose(attr);
+    if(0 >= attnode->id)
+        ret = H5Aclose(attnode->id);
     
     return ret;
 }
@@ -5904,15 +5920,20 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
        *    status = H5Pset_deflate(plist, varnode->compress_level);
        */
 
-        did = H5Dcreate(fid, NrmQuarkToString(varnode->name),
-                         type, space, H5P_DEFAULT, plist, H5P_DEFAULT);
+        if(0 > varnode->id)
+        {
+            did = H5Dcreate(fid, NrmQuarkToString(varnode->name),
+                             type, space, H5P_DEFAULT, plist, H5P_DEFAULT);
                     
-      /*
-       *fprintf(stderr, "\tfile: %s, line: %d\n\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\tdid = %d\n", did);
-       */
-
-        varnode->id = did;
+          /*
+           *fprintf(stderr, "\tfile: %s, line: %d\n\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tdid = %d\n", did);
+           */
+    
+            varnode->id = did;
+        }
+        else
+            did = varnode->id;
 
         if(did > 0)
         {
@@ -5934,7 +5955,11 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
 
     if(NULL != varnode->att_rec)
     {
-        did = H5Dopen(fid, NrmQuarkToString(varnode->name), H5P_DEFAULT);
+        if(0 > varnode->id)
+            did = H5Dopen(fid, NrmQuarkToString(varnode->name), H5P_DEFAULT);
+        else
+            did = varnode->id;
+
         varnode->att_rec->gid = fid;
         varnode->att_rec->id  = did;
 

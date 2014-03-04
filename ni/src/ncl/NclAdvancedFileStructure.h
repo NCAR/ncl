@@ -59,6 +59,7 @@ typedef struct _NclFileAttNode
 {
     NclQuark          name;
     NclBasicDataTypes type;
+    ng_size_t         id;
     int               n_elem;
     void             *value;
     nc_type           the_nc_type;

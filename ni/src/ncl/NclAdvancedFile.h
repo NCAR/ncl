@@ -45,10 +45,6 @@
 #include "NclData.h"
 #include "NclAdvancedFileStructure.h"
 
-#define NCLFILE_INC -1
-#define NCLFILE_DEC -2
-#define NCLFILE_VEC 0
-
 extern int grib_version;
 
 typedef struct _NclAdvancedFileRec NclAdvancedFileRec;
@@ -138,9 +134,9 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
 void _printNclFileVarRecord(FILE *fp, NclAdvancedFile thefile, NclFileVarRecord *var_rec);
 void _printNclFileGrpRecord(FILE *fp, NclAdvancedFile thefile, NclFileGrpRecord *grp_rec);
 
-void AdvancedLoadVarAtts(NclAdvancedFile thefile, NclQuark var);
-
 NhlErrorTypes _NclAdvancedFilePrintSummary(NclObj self, FILE *fp);
+
+extern void AdvancedLoadVarAtts(NclAdvancedFile thefile, NclQuark var);
 
 extern char *_getComponentName(const char *fullname, char **structname);
 extern NclFileCompoundNode *_getComponentNodeFromVarNode(NclFileVarNode *varnode,

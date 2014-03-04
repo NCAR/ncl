@@ -99,7 +99,7 @@ static int _getGroupIdFromGrpNode(NclFileGrpNode *grpnode, NclQuark group);
 static int AdvancedFileIsGroup(NclFile infile, NclQuark group);
 static int isUnlimitedDimension(NclFileGrpNode *grpnode, NclQuark dimname);
 
-NclGroup *AdvancedFileReadGroup(NclFile infile, NclQuark group_name);
+static NclGroup *AdvancedFileReadGroup(NclFile infile, NclQuark group_name);
 
 NclFileOption adv_file_options[] = {
         { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },  /* NetCDF PreFill */
@@ -1308,6 +1308,7 @@ NhlErrorTypes _addNclAttNode(NclFileAttRecord **rootattrec,
 
     attnode->name = name;
     attnode->type = type;
+    attnode->id   = -1;
     attnode->n_elem = n_elem;
     attnode->value = (void *)NclMalloc(n_elem * _NclSizeOf(type));
     assert(attnode->value);
@@ -2135,15 +2136,11 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
                         NclQuark varname)
 {
     int n;
-    NclFileGrpNode *newgrpnode;
     NclFileGrpNode *tmpgrpnode;
     NclFileVarNode *varnode = NULL;
     NclQuark vn = varname;
     char *struct_name = NULL;
     char *component_name = NULL;
-
-    NclQuark *gname = NULL;
-    int gnumb = 0;
 
   /*
    *fprintf(stderr, "\nHit _getVarNodeFromNclFileGrpNode, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -2151,7 +2148,7 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
    *fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varname));
    */
 
-    component_name =  _getComponentName(NrmQuarkToString(varname), &struct_name);
+    component_name = _getComponentName(NrmQuarkToString(varname), &struct_name);
     if(NULL != component_name)
     {
       /*
@@ -2165,31 +2162,35 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
         free(struct_name);
     }
 
-    gname = _NclSplitString(vn, &gnumb);
-
-    if(1 < gnumb)
+    if(NULL != grpnode->var_rec)
     {
-        tmpgrpnode = grpnode;
-        for(n = 0; n < gnumb - 1; ++n)
+        for(n = 0; n < grpnode->var_rec->n_vars; n++)
         {
-            newgrpnode = _getGrpNodeFromNclFileGrpNode(tmpgrpnode, gname[n]);
-            tmpgrpnode = newgrpnode;
-        }
-        vn = gname[gnumb-1];
-        NclFree(gname);
-    }
-    else
-        newgrpnode = grpnode;
-
-    if(NULL != newgrpnode->var_rec)
-    {
-        for(n = 0; n < newgrpnode->var_rec->n_vars; n++)
-        {
-            varnode = &(newgrpnode->var_rec->var_node[n]);
+            varnode = &(grpnode->var_rec->var_node[n]);
           /*
            *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
            *fprintf(stderr, "\tvar no %d, name: <%s>, real_name: <%s>\n", n, 
            *        NrmQuarkToString(varnode->name), NrmQuarkToString(varnode->real_name));
+           */
+
+            if(NULL == varnode)
+                continue;
+
+            if((vn == varnode->name) || (vn == varnode->real_name))
+                return varnode;
+        }
+    }
+
+    if(NULL != grpnode->grp_rec)
+    {
+        for(n = 0; n < grpnode->grp_rec->n_grps; n++)
+        {
+            tmpgrpnode = grpnode->grp_rec->grp_node[n];
+            varnode = _getVarNodeFromNclFileGrpNode(tmpgrpnode, vn);
+          /*
+           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tgrp no %d, name: <%s>\n", n, 
+           *        NrmQuarkToString(tmpgrpnode->name));
            */
 
             if(NULL == varnode)
@@ -5085,7 +5086,7 @@ static struct _NclMultiDValDataRec *AdvancedFileReadVarAtt(NclFile infile,
 
         if(NULL == tmp_md)
 	{
-    		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+    		NHLPERROR((NhlINFO, NhlWARNING,
         		"AdvancedFileReadVarAtt: (%s) is not an attribute of (%s)",
          		NrmQuarkToString(attname),NrmQuarkToString(var)));
     		return(_NclCreateMissing());
@@ -5095,24 +5096,16 @@ static struct _NclMultiDValDataRec *AdvancedFileReadVarAtt(NclFile infile,
             return (tmp_md);
         else if (tmp_md->multidval.val == NULL)
         {
-            NhlPError(NhlWARNING,NhlEUNKNOWN,
+            NhlPError(NhlINFO, NhlWARNING,
                   "AdvancedFileReadVarAtt: _FillValue attribute for  variable (%s) in file (%s) has NULL value, substituting default fill value of variable type",
                   NrmQuarkToString(var),NrmQuarkToString(thefile->advancedfile.fname));
-            _NclGetDefaultFillValue(varnode->type,&missing_value);
         }
         else if (tmp_md->multidval.data_type == varnode->type)
             return (tmp_md);
         else if (NCL_enum == varnode->type)
             return (tmp_md);
-        else
-        {
-            NhlPError(NhlWARNING,NhlEUNKNOWN,
-              "FileReadVarAtt: _FillValue attribute type differs from variable (%s) type in file (%s), forcing type conversion; may result in overflow and/or loss of precision",
-                  NrmQuarkToString(var),NrmQuarkToString(thefile->advancedfile.fname));
-            _NclScalarForcedCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,
-                           (void*)&missing_value,varnode->type);
-        }
         
+        _NclGetDefaultFillValue(varnode->type,&missing_value);
         type_name = _NclBasicDataTypeToName(varnode->type);
         type_class = _NclNameToTypeClass(NrmStringToQuark(type_name));
         return (_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void*)&missing_value,NULL,1,&dim_size,PERMANENT,NULL,type_class));
@@ -8594,10 +8587,10 @@ NclGroup *AdvancedFileReadGroup(NclFile infile, NclQuark group_name)
 
     index = AdvancedFileIsGroup(infile, group_name);
 
-    fprintf(stderr, "\nEnter AdvancedFileReadGroup, file: %s, line:%d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tgroup_name: <%s>\n", NrmQuarkToString(group_name));
-    fprintf(stderr, "\tindex = %d\n", index);
   /*
+   *fprintf(stderr, "\nEnter AdvancedFileReadGroup, file: %s, line:%d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tgroup_name: <%s>\n", NrmQuarkToString(group_name));
+   *fprintf(stderr, "\tindex = %d\n", index);
    */
 
     if(index < 0)
@@ -8606,8 +8599,8 @@ NclGroup *AdvancedFileReadGroup(NclFile infile, NclQuark group_name)
     group_out = _NclCreateGroup(NULL,NULL,Ncl_File,0,TEMPORARY,infile,group_name);
 
   /*
+   *fprintf(stderr, "Leave FileReadGroup, file: %s, line:%d\n\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "Leave FileReadGroup, file: %s, line:%d\n\n", __FILE__, __LINE__);
 
     return (group_out);
 }
