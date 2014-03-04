@@ -444,10 +444,7 @@ NhlErrorTypes regCoef_W( void )
  * Output array variables
  */
   void *tval, *yint, *rstd, *rcoef;
-  double *tmp_tval = NULL;
-  double *tmp_yint = NULL;
-  double *tmp_rstd = NULL;
-  double *tmp_rcoef = NULL;
+  double tmp_tval, tmp_yint, tmp_rstd, tmp_rcoef;
   double xave, yave;
   int ndims_rcoef;
   ng_size_t *dsizes_rcoef;
@@ -612,22 +609,11 @@ NhlErrorTypes regCoef_W( void )
   if(type_x != NCL_double && type_y != NCL_double) {
     type_rcoef = NCL_float;
 
-    rcoef     = (float *)calloc(total_size_rcoef,sizeof(float));
-    tval      = (float *)calloc(total_size_rcoef,sizeof(float));
-    yint      = (float *)calloc(total_size_rcoef,sizeof(float));
-    rstd      = (float *)calloc(total_size_rcoef,sizeof(float));
-    nptxy     = (int *)calloc(total_size_rcoef,sizeof(int));
-    tmp_tval  = (double*)calloc(1,sizeof(double));
-    tmp_yint  = (double*)calloc(1,sizeof(double));
-    tmp_rstd  = (double*)calloc(1,sizeof(double));
-    tmp_rcoef = (double *)calloc(1,sizeof(double));
-
-    if(tmp_rcoef == NULL || rcoef == NULL || nptxy == NULL ||
-       tmp_tval  == NULL || tval  == NULL || tmp_yint == NULL ||
-       yint == NULL || tmp_rstd  == NULL || rstd  == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef: Unable to allocate memory for output variables");
-      return(NhlFATAL);
-    }
+    rcoef = (float *)calloc(total_size_rcoef,sizeof(float));
+    tval  = (float *)calloc(total_size_rcoef,sizeof(float));
+    yint  = (float *)calloc(total_size_rcoef,sizeof(float));
+    rstd  = (float *)calloc(total_size_rcoef,sizeof(float));
+    nptxy = (int *)calloc(total_size_rcoef,sizeof(int));
   }
   else {
     type_rcoef = NCL_double;
@@ -638,11 +624,10 @@ NhlErrorTypes regCoef_W( void )
     rstd  = (double *)calloc(total_size_rcoef,sizeof(double));
     nptxy = (int *)calloc(total_size_rcoef,sizeof(int));
 
-    if(rcoef == NULL || tval == NULL || yint == NULL || rstd == NULL || 
-       nptxy == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef: Unable to allocate memory for output variables");
-      return(NhlFATAL);
-    }
+  }
+  if(rcoef == NULL || tval == NULL || yint == NULL || rstd == NULL || nptxy == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef: Unable to allocate memory for output variables");
+    return(NhlFATAL);
   }
   if(dimsizes_same) {
 /*
@@ -679,30 +664,27 @@ NhlErrorTypes regCoef_W( void )
         tmp_y = &((double*)y)[lx];
       }
 
-      if(type_rcoef == NCL_double) {
-        tmp_tval  = &((double*)tval)[ln];
-        tmp_yint  = &((double*)yint)[ln];
-        tmp_rstd  = &((double*)rstd)[ln];
-        tmp_rcoef = &((double*)rcoef)[ln];
-      }
-
       NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
-                                 &missing_dy.doubleval,tmp_rcoef,tmp_tval,
-                                 &nptxy[ln],&xave,&yave,tmp_rstd,tmp_yint,
+                                 &missing_dy.doubleval,&tmp_rcoef,&tmp_tval,
+                                 &nptxy[ln],&xave,&yave,&tmp_rstd,&tmp_yint,
                                  &ier);
-
       if (ier == 5) ier_count5++;
       if (ier == 6) ier_count6++;
 /*
- * Coerce output to float if necessary.
+ * Coerce output to float or double.
  */
       if(type_rcoef != NCL_double) {
-        ((float*)tval)[ln]  = (float)*tmp_tval;
-        ((float*)yint)[ln]  = (float)*tmp_yint;
-        ((float*)rstd)[ln]  = (float)*tmp_rstd;
-        ((float*)rcoef)[ln] = (float)*tmp_rcoef;
+        ((float*)tval)[ln]  = (float)tmp_tval;
+        ((float*)yint)[ln]  = (float)tmp_yint;
+        ((float*)rstd)[ln]  = (float)tmp_rstd;
+        ((float*)rcoef)[ln] = (float)tmp_rcoef;
       }
-
+      else {
+        ((double*)tval)[ln]  = tmp_tval;
+        ((double*)yint)[ln]  = tmp_yint;
+        ((double*)rstd)[ln]  = tmp_rstd;
+        ((double*)rcoef)[ln] = tmp_rcoef;
+      }
       lx += npts;
       ln ++;
     }
@@ -740,30 +722,28 @@ NhlErrorTypes regCoef_W( void )
           tmp_y  = &((double*)y)[ly];
         }
         
-        if(type_rcoef == NCL_double) {
-          tmp_tval  = &((double*)tval)[ln];
-          tmp_yint  = &((double*)yint)[ln];
-          tmp_rstd  = &((double*)rstd)[ln];
-          tmp_rcoef = &((double*)rcoef)[ln];
-        }
-        
         NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&inpts,&missing_dx.doubleval,
-                                   &missing_dy.doubleval,tmp_rcoef,tmp_tval,
-                                   &nptxy[ln],&xave,&yave,tmp_rstd,tmp_yint,
+                                   &missing_dy.doubleval,&tmp_rcoef,&tmp_tval,
+                                   &nptxy[ln],&xave,&yave,&tmp_rstd,&tmp_yint,
                                    &ier);
  
         if (ier == 5) ier_count5++;
         if (ier == 6) ier_count6++;
 /*
- * Coerce output to float if necessary.
+ * Coerce output to float or double.
  */
         if(type_rcoef != NCL_double) {
-          ((float*)tval)[ln]  = (float)*tmp_tval;
-          ((float*)yint)[ln]  = (float)*tmp_yint;
-          ((float*)rstd)[ln]  = (float)*tmp_rstd;
-          ((float*)rcoef)[ln] = (float)*tmp_rcoef;
+          ((float*)tval)[ln]  = (float)tmp_tval;
+          ((float*)yint)[ln]  = (float)tmp_yint;
+          ((float*)rstd)[ln]  = (float)tmp_rstd;
+          ((float*)rcoef)[ln] = (float)tmp_rcoef;
         }
-        
+        else {
+          ((double*)tval)[ln]  = tmp_tval;
+          ((double*)yint)[ln]  = tmp_yint;
+          ((double*)rstd)[ln]  = tmp_rstd;
+          ((double*)rcoef)[ln] = tmp_rcoef;
+        }
         ly += npts;
         ln ++;
       }
@@ -774,23 +754,16 @@ NhlErrorTypes regCoef_W( void )
  * Handle error messages.
  */
   if(ier_count5 > 0) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef: %d array(s) contained all missing values",ier_count5);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef: one or more arrays contained all missing values");
   }
   if (ier_count6 > 0) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef: %d array(s) contained less than 3 non-missing values",ier_count6);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef: one or more arrays contained less than 3 non-missing values");
   }
 /*
  * free memory.
  */
-  if(type_x     != NCL_double) NclFree(tmp_x);
-  if(type_y     != NCL_double) NclFree(tmp_y);
-  if(type_rcoef != NCL_double) {
-    NclFree(tmp_rcoef);
-    NclFree(tmp_tval);
-    NclFree(tmp_yint);
-    NclFree(tmp_rstd);
-  }
-
+  if(type_x != NCL_double) NclFree(tmp_x);
+  if(type_y != NCL_double) NclFree(tmp_y);
   dsizes[0] = total_size_rcoef;
 /*
  * Get ready to return everything.
