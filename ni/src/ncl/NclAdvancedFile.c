@@ -2723,7 +2723,7 @@ NclFile _NclAdvancedFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes ob
     NclAdvancedFile file_out = NULL;
     int file_out_free = 0;
     NhlErrorTypes ret= NhlNOERROR;
-    NclObjClass class_ptr;
+    NclObjClass class_ptr = nclAdvancedFileClass;
     struct stat buf;
     NclFileClassPart *fcp = &(nclAdvancedFileClassRec.file_class);
     int ret_error = 0;
@@ -2740,9 +2740,7 @@ NclFile _NclAdvancedFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes ob
     if(ret < NhlWARNING) 
         return(NULL);
 
-    if(theclass == NULL)
-        class_ptr = nclAdvancedFileClass;
-    else
+    if(NULL != theclass)
         class_ptr = theclass;
 
   /*
