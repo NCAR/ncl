@@ -101,8 +101,7 @@ extern void NGCALLF(dcalcuh,DCALCUH)(int *, int *, int *, int *, double *,
                                      double *, double *, double *, double *,
                                      double *, double *, double *);
 
-extern void NGCALLF(plotgrids_var,PLOTGRIDS_VAR)(char *fname, float *plotvar,
-                                                 float *pmsg, int);
+extern void NGCALLF(plotgrids_var,PLOTGRIDS_VAR)(char *fname, float *plotvar, int);
 
 extern void NGCALLF(plotfmt_open,PLOTFMT_OPEN)(char *cfilename, int *istatus,
                                                int);
@@ -11345,7 +11344,7 @@ NhlErrorTypes wrf_wps_read_nml_W( void )
 /*
  * Various
  */
-  int NVAR=17, MAX_DOMAINS=21;
+  int NVAR=19, MAX_DOMAINS=21;
   int ret;
 /*
  * Get argument # 0
@@ -11382,8 +11381,7 @@ NhlErrorTypes wrf_wps_read_nml_W( void )
  * Call the Fortran routine.
  */
   NGCALLF(plotgrids_var,PLOTGRIDS_VAR)(cnamelist, pgrids_var, 
-                                       &missing_output.floatval, 
-                                       strlen(cnamelist));
+				       strlen(cnamelist));
 /*
  * Return value back to NCL script.
  */
