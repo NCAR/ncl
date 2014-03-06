@@ -1,15 +1,14 @@
-subroutine plotgrids_var(fname,plotvar,pmsg)
+subroutine plotgrids_var(fname,plotvar)
 
    implicit none
 
    ! Parameters
    integer, parameter :: MAX_DOMAINS = 21
-   integer, parameter :: NVAR = 17
+   integer, parameter :: NVAR = 19
 
    ! Variables
    integer :: i, j, funit, io_form_geogrid
    integer :: interval_seconds
-   real :: pmsg
 
    real, dimension(MAX_DOMAINS) :: parent_grid_ratio, parent_id, ixdim, jydim
    real, dimension(MAX_DOMAINS) :: i_parent_start, j_parent_start, &
@@ -47,9 +46,13 @@ subroutine plotgrids_var(fname,plotvar,pmsg)
 
    !Initialize array
 
+   ref_x = -999.0
+   ref_y = -999.0
+   ref_lat = -999.0
+   ref_lon = -999.0
    do i=1,NVAR
     do j=1,MAX_DOMAINS
-      plotvar(i,j) = pmsg
+      plotvar(i,j) = -999.0
     end do
    end do
 
@@ -82,19 +85,21 @@ subroutine plotgrids_var(fname,plotvar,pmsg)
    plotvar(3,1) = dy
    plotvar(4,1) = ref_lat
    plotvar(5,1) = ref_lon
-   plotvar(6,1) = truelat1
-   plotvar(7,1) = truelat2
-   plotvar(8,1) = stand_lon
-   plotvar(9,1) = mproj_int
-   plotvar(10,1) = pole_lat
-   plotvar(11,1) = pole_lon
-   do j=1,nint(max_dom)
-     plotvar(12,j) = parent_id(j)
-     plotvar(13,j) = parent_grid_ratio(j)
-     plotvar(14,j) = i_parent_start(j)
-     plotvar(15,j) = j_parent_start(j)
-     plotvar(16,j) = e_we(j)
-     plotvar(17,j) = e_sn(j)
+   plotvar(6,1) = ref_x
+   plotvar(7,1) = ref_y
+   plotvar(8,1) = truelat1
+   plotvar(9,1) = truelat2
+   plotvar(10,1) = stand_lon
+   plotvar(11,1) = mproj_int
+   plotvar(12,1) = pole_lat
+   plotvar(13,1) = pole_lon
+   do j=1,max_dom
+     plotvar(14,j) = parent_id(j)
+     plotvar(15,j) = parent_grid_ratio(j)
+     plotvar(16,j) = i_parent_start(j)
+     plotvar(17,j) = j_parent_start(j)
+     plotvar(18,j) = e_we(j)
+     plotvar(19,j) = e_sn(j)
    end do
 
 end subroutine plotgrids_var
