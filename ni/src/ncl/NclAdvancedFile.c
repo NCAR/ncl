@@ -2580,6 +2580,7 @@ static NhlErrorTypes InitializeAdvancedFileClass
 {
     NclFileClassPart *fcp = &(nclAdvancedFileClassRec.file_class);
     InitializeFileOptions(fcp);
+    _NclInitClass(nclAdvancedFileClass);
 
   /*
    *_NclRegisterClassPointer(Ncl_AdvancedFile, (NclObjClass)&nclAdvancedFileClassRec);
@@ -2735,10 +2736,6 @@ NclFile _NclAdvancedFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes ob
    *fprintf(stderr, "\nEnter _NclAdvancedFileCreate, file: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tpath: <%s>\n", NrmQuarkToString(path));
    */
-
-    ret = _NclInitClass(nclAdvancedFileClass);
-    if(ret < NhlWARNING) 
-        return(NULL);
 
     if(NULL != theclass)
         class_ptr = theclass;
