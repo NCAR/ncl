@@ -405,6 +405,7 @@ extern NhlErrorTypes esccr_shields_W(void);
 extern NhlErrorTypes esccv_W(void);
 extern NhlErrorTypes escorc_W(void);
 extern NhlErrorTypes escovc_W(void);
+extern NhlErrorTypes escorc_n_W(void);
 extern NhlErrorTypes ezfftf_W(void);
 extern NhlErrorTypes ezfftb_W(void);
 extern NhlErrorTypes cfftf_W(void);
@@ -5948,6 +5949,19 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
     NclRegisterFunc(escorc_W,args,"escorc",nargs);
+/*
+ * Register "escorc_n".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+
+    NclRegisterFunc(escorc_n_W,args,"escorc_n",nargs);
 /*
  * Register "escovc".
  *
