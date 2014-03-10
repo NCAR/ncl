@@ -83,9 +83,11 @@ extern NhlErrorTypes wrf_pvo_W(void);
 extern NhlErrorTypes wrf_avo_W(void);
 extern NhlErrorTypes wrf_helicity_W(void);
 extern NhlErrorTypes wrf_updraft_helicity_W(void);
+/*
 extern NhlErrorTypes wrf_wetbulb_W(void);
 extern NhlErrorTypes wrf_omega_W(void);
 extern NhlErrorTypes wrf_virtual_temperature_W(void);
+*/
 extern NhlErrorTypes wrf_ll_to_ij_W(void);
 extern NhlErrorTypes wrf_ij_to_ll_W(void);
 extern NhlErrorTypes wrf_wps_read_nml_W(void);
@@ -1709,6 +1711,7 @@ void NclAddUserFuncs(void)
  *
  * Create private argument array
  */
+/*
         nargs = 0;
         args = NewArgs(3);
 
@@ -1717,12 +1720,13 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
         NclRegisterFunc(wrf_wetbulb_W,args,"wrf_wetbulb",nargs);
-
+*/
 /*
  * Register "wrf_omega".
  *
  * Create private argument array
  */
+/*
         nargs = 0;
         args = NewArgs(4);
 
@@ -1732,12 +1736,13 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
         NclRegisterFunc(wrf_omega_W,args,"wrf_omega",nargs);
-
+*/
 /*
  * Register "wrf_virtual_temperature".
  *
  * Create private argument array
  */
+/*
         nargs = 0;
         args = NewArgs(2);
 
@@ -1745,7 +1750,7 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
         NclRegisterFunc(wrf_virtual_temperature_W,args,"wrf_virtual_temperature",nargs);
-
+*/
 /*
  * Register "wrf_ll_to_ij".
  *
