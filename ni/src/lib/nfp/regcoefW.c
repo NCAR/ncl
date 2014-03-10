@@ -381,14 +381,19 @@ NhlErrorTypes regcoef_W( void )
     }
   }
 /*
- * Handle error messages.
+ * Handle error messages. 
+ *
+ * This was commented in 6.2.0, because it potentially
+ * echoes a lot of output if you call this routine a lot.
  */
+/*
   if(ier_count5 > 0) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"regcoef: %d array(s) contained all missing values",ier_count5);
   }
   if (ier_count6 > 0) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"regcoef: %d array(s) contained less than 3 non-missing values",ier_count6);
   }
+ */
 /*
  * free memory.
  */
@@ -752,13 +757,18 @@ NhlErrorTypes regCoef_W( void )
   }
 /*
  * Handle error messages.
+ *
+ * This was commented in 6.2.0, because it potentially
+ * echoes a lot of output if you call this routine a lot.
  */
+/*
   if(ier_count5 > 0) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef: one or more arrays contained all missing values");
   }
   if (ier_count6 > 0) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef: one or more arrays contained less than 3 non-missing values");
   }
+*/
 /*
  * free memory.
  */
@@ -1385,13 +1395,18 @@ NhlErrorTypes regCoef_n_W( void )
 
 /*
  * Handle error messages.
+ *
+ * This was commented in 6.2.0, because it potentially
+ * echoes a lot of output if you call this routine a lot.
  */
+/*
   if(ier_count5 > 0) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef_n: %d array(s) contained all missing values",ier_count5);
   }
   if (ier_count6 > 0) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"regCoef_n: %d array(s) contained less than 3 non-missing values",ier_count6);
   }
+ */
 /*
  * free memory.
  */
