@@ -2380,12 +2380,16 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
                 for(k = 0; k < varnode->chunk_dim_rec->n_dims; ++k)
                 {
                     vardimnode = &(varnode->chunk_dim_rec->dim_node[k]);
-                    if((NULL != vardimnode) && (vardimnode->name == dimnode->name))
+                    if((NULL != vardimnode) && (NULL != dimnode) && (vardimnode->name == dimnode->name))
                     {
                         _addNclDimNode(&(grpnode->chunk_dim_rec), dimnode->name, vardimnode->id,
                                        vardimnode->size, vardimnode->is_unlimited);
+
                         ++i;
-                        dimnode = &(grpnode->dim_rec->dim_node[i]);
+                        if(i < grpnode->dim_rec->n_dims)
+                            dimnode = &(grpnode->dim_rec->dim_node[i]);
+                        else
+                            dimnode = NULL;
                     }
                 }
             }
