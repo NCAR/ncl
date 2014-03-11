@@ -697,7 +697,7 @@ then
 #       export LIBS='-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl'
 # Might be needed on yellowstone/caledera/geyser
 #       export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl -ldl"           
-        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl"
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl -ldl"
         ./configure --enable-netcdf-4 --enable-dap --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
       fi
     fi
@@ -833,7 +833,9 @@ then
     echo "Building $NETCDF_ESMF_DIR..."
     export LDFLAGS="-L$PREFIX/lib"
     export CPPFLAGS="-I$PREFIX/include"
-    export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
+#    export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
+# Needed on a yellowstone
+    export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -ldl"
 # Needed on a Debian system (k9.rap)
 #     export LIBS='-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl'
 # Might be needed for other systems, like Macs.
