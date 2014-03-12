@@ -6662,7 +6662,7 @@ static void InitPtables
 }
 
 
-static int InitializeOptions 
+static int g1InitializeOptions 
 #if	NhlNeedProto
 (GribFileRecord *tmp)
 #else
@@ -6726,7 +6726,7 @@ NclFileFormatType *format;
 		NhlPError(NhlFATAL,ENOMEM,NULL);
 		return NULL;
 	}
-	InitializeOptions(therec);
+	g1InitializeOptions(therec);
 	*format = _NclGRIB;
 	return (void *) therec;
 }

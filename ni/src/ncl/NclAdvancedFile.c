@@ -15,8 +15,6 @@ static char blank_space[MAX_BLANK_SPACE_LENGTH];
 static int indentation_level;
 static int indentation_length;
 
-NhlErrorTypes InitializeFileOptions(NclFileClassPart *fcp);
-
 static struct _NclMultiDValDataRec *AdvancedFileReadVarAtt(NclFile infile,
                                                       NclQuark var,
                                                       NclQuark attname,
@@ -100,31 +98,6 @@ static int AdvancedFileIsGroup(NclFile infile, NclQuark group);
 static int isUnlimitedDimension(NclFileGrpNode *grpnode, NclQuark dimname);
 
 static NclGroup *AdvancedFileReadGroup(NclFile infile, NclQuark group_name);
-
-NclFileOption adv_file_options[] = {
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },  /* NetCDF PreFill */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },  /* NetCDF define mode */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB thinned grid interpolation method */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },  /* NetCDF header reserve space */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* NetCDF suppress close option */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 3, NULL },  /* NetCDF file format option */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* Binary file read byte order */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* Binary file write byte order */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },   /* GRIB initial time coordinate type */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* NetCDF missing to fill value option */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },         /* NetCDF 4 shuffle */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },         /* NetCDF 4 compression option level */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },         /* NetCDF 4 cache switch */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 3200000, NULL },   /* NetCDF 4 cache size */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 1009, NULL },      /* NetCDF 4 cache nelems */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0.50, NULL },      /* NetCDF 4 cache preemption */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB default NCEP parameter table */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB print record info */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB single element dimensions */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB time period suffix */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },   /* advanced file-structure */
-        { NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 4, NULL }  /* Fortran binary file record marker size */
-};
 
 NhlErrorTypes _addNclEnumNode(NclFileEnumRecord **enumrec,
                              NclQuark name, long long value)
@@ -2579,13 +2552,9 @@ static NhlErrorTypes InitializeAdvancedFileClass
 #endif
 {
     NclFileClassPart *fcp = &(nclAdvancedFileClassRec.file_class);
-    InitializeFileOptions(fcp);
-    _NclInitClass(nclAdvancedFileClass);
+    InitializeFileOptions(fcp->options);
 
-  /*
-   *_NclRegisterClassPointer(Ncl_AdvancedFile, (NclObjClass)&nclAdvancedFileClassRec);
-   */
-    _NclRegisterClassPointer(Ncl_File, (NclObjClass)&nclAdvancedFileClassRec);
+    _NclRegisterClassPointer(Ncl_File, nclAdvancedFileClass);
     
     return(NhlNOERROR);
 }
@@ -2724,7 +2693,7 @@ NclFile _NclAdvancedFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes ob
     NclAdvancedFile file_out = NULL;
     int file_out_free = 0;
     NhlErrorTypes ret= NhlNOERROR;
-    NclObjClass class_ptr = nclAdvancedFileClass;
+    NclObjClass class_ptr;
     struct stat buf;
     NclFileClassPart *fcp = &(nclAdvancedFileClassRec.file_class);
     int ret_error = 0;
@@ -2737,7 +2706,9 @@ NclFile _NclAdvancedFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes ob
    *fprintf(stderr, "\tpath: <%s>\n", NrmQuarkToString(path));
    */
 
-    if(NULL != theclass)
+    if(theclass == NULL)
+        class_ptr = nclAdvancedFileClass;
+    else
         class_ptr = theclass;
 
   /*
@@ -8942,22 +8913,21 @@ NclAdvancedFileClassRec nclAdvancedFileClassRec =
     {        
         "NclAdvancedFileClass",
         sizeof(NclAdvancedFileRec),
-        (NclObjClass)&nclFileClassRec,
+        (NclObjClass)&nclObjClassRec,
         0,
-        (NclGenericFunction)    AdvancedFileDestroy,
-        (NclSetStatusFunction)  NULL,
-        (NclInitPartFunction)   NULL,
-        (NclInitClassFunction)  InitializeAdvancedFileClass,
-        (NclAddParentFunction)  NULL,
-        (NclDelParentFunction)  NULL,
+        (NclGenericFunction)                      AdvancedFileDestroy,
+        (NclSetStatusFunction)                    NULL,
+        (NclInitPartFunction)                     NULL,
+        (NclInitClassFunction)                    InitializeAdvancedFileClass,
+        (NclAddParentFunction)                    FileAddParent,
+        (NclDelParentFunction)                    FileDelParent,
       /* NclPrintSummaryFunction print_summary */ NULL,
-        (NclPrintFunction)      AdvancedFilePrint,
-      /* NclCallBackList* create_callback*/   NULL,
-      /* NclCallBackList* delete_callback*/   NULL,
-      /* NclCallBackList* modify_callback*/   NULL,
-      /* NclObtainCall obtain_calldata*/      NULL
+        (NclPrintFunction)                        AdvancedFilePrint,
+      /* NclCallBackList* create_callback */      NULL,
+      /* NclCallBackList* delete_callback */      NULL,
+      /* NclCallBackList* modify_callback */      NULL,
+      /* NclObtainCall obtain_calldata */         FileObtainCallData
     },
-
     {
        /*NclFileVarRepValueFunc         rep_val*/                      AdvancedFileVarRepValue,
        /*NclFileIsAFunc                 is_var*/                       AdvancedFileIsVar,
@@ -8991,10 +8961,10 @@ NclAdvancedFileClassRec nclAdvancedFileClassRec =
        /*NclAddFileVarAttFunc           add_var_att_func*/             NULL,
        /*NclAddFileAttFunc              add_att_func*/                 NULL,
        /*NclSetFileOptionFunc           set_file_option*/              AdvancedFileSetFileOption,
-       /*NclFileOption                 *options*/                      adv_file_options,
+       /*NclFileOption                 *options*/                      file_options,
        /*NclFileIsAFunc                 is_group*/                     AdvancedFileIsGroup,
        /*NclGetFileGroupFunc            read_group_func*/              AdvancedFileReadGroup,
-         sizeof(adv_file_options) / sizeof(adv_file_options[0])
+         Ncl_NUMBER_OF_FILE_OPTIONS
     },
 
     {

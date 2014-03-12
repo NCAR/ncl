@@ -4245,3 +4245,566 @@ NclQuark _NclFileReadVersion(NclFile thefile)
 	return version;
 }
 
+void _NclInitFileClasses()
+{
+    NhlErrorTypes retcode = NhlNOERROR;
+
+    retcode = _NclInitClass(nclFileClass);
+    if(NhlNOERROR !=  retcode)
+    {
+        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                   "Can not initialize nclFileClass.\n"));
+        return;
+    }
+
+    retcode = _NclInitClass(nclAdvancedFileClass);
+    if(NhlNOERROR !=  retcode)
+    {
+        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                   "Can not initialize nclAdvancedFileClass.\n"));
+        return;
+    }
+}
+
+NhlErrorTypes UpdateGridTypeAtt(NclFile thefile)
+{
+	NclQuark *vnames;
+	int n_vnames;
+	int i;
+	int vindex,att_id;
+	NrmQuark grid_type_att_name;
+	void *val;
+	NclMultiDValData tmp_md;
+
+	if (thefile->file.file_format != _NclGRIB2)
+		return NhlNOERROR;
+
+	grid_type_att_name = NrmStringToQuark("grid_type");
+	vnames = (*thefile->file.format_funcs->get_var_names)(thefile->file.private_rec,&n_vnames);
+	for(i = 0; i < n_vnames; i++){
+		vindex = _NclFileIsVar(thefile,vnames[i]);
+		if(thefile->file.var_att_ids[vindex] == -1) {
+			LoadVarAtts(thefile,vnames[i]);
+			continue;
+		}
+		att_id = thefile->file.var_att_ids[vindex];
+		if (! _NclIsAtt(att_id,NrmQuarkToString(grid_type_att_name)))
+			continue;
+
+		tmp_md = _NclGetAtt(att_id,NrmQuarkToString(grid_type_att_name),NULL);
+		(*thefile->file.format_funcs->read_var_att)(thefile->file.private_rec,vnames[i],grid_type_att_name,&val);
+
+		*((NrmQuark*)tmp_md->multidval.val) = (NrmQuark)val;
+		_NclAddAtt(att_id,NrmQuarkToString(grid_type_att_name),tmp_md,NULL);
+	}
+	NclFree((void*)vnames);
+	return NhlNOERROR;
+}
+
+/*
+ * Updates the dimension info
+ */
+
+NhlErrorTypes UpdateDims(NclFile thefile)
+{
+	NclQuark *name_list;
+	int n_names;
+	int i;
+	int index;
+
+	name_list = (*thefile->file.format_funcs->get_dim_names)(thefile->file.private_rec,&n_names);
+	thefile->file.n_file_dims = n_names;
+	for(i = 0; i < n_names; i++){
+		if (thefile->file.file_dim_info[i])
+			NclFree(thefile->file.file_dim_info[i]);
+		thefile->file.file_dim_info[i] = (thefile->file.format_funcs->get_dim_info)
+			(thefile->file.private_rec,name_list[i]);
+		index = _NclFileIsVar(thefile,name_list[i]);
+		if(index > -1 && thefile->file.var_info[index]->num_dimensions == 1) {
+			thefile->file.coord_vars[i] = thefile->file.var_info[index];
+		}
+	}
+	NclFree((void*)name_list);
+	return NhlNOERROR;
+}
+
+NclFileOption file_options[] = {
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },  /* NetCDF PreFill */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },  /* NetCDF define mode */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, UpdateGridTypeAtt },  /* GRIB thinned grid interpolation method */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },  /* NetCDF header reserve space */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* NetCDF suppress close option */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 3, NULL },  /* NetCDF file format option */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* Binary file read byte order */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* Binary file write byte order */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, UpdateDims },   /* GRIB initial time coordinate type */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* NetCDF missing to fill value option */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },         /* NetCDF 4 shuffle */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },         /* NetCDF 4 compression option level */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },         /* NetCDF 4 cache switch */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 3200000, NULL },   /* NetCDF 4 cache size */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 1009, NULL },      /* NetCDF 4 cache nelems */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0.50, NULL },      /* NetCDF 4 cache preemption */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB default NCEP parameter table */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB print record info */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB single element dimensions */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB time period suffix */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },   /* advanced file-structure */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 4, NULL },  /* Fortran binary file record marker size */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },   /* GRIB cache size */
+};
+
+NhlErrorTypes InitializeFileOptions(NclFileOption *options)
+{
+	logical *lval;
+	NclQuark *sval;
+	float *fval;
+	int *ival;
+	ng_size_t len_dims;
+	NhlErrorTypes ret = NhlNOERROR;
+	
+	
+	/* option names are case insensitive and so are string-type 
+	 * option values
+	 */
+
+	/* NetCDF option PreFill */
+	options[Ncl_PREFILL].format = NrmStringToQuark("nc");
+	options[Ncl_PREFILL].name = NrmStringToQuark("prefill");
+	len_dims = 1;
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = True;
+	options[Ncl_PREFILL].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = True;
+	options[Ncl_PREFILL].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	options[Ncl_PREFILL].valid_values = NULL;
+
+	/* NetCDF option DefineMode */
+	options[Ncl_DEFINE_MODE].format = NrmStringToQuark("nc");
+	options[Ncl_DEFINE_MODE].name = NrmStringToQuark("definemode");
+	len_dims = 1;
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = True;
+	options[Ncl_DEFINE_MODE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = True;
+	options[Ncl_DEFINE_MODE].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	options[Ncl_DEFINE_MODE].valid_values = NULL;
+	
+	/* GRIB option ThinnedGridInterpolation */
+
+	options[Ncl_THINNED_GRID_INTERPOLATION].format = NrmStringToQuark("grb");
+	options[Ncl_THINNED_GRID_INTERPOLATION].name = NrmStringToQuark("thinnedgridinterpolation");
+	len_dims = 1;
+	sval = (NclQuark *) NclMalloc(sizeof(NclQuark));
+	*sval = NrmStringToQuark("cubic");
+	options[Ncl_THINNED_GRID_INTERPOLATION].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (NclQuark *) NclMalloc(sizeof(NclQuark));
+	*sval = NrmStringToQuark("cubic");
+	options[Ncl_THINNED_GRID_INTERPOLATION].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (NclQuark*) NclMalloc(2 * sizeof(NclQuark));
+	sval[0] = NrmStringToQuark("linear");
+	sval[1] = NrmStringToQuark("cubic");
+	len_dims = 2;
+	options[Ncl_THINNED_GRID_INTERPOLATION].valid_values = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+
+	/* NetCDF option HeaderReserveSpace */
+	options[Ncl_HEADER_RESERVE_SPACE].format = NrmStringToQuark("nc");
+	options[Ncl_HEADER_RESERVE_SPACE].name = NrmStringToQuark("headerreservespace");
+	len_dims = 1;
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 0;
+	options[Ncl_HEADER_RESERVE_SPACE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 0;
+	options[Ncl_HEADER_RESERVE_SPACE].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	options[Ncl_HEADER_RESERVE_SPACE].valid_values = NULL;
+
+	/* NetCDF option SuppressClose */
+	options[Ncl_SUPPRESS_CLOSE].format = NrmStringToQuark("nc");
+	options[Ncl_SUPPRESS_CLOSE].name = NrmStringToQuark("suppressclose");
+	len_dims = 1;
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = True;
+	options[Ncl_SUPPRESS_CLOSE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = True;
+	options[Ncl_SUPPRESS_CLOSE].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	options[Ncl_SUPPRESS_CLOSE].valid_values = NULL;
+
+
+	/* NetCDF option Format */
+
+	options[Ncl_FORMAT].format = NrmStringToQuark("nc");
+	options[Ncl_FORMAT].name = NrmStringToQuark("format");
+	len_dims = 1;
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
+	*sval = NrmStringToQuark("classic");
+	options[Ncl_FORMAT].value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
+	*sval = NrmStringToQuark("classic");
+	options[Ncl_FORMAT].def_value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	len_dims = 5;
+	sval = (NclQuark*) NclMalloc(len_dims * sizeof(NclQuark));
+	sval[0] = NrmStringToQuark("classic");
+	sval[1] = NrmStringToQuark("64bitoffset");
+	sval[2] = NrmStringToQuark("largefile");
+	sval[3] = NrmStringToQuark("netcdf4classic");
+	sval[4] = NrmStringToQuark("netcdf4");
+
+	options[Ncl_FORMAT].valid_values = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+
+	/* Binary option ReadByteOrder */
+
+	options[Ncl_READ_BYTE_ORDER].format = NrmStringToQuark("bin");
+	options[Ncl_READ_BYTE_ORDER].name = NrmStringToQuark("readbyteorder");
+	len_dims = 1;
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
+	*sval = NrmStringToQuark("native");
+	options[Ncl_READ_BYTE_ORDER].value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
+	*sval = NrmStringToQuark("native");
+	options[Ncl_READ_BYTE_ORDER].def_value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (NclQuark*) NclMalloc(3 * sizeof(NclQuark));
+	sval[0] = NrmStringToQuark("native");
+	sval[1] = NrmStringToQuark("bigendian");
+	sval[2] = NrmStringToQuark("littleendian");
+	len_dims = 3;
+	options[Ncl_READ_BYTE_ORDER].valid_values = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+
+	/* Binary option WriteByteOrder */
+
+	options[Ncl_WRITE_BYTE_ORDER].format = NrmStringToQuark("bin");
+	options[Ncl_WRITE_BYTE_ORDER].name = NrmStringToQuark("writebyteorder");
+	len_dims = 1;
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
+	*sval = NrmStringToQuark("native");
+	options[Ncl_WRITE_BYTE_ORDER].value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
+	*sval = NrmStringToQuark("native");
+	options[Ncl_WRITE_BYTE_ORDER].def_value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (NclQuark*) NclMalloc(3 * sizeof(NclQuark));
+	sval[0] = NrmStringToQuark("native");
+	sval[1] = NrmStringToQuark("bigendian");
+	sval[2] = NrmStringToQuark("littleendian");
+	len_dims = 3;
+	options[Ncl_WRITE_BYTE_ORDER].valid_values = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+
+
+	/* Grib option NumericIniitialTimeCoordinates */
+	options[Ncl_INITIAL_TIME_COORDINATE_TYPE].format = NrmStringToQuark("grb");
+	options[Ncl_INITIAL_TIME_COORDINATE_TYPE].name = NrmStringToQuark("initialtimecoordinatetype");
+	len_dims = 1;
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
+	*sval = NrmStringToQuark("numeric");
+	options[Ncl_INITIAL_TIME_COORDINATE_TYPE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
+	*sval = NrmStringToQuark("numeric");
+	options[Ncl_INITIAL_TIME_COORDINATE_TYPE].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (NclQuark*) NclMalloc(2 * sizeof(NclQuark));
+	sval[0] = NrmStringToQuark("string");
+	sval[1] = NrmStringToQuark("numeric");
+	len_dims = 2;
+	options[Ncl_INITIAL_TIME_COORDINATE_TYPE].valid_values = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+
+	/* NetCDF option MissingToFillValue */
+	options[Ncl_MISSING_TO_FILL_VALUE].format = NrmStringToQuark("nc");
+	options[Ncl_MISSING_TO_FILL_VALUE].name = NrmStringToQuark("missingtofillvalue");
+	len_dims = 1;
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = True;
+	options[Ncl_MISSING_TO_FILL_VALUE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = True;
+	options[Ncl_MISSING_TO_FILL_VALUE].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	options[Ncl_MISSING_TO_FILL_VALUE].valid_values = NULL;
+
+	/*suffle*/
+	options[Ncl_SHUFFLE].format = NrmStringToQuark("nc");
+	options[Ncl_SHUFFLE].name = NrmStringToQuark("shuffle");
+	len_dims = 1;
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 1;
+	options[Ncl_SHUFFLE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 1;
+	options[Ncl_SHUFFLE].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	options[Ncl_SHUFFLE].valid_values = NULL;
+
+	/*compression level */
+	options[Ncl_COMPRESSION_LEVEL].format = NrmStringToQuark("nc");
+	options[Ncl_COMPRESSION_LEVEL].name = NrmStringToQuark("compressionlevel");
+	len_dims = 1;
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 0;
+	options[Ncl_COMPRESSION_LEVEL].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 0;
+	options[Ncl_COMPRESSION_LEVEL].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	options[Ncl_COMPRESSION_LEVEL].valid_values = NULL;
+
+	/*use cache */
+	options[Ncl_USE_CACHE].format = NrmStringToQuark("nc");
+	options[Ncl_USE_CACHE].name = NrmStringToQuark("cachepreemption");
+	len_dims = 1;
+	fval = (float *) NclMalloc(sizeof(float));
+	*fval = 0.50;
+	options[Ncl_USE_CACHE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0.50,(void *)fval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypefloatClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 0;
+	options[Ncl_USE_CACHE].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	options[Ncl_USE_CACHE].valid_values = NULL;
+
+	/*cache size */
+	options[Ncl_CACHE_SIZE].format = NrmStringToQuark("nc");
+	options[Ncl_CACHE_SIZE].name = NrmStringToQuark("cachesize");
+	len_dims = 1;
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 3*1024*1025;
+	options[Ncl_CACHE_SIZE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 3*1024*1025;
+	options[Ncl_CACHE_SIZE].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	options[Ncl_CACHE_SIZE].valid_values = NULL;
+
+	/*cache nelems */
+	options[Ncl_CACHE_NELEMS].format = NrmStringToQuark("nc");
+	options[Ncl_CACHE_NELEMS].name = NrmStringToQuark("cachenelems");
+	len_dims = 1;
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 1009;
+	options[Ncl_CACHE_NELEMS].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 1009;
+	options[Ncl_CACHE_NELEMS].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	options[Ncl_CACHE_NELEMS].valid_values = NULL;
+
+	/*cache preemption */
+	options[Ncl_CACHE_PREEMPTION].format = NrmStringToQuark("nc");
+	options[Ncl_CACHE_PREEMPTION].name = NrmStringToQuark("cachepreemption");
+	len_dims = 1;
+	fval = (float *) NclMalloc(sizeof(float));
+	*fval = 0.50;
+	options[Ncl_CACHE_PREEMPTION].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0.50,(void *)fval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypefloatClass);
+	fval = (float*) NclMalloc(sizeof(float));
+	*fval = 0.50;
+	options[Ncl_CACHE_PREEMPTION].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0.50,(void *)fval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypefloatClass);
+	options[Ncl_CACHE_PREEMPTION].valid_values = NULL;
+
+	/* Grib option Default_NCEP_Ptable */
+	options[Ncl_DEFAULT_NCEP_PTABLE].format = NrmStringToQuark("grb");
+	options[Ncl_DEFAULT_NCEP_PTABLE].name = NrmStringToQuark("defaultncepptable");
+	len_dims = 1;
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
+	*sval = NrmStringToQuark("operational");
+	options[Ncl_DEFAULT_NCEP_PTABLE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
+	*sval = NrmStringToQuark("operational");
+	options[Ncl_DEFAULT_NCEP_PTABLE].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (NclQuark*) NclMalloc(2 * sizeof(NclQuark));
+	sval[0] = NrmStringToQuark("operational");
+	sval[1] = NrmStringToQuark("reanalysis");
+	len_dims = 2;
+	options[Ncl_DEFAULT_NCEP_PTABLE].valid_values = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+
+
+	/* GRIB (2) option PrintRecordInfo */
+	options[Ncl_PRINT_RECORD_INFO].format = NrmStringToQuark("grb");
+	options[Ncl_PRINT_RECORD_INFO].name = NrmStringToQuark("printrecordinfo");
+	len_dims = 1;
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = False;
+	options[Ncl_PRINT_RECORD_INFO].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = False;
+	options[Ncl_PRINT_RECORD_INFO].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	options[Ncl_PRINT_RECORD_INFO].valid_values = NULL;
+
+	/* Grib option Single element dimensions */
+	options[Ncl_SINGLE_ELEMENT_DIMENSIONS].format = NrmStringToQuark("grb");
+	options[Ncl_SINGLE_ELEMENT_DIMENSIONS].name = NrmStringToQuark("singleelementdimensions");
+	len_dims = 1;
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
+	*sval = NrmStringToQuark("none");
+	options[Ncl_SINGLE_ELEMENT_DIMENSIONS].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (NclQuark*) NclMalloc(sizeof(NclQuark));
+	*sval = NrmStringToQuark("none");
+	options[Ncl_SINGLE_ELEMENT_DIMENSIONS].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (NclQuark*) NclMalloc(7 * sizeof(NclQuark));
+	sval[0] = NrmStringToQuark("none");
+	sval[1] = NrmStringToQuark("all");
+	sval[2] = NrmStringToQuark("ensemble");
+	sval[3] = NrmStringToQuark("initial_time");
+	sval[4] = NrmStringToQuark("forecast_time");
+	sval[5] = NrmStringToQuark("level");
+	sval[6] = NrmStringToQuark("probability");
+	len_dims = 7;
+	options[Ncl_SINGLE_ELEMENT_DIMENSIONS].valid_values = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+
+	/* GRIB option TimePeriodSuffix */
+
+	options[Ncl_TIME_PERIOD_SUFFIX].format = NrmStringToQuark("grb");
+	options[Ncl_TIME_PERIOD_SUFFIX].name = NrmStringToQuark("timeperiodsuffix");
+	len_dims = 1;
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = True;
+	options[Ncl_TIME_PERIOD_SUFFIX].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = True;
+	options[Ncl_TIME_PERIOD_SUFFIX].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	options[Ncl_TIME_PERIOD_SUFFIX].valid_values = NULL;
+
+	/* advanced file-structure */
+
+	options[Ncl_ADVANCED_FILE_STRUCTURE].format = NrmStringToQuark("all");
+	options[Ncl_ADVANCED_FILE_STRUCTURE].name = NrmStringToQuark("filestructure");
+        len_dims = 1;
+        sval = (NrmQuark*) NclMalloc(sizeof(NrmQuark));
+	if(NCLadvancedFileStructure[0])
+        	*sval = NrmStringToQuark("advanced");
+	else
+        	*sval = NrmStringToQuark("standard");
+	options[Ncl_ADVANCED_FILE_STRUCTURE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+        sval = (NrmQuark*) NclMalloc(sizeof(NrmQuark));
+	if(NCLadvancedFileStructure[0])
+        	*sval = NrmStringToQuark("advanced");
+	else
+        	*sval = NrmStringToQuark("standard");
+	options[Ncl_ADVANCED_FILE_STRUCTURE].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	options[Ncl_ADVANCED_FILE_STRUCTURE].valid_values = NULL;
+
+	/* Binary option RecordMarkerSize */
+
+	options[Ncl_RECORD_MARKER_SIZE].format = NrmStringToQuark("bin");
+	options[Ncl_RECORD_MARKER_SIZE].name = NrmStringToQuark("recordmarkersize");
+
+	len_dims = 1;
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 4;
+	options[Ncl_RECORD_MARKER_SIZE].value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 4;
+	options[Ncl_RECORD_MARKER_SIZE].def_value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	ival = (int*) NclMalloc(2 * sizeof(int));
+	ival[0] = 4;
+	ival[1] = 8;
+	len_dims = 2;
+	options[Ncl_RECORD_MARKER_SIZE].valid_values = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+
+	/*cache size */
+	options[Ncl_GRIB_CACHE_SIZE].format = NrmStringToQuark("grb");
+	options[Ncl_GRIB_CACHE_SIZE].name = NrmStringToQuark("cachesize");
+	len_dims = 1;
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 0;
+	options[Ncl_GRIB_CACHE_SIZE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 0;
+	options[Ncl_GRIB_CACHE_SIZE].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	options[Ncl_GRIB_CACHE_SIZE].valid_values = NULL;
+	/* End of options */
+
+	return ret;
+}
+

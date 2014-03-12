@@ -2831,9 +2831,6 @@ NhlErrorTypes _NclIfbindirread(void)
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 
-	ret = _NclInitClass(nclFileClass);
-	if (ret < NhlWARNING)
-		return ret;
 #ifdef ByteSwapped
 	if (NrmStringToQuark("bigendian") == *(NclQuark *)(fcp->options[Ncl_READ_BYTE_ORDER].value->multidval.val)) {
 		swap_bytes = 1;
@@ -3073,9 +3070,6 @@ NhlErrorTypes _NclIcbinread
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 
-	ret = _NclInitClass(nclFileClass);
-	if (ret < NhlWARNING)
-		return ret;
 #ifdef ByteSwapped
 	if (NrmStringToQuark("bigendian") == *(NclQuark *)(fcp->options[Ncl_READ_BYTE_ORDER].value->multidval.val)) {
 		swap_bytes = 1;
@@ -3242,10 +3236,6 @@ NhlErrorTypes _NclIfbinnumrec
 	NhlErrorTypes ret = NhlNOERROR;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	
-
-	ret = _NclInitClass(nclFileClass);
-	if (ret < NhlWARNING)
-		return ret;
 #ifdef ByteSwapped
 	if (NrmStringToQuark("bigendian") == *(NclQuark *)(fcp->options[Ncl_READ_BYTE_ORDER].value->multidval.val)) {
 		swap_bytes = 1;
@@ -3379,9 +3369,6 @@ NhlErrorTypes _NclIfbinrecwrite
 	int swap_bytes = 0;
 	int marker_size = 4;
 
-	ret = _NclInitClass(nclFileClass);
-	if (ret < NhlWARNING)
-		return ret;
 #ifdef ByteSwapped
 	if (NrmStringToQuark("bigendian") == *(NclQuark *)(fcp->options[Ncl_WRITE_BYTE_ORDER].value->multidval.val)) {
 		swap_bytes = 1;
@@ -3595,9 +3582,6 @@ NhlErrorTypes _NclIfbinrecread
 	int swap_bytes = 0;
 	int marker_size = 4;
 
-	ret = _NclInitClass(nclFileClass);
-	if (ret < NhlWARNING)
-		return ret;
 #ifdef ByteSwapped
 	if (NrmStringToQuark("bigendian") == *(NclQuark *)(fcp->options[Ncl_READ_BYTE_ORDER].value->multidval.val)) {
 		swap_bytes = 1;
@@ -3870,9 +3854,6 @@ NhlErrorTypes _NclIfbinread
 	int marker_size = 4;
 	long long ind1;
 
-	ret = _NclInitClass(nclFileClass);
-	if (ret < NhlWARNING)
-		return ret;
 #ifdef ByteSwapped
 	if (NrmStringToQuark("bigendian") == *(NclQuark *)(fcp->options[Ncl_READ_BYTE_ORDER].value->multidval.val)) {
 		swap_bytes = 1;
@@ -5195,9 +5176,6 @@ NhlErrorTypes _NclIfbindirwrite
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 
-	ret = _NclInitClass(nclFileClass);
-	if (ret < NhlWARNING)
-		return ret;
 #ifdef ByteSwapped
 	if (NrmStringToQuark("bigendian") == *(NclQuark *)(fcp->options[Ncl_WRITE_BYTE_ORDER].value->multidval.val)) {
 		swap_bytes = 1;
@@ -5285,9 +5263,6 @@ NhlErrorTypes _NclIcbinwrite
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 
-	ret = _NclInitClass(nclFileClass);
-	if (ret < NhlWARNING)
-		return ret;
 #ifdef ByteSwapped
 	if (NrmStringToQuark("bigendian") == *(NclQuark *)(fcp->options[Ncl_WRITE_BYTE_ORDER].value->multidval.val)) {
 		swap_bytes = 1;
@@ -5386,9 +5361,6 @@ NhlErrorTypes _NclIfbinwrite
 	long long ll_total;
 	int marker_size = 4;
 
-	ret = _NclInitClass(nclFileClass);
-	if (ret < NhlWARNING)
-		return ret;
 #ifdef ByteSwapped
 	if (NrmStringToQuark("bigendian") == *(NclQuark *)(fcp->options[Ncl_WRITE_BYTE_ORDER].value->multidval.val)) {
 		swap_bytes = 1;
@@ -20846,8 +20818,6 @@ NhlErrorTypes _NclISetFileOption(void)
 	if(tmp_md1 == NULL)
 		return(NhlFATAL);
 
-	_NclInitClass(nclFileClass);
-
         filetype_lower = _NclGetLower(filetype);
         option_lower = _NclGetLower(option);
 
@@ -20954,16 +20924,6 @@ NhlErrorTypes _NclISetFileOption(void)
     		}
     	}
 
-#ifdef USE_NETCDF4_FEATURES
-	for(n = 0; n < _NclNumberOfFileFormats; ++n)
-	{
-		if(NCLadvancedFileStructure[n])
-		{
-			_NclInitClass(nclAdvancedFileClass);
-			break;
-		}
-	}
-#endif
 	ret = _NclFileSetOption(f,filetype,option,tmp_md1);
 
 	return ret;

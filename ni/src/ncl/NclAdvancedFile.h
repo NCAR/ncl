@@ -101,7 +101,6 @@ struct _NclAdvancedFileRec
     NclObjPart      obj;
     NclFilePart     file;
     NclAdvancedFilePart  advancedfile;
-
 };
 
 extern NclObjClass nclAdvancedFileClass;

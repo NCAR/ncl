@@ -315,10 +315,6 @@ NclGroup *_NclAdvancedGroupCreate(NclObj inst, NclObjClass theclass, NclObjTypes
         return NULL;
     }
 
-    ret = _NclInitClass(nclAdvancedFileClass);
-    if(ret < NhlWARNING) 
-        return(NULL);
-
     if(theclass == NULL)
     {
         class_ptr = nclAdvancedFileClass;

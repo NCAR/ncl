@@ -228,7 +228,7 @@ static void *NC4MapFromNcl(NclBasicDataTypes the_type)
     return(out_type);
 }
 
-static int InitializeOptions(NclFileGrpNode *grpnode)
+static int NC4InitializeOptions(NclFileGrpNode *grpnode)
 {
     NCLOptions *options;
 
@@ -421,7 +421,7 @@ static void *NC4InitializeFileRec(NclFileFormat *format)
     grpnode->other_src = NULL;
     grpnode->parent = NULL;
 
-    InitializeOptions(grpnode);
+    NC4InitializeOptions(grpnode);
 
     *format = _NclNETCDF4;
     setvbuf(stderr,NULL,_IONBF,0);
@@ -435,7 +435,7 @@ static void *NC4CreateFile(void *rootgrp,NclQuark path)
     int nc_ret, mode;
     int format;
 
-    InitializeOptions(grpnode);
+    NC4InitializeOptions(grpnode);
 
     if (*(NrmQuark *)(grpnode->options[Ncl_FORMAT].values) == 
               NrmStringToQuark("classic"))

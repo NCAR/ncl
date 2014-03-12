@@ -281,6 +281,7 @@ int NclDriver(int argc, char **argv)
     _NclInitSymbol();	
     _NclInitTypeClasses();
     _NclInitDataClasses();
+    _NclInitFileClasses();
     /* if the -o flag is specified do stuff to make NCL backwards compatible */
     if (NCLoldBehavior) {
 	    _NclSetDefaultFillValues(NCL_5_DEFAULT_FILLVALUES);

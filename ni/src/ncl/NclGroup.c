@@ -374,9 +374,6 @@ NclQuark group_name;
 
     int       found = 0;
 
-    ret = _NclInitClass(nclFileClass);
-    if(ret < NhlWARNING) 
-        return(NULL);
     if(theclass == NULL)
     {
         class_ptr = nclFileClass;
