@@ -656,6 +656,14 @@ NclHDFEOS.o: NclHDFEOS.c
 	  @echo 
 
 #
+# To deal with strdup issue. Can't built with any ANSI or POSIX flags.
+# Incorrect definition of strdup is causing major headaches for 
+# memory/time intensive cod.
+#
+userAddFuncs.o: userAddFuncs.c
+	$(CC) -c $(ALLINCLUDES) $(CCOPTIONS) $(COPT) userAddFuncs.c
+
+#
 # NIO dependencies
 #
 nio_path.c: nio_path.c.sed Makefile
