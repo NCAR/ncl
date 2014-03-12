@@ -66,6 +66,7 @@ extern "C" {
 #include <signal.h>
 #include <netcdf.h>
 #include <ctype.h>
+#include <string.h>
 
 #define MAX_PRINT_SPACES	128
 #define MAX_LIST_ELEMENT	128
