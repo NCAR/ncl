@@ -661,7 +661,7 @@ NclHDFEOS.o: NclHDFEOS.c
 # memory/time intensive cod.
 #
 userAddFuncs.o: userAddFuncs.c
-	$(CC) -c $(ALLINCLUDES) $(CCOPTIONS) $(COPT) userAddFuncs.c
+	$(CC) -c $(ALLINCLUDES) $(COPT) userAddFuncs.c
 
 #
 # NIO dependencies
