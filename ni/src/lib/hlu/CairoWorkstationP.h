@@ -34,6 +34,7 @@ typedef struct _NhlCairoWorkstationLayerPart {
     int lower_y;
     int upper_x;
     int upper_y;
+    NhlBoolean cairo_fill_hack;
 
     /* fields for PS/PDF workstations */
     NhlString          paper_size;      /* standard paper name, e.g., "legal", "A2", etc. */

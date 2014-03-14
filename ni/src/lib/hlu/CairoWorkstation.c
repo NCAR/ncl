@@ -56,6 +56,13 @@ static NhlResource resourcesDocumentWS[] = {
         _NhlUSET((NhlPointer) - 1), _NhlRES_DEFAULT, NULL},
 
     /* End-documented-resources */
+        
+    /* HACK:  Enables the paint-clip-stroke drawing hack intended to deal with faint gaps sometime seen between 
+     * adject filled regions. See Jira ncl-1913 
+     */
+    {NhlNwkCairoFillWorkaround, NhlCwkCairoFillWorkaround, NhlTBoolean,
+        sizeof (NhlBoolean), Oset(cairo_fill_hack), NhlTImmediate,
+        _NhlUSET((NhlPointer) False), _NhlRES_DEFAULT, NULL},
 };
 
 /* Resources for the Image Workstation */
@@ -97,6 +104,14 @@ static NhlResource resourcesImageWS[] = {
     {NhlNwkHeight, NhlCwkHeight, NhlTInteger, sizeof (int),
         Oset(pixconfig.height), NhlTImmediate,
         _NhlUSET((NhlPointer) 1024), _NhlRES_NOSACCESS, NULL},
+
+    /* See Jira ncl-1913.  The drawing hack does not apply to ImageWorkstations, but we silently include this resource 
+     * here to suppress warnings if a user has it set -- it should quietly do nothing, rather than throw warnings that
+     * its not going to do anything!
+     */
+    {NhlNwkCairoFillWorkaround, NhlCwkCairoFillWorkaround, NhlTBoolean,
+        sizeof (NhlBoolean), Oset(cairo_fill_hack), NhlTImmediate,
+        _NhlUSET((NhlPointer) False), _NhlRES_DEFAULT, NULL},
 };
 
 static NhlResource resourcesWindowWS[] = {
@@ -134,6 +149,14 @@ static NhlResource resourcesWindowWS[] = {
     {NhlNwkIconTitle, NhlCwkIconTitle, NhlTString, sizeof (NhlString),
         Oset(xwinconfig.icon_title), NhlTImmediate, _NhlUSET((NhlPointer) NULL),
         _NhlRES_NOSACCESS, (NhlFreeFunc) NhlFree},
+
+    /* See Jira ncl-1913.  The drawing hack does not apply to ImageWorkstations, but we silently include this resource 
+     * here to suppress warnings if a user has it set -- it should quietly do nothing, rather than throw warnings that
+     * its not going to do anything!
+     */
+    {NhlNwkCairoFillWorkaround, NhlCwkCairoFillWorkaround, NhlTBoolean,
+        sizeof (NhlBoolean), Oset(cairo_fill_hack), NhlTImmediate,
+        _NhlUSET((NhlPointer) False), _NhlRES_DEFAULT, NULL},
 };
 
 static NhlResource resourcesQtWS[] = {
@@ -171,11 +194,20 @@ static NhlResource resourcesQtWS[] = {
     {NhlNwkIconTitle, NhlCwkIconTitle, NhlTString, sizeof (NhlString),
         Oset(xwinconfig.icon_title), NhlTImmediate, _NhlUSET((NhlPointer) NULL),
         _NhlRES_NOSACCESS, (NhlFreeFunc) NhlFree},
+    
+    /* See Jira ncl-1913.  The drawing hack does not apply to ImageWorkstations, but we silently include this resource 
+     * here to suppress warnings if a user has it set -- it should quietly do nothing, rather than throw warnings that
+     * its not going to do anything!
+     */
+    {NhlNwkCairoFillWorkaround, NhlCwkCairoFillWorkaround, NhlTBoolean,
+        sizeof (NhlBoolean), Oset(cairo_fill_hack), NhlTImmediate,
+        _NhlUSET((NhlPointer) False), _NhlRES_DEFAULT, NULL},
 };
 
 /* forward declarations of helper functions */
 static NhlErrorTypes fixupFilename(NhlCairoWorkstationLayer layer, char* filenameSuffix, char* callingFunc);
 static NhlErrorTypes checkUlLRBounds(NhlCairoWorkstationLayerPart*, char*);
+static void setCairoFillHackValue(NhlLayer layer);
 
 /*
  * CairoWorkstation base_class method declarations
@@ -1071,6 +1103,8 @@ CairoDocumentWorkstationOpen(NhlLayer l) {
     h = cairo->upper_y - cairo->lower_y;
     d = MAX(w, h);
     work->work.vswidth_dev_units = d / 72 * cairo->dpi;
+    
+    setCairoFillHackValue(l);
 
     return ret;
 }
@@ -1390,3 +1424,25 @@ checkUlLRBounds(NhlCairoWorkstationLayerPart *cairoLayer, char* callingFunc)
 
     return ret;
 }
+
+
+/*
+ * This hack is intended to address a deficiency in cairo's "fill" operation on document workstations (i.e., the
+ * dreaded "thin white lines/gaps" problem). See Jira ticket ncl-1913.
+ * 
+ */
+
+void setCairoFillHackValue(NhlLayer layer)
+{
+    NhlCairoWorkstationLayer wLayer = (NhlCairoWorkstationLayer) layer;        
+    NhlBoolean fillMode = wLayer->cairo.cairo_fill_hack;        
+    _NGCCairoFillHack fillHackRec;
+    Gescape_in_data gesc;
+    
+    fillHackRec.type = NGC_CAIROFILLHACK;
+    fillHackRec.work_id = wLayer->work.gkswksid;
+    fillHackRec.fill_mode_boolean = fillMode;
+    gesc.escape_r1.data = &fillHackRec;
+    gesc.escape_r1.size = sizeof(fillHackRec);
+    gescape(NGESC_CNATIVE, &gesc, NULL, NULL);                                
+}       

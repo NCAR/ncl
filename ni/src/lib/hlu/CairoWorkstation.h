@@ -39,6 +39,8 @@
 #define    NhlNwkIconTitle  "wkIconTitle"
 #define    NhlCwkIconTitle  "WkIconTitle"
 
+#define    NhlNwkCairoFillWorkaround "wkCairoFillWorkaround"
+#define    NhlCwkCairoFillWorkaround "WKCairoFillWorkaround"
 /*
  * See: Workstation.h for common, shared resources for visual type,
  * orientation, background, device upper/lower coordinates, and
