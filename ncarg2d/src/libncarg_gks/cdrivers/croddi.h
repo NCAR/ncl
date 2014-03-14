@@ -25,6 +25,7 @@
 typedef struct  CROddi_ {
   int             wks_id;
   int             wks_type;
+  int             is_vector_type;
   Transform2D     transform;
   TransSystem     tsystem;
   CRODeviceSpace  dspace;
@@ -35,6 +36,7 @@ typedef struct  CROddi_ {
   cro_orientation  orientation;    /* applicable only to PS/PDF formats */
   float         sfill_spacing;
   float         hatch_spacing;
+  int           cairo_fill_hack;   /* see Jira ncl-1913 */
   linejoin_type line_join;
   linecap_type  line_cap;
   float         miter_limit;

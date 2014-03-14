@@ -49,6 +49,7 @@
 #define NGC_SETALPHA    7
 #define NGC_GETALPHA    8
 #define NGC_ANTIALIAS   9
+#define NGC_CAIROFILLHACK 10   /* see Jira ticket ncl-1913 */
 
 /* opcodes for setting opacity attributes */
 #define NGC_LINEALPHA   0
@@ -134,6 +135,12 @@ typedef struct {
     int                 antialias_boolean;
 } _NGCAntiAlias;
 
+typedef struct {        /* Jira ncl-1913 */
+    int                 type;
+    int                 work_id;
+    int                 fill_mode_boolean;
+} _NGCCairoFillHack;
+
 typedef struct {
 	int		type;
 	int		work_id;
@@ -150,6 +157,7 @@ typedef union _NGCescapeRec_ {
 	_NGCPixConfig   pixconfig;
 	_NGCAlpha       alphaconfig;
         _NGCAntiAlias   antialias;
+        _NGCCairoFillHack fillhack;
 } _NGCesc;
 
 /*

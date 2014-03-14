@@ -757,6 +757,7 @@ static int cro_CEsc(CROddp *psa, _NGCesc *cesc) {
     _NGCPixConfig *pixconf;
     _NGCAlpha     *alphaConfig;
     _NGCAntiAlias *aliasConfig;
+    _NGCCairoFillHack *fillMode;
     
     switch (cesc->type) {
         case NGC_PIXCONFIG: /* get resolution of image-based output formats */
@@ -809,6 +810,10 @@ static int cro_CEsc(CROddp *psa, _NGCesc *cesc) {
             cairo_set_antialias(getContext(psa->wks_id), (aliasConfig->antialias_boolean) ?
                 CAIRO_ANTIALIAS_DEFAULT :
                 CAIRO_ANTIALIAS_NONE);
+            break;
+        case NGC_CAIROFILLHACK: /* cairo fill-hack: see Jira ncl-1913  */
+            fillMode = (_NGCCairoFillHack*) cesc;
+            psa->cairo_fill_hack = fillMode->fill_mode_boolean;
             break;
     }
  
@@ -872,20 +877,55 @@ int cro_FillArea(GKSC *gksc) {
         
         /* Intended to address Jira 1593:  Previously we just performed a fill on the path.
          * Now, we perform a preserving-fill followed by a stroke of the path.
-         * But not for text (Jira1667).
+         * 
+         * Update 3/14/14:  The saga continues!  What is now known is that the "thin white lines"
+         * problem happens along long, straight bordering filled regions. It happens no matter what
+         * for the document backends (pdf, ps, svg);  it occurs in the image backends as well, but
+         * disappears if anti-aliasing is turned off.  A simple cairo program was put together to 
+         * demonstrate the problem and filed as bug #76090 with the CairoGraphics people.
+         *
+         * The original strategy of performing a fill, followed by a stroke clipped to the path, has proven 
+         * problematic:  it causes much larger ps/pdf/svg output files, can be extremely slow for image backends, 
+         * and is suspected in some mysterious SEGVs occurring deep in the cairo pipeline, related to clipping.
+         * 
+         * The solution now is to:
+         * - For image types, we'll turn antialiasing off for filled regions, but otherwise preserve the setting as 
+         *   applied to text and lines.
+         *   
+         * - For document types, there are certain known plots that wreak havoc upon their viewers.  By default the 
+         *   fill-clip-stroke drawing strategy is disabled;  we'll perform a straightforward fill operation, which is 
+         *   safe but prone to white-lines. However, for certain users and in cases that the white lines are unacceptable,
+         *   we've implemented an undocumented resource -- wkCairoFillWorkaround -- that if set, will invoke the 
+         *   fill-clip-stroke drawing method. 
+         * 
+         * Hopefully, someday soon, a fix to cairo will eliminate all this nonsense!
+         * 
+         * This addresses a slew of Jira tickets: 1593, 1667, 1860, 1896, 1913
+         * R. Brownrigg
+         * 
          */
-        if (psa->attributes.fill_int_style == SOLID_TEXT_FILL ||
-            cval.alpha < 1.0 || psa->attributes.fill_alpha < 1.0) 
-        {
+
+        if (psa->attributes.fill_int_style == SOLID_TEXT_FILL) { 
+            cairo_fill(context); 
+        }
+        else if (psa->is_vector_type == TRUE) {   /* pdf, ps, svg, etc. */
+            if (psa->cairo_fill_hack == FALSE || cval.alpha < 1.0 || psa->attributes.fill_alpha < 1.0) {
+                cairo_fill(context);
+            } else {
+	      cairo_save(context);
+	      cairo_clip_preserve(context);
+	      cairo_set_line_width(context, 2.0);
+	      cairo_fill_preserve(context);
+	      cairo_stroke(context);
+	      cairo_restore(context);
+	    }
+        }
+        else {  /* image backends */
+            cairo_antialias_t saveAlias = cairo_get_antialias(context);
+            cairo_set_antialias(context, CAIRO_ANTIALIAS_NONE);
             cairo_fill(context);
-        } else {
-	  cairo_save(context);
-	  cairo_clip_preserve(context);
-	  cairo_set_line_width(context, 2.0);
-	  cairo_fill_preserve(context);
-	  cairo_stroke(context);
-	  cairo_restore(context);
-	}
+	    cairo_set_antialias(context, saveAlias);
+        }
         break;
     case PATTERN_FILL: /* currently not implemented, issue polyline */
         cairo_move_to(context, 
@@ -1050,6 +1090,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
         context = cairo_create(surface);
         saveCairoEnv(orig_wks_id, context, surface);
         psa->orientation = PORTRAIT;
+        psa->is_vector_type = TRUE;
     }
 
     else if (psa->wks_type == CPDF) {
@@ -1061,6 +1102,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
         context = cairo_create(surface);
         saveCairoEnv(orig_wks_id, context, surface);
         psa->orientation = PORTRAIT;
+        psa->is_vector_type = TRUE;
     }
 
     else if (psa->wks_type == CPNG) {
@@ -1072,6 +1114,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
         saveCairoEnv(orig_wks_id, context, surface);
         psa->output_file = (char*) malloc(strlen(sptr) + 1);
         strcpy(psa->output_file, sptr);
+        psa->is_vector_type = FALSE;
     }
 
     else if (psa->wks_type == CTIFF) {
@@ -1083,6 +1126,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
         saveCairoEnv(orig_wks_id, context, surface);
         psa->output_file = (char*) malloc(strlen(sptr) + 1);
         strcpy(psa->output_file, sptr);
+        psa->is_vector_type = FALSE;
     }
 
     else if (psa->wks_type == CX11) {
@@ -1093,6 +1137,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
         saveCairoEnv(orig_wks_id, context, surface);
         psa->image_width = cairo_xlib_surface_get_width(surface);
         psa->image_height = cairo_xlib_surface_get_height(surface);
+        psa->is_vector_type = FALSE;
     }
 
     else if (psa->wks_type == CSVG) {
@@ -1116,6 +1161,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
             return (ERR_NO_DISPLAY);
         context = cairo_create(surface);
         saveCairoEnv(orig_wks_id, context, surface);
+        psa->is_vector_type = TRUE;
     }
     
     else if (psa->wks_type == CQT)
@@ -1151,6 +1197,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
 
         psa->image_height = qt_screen_height;
         psa->image_width  = qt_screen_width;
+        psa->is_vector_type = FALSE;
     }
 
     CROInitCairoContext(psa, context, surface);
@@ -2411,6 +2458,8 @@ static void CROinit(CROddp *psa, int *coords) {
     psa->miter_limit = MITER_LIMIT_DEFAULT;
     psa->sfill_spacing = CRO_FILL_SPACING;
     psa->frame_count = 0;
+    psa->is_vector_type = FALSE;
+    psa->cairo_fill_hack = FALSE;
 
 #if 0 /* THIS IS NOT HANDED DOWN FROM HLU LAYER; coords+6 is undefined -- RLB*/
     /*
