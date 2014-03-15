@@ -28,13 +28,14 @@ c
 c !INTERFACE:
 c ------------------------------------------------------------------
 C NCLFORTSTART
-      subroutine wetbulbcalc(prs,tmk,qvp,twb,nx,ny,nz)
+      subroutine wetbulbcalc(prs,tmk,qvp,twb,nx,ny,nz,psafile)
       implicit none
       integer nx, ny, nz
       double precision prs(nz,ny,nx)
       double precision tmk(nz,ny,nx)
       double precision qvp(nz,ny,nx)
       double precision twb(nz,ny,nx)
+      character*(*) psafile
 C NCLEND
       integer i,j,k
       integer jtch,jt,ipch,ip
@@ -50,9 +51,7 @@ c
 c  Before looping, set lookup table for getting temperature on
 c  a pseudoadiabat.
 c
-      CALL DLOOKUP_TABLE(PSADITHTE,PSADIPRS,PSADITMK,
-     &                   "./psadilookup.dat")
-
+      CALL DLOOKUP_TABLE(PSADITHTE,PSADIPRS,PSADITMK,psafile)
 
 c  Define constants
 
@@ -72,9 +71,9 @@ c  Define constants
       thtecon3=.81
       celkel=273.15
 
-      DO i=1,nz
+      DO k=1,nx
         DO j=1,ny
-          DO k=1,nx
+          DO i=1,nz
             q=dmax1(qvp(i,j,k),1.d-15)
             t=tmk(i,j,k)
             p=prs(i,j,k)/100.
@@ -203,9 +202,9 @@ c
       rgas=287.04  !J/K/kg
       eps=0.622
 
-      do i=1,mz
+      do k=1,mx
         do j=1,my
-          do k=1,mx
+          do i=1,mz
             omg(i,j,k)=-grav*prs(i,j,k)/
      &        (rgas*((tmk(i,j,k)*(eps+qvp(i,j,k)))/
      &        (eps*(1.+qvp(i,j,k)))))*www(i,j,k)
@@ -253,9 +252,9 @@ C NCLEND
       INTEGER I,J,K
       DOUBLE PRECISION EPS
       EPS = 0.622D0
-      DO I=1,NZ
+      DO K=1,NX
         DO J=1,NY
-          DO K=1,NX
+          DO I=1,NZ
             TV(I,J,K) = TEMP(I,J,K)* (EPS+RATMIX(I,J,K))/ 
      &                     (EPS* (1.D0+RATMIX(I,J,K)))
           ENDDO
