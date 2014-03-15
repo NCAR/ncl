@@ -283,8 +283,10 @@ COLORBREWER_FILES = \
 		CBR_set3.rgb \
 		CBR_wet.rgb
 RANDOM_FILES = \
-		lithology.rgb
-
+		lithology.rgb \
+		circular_0.rgb \
+		circular_1.rgb \
+		circular_2.rgb
 
 FILES = $(ORIG_FILES) $(GFDL_FILES) $(GMT_FILES) $(GRADS_FILES) $(MPL_FILES) $(NCVIEW_FILES) $(SVG_FILES) $(COLORBREWER_FILES) $(RANDOM_FILES)
 
