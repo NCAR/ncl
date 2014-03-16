@@ -4344,13 +4344,13 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
     int maxelems = MAX_LIST_ELEMENT;
     int truelems = 0;
     NclBasicDataTypes type[MAX_LIST_ELEMENT];
-    char              prefix[256];
+    char              prefix[NCL_INITIAL_STRING_LENGTH];
     char              format[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
     size_t            size[MAX_LIST_ELEMENT];
     size_t maxlen = 0;
 
     char  name[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
-    char *tmp = strdup(fmtstr);
+    char *tmp = NULL;
     char *result = NULL;
 
     NclListObjList *step;
@@ -4363,6 +4363,10 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
 
     int nstart, length, remain;
     int has_seperator[MAX_LIST_ELEMENT];
+
+    length = 1 + strlen(fmtstr);
+    tmp = (char*)NclMalloc(length*sizeof(char));
+    strcpy(tmp, fmtstr);
 
     if('%' != fmtstr[0])
     {
@@ -4722,6 +4726,8 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
         if(output)
             fprintf(fp, "%s\n", prntln);
     }
+
+    NclFree(tmp);
 
     return(NhlNOERROR);
 }
