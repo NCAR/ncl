@@ -231,10 +231,6 @@
 #endif
 #endif	/* BuildSunViewctrans */
 
-#ifndef	HDFlib
-#define	HDFlib	-lmfhdf -ldf -ljpeg -lz
-#endif	/* HDFlib */
-
 #ifndef	PNGlib
 #define	PNGlib	-lpng -lz
 #endif	/* PNGlib */
@@ -243,17 +239,37 @@
 #define CAIROlib -lcairo -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -lpthread -lbz2 -lXrender
 #endif
 
+#ifdef	BuildHDFEOS
 #ifndef	HDFEOSlib
 #define	HDFEOSlib   -lhdfeos -lGctp
 #endif	/* HDFEOSlib */
+#else
+#define	HDFEOSlib
+#endif
 
+#ifdef	BuildHDFEOS5
 #ifndef	HDFEOS5lib
 #define	HDFEOS5lib   -lhe5_hdfeos -lGctp
 #endif	/* HDFEOS5lib */
+#else
+#define	HDFEOS5lib
+#endif
 
+#ifdef	BuildHDF4
+#ifndef	HDFlib
+#define	HDFlib	-lmfhdf -ldf -ljpeg -lz
+#endif	/* HDFlib */
+#else
+#define	HDFlib
+#endif
+
+#ifdef BuildHDF5
 #ifndef	HDF5lib
 #define	HDF5lib	-lhdf5_hl -lhdf5 -lsz -lz
 #endif	/* HDF5lib */
+#else
+#define	HDF5lib
+#endif
 
 #ifdef BuildGDAL
 #ifndef	GDALlib
