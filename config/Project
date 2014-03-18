@@ -61,19 +61,12 @@
 
 #ifndef	BuildHDFEOS
 #define	BuildHDFEOS
+#define	BuildHDF	/* If defined HDFEOS, then we need HDF4 as well */
 #else
 #if	!BuildHDFEOS
 #undef	BuildHDFEOS
 #endif
 #endif	/* BuildHDFEOS */
-
-#ifndef	BuildHDFEOS5
-#define	BuildHDFEOS5
-#else
-#if	!BuildHDFEOS5
-#undef	BuildHDFEOS5
-#endif
-#endif	/* BuildHDFEOS5 */
 
 #ifndef BuildHDF5
 #define BuildHDF5
@@ -82,6 +75,15 @@
 #undef  BuildHDF5
 #endif
 #endif  /* BuildHDF5 */
+
+#ifndef	BuildHDFEOS5
+#define	BuildHDFEOS5
+#define BuildHDF5	/* If defined HDFEOS5, then we need HDF5 as well */
+#else
+#if	!BuildHDFEOS5
+#undef	BuildHDFEOS5
+#endif
+#endif	/* BuildHDFEOS5 */
 
 #ifndef	BuildGRIB2
 #define	BuildGRIB2
