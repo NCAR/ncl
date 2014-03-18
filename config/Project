@@ -257,7 +257,7 @@
 
 #ifdef BuildGDAL
 #ifndef	GDALlib
-#define	GDALlib   -lgdal -lproj -ljpeg -lxml2
+#define	GDALlib   -lgdal -lproj -ljpeg
 #endif
 #else
 #define GDALlib
