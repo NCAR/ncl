@@ -20,7 +20,7 @@ begin
   if( isstring( i_message ) ) then
     chMessage = stringtochar(i_message)
 
-    if( dimsizes(chMessage).ge.maxCols ) then
+    if( dimsizes(chMessage).gt.maxCols ) then
       firstLine  = chartostring(chMessage(:maxCols-1))
       restOfMsg  = chartostring(chMessage(maxCols-1:))
       print( firstLine + wallClock )
