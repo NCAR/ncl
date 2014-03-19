@@ -560,7 +560,7 @@ typedef struct _Grib2VarTraits {
 	int center;
 	int subcenter;
 	int prod_status;
-	int proc_data_type;
+	int gen_process_type;
 	int sig_ref_time;
 	int pds_template;
 	int discipline;

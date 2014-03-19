@@ -4420,6 +4420,7 @@ Grib2FileRecord *therec;
 		step->theatts = att_list_ptr;
 		step->n_atts++;
 
+
 		/* center */
 		att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
 		att_list_ptr->next = step->theatts;
@@ -4708,6 +4709,49 @@ Grib2FileRecord *therec;
 	g2SetInitialTimeCoordinates(therec);
 	return;
 }
+static void _g2AddGenProcAtt(Grib2ParamList *step)
+{
+	Grib2RecordInqRec *grib_rec = NULL;
+	Grib2AttInqRecList *att_list_ptr= NULL;
+	NclQuark *tmp_string = NULL;
+	g2codeTable *ct;
+	ng_size_t tmp_dimsizes = 1;
+	char buf[512];
+
+	ct = (g2codeTable *) NclMalloc(1 * sizeof(g2codeTable));
+	if (ct == NULL) {
+		NhlPError(NhlFATAL, NhlEUNKNOWN,
+			  " Unable to allocate code table data, cannot continue.");
+		return;
+	}
+	memset(ct,0,sizeof(g2codeTable));
+
+	/* type of generating processs */
+	att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+	att_list_ptr->next = step->theatts;
+	att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+	att_list_ptr->att_inq->name = NrmStringToQuark("generating_process_type");
+
+	if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, "4.3.table", step->traits.gen_process_type,-1,ct) < NhlWARNING) {
+		return;
+	}
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	if (ct->descrip) {
+		*tmp_string = NrmStringToQuark(ct->descrip);
+	}
+	else {
+		sprintf(buf,"%d",step->traits.gen_process_type);
+		*tmp_string = NrmStringToQuark(buf);
+	}
+	att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+		_NclCreateVal(NULL, NULL,
+			      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes,
+			      PERMANENT, NULL, nclTypestringClass);
+	step->theatts = att_list_ptr;
+	step->n_atts++;
+	Grib2FreeCodeTableRec(ct);
+
+}
 
 static void _g2MakeVarnamesUnique
 #if 	NhlNeedProto
@@ -4724,6 +4768,7 @@ Grib2FileRecord *therec;
 		NclQuark qvname = step->var_info.var_name_quark;
 		int nfound = 0;
 		Grib2ParamList *tstep = step->next;
+		int need_gen_proc_att = 0;
 		
 		for (tstep = step->next; tstep != NULL; tstep = tstep->next) {
 			int i;
@@ -4733,6 +4778,10 @@ Grib2FileRecord *therec;
 			nfound++;
 			sprintf(buffer,"%s_%d",NrmQuarkToString(qvname),nfound);
 			tstep->var_info.var_name_quark = NrmStringToQuark(buffer);
+			if (tstep->traits.gen_process_type != step->traits.gen_process_type || need_gen_proc_att) {
+				need_gen_proc_att = 1;
+				_g2AddGenProcAtt(tstep);
+			}
 
 			for (i = 0; i < tstep->n_entries; i++) {
 				Grib2RecordInqRec *rec = tstep->thelist[i].rec_inq;
@@ -4741,6 +4790,10 @@ Grib2FileRecord *therec;
 				rec->var_name_q = tstep->var_info.var_name_quark;
 			}
 		}
+		if (need_gen_proc_att) {
+			_g2AddGenProcAtt(step);
+		}
+
 	}
 }
 
@@ -11187,7 +11240,7 @@ static void *Grib2OpenFile
 	    g2inqrec->traits.center =  g2rec[i]->sec1.centerID;
 	    g2inqrec->traits.subcenter =  g2rec[i]->sec1.subcenterID;
 	    g2inqrec->traits.prod_status = g2rec[i]->sec1.prod_status;
-	    g2inqrec->traits.proc_data_type = 0; /*g2rec[i]->sec1.data_type;*/
+	    g2inqrec->traits.gen_process_type = g2rec[i]->sec4[j]->prod_params->gen_process; /* no way to distinguish these in the var name now */
 	    g2inqrec->traits.sig_ref_time = g2rec[i]->sec1.ref_time;
 	    g2inqrec->traits.pds_template = g2rec[i]->sec4[j]->pds_num; 
 	    g2inqrec->traits.discipline = g2rec[i]->sec0.discipline;
