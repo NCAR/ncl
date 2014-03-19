@@ -148,9 +148,7 @@ begin
   outp = doubletofloat(out)
     
   drwsrfc(gkswid,xp,yp,outp,15.,-25.,90.)
-;
-; Destroy the objects created and exit.
-;
-  delete(wid)
+
+  frame(wid)
 end
 

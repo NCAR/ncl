@@ -91,5 +91,7 @@ begin
   end getvalues
 
   drwsrfc(gkswid,xi,yi,zi,15.,-25.,90.)
+
+  frame(wid)
 end
 
