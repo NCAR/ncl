@@ -12111,7 +12111,7 @@ NhlErrorTypes wrf_wetbulb_W( void )
            DONT_CARE);
 
   qvp = (void*)NclGetArgValue(
-           1,
+           2,
            3,
            &ndims_qvp,
            dsizes_qvp,
