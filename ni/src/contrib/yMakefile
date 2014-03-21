@@ -10,7 +10,7 @@ GE_SCRIPT = NCL_GETools.ncl
 CONTRIB_SCRIPTS = calendar_decode2.ncl time_axis_labels.ncl		\
 		  ut_string.ncl run_cor.ncl kf_filter.ncl		\
 		  cd_string.ncl print_clock.ncl calcMonAnomTXXX.ncl	\
-		  clmMonTXXX.ncl $(GE_SCRIPT)
+		  clmMonTXXX.ncl nchoosek.ncl $(GE_SCRIPT)
 
 InstallTarget($(CONTRIB_SCRIPTS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclscripts/contrib)
 
