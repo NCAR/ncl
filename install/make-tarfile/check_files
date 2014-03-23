@@ -608,6 +608,9 @@ lib/ncarg/colormaps/amwg_blueyellowred.rgb
 lib/ncarg/colormaps/cb_9step.rgb
 lib/ncarg/colormaps/cb_rainbow.rgb
 lib/ncarg/colormaps/cb_rainbow_inv.rgb
+lib/ncarg/colormaps/circular_0.rgb
+lib/ncarg/colormaps/circular_1.rgb
+lib/ncarg/colormaps/circular_2.rgb
 lib/ncarg/colormaps/cmp_b2r.rgb
 lib/ncarg/colormaps/cmp_flux.rgb
 lib/ncarg/colormaps/cmp_haxby.rgb
@@ -1706,7 +1709,7 @@ lib/ncarg/nclscripts/contrib/calendar_decode2.ncl
 lib/ncarg/nclscripts/contrib/cd_string.ncl
 lib/ncarg/nclscripts/contrib/clmMonTXXX.ncl
 lib/ncarg/nclscripts/contrib/kf_filter.ncl
-lib/ncarg/nclscripts/contrib/print_clock.ncl
+lib/ncarg/nclscripts/contrib/nchoosek.ncl
 lib/ncarg/nclscripts/contrib/run_cor.ncl
 lib/ncarg/nclscripts/contrib/time_axis_labels.ncl
 lib/ncarg/nclscripts/contrib/ut_string.ncl
