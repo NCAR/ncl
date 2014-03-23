@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------
 # This script is for building ESMF software (and hence
 # ESMF_RegridWeightGen) on a Mac or Linux system. This
-# script should work with ESMF 5.2.x or 6.2.x, which can
+# script should work with ESMF 5.2.x, 6.x, which can
 # be downloaded from:
 #
 # http://www.earthsystemmodeling.org/download/releases.shtml
@@ -21,14 +21,13 @@
 #
 #   - You are using gfortran/gcc/g++ ( you must have V4.2 or higher)
 
-#   - ESMF source code is in /usr/local/esmf-6.2.0
+#   - ESMF source code is in /xxx/yyy/esmf-6.3.0r
 #
 #   - You want ESMF software installed in same location as
 #     $NCARG_ROOT
 #
-#   - NetCDF is installed in /usr/local, and that you are linking
-#     against a NetCDF-4 enabled version (not required, since
-#     ESMF doesn't handle NetCDF-4 yet).
+#   - You are linking against a NetCDF-4 enabled version 
+#     (not required, since ESMF doesn't handle NetCDF-4 yet).
 #
 #   - The NCL versions of the lapack and blas libraries
 #     (liblapack_ncl.a and libblas_ncl.a) are installed
@@ -44,14 +43,18 @@ os=`uname -s`
 #
 # Change the environment variables as necessary
 #
-export NCARG_ROOT=/usr/local/ncl-6.2.0
-export ESMF_DIR=/usr/local/src/esmf-6.2.0
+export NCARG_ROOT=/usr/local/ncl-6.3.0r
+export ESMF_DIR=/usr/local/src/esmf-6.3.0r
 export ESMF_INSTALL_PREFIX=$NCARG_ROOT
 export ESMF_NETCDF_LIBPATH=/usr/local/netcdf-4.3.0/lib
 export ESMF_NETCDF_INCLUDE=/usr/local/netcdf-4.3.0/include
 export ESMF_LAPACK_LIBPATH=$NCARG_ROOT/lib
 export ESMF_LAPACK_LIBS="-llapack_ncl -lblas_ncl"
+# generic libs
 export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lsz -lz"
+# MacOS 10.9
+export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lssl -lcrypto -llber -lsz -lz"
+
 export ESMF_NETCDF="split"
 export ESMF_LAPACK="netlib"
 export ESMF_COMM=mpiuni

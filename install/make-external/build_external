@@ -106,12 +106,12 @@ fi
 G2CLIB_DIR="g2clib-1.5.0-patch"
 GDAL_DIR="gdal-1.10.1"
 HDF4_DIR="hdf-4.2.9"
-HDF5_DIR="hdf5-1.8.11"
+HDF5_DIR="hdf5-1.8.12"
 HDFEOS_DIR="hdfeos-2.18"
 HDFEOS5_DIR="hdfeos5-1.14"
 JASPER_DIR="jasper-1.900.1"
 JPEG_DIR="jpeg-6b"
-NETCDF_DIR="netcdf-4.3.0"
+NETCDF_DIR="netcdf-c-4.3.2-rc1"
 NETCDF4_FORTRAN_DIR="netcdf-fortran-4.2"
 NETCDF3_CXX_DIR="netcdf-cxx-4.2"
 NETCDF_ESMF_DIR="netcdf-4.1.3"
@@ -128,7 +128,7 @@ FONTCONFIG_DIR="fontconfig-2.10.93"
 PIXMAN_DIR="pixman-0.30.0"
 CAIRO_DIR="cairo-1.10.2"
 OPENSSL_DIR="openssl-1.0.0c"
-CURL_DIR="curl-7.33.0"
+CURL_DIR="curl-7.35.0"
 XML2_DIR="libxml2-2.9.1"
 DAP_DIR="libdap-3.8.2"
 NC_DIR="libnc-dap-3.7.4"
@@ -691,6 +691,8 @@ then
       if [ "$os" == "Darwin" ]
       then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
+# MacOS 10.9 (riley)
+#        export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
         ./configure --enable-netcdf-4 --enable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
       else
 # Might need on a Debian system (k9.rap)
