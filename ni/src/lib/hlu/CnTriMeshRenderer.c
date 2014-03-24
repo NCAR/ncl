@@ -274,7 +274,7 @@ static NhlIsoLine *CnTriMeshGetIsoLines(
 
 static void FreeTriBlockContents (
 	TriBlock *tri_block,
-	int *count;
+	int *count
 	);
 
 NhlCnTriMeshRendererClassRec NhlcnTriMeshRendererClassRec = {
