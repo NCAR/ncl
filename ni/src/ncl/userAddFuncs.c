@@ -4727,7 +4727,9 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
             fprintf(fp, "%s\n", prntln);
     }
 
-    NclFree(tmp);
+  /*
+   *NclFree(tmp);
+   */
 
     return(NhlNOERROR);
 }
