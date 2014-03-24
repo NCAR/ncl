@@ -82,7 +82,12 @@ NhlErrorTypes ezfftf_W( void )
 /*
  * Calculate size of output array.
  */
-  npts2  = npts/2;
+  if((npts % 2) == 0) {
+    npts2 = npts/2;
+  }
+  else {
+    npts2 = (npts-1)/2;
+  }
   lnpts2 = npts2 * size_leftmost;
   npts22 = 2*npts2;
   size_cf = size_leftmost * npts22;
@@ -401,17 +406,9 @@ NhlErrorTypes ezfftb_W( void )
  * set when "ezfftf" was called, and it indicates the length of the
  * original series.
  */
-  npts2  = dsizes_cf[ndims_cf-1];     /* Go ahead and calculate the     */
-  npts   = 2*npts2;                   /* length, in case it is not set  */
-                                      /* explicitly.                    */
-/*
- * Test input array size
- */
-  if(npts > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: npts = %d is greater than INT_MAX", npts);
-    return(NhlFATAL);
-  }
-  inpts = (int) npts;
+  npts2  = dsizes_cf[ndims_cf-1];     /* Calculate the length in case  */
+                                      /* it is not set explicitly. */
+  npts = 2*npts2;
 
   data = _NclGetArg(0,2,DONT_CARE);
   switch(data.kind) {
@@ -434,7 +431,12 @@ NhlErrorTypes ezfftb_W( void )
                                     "ezfftb");
           npts = *tmp_npts;
           free(tmp_npts);
-          npts2 = npts/2;
+	  if((npts % 2) == 0) {
+	    npts2 = npts/2;
+	  }
+	  else {
+	    npts2 = (npts-1)/2;
+	  }
           break;
         }
         att_list = att_list->next;
@@ -445,6 +447,15 @@ NhlErrorTypes ezfftb_W( void )
         NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: data.kind, can't continue");
         return(NhlFATAL);
   }
+/*
+ * Test input array size
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: npts = %d is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
 /*
  * Calculate size of output array.
  */
