@@ -11345,7 +11345,7 @@ NhlErrorTypes wrf_wps_read_nml_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_read_nml: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
-  missing_output.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+  missing_output.floatval = -999.;
 
 /*
  * Call the Fortran routine.
