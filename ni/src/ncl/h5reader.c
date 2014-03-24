@@ -3975,16 +3975,15 @@ herr_t _NclHDF5search_obj(char *name, H5O_info_t *oinfo,
         return SUCCEED;
     }
 
-    /* Open the object.  Not all objects can be opened.  If this is the case
-     * then return right away.
-     */
-
-    if(0 == strcmp(name, "/U-MARF/MSG/Level1.5/METADATA/HEADER/CelestialEvents/EarthEphemeris_ARRAY"))
-    {
-        fprintf(stderr, "\nin file: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tSkip checking: <%s>\n", name);
-        return FAILED;
-    }
+  /* Open the object.  Not all objects can be opened.  If this is the case
+   * then return right away.
+   *if(0 == strcmp(name, "/U-MARF/MSG/Level1.5/METADATA/HEADER/CelestialEvents/EarthEphemeris_ARRAY"))
+   *{
+   *    fprintf(stderr, "\nin file: %s, line: %d\n", __FILE__, __LINE__);
+   *    fprintf(stderr, "\tSkip checking: <%s>\n", name);
+   *    return FAILED;
+   *}
+   */
 
     obj_id = H5Oopen(id, name, H5P_DEFAULT);
 
