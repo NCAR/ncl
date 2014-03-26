@@ -7,7 +7,7 @@
 *        University Corporation for Atmospheric Research                *
 *                All Rights Reserved                                    *
 *                                                                       *
-/************************************************************************
+************************************************************************/
 
 /*
  *      File:           crodevice.c
