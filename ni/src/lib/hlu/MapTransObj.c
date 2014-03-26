@@ -3370,7 +3370,9 @@ int n;
 	int             unprojectable;
 	int             fail_ix;
 	int             use_great_circle = 0;
+	static int      count = 0;
 
+	count++;
 	Wkptr = mptrans->trobj.wkptr;
 	NhlVAGetValues(Wkptr->base.id,
 		       _NhlNwkGraphicStyle, &gsid,
@@ -3412,7 +3414,9 @@ int n;
 	is_cyclic = 0;
 	unprojectable = 0;
 	fail_ix = -1;
+	/*printf("MapDataPolygon %d:",count);*/
 	for (i = 0; i <= n; i++) {
+		/*printf(" (%f %f)",x[i%n]-360,y[i%n]); */
 		if (i > 0) {
 			float gcd = great_circle_distance(y[i%n],x[i%n],y[i-1], x[i-1]);
 			/*printf("gcd %f\n",gcd);*/
@@ -3435,8 +3439,10 @@ int n;
 			unprojectable = 1;
 		}
 		init = 0;
-		
-	}
+        }
+	/*printf("\n");*/
+ 
+
 
 	if (is_cyclic) {
 		float *xw_ret, *yw_ret;

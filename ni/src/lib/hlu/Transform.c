@@ -1649,6 +1649,7 @@ static NhlErrorTypes TransformDataPolygon
 		int one_at_least;
 		int done;
 		int tid, nthreads;
+		int count = 0;
 #if 0
 #pragma omp parallel shared(start_count, segments, x, y, top,n,len_colors,colors,gsid) private(i,bix,eix,ln,j,subret,status,tmpx,tmpy,one_at_least,fill_color,k,ix,done) reduction(|:ret) 
 		{
@@ -1676,7 +1677,7 @@ static NhlErrorTypes TransformDataPolygon
 			ln = eix - bix + 1;
 			if (ln < 3)
 				continue;
-			for (j = bix; j < eix; j++) {
+			for (j = bix; j <= eix; j++) {
 				subret = _NhlDataToWin((NhlLayer)top,&x[j],&y[j],1,&tmpx,&tmpy,&status,NULL,NULL);
 				if (! status)  {/* at least one point inside the domain */
 					one_at_least = 1;
@@ -1685,6 +1686,7 @@ static NhlErrorTypes TransformDataPolygon
 			}
 			if (! one_at_least) /* skip this polygon */
 				continue;
+			count++;
 #if 1
 			if (len_colors > 0) {
 				fill_color = colors[(i-1) % len_colors];
@@ -1693,6 +1695,7 @@ static NhlErrorTypes TransformDataPolygon
 					       NULL);
 			}
 #endif
+			/*printf("drawing polygon %d: (%f %f)\n",count,x[bix] - 360,y[bix]);*/
 			subret = _NhlDataPolygon((NhlLayer)top,&(x[bix]),&(y[bix]),ln);
 			if ((ret = MIN(ret,subret)) < NhlWARNING)
 			  i = start_count + 1;
@@ -1712,6 +1715,7 @@ static NhlErrorTypes TransformDataPolygon
 				c_plotif(0.0,0.0,2);
 			}
 		}
+		/*printf("drew %d polygons\n",count);*/
 #if 0
 		}
 #endif

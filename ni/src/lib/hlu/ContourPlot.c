@@ -714,6 +714,9 @@ static NhlResource resources[] = {
 	{NhlNcnConstFLabelOrthogonalPosF,NhlCcnConstFLabelOrthogonalPosF,
 		 NhlTFloat,sizeof(float),Oset(constf_lbl_rec.ortho_pos),
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
+	{NhlNcnConstFEnableFill,NhlCcnConstFEnableFill,NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(constf_enable_fill),
+		 NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 
 /* Missing value area resources */
 
@@ -2114,6 +2117,10 @@ ContourPlotInitialize
 		else 
 			cnp->fill_mode = NhlAREAFILL;
 	}
+	cnp->do_constf_fill = False;
+	if (cnp->fill_on && cnp->constf_enable_fill) {
+		cnp->do_constf_fill = True;
+	}
 
         if (! cnp->lbar_end_labels_on_set) {
 		cnp->lbar_end_labels_on = False;
@@ -2565,6 +2572,10 @@ static NhlErrorTypes ContourPlotSetValues
 			cnp->fill_mode = NhlRASTERFILL;
 		else if (cnp->fill_mode == NhlRASTERFILL)
 			cnp->fill_mode = NhlAREAFILL;
+	}
+	cnp->do_constf_fill = False;
+	if (cnp->fill_on && cnp->constf_enable_fill) {
+		cnp->do_constf_fill = True;
 	}
 
 	if (cnp->lbar_end_labels_on_set && ! cnp->lbar_end_style_set) {
@@ -3571,7 +3582,7 @@ static NhlErrorTypes ContourPlotPreDraw
 	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
         NhlBoolean		seg_draw;
 
-	if (! cnp->data_init || cnp->const_field)
+	if (! cnp->data_init || (cnp->const_field && !cnp->do_constf_fill))
 		return NhlNOERROR;
 	
 	Cnp = cnp;
@@ -3638,7 +3649,7 @@ static NhlErrorTypes ContourPlotDraw
 	NhlString	entry_name = "ContourPlotDraw";
         NhlBoolean		seg_draw;
 
-	if (! cnp->data_init || cnp->const_field) {
+	if (! cnp->data_init || (cnp->const_field && !cnp->do_constf_fill)) {
 		Cnp = NULL;
 		return NhlNOERROR;
 	}
@@ -3716,7 +3727,7 @@ static NhlErrorTypes ContourPlotPostDraw
 		return ret;
 	}
 		
-	if (! cnp->data_init || cnp->const_field) {
+	if (! cnp->data_init || (cnp->const_field && !cnp->do_constf_fill)) {
 		if (cnp->display_constf_no_data &&
 		    tfp->overlay_status == _tfNotInOverlay) {
 			subret = NhlDraw(cnp->constf_lbl_rec.id);
@@ -5981,9 +5992,11 @@ static NhlErrorTypes ManageLabelBar
 	if (init || 
 	    cnp->display_labelbar != ocnp->display_labelbar ||
 	    cnp->const_field != ocnp->const_field ||
+	    cnp->do_constf_fill != ocnp->do_constf_fill ||
 	    cnp->data_init != ocnp->data_init) {
 
-		if ( cnp->const_field && cnp->display_labelbar < NhlFORCEALWAYS) {
+		if ( cnp->const_field && cnp->display_labelbar < NhlFORCEALWAYS &&
+			! cnp->do_constf_fill) {
 			e_text = "%s: constant field: turning Labelbar off";
 			NhlPError(NhlINFO,NhlEUNKNOWN,e_text,entry_name);
 			ret = MIN(ret,NhlINFO);
@@ -5994,7 +6007,8 @@ static NhlErrorTypes ManageLabelBar
 			NhlSetSArg(&sargs[(*nargs)++],
 				   NhlNpmLabelBarDisplayMode,
 				   cnp->display_labelbar);
-			if (init || cnp->const_field != ocnp->const_field) 
+			if (init || cnp->const_field != ocnp->const_field ||
+				cnp->do_constf_fill != ocnp->do_constf_fill) 
 				set_all = True;
 		}
 	}
@@ -6021,7 +6035,7 @@ static NhlErrorTypes ManageLabelBar
 		cnp->lbar_labels_set = True;
 	}
 
-	if (cnp->const_field && cnp->display_labelbar < NhlFORCEALWAYS) return ret;
+	if (cnp->const_field && cnp->display_labelbar < NhlFORCEALWAYS && ! cnp->do_constf_fill) return ret;
 	
         if (! (cnp->explicit_lbar_labels_on && cnp->lbar_alignment_set)) {
 		if (init || cnp->lbar_end_style != ocnp->lbar_end_style ||
@@ -6598,7 +6612,7 @@ static NhlErrorTypes ManageInfoLabel
  *
  * Description: If a constant field is detected a constant field label
  *		is created, or turned on.
- *		If there is an PlotManager an AnnoManager object is 
+ *		If there is a PlotManager an AnnoManager object is 
  *		created so that the overlay object can manage the
  *		annotations.
  *
@@ -6697,9 +6711,19 @@ static NhlErrorTypes ManageConstFLabel
 	if (text_changed)
 		ocnp->constf_no_data_string = NULL;
 
+/**
+   this would turn off the constant field label automatically whenever fill is on and do_constf_fill is set True,
+   but we don't want to do that just yet. For now it's up to the user to do it with the cnConstFLabelOn resource.
+
 	cnp->display_constf_no_data = 
-		(cflp->on && cnp->const_field) || 
+		(cflp->on && cnp->const_field && 
+		 ! (cnp->fill_on && cnp->do_constf_fill)) || 
 			(cnp->no_data_label_on && ! cnp->data_init);
+*/
+
+	cnp->display_constf_no_data = 
+		(cflp->on && cnp->const_field) ||
+		 (cnp->no_data_label_on && ! cnp->data_init);
 
 	subret = ReplaceSubstitutionChars(cnp,ocnp,init,_cnCONSTF,
 				  &text_changed,entry_name);
@@ -7673,10 +7697,18 @@ static NhlErrorTypes    ManageData
 		_NhlCmpFAny2(cnp->zmax,cnp->zmin,6,_NhlMIN_NONZERO) <= 0.0 ?
 		True : False;
 	if (cnp->const_field) {
-		e_text = 
-		 "%s: scalar field is constant; ContourPlot not possible";
-		NhlPError(NhlWARNING,NhlECONSTFIELD,e_text,entry_name);
-		ret = MIN(NhlWARNING,ret);
+		if (! cnp->do_constf_fill) {
+			e_text = 
+				"%s: scalar field is constant; no contour lines will appear; use cnConstFEnableFill to enable fill";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(NhlWARNING,ret);
+		}
+		else {
+			e_text = 
+				"%s: scalar field is constant; no contour lines will appear";
+			NhlPError(NhlINFO,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(NhlINFO,ret);
+		}
 	}
 
 	cnp->data_init = True;
@@ -9444,9 +9476,14 @@ static NhlErrorTypes    SetupLevelsAutomatic
 	lmax = cnp->zmax;
 
         if (cnp->const_field) {
-                choose_spacing = False;
-                count = 1;
-                spacing = cnp->level_spacing;
+		if (_NhlCmpFAny2(cnp->zmax,0.0,6,1e-6) == 0.0) {
+			lmax = 1.0;
+			lmin = -1.0;
+		}
+		else {
+			lmax = cnp->zmax + fabs(cnp->zmax * 0.1);  
+			lmin = cnp->zmax - fabs(cnp->zmax * 0.1);
+		}
         }
 	else if (cnp->level_spacing_set) {
 		spacing = cnp->level_spacing;
@@ -9494,7 +9531,7 @@ static NhlErrorTypes    SetupLevelsAutomatic
 			lmin += spacing;
 		}
 		ftmp = lmin;
-		ftest = cnp->zmax;
+		ftest = cnp->const_field ? lmax : cnp->zmax;
 		count = 0;
 		while (_NhlCmpFAny2(ftmp,ftest,6,spacing * 0.001) < 0.0) {
 			count++;

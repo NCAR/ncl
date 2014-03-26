@@ -841,29 +841,21 @@ static NhlErrorTypes UpdateFillInfo
 #if	NhlNeedProto
 (
 	NhlContourPlotLayer	cl,
-	NhlBoolean	*do_fill
+	NhlBoolean	*do_fill,
+	NhlBoolean      *almost_const
 )
 #else
-(cl,do_fill)
+	(cl,do_fill,almost_const)
         NhlContourPlotLayer	cl;
 	NhlBoolean	*do_fill;
+	NhlBoolean      *almost_const;
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlContourPlotLayerPart	*cnp = &(cl->contourplot);
-#if 0
- 	NhlBoolean	color_fill, pattern_fill;
+	float *levels = (float *) cnp->levels->data;
+	int i;
 
-	color_fill = (cnp->mono_fill_color && 
-		      cnp->fill_color == NhlTRANSPARENT) ? False : True;
-	pattern_fill = (cnp->mono_fill_pattern && 
-			cnp->fill_pattern == NhlHOLLOWFILL) ? False : True;
-
-	if (color_fill &&  pattern_fill &&  
-	    (cnp->fill_on || cnp->raster_mode_on)) {
-	}
-#endif 
-        
         _NhlSetFillOpacity(cl, cnp->fill_opacity);
 /*
  * Since the missing value fill resources are not supposed to be affected
@@ -872,12 +864,21 @@ static NhlErrorTypes UpdateFillInfo
  * fill pattern is hollow. So just keep it simple.
  * 
  */
-	if (cnp->fill_on) {
-		*do_fill = True;
+	if (! cnp->fill_on) {
+		*do_fill = False;
 		return ret;
 	}
 
-	*do_fill = False;
+	*do_fill = True;
+
+	*almost_const = False;
+	for (i = 0; i< cnp->level_count -1 ; i++) { 
+		if (cnp->zmin >= levels[i] &&
+		    cnp->zmax <= levels[i + 1]) {
+			*almost_const = True; 
+			return ret;
+		}
+	}
 	return ret;
 }
 
@@ -1471,6 +1472,79 @@ static NhlErrorTypes SetTransBoundsState
 }
 #endif
 
+static NhlErrorTypes DoConstFillHack(
+	NhlContourPlotLayerPart           *cnp,
+	NhlBoolean on
+	)
+{
+	int i,ix;
+	float *levels = (float *) cnp->levels->data;
+	static int save_fill_color = 0, save_fill_pattern = 0;
+	static float save_fill_scale = 0;
+	static NhlBoolean save_mono_fill_color = False, save_mono_fill_pattern = False,
+		save_mono_fill_scale;
+	float test_val;
+	static float save_test_val;
+
+	if (! on) {
+		cnp->mono_fill_color = save_mono_fill_color;
+		cnp->mono_fill_pattern = save_mono_fill_pattern;
+		cnp->mono_fill_scale = save_mono_fill_scale;
+		cnp->fill_color = save_fill_color;
+		cnp->fill_pattern = save_fill_pattern;
+		cnp->fill_scale = save_fill_scale;
+		cnp->data[0] = save_test_val;
+		return NhlNOERROR;
+	}
+
+	if (! cnp->data) {
+		printf("no data\n");
+		return NhlWARNING;
+	}
+	save_test_val = test_val = cnp->data[0];
+
+	ix = -1;
+	for (i = 0; i< cnp->level_count; i++) {
+                if (test_val >= levels[i])
+			continue;
+		ix = i;
+		break;
+		
+        }
+	if (ix == -1) {
+		ix = cnp->level_count;
+	}
+	if (ix > 1) {
+		cnp->data[0] = levels[0];
+	}
+	else {
+		cnp->data[0] = levels[cnp->level_count - 1];
+	}
+	
+	save_mono_fill_color = cnp->mono_fill_color;
+	save_mono_fill_pattern = cnp->mono_fill_pattern;
+	save_mono_fill_scale = cnp->mono_fill_scale;
+	save_fill_color = cnp->fill_color;
+	save_fill_pattern = cnp->fill_pattern;
+	save_fill_scale = cnp->fill_scale;
+	save_test_val = test_val;
+
+	if (! cnp->mono_fill_pattern)
+		cnp->fill_pattern = ((int *) cnp->fill_patterns->data)[ix];
+	if (! cnp->mono_fill_scale) 
+		cnp->fill_scale = ((float *) cnp->fill_scales->data)[ix];
+	if (! cnp->mono_fill_color)
+		cnp->fill_color = ((int *) cnp->fill_colors->data)[ix];
+
+	cnp->mono_fill_pattern = True;
+	cnp->mono_fill_color = True;
+	cnp->mono_fill_scale = True;
+
+	return NhlNOERROR;
+}
+
+	
+
 static NhlErrorTypes CnStdRender
 #if	NhlNeedProto
 (
@@ -1496,6 +1570,10 @@ static NhlErrorTypes CnStdRender
         Gint            err_ind;
         Gclip           clip_ind_rect;
 	int            out_of_bounds;
+	NhlBoolean     almost_const;
+	int do_const_fill_hack = 0;
+	int do_fill;
+	int is_const;
 
 	Cnl = cnl;
 	Cnp = cnp;
@@ -1572,6 +1650,7 @@ static NhlErrorTypes CnStdRender
         c_cpseti("RWC",500);
         c_cpseti("RWG",1500);
         c_cpseti("MAP",NhlcnMAPVAL);
+	c_cpsetc("CFT","");
 
 	c_cpsetr("PIT",MAX(0.0,cnp->max_point_distance));
 	
@@ -1591,11 +1670,15 @@ static NhlErrorTypes CnStdRender
 		return ret;
 	}
 
-	subret = UpdateFillInfo(cnl, &cnp->do_fill);
+	subret = UpdateFillInfo(cnl, &cnp->do_fill,&almost_const);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		ContourAbortDraw(cnl);
 		gset_clip_ind(clip_ind_rect.clip_ind);
 		return ret;
+	}
+	if (cnp->fill_mode == NhlAREAFILL && (almost_const || (cnp->const_field  && cnp->do_constf_fill))) {
+		DoConstFillHack(cnp, True);
+		do_const_fill_hack = 1;
 	}
 
 
@@ -1624,6 +1707,8 @@ static NhlErrorTypes CnStdRender
 		gset_clip_ind(clip_ind_rect.clip_ind);
 		return ret;
 	}
+	c_cpgeti("CFF",&is_const);
+       
 #if 0
 	{ /* for debugging */
 		float flx,frx,fby,fuy,wlx,wrx,wby,wuy; int ll;
@@ -1633,10 +1718,15 @@ static NhlErrorTypes CnStdRender
   	}
 #endif
 
+	do_fill = cnp->do_fill;
+	if (cnp->const_field && ! cnp->do_constf_fill) {
+		do_fill = False;
+	}
+	if (do_fill && cnp->fill_order == order) {
+		NhlcnFillMode fill_mode = cnp->fill_mode;
+		int do_raster_smoothing = cnp->raster_smoothing_on;
 
-	if (cnp->do_fill && cnp->fill_order == order) {
-
-		if (cnp->fill_mode == NhlAREAFILL) {
+		if (fill_mode == NhlAREAFILL) {
 #if 0
 			subret = SetTransBoundsState
 				(cnl,False,&csrp->do_bounds);
@@ -1691,15 +1781,20 @@ static NhlErrorTypes CnStdRender
 			subret = _NhlIdleWorkspace(cnp->aws);
 			ret = MIN(subret,ret);
 			cnp->aws = NULL;
+			if (do_const_fill_hack) {
+				DoConstFillHack(cnp, False);
+				do_const_fill_hack = 0;
+			}
+			
 		}
-		else if (cnp->fill_mode == NhlCELLFILL) {
+		else if (fill_mode == NhlCELLFILL) {
 			subret = _NhlCellFill((NhlLayer)cnl,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				ContourAbortDraw(cnl);
 				return ret;
 			}
 		}
-		else if (cnp->fill_mode == NhlMESHFILL) { /* NhlMESHFILL */
+		else if (fill_mode == NhlMESHFILL) { /* NhlMESHFILL */
 			int msize,nsize;
 			float min_cell_size;
 			NhlBoundingBox bbox;
@@ -1721,7 +1816,7 @@ static NhlErrorTypes CnStdRender
 					    msize,msize,nsize,
 					    bbox.l,bbox.b,bbox.r,bbox.t,
 					    min_cell_size,
-					    cnp->raster_smoothing_on,
+					    do_raster_smoothing,
 					    True,
 					    entry_name);
  			if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -1757,7 +1852,7 @@ static NhlErrorTypes CnStdRender
 					    msize,msize,nsize,
 					    bbox.l,bbox.b,bbox.r,bbox.t,
 					    min_cell_size,
-					    cnp->raster_smoothing_on,
+					    do_raster_smoothing,
 					    False,
 					    entry_name);
  			if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -2249,6 +2344,7 @@ int (_NHLCALLF(hlucpfill,HLUCPFILL))
 	sclp = (float *) Cnp->fill_scales->data;
 	for (i = 0; i < *nai; i++) {
 		if (iag[i] == 3) {
+			/*if (iai[i] == 1) iai[i] += 100;*/
 			if (iai[i] > 99 && 
 			    iai[i] < 100 + Cnp->fill_count) {
 				int ix = iai[i] - 100;

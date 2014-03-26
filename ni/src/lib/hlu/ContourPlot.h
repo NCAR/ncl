@@ -308,6 +308,7 @@ NhlErrorTypes NhlFreeIsoLines(
 #define NhlNcnConstFLabelJust		"cnConstFLabelJust"
 #define NhlNcnConstFLabelParallelPosF	"cnConstFLabelParallelPosF"
 #define NhlNcnConstFLabelOrthogonalPosF	"cnConstFLabelOrthogonalPosF"
+#define NhlNcnConstFEnableFill		"cnConstFEnableFill"
 
 #define NhlNcnMissingValPerimOn		"cnMissingValPerimOn"
 #define NhlNcnMissingValPerimGridBoundOn "cnMissingValPerimGridBoundOn"
@@ -446,6 +447,7 @@ NhlErrorTypes NhlFreeIsoLines(
 #define NhlCcnConstFLabelJust		"CnConstFLabelJust"
 #define NhlCcnConstFLabelParallelPosF	"CnConstFLabelParallelPosF"
 #define NhlCcnConstFLabelOrthogonalPosF	"CnConstFLabelOrthogonalPosF"
+#define NhlCcnConstFEnableFill		"CnConstFEnableFill"
 
 #define NhlCcnDumpAreaMap		"CnDumpAreaMap"
 #define NhlCcnFixFillBleed		"CnFixFillBleed"

@@ -224,6 +224,7 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlString		constf_string; /* before substitution */
 	NhlcnLabelAttrs 	constf_lbl;
 	NhlAnnotationRec	constf_lbl_rec;
+	NhlBoolean              constf_enable_fill;
 
 	NhlcnRegionAttrs	missing_val;
 	NhlBoolean		missing_val_perim_grid_bound_on;
@@ -278,6 +279,7 @@ typedef struct _NhlContourPlotLayerPart {
 	float		zmin;
 	float		zmax;
 	NhlBoolean	const_field;
+	NhlBoolean      do_constf_fill;
 	NhlBoolean	display_constf_no_data;
 	NhlString	constf_no_data_string;
 	int		fill_count;
