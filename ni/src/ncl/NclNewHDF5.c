@@ -5345,10 +5345,14 @@ static void H5FreeFileRec(void* therec)
     FileDestroyGrpNode(grpnode);
 
   /*Free visited addresses table*/
+  /*FIXME
+   *This cause trouble.
+   *We need to fix it later. march 26, 2014, Wei
     if(tudata.seen && tudata.seen->objs)
     {
         NclFree(tudata.seen->objs);
     }
+   */
 }
 
 static void *H5CreateFile(void *rec, NclQuark path)
@@ -6206,8 +6210,6 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
 
         hid_t            filetype;
         hid_t            memtype;
-        hid_t            space;
-        hid_t            did;
 
         hvl_t            *vlendata = (hvl_t *) NclCalloc(vlist->list.nelem,
                                                           sizeof(hvl_t));
@@ -6293,7 +6295,10 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
            */
 
             status = H5Dvlen_reclaim(memtype, space, H5P_DEFAULT, vlendata);
-            status = H5Dclose(did);
+
+          /*
+           *status = H5Dclose(did);
+           */
         }
 
         status = H5Sclose(space);
@@ -6382,7 +6387,9 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
                 ip[j] = (unsigned int)cptr[j];
             }
             status = H5Dwrite(did, type, H5S_ALL, H5S_ALL, H5P_DEFAULT, ip);
-            H5Dclose(did);
+          /*
+           *H5Dclose(did);
+           */
 
             NclFree(ip);
         }
@@ -6445,7 +6452,9 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
             char *cptr = (char *)data;
 
             status = H5Dwrite(did, type, H5S_ALL, H5S_ALL, H5P_DEFAULT, cptr);
-            H5Dclose(did);
+          /*
+           *H5Dclose(did);
+           */
         }
         else
         {
