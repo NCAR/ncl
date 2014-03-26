@@ -58,7 +58,9 @@ static void reverse_chrs(char*);
 static int cro_CEsc(CROddp *psa, _NGCesc *cesc);
 
 extern int crotiff_writeImage(const char* filename, cairo_surface_t* surface);
+#ifdef BuildQtEnabled
 extern void croActivateQt(CROddp *psa);
+#endif
 
 /* this looks like it should be static, but there's a pattern where the SoftFill() routines
  * are declared external for this, the PS, and the PDF drivers. Leaving it for now.  --RLB 1/2010.
@@ -71,11 +73,13 @@ extern void croX11Pause(cairo_surface_t* surface);
 extern void croFreeNativeSurface(cairo_surface_t* surface);
 extern void croActivateX11(CROddp* psa, cairo_surface_t* surface);
 
+#ifdef BuildQtEnabled
 /* Globals for QT-based interactive view tool (to be named?) */
 cairo_surface_t *qt_surface = NULL;
 cairo_t         *qt_context = NULL;
 int qt_screen_width  = 1000;
 int qt_screen_height = 1000;
+#endif
 
 /*
  *  Functions and globals for mapping workstation IDs into indices for the
@@ -325,6 +329,7 @@ int cro_ActivateWorkstation(GKSC *gksc) {
       croActivateX11(psa, getSurface(psa->wks_id));
       setSurfaceTransform(psa);
     }
+#ifdef BuildQtEnabled
     else if (psa->wks_type == CQT) {
     /*
      *fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
@@ -333,6 +338,7 @@ int cro_ActivateWorkstation(GKSC *gksc) {
       croActivateQt(psa);
       setSurfaceTransform(psa);
     }
+#endif
 
     return (0);
 }
@@ -647,6 +653,7 @@ int cro_CloseWorkstation(GKSC *gksc) {
     if (psa->wks_type == CX11) {
         croFreeNativeSurface(getSurface(psa->wks_id));
     }
+#ifdef BuildQtEnabled
     else if (psa->wks_type == CQT) {
       /*
        *fprintf(stderr, "\nfile %s, line: %d, function: %s\n",
@@ -657,6 +664,7 @@ int cro_CloseWorkstation(GKSC *gksc) {
        *croFreeNativeSurface(getSurface(psa->wks_id));
        */
     }
+#endif
 
     cairo_destroy(getContext(psa->wks_id));
     removeCairoEnv(psa->wks_id);
@@ -1022,7 +1030,7 @@ int cro_GetColorRepresentation(GKSC *gksc) {
     return (0);
 }
 
-
+#ifdef BuildQtEnabled
 void setCairoQtSurface(cairo_surface_t *surface)
 {
     qt_surface = surface;
@@ -1038,7 +1046,7 @@ void setCairoQtWinSize(int width, int height)
     qt_screen_width = width;
     qt_screen_height = height;
 }
-
+#endif
 
 int cro_OpenWorkstation(GKSC *gksc) {
 
@@ -1164,6 +1172,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
         psa->is_vector_type = TRUE;
     }
     
+#ifdef BuildQtEnabled
     else if (psa->wks_type == CQT)
     {
         double width  = (double) qt_screen_width;
@@ -1199,6 +1208,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
         psa->image_width  = qt_screen_width;
         psa->is_vector_type = FALSE;
     }
+#endif
 
     CROInitCairoContext(psa, context, surface);
 
@@ -1256,6 +1266,7 @@ void CROInitCairoContext(CROddp* psa, cairo_t* context, cairo_surface_t* surface
      *  colors and draw the background.
      *& Select the foreground color.
      */
+#ifdef BuildQtEnabled
     if(CQT == psa->wks_type)
     {
        /*Qt & OpenGL*/
@@ -1264,6 +1275,7 @@ void CROInitCairoContext(CROddp* psa, cairo_t* context, cairo_surface_t* surface
         cairo_set_source_rgba(context, 1., 1., 1., 0.);
     }
     else
+#endif
     {
        /*Others*/
         (psa->ctable)[0] = 0xFFFFFFFF;

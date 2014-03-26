@@ -401,6 +401,7 @@ croActivateX11(CROddp *psa, cairo_surface_t* surface)
     return;
 }
 
+#ifdef BuildQtEnabled
 /* This function is modified from croActivateX11 above. Wei Huang */
 void croActivateQt(CROddp *psa)
 {
@@ -463,4 +464,5 @@ void croActivateQt(CROddp *psa)
    *                 __PRETTY_FUNCTION__, __LINE__, __FILE__);
    */
 }
+#endif
 
