@@ -126,7 +126,7 @@ EXPAT_DIR="expat-2.1.0"
 FREETYPE_DIR="freetype-2.5.0.1"
 FONTCONFIG_DIR="fontconfig-2.10.93"
 PIXMAN_DIR="pixman-0.30.0"
-CAIRO_DIR="cairo-1.10.2"
+CAIRO_DIR="cairo-1.12.16"
 OPENSSL_DIR="openssl-1.0.0c"
 CURL_DIR="curl-7.35.0"
 XML2_DIR="libxml2-2.9.1"
@@ -690,16 +690,18 @@ then
       export CPPFLAGS="-I$PREFIX/include"
       if [ "$os" == "Darwin" ]
       then
+# cisl-denton (MacOS 10.8)
+#       export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
+# riley (MacOS 10.9)
+#       export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
-# MacOS 10.9 (riley)
-#        export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
         ./configure --enable-netcdf-4 --enable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
       else
-# Might need on a Debian system (k9.rap)
+# k9.rap (Debian)
 #       export LIBS='-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl'
 # harmon
 #       export LIBS='-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lz -lidn -lrt -ldl
-# yellowstone/caledera/geyser
+# generic/yellowstone/caledera/geyser
 #       export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl -ldl"           
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl -ldl"
         ./configure --enable-netcdf-4 --enable-dap --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests

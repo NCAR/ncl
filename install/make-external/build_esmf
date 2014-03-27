@@ -43,7 +43,7 @@ os=`uname -s`
 #
 # Change the environment variables as necessary
 #
-export NCARG_ROOT=/usr/local/ncl-6.3.0r
+export NCARG_ROOT=/usr/local/ncl-6.2.0
 export ESMF_DIR=/usr/local/src/esmf-6.3.0r
 export ESMF_INSTALL_PREFIX=$NCARG_ROOT
 export ESMF_NETCDF_LIBPATH=/usr/local/netcdf-4.3.0/lib
