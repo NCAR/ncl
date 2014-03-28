@@ -71,6 +71,7 @@ os=`uname -s`
 
 # Parent location for installing external software
 PREFIX=/usr/local
+NODAP_PREFIX=$PREFIX/nodap
 
 # Set environment variables for building software
 export CC=gcc
@@ -111,10 +112,10 @@ HDFEOS_DIR="hdfeos-2.18"
 HDFEOS5_DIR="hdfeos5-1.14"
 JASPER_DIR="jasper-1.900.1"
 JPEG_DIR="jpeg-6b"
+NETCDF_NODAP_DIR="netcdf-c-4.3.2-rc1"
 NETCDF_DIR="netcdf-c-4.3.2-rc1"
 NETCDF4_FORTRAN_DIR="netcdf-fortran-4.2"
 NETCDF3_CXX_DIR="netcdf-cxx-4.2"
-NETCDF_ESMF_DIR="netcdf-4.1.3"
 PNG_DIR="libpng-1.2.50"
 PROJ4_DIR="proj-4.8.0"
 SZIP_DIR="szip-2.1"
@@ -144,6 +145,7 @@ INSTALL_HDF5=1
 INSTALL_HDFEOS5=1
 INSTALL_HDF4=1
 INSTALL_HDFEOS=1
+INSTALL_NETCDF4_NODAP=1
 INSTALL_NETCDF4=1
 INSTALL_NETCDF4_FORTRAN=1
 INSTALL_NETCDF3_CXX=1
@@ -202,7 +204,9 @@ if [ ! -d "$PREFIX/man/man1" ]
 then
   mkdir $PREFIX/man/man1
 fi
-
+if [ $INSTALL_NETCDF4_NODAP ] && [ ! -d $NODAP_PREFIX ] ; then
+  mkdir $NODAP_PREFIX
+fi
 if [ $INSTALL_ZLIB ] && [ ! -d $ZLIB_DIR ] ; then
   echo "$ZLIB_DIR does not exist"
   exit
@@ -241,6 +245,10 @@ if [ $INSTALL_HDF4 ] && [ ! -d $HDF4_DIR ] ; then
 fi
 if [ $INSTALL_HDFEOS ] && [ ! -d $HDFEOS_DIR ] ; then
   echo "$HDFEOS_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_NETCDF4_NODAP ] && [ ! -d $NETCDF4_DIR_NODAP ] ; then
+  echo "$NETCDF4_NODAP_DIR does not exist"
   exit
 fi
 if [ $INSTALL_NETCDF4 ] && [ ! -d $NETCDF4_DIR ] ; then
@@ -667,6 +675,46 @@ else
 fi
 
 #--------------------------------------------------------------------
+# NetCDF interface for no OPeNDAP, this is for ESMF too.
+#--------------------------------------------------------------------
+if [ "$INSTALL_NETCDF4_NODAP" ]
+then
+  if [ -d "$NETCDF_NODAP_DIR" ]
+  then
+    cd $NETCDF_NODAP_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $NETCDF_NODAP_DIR before making..."
+      make distclean
+      make clean
+    fi
+    echo "Building $NETCDF_NODAP_DIR..."
+    export LDFLAGS="-L$PREFIX/lib"
+    export CPPFLAGS="-I$PREFIX/include"
+    export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
+    ./configure --enable-netcdf-4 --disable-dap --disable-shared --prefix\=$NODAP_PREFIX
+    make all install
+    if [ $? ]
+    then
+      echo "$NETCDF_NODAP_DIR build successful."
+      if [ $CLEAN_AFTER ]
+      then
+        echo "Cleaning $NETCDF_NODAP_DIR after making..."
+        make distclean
+        make clean
+      fi
+    else
+      echo "$NETCDF_NODAP_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $NETCDF_NODAP_DIR doesn't exist"
+  fi
+else
+  echo "Not building non-OPeNDAP version of NetCDF..."
+fi
+
+#--------------------------------------------------------------------
 # NetCDF C interface (this section handles regular NetCDF or classic NetCDF-4)
 #--------------------------------------------------------------------
 if [ "$INSTALL_NETCDF" -o "$INSTALL_NETCDF4" ]
@@ -758,7 +806,7 @@ then
 # This is for NetCDF 4.2
     export CPPFLAGS="-I$PREFIX/include"
     export LDFLAGS="-L$PREFIX/lib"
-    ./configure --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
+    ./configure --disable-shared --prefix\=$NODAP_PREFIX
     make all install
 # This extra install needed b/c build sometimes fails on missing TeX pieces.
     make install
@@ -800,7 +848,7 @@ then
 # This is for NetCDF 4.2
     export CPPFLAGS="-I$PREFIX/include"
     export LDFLAGS="-L$PREFIX/lib"
-    ./configure --disable-shared --prefix\=$PREFIX  --enable-large-file-tests
+    ./configure --disable-shared --prefix\=$NODAP_PREFIX
     make all install
     if [ $? ]
     then
@@ -820,54 +868,6 @@ then
   fi
 else
   echo "Not building NetCDF C++ interface..."
-fi
-
-#--------------------------------------------------------------------
-# NetCDF interface for ESMF
-#--------------------------------------------------------------------
-if [ "$INSTALL_NETCDF4_FOR_ESMF"]
-then
-  if [ -d "$NETCDF_ESMF_DIR" ]
-  then
-    cd $NETCDF_ESMF_DIR
-    if [ $CLEAN_BEFORE ]
-    then
-      echo "Cleaning $NETCDF_ESMF_DIR before making..."
-      make distclean
-      make clean
-    fi
-    echo "Building $NETCDF_ESMF_DIR..."
-    export LDFLAGS="-L$PREFIX/lib"
-    export CPPFLAGS="-I$PREFIX/include"
-#    export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
-# Needed on a yellowstone
-    export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -ldl"
-# Needed on a Debian system (k9.rap)
-#     export LIBS='-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl'
-# Might be needed for other systems, like Macs.
-#    export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto"
-    ./configure --enable-netcdf-4 --enable-dap --disable-shared --prefix\=$PREFIX/esmfnetcdf  --enable-large-file-tests --enable-dap-remote-tests
-    make all install
-# This extra install needed b/c build sometimes fails on missing TeX pieces.
-    make install
-    if [ $? ]
-    then
-      echo "$NETCDF_ESMF_DIR build successful."
-      if [ $CLEAN_AFTER ]
-      then
-        echo "Cleaning $NETCDF_ESMF_DIR after making..."
-        make distclean
-        make clean
-      fi
-    else
-      echo "$NETCDF_ESMF_DIR build NOT successful."
-    fi
-    cd ..
-  else
-    echo "Directory $NETCDF_ESMF_DIR doesn't exist"
-  fi
-else
-  echo "Not building NetCDF for ESMF..."
 fi
 
 #--------------------------------------------------------------------
