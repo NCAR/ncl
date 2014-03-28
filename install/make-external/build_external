@@ -72,6 +72,7 @@ os=`uname -s`
 
 # Parent location for installing external software
 PREFIX=/usr/local
+NCARG_ROOT=/Users/haley/dev
 
 # Whether to build OPeNDAP versions of NetCDF.  Comment out if you don't want this
 OPENDAP=1
@@ -1235,19 +1236,17 @@ if [ $INSTALL_ESMF ] ; then
     export ESMF_NETCDF_INCLUDE=$PREFIX/include
     export ESMF_LAPACK_LIBPATH=$NCARG_ROOT/lib
     export ESMF_LAPACK_LIBS="-llapack_ncl -lblas_ncl"
-    export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf"
     export ESMF_NETCDF="split"
     export ESMF_LAPACK="netlib"
     export ESMF_COMM=mpiuni
     if [ "$un" == "cisl-denton.local" ] && [ $OPENDAP ] ; then
-      export ESMF_CXXLINKLIBS="-L$PREFIX/lib -lgfortran -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
-      export ESMF_F90LINKLIBS="-L$PREFIX/lib -lstdc++ -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
+      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
+    elif [ "$un" == "harmon.cgd.ucar.edu" ] && [ $OPENDAP ] ; then
+     export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lz -lidn -lrt -ldl -lsz -lz"
     elif [ $OPENDAP ] ; then
-      export ESMF_CXXLINKLIBS="-L$PREFIX/lib -lgfortran -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lsz -lz"
-      export ESMF_F90LINKLIBS="-L$PREFIX/lib -lstdc++ -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lsz -lz -lquadmath"
+      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lsz -lz"
     else
-      export ESMF_CXXLINKLIBS="-L$PREFIX/lib -lgfortran -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz"
-      export ESMF_F90LINKLIBS="-L$PREFIX/lib -lstdc++ -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz -lquadmath"
+      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz"
     fi
     if [ "$um" == "x86_64" ] ; then
       export ESMF_ABI=64
