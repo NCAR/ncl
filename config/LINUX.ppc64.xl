@@ -20,11 +20,15 @@
 #define Cstatic       -bnso
 #define Cdynamic      -bso
 #define CtoFLibraries -L/opt/ibmcmp/xlf/9.1/lib64 -lxlfmath -lxlf90 -lm
+#define CtoFLibrariesUser -L/opt/ibmcmp/xlf/9.1/lib64 -lxlfmath -lxlf90 -lm
 #define NgCallF       reg
 #define CppCommand '/usr/bin/cpp -traditional'
 #define XToolLibrary -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lX11 -lXext
+
+#define LibSearchUser -L/usr/X11R6/lib64
+#define IncSearchUser -I/usr/X11R6/include
 
 #define ArchRecLibSearch -L/usr/X11R6/lib64
 #define ArchRecIncSearch -I/usr/X11R6/include

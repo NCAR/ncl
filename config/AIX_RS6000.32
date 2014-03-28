@@ -20,5 +20,6 @@
 #define Cstatic       -bnso
 #define Cdynamic      -bso
 #define CtoFLibraries -lm -lxlf90 -lxlopt
+#define CtoFLibrariesUser -lm -lxlf90 -lxlopt
 #define ExtraExportFlags -bexpall -brtl
 #define NgCallF       reg

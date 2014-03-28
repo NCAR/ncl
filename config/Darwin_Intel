@@ -19,10 +19,18 @@
  *                       the "CtoFLibraries" line below and include a "-L"
  *                       path to help it. For example:
  *
- *     #define CtoFLibraries  -L/usr/local/lib -lgfortran
+ *     #define CtoFLibraries  -L/usr/local/lib -lgfortran -lquadmath
+ *     or
+ *     #define CtoFLibraries  /usr/local/lib/libgfortran.a /usr/local/lib/libquadmath.a
  *
  *                       You'll need to change "/usr/local/lib" to
  *                       whatever directory contains "libgfortran.so".
+ *
+ *			 The references to the "User" macros below is for building the
+ *                       ncargcc, ncargf90, nhlcc, etc, scripts.  We don't want the
+ *                       development stuff (like the CtoFLibraries) jammed into those
+ *                       scripts, like "/usr/local/lib/libcairo.a"; instead, we want
+ *                       clean paths like "-lcairo".
  */
 #define HdfDefines  -DDARWIN
 #define StdDefines  -DSYSV -D_XOPEN_SOURCE -DByteSwapped -D__UNIXOS2__
@@ -31,13 +39,18 @@
 #define Cdynamic 
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   gcc
+#define CxxCompiler   g++
 #define FCompiler   gfortran
 #define CcOptions      -ansi -fPIC -m64 -Wall -fopenmp
 #define FcOptions      -fPIC -fno-range-check  -m64 -Wall -fopenmp
-#define CtoFLibraries  -lgfortran
+#define CtoFLibraries      -lgfortran -lquadmath
+#define CtoFLibrariesUser  -lgfortran -lquadmath
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
+
+#define LibSearchUser    -L/usr/X11R6/lib
+#define IncSearchUser    -L/usr/X11R6/include
 
 #define ArchRecLibSearch    -L/usr/X11R6/lib
 #define ArchRecIncSearch    -I/usr/X11R6/include

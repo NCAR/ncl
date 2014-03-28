@@ -33,11 +33,16 @@
 #define FcOptions      -fPIC  -fno-range-check  -m64 -fopenmp -framework OpenCL 
 /*
 #define CtoFLibraries  -L/sw/lib/gcc4.4/lib/x86_64 -lgfortran
+#define CtoFLibrariesUser  -L/sw/lib/gcc4.4/lib/x86_64 -lgfortran
 */
 #define CtoFLibraries -lgfortran
+#define CtoFLibrariesUser -lgfortran
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
+
+#define LibSearchUser    -L/usr/X11R6/lib
+#define IncSearchUser    -I/usr/X11R6/include
 
 #define ArchRecLibSearch    -L/usr/X11R6/lib
 #define ArchRecIncSearch    -I/usr/X11R6/include

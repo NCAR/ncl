@@ -241,6 +241,11 @@
 #define CAIROlib -lcairo -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -lpthread -lbz2 -lXrender
 #endif
 
+/* This should be same as CAIROlib except with no explicit paths */
+#ifndef CAIROlibuser
+#define CAIROlibuser  -lcairo -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -liconv -lXrender -lbz2
+#endif
+
 #ifdef	BuildHDFEOS
 #ifndef	HDFEOSlib
 #define	HDFEOSlib   -lhdfeos -lGctp
@@ -652,6 +657,7 @@ NETCDFLIB	=
 NCDFLIBS	= NetCDFlib
 PNGLIB		= PNGlib
 CAIROLIB	= CAIROlib
+CAIROLIBUSER	= CAIROlibuser
 HDFLIB		= HDFlib
 NETCDF4LIB      = NetCDF4lib
 HDFEOSLIB	= HDFEOSlib

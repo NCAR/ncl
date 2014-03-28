@@ -18,11 +18,16 @@
 #define FcOptions -mp
 /*
 #define CtoFLibraries -lpgc -lpgf90  -lpgf90_rpm1  -lpgf902 -lpgftnrtl
+#define CtoFLibrariesUser -lpgc -lpgf90  -lpgf90_rpm1  -lpgf902 -lpgftnrtl
 */
 #define CtoFLibraries -pgf90libs
+#define CtoFLibrariesUser -pgf90libs
 #define XToolLibrary -lXt -lSM -lICE
 #define BuildShared NO
 #define ExtraExportFlags -Wl,--export-dynamic
+
+#define LibSearchUser -L/usr/X11R6/lib
+#define IncSearchUser -I/usr/X11R6/include
 
 #define ArchRecLibSearch -L/usr/X11R6/lib
 #define ArchRecIncSearch -I/usr/X11R6/include

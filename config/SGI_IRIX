@@ -31,6 +31,7 @@ SGIWARNSUPPRESS = SgiWarnSuppress
 #define	LdCommand	ld -64
 #define	RanLib		$(AR) m
 #define CtoFLibraries	-lftn -lm -lfortran
+#define CtoFLibrariesUser	-lftn -lm -lfortran
 #define COptimizeFlag    -O3
 #define FOptimizeFlag    -O3
 

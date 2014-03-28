@@ -18,12 +18,16 @@
 #define	CCompiler	gcc
 #define	FCompiler	gfortran
 #define	CtoFLibraries	-lgfortran -lm
+#define	CtoFLibrariesUser	-lgfortran -lm
 #define CcOptions      -ansi -fopenmp
 #define FcOptions      -fno-range-check -fopenmp
 #define XToolLibrary	-lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
 #define ExeSuffix exe
+
+#define	LibSearchUser
+#define	IncSearchUser
 
 #define	ArchRecLibSearch	
 #define	ArchRecIncSearch

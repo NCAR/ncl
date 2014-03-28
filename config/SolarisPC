@@ -35,5 +35,6 @@
 #define ArchRecLibSearch        -L/usr/openwin/lib -L/usr/dt/lib
 #define ArchRecIncSearch        -I/usr/openwin/include -I/usr/dt/include 
 #define CtoFLibraries    -lg2c -lm
+#define CtoFLibrariesUser    -lg2c -lm
  
 

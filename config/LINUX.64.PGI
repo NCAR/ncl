@@ -19,13 +19,20 @@
 /*
  * You can try one of these, if you are using "gcc" as a compiler,
  * instead of pgcc:
+ */
 #define CtoFLibraries -lpgc -lpgf90  -lpgf90_rpm1  -lpgf902 -lpgftnrtl -lpghpf
 #define CtoFLibraries -L/usr/pgi/linux86-64/12.9/lib  -lpgmp -lnuma -lpthread -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgf90rtl -lpgftnrtl -lnspgc -lpgc -lrt -lpthread -lm
- */
 #define CtoFLibraries -pgf90libs
+
+#define CtoFLibrariesUser -lpgc -lpgf90  -lpgf90_rpm1  -lpgf902 -lpgftnrtl -lpghpf
+#define CtoFLibrariesUser -pgf90libs
+
 #define XToolLibrary -lXt -lSM -lICE
 #define BuildShared NO
 #define ExtraExportFlags -Wl,--export-dynamic
+
+#define LibSearchUser -L/usr/X11R6/lib64
+#define IncSearchUser -I/usr/X11R6/include
 
 #define ArchRecLibSearch -L/usr/X11R6/lib64
 #define ArchRecIncSearch -I/usr/X11R6/include

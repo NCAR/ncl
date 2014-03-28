@@ -14,10 +14,14 @@
 #define CCompiler   cc
 #define FCompiler   fort
 #define CtoFLibraries   -lg2c -lfor -lots
+#define CtoFLibrariesUser   -lg2c -lfor -lots
 #define CcOptions      -ansi
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
+
+#define LibSearchUser    -L/usr/X11R6/lib
+#define IncSearchUser    -I/usr/X11R6/include
 
 #define ArchRecLibSearch    -L/usr/X11R6/lib
 #define ArchRecIncSearch    -I/usr/X11R6/include

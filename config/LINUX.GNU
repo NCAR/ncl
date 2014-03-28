@@ -19,12 +19,16 @@
 #define CCompiler   gcc
 #define FCompiler   g77
 #define CtoFLibraries   -lg2c -lgcc -lm
+#define CtoFLibrariesUser   -lg2c -lgcc -lm
 #define CcOptions      -ansi -fPIC -fopenmp
 #define FcOptions      -fPIC -fno-second-underscore
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lX11 -lXext
 #define ExtraExportFlags -rdynamic
+
+#define LibSearchUser    -L/usr/X11R6/lib
+#define IncSearchUser    -I/usr/X11R6/include
 
 #define ArchRecLibSearch    -L/usr/X11R6/lib
 #define ArchRecIncSearch    -I/usr/X11R6/include

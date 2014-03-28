@@ -20,10 +20,14 @@
 #define CcOptions      -ansi -fopenmp
 #define FcOptions      -m32 -openmp
 #define CtoFLibraries  -lifcore -lsvml -limf -lirc
+#define CtoFLibrariesUser  -lifcore -lsvml -limf -lirc
 #define LdCommand      gcc -bind_at_load
 #define XToolLibrary   -lXt -lSM -lICE
 #define BuildShared    NO
 #define XLibrary -lXpm -lX11 -lXext
+
+#define LibSearchUser    -L/usr/X11R6/lib -L/sw/lib
+#define IncSearchUser    -I/usr/X11R6/include -I/sw/include
 
 #define ArchRecLibSearch    -L/usr/X11R6/lib -L/sw/lib
 #define ArchRecIncSearch    -I/usr/X11R6/include -I/sw/include

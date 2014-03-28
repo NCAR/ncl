@@ -20,9 +20,13 @@
 #define CcOptions      -ansi -fPIC -fopenmp
 #define FcOptions      -fPIC 
 #define CtoFLibraries  -lf95
+#define CtoFLibrariesUser  -lf95
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
+
+#define LibSearchUser    -L/usr/X11R6/lib -L/sw/lib
+#define IncSearchUser    -I/usr/X11R6/include -I/sw/include
 
 #define ArchRecLibSearch    -L/usr/X11R6/lib -L/sw/lib
 #define ArchRecIncSearch    -I/usr/X11R6/include -I/sw/include

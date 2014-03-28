@@ -331,6 +331,10 @@ NGCOMM########################################################################
 #define LibSearch	ArchRecLibSearch
 #endif	/* LibSearch */
 
+#ifndef	LibSearchUser
+#define LibSearchUser	/**/
+#endif	/* LibSearchUser */
+
 #ifndef	PythonVersion
 #define PythonVersion	/**/
 #endif	/* PythonVersion */
@@ -363,6 +367,10 @@ NGCOMM########################################################################
 #define IncSearch	ArchRecIncSearch
 #endif	/* IncSearch */
 
+#ifndef	Incsearchuser
+#define Incsearchuser	/**/
+#endif	/* Incsearchuser */
+
 #ifndef	ExtraLibSearch
 #define	ExtraLibSearch	/**/
 #endif	/* ExtraLibSearch */
@@ -374,6 +382,10 @@ NGCOMM########################################################################
 #ifndef CtoFLibraries
 #define CtoFLibraries	/**/
 #endif	/* CtoFLibraries */
+
+#ifndef CtoFLibrariesUser
+#define CtoFLibrariesUser	/**/
+#endif	/* CtoFLibrariesUser */
 
 #ifndef	StdDefines
 #define	StdDefines	/**/
@@ -588,6 +600,8 @@ MANPATH			= ManPath
 
 LIBSEARCH		= LibSearch
 INCSEARCH		= IncSearch
+LIBSEARCHUSER		= LibSearchUser
+INCSEARCHUSER		= IncSearchUser
 PYTHONVERSION		= PythonVersion
 PYTHONLIBSEARCH		= PythonLibSearch
 PYTHONINCSEARCH		= PythonIncSearch
@@ -673,6 +687,7 @@ XATHENACLIENTLIBS	= $(XAWLIB) $(XTOOLLIB) $(EXTENSIONLIB) $(XLIB)
 XMUATHENACLIENTLIBS	= $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(EXTENSIONLIB) $(XLIB)
 
 CTOFLIBS	= CtoFLibraries
+CTOFLIBSUSER	= CtoFLibrariesUser
 MAKE		= MakeProgram
 #if	BuildMFLAGS
 MFLAGS		= -$(MAKEFLAGS)

@@ -53,12 +53,15 @@ CCompiler   cc          $(CC)
 CLoader     CCompiler       $(CC_LD)
 LibSearch   null            default libsearch path(set in Site file)
 IncSearch   null            default incsearch path(set in Site file)
+LibSearchUser   null            User lib search path(specific to arch)
+IncSearchUser   null            User inc search path(specific to arch)
 ExtraLibSearch  null            Extra lib search path(specific to arch)
 ExtraIncSearch  null            Extra inc search path(specific to arch)
 ExtraSysLibraries   null        Extra lib to link into EVERY executable
 ExtraExportFlags    null        Extra export options for building NCL so
   that it can load shared objects.
 CtoFLibraries   null            $(CTOFLIBS)
+CtoFLibrariesUser   null            $(CTOFLIBSUSER)
 StdDefines  null            default c-defines (specific to arch)
 Cdynamic    null            $(CDYNAMIC)
 Cstatic     null            $(CSTATIC)

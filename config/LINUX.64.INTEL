@@ -15,6 +15,7 @@
 #define CCompiler   icc
 #define FCompiler   ifort
 #define CtoFLibraries   -lm -lifcore -lsvml -lifport -lirc
+#define CtoFLibrariesUser   -lm -lifcore -lsvml -lifport -lirc
 #define CcOptions    -ansi -openmp
 #define FcOptions     -openmp
 #define COptimizeFlag    -O2
@@ -22,6 +23,9 @@
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
+
+#define LibSearchUser    -L/usr/X11R6/lib
+#define IncSearchUser    -I/usr/X11R6/include
 
 #define ArchRecLibSearch    -L/usr/X11R6/lib
 #define ArchRecIncSearch    -I/usr/X11R6/include

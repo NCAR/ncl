@@ -25,12 +25,16 @@
 #define CCompiler   gcc
 #define FCompiler   gfortran
 #define CtoFLibraries   -lgfortran -lm
+#define CtoFLibrariesUser   -lgfortran -lm
 #define CcOptions      -fPIC -ansi -fopenmp
 #define FcOptions      -fPIC -fopenmp
 
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
+
+#define LibSearchUser    -L/usr/X11R6/lib -L/sw/lib
+#define IncSearchUser    -I/usr/X11R6/include -I/sw/include
 
 #define ArchRecLibSearch    -L/usr/X11R6/lib -L/sw/lib
 #define ArchRecIncSearch    -I/usr/X11R6/include -I/sw/include

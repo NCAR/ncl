@@ -13,6 +13,7 @@
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   gcc
 #define CtoFLibraries   -L/Applications/Absoft/lib -lU77 -lfio -lf77math
+#define CtoFLibrariesUser   -L/Applications/Absoft/lib -lU77 -lfio -lf77math
 #define FCompiler   f90
 #define CcOptions      -DAbsoftProFortran -ansi -fopenmp
 #define FcOptions      -s 
@@ -21,6 +22,9 @@
 #define XLibrary -lXpm -lX11 -lXext
 #define ExtraExportFlags -rdynamic
 #define NgCallF  caps
+
+#define LibSearchUser    -L/usr/X11R6/lib
+#define IncSearchUser    -I/usr/X11R6/include
 
 #define ArchRecLibSearch    -L/usr/X11R6/lib
 #define ArchRecIncSearch    -I/usr/X11R6/include
