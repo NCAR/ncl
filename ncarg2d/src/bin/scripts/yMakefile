@@ -32,11 +32,11 @@ ncargf77: ncargf77.csh Makefile
 	@sed \
 	-e 's+SED_FC+$(F77)+' \
 	-e 's+SED_LIBNCARG_GKS+ncarg_gks+' \
-	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
+	-e 's+SED_LIBSEARCHUSER+$(LIBSEARCHUSER)+' \
 	-e 's+SED_LDFLAGS+$(FC_LDOPTIONS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_XLIB+$(XLIB)+' \
-	-e 's+SED_CAIROLIB+$(CAIROLIB)+' \
+	-e 's+SED_CAIROLIBUSER+$(CAIROLIBUSER)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_LIBEXTRA+$(EXTRA_SYS_LIBS)+' \
@@ -47,11 +47,11 @@ ncargf90: ncargf77.csh Makefile
 	@sed \
 	-e 's+SED_FC+$(F77)+' \
 	-e 's+SED_LIBNCARG_GKS+ncarg_gks+' \
-	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
+	-e 's+SED_LIBSEARCHUSER+$(LIBSEARCHUSER)+' \
 	-e 's+SED_LDFLAGS+$(FC_LDOPTIONS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_XLIB+$(XLIB)+' \
-	-e 's+SED_CAIROLIB+$(CAIROLIB)+' \
+	-e 's+SED_CAIROLIBUSER+$(CAIROLIBUSER)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_LIBEXTRA+$(EXTRA_SYS_LIBS)+' \
@@ -62,14 +62,14 @@ ncargcc: ncargcc.csh Makefile
 	@sed \
 	-e 's+SED_CC+$(CC)+' \
 	-e 's+SED_LIBNCARG_GKS+ncarg_gks+' \
-	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
+	-e 's+SED_LIBSEARCHUSER+$(LIBSEARCHUSER)+' \
 	-e 's+SED_STDDEF+$(STD_DEFINES)+' \
 	-e 's+SED_PROJDEF+$(PROJECTDEFINES)+' \
 	-e 's+SED_LDCFLAGS+$(CC_LDOPTIONS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_XLIB+$(XLIB)+' \
-	-e 's+SED_CAIROLIB+$(CAIROLIB)+' \
-	-e 's+SED_CTOFLIBS+$(CTOFLIBS)+' \
+	-e 's+SED_CAIROLIBUSER+$(CAIROLIBUSER)+' \
+	-e 's+SED_CTOFLIBSUSER+$(CTOFLIBSUSER)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_INCDIR+$(INCDIR)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \

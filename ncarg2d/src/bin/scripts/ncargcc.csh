@@ -20,17 +20,16 @@ if ($status != 0) then
 	exit 1
 endif
 
-set syslibdir = "SED_LIBSEARCH"
+set syslibdir = "SED_LIBSEARCHUSER"
 set xlib     = "SED_XLIB"
-set cairolib = "SED_CAIROLIB"
-set system   = "SED_SYSTEM_INCLUDE"
+set cairolib = "SED_CAIROLIBUSER"
 set cc       = "SED_CC"
 set defines  = "SED_STDDEF SED_PROJDEF"
 set loadflags = "SED_LDCFLAGS"
 set libdir   = `ncargpath SED_LIBDIR`
 set incdir   = `ncargpath SED_INCDIR`
 set ro       = "$libdir/SED_NCARGDIR/SED_ROBJDIR"
-set f77libs  = "SED_CTOFLIBS"
+set f77libs  = "SED_CTOFLIBSUSER"
 set libpath = "-L$libdir $syslibdir"
 set incpath = "-I$incdir"
 
