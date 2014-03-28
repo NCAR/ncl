@@ -689,10 +689,7 @@ then
       make clean
     fi
     echo "Building $NETCDF_NODAP_DIR..."
-    export LDFLAGS="-L$PREFIX/lib"
-    export CPPFLAGS="-I$PREFIX/include"
-    export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
-    ./configure --enable-netcdf-4 --disable-dap --disable-shared --prefix\=$NODAP_PREFIX
+    ./configure --disable-netcdf-4 --disable-dap --disable-shared --prefix\=$NODAP_PREFIX
     make all install
     if [ $? ]
     then
