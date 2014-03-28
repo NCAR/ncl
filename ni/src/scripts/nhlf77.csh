@@ -15,14 +15,14 @@ if ($status != 0) then
 endif
 
 set xlibs = "SED_XLIB"
-set cairolib = "SED_CAIROLIB"
+set cairolib = "SED_CAIROLIBUSER"
 set system   = "SED_SYSTEM_INCLUDE"
 set f77       = "SED_FC"
 set loadflags  = "SED_LDFFLAGS"
 set libdir   = `ncargpath SED_LIBDIR`
 set incdir   = `ncargpath SED_INCDIR`
-set syslibdir = "SED_LIBSEARCH"
-set sysincdir = "SED_INCSEARCH"
+set syslibdir = "SED_LIBSEARCHUSER"
+set sysincdir = "SED_INCSEARCHUSER"
 set ro       = "$libdir/SED_NCARGDIR/SED_ROBJDIR"
 set newargv = "$f77 $loadflags"
 set libpath = "-L$libdir $syslibdir"
