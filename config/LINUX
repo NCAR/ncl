@@ -30,7 +30,7 @@
 #define ExtraExportFlags -rdynamic
 
 #define LibSearchUser    -L/usr/X11R6/lib64
-#define IncSearchUser    -L/usr/X11R6/include
+#define IncSearchUser    -I/usr/X11R6/include
 
 #define ArchRecLibSearch    -L/usr/X11R6/lib64
 #define ArchRecIncSearch    -I/usr/X11R6/include
