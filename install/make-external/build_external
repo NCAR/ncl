@@ -69,7 +69,6 @@ PREFIX=/usr/local
 NCARG_ROOT=/usr/local
 PREFIX_NODAP=$PREFIX/nodap
 
-# Set up file to hold build output.
 dd=`date +'%m%d%y'`
 un=`uname -n`
 um=`uname -m`
@@ -77,7 +76,7 @@ os=`uname -s`
 
 # Special test for yellowstone/geyser/caldera
 if [ -n "$LIB_NCAR" ] ; then
-  if [ "$COMPILER_VERSION" == "4.7.2" ] ; then
+  if [ "$COMPILER_VERSION" = "4.7.2" ] ; then
     export PATH=$PREFIX/bin:/glade/apps/opt/gnu/4.7.2/bin:/usr/lib64/qt-3.3/bin:/glade/apps/opt/bin:/glade/apps/el6/usr/bin:/glade/apps/el6/bin:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/etc:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/openssh/5.7p1krb/bin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/ncar/opt/hpss
     export LD_LIBRARY_PATH=/glade/apps/opt/gnu/4.7.2/lib64:/glade/apps/opt/gnu/lib:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/lib
     un="yellowstone_gnu472"
@@ -90,24 +89,24 @@ if [ -n "$LIB_NCAR" ] ; then
 fi
 
 # Get MacOS version
-if [ "$os" == "Darwin" ] ; then
+if [ "$os" = "Darwin" ] ; then
   os_version=`sw_vers -productVersion`
 fi
 
 # Set environment variables for building software
-if [ "$os" == "Darwin" ] ; then
+if [ "$os" = "Darwin" ] ; then
   export CC=/usr/local/bin/gcc
   export CXX=/usr/local/bin/g++
   export FC=/usr/local/bin/gfortran
   export F77=/usr/local/bin/gfortran
   export F90=/usr/local/bin/gfortran
-elif [ "$un" == "yellowstone_gnu472" ] ; then
+elif [ "$un" = "yellowstone_gnu472" ] ; then
   export CC=/glade/u/apps/opt/gnu/4.7.2/bin/gcc
   export CXX=/glade/u/apps/opt/gnu/4.7.2/bin/g++
   export FC=/glade/u/apps/opt/gnu/4.7.2/bin/gfortran
   export F77=/glade/u/apps/opt/gnu/4.7.2/bin/gfortran
   export F90=/glade/u/apps/opt/gnu/4.7.2/bin/gfortran
-elif [ "$un" == "yellowstone_gnu446" ] ; then
+elif [ "$un" = "yellowstone_gnu446" ] ; then
   export CC=/usr/bin/gcc
   export CXX=/usr/bin/g++
   export FC=/usr/bin/gfortran
@@ -120,7 +119,7 @@ else
   export F77=gfortran
   export F90=gfortran
 fi
-if [ "$os" == "Darwin" ] ; then
+if [ "$os" = "Darwin" ] ; then
   export CFLAGS='-fPIC -m64 -Df2cFortran'
   export FFLAGS='-m64 -fPIC'
   export F90FLAGS='-m64 -fPIC'
@@ -132,8 +131,8 @@ else
   export CXXFLAGS=-fPIC
 fi
 
-if [ "$os" == "Linux" ] ; then
-  if [ "$um" == "x86_64" ] ; then
+if [ "$os" = "Linux" ] ; then
+  if [ "$um" = "x86_64" ] ; then
     export LINUX_BRAND linux64
   else
     export LINUX_BRAND linux32
@@ -605,7 +604,7 @@ if [ $INSTALL_HDF4 ] ; then
       make clean
     fi
     echo "Building $HDF4_DIR..."
-    if [ "$os" == "Darwin" ] ; then
+    if [ "$os" = "Darwin" ] ; then
       ./configure --disable-netcdf --disable-dependency-tracking --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX
     else
       ./configure  --disable-netcdf --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX
@@ -687,16 +686,16 @@ then
       echo "Cleaning $NETCDF_DIR to do non-OPeNDAP build"
       make distclean
       make clean
-      if [ "$os" == "Darwin" ] ; then
+      if [ "$os" = "Darwin" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
         ./configure --enable-netcdf-4 --disable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX_NODAP
         make all install
         echo "Cleaning $NETCDF_DIR to do OPeNDAP build"
         make distclean
         make clean
-        if [ "$un" == "cisl-denton.local" ] || [ "$os_version" == "10.8.4" ] ; then
+        if [ "$un" = "cisl-denton.local" ] || [ "$os_version" = "10.8.4" ] ; then
           export LIBS="-lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
-        elif [ "$un" == "riley.local" ] || [ "$os_version" == "10.9.2" ] ; then
+        elif [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ] ; then
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
         else
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
@@ -704,7 +703,7 @@ then
         ./configure --enable-netcdf-4 --enable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
         make all install
       else
-        if [ "$un" == "yellowstone_gnu472" ] || [ "$un" == "yellowstone_gnu446" ] ; then
+        if [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu446" ] ; then
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -ldl"
         else
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
@@ -715,13 +714,13 @@ then
         echo "Cleaning $NETCDF_DIR to do OPeNDAP build"
         make distclean
         make clean
-        if [ "$un" == "k5" ] ; then
+        if [ "$un" = "k5" ] ; then
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
-        elif [ "$un" == "k9" ] ; then
+        elif [ "$un" = "k9" ] ; then
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl"
-        elif [ "$un" == "harmon.cgd.ucar.edu" ] ; then
+        elif [ "$un" = "harmon.cgd.ucar.edu" ] ; then
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lz -lidn -lrt -ldl"
-        elif [ "$un" == "yellowstone_gnu472" ] || [ "$un" == "yellowstone_gnu446" ] ; then
+        elif [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu446" ] ; then
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lz -lidn -lrt -ldl"
         else
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl -ldl"
@@ -1177,7 +1176,7 @@ if [ $INSTALL_CAIRO ] ; then
       make clean
     fi
     echo "Building $CAIRO_DIR..."
-    if [ "$os" == "Darwin" ] ; then
+    if [ "$os" = "Darwin" ] ; then
       ./configure --prefix\=$PREFIX --enable-quartz-font=no --enable-quartz=no --enable-shared=no --enable-static=yes
     else
       ./configure --prefix\=$PREFIX --disable-shared
@@ -1308,7 +1307,17 @@ if [ $INSTALL_ESMF ] ; then
     export ESMF_NETCDF="split"
     export ESMF_LAPACK="netlib"
     export ESMF_COMM=mpiuni
-    if [ "$um" == "x86_64" ] ; then
+#
+# k7.rap.ucar.edu needs extra hand-holding for some reason.
+# It doesn't see itself as a Linux system.
+#
+    if [ "$un" = "k7" ] ; then
+      export ESMF_COMPILER=gfortran
+      export ESMF_OS=Linux
+      export ESMF_CXXCOMPILER=/usr/bin/g++
+      export ESMF_F90COMPILER=/usr/bin/gfortran
+    fi
+    if [ "$um" = "x86_64" ] ; then
       export ESMF_ABI=64
     else
       export ESMF_ABI=32
@@ -1316,7 +1325,7 @@ if [ $INSTALL_ESMF ] ; then
 # Don't use ESMF_BUILD_DIR here
     export ESMFBUILDDIR="$os.gfortran.$ESMF_ABI.$ESMF_COMM.default"
     export ESMFREGRIDFILE="$ESMF_INSTALL_PREFIX/bin/binO/$ESMFBUILDDIR/ESMF_RegridWeightGen"
-    if [ "$os" == "Darwin" ] ; then
+    if [ "$os" = "Darwin" ] ; then
       export ESMFSHAREDLIB="lib/libO/$ESMFBUILDDIR/libesmf.dylib"
     else
       export ESMFSHAREDLIB="lib/libO/$ESMFBUILDDIR/libesmf.so"
@@ -1355,15 +1364,15 @@ if [ $INSTALL_ESMF ] ; then
     export ESMFREGRIDFILE="$ESMF_INSTALL_PREFIX/bin/binO/$ESMFBUILDDIR/ESMF_RegridWeightGen"
     unset ESMF_CXXLINKPATHS
 
-    if [ "$un" == "cisl-denton.local" ] || [ "$os_version" == "10.8.4" ] ; then
+    if [ "$un" = "cisl-denton.local" ] || [ "$os_version" = "10.8.4" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
-    elif [ "$un" == "riley.local" ] || [ "$os_version" == "10.9.2" ] ; then
+    elif [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
-    elif [ "$un" == "k5" ] ; then
+    elif [ "$un" = "k5" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
-    elif [ "$un" == "k9" ] ; then
+    elif [ "$un" = "k9" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl"
-    elif [ "$un" == "harmon.cgd.ucar.edu" ] ; then
+    elif [ "$un" = "harmon.cgd.ucar.edu" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lz -lidn -lrt -ldl -lsz -lz"
     else
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lsz -lz"
