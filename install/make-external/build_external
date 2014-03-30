@@ -74,22 +74,24 @@ dd=`date +'%m%d%y'`
 un=`uname -n`
 um=`uname -m`
 os=`uname -s`
-if [ "$os" == "Darwin" ] ; then
-  os_version=`sw_vers -productVersion`
-fi
 
 # Special test for yellowstone/geyser/caldera
 if [ -n "$LIB_NCAR" ] ; then
   if [ "$COMPILER_VERSION" == "4.7.2" ] ; then
     export PATH=$PREFIX/bin:/glade/apps/opt/gnu/4.7.2/bin:/usr/lib64/qt-3.3/bin:/glade/apps/opt/bin:/glade/apps/el6/usr/bin:/glade/apps/el6/bin:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/etc:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/openssh/5.7p1krb/bin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/ncar/opt/hpss
     export LD_LIBRARY_PATH=/glade/apps/opt/gnu/4.7.2/lib64:/glade/apps/opt/gnu/lib:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/lib
-    os="yellowstone_gnu472"
+    un="yellowstone_gnu472"
   else
-    os="yellowstone_gnu446"
+    un="yellowstone_gnu446"
   fi
   unset LIB_NCAR
   unset INC_NCAR
   unset NETCDF
+fi
+
+# Get MacOS version
+if [ "$os" == "Darwin" ] ; then
+  os_version=`sw_vers -productVersion`
 fi
 
 # Set environment variables for building software
@@ -99,13 +101,13 @@ if [ "$os" == "Darwin" ] ; then
   export FC=/usr/local/bin/gfortran
   export F77=/usr/local/bin/gfortran
   export F90=/usr/local/bin/gfortran
-elif [ "$os" == "yellowstone_gnu472" ] ; then
+elif [ "$un" == "yellowstone_gnu472" ] ; then
   export CC=/glade/u/apps/opt/gnu/4.7.2/bin/gcc
   export CXX=/glade/u/apps/opt/gnu/4.7.2/bin/g++
   export FC=/glade/u/apps/opt/gnu/4.7.2/bin/gfortran
   export F77=/glade/u/apps/opt/gnu/4.7.2/bin/gfortran
   export F90=/glade/u/apps/opt/gnu/4.7.2/bin/gfortran
-elif [ "$os" == "yellowstone_gnu446" ] ; then
+elif [ "$un" == "yellowstone_gnu446" ] ; then
   export CC=/usr/bin/gcc
   export CXX=/usr/bin/g++
   export FC=/usr/bin/gfortran
@@ -702,7 +704,7 @@ then
         ./configure --enable-netcdf-4 --enable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
         make all install
       else
-        if [ "$os" == "yellowstone_gnu472" ] || [ "$os" == "yellowstone_gnu446" ] ; then
+        if [ "$un" == "yellowstone_gnu472" ] || [ "$un" == "yellowstone_gnu446" ] ; then
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -ldl"
         else
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
@@ -717,7 +719,7 @@ then
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl"
         elif [ "$un" == "harmon.cgd.ucar.edu" ] ; then
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lz -lidn -lrt -ldl"
-        elif [ "$os" == "yellowstone_gnu472" ] || [ "$os" == "yellowstone_gnu446" ] ; then
+        elif [ "$un" == "yellowstone_gnu472" ] || [ "$un" == "yellowstone_gnu446" ] ; then
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lz -lidn -lrt -ldl"
         else
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl -ldl"
@@ -1309,25 +1311,32 @@ if [ $INSTALL_ESMF ] ; then
     else
       export ESMF_ABI=32
     fi
+# Don't use ESMF_BUILD_DIR here
+    export ESMFBUILDDIR="$os.gfortran.$ESMF_ABI.$ESMF_COMM.default"
+    export ESMFREGRIDFILE="$ESMF_INSTALL_PREFIX/bin/binO/$ESMFBUILDDIR/ESMF_RegridWeightGen"
+    if [ "$os" == "Darwin" ] ; then
+      export ESMFSHAREDLIB="lib/libO/$ESMFBUILDDIR/libesmf.dylib"
+    else
+      export ESMFSHAREDLIB="lib/libO/$ESMFBUILDDIR/libesmf.so"
+    fi
 
 # Here's the non-OPeNDAP build
     echo "Building non-OPeNDAP version of $ESMF_DIR..."
     make all install
 
 # This is to get rid of libesmf shared library dependency.
-    if [ "$os" == "Darwin" ] ; then
-      /bin/rm -rf $ESMF_DIR/lib/libO/$os.gfortran.$ESMF_ABI.mpiuni.default/libesmf.dylib $ESMF_INSTALL_PREFIX/lib/libO/$os.gfortran.$ESMF_ABI.mpiuni.default/libesmf.dylib
-    else
-      /bin/rm -rf $ESMF_DIR/lib/libO/$os.gfortran.$ESMF_ABI.mpiuni.default/libesmf.so $ESMF_INSTALL_PREFIX/lib/libO/$os.gfortran.$ESMF_ABI.mpiuni.default/libesmf.so
-    fi
+    /bin/rm -rf $ESMF_DIR/$ESMFSHAREDLIB $ESMF_INSTALL_PREFIX/$ESMFSHAREDLIB
     make install
 
 # If successful, move ESMF_RegridWeightGen to appropriate location and clean up.
-    if [ -f $ESMF_INSTALL_PREFIX/bin/binO/$os.gfortran.$ESMF_ABI.mpiuni.default/ESMF_RegridWeightGen ] ; then
-      /bin/mv $ESMF_INSTALL_PREFIX/bin/binO/$os.gfortran.$ESMF_ABI.mpiuni.default/ESMF_RegridWeightGen $ESMF_INSTALL_PREFIX/bin/.
+    if [ -f $ESMFREGRIDFILE ] ; then
+      echo "Moving $ESMFREGRIDFILE to $ESMF_INSTALL_PREFIX/bin/."
+      /bin/mv $ESMFREGRIDFILE $ESMF_INSTALL_PREFIX/bin/.
       /bin/rm -rf $ESMF_INSTALL_PREFIX/bin/binO
       /bin/rm -rf $ESMF_INSTALL_PREFIX/lib/libO
       /bin/rm -rf $ESMF_INSTALL_PREFIX/include/ESMC*
+    else
+      echo "$ESMFREGRIDFILE doesn't exist"
     fi
 
 #--------------------------------------------------
@@ -1341,6 +1350,7 @@ if [ $INSTALL_ESMF ] ; then
     export ESMF_INSTALL_PREFIX=$PREFIX
     export ESMF_LAPACK_LIBPATH=$NCARG_ROOT/lib
     export ESMF_CXXCOMPILEPATHS="-I$PREFIX/include"
+    export ESMFREGRIDFILE="$ESMF_INSTALL_PREFIX/bin/binO/$ESMFBUILDDIR/ESMF_RegridWeightGen"
     unset ESMF_CXXLINKPATHS
 
     if [ "$un" == "cisl-denton.local" ] || [ "$os_version" == "10.8.4" ] ; then
@@ -1356,19 +1366,18 @@ if [ $INSTALL_ESMF ] ; then
     make all install
 
 # This is to get rid of libesmf shared library dependency.
-    if [ "$os" == "Darwin" ] ; then
-      /bin/rm -rf $ESMF_DIR/lib/libO/$os.gfortran.$ESMF_ABI.mpiuni.default/libesmf.dylib $ESMF_INSTALL_PREFIX/lib/libO/$os.gfortran.$ESMF_ABI.mpiuni.default/libesmf.dylib
-    else
-      /bin/rm -rf $ESMF_DIR/lib/libO/$os.gfortran.$ESMF_ABI.mpiuni.default/libesmf.so $ESMF_INSTALL_PREFIX/lib/libO/$os.gfortran.$ESMF_ABI.mpiuni.default/libesmf.so
-    fi
+    /bin/rm -rf $ESMF_DIR/$ESMFSHAREDLIB $ESMF_INSTALL_PREFIX/$ESMFSHAREDLIB
     make install
 
 # If successful, move ESMF_RegridWeightGen to appropriate location and clean up.
-    if [ -f $ESMF_INSTALL_PREFIX/bin/binO/$os.gfortran.$ESMF_ABI.mpiuni.default/ESMF_RegridWeightGen ] ; then
-      /bin/mv $ESMF_INSTALL_PREFIX/bin/binO/$os.gfortran.$ESMF_ABI.mpiuni.default/ESMF_RegridWeightGen $ESMF_INSTALL_PREFIX/bin/.
+    if [ -f $ESMFREGRIDFILE ] ; then
+      echo "Moving $ESMFREGRIDFILE to $ESMF_INSTALL_PREFIX/bin/."
+      /bin/mv $ESMFREGRIDFILE $ESMF_INSTALL_PREFIX/bin/.
       /bin/rm -rf $ESMF_INSTALL_PREFIX/bin/binO
       /bin/rm -rf $ESMF_INSTALL_PREFIX/lib/libO
       /bin/rm -rf $ESMF_INSTALL_PREFIX/include/ESMC*
+    else
+      echo "$ESMFREGRIDFILE doesn't exist"
     fi
 
     if [ $CLEAN_AFTER ] ; then
