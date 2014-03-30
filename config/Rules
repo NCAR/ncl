@@ -917,9 +917,6 @@ all-local::]\
 install-local::]\
 	MakeDir($(XAPPPATH))]\
 	@for name in appfiles; do \ ]\
-	if (test -f $(XAPPPATH)/$$name) then \ ]\
-		echo "Warning - replacing $(XAPPPATH)/$$name"; \ ]\
-		$(MV) $(XAPPPATH)/$$name $(XAPPPATH)/$$name.bak ; fi; \ ]\
 	(echo "Installing $$name.ad"; \ ]\
 	$(INSTALL) -m $(INSTALL_APP) $$name.ad $(XAPPPATH)/$$name); \ ]\
 	done]
