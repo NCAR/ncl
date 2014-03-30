@@ -715,7 +715,9 @@ then
         echo "Cleaning $NETCDF_DIR to do OPeNDAP build"
         make distclean
         make clean
-        if [ "$un" == "k9" ] ; then
+        if [ "$un" == "k5" ] ; then
+          export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
+        elif [ "$un" == "k9" ] ; then
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl"
         elif [ "$un" == "harmon.cgd.ucar.edu" ] ; then
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lz -lidn -lrt -ldl"
@@ -1357,6 +1359,10 @@ if [ $INSTALL_ESMF ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
     elif [ "$un" == "riley.local" ] || [ "$os_version" == "10.9.2" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
+    elif [ "$un" == "k5" ] ; then
+      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
+    elif [ "$un" == "k9" ] ; then
+      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl"
     elif [ "$un" == "harmon.cgd.ucar.edu" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lz -lidn -lrt -ldl -lsz -lz"
     else
