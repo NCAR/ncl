@@ -703,11 +703,7 @@ then
         ./configure --enable-netcdf-4 --enable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
         make all install
       else
-        if [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu446" ] ; then
-          export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -ldl"
-        else
-          export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
-        fi
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -ldl"
         ./configure --enable-netcdf-4 --disable-dap --disable-shared --prefix\=$PREFIX_NODAP
         make all install
         mv config.log config.log.nodap
