@@ -44,7 +44,7 @@ static NhlResource resources[] = {
 };
 #undef Oset
 
-static NhlColor	cyclic_old[] = {
+static NhlColor	cyclic[] = {
 	{-1.0,0.0,0.0},	/* white/black */
 	{-1.0,0.0,0.0},	/* white/black */
 	{1.0,0.0,0.0},	/* red */
@@ -55,7 +55,7 @@ static NhlColor	cyclic_old[] = {
 	{1.0,0.0,1.0}	/* magenta */
 };
 
-static NhlColor	def_old[] = {
+static NhlColor	def[] = {
 	{-1.0,0.0,0.0},	/* white/black */
 	{-1.0,0.0,0.0},	/* white/black */
 	{1.0,0.0,0.0},	/* red */
@@ -90,7 +90,7 @@ static NhlColor	def_old[] = {
 	{0.375,0.375,0.375}
 };
 
-static NhlColor	gscyclic_old[] = {
+static NhlColor	gscyclic[] = {
 	{-1.0,0.0,0.0},	/* white/black */
 	{-1.0,0.0,0.0},	/* white/black */
 	{0.5,0.5,0.5},
@@ -101,7 +101,7 @@ static NhlColor	gscyclic_old[] = {
 	{0.375,0.375,0.375}
 };
 
-static NhlColor gsld_old[] = {
+static NhlColor gsld[] = {
 	{0.00000,0.00000,0.00000},
 	{1.00000,1.00000,1.00000},
 	{0.96875,0.96875,0.96875},
@@ -137,7 +137,7 @@ static NhlColor gsld_old[] = {
 	{0.03125,0.03125,0.03125}
 };
 
-static NhlColor gsdl_old[] = {
+static NhlColor gsdl[] = {
 	{1.00000,1.00000,1.00000},
 	{0.00000,0.00000,0.00000},
 	{0.03125,0.03125,0.03125},
@@ -173,7 +173,7 @@ static NhlColor gsdl_old[] = {
 	{0.96875,0.96875,0.96875}
 };
 
-static NhlColor uniform_old[] = {
+static NhlColor uniform[] = {
 	{-1.0,0.0,0.0},	/* white/black */
 	{-1.0,0.0,0.0},	/* white/black */
 	{0.7500,1.0000,1.0000},
@@ -351,7 +351,7 @@ static NhlColor uniform_old[] = {
 	{0.2500,0.0000,0.0000}
 };
 
-static NhlColor temp1_old[] = {
+static NhlColor temp1[] = {
 	{-1.0,0.0,0.0},	/* white/black */
 	{-1.0,0.0,0.0},	/* white/black */
         {0.700,0.700,0.700},
@@ -417,7 +417,7 @@ static NhlColor temp1_old[] = {
         {1.000,0.000,0.000}
 };
 
-static NhlColor psgcap_old[] = {
+static NhlColor psgcap[] = {
 	{-1.00,0.00,0.00},
 	{-1.00,0.00,0.00},
 	{1.00,0.00,0.00},
@@ -660,7 +660,7 @@ static NhlColor psgcap_old[] = {
 	{0.17,0.09,0.00},
 };
 
-static NhlColor example_old[] = {
+static NhlColor example[] = {
 	{-1.000000,0.000000,0.000000},
 	{-1.000000,0.000000,0.000000},
 	{1.000000,1.000000,0.968627},
@@ -778,7 +778,7 @@ static NhlColor example_old[] = {
 	{0.000000,0.000000,0.031373}
 };
 
-static NhlColor	ncl_default_old[] = {
+static NhlColor	ncl_default[] = {
         {-1.000000,0.000000,0.000000},
         {-1.000000,0.000000,0.000000},
         {0.505882, 0.121569, 0.941176}, 
@@ -1039,23 +1039,21 @@ static NhlColor	ncl_default_old[] = {
 
 
 /*
- * List of all old pre-defined colormaps, but with "_old" appended to
- * the name. As of 10/21/2013, these colormaps have been converted to 
- * .rgb files for consistency. They are kept here just in case, but 
- * probably can be removed.
+ * As of 10/21/2013, these colormaps have *.rgb versions for
+ * consistency.  Leave them alone here (don't rename them).
  */
 static _NhlPalCmap cmaps[] = {
-	{"default_old",	def_old,	NhlNumber(def_old)},
-	{"cyclic_old",	cyclic_old,	NhlNumber(cyclic_old)},
-	{"gscyclic_old",gscyclic_old,	NhlNumber(gscyclic_old)},
-	{"gsltod_old",	gsld_old,	NhlNumber(gsld_old)},
-	{"gsdtol_old",	gsdl_old,	NhlNumber(gsdl_old)},
-	{"uniform_old",	uniform_old,	NhlNumber(uniform_old)},
-	{"temp1_old",	temp1_old,	NhlNumber(temp1_old)},
-	{"psgcap_old",	psgcap_old,	NhlNumber(psgcap_old)},
-	{"example_old",	example_old,	NhlNumber(example_old)},
-	{"ncl_default_old",ncl_default_old,	NhlNumber(ncl_default_old)},
-	{NULL,		NULL,		0}
+        {"default",     def,         NhlNumber(def)},
+        {"cyclic",      cyclic,      NhlNumber(cyclic)},
+        {"gscyclic",    gscyclic,    NhlNumber(gscyclic)},
+        {"gsltod",      gsld,        NhlNumber(gsld)},
+        {"gsdtol",      gsdl,        NhlNumber(gsdl)},
+        {"uniform",     uniform,     NhlNumber(uniform)},
+        {"temp1",       temp1,       NhlNumber(temp1)},
+        {"psgcap",      psgcap,      NhlNumber(psgcap)},
+        {"example",     example,     NhlNumber(example)},
+        {"ncl_default", ncl_default, NhlNumber(ncl_default)},
+        {NULL,          NULL,           0}
 };
 
 static NhlErrorTypes PaletteClassInitialize(
