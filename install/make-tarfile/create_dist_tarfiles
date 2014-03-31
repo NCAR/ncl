@@ -26,7 +26,8 @@ set un=`uname -n`
 set um=`uname -m`
 set os=`uname -s`
 set SCP_FILES       # Whether to scp files to yellowstone
-#set TAR_FILES       # Whether to tar up files
+set TAR_FILES       # Whether to tar up files
+set ASK             # Whether to ask to continue at various locations
 
 if ("$os" == "Darwin") then
   set macosv = `sw_vers -productVersion`
@@ -134,8 +135,10 @@ set sys_dir  = "/glade/u/ncldev/src/tarfiles/dist/ncl/$version"
 cd $NCARG_ROOT
 /bin/rm $dap_gzfile $nodap_gzfile $dap_tarfile $nodap_tarfile
 
-set opendap_test = "$NCARGTEST/nclscripts/opendap.ncl"
-set esmf_test    = "$NCARGTEST/nclscripts/plotting/ESMF_1.ncl"
+set opendap_test  = "$NCARGTEST/nclscripts/opendap.ncl"
+set esmf_test     = "$NCARGTEST/nclscripts/plotting/ESMF_1.ncl"
+set ncargex_tests = ("cpex08" "c_shex03")
+set ng4ex_tests   = ("cn02c" "xy04f" "nm04c") 
 
 #----------------------------------------------------------------------
 # Get ready to create non-opendap ncl
@@ -163,16 +166,63 @@ echo "Running opendap test...should fail"
 echo "----------------------------------------------------------------------"
 ncl $opendap_test
 
+if( $?ASK ) then
+  echo -n "Continue? (y/n) "
+  set answer="$<"
+  if ("$answer" != "y") then
+    exit
+  endif
+endif
+
 echo "----------------------------------------------------------------------"
 echo "Running ESMF_RegridTest test...should succeed"
 echo "----------------------------------------------------------------------"
 ncl 'wtype="x11"' $esmf_test
 
+if( $?ASK ) then
+  echo -n "Continue? (y/n) "
+  set answer="$<"
+  if ("$answer" != "y") then
+    exit
+  endif
+endif
+
+foreach f($ncargex_tests)
+  ncargex $f -clean -W x11
+end
+
+if( $?ASK ) then
+  echo -n "Continue? (y/n) "
+  set answer="$<"
+  if ("$answer" != "y") then
+    exit
+  endif
+endif
+
+foreach f($ng4ex_tests)
+  ng4ex $f -clean -W x11
+end
+
+if( $?ASK ) then
+  echo -n "Continue? (y/n) "
+  set answer="$<"
+  if ("$answer" != "y") then
+    exit
+  endif
+endif
 
 echo "----------------------------------------------------------------------"
 echo "Running check_files..."
 echo "----------------------------------------------------------------------"
 $NCARG/install/make-tarfile/check_files
+
+if( $?ASK ) then
+  echo -n "Continue? (y/n) "
+  set answer="$<"
+  if ("$answer" != "y") then
+    exit
+  endif
+endif
 
 # Create the tarfile
 if ($?TAR_FILES) then
@@ -181,6 +231,14 @@ if ($?TAR_FILES) then
   echo "----------------------------------------------------------------------"
   cd $NCARG_ROOT
   $NCARG/install/make-tarfile/create_dist -f $nodap_string
+
+  if( $?ASK ) then
+    echo -n "Continue? (y/n) "
+    set answer="$<"
+    if ("$answer" != "y") then
+      exit
+    endif
+  endif
 endif
 
 #----------------------------------------------------------------------
@@ -209,16 +267,39 @@ echo "Running opendap test...should succeed"
 echo "----------------------------------------------------------------------"
 ncl $opendap_test
 
+if( $?ASK ) then
+  echo -n "Continue? (y/n) "
+  set answer="$<"
+  if ("$answer" != "y") then
+    exit
+  endif
+endif
+
 echo "----------------------------------------------------------------------"
 echo "Running ESMF_RegridTest test...should succeed"
 echo "----------------------------------------------------------------------"
 ncl 'wtype="x11"' $esmf_test
+
+if( $?ASK ) then
+  echo -n "Continue? (y/n) "
+  set answer="$<"
+  if ("$answer" != "y") then
+    exit
+  endif
+endif
 
 echo "----------------------------------------------------------------------"
 echo "Running check_files..."
 echo "----------------------------------------------------------------------"
 $NCARG/install/make-tarfile/check_files
 
+if( $?ASK ) then
+  echo -n "Continue? (y/n) "
+  set answer="$<"
+  if ("$answer" != "y") then
+    exit
+  endif
+endif
 
 # Create the tarfile
 if ($?TAR_FILES) then
@@ -227,6 +308,14 @@ if ($?TAR_FILES) then
   echo "----------------------------------------------------------------------"
   cd $NCARG_ROOT
   $NCARG/install/make-tarfile/create_dist -f $dap_string
+
+  if( $?ASK ) then
+    echo -n "Continue? (y/n) "
+    set answer="$<"
+    if ("$answer" != "y") then
+      exit
+    endif
+  endif
 
 # Copy files over to yellowstone                                                
   if ($?SCP_FILES) then

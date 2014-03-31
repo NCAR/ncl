@@ -2393,14 +2393,11 @@ sort $that_file_list > $sort_that_file_list
 
 diff $sort_this_file_list $sort_that_file_list
 
+echo ""
 if ($status == 0) then
-   echo "---"
    echo "FILES ARE EXACTLY THE SAME."
-   echo "---"
 else
-   echo "---"
    echo "FILES ARE NOT THE SAME."
-   echo "---"
 endif
 echo "============================================================"
 
