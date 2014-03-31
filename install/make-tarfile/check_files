@@ -66,12 +66,16 @@ endif
 set nclversion = "6.2.0"
 set pwddir  = `pwd`
 
+echo "============================================================"
 if ($?NCARGNCL) then
-  echo "Checking files for NCL/NCARG version $nclversion in directory NCARG_ROOT=$NCARG_ROOT..."
+  echo "Checking files for NCL/NCARG version $nclversion in"
+  echo "  directory NCARG_ROOT=$NCARG_ROOT..."
 else if ($?NCLONLY) then
-  echo "Checking files for NCL version $nclversion in directory NCARG_ROOT=$NCARG_ROOT..."
+  echo "Checking files for NCL version $nclversion in"
+  echo "  directory NCARG_ROOT=$NCARG_ROOT..."
 else if ($?NCARGONLY) then
-  echo "Checking files for NCAR Graphics version $nclversion in directory NCARG_ROOT=$NCARG_ROOT..."
+  echo "Checking files for NCAR Graphics version $nclversion"
+  echo "  in directory NCARG_ROOT=$NCARG_ROOT..."
 endif
 
 set that_file_list      = "tmp_that_file_list$$"
@@ -2390,8 +2394,15 @@ sort $that_file_list > $sort_that_file_list
 diff $sort_this_file_list $sort_that_file_list
 
 if ($status == 0) then
-   echo "files are exactly the same."
+   echo "---"
+   echo "FILES ARE EXACTLY THE SAME."
+   echo "---"
+else
+   echo "---"
+   echo "FILES ARE NOT THE SAME."
+   echo "---"
 endif
+echo "============================================================"
 
 #
 # Clean up.
