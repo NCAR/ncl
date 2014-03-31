@@ -156,14 +156,9 @@ foreach dir($dirs)
   make all install
 end
 
-#----------------------------------------------------------------------         
-# Copy over appropriate ESMF_RegridWeightGen                                    
-#----------------------------------------------------------------------         
-/bin/cp $NCARG_EXTERNAL/nodap/bin/ESMF_RegridWeightGen $NCARG_ROOT/bin/.
-
 echo "----------------------------------------------------------------------"
-echo "Running opendap test...should fail"
-echo "----------------------------------------------------------------------"
+  echo "Running opendap test...should fail"
+  echo "----------------------------------------------------------------------"
 ncl $opendap_test
 
 if( $?ASK ) then
@@ -174,16 +169,23 @@ if( $?ASK ) then
   endif
 endif
 
-echo "----------------------------------------------------------------------"
-echo "Running ESMF_RegridTest test...should succeed"
-echo "----------------------------------------------------------------------"
-ncl 'wtype="x11"' $esmf_test
+#----------------------------------------------------------------------
+# Copy over appropriate ESMF_RegridWeightGen
+#----------------------------------------------------------------------
+if ("$un" != "k5" && "$un" != "k8" ) then
+  /bin/cp $NCARG_EXTERNAL/nodap/bin/ESMF_RegridWeightGen $NCARG_ROOT/bin/.
 
-if( $?ASK ) then
-  echo -n "Continue? (y/n) "
-  set answer="$<"
-  if ("$answer" != "y") then
-    exit
+  echo "----------------------------------------------------------------------"
+  echo "Running ESMF_RegridTest test...should succeed"
+  echo "----------------------------------------------------------------------"
+  ncl 'wtype="x11"' $esmf_test
+
+  if( $?ASK ) then
+    echo -n "Continue? (y/n) "
+    set answer="$<"
+    if ("$answer" != "y") then
+      exit
+    endif
   endif
 endif
 
@@ -257,11 +259,6 @@ foreach dir($dirs)
   make all install
 end
 
-#----------------------------------------------------------------------         
-# Copy over appropriate ESMF_RegridWeightGen                                    
-#----------------------------------------------------------------------         
-/bin/cp $NCARG_EXTERNAL/bin/ESMF_RegridWeightGen $NCARG_ROOT/bin/.
-
 echo "----------------------------------------------------------------------"
 echo "Running opendap test...should succeed"
 echo "----------------------------------------------------------------------"
@@ -275,16 +272,23 @@ if( $?ASK ) then
   endif
 endif
 
-echo "----------------------------------------------------------------------"
-echo "Running ESMF_RegridTest test...should succeed"
-echo "----------------------------------------------------------------------"
-ncl 'wtype="x11"' $esmf_test
+#----------------------------------------------------------------------
+# Copy over appropriate ESMF_RegridWeightGen
+#----------------------------------------------------------------------
+if ("$un" != "k5" && "$un" != "k8" ) then
+  /bin/cp $NCARG_EXTERNAL/bin/ESMF_RegridWeightGen $NCARG_ROOT/bin/.
+ 
+  echo "----------------------------------------------------------------------"
+  echo "Running ESMF_RegridTest test...should succeed"
+  echo "----------------------------------------------------------------------"
+  ncl 'wtype="x11"' $esmf_test
 
-if( $?ASK ) then
-  echo -n "Continue? (y/n) "
-  set answer="$<"
-  if ("$answer" != "y") then
-    exit
+  if( $?ASK ) then
+    echo -n "Continue? (y/n) "
+    set answer="$<"
+    if ("$answer" != "y") then
+      exit
+    endif
   endif
 endif
 
