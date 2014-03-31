@@ -1,0 +1,243 @@
+#!/bin/csh -f
+#
+# This script is a very basic one for creating the two 
+# NCL binary distributions for each system: OPeNDAP and 
+# non-OPenDAP. There are certain assumptions about this
+# script:
+#
+#  1. The non-OPeDNAP version of the NetCDF library
+#     is in $NCARG_EXTERNAL/nodap, and the OPeNDAP
+#     version is in $NCARG_EXTERNAL.
+#
+#  2. ESMF_RegridWeightGen is installed to $NCARG_EXTERNAL/bin
+#     and $NCARG_EXTERNAL/nodap/bin
+#
+#  3. The $NCARG/config/Site.local,Site.local.orig,Site.local.nodap
+#     files all exist. The Site.local.nodap should just have an
+#     extra -L$NCARG_EXTERNAL/nodap/lib path so that the non
+#     OPenDAP NetCDF gets loaded first.
+#
+#  4. You are able to display an NCL X11 window, because an
+#     ESMF test example is executed below where you need this.
+#
+
+
+set un=`uname -n`
+set um=`uname -m`
+set os=`uname -s`
+set SCP_FILES       # Whether to scp files to yellowstone
+#set TAR_FILES       # Whether to tar up files
+
+if ("$os" == "Darwin") then
+  set macosv = `sw_vers -productVersion`
+  if( $macosv == "10.9.2") then
+    set un="riley.local"
+  endif
+endif
+
+if ($?LIB_NCAR) then
+  set un="yellowstone"
+endif
+
+if ("$un" == "harmon.cgd.ucar.edu") then
+  setenv NCARGTEST /project/yampa02/haley/ncargtest
+  setenv NCARG_EXTERNAL /contrib/ncl-6.2.0/external
+  setenv NCARG_ROOT /contrib/ncl-6.2.0
+  setenv NCARG /contrib/ncl-6.2.0/src/ncarg
+  set dap_string   = "Linux_SL6.5_x86_64_gcc447"
+  set nodap_string = "Linux_SL6.5_x86_64_nodap_gcc447"
+else if ("$un" == "k5") then
+  setenv NCARGTEST /d2/haley/ncargtest
+  setenv NCARG_EXTERNAL /d2/haley/external
+  setenv NCARG_ROOT /d2/haley/ncl-6.2.0
+  setenv NCARG /d2/haley/src/ncarg
+  set dap_string   = "Linux_RHEL5.10_i686_gcc412"
+  set nodap_string = "Linux_RHEL5.10_i686_nodap_gcc412"
+else if ("$un" == "k6") then
+  setenv NCARGTEST /d2/haley/ncargtest
+  setenv NCARG_EXTERNAL /d2/haley/external
+  setenv NCARG_ROOT /d2/haley/ncl-6.2.0
+  setenv NCARG /d2/haley/src/ncarg
+  set dap_string   = "Linux_Debian6.0_i686_gcc445"
+  set nodap_string = "Linux_Debian6.0_i686_nodap_gcc445"
+else if ("$un" == "k7") then
+  setenv NCARGTEST /d2/haley/ncargtest
+  setenv NCARG_EXTERNAL /d2/haley/external
+  setenv NCARG_ROOT /d2/haley/ncl-6.2.0
+  setenv NCARG /d2/haley/src/ncarg
+  set dap_string   = "Linux_Debian6.0_x86_64_gcc445"
+  set nodap_string = "Linux_Debian6.0_x86_64_nodap_gcc445"
+else if ("$un" == "k8") then
+  setenv NCARGTEST /d2/haley/ncargtest
+  setenv NCARG_EXTERNAL /d2/haley/external
+  setenv NCARG_ROOT /d2/haley/ncl-6.2.0
+  setenv NCARG /d2/haley/src/ncarg
+  set dap_string   = "Linux_RHEL5.10_x86_64_gcc412"
+  set nodap_string = "Linux_RHEL5.10_x86_64_nodap_gcc412"
+else if ("$un" == "k9") then
+  setenv NCARGTEST /d2/haley/ncargtest
+  setenv NCARG_EXTERNAL /d2/haley/external
+  setenv NCARG_ROOT /d2/haley/ncl-6.2.0
+  setenv NCARG /d2/haley/src/ncarg
+  set dap_string   = "Linux_Debian7.4_x86_64_gcc472"
+  set nodap_string = "Linux_Debian7.4_x86_64_nodap_gcc472"
+  setenv NCARGTEST /glade/u/ncldev/test/ncargtest
+  set gccv = `gcc --version`
+  if ("$gccv" == "gcc (GCC) 4.4.6 20110731 (Red Hat 4.4.6-3)") then
+    setenv NCARG_EXTERNAL /glade/p/work/haley/dev/external/gnu/4.4.6
+    setenv NCARG_ROOT /glade/apps/opt/ncl/6.2.0/gnu/4.4.6
+    setenv NCARG /glade/p/work/haley/src/ncl-trunk-gnu446
+    set dap_string   = "Linux_RHEL6.2_x86_64_gcc446"
+    set nodap_string = "Linux_RHEL6.2_x86_64_nodap_gcc446"
+  else 
+    setenv NCARG_ROOT /glade/apps/opt/ncl/6.2.0/gnu/4.7.2
+    setenv NCARG /glade/p/work/haley/src/ncl-trunk-gnu472
+    set dap_string   = "Linux_RHEL6.2_x86_64_gcc472"
+    set nodap_string = "Linux_RHEL6.2_x86_64_nodap_gcc472"
+  endif
+else if ("$un" == "riley.local") then
+  setenv NCARGTEST /Users/haley/ncargtest
+  setenv NCARG_EXTERNAL /Users/haley/dev/external
+  setenv NCARG_ROOT /Users/haley/dev
+  setenv NCARG /Users/haley/src/ncarg
+  set dap_string   = "MacOS_10.9_64bit_gcc481"
+  set nodap_string = "MacOS_10.9_64bit_nodap_gcc481"
+else if ("$un" == "cisl-denton.scd.ucar.edu") then
+  setenv NCARGTEST /Users/haley/ncargtest
+  setenv NCARG_EXTERNAL /Users/haley/dev/external
+  setenv NCARG_ROOT /Users/haley/dev
+  setenv NCARG /Users/haley/src/ncarg
+  set dap_string   = "MacOS_10.8_64bit_gcc471"
+  set nodap_string = "MacOS_10.8_64bit_nodap_gcc471"
+else
+  echo "I DON'T RECOGNIZE THIS SYSTEM. EXITING..."
+  exit
+endif
+
+setenv PATH $NCARG_ROOT/bin:$PATH
+rehash
+
+set copy_files   = "Site.local"
+
+set path=($NCARG_ROOT/bin $path)
+rehash
+set version=`ncl -V`
+set dap_tarfile   = "ncl_ncarg-$version.$dap_string.tar"
+set nodap_tarfile = "ncl_ncarg-$version.$nodap_string.tar"
+set dap_gzfile    = "$dap_tarfile.gz"
+set nodap_gzfile  = "$nodap_tarfile.gz"
+
+set sys_name = "yellowstone.ucar.edu"
+set sys_dir  = "/glade/u/ncldev/src/tarfiles/dist/ncl/$version"
+
+# Clean up
+cd $NCARG_ROOT
+/bin/rm $dap_gzfile $nodap_gzfile $dap_tarfile $nodap_tarfile
+
+set opendap_test = "$NCARGTEST/nclscripts/opendap.ncl"
+set esmf_test    = "$NCARGTEST/nclscripts/plotting/ESMF_1.ncl"
+
+#----------------------------------------------------------------------
+# Get ready to create non-opendap ncl
+#----------------------------------------------------------------------
+cd $NCARG/config
+foreach f($copy_files)
+  /bin/cp $f.nodap $f
+end
+
+set dirs = ($NCARG/ni/src/ncl)
+foreach dir($dirs)
+  cd $dir
+  /bin/rm ncl
+  make me
+  make all install
+end
+
+#----------------------------------------------------------------------         
+# Copy over appropriate ESMF_RegridWeightGen                                    
+#----------------------------------------------------------------------         
+/bin/cp $NCARG_EXTERNAL/nodap/bin/ESMF_RegridWeightGen $NCARG_ROOT/bin/.
+
+echo "----------------------------------------------------------------------"
+echo "Running opendap test...should fail"
+echo "----------------------------------------------------------------------"
+ncl $opendap_test
+
+echo "----------------------------------------------------------------------"
+echo "Running ESMF_RegridTest test...should succeed"
+echo "----------------------------------------------------------------------"
+ncl 'wtype="x11"' $esmf_test
+
+
+echo "----------------------------------------------------------------------"
+echo "Running check_files..."
+echo "----------------------------------------------------------------------"
+$NCARG/install/make-tarfile/check_files
+
+# Create the tarfile
+if ($?TAR_FILES) then
+  echo "----------------------------------------------------------------------"
+  echo "Creating tarfile..."
+  echo "----------------------------------------------------------------------"
+  cd $NCARG_ROOT
+  $NCARG/install/make-tarfile/create_dist -f $nodap_string
+endif
+
+#----------------------------------------------------------------------
+# Get ready to create opendap ncl                                           
+#----------------------------------------------------------------------
+cd $NCARG/config
+foreach f($copy_files)
+  /bin/cp $f.orig $f
+end
+
+set dirs = ($NCARG/ni/src/ncl)
+foreach dir($dirs)
+  cd $dir
+  /bin/rm ncl
+  make me
+  make all install
+end
+
+#----------------------------------------------------------------------         
+# Copy over appropriate ESMF_RegridWeightGen                                    
+#----------------------------------------------------------------------         
+/bin/cp $NCARG_EXTERNAL/bin/ESMF_RegridWeightGen $NCARG_ROOT/bin/.
+
+echo "----------------------------------------------------------------------"
+echo "Running opendap test...should succeed"
+echo "----------------------------------------------------------------------"
+ncl $opendap_test
+
+echo "----------------------------------------------------------------------"
+echo "Running ESMF_RegridTest test...should succeed"
+echo "----------------------------------------------------------------------"
+ncl 'wtype="x11"' $esmf_test
+
+echo "----------------------------------------------------------------------"
+echo "Running check_files..."
+echo "----------------------------------------------------------------------"
+$NCARG/install/make-tarfile/check_files
+
+
+# Create the tarfile
+if ($?TAR_FILES) then
+  echo "----------------------------------------------------------------------"
+  echo "Creating tarfile..."
+  echo "----------------------------------------------------------------------"
+  cd $NCARG_ROOT
+  $NCARG/install/make-tarfile/create_dist -f $dap_string
+
+# Copy files over to yellowstone                                                
+  if ($?SCP_FILES) then
+    echo "----------------------------------------------------------------------"
+    echo "Copying files to yellowstone..."
+    echo "----------------------------------------------------------------------"
+    cd $NCARG_ROOT
+    if ("$un" == "yellowstone") then
+      /bin/cp $nodap_gzfile $dap_gzfile ${sys_dir}/.
+    else
+      scp $nodap_gzfile $dap_gzfile ${sys_name}:${sys_dir}/.
+    endif
+  endif
+endif
