@@ -1190,6 +1190,26 @@ typedef struct _ctri {
   int flag;
 } Ctri;
 
+static void SortEdges (
+	TriBlock *tbp
+       )
+{
+  Cpoint *cpoints = (Cpoint *)tbp->rpnt;
+  Cedge  *cedges = (Cedge *) tbp->iedg;
+  int i,tmp;
+  
+  for (i = 0; i < tbp->nedg / Loen; i++) {
+    if (cpoints[cedges[i].pix_1 / Lopn].dat > cpoints[cedges[i].pix_2 / Lopn].dat) {
+      tmp = cedges[i].pix_1;
+      cedges[i].pix_1 = cedges[i].pix_2;
+      cedges[i].pix_2 = tmp;
+      tmp = cedges[i].trix_l;
+      cedges[i].trix_l = cedges[i].trix_r;
+      cedges[i].trix_r = tmp;
+    }
+  }
+}
+
 #ifdef BuildTRIANGLE
 
 /* these are the shewchuk structures */
@@ -1208,205 +1228,7 @@ typedef struct _sedge {
 } Sedge;
 
 
-#if 0
-/* this is the old code --keeping it around for now */
-static NhlErrorTypes BuildDelaunayMesh 
-#if	NhlNeedProto
-(
-	NhlCnTriMeshRendererLayerPart *dyp,
-	NhlContourPlotLayer     cnl,
-	NhlString entry_name
-)
-#else
-(dyp,cnl,entry_name)
-        NhlCnTriMeshRendererLayerPart *dyp;
-	NhlContourPlotLayer     cnl;
-	NhlString entry_name;
-#endif
-{
-	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
-	int mnop = cnp->sfp->fast_len;
-	int mpnt = mnop * Lopn;
-	int mnot;
-	int mnoe;
-	int medg;
-	int mtri;
-	float *rpnt;
-	int *el;
-	int *iedg, *itri;
-	int *ippp,*ippe;
-	int npnt,nedg;
-	float *rlat,*rlon,*rdat;
-	double *points;
-	float *dat;
-	int pcount;
-	float tbuf[5021][12];
-	int kbuf = 173;
-	int mbuf = 5021;
-	int nppp = 0;
-	int nppe = 0;
-	int nbuf = 0;
-	int ntri = 0;
-	int i,j;
-	int ix_offset = 0;
-	int err_num;
-	char *e_msg;
-	char *e_text;
-	struct triangulateio in,out;
-	char *flags;
-	TriBlock *tbp;
-
-	FreeTriBlockContents(dyp->tri_block,&(dyp->nblocks));
-
-	rlat = (float*)cnp->sfp->y_arr->data;
-	rlon = (float*)cnp->sfp->x_arr->data;
-	rdat = (float*)cnp->sfp->d_arr->data;
-	points = (double *)NhlMalloc(2 * mnop * sizeof(double));
-	dat = (float *) NhlMalloc(mnop * sizeof(float));
-	pcount = 0;
-	if (dyp->ezmap) { /* transform points into projection space
-			   throwing away points outside the map limits */ 
-		for (i = 0; i < mnop; i++) {
-			double xt,yt;
-			j = pcount * 2;
-			c_mdptra((double)rlat[i],(double)rlon[i],&xt,&yt);
-			if (xt > 1e10 || yt > 1e10)
-				continue;
-			points[j] = (double)xt;
-			points[j+1] = (double)yt;
-			dat[pcount] = rdat[i];
-			pcount++;
-		}
-	}
-	else {
-		for (i = 0; i < mnop; i++) {
-			j = pcount * 2;
-			points[j] = (double)rlon[i];
-			points[j+1] = (double)rlat[i];
-			dat[pcount] = rdat[i];
-			pcount++;
-		}
-	}
-	memset(&in,0,sizeof(struct triangulateio));
-	memset(&out,0,sizeof(struct triangulateio));
-	in.pointlist = points;
-	in.numberofpoints = pcount;
-	in.numberofpointattributes = 0;
-	in.numberoftriangles = 0;
-
-	if (cnp->verbose_triangle_info) {
-		flags = "IBzV";
-	}
-	else {
-		flags = "IBzQ";
-	}
-	triangulate(flags,&in,&out,NULL);
-
-	if (points != out.pointlist)
-		NhlFree(points);
-	points = out.pointlist;
-	el = out.trianglelist;
-	mnop = out.numberofpoints;
-	mnot = out.numberoftriangles;
-	mnoe = 3 * mnot;
-	mpnt = mnop * Lopn;
-	medg = mnoe * Loen;
-	mtri = mnot * Lotn;
-	rpnt = NhlMalloc(mpnt * sizeof(float));
-	iedg = NhlMalloc(medg * sizeof(int));
-	itri = NhlMalloc(mtri * sizeof(int));
-	ippp = NhlMalloc(2 * mnop * sizeof(int));
-	ippe = NhlMalloc(2 * mnoe * sizeof(int));
-	
-	if (! (rpnt && iedg && itri && ippp && ippe )) {
-		NHLPERROR((NhlFATAL,ENOMEM,NULL));
-		return NhlFATAL;
-	}
-	    
-	for (i = 0; i < mnot; i++) {
-		int *ep;
-		int e0,e1,e2;
-		if (nbuf >= mbuf) 
-			_NHLCALLF(hlucttmtl,HLUCTTMTL)
-				(&kbuf,(float*)tbuf,&mbuf,&nbuf,
-				 ippp,&mnop,&nppp,
-				 ippe,&mnoe,&nppe,
-				 rpnt,&mpnt,&npnt,&Lopn,
-				 iedg,&medg,&nedg,&Loen,
-				 itri,&mtri,&ntri,&Lotn);
-		if (c_nerro(&err_num) != 0) {
-			e_msg = c_semess(0);
-			e_text = "%s: %s";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,e_msg);
-			return NhlFATAL;
-		}
-
-		ep = el + i * 3;
-		e0 = *ep - ix_offset;
-		e1 = *(ep+1) - ix_offset;
-		e2 = *(ep+2) - ix_offset;
-		tbuf[nbuf][0] = (float)points[2*e0];
-		tbuf[nbuf][1] = (float)points[2*e0+1];
-		tbuf[nbuf][2] = 0.0;
-		tbuf[nbuf][3] = (float)dat[e0];
-
-		tbuf[nbuf][4] = points[2*e1];
-		tbuf[nbuf][5] = points[2*e1+1];
-		tbuf[nbuf][6] = 0.0;
-		tbuf[nbuf][7] = dat[e1];
-
-		tbuf[nbuf][8] = points[2*e2];
-		tbuf[nbuf][9] = points[2*e2+1];
-		tbuf[nbuf][10] = 0.0;
-		tbuf[nbuf][11] = dat[e2];
-		
-		if (! cnp->sfp->missing_value_set)
-			nbuf++;
-		else if (tbuf[nbuf][3] != cnp->sfp->missing_value && 
-			 tbuf[nbuf][7] != cnp->sfp->missing_value &&
-			 tbuf[nbuf][11] != cnp->sfp->missing_value) {
-			nbuf++;
-		}
-	}
-	if (nbuf > 0) {
-		_NHLCALLF(hlucttmtl,HLUCTTMTL)
-			(&nbuf,(float*)tbuf,&mbuf,&nbuf,
-			 ippp,&mnop,&nppp,
-			 ippe,&mnoe,&nppe,
-			 rpnt,&mpnt,&npnt,&Lopn,
-			 iedg,&medg,&nedg,&Loen,
-			 itri,&mtri,&ntri,&Lotn);
-
-		if (c_nerro(&err_num) != 0) {
-			e_msg = c_semess(0);
-			e_text = "%s: %s";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,e_msg);
-			return NhlFATAL;
-		}
-	}
-
-	tbp = &(dyp->tri_block[0]);
-	tbp->npnt = npnt;
-	tbp->nedg = nedg;
-	tbp->ntri = ntri;
-	tbp->rpnt = rpnt;
-	tbp->iedg = iedg;
-	tbp->itri = itri;
-
-	dyp->nblocks = 1;
-	dyp->update_mode = TRIMESH_NOUPDATE;
-	NhlFree(ippp);
-	NhlFree(ippe);
-	NhlFree(points);
-	NhlFree(dat);
-	NhlFree(el);
-	/*printf("total number of edges %d\n",nedg);*/
-
-	return NhlNOERROR;
-
-}
-#endif
-#if 0  
+#if 0   /* experimental boundary generation code (depends on Triangle) */
 typedef struct _PointAndIndex {
   double x,y;
   int index;
@@ -1633,27 +1455,8 @@ static NhlErrorTypes AddBoundarySegments
   }
   return NhlNOERROR;
 }
-#endif
+#endif   /* #if 0 for boundary generation code that is not used now but may be in the future */
 
-static void SortEdges (
-	TriBlock *tbp
-       )
-{
-  Cpoint *cpoints = (Cpoint *)tbp->rpnt;
-  Cedge  *cedges = (Cedge *) tbp->iedg;
-  int i,tmp;
-  
-  for (i = 0; i < tbp->nedg / Loen; i++) {
-    if (cpoints[cedges[i].pix_1 / Lopn].dat > cpoints[cedges[i].pix_2 / Lopn].dat) {
-      tmp = cedges[i].pix_1;
-      cedges[i].pix_1 = cedges[i].pix_2;
-      cedges[i].pix_2 = tmp;
-      tmp = cedges[i].trix_l;
-      cedges[i].trix_l = cedges[i].trix_r;
-      cedges[i].trix_r = tmp;
-    }
-  }
-}
 
 static NhlErrorTypes BuildDelaunayMesh
 #if	NhlNeedProto
@@ -2001,7 +1804,7 @@ static NhlErrorTypes BuildDelaunayMesh
 	return NhlNOERROR;
 }
 
-#endif
+#endif   /* ifdef BuildTRIANGLE */
 
 static void FreeTriBlockContents (
 	TriBlock *tri_block,
