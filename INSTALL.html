@@ -8,7 +8,7 @@
 <h1>How to build NCL and NCAR Graphics version 6.2.0 from source code</h1>
 <p>
 
-<i>December 7, 2013</i><p>
+<i>March 30, 2014</i><p>
 
 <b>The latest version of this document can be found at
 <a href="http://www.ncl.ucar.edu/Download/build_from_src.shtml">http://www.ncl.ucar.edu/Download/build_from_src.shtml</a>.</b>
@@ -75,7 +75,7 @@ system. On Linux and Mac systems, you can use a command called
 
 NCL/NCAR Graphics has been successfully built on 32 and 64 bit Linux
 systems, Macs (32 or 64 bit) running MacOSX, and Windows running
-Cygwin (to name a few).
+Cygwin.
 <p>
 
 
@@ -118,26 +118,25 @@ NCL</A>
 non-optional external software</A><br>
 
 <UL>
-<LI><A HREF="#JPEG">JPEG</A>
-<LI><A HREF="#ZLIB">ZLIB</A>
+<LI><A HREF="#JPEG">JPEG</A> (6b)
+<LI><A HREF="#ZLIB">ZLIB</A> (1.2.8)
 
-<LI><A HREF="#cairo">cairo</A>
+<LI><A HREF="#cairo">cairo</A> (1.12.16)
 <UL>
-<LI><A HREF="#PNG">PNG</A>
-<LI><A HREF="#pkgconfig">pkg-config</A>
-<LI><A HREF="#fontconfig">fontconfig</A>
-<LI><A HREF="#freetype">FreeType</A>
-<LI><A HREF="#pixman">pixman</A>
-<LI><A HREF="#expat">expat</A>
+<LI><A HREF="#PNG">PNG</A> (1.2.50)
+<LI><A HREF="#pkgconfig">pkg-config</A> (0.28)
+<LI><A HREF="#fontconfig">fontconfig</A> (use system one instead)
+<LI><A HREF="#freetype">FreeType</A> (2.5.0.1)
+<LI><A HREF="#pixman">pixman</A> (0.30.0)
 </UL>
 
-<LI><A HREF="#NetCDF">NetCDF</A>
+<LI><A HREF="#NetCDF">NetCDF</A> (4.3.2-rc1)
 <UL>
-<LI><A HREF="#szip">szip</A>
-<LI><A HREF="#HDF5">HDF-5</A>
-<LI><A HREF="#libcurl">libcurl</a>
+<LI><A HREF="#szip">szip</A> (2.1)
+<LI><A HREF="#HDF5">HDF-5</A> (1.8.12)
+<LI><A HREF="#libcurl">libcurl</a> (7.35.0)
 </UL>
-<LI><A HREF="#HDF4">HDF-4</A>
+<LI><A HREF="#HDF4">HDF-4</A> (4.2.9)
 
 </UL>
 
@@ -147,27 +146,27 @@ external software</A><br>
 <UL>
 <LI><A HREF="#GRIB2">GRIB2</A>
 <UL>
-<LI><A HREF="#Jasper">Jasper</a>
-<LI><A HREF="#PNG">PNG</a>
-<LI><A HREF="#g2clib">g2clib</a>
+<LI><A HREF="#Jasper">Jasper</a> (1.900.1)
+<LI><A HREF="#PNG">PNG</a> (1.2.50)
+<LI><A HREF="#g2clib">g2clib</a> (1.5.0-patch)
 </UL>
 <LI><A HREF="#GDAL_PROJ4">GDAL/PROJ.4</A>
 <UL>
-<LI><A HREF="#PROJ4">PROJ.4</A>
-<LI><A HREF="#GDAL">GDAL</A>
+<LI><A HREF="#PROJ4">PROJ.4</A> (4.8.0)
+<LI><A HREF="#GDAL">GDAL</A> (1.10.1)
 </UL>
-<LI><A HREF="#HDFEOS2">HDF-EOS 2</A>
+<LI><A HREF="#HDFEOS2">HDF-EOS 2</A> (2.18)
 <UL>
 <LI><A HREF="#gctp">gctp</A>
 </UL>
-<LI><A HREF="#HDFEOS5">HDF-EOS 5</A>
+<LI><A HREF="#HDFEOS5">HDF-EOS 5</A> (1.14)
 <UL>
-<LI><A HREF="#szip">szip</A>
-<LI><A HREF="#HDF5">HDF-5</A>
+<LI><A HREF="#szip">szip</A> (2.1)
+<LI><A HREF="#HDF5">HDF-5</A> (1.8.12)
 </UL>
 
 <LI><A HREF="#Triangle">Triangle</A>
-<LI><A HREF="#UDUNITS2">UDUNITS-2</A>
+<LI><A HREF="#UDUNITS2">UDUNITS-2</A> (2.1.24)
 <LI><A HREF="#Vis5D">Vis5D+</A>
 </UL>
 
@@ -268,7 +267,7 @@ software is no longer optional.
 <li>The
 new <a href="http://www.ncl.ucar.edu/Applications/ESMF.shtml">ESMF
 regridding software</a> in NCL uses an application called
-"<a href="http://www.earthsystemmodeling.org/esmf_releases/last_built/ESMF_refdoc/node3.html#SECTION03020000000000000000">ESMF_RegridWeightGen</a>",
+"<a href="http://www.earthsystemmodeling.org/esmf_releases/public/ESMF_3_1_0rp3/ESMF_usrdoc/node7.html">ESMF_RegridWeightGen</a>",
 which is part of
 the <a href="http://www.earthsystemmodeling.org/">Earth System
 Modeling Framework</a>. A serial version of this application is
@@ -280,16 +279,13 @@ Start</a> section of the ESMF User Guide.
 
 <li>Some external software packages have newer versions. For example,
 <a href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF</a> is
-at <a href="http://www.unidata.ucar.edu/downloads/netcdf/netcdf-4_2/index.jsp">version
-4.2</a> and has split up its software into three separate packages (C,
+at <a href="http://www.unidata.ucar.edu/downloads/netcdf/index.jsp">version
+4.3</a> and has split up its software into three separate packages (C,
 Fortran, and C++ interfaces).
 <p>
 
-We built this version of NCL against NetCDF 4.2, but
-version <a href="http://www.unidata.ucar.edu/downloads/netcdf/netcdf-4_1_3/index.jsp">NetCDF
-4.1.3</a> will work too.
-<p>
-
+<li>There are experimental calls to OpenMP code in NCL V6.2.0; as
+such, the code needs to be compiled with "-fopenmp".
 </ol>
 <p>
 
@@ -338,11 +334,11 @@ csh/tcsh:<br>
 <TR>
 <TD><b>CFLAGS</b>   <TD>C compile flags
 <TD>bash/ksh:<br>
-&nbsp;&nbsp;export CFLAGS='-O -ansi -fPIC'<br>
-&nbsp;&nbsp;export CFLAGS='-O -m64 -ansi -fPIC'<br>
+&nbsp;&nbsp;export CFLAGS='-O -ansi -fopenmp -fPIC'<br>
+&nbsp;&nbsp;export CFLAGS='-O -m64 -ansi -fopenmp -fPIC'<br>
 csh/tcsh:<br>
-&nbsp;&nbsp;setenv CFLAGS '-O -ansi -fPIC'<br>
-&nbsp;&nbsp;setenv CFLAGS '-O -m64 -ansi -fPIC'
+&nbsp;&nbsp;setenv CFLAGS '-O -ansi -fopenmp -fPIC'<br>
+&nbsp;&nbsp;setenv CFLAGS '-O -m64 -ansi -fopenmp -fPIC'
 
 <TR>
 <TD><b>FC</b></b>  <TD>Fortran compiler
@@ -354,9 +350,9 @@ csh/tcsh:<br>
 <TR>
 <TD><b>FFLAGS</b>   <TD>Fortran compile flags
 <TD>bash/ksh:<br>
-&nbsp;&nbsp;export FFLAGS='-fPIC'<br>
+&nbsp;&nbsp;export FFLAGS='-fPIC -fopenmp'<br>
 csh/tcsh:<br>
-&nbsp;&nbsp;setenv FFLAGS '-fPIC'
+&nbsp;&nbsp;setenv FFLAGS '-fPIC -fopenmp'
 
 <TR>
 <TD><b>F90</b>      <TD>Fortran 90 compiler
@@ -368,11 +364,11 @@ csh/tcsh:<br>
 <TR>
 <TD><b>F90FLAGS</b> <TD>Fortran 90 compile flags
 <TD>bash/ksh:<br>
-&nbsp;&nbsp;export F90FLAGS='-fPIC'<br>
+&nbsp;&nbsp;export F90FLAGS='-fPIC -fopenp'<br>
 &nbsp;&nbsp;export F90FLAGS='-m64 -fPIC'<br>
 csh/tcsh:<br>
-&nbsp;&nbsp;setenv F90FLAGS '-fPIC'<br>
-&nbsp;&nbsp;setenv F90FLAGS '-m64 -fPIC'
+&nbsp;&nbsp;setenv F90FLAGS '-fPIC -fopenmp'<br>
+&nbsp;&nbsp;setenv F90FLAGS '-m64 -fPIC -fopenmp'
 
 <TR>
 <TD><b>CXX</b>      <TD>C++ compiler
@@ -384,11 +380,11 @@ csh/tcsh:<br>
 <TR>
 <TD><b>CXXFLAGS</b> <TD>C++ compile flags
 <TD>bash/ksh:<br>
-&nbsp;&nbsp;export CXXFLAGS='-O -ansi -fPIC'<br>
-&nbsp;&nbsp;export CXXFLAGS='-O -m64 -ansi -fPIC'<br>
+&nbsp;&nbsp;export CXXFLAGS='-O -ansi -fopenmp -fPIC'<br>
+&nbsp;&nbsp;export CXXFLAGS='-O -m64 -ansi -fopenmp -fPIC'<br>
 csh/tcsh:<br>
-&nbsp;&nbsp;setenv CXXFLAGS '-O -ansi -fPIC'<br>
-&nbsp;&nbsp;setenv CXXFLAGS '-O -m64 -ansi -fPIC'
+&nbsp;&nbsp;setenv CXXFLAGS '-O -ansi -fopenmp -fPIC'<br>
+&nbsp;&nbsp;setenv CXXFLAGS '-O -m64 -ansi -fopenmp -fPIC'
 
 <TR>
 <TD><b>CPPFLAGS</b> <TD>preprocessor compile flags<br>
@@ -469,14 +465,18 @@ use <a href="http://www.macports.org/">MacPorts</a>. Under Cygwin, the
 "setup.exe" program can be used.
 <p>
 
+Each package is listed below, along with the version we used to
+build NCL V6.2.0 on our own systems. In most cases you don't need to
+have the exact version of the software we used, but it's a good idea
+to match them as much as possible
 <ul>
 
 <A NAME="JPEG"></A>
-<li><a href="http://www.ijg.org/">JPEG</a> - not
+<li><a href="http://www.ijg.org/">JPEG</a> (6b) - not
 needed if you are only doing an NCAR Graphics build.<p>
 
 Download version 6b (jpeg-7 supposedly has some problems and we
-haven't tried jpeg-8b or later)
+haven't tried jpeg-8b or later).
 <p>
 
 Once you have the jpeg source code, you can build and install it
@@ -498,7 +498,7 @@ If you downloaded version 6b, you will additionally need to do this:
 <p>
 
 <A NAME="ZLIB"></A>
-<li><a href="http://www.zlib.net/">zlib</a> - not optional,
+<li><a href="http://www.zlib.net/">zlib</a> (1.2.8) - not optional,
 but mostly likely already available on your system
 <p>
 
@@ -531,11 +531,11 @@ them. <p>
 
 <ul>
 <A NAME="PNG"></A>
-<a href="http://www.libpng.org/pub/png/libpng.html">PNG</a> library -
-required
+<a href="http://www.libpng.org/pub/png/libpng.html">PNG</a> library
+(1.2.50) - required
 <p>
 
-Download version 1.2.x (not 1.4.x or 1.5.x!)
+Download version 1.2.x (not 1.4.x or 1.5.x!).
 <p>
 
 Once you have the libpng source code, you can build and install it
@@ -550,7 +550,7 @@ with:
 
 <a name="pkgconfig"></a>
 <li><a href="http://pkgconfig.freedesktop.org/releases/">pkg-config</a>
-- Download version 0.25 or later.
+(0.28) - Download version 0.25 or later.
 <p>
 
 Once you have the pkg-config source code, you can build and install it
@@ -593,7 +593,8 @@ From ksh or bash:
 
 <a name="fontconfig"></a>
 <li><a href="http://fontconfig.org/release/">fontconfig</a> - Download
-version 2.8.0 or later.
+version 2.8.0 or later. NOTE: we started using the "fontconfig" already 
+installed on our systems, and recommend you do the same.
 <p>
 
 Once you have the fontconfig source code, you can build and install it
@@ -608,7 +609,7 @@ with:
 
 <a name="freetype"></a>
 <li><a href="http://freetype.sourceforge.net/index2.html">FreeType</a>
-- Download version 2.4.4 or later.
+(2.5.0.1) - Download version 2.4.4 or later.
 <p>
 
 Once you have the FreeType source code, you can build and install it
@@ -623,7 +624,7 @@ with:
 
 <a name="pixman"></a>
 <li><a href="http://cairographics.org/releases/">pixman</a>
-- Download version 0.2x.x or later.
+(0.30.0) - Download version 0.2x.x or later. 
 <p>
 
 Once you have the pixman source code, you can build and install it
@@ -647,27 +648,8 @@ Linux, Cygwin, others:<p>
 </pre>
 <p>
 
-<A NAME="expat"></A>
-<li><a href="http://sourceforge.net/projects/expat/">Expat</a>
-- Download version 2.0.1 or later.
-<p>
-
-This software may not be needed, but the instructions are here
-in case you need expat to get cairo support into NCL.
-<p>
-
-Once you have the expat source code, you can build and install it
-with:
-<p>
-
-<pre>
-  ./configure --prefix=/usr/local
-  make all install
-</pre>
-<p>
-
-<li><a href="http://cairographics.org/releases/">cairo</a> - Download
-version 1.10.2 or later.
+<li><a href="http://cairographics.org/releases/">cairo</a> (1.12.16) -
+Download version 1.12.16 or later. Older versions have known bugs.
 <p>
 
 You can't build cairo until you have installed fontconfig, FreeType,
@@ -725,11 +707,12 @@ not install if you are only doing an NCAR Graphics build.
 <p>
 
 Download
-version <a href="http://www.unidata.ucar.edu/downloads/netcdf/netcdf-4_2/index.jsp">4.2</a>
-or <a href="http://www.unidata.ucar.edu/downloads/netcdf/netcdf-4_1_3/index.jsp">4.1.3</a>.
+version <a href="http://www.unidata.ucar.edu/downloads/netcdf/index.jsp">4.3.2</a>. At
+the time of the NCL V6.2.0 release, only V4.3.2-rc1 was available,
+which we used.
 <p>
 
-Please note that NetCDF-3 and NetCDF-4 are different <b>file
+Note that NetCDF-3 and NetCDF-4 are different <b>file
 formats</b> and have nothing to do with the version of the NetCDF
 software. NetCDF software version 4.<i>x</i> supports both NetCDF-3
 and NetCDF-4 file formats, but as noted below, you may have to set
@@ -744,7 +727,7 @@ support NetCDF-3.
 <p>
 
 NetCDF versions 4.1.1 and later support OPenDAP, and this is built in
-by default. We recommend you use V4.1.3 or later. NetCDF 4.1.x also
+by default. Unidata recommends you use V4.3.2 or later. NetCDF 4.1.x also
 includes the UDUNITS-2 software, but the stand-alone UDUNITS-2 library
 is more up-to-date so we recommend this over the one that comes with
 NetCDF. See <a href="#UDUNITS2">instructions on building and
@@ -806,8 +789,8 @@ szip page.
 
 <A NAME="HDF5"></A>
 <li><a
-href="http://www.hdfgroup.org/HDF5/release/obtain5.html">HDF-5</a> -
-Download version 1.8.6 or later.
+href="http://www.hdfgroup.org/HDF5/release/obtain5.html">HDF-5</a>
+(1.8.12) - Download version 1.8.12 or later. 
 <p>
 
 <pre>
@@ -817,11 +800,11 @@ Download version 1.8.6 or later.
 <p>
 
 <A NAME="libcurl"></A>
-<li><a href="http://curl.haxx.se">libcurl</a>
+<li><a href="http://curl.haxx.se">libcurl</a> (7.35.0)
 <p>
 
-Download version 7.24.x or later.  Once you have the source code, you can
-build and install it with:
+Download version 7.35.x or later.  Once you have the source code, you
+can build and install it with:
 <p>
 
 <pre>
@@ -879,7 +862,7 @@ Builds of the NetCDF Package</a>" page for some tips.
 
 <A NAME="HDF4"></A>
 <li><a href="http://www.hdfgroup.org/products/hdf4/">HDF-4</a> -
-if you want to build NCAR Graphics only, then HDF-4 is optional,
+(4.2.9) if you want to build NCAR Graphics only, then HDF-4 is optional,
 unless you need HDF support in <a
 href="http://www.ncl.ucar.edu/Document/Tools/ctrans.shtml">ctrans</a>,
 <a
@@ -888,8 +871,8 @@ and <a
 href="http://www.ncl.ucar.edu/Document/Tools/idt.shtml">idt</a>.
 <p>
 
-Download version 4.2.5 or later. (HDF version 5.<i>x.y</i> is a different
-software package).
+Download version 4.2.6 or later. (HDF version
+5.<i>x.y</i> is a different software package).
 <p>
 
 <b>Note:</b> As of NCL V6.2.0, you no longer need to install the HDF
@@ -944,8 +927,8 @@ packages.
 <ul>
 
 <a name="Jasper"></a> <li><a
-href="http://www.ece.uvic.ca/~mdadams/jasper/">Jasper</a> - Download
-version 1.900 or later.
+href="http://www.ece.uvic.ca/~mdadams/jasper/">Jasper</a> 
+(1.900.1) - Download version 1.900 or later.
 <p>
 
 Once you have the Jasper source code, you can build and install it
@@ -965,7 +948,7 @@ with:
 <li>g2clib - normally you would download this software
 from <a href="http://www.nco.ncep.noaa.gov/pmb/codes/GRIB2/">http://www.nco.ncep.noaa.gov/pmb/codes/GRIB2/</a>,
 but there were a few bugs we had to fix.  Download
-the <a href="http://www.ncl.ucar.edu/Download/files/g2clib-1.2.3-patch.tar.gz">g2clib-1.2.3-patch.tar.gz</a>
+the <a href="http://www.ncl.ucar.edu/Download/files/g2clib-1.5.0-patch.tar.gz">g2clib-1.5.0-patch.tar.gz</a>
 file instead.
 <p>
 
@@ -1011,8 +994,8 @@ two packages.
 <ul>
 
 <a name="PROJ4"></a>
-<li><a href="http://trac.osgeo.org/proj/">PROJ.4</a> - Cartographic Projections
-Library - Download version 4.7.0 or later.
+<li><a href="http://trac.osgeo.org/proj/">PROJ.4</a> (4.8.0) -
+Cartographic Projections Library - Download version 4.7.0 or later.
 <p>
 
 Once you have the PROJ.4 source code, you can build and install it
@@ -1027,8 +1010,8 @@ with:
 
 
 <a name="GDAL"></a>
-<li><a href="http://www.gdal.org/">GDAL</a> - Geospatial Data Abstraction
-Library - Download version 1.9.0 or later.
+<li><a href="http://www.gdal.org/">GDAL</a> (1.10.1) - Geospatial Data
+Abstraction Library - Download version 1.9 or later.
 <p>
 
 <b>Important note about GDAL:</b> this software contains its own
@@ -1045,7 +1028,8 @@ software requires including several "--without-<i>xxxx</i>" options:
       --with-geotiff=internal --with-jpeg=/usr/local --with-libz=/usr/local 
       --with-sqlite3=no --with-expat=no --with-curl=no --without-ld-shared 
       --with-hdf4=no --with-hdf5=no --with-pg=no --without-grib
-      --with-freexl=no --with-geos=no
+      --with-freexl=no --with-geos=no --with-openjpeg=no --with-mysql=no 
+      --with-ecw=no --with-fdgb=no --with-odbc=no --with-xml2=no
 
   make all install
 </pre>
@@ -1064,77 +1048,22 @@ packages:
 
 <ul>
 <li><a href="ftp://edhs1.gsfc.nasa.gov/edhs/hdfeos/latest_release/">HDF-EOS
-2</a> - Download version 2.18 or later.
+2</a> (2.18) - Download version 2.18 or later.
 <p>
 
-You may need to edit the file "bin/INSTALL-HDFEOS" to make sure it
-uses the correct compilers and compile options. Then run:
-<p>
-
-<pre>
-  bin/INSTALL-HDFEOS
-</pre>
-<p>
-
-Answer questions about location of HDF-4 lib and include files. You
-must include the "hdf" subdir for the HDF4 include directory (for
-example, "/usr/local/include/hdf").
-<p>
-
-Pay attention to where "libhdfeos.a" file gets installed under the
-hdfeos/lib directory (for example, "hdfeos/lib/linux64"), and copy or
-move this file to your library installation directory. Do the same for
-the include files. Do
-<b>not</b> copy libGctp.a!  For example, on a 64-bit linux machine,
-you would type:
+Once you have the HDF-EOS 2 source code, you can build and install it
+with:
 <p>
 
 <pre>
-  mv lib/linux64/libhdfeos.a /usr/local/lib/.
-  cp include/*.h /usr/local/include/.
+    ./configure CC=/usr/local/bin/h4cc --with-hdf4=/usr/local --with-zlib=/usr/local --with-jpeg=/usr/local --prefix=/usr/local
 </pre>
 <p>
 
 <A NAME="gctp"></A>
-<li>gctp - this source should be part of the HDF-EOS2 software you just
-downloaded, in a directory "gctp/src".
-<p>
 
-<ul>
-
-<li>cd gctp/src
-<p>
-
-<li>Copy the appropriate make<i>xxxx</i> file to "makefile".
-<p>
-
-<li>Make "makefile" writable: 
-<p>
-
-<pre>
-  chmod u+rw makefile
-</pre>
-<p>
-
-<li>Edit "makefile" and change LIBDIR appropriately (/usr/local/lib),
-and change the library name from "libgctp<i>xxxx</i>.a" to "libGctp.a"
-in <b>all</b> locations in this file (there's more than one
-reference).
-<p>
-
-<li>Copy some include files to the same directory you're in:
-<p>
-<pre>
-  cp ../include/*.h .
-</pre>
-<p>
-
-<li>Type:
-
-<pre>
-  make
-</pre>
-<p>
+<li>gctp - this software should get built automatically when you build
+HDF-EOS 2.
 
 </ul>
 
@@ -1157,7 +1086,7 @@ packages:
 <p>
 
 <li><a href="ftp://edhs1.gsfc.nasa.gov/edhs/hdfeos5/latest_release/">HDF-EOS
-5</a> - Download version 1.14 or later.
+5</a> (1.14) - Download version 1.14 or later.
 <p>
 
 Once you have the HDF-EOS 5 source code, you can build and install it
@@ -1216,7 +1145,7 @@ be bound by Triangle's license.
 <p>
 
 <A NAME="UDUNITS2"></A>
-<b>UDUNITS-2</b> - not needed if you are only doing an NCAR Graphics
+<b>UDUNITS-2</b> (2.1.24) - not needed if you are only doing an NCAR Graphics
 build.<p>
 
 If you need the conversion functions <a
@@ -1226,10 +1155,10 @@ href="http://www.ncl.ucar.edu/Document/Functions/Built-in/ut_inv_calendar.shtml"
 then you need to install UDUNITS-2.
 <p>
 
-Download the <a
-href="http://www.unidata.ucar.edu/software/udunits/">Udunits</a>
-2.<i>x</i> (<b>not</b> 1.<i>x</i>!) source code.  Once you have the
-source code, you can build and install it with:
+Download
+the <a href="http://www.unidata.ucar.edu/software/udunits/">Udunits</a>
+2.<i>x</i> (<b>not</b> 1.<i>x</i>!) source code. Once
+you have the source code, you can build and install it with:
 <p>
 
 <pre>
@@ -1243,15 +1172,17 @@ the perl interface from being built, which is not needed for NCL.
 <p>
 
 <A NAME="Vis5D"></A>
-<b>Vis5D+ software</b> - not needed if you are only doing an NCAR
+<b>Vis5D+ software</b> (1.3.0-beta) - not needed if you are only doing an NCAR
 Graphics build.<p>
 
 If you need to use any of the v5d_<i>xxx</i> functions (see the <a
 href="http://www.ncl.ucar.edu/Document/Functions/list_alpha.shtml#V">"V"</a>
 section of the NCL function list), then you need to install Vis5d+.
 <p>
-Download the <a href="http://vis5d.sourceforge.net/">vis5d+</a> source code.
-Once you have the source code, you can build and install it with:
+
+Download the <a href="http://vis5d.sourceforge.net/">vis5d+</a> source
+code.  We used 1.3.0-beta. Once you have the source code, you can
+build and install it with:
 <p>
 
 <pre>
