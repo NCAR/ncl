@@ -719,7 +719,7 @@ then
         elif [ "$un" = "k8" ] ; then
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lldap -lrt -lssl"
         elif [ "$un" = "k9" ] ; then
-          export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl"
+          export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl -lldap"
         elif [ "$un" = "harmon.cgd.ucar.edu" ] ; then
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lz -lidn -lrt -ldl"
         elif [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu446" ] ; then
