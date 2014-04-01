@@ -1,12 +1,46 @@
-As of version 5.0.0, NCL and NCAR Graphics are now released as one
-package, but they still have their own home pages:
+----------------------------------------------------------------------
+This is the top level directory for version 6.2.0 of the NCL and NCAR
+Graphics source code.
 
-  http://www.ncl.ucar.edu/
-  http://www.ncarg.ucar.edu/
+This code can be used to build NCL, or just NCAR Graphics.  Note: NCL
+depends on NCAR Graphics, so you will get both if you elect to build
+NCL.
 
-Instructions for downloading NCL/NCAR Graphics binaries or
-source code can be found at:
+Generally, we recommend that people install NCL and NCAR Graphics
+using a precompiled binary. We provide precompiled binaries for
+several flavors of LINUX, MacOS, and Windows/Cygwin. The NCL and NCAR
+Graphics precompiled binaries are hosted on the Earth System Grid
+website:  http://www.earthsystemgrid.org
+
+Any questions or problems with installing NCL and/or NCAR Graphics
+from source code or precompiled binaries should be posted to
+ncl-install@ucar.edu.  You need to subscribe first:
+
+   http://mailman.ucar.edu/mailman/listinfo/ncl-install
+
+Questions and bug reports on NCL should be posted to
+ncl-talk@ucar.edu:
+
+   http://mailman.ucar.edu/mailman/listinfo/ncl-talk
+
+Questions and bug reports on NCARG Graphics should be posted to
+ncarg-talk@ucar.edu:
+
+   http://mailman.ucar.edu/mailman/listinfo/ncarg-talk
+
+----------------------------------------------------------------------
+You can find detailed instructions for building NCL and NCAR Graphics
+from source code, or installing from precompiled binaries at:
 
   http://www.ncl.ucar.edu/Download/
 
-or in the "INSTALL.html" file in this directory.
+Detailed instructions for building from source code are also found
+in the "INSTALL.html" file in this directory.
+
+----------------------------------------------------------------------
+While NCAR Graphics is part of the NCL source code tree, it has
+its own documentation.
+
+  http://www.ncl.ucar.edu/
+  http://www.ncarg.ucar.edu/
+----------------------------------------------------------------------
