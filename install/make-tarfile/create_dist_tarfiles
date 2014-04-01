@@ -125,6 +125,13 @@ setenv PATH $NCARG_ROOT/bin:$PATH
 rehash
 
 set copy_files   = ("Site.local" "Project")
+cd $NCARG/config
+foreach f($copy_files)
+  if(! -f  $f) then
+    echo "$f doesn't exist...can't continue"
+  endif
+end
+
 
 set path=($NCARG_ROOT/bin $path)
 rehash
