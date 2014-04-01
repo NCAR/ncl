@@ -121,6 +121,13 @@ else
   exit
 endif
 
+# harmon doesn't have enough disk space in /contrib for tar files.
+if ("$un" == "harmon.cgd.ucar.edu") then
+  set tar_dir="/project/yampa02/haley"
+else
+  set tar_dir="$NCARG_ROOT"
+endif
+
 setenv PATH $NCARG_ROOT/bin:$PATH
 rehash
 
@@ -153,7 +160,7 @@ set sys_name = "yellowstone.ucar.edu"
 set sys_dir  = "/glade/u/ncldev/src/tarfiles/dist/ncl/$version"
 
 # Clean up
-cd $NCARG_ROOT
+cd $tar_dir
 /bin/rm $dap_gzfile $nodap_gzfile $dap_tarfile $nodap_tarfile
 
 set opendap_test  = "$NCARGTEST/nclscripts/opendap.ncl"
@@ -253,8 +260,7 @@ if ($?TAR_FILES) then
   echo "Creating tarfile..."
   echo "----------------------------------------------------------------------"
   cd $NCARG_ROOT
-  $NCARG/install/make-tarfile/create_dist -f $nodap_string
-
+  $NCARG/install/make-tarfile/create_dist -d $tar_dir -f $nodap_string
   if( $?ASK ) then
     echo -n "Continue? (y/n) "
     set answer="$<"
@@ -332,8 +338,7 @@ if ($?TAR_FILES) then
   echo "Creating tarfile..."
   echo "----------------------------------------------------------------------"
   cd $NCARG_ROOT
-  $NCARG/install/make-tarfile/create_dist -f $dap_string
-
+  $NCARG/install/make-tarfile/create_dist -d $tar_dir -f $dap_string
   if( $?ASK ) then
     echo -n "Continue? (y/n) "
     set answer="$<"
@@ -347,7 +352,7 @@ if ($?TAR_FILES) then
     echo "----------------------------------------------------------------------"
     echo "Copying files to yellowstone..."
     echo "----------------------------------------------------------------------"
-    cd $NCARG_ROOT
+    cd $tar_dir
     if ("$un" == "yellowstone") then
       /bin/cp $nodap_gzfile $dap_gzfile ${sys_dir}/.
     else
