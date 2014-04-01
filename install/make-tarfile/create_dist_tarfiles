@@ -129,9 +129,17 @@ cd $NCARG/config
 foreach f($copy_files)
   if(! -f  $f) then
     echo "$f doesn't exist...can't continue"
+    exit
+  endif
+  if(! -f  $f.orig) then
+    echo "$f.orig doesn't exist...can't continue"
+    exit
+  endif
+  if(! -f  $f.nodap) then
+    echo "$f.nodap doesn't exist...can't continue"
+    exit
   endif
 end
-
 
 set path=($NCARG_ROOT/bin $path)
 rehash
