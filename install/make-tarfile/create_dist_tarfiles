@@ -13,9 +13,11 @@
 #     and $NCARG_EXTERNAL/nodap/bin
 #
 #  3. The $NCARG/config/Site.local,Site.local.orig,Site.local.nodap
+#     $NCARG/config/Project,Project.orig,Project.nodap
 #     files all exist. The Site.local.nodap should just have an
 #     extra -L$NCARG_EXTERNAL/nodap/lib path so that the non
-#     OPenDAP NetCDF gets loaded first.
+#     OPenDAP NetCDF gets loaded first. The Project.nodap file
+#     has the "-lcurl" stuff removed from the netcdf libs line.
 #
 #  4. You are able to display an NCL X11 window, because an
 #     ESMF test example is executed below where you need this.
@@ -82,20 +84,21 @@ else if ("$un" == "k9") then
   setenv NCARG /d2/haley/src/ncarg
   set dap_string   = "Linux_Debian7.4_x86_64_gcc472"
   set nodap_string = "Linux_Debian7.4_x86_64_nodap_gcc472"
-  setenv NCARGTEST /glade/u/ncldev/test/ncargtest
   set gccv = `gcc --version`
-  if ("$gccv" == "gcc (GCC) 4.4.6 20110731 (Red Hat 4.4.6-3)") then
-    setenv NCARG_EXTERNAL /glade/p/work/haley/dev/external/gnu/4.4.6
-    setenv NCARG_ROOT /glade/apps/opt/ncl/6.2.0/gnu/4.4.6
-    setenv NCARG /glade/p/work/haley/src/ncl-trunk-gnu446
-    set dap_string   = "Linux_RHEL6.2_x86_64_gcc446"
-    set nodap_string = "Linux_RHEL6.2_x86_64_nodap_gcc446"
-  else 
-    setenv NCARG_ROOT /glade/apps/opt/ncl/6.2.0/gnu/4.7.2
-    setenv NCARG /glade/p/work/haley/src/ncl-trunk-gnu472
-    set dap_string   = "Linux_RHEL6.2_x86_64_gcc472"
-    set nodap_string = "Linux_RHEL6.2_x86_64_nodap_gcc472"
-  endif
+else if ("$un" == "yellowstone_gnu446") then
+  setenv NCARGTEST /glade/u/ncldev/test/ncargtest
+  setenv NCARG_EXTERNAL /glade/p/work/haley/dev/external/gnu/4.4.6
+  setenv NCARG_ROOT /glade/apps/opt/ncl/6.2.0/gnu/4.4.6
+  setenv NCARG /glade/p/work/haley/src/ncl-trunk-gnu446
+  set dap_string   = "Linux_RHEL6.2_x86_64_gcc446"
+  set nodap_string = "Linux_RHEL6.2_x86_64_nodap_gcc446"
+else if ("$un" == "yellowstone_gnu472") then
+  setenv NCARGTEST /glade/u/ncldev/test/ncargtest
+  setenv NCARG_EXTERNAL /glade/p/work/haley/dev/external/gnu/4.7.2
+  setenv NCARG_ROOT /glade/apps/opt/ncl/6.2.0/gnu/4.7.2
+  setenv NCARG /glade/p/work/haley/src/ncl-trunk-gnu472
+  set dap_string   = "Linux_RHEL6.2_x86_64_gcc472"
+  set nodap_string = "Linux_RHEL6.2_x86_64_nodap_gcc472"
 else if ("$un" == "riley.local") then
   setenv NCARGTEST /Users/haley/ncargtest
   setenv NCARG_EXTERNAL /Users/haley/dev/external
@@ -111,6 +114,9 @@ else if ("$un" == "cisl-denton.scd.ucar.edu") then
   set dap_string   = "MacOS_10.8_64bit_gcc471"
   set nodap_string = "MacOS_10.8_64bit_nodap_gcc471"
 else
+  if ("$un" == "yellowstone") then
+    echo "Need to set yellowstone_gnu446 or yellowstone_gnu472"
+  endif
   echo "I DON'T RECOGNIZE THIS SYSTEM. EXITING..."
   exit
 endif
@@ -118,7 +124,7 @@ endif
 setenv PATH $NCARG_ROOT/bin:$PATH
 rehash
 
-set copy_files   = "Site.local"
+set copy_files   = ("Site.local" "Project")
 
 set path=($NCARG_ROOT/bin $path)
 rehash
