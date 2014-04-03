@@ -2549,7 +2549,7 @@ NrmQuark* _get_refquarks(hid_t dset, hid_t p_type, int *nref)
 
     f_space = H5Dget_space(dset);
 
-    if (f_space == FAIL)
+    if (f_space == FAILED)
     {
         fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
         fprintf(stderr, "\tH5Dget_space failed.\n");
