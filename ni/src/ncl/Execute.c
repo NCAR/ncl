@@ -1185,7 +1185,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		goto fatal_err;
 	}
 	else if (good_file_count < newlist->list.nelem) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"A valid instance of variable %s found was not found in one or more elements of the file list", NrmQuarkToString(var));
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"A valid instance of variable %s was not found in one or more elements of the file list", NrmQuarkToString(var));
 		for (i = 0; i < newlist->list.nelem; i++) {
 			if (! files[i])
 				continue;
