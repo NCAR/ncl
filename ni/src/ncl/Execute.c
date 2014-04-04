@@ -604,7 +604,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	ng_size_t var_dim_sizes[32];
 	ng_size_t agg_chunk_size;
         int var_ndims; /* non_aggregated natural var dim count */
-	int good_file_count;
+	int good_file_count, first_good_ix;
 	long long max_var_size;
 
 
@@ -1184,6 +1184,16 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		estatus = NhlFATAL;
 		goto fatal_err;
 	}
+	else if (good_file_count < newlist->list.nelem) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"A valid instance of variable %s found was not found in one or more elements of the file list", NrmQuarkToString(var));
+		for (i = 0; i < newlist->list.nelem; i++) {
+			if (! files[i])
+				continue;
+			first_good_ix = i;
+			break;
+		}
+	}
+	
 
 	/* Reuse the list sel_ptr for the aggregated dimensions selection, which occurs next */
 	
@@ -1251,18 +1261,18 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			data =_NclPop();
 			switch(data.u.sub_rec.sub_type) {
 			case INT_VECT:
-				_NclBuildFileVSelection(files[0],var,&data.u.sub_rec.u.vec,&(filevar_sel_ptr->selection[i]),i,data.u.sub_rec.name);
+				_NclBuildFileVSelection(files[first_good_ix],var,&data.u.sub_rec.u.vec,&(filevar_sel_ptr->selection[i]),i,data.u.sub_rec.name);
 				break;
 			case INT_SINGLE:
 			case INT_RANGE:
-				_NclBuildFileRSelection(files[0],var,&data.u.sub_rec.u.range,&(filevar_sel_ptr->selection[i]),i,data.u.sub_rec.name);
+				_NclBuildFileRSelection(files[first_good_ix],var,&data.u.sub_rec.u.range,&(filevar_sel_ptr->selection[i]),i,data.u.sub_rec.name);
 				break;
 			case COORD_VECT:
-				_NclBuildFileCoordVSelection(files[0],var,&data.u.sub_rec.u.vec,&(filevar_sel_ptr->selection[i]),i,data.u.sub_rec.name);
+				_NclBuildFileCoordVSelection(files[first_good_ix],var,&data.u.sub_rec.u.vec,&(filevar_sel_ptr->selection[i]),i,data.u.sub_rec.name);
 				break;
 			case COORD_SINGLE:
 			case COORD_RANGE:
-				 _NclBuildFileCoordRSelection(files[0],var,&data.u.sub_rec.u.range,&(filevar_sel_ptr->selection[i]),i,data.u.sub_rec.name);
+				 _NclBuildFileCoordRSelection(files[first_good_ix],var,&data.u.sub_rec.u.range,&(filevar_sel_ptr->selection[i]),i,data.u.sub_rec.name);
 				break;
 			}
 			_NclFreeSubRec(&data.u.sub_rec);
