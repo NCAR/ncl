@@ -14275,8 +14275,6 @@ function sign_f90( X:numeric, Y:numeric )
 ; Mimic the f90 'sign' function: sign(X,Y) returns the
 ;       absolute value of X times the sign of Y.
 ;       This is a transfer of sign from Y to X.
-; Note: Fortran 95 allows a processor to distinguish between a positive
-;       and a negative real zero, whereas Fortran 90 did not.
 ; Note: Fortran 90 does not allow a processor to distinguish between a 
 ;       positive and a negative zero, whereas Fortran 95 does.
 ;
