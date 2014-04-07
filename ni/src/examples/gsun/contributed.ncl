@@ -14240,3 +14240,74 @@ begin
   end if
 
 end
+
+;==========================
+undef("sign_matlab")
+function sign_matlab( X:numeric )
+;
+; Mimic Matlab 'sign' function: sign_matlab(X) returns the sign of each element of 'X'
+; There are 3 possible return values for non _FillValue elements:  -1, 0, 1
+; The return value type will be the same type as 'X'
+;
+local typex, zero, onePos, oneNeg, result
+begin
+  typex  = typeof(X)
+
+  zero   = totype( 0, typex)
+  onePos = totype( 1, typex)
+  oneNeg = totype(-1, typex)
+
+  result = X                       ; same size, shape and type as 'X'
+
+  result = where(X.eq.zero,  zero  , result)
+  result = where(X.gt.zero,  onePos, result)
+  result = where(X.lt.zero,  oneNeg, result)
+
+  return(result)
+end
+;==========================
+undef("sign_f90")
+function sign_f90( X:numeric, Y:numeric )
+;
+; X and Y must be the same shape and size. 
+; They may be different numeric types (eg:, byte, short, int, float, double)
+;
+; Mimic the f90 'sign' function: sign(X,Y) returns the
+;       absolute value of X times the sign of Y.
+;       This is a transfer of sign from Y to X.
+; Note: Fortran 95 allows a processor to distinguish between a positive
+;       and a negative real zero, whereas Fortran 90 did not.
+; Note: Fortran 90 does not allow a processor to distinguish between a 
+;       positive and a negative zero, whereas Fortran 95 does.
+;
+; Note: NCL can not test for -0 .... this will test positive.
+;
+local typey, zero, result, dimX, dimY, rankX, rankY
+begin
+  dimX  = dimsizes(X)
+  dimY  = dimsizes(Y)
+  rankX = dimsizes(dimX)
+  rankY = dimsizes(dimY)
+
+  ier   = 0
+  if (rankX.ne.rankY) then
+      print("sign_f90: rank mismatch: rankX="+rankX+"; rankY="+rankY)
+      ier = 1
+  end if
+  if (.not.all(dimX.eq.dimY)) then
+      print("sign_f90: dimension size mismatch")
+      print("          dimX="+dimX)
+      print("          dimY="+dimY)
+      ier = ier+10
+  end if 
+  if (ier.ne.0) then
+      exit
+  end if
+
+  typeY  = typeof(Y)
+  zero   = totype( 0, typeY) ; make 0 same numeric type as Y
+
+  result = abs(X)            ; same size, shape and type as 'X'; all positive
+  result = where(Y.lt.zero, -result, result)
+  return(result)
+end
