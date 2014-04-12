@@ -281,8 +281,7 @@ NclSelectionRecord * sel_ptr;
 	} else {
 			tmp_md = value;
 	}
-	/* attributes cannot themselves have missing values */
-	tmp_md->multidval.missing_value.has_missing = 0;
+
 	if((att_quark == NrmStringToQuark(NCL_MISSING_VALUE_ATT))&&(theattobj->obj.cblist != NULL)) {
 		selector.lngval = MISSINGNOTIFY;
 		cbdata.ptrval = NULL;
