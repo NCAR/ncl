@@ -73,15 +73,23 @@ dd=`date +'%m%d%y'`
 un=`uname -n`
 um=`uname -m`
 os=`uname -s`
-
-# Special test for yellowstone/geyser/caldera
+#
+# Special test for yellowstone/geyser/caldera build.
+#
+# These if tests assume we have the gnu compilers 
+# 4.4.6 and 4.7.2, and the intel compiler 12.1.5.
+# You may need to update as necessary.
+# 
 if [ -n "$LIB_NCAR" ] ; then
   if [ "$COMPILER_VERSION" = "4.7.2" ] ; then
     export PATH=$PREFIX/bin:/glade/apps/opt/gnu/4.7.2/bin:/usr/lib64/qt-3.3/bin:/glade/apps/opt/bin:/glade/apps/el6/usr/bin:/glade/apps/el6/bin:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/etc:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/openssh/5.7p1krb/bin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/ncar/opt/hpss
     export LD_LIBRARY_PATH=/glade/apps/opt/gnu/4.7.2/lib64:/glade/apps/opt/gnu/lib:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/lib
     un="yellowstone_gnu472"
-  else
+  elif [ "$COMPILER_VERSION" == "4.4.6" ] ; then
     un="yellowstone_gnu446"
+  else
+    un="yellowstone_intel1215"
+    export PATH=$PREFIX/bin:/glade/apps/opt/ncl/6.1.2/intel/12.1.5/bin:/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/etc:/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/bin:/usr/lib64/qt-3.3/bin:/ncar/opt/intel/12.1.0.233/composer_xe_2011_sp1.11.339/bin/intel64:/glade/apps/opt/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/openssh/5.7p1krb/bin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/ncar/opt/hpss:/glade/apps/opt/netcdf/4.3.0/intel/12.1.5/bin:/usr/lpp/mmfs/bin
   fi
   unset LIB_NCAR
   unset INC_NCAR
@@ -112,6 +120,16 @@ elif [ "$un" = "yellowstone_gnu446" ] ; then
   export FC=/usr/bin/gfortran
   export F77=/usr/bin/gfortran
   export F90=/usr/bin/gfortran
+elif [ "$un" = "yellowstone_intel1215" ] ; then
+  export CC=icc
+  export CXX=icpc
+  export FC=ifort
+  export F77=ifort
+  export F90=ifort
+  export CFLAGS=
+  export FFLAGS=
+  export F90FLAGS=
+  export CXXFLAGS=
 else
   export CC=gcc
   export CXX=g++
@@ -158,7 +176,7 @@ PNG_DIR="libpng-1.2.50"
 PROJ4_DIR="proj-4.8.0"
 SZIP_DIR="szip-2.1"
 UDUNITS_DIR="udunits-2.1.24"
-VIS5DPLUS_DIR="vis5d+-1.3.0"
+VIS5DPLUS_DIR="vis5d+-1.3.0-beta"
 ZLIB_DIR="zlib-1.2.8"
 PKGCONFIG_DIR="pkg-config-0.28"
 EXPAT_DIR="expat-2.1.0"
@@ -703,7 +721,11 @@ then
         ./configure --enable-netcdf-4 --enable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
         make all install
       else
-        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -ldl"
+        if [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu446" ] ; then
+          export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -ldl"
+        else
+          export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
+        fi
         ./configure --enable-netcdf-4 --disable-dap --disable-shared --prefix\=$PREFIX_NODAP
         make all install
         mv config.log config.log.nodap
