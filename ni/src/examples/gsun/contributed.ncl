@@ -9727,6 +9727,7 @@ begin
    end if
 return
 end
+
 ; *****************************************************************
 ; D. Shea
 
@@ -9780,21 +9781,21 @@ begin
       one    = 1.0
   end if
 
-  if (isatt(yyyymmdd,"calendar")) then    ; retrofit to existing code
-      yrFrac@calendar = yyyymmdd@calendar
+  if (isatt(yyyymm,"calendar")) then    ; retrofit to existing code
+      yrFrac@calendar = yyyymm@calendar
 
-      if (yyyymmdd@calendar.eq."360_day" .or. yyyymmdd@calendar.eq."360") then
+      if (yyyymm@calendar.eq."360_day" .or. yyyymm@calendar.eq."360") then
           con = (/ 360, 360 /)*one
       end if
-      if (yyyymmdd@calendar.eq."365_day" .or. yyyymmdd@calendar.eq."365"    .or. \
-          yyyymmdd@calendar.eq."noleap"  .or. yyyymmdd@calendar.eq."no_leap") then
+      if (yyyymm@calendar.eq."365_day" .or. yyyymm@calendar.eq."365"    .or. \
+          yyyymm@calendar.eq."noleap"  .or. yyyymm@calendar.eq."no_leap") then
           con = (/ 365, 365 /)*one
       end if
-      if (yyyymmdd@calendar.eq."366_day" .or. yyyymmdd@calendar.eq."366"    .or. \
-          yyyymmdd@calendar.eq."allleap" .or. yyyymmdd@calendar.eq."all_leap") then
+      if (yyyymm@calendar.eq."366_day" .or. yyyymm@calendar.eq."366"    .or. \
+          yyyymm@calendar.eq."allleap" .or. yyyymm@calendar.eq."all_leap") then
           con = (/ 366, 366 /)*one
       end if
-      if (yyyymmdd@calendar.eq."gregorian" .or. yyyymmdd@calendar.eq."standard") then
+      if (yyyymm@calendar.eq."gregorian" .or. yyyymm@calendar.eq."standard") then
           con = (/ 365, 366 /)*one 
       end if
   else
@@ -10015,7 +10016,6 @@ begin
       return(xAnnual)
    end if
 end
-
 ; *****************************************************************
 ; D. Shea
 ; Convert monthly total values [eg, precipitation] to "per day" values.
