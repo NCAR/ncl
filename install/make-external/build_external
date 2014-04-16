@@ -1340,6 +1340,12 @@ if [ $INSTALL_ESMF ] ; then
       export ESMF_OS=Linux
       export ESMF_CXXCOMPILER=/usr/bin/g++
       export ESMF_F90COMPILER=/usr/bin/gfortran
+    elif [ "$un" = "yellowstone_intel1215" ] ; then
+      export ESMF_COMPILER="intel"
+      export ESMFBUILDDIR="$os.intel.$ESMF_ABI.$ESMF_COMM.default"
+      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lssl -lidn -lrt -ldl -lsz -lz"
+    else
+      export ESMFBUILDDIR="$os.gfortran.$ESMF_ABI.$ESMF_COMM.default"
     fi
     if [ "$um" = "x86_64" ] ; then
       export ESMF_ABI=64
