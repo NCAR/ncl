@@ -364,7 +364,7 @@ int
 
 typedef NhlErrorTypes (*NclAddGrpFunc)(void *record, NclQuark grpname);
 typedef NhlErrorTypes (*NclAddVlenFunc)(void *record, NclQuark vlen_name, NclQuark var_name,
-                                        NclQuark type, NclQuark dim_name);
+                                        NclQuark type, NclQuark *dim_names, ng_size_t n_dims);
 typedef NhlErrorTypes (*NclAddEnumFunc)(void *record, NclQuark enum_name, NclQuark var_name,
                                         NclQuark dim_name, NclQuark  *mem_name, void *mem_value,
                                         ng_size_t n_mems, NclBasicDataTypes val_type);

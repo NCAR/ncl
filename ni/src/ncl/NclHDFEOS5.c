@@ -4029,7 +4029,6 @@ NclFormatFunctionRecPtr HDFEOS5AddFileFormat
 ()
 #endif
 {
-	
 	return(&HDFEOS5Rec);
 }
 

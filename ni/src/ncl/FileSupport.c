@@ -31,6 +31,8 @@
 #include "ncarg/hlu/Error.h"
 #endif
 
+#include <ctype.h>
+#include <unistd.h>
 #include <netcdf.h>
 
 #ifdef BuildHDF5
@@ -833,18 +835,18 @@ NhlErrorTypes _NclBuildAdvancedFileRSelection(struct _NclFileRec *file,
     NclFileVarNode *varnode;
     NclFileDimNode *dimnode;
 
-    char* v_name;
-    char* f_name;
-
     int i;
     
 /*
 * Preconditions: subscripts are SCALAR and integer guarenteed!!!!
 */
-    v_name = NrmQuarkToString(var);
-    f_name = NrmQuarkToString(advfile->advancedfile.fname);
 
   /*
+   *char* v_name;
+   *char* f_name;
+   *v_name = NrmQuarkToString(var);
+   *f_name = NrmQuarkToString(advfile->advancedfile.fname);
+
    *fprintf(stderr, "\nEnter _NclBuildAdvancedFileRSelection, file: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tf_name: <%s>, var: <%s>, dim_name: <%s>, dim_num = %d\n",
    *                   f_name, v_name, dim_name, dim_num);
@@ -1926,16 +1928,16 @@ struct _NclSelectionRecord* sel_ptr;
 }
 
 extern NhlErrorTypes _NclFileAddVlen(NclFile infile, NclQuark vlen_name, NclQuark var_name,
-                                     NclQuark type, NclQuark dim_name)
+                                     NclQuark type, NclQuark *dim_names, ng_size_t ndims)
 {
 	NclAdvancedFile thefile = (NclAdvancedFile) infile;
 	NclAdvancedFileClass fc = NULL;
 
       /*
        *fprintf(stderr, "\nHit _NclFileAddVlen, file: %s, line: %d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\tvlen name: <%s>, var name: <%s>, base type: <%s>, dim_name: <%s>\n",
+       *fprintf(stderr, "\tvlen name: <%s>, var name: <%s>, base type: <%s>, dim_name[0]: <%s>\n",
        *                 NrmQuarkToString(vlen_name), NrmQuarkToString(var_name),
-       *                 NrmQuarkToString(type), NrmQuarkToString(dim_name));
+       *                 NrmQuarkToString(type), NrmQuarkToString(dim_name[0]));
        */
 
 	if(infile == NULL)
@@ -1958,7 +1960,7 @@ extern NhlErrorTypes _NclFileAddVlen(NclFile infile, NclQuark vlen_name, NclQuar
 		if(fc->advancedfile_class.create_vlen_type != NULL)
 		{
 			return((*fc->advancedfile_class.create_vlen_type)
-                               (infile, vlen_name, var_name, type, dim_name));
+                               (infile, vlen_name, var_name, type, dim_names, ndims));
 		}
 		else
 		{
@@ -3251,8 +3253,6 @@ NclApiDataList *_NclGetFileInfo1(NclFile thefile)
 {
     NclAdvancedFile advfile = (NclAdvancedFile) thefile;
     NclFileGrpNode *grpnode = advfile->advancedfile.grpnode;
-    NclFileVarNode *varnode;
-    NclFileDimNode *dimnode;
     NclFileDimNode *grpdimnode;
 
     NclApiDataList *tmp = NULL;
@@ -3903,7 +3903,6 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 			NclQuark path, int rw_status)
 {
 	NclFile file_out = NULL;
-	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 
 	NclQuark file_ext_q = -1;
 	NclQuark fname_q;
@@ -3919,6 +3918,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	if(! is_http)
 	{
 #if 0
+		NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 		/* Check if want advanced file-strucuture */
 		if(NULL != fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value)
 		{
@@ -4082,7 +4082,6 @@ NclAdvancedFile _NclCreateAdvancedFile(NclObj inst, NclObjClass theclass, NclObj
 	char *end_of_name = NULL;
 	int len_path;
 
-        struct stat file_stat;
 	short use_advanced_file_structure = 0;
 
 	file_ext_q = _NclFindFileExt(path, &fname_q, &is_http, &end_of_name, &len_path, rw_status, &use_advanced_file_structure);

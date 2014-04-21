@@ -98,6 +98,13 @@ extern int *get_dims_for_n_funcs(int arg_num,  int num_args,
 				 NclStackEntry tmpdata,
 				 const char *name, int *ndims);
 
+extern NhlErrorTypes _NclPreLoadScript(char *path, int status);
+
+NhlErrorTypes NclGetCPUTime(float *time);
+NhlErrorTypes NclGetWTime(double *time);
+
+void IncLine(void);
+
 NhlErrorTypes _NclIGetScriptPrefixName
 #if     NhlNeedProto
 (void)
@@ -1105,7 +1112,7 @@ NhlErrorTypes _Nclsystemfunc
         NclMultiDValData tmp_md = NULL;
 	char* command;
 	int fildes[2],new_pipe_fd;
-        int ret;
+        NhlErrorTypes ret = NhlFATAL;
 	int id;
 	int tmp_id;
 	int n;
@@ -1219,10 +1226,10 @@ NhlErrorTypes _Nclsystemfunc
 			data.u.data_obj = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void*)qbuffer,NULL,1,&nelem,TEMPORARY,NULL,(NclTypeClass)nclTypestringClass);
 			_NclPlaceReturn(data);
 		}
-		return(NhlNOERROR);
-	} else {
-                return(NhlFATAL);
+		ret = NhlNOERROR;
 	}
+
+	return ret;
 }
 
 NhlErrorTypes _Nclstrlen
@@ -3063,7 +3070,6 @@ NhlErrorTypes _NclIcbinread
 	struct stat buf;
 	int fd = -1;
 	ng_size_t totalsize = 0;
-	ssize_t n;
 	char *step = NULL;
 	NclStackEntry data_out;
 	ng_size_t dim2;
@@ -3189,10 +3195,10 @@ NhlErrorTypes _NclIcbinread
 
 		step = tmp_ptr;
 		for(i = 0; i < (ng_size_t)(totalsize / buf.st_blksize); i++) {
-			n = read(fd, step,buf.st_blksize);
+			ret = read(fd, step,buf.st_blksize);
 			step = step + buf.st_blksize;
 		}
-		n = read(fd,step,totalsize % buf.st_blksize);
+		ret = read(fd,step,totalsize % buf.st_blksize);
 		step = step + totalsize % buf.st_blksize;
 		if (swap_bytes) {
 		        ng_size_t count = ((ng_size_t)(step - (char*)tmp_ptr)) / thetype->type_class.size;
@@ -3438,7 +3444,7 @@ NhlErrorTypes _NclIfbinrecwrite
 #endif
 	itotal = (int)total;
 
-	fd = open(_NGResolvePath(NrmQuarkToString(*fpath)),(O_CREAT | O_RDWR),0666);
+	fd = open(_NGResolvePath(NrmQuarkToString(*fpath)),(O_CREAT | O_RDWR),0644);
 	if(fd == -1) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecwrite: could not open (%s) check path and permissions, can't continue",NrmQuarkToString(*fpath));
 		return(NhlFATAL);
@@ -4038,13 +4044,10 @@ NhlErrorTypes _NclIasciiwrite
 	NhlErrorTypes ret = NhlNOERROR;
 	NclStackEntry fpath;
 	NclStackEntry value;
-	NclTypeClass thetype;
 	NclMultiDValData tmp_md= NULL;
 	Const char *path_string;
 	ng_size_t i;
-	void *tmp_ptr;
 	FILE *fd = NULL;
-	ng_size_t  totalsize = 0;
 	char *step = NULL;
 	int is_stdout = 0;
 	NclVaPrintFunc tmp ;
@@ -4085,11 +4088,6 @@ NhlErrorTypes _NclIasciiwrite
 		break;
 	default:
 		return(NhlFATAL);
-	}
-	if(tmp_md != NULL) {
-		tmp_ptr = tmp_md->multidval.val;
-		thetype = tmp_md->multidval.type;
-		totalsize = tmp_md->multidval.totalelements * thetype->type_class.size;
 	}
 	if(is_stdout) {
 		fd = stdout;
@@ -4450,7 +4448,6 @@ int asciifloat(char *buf, char **end, int type, void *retvalue,char **rem) {
  * Nan is not valid for integers.
  */
 int asciiinteger(char *buf, char **end, int type, void *retvalue,char **rem) {
-	double tmpd;
 	const char *initchars = "0123456789+-.";
 	int i;
 	int ishex = 0;
@@ -4475,9 +4472,6 @@ int asciiinteger(char *buf, char **end, int type, void *retvalue,char **rem) {
 					(*end)++;
 				}
 			}
-		}
-		else {
-			tmpd = strtod(&(buf[i]),end);
 		}
 		if (**end == '\0') {
 			*rem = &(buf[i]);
@@ -5172,7 +5166,6 @@ NhlErrorTypes _NclIfbindirwrite
 	void *tmp_ptr;
 	int fd = -1;
 	ng_size_t totalsize = 0;
-	ssize_t n;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 
@@ -5221,7 +5214,7 @@ NhlErrorTypes _NclIfbindirwrite
 		tmp_ptr = tmp_md->multidval.val;
 		thetype = tmp_md->multidval.type;
 		totalsize = tmp_md->multidval.totalelements * thetype->type_class.size;
-		fd = open(path_string,(O_CREAT | O_RDWR),0666);
+		fd = open(path_string,(O_CREAT | O_RDWR),0644);
 		if(fd >= 0) {
 			lseek(fd,0,SEEK_END);
 			if (swap_bytes) {
@@ -5229,11 +5222,11 @@ NhlErrorTypes _NclIfbindirwrite
 				if (!outdata)
 					return (NhlFATAL);
 				_NclSwapBytes(outdata,tmp_ptr,tmp_md->multidval.totalelements,thetype->type_class.size);
-				n = write(fd, outdata,totalsize);
+				ret = write(fd, outdata,totalsize);
 				NclFree(outdata);
 			}
 			else {
-				n = write(fd, tmp_ptr,totalsize);
+				ret = write(fd, tmp_ptr,totalsize);
 			}
 			close(fd);
 			return(ret);
@@ -5259,7 +5252,6 @@ NhlErrorTypes _NclIcbinwrite
 	void *tmp_ptr;
 	int fd = -1;
 	ng_size_t  totalsize = 0;
-	ng_size_t n;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 
@@ -5313,9 +5305,9 @@ NhlErrorTypes _NclIcbinwrite
 			if (!outdata)
 				return (NhlFATAL);
 			_NclSwapBytes(outdata,tmp_ptr,tmp_md->multidval.totalelements,thetype->type_class.size);
-			fd = open(path_string,(O_CREAT | O_RDWR),0666);
+			fd = open(path_string,(O_CREAT | O_RDWR),0644);
 			if(fd >= 0) {
-				n = write(fd,outdata,totalsize);
+				ret = write(fd,outdata,totalsize);
 				close(fd);
 			} else {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"cbinwrite: Could not create file");
@@ -5325,9 +5317,9 @@ NhlErrorTypes _NclIcbinwrite
 			return(ret);
 		}
 		else {
-			fd = open(path_string,(O_CREAT | O_RDWR),0666);
+			fd = open(path_string,(O_CREAT | O_RDWR),0644);
 			if(fd >= 0) {
-				n = write(fd, tmp_ptr,totalsize);
+				ret = write(fd, tmp_ptr,totalsize);
 				close(fd);
 			} else {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"cbinwrite: Could not create file");
@@ -5355,7 +5347,6 @@ NhlErrorTypes _NclIfbinwrite
 	int fd = -1;
 	ng_size_t  totalsize = 0;
 	int itotalsize;
-	ssize_t n;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 	long long ll_total;
@@ -5396,7 +5387,7 @@ NhlErrorTypes _NclIfbinwrite
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinwrite: An error in the file path was detected could not resolve file path");
 		return(NhlFATAL);
 	}
-	fd = open(path_string,(O_CREAT | O_RDWR),0666);
+	fd = open(path_string,(O_CREAT | O_RDWR),0644);
 	if(fd == -1) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  "fbinwrite: could not open (%s) check path and permissions, can't continue",path_string);
@@ -5439,29 +5430,29 @@ NhlErrorTypes _NclIfbinwrite
 		_NclSwapBytes(outdata,tmp_ptr,tmp_md->multidval.totalelements,thetype->type_class.size);
 		if (marker_size == 4) {
 			_NclSwapBytes(&ltotal,&itotalsize,1,4);
-			n = write(fd,&ltotal,4);
-			n = write(fd,outdata,itotalsize);
-			n = write(fd,&ltotal,4);
+			ret = write(fd,&ltotal,4);
+			ret = write(fd,outdata,itotalsize);
+			ret = write(fd,&ltotal,4);
 		}
 		else {
 			_NclSwapBytes(NULL,&ll_total,1,8);
-			n = write(fd,&ll_total,8);
-			n = write(fd,outdata,itotalsize);
-			n = write(fd,&ll_total,8);
+			ret = write(fd,&ll_total,8);
+			ret = write(fd,outdata,itotalsize);
+			ret = write(fd,&ll_total,8);
 		}
 		NclFree(outdata);
 	}
 	else if (marker_size == 4) {
-		n = write(fd,&itotalsize,4);
-		n = write(fd,tmp_ptr,itotalsize);
-		n = write(fd,&itotalsize,4);
+		ret = write(fd,&itotalsize,4);
+		ret = write(fd,tmp_ptr,itotalsize);
+		ret = write(fd,&itotalsize,4);
 		close(fd);
 		return(NhlNOERROR);
 	}
 	else {
-		n = write(fd,&ll_total,8);
-		n = write(fd,tmp_ptr,itotalsize);
-		n = write(fd,&ll_total,8);
+		ret = write(fd,&ll_total,8);
+		ret = write(fd,tmp_ptr,itotalsize);
+		ret = write(fd,&ll_total,8);
 		close(fd);
 		return(NhlNOERROR);
 	}
@@ -11411,7 +11402,7 @@ NhlErrorTypes _Ncldim_cumsum_n
 	logical *tmp = NULL;
 	ng_size_t i,j,k;
 	int sz;
-	ng_size_t m,n,nl,nr;
+	ng_size_t m,nl,nr;
 	NclScalar *missing = NULL;
 	int opt;
 
@@ -11492,7 +11483,6 @@ NhlErrorTypes _Ncldim_cumsum_n
 	} else {
 	  m  = tmp_md->multidval.dim_sizes[dims[0]];
 	}
-	n = nr * nl;
 
 	tmp = (logical*)NclMalloc(sizeof(logical)*m);
 	sz = tmp_md->multidval.type->type_class.size;
@@ -11787,14 +11777,10 @@ NhlErrorTypes _Ncldim_avg
 	double *val = NULL;
 	ng_size_t *dimsizes = NULL;
 	ng_size_t i,j;
-	int sf;
 	ng_size_t m,n;
-	int sz;
 	int nd;
 	ng_size_t count;
-	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
-	NclTypeClass the_type;
 	NclScalar missing;
 	int did_coerce = 0;
 
@@ -11835,19 +11821,14 @@ NhlErrorTypes _Ncldim_avg
 /*
  * Determine output type, which will either be float or double.
  */
-	data_type = NCL_double;
-	the_type = (NclTypeClass)nclTypedoubleClass;
 	if(tmp_md->multidval.data_type == NCL_double) {
-		sz = tmp_md->multidval.type->type_class.size;
 		out_val = (void*)NclMalloc(sizeof(double)* n);
 		out_data_type = NCL_double;
-		sf = sizeof(double);
 		if(tmp_md->multidval.missing_value.has_missing) {
 			missing = tmp_md->multidval.missing_value.value;
 		}
 	} else {
 		out_val = (void*)NclMalloc(sizeof(float)* n);
-		sf = sizeof(float);
 		out_data_type = NCL_float;
 		tmp_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
 		if(tmp_md == NULL) {
@@ -11858,7 +11839,6 @@ NhlErrorTypes _Ncldim_avg
 			missing = tmp_md->multidval.missing_value.value;
 		}
 		did_coerce = 1;
-		sz = ((NclTypeClass)nclTypefloatClass)->type_class.size;
 	}
 	val = (double*)tmp_md->multidval.val;
 	if(tmp_md->multidval.missing_value.has_missing) {
@@ -11978,14 +11958,10 @@ NhlErrorTypes _Ncldim_avg_n
 	double *val = NULL;
 	ng_size_t *dimsizes = NULL;
 	ng_size_t i,j,k;
-	int sf;
 	ng_size_t m,n,nr,nl;
-	int sz;
 	int nd;
 	ng_size_t count;
-	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
-	NclTypeClass the_type;
 	NclScalar missing;
 	int did_coerce = 0;
 /*
@@ -12061,19 +12037,14 @@ NhlErrorTypes _Ncldim_avg_n
 /*
  * Determine output type, which will either be float or double.
  */
-	data_type = NCL_double;
-	the_type = (NclTypeClass)nclTypedoubleClass;
 	if(tmp_md->multidval.data_type == NCL_double) {
-	  sz = tmp_md->multidval.type->type_class.size;
 	  out_val = (void*)NclMalloc(sizeof(double)* n);
 	  out_data_type = NCL_double;
-	  sf = sizeof(double);
 	  if(tmp_md->multidval.missing_value.has_missing) {
 	    missing = tmp_md->multidval.missing_value.value;
 	  }
 	} else {
 	  out_val = (void*)NclMalloc(sizeof(float)* n);
-	  sf = sizeof(float);
 	  out_data_type = NCL_float;
 	  tmp_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
 	  if(tmp_md == NULL) {
@@ -12084,7 +12055,6 @@ NhlErrorTypes _Ncldim_avg_n
 	    missing = tmp_md->multidval.missing_value.value;
 	  }
 	  did_coerce = 1;
-	  sz = ((NclTypeClass)nclTypefloatClass)->type_class.size;
 	}
 	val = (double*)tmp_md->multidval.val;
 	if(tmp_md->multidval.missing_value.has_missing) {
@@ -12206,13 +12176,10 @@ NhlErrorTypes _NclIdim_variance
 	double *val = NULL;
 	ng_size_t *dimsizes = NULL;
 	ng_size_t i,j;
-	int sf;
-	ng_size_t m,n,sz;
+	ng_size_t m,n;
 	ng_size_t nd;
 	ng_size_t count;
-	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
-	NclTypeClass the_type;
 	NclScalar missing;
 	int start;
 	int did_coerce = 0;
@@ -12250,19 +12217,14 @@ NhlErrorTypes _NclIdim_variance
 		m = tmp_md->multidval.dim_sizes[tmp_md->multidval.n_dims -1];
 		nd = 1;
 	}
-	data_type = NCL_double;
-	the_type = (NclTypeClass)nclTypedoubleClass;
 	if(tmp_md->multidval.data_type == NCL_double) {
-		sz = tmp_md->multidval.type->type_class.size;
 		out_val = (void*)NclMalloc(sizeof(double)* n);
 		out_data_type = NCL_double;
-		sf = sizeof(double);
 		if(tmp_md->multidval.missing_value.has_missing) {
 			missing = tmp_md->multidval.missing_value.value;
 		}
 	} else {
 		out_val = (void*)NclMalloc(sizeof(float)* n);
-		sf = sizeof(float);
 		out_data_type = NCL_float;
 		tmp_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
 		if(tmp_md == NULL) {
@@ -12272,7 +12234,6 @@ NhlErrorTypes _NclIdim_variance
 			missing = tmp_md->multidval.missing_value.value;
 		}
 		did_coerce = 1;
-		sz = ((NclTypeClass)nclTypefloatClass)->type_class.size;
 	}
 	val = (double*)tmp_md->multidval.val;
 	if(tmp_md->multidval.missing_value.has_missing) {
@@ -12384,15 +12345,11 @@ NhlErrorTypes _NclIdim_variance_n
 	double *val = NULL;
 	ng_size_t *dimsizes = NULL;
 	ng_size_t i,j,k;
-	int sf;
 	ng_size_t i_in,i_out;
 	ng_size_t m,n,nr,nl;
-	int sz;
 	int nd;
 	ng_size_t count;
-	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
-	NclTypeClass the_type;
 	NclScalar missing;
 	int start;
 	int did_coerce = 0;
@@ -12467,19 +12424,14 @@ NhlErrorTypes _NclIdim_variance_n
 /*
  * Determine output type, which will either be float or double.
  */
-	data_type = NCL_double;
-	the_type = (NclTypeClass)nclTypedoubleClass;
 	if(tmp_md->multidval.data_type == NCL_double) {
-	  sz = tmp_md->multidval.type->type_class.size;
 	  out_val = (void*)NclMalloc(sizeof(double)* n);
 	  out_data_type = NCL_double;
-	  sf = sizeof(double);
 	  if(tmp_md->multidval.missing_value.has_missing) {
 	    missing = tmp_md->multidval.missing_value.value;
 	  }
 	} else {
 	  out_val = (void*)NclMalloc(sizeof(float)* n);
-	  sf = sizeof(float);
 	  out_data_type = NCL_float;
 	  tmp_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
 	  if(tmp_md == NULL) {
@@ -12489,7 +12441,6 @@ NhlErrorTypes _NclIdim_variance_n
 	    missing = tmp_md->multidval.missing_value.value;
 	  }
 	  did_coerce = 1;
-	  sz = ((NclTypeClass)nclTypefloatClass)->type_class.size;
 	}
 	val = (double*)tmp_md->multidval.val;
 	if(tmp_md->multidval.missing_value.has_missing) {
@@ -12627,9 +12578,7 @@ NhlErrorTypes _NclIvariance
 	ng_size_t dimsizes = 1;
 	ng_size_t n;
 	ng_size_t  i;
-	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
-	NclTypeClass the_type;
 	NclScalar missing;
 	int did_coerce = 0;
 
@@ -12648,8 +12597,6 @@ NhlErrorTypes _NclIvariance
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
-	data_type = NCL_double;
-	the_type = (NclTypeClass)nclTypedoubleClass;
 	if(tmp_md->multidval.data_type == NCL_double) {
 		out1_val = (void*)NclMalloc(sizeof(double));
 		if((tmp_md->multidval.n_dims ==1)&&( tmp_md->multidval.dim_sizes[0] ==1)) {
@@ -12801,13 +12748,10 @@ NhlErrorTypes _NclIdim_stddev
 	double *val = NULL;
 	ng_size_t *dimsizes = NULL;
 	ng_size_t i,j;
-	int sf;
-	ng_size_t m,n,sz;
+	ng_size_t m,n;
 	ng_size_t nd;
 	ng_size_t count;
-	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
-	NclTypeClass the_type;
 	NclScalar missing;
 	int start;
 	int did_coerce = 0;
@@ -12843,19 +12787,14 @@ NhlErrorTypes _NclIdim_stddev
 		m = tmp_md->multidval.dim_sizes[tmp_md->multidval.n_dims -1];
 		nd = 1;
 	}
-	data_type = NCL_double;
-	the_type = (NclTypeClass)nclTypedoubleClass;
 	if(tmp_md->multidval.data_type == NCL_double) {
-		sz = tmp_md->multidval.type->type_class.size;
 		out_val = (void*)NclMalloc(sizeof(double)* n);
 		out_data_type = NCL_double;
-		sf = sizeof(double);
 		if(tmp_md->multidval.missing_value.has_missing) {
 			missing = tmp_md->multidval.missing_value.value;
 		}
 	} else {
 		out_val = (void*)NclMalloc(sizeof(float)* n);
-		sf = sizeof(float);
 		out_data_type = NCL_float;
 		tmp_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
 	
@@ -12865,7 +12804,6 @@ NhlErrorTypes _NclIdim_stddev
 		} else if(tmp_md->multidval.missing_value.has_missing) {
 			missing = tmp_md->multidval.missing_value.value;
 		}
-		sz = ((NclTypeClass)nclTypefloatClass)->type_class.size;
 		did_coerce = 1;
 	}
 	val = (double*)tmp_md->multidval.val;
@@ -12982,15 +12920,11 @@ NhlErrorTypes _NclIdim_stddev_n
 	double *val = NULL;
 	ng_size_t *dimsizes = NULL;
 	ng_size_t i,j,k;
-	int sf;
 	ng_size_t i_in,i_out;
 	ng_size_t m,n,nr,nl;
-	int sz;
 	int nd;
 	ng_size_t count;
-	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
-	NclTypeClass the_type;
 	NclScalar missing;
 	int start;
 	int did_coerce = 0;
@@ -13064,19 +12998,14 @@ NhlErrorTypes _NclIdim_stddev_n
 /*
  * Determine output type, which will either be float or double.
  */
-	data_type = NCL_double;
-	the_type = (NclTypeClass)nclTypedoubleClass;
 	if(tmp_md->multidval.data_type == NCL_double) {
-	  sz = tmp_md->multidval.type->type_class.size;
 	  out_val = (void*)NclMalloc(sizeof(double)* n);
 	  out_data_type = NCL_double;
-	  sf = sizeof(double);
 	  if(tmp_md->multidval.missing_value.has_missing) {
 	    missing = tmp_md->multidval.missing_value.value;
 	  }
 	} else {
 	  out_val = (void*)NclMalloc(sizeof(float)* n);
-	  sf = sizeof(float);
 	  out_data_type = NCL_float;
 	  tmp_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
 	  if(tmp_md == NULL) {
@@ -13086,7 +13015,6 @@ NhlErrorTypes _NclIdim_stddev_n
 	    missing = tmp_md->multidval.missing_value.value;
 	  }
 	  did_coerce = 1;
-	  sz = ((NclTypeClass)nclTypefloatClass)->type_class.size;
 	}
 	val = (double*)tmp_md->multidval.val;
 	if(tmp_md->multidval.missing_value.has_missing) {
@@ -13227,9 +13155,7 @@ NhlErrorTypes _NclIstddev
 	ng_size_t dimsizes = 1;
 	ng_size_t n;
 	ng_size_t  i;
-	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
-	NclTypeClass the_type;
 	NclScalar missing;
 	int did_coerce = 0;
 
@@ -13248,8 +13174,6 @@ NhlErrorTypes _NclIstddev
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
-	data_type = NCL_double;
-	the_type = (NclTypeClass)nclTypedoubleClass;
 	if(tmp_md->multidval.data_type == NCL_double) {
 		out1_val = (void*)NclMalloc(sizeof(double));
 		if((tmp_md->multidval.n_dims ==1)&&( tmp_md->multidval.dim_sizes[0] ==1)) {
@@ -13402,7 +13326,6 @@ NhlErrorTypes _Nclavg
 	logical *tmp = NULL;
 	ng_size_t n;
 	ng_size_t  i;
-	NclBasicDataTypes data_type;
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
 	NclScalar missing;
@@ -13424,7 +13347,6 @@ NhlErrorTypes _Nclavg
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
-	data_type = NCL_double;
 	the_type = (NclTypeClass)nclTypedoubleClass;
 	if(tmp_md->multidval.data_type == NCL_double) {
 		out_data_type = NCL_double;
@@ -17115,7 +17037,6 @@ NhlErrorTypes _NclIGetVarDims
 #endif
 {
 	int i;
-	NclQuark name;
 	ng_size_t dimsizes;
 	NclApiDataList *data = NULL;
 	NhlErrorTypes ret = NhlNOERROR;
@@ -17132,11 +17053,6 @@ NhlErrorTypes _NclIGetVarDims
         switch(val.kind) {
 	case NclStk_VAR:
 		tmp_var = val.u.data_var;
-		if(tmp_var->var.var_quark > 0) {
-			name = tmp_var->var.var_quark;
-		} else {
-			name = -1;
-		}
 		break;
 	case NclStk_VAL:
 	default:
@@ -17601,9 +17517,72 @@ NhlErrorTypes _NclIGetFileVarAtts
 
 }
 
+NhlErrorTypes _NclIGetFileCompoundVarComponentNames(void)
+{
+	NclQuark *name;
+	NclQuark fname;
+	NclScalar name_missing;
+	int name_has_missing;
+	NhlErrorTypes ret;
+	NclVar tmp_var;
+	NclStackEntry val;
+	NclQuark *component_names = NULL;
+	ng_size_t num_components = 0;
+
+        val = _NclGetArg(0,2,DONT_CARE);
+        switch(val.kind)
+	{
+		case NclStk_VAR:
+			tmp_var = val.u.data_var;
+			if(tmp_var->var.var_quark > 0)
+				fname = tmp_var->var.var_quark;
+			else
+				fname = -1;
+			break;
+		default:
+			num_components = -1;
+	}
+
+        name = (NclQuark*)NclGetArgValue(
+                        1,
+                        2,
+                        NULL,
+                        NULL,
+                        &name_missing,
+                        &name_has_missing,
+                        NULL,
+                        0);
+
+	if(name_has_missing)
+	{
+		if(*name == name_missing.stringval)
+			num_components = -1;
+	}
+
+	if((-1 == fname) || (-1 == num_components))
+		num_components = 0;
+	else
+		component_names = _NclGetFileCompoundVarComponentInfo(fname, *name, &num_components);
+
+	if(num_components)
+	{
+		ret = NclReturnValue((void*)component_names, 1, &num_components, NULL,
+					((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+		NclFree(component_names);
+	}
+	else
+	{
+		num_components = 1;
+		ret = NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &num_components,
+					&((NclTypeClass)nclTypestringClass)->type_class.default_mis,
+					((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+	}
+
+	return(ret);
+}
+
 NhlErrorTypes _NclIFileVlenDef(void)
 {
-    ng_size_t n_vlens;
     NclScalar missing;
     int has_missing;
 
@@ -17611,7 +17590,8 @@ NhlErrorTypes _NclIFileVlenDef(void)
     NclQuark *vlen_name;
     NclQuark *var_name;
     NclQuark *type;
-    NclQuark *dim_name;
+    NclQuark *dim_names;
+    ng_size_t ndims;
     NclFile thefile;
     NhlErrorTypes ret=NhlNOERROR;
 
@@ -17636,7 +17616,7 @@ NhlErrorTypes _NclIFileVlenDef(void)
                         1,
                         5,
                         NULL,
-                        &n_vlens,
+                        &ndims,
                         &missing,
                         &has_missing,
                         NULL,
@@ -17657,7 +17637,7 @@ NhlErrorTypes _NclIFileVlenDef(void)
                         2,
                         5,
                         NULL,
-                        &n_vlens,
+                        &ndims,
                         &missing,
                         &has_missing,
                         NULL,
@@ -17678,7 +17658,7 @@ NhlErrorTypes _NclIFileVlenDef(void)
                         3,
                         5,
                         NULL,
-                        &n_vlens,
+                        &ndims,
                         &missing,
                         &has_missing,
                         NULL,
@@ -17695,11 +17675,11 @@ NhlErrorTypes _NclIFileVlenDef(void)
         }
     }
 
-    dim_name = (NclQuark*)NclGetArgValue(
+    dim_names = (NclQuark*)NclGetArgValue(
                         4,
                         5,
                         NULL,
-                        &n_vlens,
+                        &ndims,
                         &missing,
                         &has_missing,
                         NULL,
@@ -17707,16 +17687,16 @@ NhlErrorTypes _NclIFileVlenDef(void)
 
     if(has_missing)
     {
-        if((NclQuark)*dim_name == missing.stringval)
+        if(dim_names[0] == missing.stringval)
         {
             NHLPERROR((NhlFATAL, NhlEUNKNOWN,
                 "_NclIFileVlenDef: CANNOT add vlen dimension named <%s>, which is same as missing-value.\n",
-                NrmQuarkToString((NclQuark)*dim_name)));
+                NrmQuarkToString(dim_names[0])));
             return(NhlFATAL);
         }
     }
 
-    ret = _NclFileAddVlen(thefile, *vlen_name, *var_name, *type, *dim_name);
+    ret = _NclFileAddVlen(thefile, *vlen_name, *var_name, *type, dim_names, ndims);
 
     return(ret);
 }
@@ -20167,7 +20147,6 @@ NhlErrorTypes _NclIListGetType(void)
 	NclObj thelist = NULL;
 	NclQuark *ret_val;
 	ng_size_t dimsize = 2;
-        NclStackEntry data;
 	int i;
 	int list_type;
 
@@ -20182,7 +20161,6 @@ NhlErrorTypes _NclIListGetType(void)
 	   NULL,
            NULL,
            DONT_CARE);
-	data= _NclGetArg(1,2,DONT_CARE);
 	thelist = _NclGetObj(*list_id);
 	list_type = _NclListGetType(thelist);
 	i = 0;
@@ -20222,7 +20200,6 @@ NhlErrorTypes _NclIListSetType(void)
 	obj *list_id;
 	NclObj thelist = NULL;
 	NclQuark *option;
-        NclStackEntry data;
 	char *tmp;	
 	char buffer[16];
 	int i, buflen;
@@ -20236,7 +20213,6 @@ NhlErrorTypes _NclIListSetType(void)
 	   NULL,
            NULL,
            DONT_CARE);
-	data= _NclGetArg(1,2,DONT_CARE);
    	option = (NclQuark*)NclGetArgValue(
            1,
            2,
@@ -21496,18 +21472,103 @@ NhlErrorTypes   _NclIFileIsPresent
 ()
 # endif
 {
+    NclQuark *files;
+    const char *fpath = NULL;
+    struct stat st;
+
+    int fid = -1;
+    int ndims;
+    ng_size_t dimsz[NCL_MAX_DIMENSIONS];
+    int sz = 1;
+
+    logical *filemanuable;        /* file manuable? */
+    int i = 0;
+
+    NclFile file = NULL;
+    int rw_v = 0;
+
+    files = (NclQuark *) NclGetArgValue(
+                0, 
+                1, 
+                &ndims,
+                dimsz,
+                NULL,
+                NULL,
+                NULL,
+                0);
+
+    /* calculate total number of input files to check */
+    for (i = 0; i < ndims; i++)
+        sz *= dimsz[i];
+
+    /* logical array to return */
+    filemanuable = (logical *) NclMalloc((unsigned int) sizeof(logical) * sz);
+    if (filemanuable == (logical *) NULL)
+    {
+        NhlPError(NhlFATAL, errno, "isfilepresent: memory allocation error");
+        return NhlFATAL;
+    }
+
+    for(i = 0; i < sz; i++)
+    {
+	filemanuable[i] = 0;
+	fpath = (char *) NrmQuarkToString(files[i]);
+        if(0 == strncmp(fpath, "http", 4))
+	{
+            fid = ncopen(fpath, NC_NOWRITE);
+            if(0 <= fid)
+                filemanuable[i] = 1;     /* true */
+        }
+        else
+	{
+            if(stat(fpath, &st))
+            {
+                char tmp_path[NCL_MAX_STRING];
+                char *ext_name;
+                strcpy(tmp_path, fpath);
+
+                ext_name = strrchr(tmp_path, '.');
+                if(NULL != ext_name)
+		{
+                    tmp_path[strlen(tmp_path) - strlen(ext_name)] = '\0'; 
+                    if(! stat(_NGResolvePath(tmp_path),&st))
+                    {
+                        file = _NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,NrmStringToQuark(tmp_path),rw_v);
+                        if(NULL != file)
+                        {
+                            filemanuable[i] = 1;     /* true */
+                            _NclDestroyObj((NclObj)file);
+                        }
+                    }
+                }
+            }
+            else
+            {
+	        file = _NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,files[i],rw_v);
+	        if(NULL != file)
+                {
+                    filemanuable[i] = 1;     /* true */
+                    _NclDestroyObj((NclObj)file);
+                }
+            }
+        }
+    }
+
+    return NclReturnValue((void *) filemanuable, ndims, dimsz, NULL, NCL_logical, 0);
+}
+
+NhlErrorTypes  _NclIFileExists(void)
+{
     NclQuark  *files;
     const char  *fpath = NULL;
     struct stat st;
 
-    int fid = 0;
     int ndims;
     ng_size_t dimsz[NCL_MAX_DIMENSIONS];
     int sz = 1;
 
     logical *file_exists;        /* file exists? */
     int i = 0;
-
 
     files = (NclQuark *) NclGetArgValue(
                 0, 
@@ -21525,53 +21586,19 @@ NhlErrorTypes   _NclIFileIsPresent
 
     /* logical array to return */
     file_exists = (logical *) NclMalloc((unsigned int) sizeof(logical) * sz);
-    if (file_exists == (logical *) NULL) {
-        NhlPError(NhlFATAL, errno, "isfilepresent: memory allocation error");
+    if(NULL == file_exists)
+    {
+        NHLPERROR((NhlFATAL, errno, "memory allocation error"));
         return NhlFATAL;
     }
 
-    for (i = 0; i < sz; i++) {
-        fpath = (char *) NrmQuarkToString(files[i]);
-        if (!strncmp(fpath, "http", 4)) {
-            fid = ncopen(fpath, NC_NOWRITE);
-            if (fid < 1)
-                file_exists[i] = 0;     /* false */
-            else
-                file_exists[i] = 1;     /* true */
-        }
-        else
-	{
+    for (i = 0; i < sz; i++)
+    {
+        file_exists[i] = 1;
+
+        fpath = _NGResolvePath(NrmQuarkToString(files[i]));
+        if(stat(fpath, &st))
             file_exists[i] = 0;
-
-            fpath = _NGResolvePath(NrmQuarkToString(files[i]));
-            if(stat(fpath, &st))
-            {
-                char tmp_path[NCL_MAX_STRING];
-                char *ext_name;
-                strcpy(tmp_path, fpath);
-
-                ext_name = strrchr(tmp_path, '.');
-              /*Use while loop will allow user to append multiple extensions.
-               *But it will be not consistent addfile.
-               *So we comment out the while loop for NOW.
-               *Wei Huang, 05/20/2012
-               */
-              /*while(NULL != ext_name)*/
-                if(NULL != ext_name)
-        	{
-                    tmp_path[strlen(tmp_path) - strlen(ext_name)] = '\0'; 
-
-                    if(! stat(_NGResolvePath(tmp_path),&st))
-                    {
-                        file_exists[i] = 1;
-                        /*break;*/
-                    }
-                    ext_name = strrchr(tmp_path, '.');
-                }
-            }
-            else
-                file_exists[i] = 1;
-        }
     }
 
     return NclReturnValue((void *) file_exists, ndims, dimsz, NULL, NCL_logical, 0);
@@ -30547,6 +30574,8 @@ NhlErrorTypes _NclIIsUnsigned
             case NCL_ulong:
             case NCL_uint64:
 		*out_val = 1;
+		if(NULL == in_value)
+			*out_val = 0;
 		break;
             default:
 		*out_val = 0;
@@ -30826,14 +30855,14 @@ NhlErrorTypes _Nclset_default_fillvalue
 NhlErrorTypes _Nclget_wall_time(void)
 {
         ng_size_t dimsize = 1;
-		double wtime;
-		int retval;
+	double wtime;
+	NhlErrorTypes retval;
 
-		retval = NclGetWTime(&wtime);
-		if(retval != NhlNOERROR){
-			NhlPError(NhlWARNING, NhlEUNKNOWN, "unable to get process wall time");
-			return(NhlWARNING);
-		}
+	retval = NclGetWTime(&wtime);
+	if(retval != NhlNOERROR){
+		NhlPError(NhlWARNING, NhlEUNKNOWN, "unable to get process wall time");
+		return(NhlWARNING);
+	}
 
         return(NclReturnValue(
                 &wtime,
@@ -30849,14 +30878,14 @@ NhlErrorTypes _Nclget_wall_time(void)
 NhlErrorTypes _Nclget_cpu_time(void)
 {
         ng_size_t dimsize = 1;
-		float time;
-		int retval;
+	float time;
+	NhlErrorTypes retval;
 
-		retval = NclGetCPUTime(&time);
-		if(retval != NhlNOERROR){
-			NhlPError(NhlWARNING, NhlEUNKNOWN, "unable to get process cpu time");
-			return(NhlWARNING);
-		}
+	retval = NclGetCPUTime(&time);
+	if(retval != NhlNOERROR){
+		NhlPError(NhlWARNING, NhlEUNKNOWN, "unable to get process cpu time");
+		return(NhlWARNING);
+	}
 
         return(NclReturnValue(
                 &time,

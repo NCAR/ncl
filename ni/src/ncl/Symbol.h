@@ -462,6 +462,10 @@ NclQuark /*attname*/
 #endif
 );
 
+extern NclQuark *_NclGetFileCompoundVarComponentInfo(NclQuark file_sym_name,
+							NclQuark file_var_name,
+							ng_size_t* num_components);
+
 extern struct _NclExtValueRec *_NclReadFileVarCoord(
 #if     NhlNeedProto
 NclQuark /*file_sym_name*/,

@@ -840,6 +840,14 @@ NclBasicDataTypes data_type;
 			return(sizeof(int));	
 		case NCL_list:
 			return(sizeof(int));	
+		case NCL_opaque:
+			return(sizeof(char));
+		case NCL_enum:
+			return(sizeof(int));
+		case NCL_vlen:
+			return(sizeof(int));
+		case NCL_reference:
+			return(sizeof(NclQuark));	
 		default:
 			return(-1);
 	}
@@ -2549,7 +2557,7 @@ NclBasicDataTypes dt;
 #endif
 {
 	static int first = 1;
-	static NclQuark quarks[25];
+	static NclQuark quarks[26];
 
 	if(first) {
 		first = 0;
@@ -2577,7 +2585,8 @@ NclBasicDataTypes dt;
                 quarks[21] = NrmStringToQuark("opaque");
                 quarks[22] = NrmStringToQuark("enum");
                 quarks[23] = NrmStringToQuark("vlen");
-                quarks[24] = NrmStringToQuark("none");
+                quarks[24] = NrmStringToQuark("reference");
+                quarks[25] = NrmStringToQuark("none");
 	}	
 
 	switch(dt) {
@@ -2625,17 +2634,19 @@ NclBasicDataTypes dt;
 		return(NrmQuarkToString(quarks[22]));
 	case NCL_vlen:
 		return(NrmQuarkToString(quarks[23]));
+	case NCL_reference:
+		return(NrmQuarkToString(quarks[24]));
 	case NCL_none:
         default:
-		return(NrmQuarkToString(quarks[24]));
+		return(NrmQuarkToString(quarks[25]));
 	}
 }
 
 NclBasicDataTypes _nameToNclBasicDataType(NclQuark name)
 {
 	static int first = 1;
-	static NclQuark quarks[24];
-	static NclBasicDataTypes nbd_type[24];
+	static NclQuark quarks[26];
+	static NclBasicDataTypes nbd_type[26];
 	int n;
 
 	if(first) {
@@ -2663,7 +2674,9 @@ NclBasicDataTypes _nameToNclBasicDataType(NclQuark name)
                 quarks[20] = NrmStringToQuark("ubyte");
                 quarks[21] = NrmStringToQuark("opaque");
                 quarks[22] = NrmStringToQuark("enum");
-                quarks[23] = NrmStringToQuark("none");
+                quarks[23] = NrmStringToQuark("vlen");
+                quarks[24] = NrmStringToQuark("reference");
+                quarks[25] = NrmStringToQuark("none");
 
 		nbd_type[0] = NCL_double;
 		nbd_type[1] = NCL_float;
@@ -2688,10 +2701,12 @@ NclBasicDataTypes _nameToNclBasicDataType(NclQuark name)
 		nbd_type[20] = NCL_ubyte;
 		nbd_type[21] = NCL_opaque;
 		nbd_type[22] = NCL_enum;
-		nbd_type[23] = NCL_none;
+		nbd_type[23] = NCL_vlen;
+		nbd_type[24] = NCL_reference;
+		nbd_type[25] = NCL_none;
 	}	
 
-	for(n = 0; n < 24; n++)
+	for(n = 0; n < 26; n++)
 	{
 		if(name == quarks[n])
 			return (nbd_type[n]);

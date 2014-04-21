@@ -1473,6 +1473,59 @@ NclQuark file_var_name;
 	return(NULL);
 }
 
+extern NclQuark *_NclGetFileCompoundVarComponentInfo(NclQuark file_sym_name, NclQuark file_var_name, ng_size_t* num_components)
+{
+	NclQuark *component_names = NULL;
+
+#ifdef USE_NETCDF4_FEATURES
+	NclSymbol *s = NULL;
+	int n;
+	NclStackEntry *thevar = NULL;
+	NclFile thefile = NULL;
+	NclMultiDValData theid = NULL;
+	NclFileAttInfoList *step;
+
+	*num_components = 0;
+
+	s = _NclLookUp(NrmQuarkToString(file_sym_name));
+	if((NULL == s) || (UNDEF == s->type))
+		return component_names;
+
+	thevar = _NclRetrieveRec(s,DONT_CARE);
+	if(NclStk_VAR != thevar->kind)
+		return component_names;
+
+	theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
+	if(theid->obj.obj_type_mask & Ncl_MultiDValnclfileData)
+	{
+		thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+
+		if((NULL == thefile) || (0 == thefile->file.advanced_file_structure))
+			return component_names;
+		else
+		{
+			NclAdvancedFile theadvancedfile = (NclAdvancedFile) thefile;
+			NclFileVarNode *varnode = _getVarNodeFromNclFileGrpNode(theadvancedfile->advancedfile.grpnode, file_var_name);
+
+			if((NULL == varnode) || ( 0 == varnode->is_compound))
+				return component_names;
+
+			if((NULL == varnode->comprec) || (1 > varnode->comprec->n_comps))
+				return component_names;
+
+			component_names = (NclQuark*)NclCalloc(varnode->comprec->n_comps, sizeof(NclQuark));
+			*num_components = varnode->comprec->n_comps;
+			for(n = 0; n < varnode->comprec->n_comps; ++n)
+				component_names[n] = varnode->comprec->compnode[n].name;
+		}
+	}
+#else
+	*num_components = 0;
+#endif
+
+	return component_names;
+}
+
 #ifdef USE_NETCDF4_FEATURES
 static NclApiDataList *getAdvancedFileVarCoordInfo(NclFile thefile,
                                   NclQuark coordname)
