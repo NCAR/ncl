@@ -7873,28 +7873,28 @@ begin
      nTim   = dimsizes(yyyymmddhh)
 
      if (varType.eq."double") then
-         yrFrac = new( nDay, "double", "No_FillValue")
+         yrFrac = new( nTim, "double", "No_FillValue")
          one    = 1d0
      else
-         yrFrac = new( nDay, "float", "No_FillValue")
+         yrFrac = new( nTim, "float", "No_FillValue")
          one    = 1.0
      end if
 
-     if (isatt(yyyymmdd,"calendar")) then    ; retrofit to existing code
-         yrFrac@calendar = yyyymmdd@calendar
+     if (isatt(yyyymmddhh,"calendar")) then    ; retrofit to existing code
+         yrFrac@calendar = yyyymmddhh@calendar
 
-         if (yyyymmdd@calendar.eq."360_day" .or. yyyymmdd@calendar.eq."360") then
+         if (yyyymmddhh@calendar.eq."360_day" .or. yyyymmddhh@calendar.eq."360") then
              con = (/ 360, 360, 86400, 3600 /)*one
          end if
-         if (yyyymmdd@calendar.eq."365_day" .or. yyyymmdd@calendar.eq."365"    .or. \
-             yyyymmdd@calendar.eq."noleap"  .or. yyyymmdd@calendar.eq."no_leap") then
+         if (yyyymmddhh@calendar.eq."365_day" .or. yyyymmddhh@calendar.eq."365"    .or. \
+             yyyymmddhh@calendar.eq."noleap"  .or. yyyymmddhh@calendar.eq."no_leap") then
              con = (/ 365, 365, 86400, 3600 /)*one
          end if
-         if (yyyymmdd@calendar.eq."366_day" .or. yyyymmdd@calendar.eq."366"    .or. \
-             yyyymmdd@calendar.eq."allleap" .or. yyyymmdd@calendar.eq."all_leap") then
+         if (yyyymmddhh@calendar.eq."366_day" .or. yyyymmddhh@calendar.eq."366"    .or. \
+             yyyymmddhh@calendar.eq."allleap" .or. yyyymmddhh@calendar.eq."all_leap") then
              con = (/ 366, 366, 86400, 3600 /)*one
          end if
-         if (yyyymmdd@calendar.eq."gregorian" .or. yyyymmdd@calendar.eq."standard") then
+         if (yyyymmddhh@calendar.eq."gregorian" .or. yyyymmddhh@calendar.eq."standard") then
              con = (/ 365, 366, 86400, 3600 /)*one 
          end if
      else
@@ -7913,7 +7913,7 @@ begin
 
      yrFrac@long_name = "Time"
      yrFrac@units     = "YYYY + fractional portion of year"
-     yrFrac@NCL       = "contributed.ncl: function yyyymmddhh_to_yyyyFrac"
+     yrFrac@NCL       = "contributed.ncl: function yyyymmddhhhh_to_yyyyFrac"
 
      return(yrFrac)
 end
