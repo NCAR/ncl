@@ -1938,38 +1938,47 @@ begin
      end if
   end do
 
-;;work   = x(lat|:,lon|:,time|:)       ; reorder so time is rightmost
-;;work   = x($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)   ; generic
-  work   = x                           ; _n
-
-                                       ; By default ... no detrend
-  if (opt .and.(isatt(opt,"detrend") .and. opt@detrend)) then
-      if (isatt(work,"_FillValue")) then
-          delete(work@_FillValue)         ; avoid annoying warning msg
-      end if                           
-      work  = dtrend_n(work, False, 0 )   ; detrend
-      work@detrend = "data detrended in time"        
-  end if
-
   ihp    = 2                               ; bpf=>band pass filter
   sigma  = 1.0                             ; Lanczos sigma
   bpfwgt = filwgts_lanczos (bpfNwgt, ihp, fca, fcb, sigma )
+;;printVarSummary(bpfwgt))
 
   if (opt .and. isatt(opt,"fft") .and. opt@fft) then 
-                                       ; By default ... no taper
+
+; As of 6.2.0 there are no ezfft_n / exfftb_n 
+; until there is an ezfft_n (exfftb_n) the opt@fft=True option
+; must be handled in the 'old-fashioned' way' (dimension reordering)
+
+    ;;work   = x(lat|:,lon|:,time|:)       ; reorder so time is rightmost
+      work   = x($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)   ; generic
+    ;;printVarSummary(work)
+
+      if (isatt(work,"_FillValue")) then
+          delete(work@_FillValue)          ; avoid annoying warning msg
+      end if                               ; when calling ezfftf
+
+                                           ; By default ... no detrend
+      if (opt .and.(isatt(opt,"detrend") .and. opt@detrend)) then
+          work  = dtrend(work, False)         ; detrend reordered array
+          work@detrend = "data detrended in time"        
+      end if
+                                           ; By default ... no taper
       if (isatt(opt,"taper")) then
           tim_taper = opt@taper
       else
-          tim_taper = 0.10             ; default taper is 10%
+          tim_taper = 0.10                 ; default taper is 10%
       end if
-      work       = taper(work, tim_taper, 0) 
+
+      work       = taper(work, tim_taper, 0)  ; rightmost dimension (time) 
       work@taper = "data tapered in time"        
                                            ; fft in time
       cf   = ezfftf (work)                 ; cf(2,nlat,mlon,ntim/2)
+    ;;printVarSummary(cf)
                                            ; map response of digitial
                                            ; filter to fft space
       fcf  = fspan(0, 0.5, ntim/2)         ; fft freq
       wcf  = linint1 (bpfwgt@freq, bpfwgt@resp, False, fcf, 0)
+    ;;printVarSummary(wcf)
       WCF  = conform(cf(0,:,:,:), wcf, 2)
       delete(wcf)
                                
@@ -1981,9 +1990,13 @@ begin
       delete(cf)
       work@process  =  "FFT with digital respoonse mapped tp FFT space"
   else
-printVarSummary(work)
+      work   = x                          ; _n
+    ;;printVarSummary(work)
+                                          ; By default ... no detrend
+      work  = dtrend_n(work, False, 0 )   ; detrend
+      work@detrend = "data detrended in time"        
+      
       work   = wgt_runave_n_Wrap(work,bpfwgt,0,0)
-    ;;work   = wgt_runave_Wrap(work,bpfwgt,0)
       work@process  =  "wgt_runave"
   end if
 
@@ -2006,10 +2019,8 @@ printVarSummary(work)
   end if
 
   return(work)
-
 end
 ; ----------------------------------------------------
-
 undef ("band_pass_hovmueller")  
 function band_pass_hovmueller(                         \
                   x[*][*][*]:numeric, spd[1]:numeric   \
