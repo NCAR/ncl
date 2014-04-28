@@ -3505,6 +3505,7 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
     size_t count[MAX_NC_DIMS];
     size_t locstart[MAX_NC_DIMS];
     ng_size_t n_elem = 1;
+    int in_whole = 0;
     int no_stride = 1;
     int i,j,n;
     int ret;
@@ -3544,6 +3545,9 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 {
                     dimnode->size = MAX(finish[i] + 1, dimnode->size);
                 }
+
+                if((1 == locstart[i]) && (count[i] == (size_t)dimnode->size))
+                    in_whole = 1;
 
               /*
                *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -3656,14 +3660,14 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 for(i = 0; i < varnode->dim_rec->n_dims; i++)
                 {
                     dimnode = &(varnode->dim_rec->dim_node[i]);
-                    for(j = 0; j < dimnode->size; j++)
+                    for(j = locstart[i]; j < dimnode->size; j++)
                     {
                         tmpstr[n] = NrmQuarkToString(qd[n]);
                         n++;
                     }
                 }
                 
-                if(no_stride)
+                if(no_stride && in_whole)
                 {
                     ret = nc_put_var_string(fid, varnode->id, (const char **)tmpstr);
                 }
