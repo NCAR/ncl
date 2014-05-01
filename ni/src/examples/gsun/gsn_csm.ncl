@@ -12251,6 +12251,16 @@ begin
 
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
+;
+; The setting for "pmTickMarkDisplayMode" to "Always" was added in V6.2.0
+; to fix a bug in which gsn_attach_plots didn't work for gsn_csm_pres_hgt
+; plots. This is because loglin has this resource turned off by default,
+; which means you can't retrieve any tickmark information, which is 
+; required by gsn_attach_plots.
+;
+; We have to turn off pmTickMarkDisplayMode before leaving this function,
+; however, otherwise the Y axes of the pressure/height plot won't be correct.
+;
     loglin_object = create wksname + "_loglin" logLinPlotClass wks
       "vpXF"       : xvp
       "vpYF"       : yvp
@@ -12262,6 +12272,7 @@ begin
       "trYMinF"    : ymin
       "trYMaxF"    : ymax
       "trYLog"     : log_y
+      "pmTickMarkDisplayMode" : "Always"
     end create
 ;
 ; Check for transformation resources and apply them to loglin plot.
@@ -12282,6 +12293,12 @@ begin
     end do
 
     attsetvalues_check(loglin_object,trres)
+
+; Turn off the tickmarks before we leave function.
+
+    setvalues loglin_object
+      "pmTickMarkDisplayMode" : "NoCreate"
+    end setvalues
 
 ; Overlay this on a LogLin plot so we can get a logarithmic Y axis.
 
