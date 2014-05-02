@@ -2714,8 +2714,7 @@ begin
     end if
   end if
 
-; Check length of arrays.
-;
+;---Check length of arrays.
   dsizes_y = dimsizes(yi)
   npts     = dimsizes(xi)
   ncurves  = dsizes_y(0)
@@ -2758,38 +2757,27 @@ begin
 ; If the first one is set, it overwrites the others. If
 ; none of them are set, then no fill color will be used.
 ;
-; To make things a little easier, above==right and below==left
+; To make things a little easier (or harder?): 
+;      above==right and below==left
 ;
   res2 = res       ; Make a copy
-  if(res2) then
-    if(isatt(res2,"gsnXYFillColors")) then
-      above_fill_colors = get_res_value(res2,"gsnXYFillColors",-1)
-      below_fill_colors = above_fill_colors
-      dum               = get_res_value(res2,"gsnXYAboveFillColors",-1)
-      dum               = get_res_value(res2,"gsnXYBelowFillColors",-1)
-      dum               = get_res_value(res2,"gsnXYRightFillColors",-1)
-      dum               = get_res_value(res2,"gsnXYLeftFillColors",-1)
+  if(isatt(res2,"gsnXYFillColors")) then
+    above_fill_colors = get_res_value(res2,"gsnXYFillColors",-1)
+    below_fill_colors = above_fill_colors
+    dum               = get_res_value(res2,"gsnXYAboveFillColors",-1)
+    dum               = get_res_value(res2,"gsnXYBelowFillColors",-1)
+    dum               = get_res_value(res2,"gsnXYRightFillColors",-1)
+    dum               = get_res_value(res2,"gsnXYLeftFillColors",-1)
+  else
+    if(fill_x) then
+      above_fill_colors = get_res_value(res2,"gsnXYRightFillColors",-1)
+      below_fill_colors = get_res_value(res2,"gsnXYLeftFillColors",-1)
     else
-      if(fill_x) then
-        above_fill_colors = get_res_value(res2,"gsnXYRightFillColors",-1)
-        below_fill_colors = get_res_value(res2,"gsnXYLeftFillColors",-1)
-      else
-        above_fill_colors = get_res_value(res2,"gsnXYAboveFillColors",-1)
-        below_fill_colors = get_res_value(res2,"gsnXYBelowFillColors",-1)
-      end if
-    end if
-
-    if(isatt(res2,"gsnXYFillOpacityF")) then
-      fill_opacs = conform(above_fill_colors, \
-                           get_res_value(res2,"gsnXYFillOpacityF",1.0), \
-                           -1)
-    else if(isatt(res2,"gsnXYFillOpacities")) then
-      fill_opacs = get_res_value(res2,"gsnXYFillOpacities",1.0)
-    else
-      fill_opacs = conform(above_fill_colors,1.0,-1)
-    end if
+      above_fill_colors = get_res_value(res2,"gsnXYAboveFillColors",-1)
+      below_fill_colors = get_res_value(res2,"gsnXYBelowFillColors",-1)
     end if
   end if
+
   nacol = dimsizes(above_fill_colors)
   nbcol = dimsizes(below_fill_colors)
 
@@ -2805,7 +2793,6 @@ begin
 ;
   rgbArrayA = False
   if (dimsizes(nacol).eq.1 .and. typeof(above_fill_colors).eq."float") then
-    ;
     tmp = above_fill_colors
     delete(above_fill_colors)
     above_fill_colors = new((/1, nacol /), float)
@@ -2824,7 +2811,6 @@ begin
 
   rgbArrayB = False
   if (dimsizes(nbcol).eq.1 .and. typeof(below_fill_colors).eq."float") then
-    ;
     tmp = below_fill_colors
     delete(below_fill_colors)
     below_fill_colors = new((/1, nbcol /), float)
@@ -2841,6 +2827,16 @@ begin
     delete(tmp)
   end if 
 
+;---Check for a fill opacity array. If none, then make colors fully opaque (1.0)
+  nfopacs = max((/nacol,nbcol/))
+  if(isatt(res2,"gsnXYFillOpacityF")) then
+    fill_opacs = conform_dims(nfopacs,get_res_value(res2,"gsnXYFillOpacityF",1.0),-1)
+  else if(isatt(res2,"gsnXYFillOpacities")) then
+    fill_opacs = get_res_value(res2,"gsnXYFillOpacities",1.0)
+  else
+    fill_opacs = conform_dims(nfopacs,1.0,-1)
+  end if
+  end if
 ;
 ; Convert input arrays to double.
 ;
