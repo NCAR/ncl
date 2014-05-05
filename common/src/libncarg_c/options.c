@@ -869,7 +869,7 @@ void	PrintOptionHelp(od, fp)
 			sprintf(sbf," arg0 .. arg%d",odr[i].arg_count-1);
 			(void) strcat(buf, sbf);
 		}
-		(void) fprintf(fp, buf);
+		(void) fprintf(fp, "%s", buf);
 		for(j=strlen(buf); j<sizeof(buf); j++) {
 			putc(' ', fp);
 		}
