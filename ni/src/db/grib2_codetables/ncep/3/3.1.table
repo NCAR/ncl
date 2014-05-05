@@ -38,5 +38,6 @@
 1200:1200:Time section grid
 # 1201-32767 Reserved
 32768:32768:Rotated latitude/longitude (Arakawa Staggered E-Grid)
+32769:32769:Arakawa Non-E Staggered Rotated Latitude/Longitude Grid
 # 32768-65534 Reserved for local use
 65535:65535:Missing
