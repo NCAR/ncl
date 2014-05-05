@@ -2660,7 +2660,7 @@ GribFileRecord *therec;
 		if (cp && ! strcmp(cp,"_hours")) {
 			if ((NrmQuark)therec->options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].values == NrmStringToQuark("numeric"))
 				continue;
-			sprintf(buffer,NrmQuarkToString(dimq));
+			sprintf(buffer,"%s",NrmQuarkToString(dimq));
 			cp = strrchr(buffer,'_');
 			*cp = '\0';
 			newdimq = NrmStringToQuark(buffer);
