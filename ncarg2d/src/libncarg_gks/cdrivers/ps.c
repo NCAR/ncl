@@ -3430,8 +3430,8 @@ void ps_NcarLogo(GKSC *gksc,float x,float y,float size)
                    scaling*(psa->dspace.urx), scaling*(psa->dspace.ury));
   }
 
-  (void) fprintf(fp, translate);
-  (void) fprintf(fp, scale);
+  (void) fprintf(fp, "%s", translate);
+  (void) fprintf(fp, "%s", scale);
   (void) fprintf(fp, "-40 33 translate\n");
   (void) fprintf(fp, "1 -1 scale\n");
   free(scale);

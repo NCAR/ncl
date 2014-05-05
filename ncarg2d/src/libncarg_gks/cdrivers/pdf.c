@@ -398,10 +398,10 @@ void PDFpreamble (PDFddp *psa, preamble_type type)
     object_pointer[0] = byte_count;
 
     strn = "%%PDF-1.4\n";      /* Double % prints as a single % */
-    (void) fprintf(fp, strn);  /* Double % prints as a single % */
+    (void) fprintf(fp, "%s", strn);  /* Double % prints as a single % */
     byte_count += 9;           /* Double % prints as a single % */
     strn = "%%\307\354\217\242\n";
-    (void) fprintf(fp, strn);
+    (void) fprintf(fp, "%s", strn);
     byte_count += 6;        
   
     object_number = 2;
@@ -1783,7 +1783,7 @@ int PDFCloseWorkstation(GKSC *gksc)
  */
   object_pointer[1] = byte_count;
   tstring = " 1 0 obj\n<<\n/Type /Pages\n/Kids [\n";
-  fprintf(fp,tstring);
+  fprintf(fp,"%s", tstring);
   byte_count += strlen(tstring);
 
   for (i = 0; i < psa->page_number-1; i++) {
@@ -1795,7 +1795,7 @@ int PDFCloseWorkstation(GKSC *gksc)
   byte_count += 16;
 
   tstring = ">>\nendobj\n";
-  fprintf(fp,tstring);
+  fprintf(fp,"%s",tstring);
   byte_count += strlen(tstring);
 
 /*
@@ -3646,7 +3646,7 @@ void PDFPutStream(FILE *fp) {
   fprintf(fp, "%6d 0 obj\n<< /Length %10d >>\nstream\n",object_number+1,
                stream_size);
   for (i = 0; i < num_page_lines+1; i++) {
-    fprintf(fp,page_lines[i]);
+    fprintf(fp,"%s", page_lines[i]);
     fflush(fp);
   }
   fprintf(fp, "endstream\nendobj\n");

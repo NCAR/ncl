@@ -310,9 +310,9 @@ void InsertLogo(float angle, float size, float xpos, float ypos, FILE *fp) {
   sprintf(rotate,"%10.2f ", angle);
   sprintf(rotate+11,"rotate\n");
 
-  (void) fprintf(fp, translate);
-  (void) fprintf(fp, scale);
-  (void) fprintf(fp, rotate);
+  (void) fprintf(fp, "%s", translate);
+  (void) fprintf(fp, "%s", scale);
+  (void) fprintf(fp, "%s", rotate);
   free(translate);
   free(scale);
   free(rotate);
