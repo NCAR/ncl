@@ -267,7 +267,7 @@ main(int argc,char* argv[])
 	char *type = "NclANY";
 	
 
-	fprintf(stdout,initial_fmt);
+	fprintf(stdout,"%s", initial_fmt);
 	if(!yyparse()) {
 /*
 		tmp = wrap_list;
@@ -277,7 +277,7 @@ main(int argc,char* argv[])
 			
 		}
 */
-		fprintf(stdout,init_fmt);
+		fprintf(stdout,"%s",init_fmt);
 		tmp = wrap_list;
 		while(tmp!= NULL) {
 			fprintf(stdout,"\tnargs = 0;\n");
@@ -357,7 +357,7 @@ main(int argc,char* argv[])
 			}
 			tmp = tmp->next;
 		}
-		fprintf(stdout,endf_fmt);
+		fprintf(stdout,"%s",endf_fmt);
 		exit(0);
 	} else {
 		fprintf(stdout,"Everything is NOT ok!\n");
