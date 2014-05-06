@@ -168,3 +168,23 @@ NhlErrorTypes _NclListAppend(NclObj thelist, NclObj theobj)
 	return(NhlFATAL);
 }
 
+
+void _NclBuildArrayOfList(void *tmp_val, int ndims, ng_size_t *dim_sizes)
+{
+        obj *id = (obj *)tmp_val;
+        NclList tmp_list;
+        ng_size_t i;
+        ng_size_t n_items = 1;
+        int list_type = (int) (NCL_FIFO);
+
+        for(i = 0; i < ndims; i++)
+                n_items *= dim_sizes[i];
+
+        for(i = 0; i < n_items; i++)
+        {
+                tmp_list =(NclList)_NclListCreate(NULL,NULL,0,0,list_type);
+                _NclListSetType((NclObj)tmp_list,list_type);
+                id[i] = tmp_list->obj.id;
+        }
+}
+

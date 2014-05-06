@@ -40,6 +40,8 @@ extern void _NclListDestroy(NclObj);
 
 extern NhlErrorTypes _NclListAppend(NclObj , NclObj );
 
+extern void _NclBuildArrayOfList(void *tmp_val, int ndims, ng_size_t *dim_sizes);
+
 #endif /*_ListSupport_h */
 
 
