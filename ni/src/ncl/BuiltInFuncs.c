@@ -21485,7 +21485,7 @@ NhlErrorTypes   _NclIFileIsPresent
     int i = 0;
 
     NclFile file = NULL;
-    int rw_v = 0;
+    int rw_v = 1;
 
     files = (NclQuark *) NclGetArgValue(
                 0, 
