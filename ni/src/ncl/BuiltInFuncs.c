@@ -4448,6 +4448,7 @@ int asciifloat(char *buf, char **end, int type, void *retvalue,char **rem) {
  * Nan is not valid for integers.
  */
 int asciiinteger(char *buf, char **end, int type, void *retvalue,char **rem) {
+	double tmpd;
 	const char *initchars = "0123456789+-.";
 	int i;
 	int ishex = 0;
@@ -4472,6 +4473,9 @@ int asciiinteger(char *buf, char **end, int type, void *retvalue,char **rem) {
 					(*end)++;
 				}
 			}
+		}
+		else {
+			tmpd = strtod(&(buf[i]),end);
 		}
 		if (**end == '\0') {
 			*rem = &(buf[i]);
