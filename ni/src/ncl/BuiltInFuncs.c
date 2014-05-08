@@ -21525,7 +21525,7 @@ NhlErrorTypes   _NclIFileIsPresent
         }
         else
 	{
-            if(stat(fpath, &st))
+            if(stat(_NGResolvePath(fpath),&st))
             {
                 char tmp_path[NCL_MAX_STRING];
                 char *ext_name;
