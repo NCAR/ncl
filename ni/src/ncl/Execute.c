@@ -1930,6 +1930,7 @@ void CallSET_NEXT_OP(void)
 			case Ncl_Var:
 			case Ncl_HLUVar:
 			case Ncl_CoordVar:
+			case Ncl_MultiDValData:
 			case Ncl_MultiDVallistData:
 				(void)_NclChangeSymbolType(temporary,VAR);
 				tmp_ptr->kind = NclStk_VAR;
