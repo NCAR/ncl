@@ -1610,14 +1610,12 @@ static NhlErrorTypes CnStdRender
 				if (cnp->fill_mode == NhlRASTERFILL) {
 					mode = "RasterFill";
 				}
-				e_text =  "%s: coordinates are out of range for drawing over a map: standard %s rendering method will not work;\n consider setting the resource trGridType to \"TriangularMesh\" if coordinates contain missing values";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,cnp->fill_mode == NhlAREAFILL ? "AreaFill" : "RasterFill");
-				return(NhlFATAL);
+				e_text =  "%s: out of range coordinates encountered; standard %s rendering method may be unreliable;\n consider setting the resource trGridType to \"TriangularMesh\" if coordinates contain missing values";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,cnp->fill_mode == NhlAREAFILL ? "AreaFill" : "RasterFill");
 			}
 			else if (cnp->lines_on || cnp->line_lbls.on) {
-				e_text =  "%s: coordinates are out of range for drawing over a map: standard line or line label rendering method will not work;\n consider setting the resource trGridType to \"TriangularMesh\" if coordinates contain missing values";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-				return(NhlFATAL);
+				e_text =  "%s: out of range coordinates encountered; standard %s rendering method may be unreliable;\n consider setting the resource trGridType to \"TriangularMesh\" if coordinates contain missing values";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			}
 		}
 	}
