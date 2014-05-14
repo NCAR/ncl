@@ -11722,6 +11722,39 @@ begin
   return( pdf2 )
 end
 ; ----
+undef("pdfxy_conform")
+function pdfxy_conform(x,y,nbinx,nbiny,opt)  ; same arguments as pdfxy
+;
+; Work around to allow x and y to be different sizes
+; Same arguments as pdfxy
+
+local N, M, X, Y, XX, YY, pdf2
+begin
+    N = product(dimsizes(x))
+    M = product(dimsizes(y))
+
+    if (N.eq.M) then
+        pdf2 = pdfxy(x,y,nbinx,nbiny,opt)
+        return(pdf2)
+    end if
+
+    X = ndtooned(x)
+    Y = ndtooned(y)
+
+    if (N.gt.M) then
+        YY   = new(N, typeof(Y), getVarFillValue(Y))
+        YY(0:M-1) = (/ Y /)
+        pdf2 = pdfxy(X,YY,nbinx,nbiny,opt)
+    else
+        XX   = new(M, typeof(X), getVarFillValue(X))
+        XX(0:N-1) = (/ X /)
+        pdf2 = pdfxy(XX,Y,nbinx,nbiny,opt)
+    end if
+
+    return(pdf2)
+end 
+
+; ----
 undef ("genNormalDist")
 function genNormalDist(xAve[1]:numeric, xStd[1]:numeric, opt:logical) 
 ; Usage:
