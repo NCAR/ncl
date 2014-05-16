@@ -12385,7 +12385,11 @@ begin
 
    if (isvar("shadem").and.any(cnlvls.ge.lowval.and.cnlvls.le.highval)) then
      ii := ind(cnlvls.ge.lowval.and.cnlvls.le.highval)
-     colist(ii(1:)) = shadem    ; Don't include the first value in ii
+     if (dimsizes(ii).ge.2) then
+        colist(ii(1:)) = shadem    ; Don't include the first value in ii
+     else
+        print("gsn_contour_shade: 1 contour level or less found between "+lowval+" and "+highval+", not color filling")
+     end if
    end if
 
    if (.not.(isatt(opt,"gsnShadeFillType")).or. \
