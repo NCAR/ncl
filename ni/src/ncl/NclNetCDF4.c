@@ -1159,8 +1159,8 @@ NclFileCompoundRecord *get_nc4_compoundrec(int ncid, nc_type xtype, NrmQuark **c
     comprec->xtype = xtype;
     comprec->base_nc_type = base_nc_type;
 
-    componentnames = (NrmQuark*)NclMalloc(nfields * sizeof(NrmQuark));
-    *componentnamesptr = componentnames;
+    *componentnamesptr = (NrmQuark*)NclMalloc(nfields * sizeof(NrmQuark));
+    componentnames = *componentnamesptr;
 
     for(fidx = 0; fidx < nfields; fidx++)
     {
@@ -1196,7 +1196,7 @@ NclFileCompoundRecord *get_nc4_compoundrec(int ncid, nc_type xtype, NrmQuark **c
         compnode->sides = sides;
         compnode->nvals = 1;
 
-        componentnames[i] = compnode->name;
+        componentnames[fidx] = compnode->name;
 
         nc_inq_compound_size(ncid, xtype, &size);
 
@@ -1218,7 +1218,7 @@ NclFileCompoundRecord *get_nc4_compoundrec(int ncid, nc_type xtype, NrmQuark **c
     return comprec;
 }
 
-NclMultiDValData get_nc4_vlenlist(int ncid, int varid, nc_type xtype)
+NclMultiDValData get_nc4_vlenlist(int ncid, int varid, nc_type xtype, NclBasicDataTypes* vlentype)
 {
     NclList vlenlist;
     size_t size;
@@ -1229,7 +1229,7 @@ NclMultiDValData get_nc4_vlenlist(int ncid, int varid, nc_type xtype)
     int dimids[NCL_MAX_DIMENSIONS];
     char var_name[NC_MAX_NAME];
     char buffer[NC_MAX_NAME];
-    int natts, ndims;
+    int natts, ndims, nvlendims;
     nc_type var_type;
     int i;
 
@@ -1239,13 +1239,12 @@ NclMultiDValData get_nc4_vlenlist(int ncid, int varid, nc_type xtype)
 
     NclQuark  dimnames[NCL_MAX_DIMENSIONS];
     ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+    ng_size_t vlendimsizes[1];
 
     void *vlenvalues;
     NclVar vlenvar;
-    NclBasicDataTypes vlentype;
 
-    ng_size_t one = 1;
-    int *id = (int *)NclMalloc(sizeof(int));
+    obj *listids = NULL;
 
     NclMultiDValData vlen_md;
   /*
@@ -1285,20 +1284,6 @@ NclMultiDValData get_nc4_vlenlist(int ncid, int varid, nc_type xtype)
    *                   base_nc_type, (int)size, buffer, sizeof(nc_vlen_t));
    */
 
-    vlentype = NC4MapToNcl(&base_nc_type);
-    vlenlist = (NclList)_NclListCreate(NULL, NULL, 0, 0, NCL_FIFO);
-    assert(vlenlist);
-
-    *id = vlenlist->obj.id;
-    vlen_md = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,0,id,
-                                          NULL,1,&one,TEMPORARY,NULL);
-  /*
-   *_NclListSetType((NclObj)vlenlist,NCL_FIFO);
-   */
-
-    vlenlist->list.list_quark = NrmStringToQuark(buffer);
-    vlenlist->obj.obj_type = Ncl_List;
-
     nc_inq_var(ncid, varid, var_name, &var_type, &ndims, dimids, &natts);
 
   /*
@@ -1319,28 +1304,39 @@ NclMultiDValData get_nc4_vlenlist(int ncid, int varid, nc_type xtype)
     values = (void *)NclCalloc(wlen, sizeof(nc_vlen_t));
     assert(values);
 
+    listids = (obj *)NclMalloc(wlen * sizeof(obj));
+    assert(listids);
+
+    _NclBuildArrayOfList(listids, ndims, dimsizes);
+
     nc_get_var(ncid, varid, values);
 
-    ndims = 1;
+    *vlentype = NC4MapToNcl(&base_nc_type);
+
+    nvlendims = 1;
     dimnames[0] = NrmStringToQuark("vlendim");
     for(i = 0; i < wlen; i++)
     {
-        dimsizes[0] = (ng_size_t)values[i].len;
+        vlendimsizes[0] = (ng_size_t)values[i].len;
 
-        vlen = values[i].len * _NclSizeOf(vlentype);
+        vlen = values[i].len * _NclSizeOf(*vlentype);
         vlenvalues = (void *)NclCalloc(vlen, sizeof(void));
         assert(vlenvalues);
         memcpy(vlenvalues, values[i].p, vlen);
 
         sprintf(buffer, "%s_%3.3d", var_name, i);
         vlenvar = _NclCreateVlenVar(buffer, vlenvalues,
-                                    ndims, dimnames,
-                                    dimsizes, vlentype);
+                                    nvlendims, dimnames,
+                                    vlendimsizes, *vlentype);
+        vlenlist = _NclGetObj(listids[i]);
         _NclListAppend((NclObj)vlenlist, (NclObj)vlenvar);
     }
 
     nc_free_vlens(wlen, values);
     free(values);
+
+    vlen_md = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,0,listids,
+                                          NULL,ndims,dimsizes,TEMPORARY,NULL);
 
     return vlen_md;
 }
@@ -3082,7 +3078,8 @@ found_component:
            *                 NrmQuarkToString(varnode->name), varnode->type);
            */
 
-            storage = (void *)get_nc4_vlenlist(varnode->gid, varnode->id, varnode->the_nc_type);
+            varnode->udt_type = NCL_UDT_vlen;
+            storage = (void *)get_nc4_vlenlist(varnode->gid, varnode->id, varnode->the_nc_type, &varnode->base_type);
             ret = 0;
             return(storage);
         }
@@ -3701,6 +3698,8 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 {
                     dimnode = &(varnode->dim_rec->dim_node[n]);
                     data_size *= (size_t) dimnode->size;
+                    if(dimnode->is_unlimited)
+                        in_whole = 0;
                 }
 
                 if(NULL != comp_rec)
@@ -3757,14 +3756,21 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                         }
                     }
         
-                    ret = nc_put_var(fid, varnode->id, data_value);
-
-                  /*
-                   *ret = nc_put_vara(fid, varnode->id,
-                   *                  start, (long *)count,
-                   *                  data_value);
-                   */
-        
+                    if(no_stride)
+                    {
+                        if(in_whole)
+                            ret = nc_put_var(fid, varnode->id, data_value);
+                        else
+                            ret = ncvarputg(fid, varnode->id,
+                                            start, (long *)count, NULL, NULL,
+                                            data_value);
+                    }
+                    else
+                    {
+                        ret = ncvarputg(fid, varnode->id,
+                                        start, (long *)count, stride, NULL,
+                                        data_value);
+                    }
                     NclFree(data_value);
                 }
             }
@@ -4716,6 +4722,11 @@ static NhlErrorTypes NC4AddChunkDim(void* therec, NclQuark thedim,
         else
         {
             dimnode = _getDimNodeFromNclFileGrpNode(grpnode, thedim);
+            if(NULL == grpnode->chunk_dim_rec)
+            {
+                grpnode->chunk_dim_rec = _NclFileDimAlloc(NCL_MINIMUM_DIMS);
+                grpnode->chunk_dim_rec->n_dims = 0;
+            }
             _addNclDimNode(&(grpnode->chunk_dim_rec), thedim, dimnode->id, size, is_unlimited);
         }
       /*
@@ -5409,7 +5420,7 @@ NhlErrorTypes NC4AddGrp(void *rec, NclQuark grpname)
     return ret;
 }
 
-static NhlErrorTypes NC4AddVlenVar(void* therec, NclQuark thevar,
+static NhlErrorTypes NC4AddVlenVar(void* therec, NclQuark thevar, NclBasicDataTypes ncl_type,
                                    nc_type vlen_type_id, ng_size_t n_dims,
                                    NclQuark *dim_names, long *dim_sizes)
 {
@@ -5522,6 +5533,9 @@ static NhlErrorTypes NC4AddVlenVar(void* therec, NclQuark thevar,
                 varnode->dim_rec->dim_node[i].id = dim_ids[i];
             }
 
+            varnode->base_type = ncl_type;
+            varnode->udt_type = NCL_UDT_vlen;
+
           /*
            *fprintf(stderr, "\tthevar: <%s>, id: var_id = %d\n", 
            *                   NrmQuarkToString(thevar), varnode->id);
@@ -5618,7 +5632,7 @@ NhlErrorTypes NC4AddVlen(void *rec, NclQuark vlen_name, NclQuark var_name,
         dimnode = _getDimNodeFromNclFileGrpNode(rootgrpnode, dim_names[n]);
         dim_sizes[n] = (long) dimnode->size;
     }
-    ret =  NC4AddVlenVar(rec, var_name, nc_vlen_type_id, n_dims, dim_names, dim_sizes);
+    ret =  NC4AddVlenVar(rec, var_name, ncl_type, nc_vlen_type_id, n_dims, dim_names, dim_sizes);
 
   /*
    *NclFree(mem_name);
