@@ -2399,7 +2399,8 @@ NhlErrorTypes _NclIDelete
 		if (data.u.data_obj->obj.obj_type == Ncl_MultiDVallistData) {
 			NclObj list_obj = _NclGetObj(*(int*) data.u.data_obj->multidval.val);
 			while ((tmp = _NclListPop(list_obj))) {
-				if (tmp->obj.obj_type == Ncl_Var || tmp->obj.obj_type == Ncl_HLUVar) {
+				if (tmp->obj.obj_type == Ncl_Var || tmp->obj.obj_type == Ncl_HLUVar
+				    || tmp->obj.obj_type == Ncl_CoordVar || tmp->obj.obj_type == Ncl_FileVar) {
 					switch(((NclVar)tmp)->var.var_type) {
 					case VARSUBSEL:
 					case COORDSUBSEL:
