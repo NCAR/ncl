@@ -171,7 +171,7 @@ begin
         path1 = paths(i) + "/" + colorMapName
         do j=0, dimsizes(suffixes)-1
             path2 = path1 + suffixes(j)
-            if (isfilepresent(path2)) then
+            if (fileexists(path2)) then
               return path2
             end if
           end do
