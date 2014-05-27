@@ -947,7 +947,6 @@ function skewT_PlotData_Original \
           if (localOpts@hemisphere.eq."SH") then      ; hemisphere
                wmsetp("wba",-62.0)                    ; NH (default) is 62.0
           end if
-print(localOpts)
 
           if (localOpts@WspdWdir) then      ; wind spd,dir (?)
               dirw = 0.017453*WDIR(idw)
