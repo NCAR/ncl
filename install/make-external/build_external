@@ -77,7 +77,7 @@ os=`uname -s`
 # Special test for yellowstone/geyser/caldera build.
 #
 # These if tests assume we have the gnu compilers 
-# 4.4.6 and 4.7.2, and the intel compiler 12.1.5.
+# 4.4.7 and 4.7.2, and the intel compiler 12.1.5.
 # You may need to update as necessary.
 # 
 if [ -n "$LIB_NCAR" ] ; then
@@ -85,8 +85,8 @@ if [ -n "$LIB_NCAR" ] ; then
     export PATH=$PREFIX/bin:/glade/apps/opt/gnu/4.7.2/bin:/usr/lib64/qt-3.3/bin:/glade/apps/opt/bin:/glade/apps/el6/usr/bin:/glade/apps/el6/bin:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/etc:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/openssh/5.7p1krb/bin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/ncar/opt/hpss
     export LD_LIBRARY_PATH=/glade/apps/opt/gnu/4.7.2/lib64:/glade/apps/opt/gnu/lib:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/lib
     un="yellowstone_gnu472"
-  elif [ "$COMPILER_VERSION" == "4.4.6" ] ; then
-    un="yellowstone_gnu446"
+  elif [ "$COMPILER_VERSION" == "4.4.7" ] ; then
+    un="yellowstone_gnu447"
   else
     un="yellowstone_intel1215"
     export PATH=$PREFIX/bin:/glade/apps/opt/ncl/6.1.2/intel/12.1.5/bin:/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/etc:/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/bin:/usr/lib64/qt-3.3/bin:/ncar/opt/intel/12.1.0.233/composer_xe_2011_sp1.11.339/bin/intel64:/glade/apps/opt/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/openssh/5.7p1krb/bin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/ncar/opt/hpss:/glade/apps/opt/netcdf/4.3.0/intel/12.1.5/bin:/usr/lpp/mmfs/bin
@@ -114,7 +114,7 @@ elif [ "$un" = "yellowstone_gnu472" ] ; then
   export FC=/glade/u/apps/opt/gnu/4.7.2/bin/gfortran
   export F77=/glade/u/apps/opt/gnu/4.7.2/bin/gfortran
   export F90=/glade/u/apps/opt/gnu/4.7.2/bin/gfortran
-elif [ "$un" = "yellowstone_gnu446" ] ; then
+elif [ "$un" = "yellowstone_gnu447" ] ; then
   export CC=/usr/bin/gcc
   export CXX=/usr/bin/g++
   export FC=/usr/bin/gfortran
@@ -161,6 +161,11 @@ fi
 # Software directories, sorted alphabetically
 #--------------------------------------------------------------------
 
+CAIRO_DIR="cairo-1.12.16"
+CURL_DIR="curl-7.35.0"
+ESMF_DIR="esmf-6.3.0r"
+EXPAT_DIR="expat-2.1.0"
+FREETYPE_DIR="freetype-2.5.0.1"
 G2CLIB_DIR="g2clib-1.5.0-patch"
 GDAL_DIR="gdal-1.10.1"
 HDF4_DIR="hdf-4.2.9"
@@ -169,35 +174,33 @@ HDFEOS_DIR="hdfeos-2.18"
 HDFEOS5_DIR="hdfeos5-1.14"
 JASPER_DIR="jasper-1.900.1"
 JPEG_DIR="jpeg-6b"
-NETCDF_DIR="netcdf-c-4.3.2-rc1"
+NETCDF_DIR="netcdf-c-4.3.2"
 NETCDF4_FORTRAN_DIR="netcdf-fortran-4.2"
 NETCDF3_CXX_DIR="netcdf-cxx-4.2"
+PIXMAN_DIR="pixman-0.30.0"
+PKGCONFIG_DIR="pkg-config-0.28"
 PNG_DIR="libpng-1.2.50"
 PROJ4_DIR="proj-4.8.0"
 SZIP_DIR="szip-2.1"
 UDUNITS_DIR="udunits-2.1.24"
 VIS5DPLUS_DIR="vis5d+-1.3.0-beta"
 ZLIB_DIR="zlib-1.2.8"
-PKGCONFIG_DIR="pkg-config-0.28"
-EXPAT_DIR="expat-2.1.0"
-FREETYPE_DIR="freetype-2.5.0.1"
-FONTCONFIG_DIR="fontconfig-2.10.93"
-PIXMAN_DIR="pixman-0.30.0"
-CAIRO_DIR="cairo-1.12.16"
-CURL_DIR="curl-7.35.0"
-ESMF_DIR="esmf-6.3.0r"
-OPENSSL_DIR="openssl-1.0.0c"
-XML2_DIR="libxml2-2.9.1"
-DAP_DIR="libdap-3.8.2"
-NC_DIR="libnc-dap-3.7.4"
+
+#FONTCONFIG_DIR="fontconfig-2.10.93"
+#OPENSSL_DIR="openssl-1.0.0c"
+#XML2_DIR="libxml2-2.9.1"
+#DAP_DIR="libdap-3.8.2"
+#NC_DIR="libnc-dap-3.7.4"
 
 # Indicate which packages you want. These are listed in the order
 # they should generally be built in.
+INSTALL_PKGCONFIG=1
 INSTALL_ZLIB=1
 INSTALL_PNG=1
 INSTALL_JPEG=1
 INSTALL_JASPER=1
 INSTALL_SZIP=1
+INSTALL_CURL=1
 INSTALL_HDF5=1
 INSTALL_HDFEOS5=1
 INSTALL_HDF4=1
@@ -209,12 +212,10 @@ INSTALL_PROJ4=1
 INSTALL_GDAL=1
 INSTALL_G2CLIB=1
 INSTALL_UDUNITS=1
-INSTALL_PKGCONFIG=1
 INSTALL_EXPAT=1
 INSTALL_FREETYPE=1
 INSTALL_PIXMAN=1
 INSTALL_CAIRO=1
-INSTALL_CURL=1
 INSTALL_ESMF=1
 
 # These are ones we probably don't want to do any more
@@ -258,8 +259,8 @@ fi
 if [ ! -d "$PREFIX/man/man1" ] ; then
   mkdir $PREFIX/man/man1
 fi
-if [ $INSTALL_ZLIB ] && [ ! -d $ZLIB_DIR ] ; then
-  echo "$ZLIB_DIR does not exist"
+if [ $INSTALL_PKGCONFIG ] && [ ! -d $PKGCONFIG_DIR ] ; then
+  echo "$PKGCONFIG_DIR does not exist"
   exit
 fi
 if [ $INSTALL_ZLIB ] && [ ! -d $ZLIB_DIR ] ; then
@@ -280,6 +281,10 @@ if [ $INSTALL_JASPER ] && [ ! -d $JASPER_DIR ] ; then
 fi
 if [ $INSTALL_SZIP ] && [ ! -d $SZIP_DIR ] ; then
   echo "$SZIP_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_CURL ] && [ ! -d $CURL_DIR ] ; then
+  echo "$CURL_DIR does not exist"
   exit
 fi
 if [ $INSTALL_HDF5 ] && [ ! -d $HDF5_DIR ] ; then
@@ -330,10 +335,6 @@ if [ $INSTALL_VIS5DPLUS ] && [ ! -d $VIS5DPLUS_DIR ] ; then
   echo "$VIS5DPLUS_DIR does not exist"
   exit
 fi
-if [ $INSTALL_PKGCONFIG ] && [ ! -d $PKGCONFIG_DIR ] ; then
-  echo "$PKGCONFIG_DIR does not exist"
-  exit
-fi
 if [ $INSTALL_EXPAT ] && [ ! -d $EXPAT_DIR ] ; then
   echo "$EXPAT_DIR does not exist"
   exit
@@ -354,10 +355,6 @@ if [ $INSTALL_CAIRO ] && [ ! -d $CAIRO_DIR ] ; then
   echo "$CAIRO_DIR does not exist"
   exit
 fi
-if [ $INSTALL_CURL ] && [ ! -d $CURL_DIR ] ; then
-  echo "$CURL_DIR does not exist"
-  exit
-fi
 if [ $INSTALL_ESMF ] && [ ! -d $ESMF_DIR ] ; then
   echo "$ESMF_DIR does not exist"
   exit
@@ -371,6 +368,40 @@ fi
 # The following section should not need any modification by 
 # the user, unless there is a problem in the script.
 #
+
+#--------------------------------------------------------------------
+# pkg-config
+#--------------------------------------------------------------------
+if [ $INSTALL_PKGCONFIG ] ; then
+  if [ -d "$PKGCONFIG_DIR" ] ; then
+    cd $PKGCONFIG_DIR
+    if [ $CLEAN_BEFORE ] ; then
+      echo "Cleaning $PKGCONFIG_DIR before making..."
+      make distclean
+      make clean
+    fi
+    echo "Building $PKGCONFIG_DIR..."
+    ./configure --prefix\=$PREFIX
+    make all install
+    if [ $? ] ; then
+      echo "$PKGCONFIG_DIR build successful."
+      export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
+      export PATH="$PREFIX/bin:$PATH"
+      if [ $CLEAN_AFTER ] ; then
+        echo "Cleaning $PKGCONFIG_DIR after making..."
+        make distclean
+        make clean
+      fi
+    else
+      echo "$PKGCONFIG_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $PKGCONFIG_DIR doesn't exist"
+  fi
+else
+  echo "Not building pkgconfig..."
+fi
 
 #--------------------------------------------------------------------
 # zlib
@@ -538,6 +569,39 @@ if [ $INSTALL_SZIP ] ; then
   fi
 else
   echo "Not building szip..."
+fi
+
+#--------------------------------------------------------------------
+# libcurl (needed for opendap-enabled netcdf) and may be picked up
+# by other packages like GDAL and cairo.
+#--------------------------------------------------------------------
+if [ $INSTALL_CURL ] ; then
+  if [ -d "$CURL_DIR" ] ; then
+    cd $CURL_DIR
+    if [ $CLEAN_BEFORE ] ; then
+      echo "Cleaning $CURL_DIR before making..."
+      make distclean
+      make clean
+    fi
+    echo "Building $CURL_DIR..."
+    ./configure --prefix\=$PREFIX --with-zlib\=$PREFIX --with-pic --disable-shared
+    make all install
+    if [ $? ] ; then
+      echo "$CURL_DIR build successful."
+      if [ $CLEAN_AFTER ] ; then
+        echo "Cleaning $CURL_DIR after making..."
+        make distclean
+        make clean
+      fi
+    else
+      echo "$CURL_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $CURL_DIR doesn't exist"
+  fi
+else
+  echo "Not building libcurl..."
 fi
 
 #--------------------------------------------------------------------
@@ -721,7 +785,7 @@ then
         ./configure --enable-netcdf-4 --enable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
         make all install
       else
-        if [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu446" ] ; then
+        if [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -ldl"
         else
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
@@ -744,7 +808,7 @@ then
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl -lldap"
         elif [ "$un" = "harmon.cgd.ucar.edu" ] ; then
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lz -lidn -lrt -ldl"
-        elif [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu446" ] ; then
+        elif [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lz -lrt -ldl -lssl -lidn"
         else
           export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl -ldl"
@@ -1019,40 +1083,6 @@ else
 fi
 
 #--------------------------------------------------------------------
-# pkg-config
-#--------------------------------------------------------------------
-if [ $INSTALL_PKGCONFIG ] ; then
-  if [ -d "$PKGCONFIG_DIR" ] ; then
-    cd $PKGCONFIG_DIR
-    if [ $CLEAN_BEFORE ] ; then
-      echo "Cleaning $PKGCONFIG_DIR before making..."
-      make distclean
-      make clean
-    fi
-    echo "Building $PKGCONFIG_DIR..."
-    ./configure --prefix\=$PREFIX
-    make all install
-    if [ $? ] ; then
-      echo "$PKGCONFIG_DIR build successful."
-      export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
-      export PATH="$PREFIX/bin:$PATH"
-      if [ $CLEAN_AFTER ] ; then
-        echo "Cleaning $PKGCONFIG_DIR after making..."
-        make distclean
-        make clean
-      fi
-    else
-      echo "$PKGCONFIG_DIR build NOT successful."
-    fi
-    cd ..
-  else
-    echo "Directory $PKGCONFIG_DIR doesn't exist"
-  fi
-else
-  echo "Not building pkgconfig..."
-fi
-
-#--------------------------------------------------------------------
 # Expat
 #--------------------------------------------------------------------
 if [ $INSTALL_EXPAT ] ; then
@@ -1255,38 +1285,6 @@ if [ $INSTALL_OPENSSL ] ; then
   fi
 else
   echo "Not building Open SSL..."
-fi
-
-#--------------------------------------------------------------------
-# libcurl (needed for opendap-enabled netcdf)
-#--------------------------------------------------------------------
-if [ $INSTALL_CURL ] ; then
-  if [ -d "$CURL_DIR" ] ; then
-    cd $CURL_DIR
-    if [ $CLEAN_BEFORE ] ; then
-      echo "Cleaning $CURL_DIR before making..."
-      make distclean
-      make clean
-    fi
-    echo "Building $CURL_DIR..."
-    ./configure --prefix\=$PREFIX --with-zlib\=$PREFIX --with-pic --disable-shared
-    make all install
-    if [ $? ] ; then
-      echo "$CURL_DIR build successful."
-      if [ $CLEAN_AFTER ] ; then
-        echo "Cleaning $CURL_DIR after making..."
-        make distclean
-        make clean
-      fi
-    else
-      echo "$CURL_DIR build NOT successful."
-    fi
-    cd ..
-  else
-    echo "Directory $CURL_DIR doesn't exist"
-  fi
-else
-  echo "Not building libcurl..."
 fi
 
 #--------------------------------------------------------------------
