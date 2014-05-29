@@ -174,7 +174,7 @@ HDFEOS_DIR="hdfeos-2.18"
 HDFEOS5_DIR="hdfeos5-1.14"
 JASPER_DIR="jasper-1.900.1"
 JPEG_DIR="jpeg-6b"
-NETCDF_DIR="netcdf-c-4.3.2"
+NETCDF4_DIR="netcdf-4.3.2"
 NETCDF4_FORTRAN_DIR="netcdf-fortran-4.2"
 NETCDF3_CXX_DIR="netcdf-cxx-4.2"
 PIXMAN_DIR="pixman-0.30.0"
@@ -750,95 +750,83 @@ fi
 # classic NetCDF-4). This section makes the non-OPeNDAP version
 # first, then the OPeNDAP version
 #--------------------------------------------------------------------
-if [ "$INSTALL_NETCDF" -o "$INSTALL_NETCDF4" ]
+if [ "$INSTALL_NETCDF4" ]
 then
-  if [ -d "$NETCDF_DIR" ] ; then
-    cd $NETCDF_DIR
+  if [ -d "$NETCDF4_DIR" ] ; then
+    cd $NETCDF4_DIR
     if [ $CLEAN_BEFORE ] ; then
-      echo "Cleaning $NETCDF_DIR before making..."
+      echo "Cleaning $NETCDF4_DIR before making..."
       make distclean
       make clean
     fi
-    echo "Building $NETCDF_DIR..."
-    if [ $INSTALL_NETCDF ] ; then
-      ./configure --disable-f90 --prefix\=$PREFIX
-    else
-      export LDFLAGS="-L$PREFIX/lib"
-      export CPPFLAGS="-I$PREFIX/include"
-      echo "Cleaning $NETCDF_DIR to do non-OPeNDAP build"
+    echo "Building $NETCDF4_DIR..."
+    export LDFLAGS="-L$PREFIX/lib"
+    export CPPFLAGS="-I$PREFIX/include"
+    echo "Cleaning $NETCDF4_DIR to do non-OPeNDAP build"
+    make distclean
+    make clean
+    if [ "$os" = "Darwin" ] ; then
+      export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
+      ./configure --enable-netcdf-4 --disable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX_NODAP
+      make all install
+      echo "Cleaning $NETCDF4_DIR to do OPeNDAP build"
       make distclean
       make clean
-      if [ "$os" = "Darwin" ] ; then
-        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
-        ./configure --enable-netcdf-4 --disable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX_NODAP
-        make all install
-        echo "Cleaning $NETCDF_DIR to do OPeNDAP build"
-        make distclean
-        make clean
-        if [ "$un" = "cisl-denton.local" ] || [ "$os_version" = "10.8.4" ] ; then
-          export LIBS="-lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
-        elif [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ] ; then
-          export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
-        else
-          export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
-        fi
-        ./configure --enable-netcdf-4 --enable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
-        make all install
+      if [ "$un" = "cisl-denton.local" ] || [ "$os_version" = "10.8.4" ] ; then
+        export LIBS="-lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
+      elif [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ] ; then
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
       else
-        if [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
-          export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -ldl"
-        else
-          export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
-        fi
-        ./configure --enable-netcdf-4 --disable-dap --disable-shared --prefix\=$PREFIX_NODAP
-        make all install
-        mv config.log config.log.nodap
-        echo "Cleaning $NETCDF_DIR to do OPeNDAP build"
-        make distclean
-        make clean
-        if [ "$un" = "k5" ] ; then
-          export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
-        elif [ "$un" = "k6" ] ; then
-          export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lldap -lrt -lssl"
-        elif [ "$un" = "k7" ] ; then
-          export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lldap -lrt -lssl"
-        elif [ "$un" = "k8" ] ; then
-          export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lldap -lrt -lssl"
-        elif [ "$un" = "k9" ] ; then
-          export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl -lldap"
-        elif [ "$un" = "harmon.cgd.ucar.edu" ] ; then
-          export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lz -lidn -lrt -ldl"
-        elif [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
-          export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lz -lrt -ldl -lssl -lidn"
-        else
-          export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl -ldl"
-        fi
-        ./configure --enable-netcdf-4 --enable-dap --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
-        make all install
-        unset LIBS
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
       fi
+      ./configure --enable-netcdf-4 --enable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
+      make all install
+    else
+      if [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -ldl"
+      else
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
+      fi
+      ./configure --enable-netcdf-4 --disable-dap --disable-shared --prefix\=$PREFIX_NODAP
+      make all install
+      mv config.log config.log.nodap
+      echo "Cleaning $NETCDF4_DIR to do OPeNDAP build"
+      make distclean
+      make clean
+      if [ "$un" = "k5" ] ; then
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
+      elif [ "$un" = "k6" ] ; then
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lldap -lrt -lssl"
+      elif [ "$un" = "k7" ] ; then
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lldap -lrt -lssl"
+      elif [ "$un" = "k8" ] ; then
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lldap -lrt -lssl"
+      elif [ "$un" = "k9" ] ; then
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl -lldap"
+      elif [ "$un" = "harmon.cgd.ucar.edu" ] ; then
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lz -lidn -lrt -ldl"
+      elif [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lz -lrt -ldl -lssl -lidn"
+      else
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl -ldl"
+      fi
+      ./configure --enable-netcdf-4 --enable-dap --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
+      make all install
+      unset LIBS
     fi
     if [ $? ] ; then
-      if [ $INSTALL_NETCDF ] ; then
-        echo "$NETCDF_DIR build successful."
-      else
-        echo "$NETCDF_DIR (classic NetCDF-4) build successful."
-      fi      
+      echo "$NETCDF4_DIR build successful."
       if [ $CLEAN_AFTER ] ; then
-        echo "Cleaning $NETCDF_DIR after making..."
+        echo "Cleaning $NETCDF4_DIR after making..."
         make distclean
         make clean
       fi
     else
-      if [ $INSTALL_NETCDF ] ; then
-        echo "$NETCDF_DIR build NOT successful."
-      else
-        echo "$NETCDF_DIR (classic NetCDF-4) build NOT successful."
-      fi      
+      echo "$NETCDF4_DIR build NOT successful."
     fi
     cd ..
   else
-    echo "Directory $NETCDF_DIR doesn't exist"
+    echo "Directory $NETCDF4_DIR doesn't exist"
   fi
 else
   echo "Not building NetCDF C interface..."
