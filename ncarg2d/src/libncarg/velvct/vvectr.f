@@ -582,6 +582,7 @@ C
       CALL GSTXCI(IOT)
       CALL GSFACI(IOK)
       CALL GSFAIS(IOF)
+      CALL NGSETI('CT', ICI)
 C
 C Set the read-only min/max vector sizes to reflect the vectors
 C actually drawn
