@@ -193,7 +193,7 @@ begin
   maxValue = -1.0
   i = 0
   do while (i.lt.dimsizes(lines) .and. numColors.lt.MAXCOLORS)
-      if (strlen(lines(i)).eq.0) then  
+      if (ismissing(strlen(lines(i))) .or. strlen(lines(i)).eq.0) then  
           lines(i) = "#"  ; zero-lengthed lines cause us grief...
       end if 
       tokens = str_split(lines(i), " ")
