@@ -4231,13 +4231,13 @@ local nFill, dn, z, cf, clmDaySmth
 begin
   
 ; The following was commented out (post 6.2.0) when people started using 
-; this on daily SSTs which, of course, have _FIllValue over land.
+; this on daily SSTs which, of course, have _FillValue over land.
  
  ;if (isatt(clmDay, "_FillValue")) then
  ;    nFill = num(ismissing(clmDay))
  ;    if (nFill.gt.0) then
- ;        print("smthClmDay_TLL: No missing values allowed: ezfftf does not allow")
- ;        print("smthClmDay_TLL: nFill="+nFill)
+ ;        print("smthClmDayTLL: No missing values allowed: ezfftf does not allow")
+ ;        print("smthClmDayTLL: nFill="+nFill)
  ;        exit  
  ;    end if
  ;end if
@@ -4270,12 +4270,15 @@ function smthClmDayTLLL (clmDay[*][*][*][*]:numeric, nHarm:integer)
 ;  lxf: Li 2011-05-15
 local nFill, dn, z, cf, clmDaySmth
 begin
+  
+; The following was commented out (post 6.2.0) when people started using 
+; this on daily ocean which, of course, have _FillValue over land.
 
   if (isatt(clmDay, "_FillValue")) then
       nFill = num(ismissing(clmDay))
       if (nFill.gt.0) then
-          print("smthClmDay_TLLL: No missing values allowed: ezfftf does not allow")
-          print("smthClmDay_TLLL: nFill="+nFill)
+          print("smthClmDayTLLL: No missing values allowed: ezfftf does not allow")
+          print("smthClmDayTLLL: nFill="+nFill)
           exit
       end if
   end if
@@ -7916,7 +7919,7 @@ begin
 
      yrFrac@long_name = "Time"
      yrFrac@units     = "YYYY + fractional portion of year"
-     yrFrac@NCL       = "contributed.ncl: function yyyymmddhhhh_to_yyyyFrac"
+     yrFrac@NCL       = "contributed.ncl: function yyyymmddhh_to_yyyyFrac"
 
      return(yrFrac)
 end
