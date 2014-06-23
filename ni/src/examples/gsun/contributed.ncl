@@ -4230,14 +4230,17 @@ function smthClmDayTLL (clmDay[*][*][*]:numeric, nHarm:integer)
 local nFill, dn, z, cf, clmDaySmth 
 begin
   
-  if (isatt(clmDay, "_FillValue")) then
-      nFill = num(ismissing(clmDay))
-      if (nFill.gt.0) then
-          print("smthClmDay_TLL: No missing values allowed: ezfftf does not allow")
-          print("smthClmDay_TLL: nFill="+nFill)
-          exit  
-      end if
-  end if
+; The following was commented out (post 6.2.0) when people started using 
+; this on daily SSTs which, of course, have _FIllValue over land.
+ 
+ ;if (isatt(clmDay, "_FillValue")) then
+ ;    nFill = num(ismissing(clmDay))
+ ;    if (nFill.gt.0) then
+ ;        print("smthClmDay_TLL: No missing values allowed: ezfftf does not allow")
+ ;        print("smthClmDay_TLL: nFill="+nFill)
+ ;        exit  
+ ;    end if
+ ;end if
 
   dn = getvardims(clmDay)                   ; get dimension names
   if (dn(0).ne."year_day") then
