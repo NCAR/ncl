@@ -2097,9 +2097,15 @@ begin
   lon = fwgt->xc_b(0:mlon-1)
 
   if(.not.is_rectilinear) then
+     tmplat    = fwgt->yc_b(nlat/2::mlon)
+     tmplon    = fwgt->xc_b(mlon:2*mlon-1)
+     nlat_test = dimsizes(lat)
+     nlon_test = dimsizes(lon)
+     nlat_tmp  = dimsizes(tmplat)
+     nlon_tmp  = dimsizes(tmplon)
 ;---Test for "rectilinear-ness"
-     if (all(lat.eq.fwgt->yc_b(nlat/2::mlon)).and. \
-         all(lon.eq.fwgt->xc_b(mlon:2*mlon-1))) then
+     if (nlat_test.eq.nlat_tmp.and.nlon_test.eq.nlon_tmp.and.\
+         all(lat.eq.tmplat).and.all(lon.eq.tmplon)) then
        if(DEBUG) then
          print("ESMF_copy_varcoords: detected a rectilinear grid.")
          dq = str_get_dq()
@@ -2113,6 +2119,7 @@ begin
        sd_regrid@lon2d = reshape(fwgt->xc_b,(/nlat,mlon/))
        return
      end if
+     delete([/tmplat,tmplon/])
   end if
 
 ;---Must be rectilinear!
