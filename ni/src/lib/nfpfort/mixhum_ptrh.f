@@ -43,7 +43,7 @@ c local
 c                                    mix ratio
       QW = QST* (RH*.01D0)
 c                                    ?specific hum?
-      IF (ISWIT.EQ.2) THEN
+      IF ((ABS(ISWIT).EQ.2) THEN
           QW = QW/ (1.D0+QW)
       END IF
 
