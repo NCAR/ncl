@@ -7661,7 +7661,8 @@ static NhlErrorTypes AdvancedFileWriteVarVar(NclFile infile, NclQuark lhs_var,
 
                 if(1 == tmp_var->var.dim_info[i].dim_size)
                 {
-                    if(NrmStringToQuark("ncl_scalar") == thefile->advancedfile.grpnode->dim_rec->dim_node[0].name)
+                    if((NULL != thefile->advancedfile.grpnode->dim_rec) &&
+                       (NrmStringToQuark("ncl_scalar") == thefile->advancedfile.grpnode->dim_rec->dim_node[0].name))
                         continue;
                 }
 
