@@ -713,6 +713,92 @@ begin
 end
 
 ;***********************************************************************;
+; This function returns the list of named colors in the rgb.txt file.
+; This can be used to test for valid color names.
+;***********************************************************************;
+undef("get_named_color_list")
+function get_named_color_list()
+local db_dir, lines
+begin
+;---Read the rgb.txt file.
+  db_dir = ncargpath("database")
+  lines  = asciiread(db_dir + "/rgb.txt",-1,"string")
+;
+; Read list of named colors off the file.
+;
+; Need to use str_get_cols and not str_get_field,
+; because some color names have spaces in them,
+; and hence we can't use a space as a delimiter.
+;
+  named_colors = str_strip(str_get_cols(lines,12,-1))
+  return(named_colors)
+end
+
+;***********************************************************************;
+; This function checks the list of named colors to make sure they are
+; all valid.  It will return a logical array of the same size as the 
+; input array.
+;***********************************************************************;
+undef("is_valid_named_colors")
+function is_valid_named_colors(colors[*]:string)
+local i, valid_named_colors, ncolors
+begin
+  named_colors = str_lower(get_named_color_list())   ; list of valid colors
+
+  ncolors            = dimsizes(colors)
+  valid_named_colors = new(ncolors,logical)
+  valid_named_colors = False    ; initialize to False
+  do i=0,ncolors-1
+    if(any(str_lower(colors(i)).eq.named_colors)) then
+      valid_named_colors(i) = True
+    end if
+  end do
+  return(valid_named_colors)
+end
+
+;***********************************************************************;
+; This function returns the type of color being used: 
+;    color index     - values 0 to 255    "index"
+;    named color     - "blue"             "named"
+;    RGB triplet     - (/1,0,0.5/)        "rgb"
+;    RGBA quadruplet - (/1,0,0.5,0.5/)    "rgba"
+;
+; A missing string is returned if no valid type is detected.
+;***********************************************************************;
+undef("get_color_type")
+function get_color_type(color)
+local dims_color, rank_color
+begin
+  dims_color = dimsizes(color)
+  rank_color = dimsizes(dims_color)
+
+  if(rank_color.eq.1.and.dims_color.eq.1.and.\
+     typeof(color).eq."string".and.is_valid_named_colors(color)) then
+    return("named")
+  end if
+
+  if(rank_color.eq.1.and.dims_color.eq.1.and.\ 
+    any(typeof(color).eq.(/"short","integer","long"/)).and.\
+     color.ge.0.and.color.le.255) then
+    return("index")
+  end if
+
+  if((rank_color.eq.1.and.dims_color(0).eq.3.or.\ 
+      rank_color.eq.2.and.dims_color(1).eq.3).and.\
+     isnumeric(color).and.all(color.ge.0).and.all(color.le.1.0)) then
+    return("rgb")
+  end if
+
+  if((rank_color.eq.1.and.dims_color(0).eq.4.or.\ 
+      rank_color.eq.2.and.dims_color(1).eq.4).and.\
+     isnumeric(color).and.all(color.ge.0).and.all(color.le.1.0)) then
+    return("rgba")
+  end if
+
+  return(new(1,string))    ; otherwise return missing
+end
+
+;***********************************************************************;
 ; This function returns the RGB triplets associated with a 
 ; given list of named colors.
 ; 
@@ -727,27 +813,21 @@ function namedcolor2rgb(names[*]:string)
 local db_dir, lines, named_colors, i, ii, ncolors, \
 lnames, rgb_array
 begin
-;---Read the rgb.txt file.
-  db_dir = ncargpath("database")
-  lines  = asciiread(db_dir + "/rgb.txt",-1,"string")
-;
-; Read list of named colors off the file.
-;
-; Need to use str_get_cols and not str_get_field,
-; because some color names have spaces in them,
-; and hence we can't use a space as a delimiter.
+;---Read list of named colors off the file.
+  named_colors = str_lower(get_named_color_list())
 ;
 ; Use str_sub_str to remove all tabs and spaces around
 ; and inside the color name.
 ;
-  named_colors = str_lower(str_get_cols(lines,12,-1))
   named_colors = str_sub_str(named_colors," ","")
   named_colors = str_sub_str(named_colors,"	","")
+  lnames       = str_lower(names)
+  ncolors      = dimsizes(names)
+  rgb_array    = new((/ncolors,3/),float)
 
-;---Convert to lower case.
-  lnames    = str_lower(names)
-  ncolors   = dimsizes(names)
-  rgb_array = new((/ncolors,3/),float)
+;---Read the rgb.txt file.
+  db_dir = ncargpath("database")
+  lines  = asciiread(db_dir + "/rgb.txt",-1,"string")
 
 ;---Loop through named colors and find the requested one(s).
   do i=0,ncolors-1
@@ -763,7 +843,7 @@ begin
       rgb_array(i,2) = tointeger(str_get_field(lines(ii(0)),3,\
                                  " 	"))/255.
     else
-      print("Warning:namedcolor2rgb: '" + names(i)  + "' is not a valid named color.")
+      print("Warning: namedcolor2rgb: '" + names(i)  + "' is not a valid named color.")
       print("Will return missing values for this color.")
     end if
     delete(ii)
@@ -8051,63 +8131,14 @@ end
 ; Function : get_rgb_values                                             ;
 ;              named_colors: string array of named colors               ;
 ;                                                                       ;
-; This function retrieves the RGB of the list of named colors, if they  ;
-; exist.  If any of the named colors don't exist, then a missing value  ;
-; is returned.                                                          ;
-;                                                                       ;
+; This is a deprecated function. Use namedcolor2rgb instead.            ;
 ;***********************************************************************;
 undef("get_rgb_values")
 function get_rgb_values(named_colors)
 begin
-;
-; Read in rgb.txt file that has named colors and RGB values.
-;
-  rgb_file = "$NCARG_ROOT/lib/ncarg/database/rgb.txt"
-  rgb_text = asciiread(rgb_file,-1,"string")
-
-  do i=0,dimsizes(rgb_text)-1
-    rgb_text(i) = lower_case(rgb_text(i))  ; convert to lower case
-  end do
-
-  rgb_text_char = stringtocharacter(rgb_text)    ; convert to character
-;
-; Normalize RGB values.
-;
-  red   = stringtointeger(charactertostring(rgb_text_char(:,0:2)))/255.
-  green = stringtointeger(charactertostring(rgb_text_char(:,4:6)))/255.
-  blue  = stringtointeger(charactertostring(rgb_text_char(:,8:10)))/255.
-;
-; Color names don't start in the same column, so we have to search
-; for them.  The end of the RGB values is column 10, so start searching
-; in column 12 (we know there's a space in column 11).
-;
-  names = new(dimsizes(rgb_text_char(:,0)),string)
-  do i=0,dimsizes(names)-1
-    tmp_name = rgb_text_char(i,12:)
-    j = 0
-    done = False
-    do while(j.lt.(dimsizes(tmp_name)-1).and..not.done)
-      if(tmp_name(j).ne." ".and.tmp_name(j).ne."	") then
-        names(i) = charactertostring(rgb_text_char(i,12+j:))
-        done = True
-      end if
-      j = j+1
-    end do
-    delete(tmp_name)
-  end do
-
-  ncolors = dimsizes(named_colors)
-  rgb_values = new((/ncolors,3/),float)
-
-  do i=0,ncolors-1
-    index = ind(lower_case(named_colors(i)).eq.names)
-    if(.not.ismissing(index))
-      rgb_values(i,0) = red(index)
-      rgb_values(i,1) = green(index)
-      rgb_values(i,2) = blue(index)
-    end if
-  end do
-  return(rgb_values)
+  print("get_rgb_values: this function is deprecated.")
+  print("   Use 'namedcolor2rgb' instead.")
+  return(namedcolor2rgb(named_colors))
 end
 
 
@@ -8242,7 +8273,7 @@ begin
 ; colors and only append colors 2 and on.  If it is named colors, 
 ; then we'll append all of the named colors.
 ;
-    rgb_values = get_rgb_values(cmap2)
+    rgb_values = namedcolor2rgb(cmap2)
     indices    = ind(.not.ismissing(rgb_values(:,0)))
 	if(all(ismissing(indices)))
       gsn_define_colormap(wks,cmap2)    ; Must be a color map name.
@@ -10514,7 +10545,7 @@ begin
 ; Find out the rgb values of each color and put it into
 ; an array
 ;
-  rgb_values = get_rgb_values(colors)
+  rgb_values = namedcolor2rgb(colors)
   rgb_val = new(ncolors, string)
   do l =0, ncolors-1, 1
 	rgb_val(l) = sprintf("%.2f", rgb_values(l,0)) + "," + \
@@ -12287,13 +12318,20 @@ end
 ;                                                                       ;
 ; This function was updated July 2013 to allow any combination of       ;
 ; gsnShadeLow, gsnShadeMid, and gsnShadeHigh to be set.                 ;
+;                                                                       ;
+; This function was updated July 2014 to allow RGB and RGBA values for  ;
+; color. The following are now valid for colors:                        ;    
+;                                                                       ;
+;  Color index value:  opt@gsnShadeLow  = 5                             ;
+;  Named color:        opt@gsnShadeHigh = "blue"                        ;
+;  RGB color:          opt@gsnShadeHigh = (/1.,0.,0.5/)                 ;
+;  RGBA color:         opt@gsnShadeHigh = (/1.,0.,0.5,0.5/)             ;
 ;***********************************************************************;
 undef("gsn_contour_shade")
 function gsn_contour_shade(plot:graphic,lowval:numeric,highval:numeric,\
                            opt:logical) 
 local cnlvls, colist, i, N, shaden, shadep, shadem, ovrly_ids, idstring
 begin
-
    getvalues plot
       "pmOverlaySequenceIds" : ovrly_ids
    end getvalues
@@ -12328,65 +12366,122 @@ begin
 ;---Error checking on the gsnShadeL/M/H resources
    if (opt.and.(isatt(opt,"gsnShadeLow"))) then
       shaden   = opt@gsnShadeLow
-      col_type = typeof(shaden)
+      var_type = typeof(shaden)
+      col_type = get_color_type(shaden)
+      col_dims = dimsizes(shaden)
+      col_rank = dimsizes(col_dims)
    end if
    if (opt.and.(isatt(opt,"gsnShadeMid"))) then
-      shadem = opt@gsnShadeMid
-      if(isvar("col_type").and.typeof(shadem).ne.col_type) then
-        print("gsn_contour_shade: the gsnShadeLow/Mid/High resources must all be the same type (a color name or color index value)")
-       return (plot)
+      shadem      = opt@gsnShadeMid
+      shadem_type = get_color_type(shadem)
+      shadem_dims = dimsizes(shadem)
+      shadem_rank = dimsizes(shadem_dims)
+      if(isvar("col_type").and.(col_type.ne.shadem_type.or. \
+         shadem_rank.ne.col_rank.or.shadem_dims.ne.col_dims)) then
+        print("gsn_contour_shade: the gsnShadeLow/Mid/High resources must all be")
+        print("     the same type and dimensionality.")
+        return (plot)
       else
-        col_type = typeof(shadem)
+        var_type = typeof(shadem)
+        col_type = shadem_type
+        col_dims = dimsizes(shadem)
+        col_rank = dimsizes(col_dims)
       end if
    end if
    if (opt.and.(isatt(opt,"gsnShadeHigh"))) then
-      shadep = opt@gsnShadeHigh
-      if(isvar("col_type").and.typeof(shadep).ne.col_type) then
-        print("gsn_contour_shade: the gsnShadeLow/Mid/High resources must all be the same type (a color name or color index value)")
-       return (plot)
+      shadep      = opt@gsnShadeHigh
+      shadep_type = get_color_type(shadep)
+      shadep_dims = dimsizes(shadep)
+      shadep_rank = dimsizes(shadep_dims)
+      if(isvar("col_type").and.(col_type.ne.shadep_type.or. \
+         shadep_rank.ne.col_rank.or.shadep_dims.ne.col_dims)) then
+        print("gsn_contour_shade: the gsnShadeLow/Mid/High resources must all be")
+        print("     the same type and dimensionality.")
+        return (plot)
       else
-        col_type = typeof(shadep)
+        var_type = typeof(shadep)
+        col_type = shadep_type
+        col_dims = dimsizes(shadep)
+        col_rank = dimsizes(col_dims)
       end if
    end if
 
 ;---Make sure user actually set one of these resources
-   if (.not.any(isvar((/"shaden","shadep","shadem"/)))) then
+   if (.not.isvar("col_type")) then
       print("gsn_contour_shade: one or more of the following option resources must be set: opt@gsnShadeLow, opt@gsnShadeHigh, opt@gsnShadeMid. return (non-fatal)")
       return(plot)
+   else if (col_type.eq."unknown") then
+      print("gsn_contour_shade: the color type is unknown.")
+      return(plot)
+   end if
    end if
 
 ;---Error checking on the gsnShadeFillType resource
-   if (opt.and.(isatt(opt,"gsnShadeFillType"))) then
-       if (lower_case(opt@gsnShadeFillType).eq."pattern".and.\
-           col_type.eq."string") 
-	     print("gsn_contour_shade: You may not use strings in the option resources opt@gsnShadeLow, opt@gsnShadeHigh, and opt@gsnShadeMid when pattern filling. Please change to integers.")
-             return(plot)
-	  end if
+   if (opt.and.isatt(opt,"gsnShadeFillType").and.\
+       lower_case(opt@gsnShadeFillType).eq."pattern".and.col_type.ne."index") then
+     print("gsn_contour_shade: You may not use strings in the option resources opt@gsnShadeLow, opt@gsnShadeHigh, and opt@gsnShadeMid when pattern filling. Please change to integers.")
+     return(plot)
    end if
 
-;---Create array for fill, , set all to transparent
-   colist = new(N+1,col_type)  
-   if(col_type.eq."string") then
+;---Create array for fill, set all to transparent or white
+   if(col_type.eq."named") then
+     colist = new(N+1,var_type)
      colist = "transparent"
-   else
+   else if(col_type.eq."index") then
+     colist = new(N+1,var_type)
      colist = -1    
+   else if(col_type.eq."rgb") then
+     colist = new((/N+1,3/),var_type)
+     colist = 1
+   else if(col_type.eq."rgba") then
+     colist      = new((/N+1,4/),var_type)
+     colist(:,3) = 0
+   end if
+   end if
+   end if
    end if
 
 ;---Start filling colist
    if (isvar("shaden").and.any(cnlvls.le.lowval)) then
      ii := ind(cnlvls.le.lowval)
-     colist(ii) = shaden
+     ii_dims = dimsizes(ii)
+     if(any(col_type.eq.(/"named","index"/))) then
+       colist(ii) = shaden
+     else if(any(col_type.eq.(/"rgb","rgba"/))) then
+       if(ii_dims.eq.1) then
+         colist(ii,:) = shaden
+       else
+         colist(ii,:) = conform_dims(dimsizes(colist(ii,:)),shaden,1)
+       end if
+     end if
+     end if
    end if
 
    if (isvar("shadep").and.any(cnlvls.ge.highval)) then     
      ii := ind(cnlvls.ge.highval)+1
-     colist(ii) = shadep
+     ii_dims = dimsizes(ii)
+     if(any(col_type.eq.(/"named","index"/))) then
+       colist(ii) = shadep
+     else if(any(col_type.eq.(/"rgb","rgba"/))) then
+       if(ii_dims.eq.1) then
+         colist(ii,:) = shadep
+       else
+         colist(ii,:) = conform_dims(dimsizes(colist(ii,:)),shadep,1)
+       end if
+     end if
+     end if
    end if
 
    if (isvar("shadem").and.any(cnlvls.ge.lowval.and.cnlvls.le.highval)) then
      ii := ind(cnlvls.ge.lowval.and.cnlvls.le.highval)
-     if (dimsizes(ii).ge.2) then
-        colist(ii(1:)) = shadem    ; Don't include the first value in ii
+     ii_dims = dimsizes(ii)
+     if (ii_dims.ge.2) then
+       if(any(col_type.eq.(/"named","index"/))) then
+         colist(ii(1:)) = shadem
+       else if(any(col_type.eq.(/"rgb","rgba"/))) then
+         colist(ii(1:),:) = conform_dims(dimsizes(colist(ii(1:),:)),shadem,1)
+       end if
+       end if
      else
         print("gsn_contour_shade: 1 contour level or less found between "+lowval+" and "+highval+", not color filling")
      end if
