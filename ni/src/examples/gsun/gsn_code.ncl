@@ -877,6 +877,54 @@ begin
 end
 
 ;***********************************************************************;
+; This function returns the RGBA values given an RGB array. The
+; "alpha" index is set to 1.0.
+; 
+; A n x 4 array is returned, where "n" is the number of 
+; named colors input.
+;***********************************************************************;
+undef("rgb2rgba")
+function rgb2rgba(rgb[*][3])
+local ncolors, rgba
+begin
+  ncolors     = dimsizes(rgb(:,0))
+  rgba        = new((/ncolors,4/),typeof(rgb))
+  rgba(:,0:2) = rgb
+  rgba(:,3)   = 1
+  return(rgba)
+end
+
+;***********************************************************************;
+; This function returns the RGBA quadruplets associated with a 
+; given list of index colors.
+; 
+; A n x 4 array is returned, where "n" is the number of 
+; named colors input.
+;
+; If any input colors are invalid, then missing will be returned.
+;***********************************************************************;
+undef("indexcolor2rgba")
+function indexcolor2rgba(wks,color_indexes[*])
+local rgba_cmap, rgb_cmap, ncolors
+begin
+  getvalues wks
+      "wkColorMap" : rgb_cmap
+  end getvalues
+
+  ncolors = dimsizes(rgb_cmap(:,0))
+  if(any(color_indexes.lt.0.or.color_indexes.ge.ncolors)) then
+    print("Error:indexcolor2rgba: one or more of the index colors")
+    print("are invalid. Will return missing values.")
+    msg = new(4,float)
+    return(msg)
+  else
+    rgba_cmap = rgb2rgba(rgb_cmap)
+    return(rgba_cmap(color_indexes,:))
+  end if
+end
+
+
+;***********************************************************************;
 ; Given two named colors and the number of colors, this
 ; function creates a series of RGB triplets that spans
 ; between the two colors.
