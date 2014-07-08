@@ -51,9 +51,9 @@ effectively building just NCAR Graphics.  This simplifies the build
 somewhat, since you can get by with not having to install most, if
 any, of the external software packages listed below.  If you are
 already familiar with building NCAR Graphics from source code, then
-all the instructions you know from before are the same. When
-you run "./Configure", be sure to answer "n"
-when it asks if you want to build NCL.
+all the instructions you know from before are the same. When you run
+"./Configure", be sure to answer "n" when it asks if you want to build
+NCL.
 <p>
 
 Before you start building NCL/NCAR Graphics, look over this document
@@ -156,9 +156,6 @@ external software</A><br>
 <LI><A HREF="#GDAL">GDAL</A> (1.10.1)
 </UL>
 <LI><A HREF="#HDFEOS2">HDF-EOS 2</A> (2.18)
-<UL>
-<LI><A HREF="#gctp">gctp</A>
-</UL>
 <LI><A HREF="#HDFEOS5">HDF-EOS 5</A> (1.14)
 <UL>
 <LI><A HREF="#szip">szip</A> (2.1)
@@ -364,8 +361,8 @@ csh/tcsh:<br>
 <TR>
 <TD><b>F90FLAGS</b> <TD>Fortran 90 compile flags
 <TD>bash/ksh:<br>
-&nbsp;&nbsp;export F90FLAGS='-fPIC -fopenp'<br>
-&nbsp;&nbsp;export F90FLAGS='-m64 -fPIC'<br>
+&nbsp;&nbsp;export F90FLAGS='-fPIC -fopenmp'<br>
+&nbsp;&nbsp;export F90FLAGS='-m64 -fPIC -fopenmp'<br>
 csh/tcsh:<br>
 &nbsp;&nbsp;setenv F90FLAGS '-fPIC -fopenmp'<br>
 &nbsp;&nbsp;setenv F90FLAGS '-m64 -fPIC -fopenmp'
@@ -469,6 +466,7 @@ Each package is listed below, along with the version we used to
 build NCL V6.2.0 on our own systems. In most cases you don't need to
 have the exact version of the software we used, but it's a good idea
 to match them as much as possible
+
 <ul>
 
 <A NAME="JPEG"></A>
@@ -527,7 +525,19 @@ model introduced in NCL and NCAR Graphics V6.1.0.
 
 Cairo and its supplemental packages may already be on your system
 (Linux, MacOSX, and Cygwin), so check this before you start building
-them. <p>
+them.<p>
+
+You can also install many of these packages on Linux systems using a
+package installer like <a href="http://yum.baseurl.org/">yum</a>
+<a href="http://linux.die.net/man/8/apt-get">apt-get</a>, or
+<a href="http://en.opensuse.org/YaST_Software_Management">YaST</a>,
+and on a Mac system using <a href="http://www.macports.org/">MacPorts</a>.
+The package(s) to install have names like "libcairo-devel",
+"libpixman-devel", "libfontconfig-devel", etc. It is very likely that
+once you install "libcairo-devel", the other packages will get
+installed automatically, so check for this before you install all the
+packages.
+<p>
 
 <ul>
 <A NAME="PNG"></A>
@@ -535,7 +545,7 @@ them. <p>
 (1.2.50) - required
 <p>
 
-Download version 1.2.x (not 1.4.x or 1.5.x!).
+Download version 1.2.x (not 1.4.x or 1.5.x).
 <p>
 
 Once you have the libpng source code, you can build and install it
@@ -763,7 +773,12 @@ of instructions:
 
 <b>3. With "classic" NetCDF-4 support, with OPeNDAP support</b><p>
 
-You first need to download and install the following packages:
+You first need to download and install the following packages.
+Unidata has provided all of these software packages in
+<a href="ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4/">one
+convenient location</a>, or you can download them at their individual
+locations using the links given below.
+<p>
 
 <ul>
 
@@ -1027,7 +1042,7 @@ software requires including several "--without-<i>xxxx</i>" options:
       --with-png=/usr/local --with-gif=internal --with-libtiff=internal 
       --with-geotiff=internal --with-jpeg=/usr/local --with-libz=/usr/local 
       --with-sqlite3=no --with-expat=no --with-curl=no --without-ld-shared 
-      --with-hdf4=no --with-hdf5=no --with-pg=no --without-grib
+      --with-hdf4=no --with-hdf5=no --with-pg=no --without-grib --disable-shared
       --with-freexl=no --with-geos=no --with-openjpeg=no --with-mysql=no 
       --with-ecw=no --with-fdgb=no --with-odbc=no --with-xml2=no
 
@@ -1059,13 +1074,6 @@ with:
     ./configure CC=/usr/local/bin/h4cc --with-hdf4=/usr/local --with-zlib=/usr/local --with-jpeg=/usr/local --prefix=/usr/local
 </pre>
 <p>
-
-<A NAME="gctp"></A>
-
-<li>gctp - this software should get built automatically when you build
-HDF-EOS 2.
-
-</ul>
 
 </ul>
 
@@ -1157,8 +1165,8 @@ then you need to install UDUNITS-2.
 
 Download
 the <a href="http://www.unidata.ucar.edu/software/udunits/">Udunits</a>
-2.<i>x</i> (<b>not</b> 1.<i>x</i>!) source code. Once
-you have the source code, you can build and install it with:
+2.<i>x</i> (<b>not</b> 1.<i>x</i>!) source code. Once you have the
+source code, you can build and install it with:
 <p>
 
 <pre>
@@ -1219,8 +1227,7 @@ source code, object files, binaries, and so on). Then, uncompress and
 untar the file as follows:<P>
 
 <pre>
-  gunzip ncl_ncarg-6.2.0.tar.gz
-  tar -xvf ncl_ncarg-6.2.0.tar
+  tar -zxvf ncl_ncarg-6.2.0.tar.gz
 </pre>
 
 The above steps will create a directory called "ncl_ncarg-6.2.0".  For
