@@ -14,6 +14,9 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Important modifications:
+;       8 Jul 2014:
+;           Added a NetCDF4 option weight files
+;
 ;       18 Dec 2013:
 ;          Added some code to get ready for automatically setting
 ;          SrcMask2D.
@@ -934,6 +937,11 @@ begin
       setfileoption("nc","Format","LargeFile") 
     end if
 
+;---Do we need to create a netcdf-4 file?
+    if (isatt_logical_true(Opt,"NetCDF4")) then
+      setfileoption("nc","Format","netcdf4") 
+    end if
+
     lat = ndtooned(inLat)
     lon = ndtooned(inLon)
 
@@ -1153,6 +1161,11 @@ begin
 ;---Do we need to create a large file?
     if (.not.isatt_logical_false(Opt,"LargeFile")) then
       setfileoption("nc","Format","LargeFile") 
+    end if
+
+;---Do we need to create a netcdf-4 file?
+    if (isatt_logical_true(Opt,"NetCDF4")) then
+      setfileoption("nc","Format","netcdf4") 
     end if
 
     if ( any(dimsizes(lat2d).ne.dimsizes(lon2d)) ) then
@@ -2408,6 +2421,11 @@ begin
         ESMFCMD = ESMFCMD + " --64bit_offset"
     end if
 
+;---This flag is necessary for writing vars > 4 GB
+    if (isatt_logical_true(opt2,"NetCDF4")) then
+        ESMFCMD = ESMFCMD + " --netcdf4"
+    end if
+
 ;---Check if the user has requested to print out the full command to be run.
   end if  ; end of building the command (Second Pass - optional features)
 		
@@ -3274,7 +3292,7 @@ begin
 ; attribute, like "opt@SrcOverwrite".
 ;
   spc_atts = (/"Mask2D","TriangularMesh","LargeFile",\
-               "Title","LLCorner","URCorner", \
+               "NetCDF4","Title","LLCorner","URCorner", \
                "Rotation","GridCornerLat","GridCornerLon",\
                "InputFileName","Overwrite","ForceOverwrite"/)
   do i=0,dimsizes(spc_atts)-1
@@ -3369,6 +3387,7 @@ end
 ;  DstGridType / DstGridLat / DstGridLon
 ;  SrcMask2D / DstMask2D
 ;  SrcLargeFile / DstLargeFile
+;  SrcNetCDF4 / DstNetCDF4
 ;  WgtFileName
 ;  SkipSrcGrid / SkipDstGrid / SkipWgtGen
 ;  Debug
