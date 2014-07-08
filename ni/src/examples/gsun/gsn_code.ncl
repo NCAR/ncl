@@ -884,13 +884,28 @@ end
 ; named colors input.
 ;***********************************************************************;
 undef("rgb2rgba")
-function rgb2rgba(rgb[*][3])
+function rgb2rgba(rgb)
 local ncolors, rgba
 begin
-  ncolors     = dimsizes(rgb(:,0))
-  rgba        = new((/ncolors,4/),typeof(rgb))
-  rgba(:,0:2) = rgb
-  rgba(:,3)   = 1
+  dims = dimsizes(rgb)
+  rank = dimsizes(dims)
+
+  if((rank.eq.1.and.dims.ne.3).or.(rank.eq.2.and.dims(1).ne.3).or.\
+     rank.lt.1.or.rank.gt.2) then
+    print("rgb2rgba: The input must be an RGB array of length 3 or n x 3")
+    print("   Returning missing.")
+    return(new(4,float))
+  end if
+  if(rank.eq.2) then
+    ncolors     = dimsizes(rgb(:,0))
+    rgba        = new((/ncolors,4/),typeof(rgb))
+    rgba(:,0:2) = rgb
+    rgba(:,3)   = 1
+  else
+    rgba      = new(4,typeof(rgb))
+    rgba(0:2) = rgb
+    rgba(3)   = 1
+  end if
   return(rgba)
 end
 
@@ -920,6 +935,39 @@ begin
   else
     rgba_cmap = rgb2rgba(rgb_cmap)
     return(rgba_cmap(color_indexes,:))
+  end if
+end
+
+;***********************************************************************;
+; Given a list of color indexes, named colors, RGB, or RGBA colors,
+; convert them to RGBA colors.
+;***********************************************************************;
+undef("convert_color_to_rgba")
+function convert_color_to_rgba(wks,colors)
+begin
+  color_type = get_color_type(colors)
+  if(color_type.eq."unknown")
+    print("Error: convert_color_to_rgba: invalid color(s). Returning missing.")
+    return(new(4,float))
+  end if
+
+  if(color_type.eq."rgba") then
+    rgba_colors = colors
+  end if
+  if(color_type.eq."index") then
+    rgba_colors = indexcolor2rgba(wks,colors)
+  end if
+  if(color_type.eq."named") then
+    rgba_colors = namedcolor2rgba(colors)
+  end if
+  if(color_type.eq."rgb") then
+    rgba_colors = rgb2rgba(colors)
+  end if
+
+  if(all(dimsizes(rgba_colors).eq.(/1,4/))) then
+    return(rgba_colors(0,:))
+  else
+    return(rgba_colors)
   end if
 end
 
@@ -12378,13 +12426,117 @@ end
 undef("gsn_contour_shade")
 function gsn_contour_shade(plot:graphic,lowval:numeric,highval:numeric,\
                            opt:logical) 
-local cnlvls, colist, i, N, shaden, shadep, shadem, ovrly_ids, idstring
+local shaden_set, shadem_set, shadep_set, shaden, shadep, shadem, ovrly_ids, \
+idstringcnlvls, colist, i, N, tmp_wks
 begin
+   if (.not.opt) then
+     print("gsn_contour_shade: Options list must be used as one of the following option resources must be set: opt@gsnShadeLow, opt@gsnShadeHigh, opt@gsnShadeMid.")
+     print("   Returning without making any changes to plot.")
+     return(plot)
+   end if
+
+   shade_type = str_lower(get_res_value_keep(opt,"gsnShadeFillType","color"))   ; "pattern"
+
+   if(.not.any(shade_type.eq.(/"color","pattern"/))) then
+     print("gsn_contour_shade: gsnShadeFillType can only be 'pattern' or 'color'.")
+     print("   Returning without making any changes to plot.")
+     return(plot)
+   end if
+
+;----------------------------------------------------------------------
+; This section is used to retrieve the gsnShadeLow/Mid/High resources
+; and make sure they are valid.
+;
+; If doing color fill, you can mix and match color types (index color,
+; named color, rgb, rgba).
+;
+; If doing pattern fill, only pattern indexes can be used.
+;----------------------------------------------------------------------
+   tmp_wks = NhlGetParentWorkstation(plot)
+   if (isatt(opt,"gsnShadeLow")) then
+     shaden_set = True
+     if(shade_type.eq."color") then
+       shaden = convert_color_to_rgba(tmp_wks,opt@gsnShadeLow)
+     else
+       shaden      = opt@gsnShadeLow
+       shaden_type = typeof(shaden)
+     end if
+   else
+     shaden_set = False
+     if(shade_type.eq."color") then
+       shaden      = (/0.,0.,0.,0./)  ; transparent
+       shaden_type = "rgba"
+     else
+       shaden      = -1              ; no fill
+       shaden_type = "integer"
+     end if
+   end if
+   if (isatt(opt,"gsnShadeMid")) then
+     shadem_set = True
+     if(shade_type.eq."color") then
+       shadem      = convert_color_to_rgba(tmp_wks,opt@gsnShadeMid)
+       shadem_type = "rgba"
+     else
+       shadem      = opt@gsnShadeMid
+       shadem_type = typeof(shadem)
+     end if
+   else
+     shadem_set = False
+     if(shade_type.eq."color") then
+       shadem      = (/0.,0.,0.,0./)  ; transparent
+       shadem_type = "rgba"
+     else
+       shadem      = -1               ; no fill
+       shadem_type = "integer"
+     end if
+   end if
+   if (isatt(opt,"gsnShadeHigh")) then
+     shadep_set = True
+     if(shade_type.eq."color") then
+       shadep      = convert_color_to_rgba(tmp_wks,opt@gsnShadeHigh)
+       shadep_type = "rgba"
+     else
+       shadep      = opt@gsnShadeHigh
+       shadep_type = typeof(shadep)
+     end if
+   else
+     shadep_set = False
+     if(shade_type.eq."color") then
+      shadep      = (/0.,0.,0.,0./)  ; transparent
+      shadep_type = "rgba"
+     else
+       shadep      = -1              ; no fill
+       shadep_type = "integer"
+     end if
+   end if
+
+;---Error checking on the gsnShadeLow/Mid/High resources
+   if(.not.any((/shaden_set,shadem_set,shadep_set/))) then
+     print("gsn_contour_shade: one of the following resources must be set: opt@gsnShadeLow, opt@gsnShadeHigh, opt@gsnShadeMid.")
+     print("   Returning without making any changes to plot.")
+     return(plot)
+   end if
+
+;---Error checking if we have pattern fill.
+   if(shade_type.eq."pattern".and.\
+      any((/shaden_type,shadem_type,shadep_type/).ne."integer")) then
+     print("gsn_contour_shade: You must use integer values when doing pattern fill.")
+     print("   Returning without making any changes to plot.")
+     return(plot)
+   end if
+
+   if(shade_type.eq."color".and.any((/all(ismissing(shaden)),\
+         all(ismissing(shadem)),all(ismissing(shadep))/))) then
+     print("gsn_contour_shade: One of your gsnShadeLow/Mid/High resources is set to an invalid color.")
+     print("   Returning without making any changes to plot.")
+     return(plot)
+   end if
+
    getvalues plot
       "pmOverlaySequenceIds" : ovrly_ids
    end getvalues
    if (.not.any(ismissing(ovrly_ids))) then
-      do i=0,dimsizes(ovrly_ids)-1
+     do i=0,dimsizes(ovrly_ids)-1
          if (NhlClassName(ovrly_ids(i)).eq."contourPlotClass")
             idstring = ovrly_ids(i)
 	    end if
@@ -12394,7 +12546,7 @@ begin
      "cnLevels"  : cnlvls
    end getvalues
 
-   if (opt.and.(isatt(opt,"printcnlevels"))) then
+   if ((isatt(opt,"printcnlevels"))) then
       if (opt@printcnlevels) then
 	    print(cnlvls)
 	 end if
@@ -12407,136 +12559,56 @@ begin
        return (plot)
    end if
 
-   if (.not.opt) then
-      print("gsn_contour_shade: Options list must be used as one of the following option resources must be set: opt@gsnShadeLow, opt@gsnShadeHigh, opt@gsnShadeMid. return (non-fatal)")
-   end if
-
-;---Error checking on the gsnShadeL/M/H resources
-   if (opt.and.(isatt(opt,"gsnShadeLow"))) then
-      shaden   = opt@gsnShadeLow
-      var_type = typeof(shaden)
-      col_type = get_color_type(shaden)
-      col_dims = dimsizes(shaden)
-      col_rank = dimsizes(col_dims)
-   end if
-   if (opt.and.(isatt(opt,"gsnShadeMid"))) then
-      shadem      = opt@gsnShadeMid
-      shadem_type = get_color_type(shadem)
-      shadem_dims = dimsizes(shadem)
-      shadem_rank = dimsizes(shadem_dims)
-      if(isvar("col_type").and.(col_type.ne.shadem_type.or. \
-         shadem_rank.ne.col_rank.or.shadem_dims.ne.col_dims)) then
-        print("gsn_contour_shade: the gsnShadeLow/Mid/High resources must all be")
-        print("     the same type and dimensionality.")
-        return (plot)
-      else
-        var_type = typeof(shadem)
-        col_type = shadem_type
-        col_dims = dimsizes(shadem)
-        col_rank = dimsizes(col_dims)
-      end if
-   end if
-   if (opt.and.(isatt(opt,"gsnShadeHigh"))) then
-      shadep      = opt@gsnShadeHigh
-      shadep_type = get_color_type(shadep)
-      shadep_dims = dimsizes(shadep)
-      shadep_rank = dimsizes(shadep_dims)
-      if(isvar("col_type").and.(col_type.ne.shadep_type.or. \
-         shadep_rank.ne.col_rank.or.shadep_dims.ne.col_dims)) then
-        print("gsn_contour_shade: the gsnShadeLow/Mid/High resources must all be")
-        print("     the same type and dimensionality.")
-        return (plot)
-      else
-        var_type = typeof(shadep)
-        col_type = shadep_type
-        col_dims = dimsizes(shadep)
-        col_rank = dimsizes(col_dims)
-      end if
-   end if
-
-;---Make sure user actually set one of these resources
-   if (.not.isvar("col_type")) then
-      print("gsn_contour_shade: one or more of the following option resources must be set: opt@gsnShadeLow, opt@gsnShadeHigh, opt@gsnShadeMid. return (non-fatal)")
-      return(plot)
-   else if (col_type.eq."unknown") then
-      print("gsn_contour_shade: the color type is unknown.")
-      return(plot)
-   end if
-   end if
-
-;---Error checking on the gsnShadeFillType resource
-   if (opt.and.isatt(opt,"gsnShadeFillType").and.\
-       lower_case(opt@gsnShadeFillType).eq."pattern".and.col_type.ne."index") then
-     print("gsn_contour_shade: You may not use strings in the option resources opt@gsnShadeLow, opt@gsnShadeHigh, and opt@gsnShadeMid when pattern filling. Please change to integers.")
-     return(plot)
-   end if
-
 ;---Create array for fill, set all to transparent or white
-   if(col_type.eq."named") then
-     colist = new(N+1,var_type)
-     colist = "transparent"
-   else if(col_type.eq."index") then
-     colist = new(N+1,var_type)
-     colist = -1    
-   else if(col_type.eq."rgb") then
-     colist = new((/N+1,3/),var_type)
-     colist = 1
-   else if(col_type.eq."rgba") then
-     colist      = new((/N+1,4/),var_type)
-     colist(:,3) = 0
-   end if
-   end if
-   end if
+   if(shade_type.eq."color") then
+     colist      = new((/N+1,4/),double)
+     colist(:,3) = 0.
+   else
+     colist = new(N+1,integer)
+     colist = -1
    end if
 
 ;---Start filling colist
-   if (isvar("shaden").and.any(cnlvls.le.lowval)) then
+   if (shaden_set.and.any(cnlvls.le.lowval)) then
      ii := ind(cnlvls.le.lowval)
      ii_dims = dimsizes(ii)
-     if(any(col_type.eq.(/"named","index"/))) then
+     if(shade_type.eq."pattern") then
        colist(ii) = shaden
-     else if(any(col_type.eq.(/"rgb","rgba"/))) then
-       if(ii_dims.eq.1) then
-         colist(ii,:) = shaden
-       else
-         colist(ii,:) = conform_dims(dimsizes(colist(ii,:)),shaden,1)
-       end if
+     else if(ii_dims.eq.1) then
+       colist(ii,:) = shaden
+     else
+       colist(ii,:) = conform(colist(ii,:),shaden,1)
      end if
      end if
    end if
 
-   if (isvar("shadep").and.any(cnlvls.ge.highval)) then     
+   if (shadep_set.and.any(cnlvls.ge.highval)) then     
      ii := ind(cnlvls.ge.highval)+1
      ii_dims = dimsizes(ii)
-     if(any(col_type.eq.(/"named","index"/))) then
+     if(shade_type.eq."pattern") then
        colist(ii) = shadep
-     else if(any(col_type.eq.(/"rgb","rgba"/))) then
-       if(ii_dims.eq.1) then
-         colist(ii,:) = shadep
-       else
-         colist(ii,:) = conform_dims(dimsizes(colist(ii,:)),shadep,1)
-       end if
-     end if
+     else if(ii_dims.eq.1) then
+       colist(ii,:) = shadep
+     else
+       colist(ii,:) = conform(colist(ii,:),shadep,1)
      end if
    end if
+   end if
 
-   if (isvar("shadem").and.any(cnlvls.ge.lowval.and.cnlvls.le.highval)) then
+   if (shadem_set.and.any(cnlvls.ge.lowval.and.cnlvls.le.highval)) then
      ii := ind(cnlvls.ge.lowval.and.cnlvls.le.highval)
      ii_dims = dimsizes(ii)
-     if (ii_dims.ge.2) then
-       if(any(col_type.eq.(/"named","index"/))) then
-         colist(ii(1:)) = shadem
-       else if(any(col_type.eq.(/"rgb","rgba"/))) then
-         colist(ii(1:),:) = conform_dims(dimsizes(colist(ii(1:),:)),shadem,1)
-       end if
-       end if
+     if(shade_type.eq."pattern") then
+       colist(ii) = shadem
+     else if (ii_dims.ge.2) then
+       colist(ii(1:),:) = conform(colist(ii(1:),:),shadem,1)
      else
-        print("gsn_contour_shade: 1 contour level or less found between "+lowval+" and "+highval+", not color filling")
+       print("gsn_contour_shade: 1 contour level or less found between "+lowval+" and "+highval+", not color filling")
+     end if
      end if
    end if
 
-   if (.not.(isatt(opt,"gsnShadeFillType")).or. \
-        lower_case(opt@gsnShadeFillType).eq."color") then
+   if (shade_type.eq."color") then
 	 setvalues idstring               
 	    "cnFillOn"          : True
             "cnMonoFillPattern" : True
