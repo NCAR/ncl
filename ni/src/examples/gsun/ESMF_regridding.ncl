@@ -938,10 +938,11 @@ begin
     end if
 
 ;---Do we need to create a netcdf-4 file?
-    if (isatt_logical_true(Opt,"NetCDF4")) then
-      setfileoption("nc","Format","netcdf4") 
-    end if
-
+;; This doesn't work in ESMFv6.3.0r, so commented for now.
+;;    if (isatt_logical_true(Opt,"NetCDF4")) then
+;;      setfileoption("nc","Format","netcdf4") 
+;;    end if
+;;
     lat = ndtooned(inLat)
     lon = ndtooned(inLon)
 
@@ -1164,9 +1165,10 @@ begin
     end if
 
 ;---Do we need to create a netcdf-4 file?
-    if (isatt_logical_true(Opt,"NetCDF4")) then
-      setfileoption("nc","Format","netcdf4") 
-    end if
+;; This doesn't work in ESMFv6.3.0r, so commented for now.
+;;    if (isatt_logical_true(Opt,"NetCDF4")) then
+;;      setfileoption("nc","Format","netcdf4") 
+;;    end if
 
     if ( any(dimsizes(lat2d).ne.dimsizes(lon2d)) ) then
         print("curvilinear_to_SCRIP: latitude and longitude must have the same number of elements.")
@@ -2422,7 +2424,7 @@ begin
     end if
 
 ;---This flag is necessary for writing vars > 4 GB
-    if (isatt_logical_true(opt2,"NetCDF4")) then
+    if (isatt_logical_true(opt2,"WgtNetCDF4")) then
         ESMFCMD = ESMFCMD + " --netcdf4"
     end if
 
