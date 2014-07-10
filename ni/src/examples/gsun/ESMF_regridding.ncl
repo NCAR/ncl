@@ -15,7 +15,12 @@
 ;
 ;    Important modifications:
 ;       8 Jul 2014:
-;           Added a NetCDF4 option weight files
+;           Added a NetCDF4 option for source/destination files
+;           and weight files. ESMF_RegridWeightGen uses the F90
+;           interface to read the source/destination files, which
+;           is a problem because this interface doesn't support
+;           the NetCDF-4 "string" type.  We have to write file
+;           string attributes (like "units") as character arrays.
 ;
 ;       18 Dec 2013:
 ;          Added some code to get ready for automatically setting
@@ -938,11 +943,13 @@ begin
     end if
 
 ;---Do we need to create a netcdf-4 file?
-;; This doesn't work in ESMFv6.3.0r, so commented for now.
-;;    if (isatt_logical_true(Opt,"NetCDF4")) then
-;;      setfileoption("nc","Format","netcdf4") 
-;;    end if
-;;
+    if (isatt_logical_true(Opt,"NetCDF4")) then
+      setfileoption("nc","Format","netcdf4") 
+      nc_file_type = "netcdf4"
+    else
+      nc_file_type = "netcdf3"
+    end if
+
     lat = ndtooned(inLat)
     lon = ndtooned(inLon)
 
@@ -1050,21 +1057,33 @@ begin
     
 ;---Define the variables unit attribute
     AttNodeCoords               = 0
-    AttNodeCoords@units         = "degrees"
-    
     AttElementConn              = 0
-    AttElementConn@long_name    = "Node Indices that define the element connectivity"
-    AttElementConn@_FillValue   = -1
-    
     AttNumElementConn           = 0
-    AttNumElementConn@long_name = "Number of nodes per element"
-    
     AttCenterCoords             = 0
-    AttCenterCoords@units       = "degrees"
-    
     AttElementArea              = 0
-    AttElementArea@units        = "radians^2"
-    AttElementArea@long_name    = "area weights"
+;
+; The conversion to character arrays for NetCDF-4 files is a 
+; work-around.  ESMF_RegridWeightGen uses the F90 interface to 
+; read NetCDF-4 files, which doesn't yet have support for 
+; NetCDF-4 "string" types.
+; 
+    if(nc_file_type.eq."netcdf3") then
+      AttNodeCoords@units         = "degrees"
+      AttElementConn@long_name    = "Node Indices that define the element connectivity"
+      AttNumElementConn@long_name = "Number of nodes per element"
+      AttCenterCoords@units       = "degrees"
+      AttElementArea@units        = "radians^2"
+      AttElementArea@long_name    = "area weights"
+    else
+      AttNodeCoords@units         = tochar("degrees")
+      AttElementConn@long_name    = tochar("Node Indices that define the element connectivity")
+      AttNumElementConn@long_name = tochar("Number of nodes per element")
+      AttCenterCoords@units       = tochar("degrees")
+      AttElementArea@units        = tochar("radians^2")
+      AttElementArea@long_name    = tochar("area weights")
+    end if
+    
+    AttElementConn@_FillValue   = -1
     
     filevarattdef(fid,"nodeCoords",    AttNodeCoords)
     filevarattdef(fid,"elementConn",   AttElementConn)
@@ -1146,7 +1165,7 @@ procedure curvilinear_to_SCRIP(FName[1]:string,lat2d[*][*]:numeric,\
 local latlon_dims, nlat, nlon, fid, FileAtt, grid_siz, grid_corners, \
 grid_rank, FDimNames, FDimSizes, FDimUnlim, DummyAtt1, DummyAtt2, \
 GridCornerLat, GridCornerLon, grid_corner_lat, grid_corner_lon, mask2d, \
-lat_type, lon_type, DEBUG
+lat_type, lon_type, DEBUG, nc_file_type
 begin
 ;---Check for options
     PrintTimings = isatt_logical_true(Opt,"PrintTimings")
@@ -1165,10 +1184,12 @@ begin
     end if
 
 ;---Do we need to create a netcdf-4 file?
-;; This doesn't work in ESMFv6.3.0r, so commented for now.
-;;    if (isatt_logical_true(Opt,"NetCDF4")) then
-;;      setfileoption("nc","Format","netcdf4") 
-;;    end if
+    if (isatt_logical_true(Opt,"NetCDF4")) then
+      setfileoption("nc","Format","netcdf4") 
+      nc_file_type = "netcdf4"
+    else
+      nc_file_type = "netcdf3"
+    end if
 
     if ( any(dimsizes(lat2d).ne.dimsizes(lon2d)) ) then
         print("curvilinear_to_SCRIP: latitude and longitude must have the same number of elements.")
@@ -1232,9 +1253,20 @@ begin
     
 ;---Define the variables unit attribute
     DummyAtt1       = 0
-    DummyAtt1@units = "degrees"
     DummyAtt2       = 0
-    DummyAtt2@units = "unitless"
+;
+; The conversion to character arrays for NetCDF-4 files is a 
+; work-around.  ESMF_RegridWeightGen uses the F90 interface to 
+; read NetCDF-4 files, which doesn't yet have support for 
+; NetCDF-4 "string" types.
+; 
+    if(nc_file_type.eq."netcdf3") then
+      DummyAtt1@units = "degrees"
+      DummyAtt2@units = "unitless"
+    else
+      DummyAtt1@units = tochar("degrees")
+      DummyAtt2@units = tochar("unitless")
+    end if
     filevarattdef(fid,"grid_center_lat",DummyAtt1)
     filevarattdef(fid,"grid_center_lon",DummyAtt1)
     filevarattdef(fid,"grid_imask",DummyAtt2)
