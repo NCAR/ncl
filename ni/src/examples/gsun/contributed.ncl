@@ -1811,7 +1811,7 @@ begin
 
           ; names to check
  oNames = (/"add_offset", "offset", "OFFSET", "Offset", "_offset" \
-           ,"Intercept", "intercept"/)
+           ,"Intercept", "intercept", "add_off", "ADD_OFF"/)
  sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor", "factor" \
            ,"Scale_factor", "Slope" , "slope", "ScaleFactor", "Scale_Factor" /)
 
@@ -14203,7 +14203,7 @@ function regline_stats(x[*]:numeric, y[*]:numeric)
 ; Davis, J.C. (2002): Statistics and Data Analysis in Geology
 ;                     Wiley (3rd Edition)   ; pgs 215-218 
 
-local nx, ny, ii, RC, rc
+local nx, ny, ii, nii, RC, rc
 begin
 
 ; Get the lengths of the x and y arrays.
@@ -14218,8 +14218,16 @@ begin
    end if
 
    if (any(ismissing(x)) .or. any(ismissing(y))) then
-       ii = ind(.not.ismissing(x) .and. .not.ismissing(y))
-       RC  = reg_multlin_stats(y(ii),x(ii),False)
+       ii  = ind(.not.ismissing(x) .and. .not.ismissing(y))
+       nii = dimsizes(ii)
+       if (nii.gt.2) then
+           RC  = reg_multlin_stats(y(ii),x(ii),False)
+       else
+           RC  = new(1,typeof(y),getVarFillValue(y))
+           RC@info = "Not enough non-missing values: nii="+nii
+           print("regline_stats: Not enough non-missing values: nii="+nii)
+           return(RC)
+       end if
    else
        RC  = reg_multlin_stats(y,x,False)
    end if
