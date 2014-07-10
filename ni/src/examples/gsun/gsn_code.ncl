@@ -4951,9 +4951,11 @@ end
 ; map. You have to set the special min/max/lat/lon attributes for this  ;
 ; to work.  I won't advertise this yet, because the interface could     ;
 ; probably be made better. THIS CODE HAS BEEN COMMENTED OUT in V6.2.0.  ;
+;                                                                       ;
+; In version 6.2.1, this function was modified to allow multiple plots. ;
 ;***********************************************************************;
 undef("gsn_add_shapefile_polylines")
-function gsn_add_shapefile_polylines(wks,plot,fname:string,lnres)
+function gsn_add_shapefile_polylines(wks,plots[*]:graphic,fname:string,lnres)
 local f, geomDims, numFeatures, lnres2
 begin
 ;---Open the shapefile
@@ -5051,7 +5053,11 @@ begin
 
 ;---This is all that's needed in V6.2.0.
   lnres2@gsSegments = f->segments(:,0)
-  poly = gsn_add_polyline(wks, plot, f->x, f->y, lnres2)
+  nplots = dimsizes(plots)
+  poly   = new(nplots,graphic)
+  do i=0,nplots-1
+    poly(i) = gsn_add_polyline(wks, plots(i), f->x, f->y, lnres2)
+  end do
   return(poly)
 end
 
@@ -5077,9 +5083,11 @@ end
 ; map. You have to set the special min/max/lat/lon attributes for this  ;
 ; to work.  I won't advertise this yet, because the interface could     ;
 ; probably be made better. THIS CODE HAS BEEN COMMENTED OUT in V6.2.0.  ;
+;                                                                       ;
+; In version 6.2.1, this function was modified to allow multiple plots. ;
 ;***********************************************************************;
 undef("gsn_add_shapefile_polygons")
-function gsn_add_shapefile_polygons(wks,plot,fname:string,gnres)
+function gsn_add_shapefile_polygons(wks,plots[*]:graphic,fname:string,gnres)
 local f, geomDims, numFeatures, gnres2
 begin
 ;---Open the shapefile
@@ -5107,6 +5115,12 @@ begin
     print("Error: gsn_add_shapefile_polygon: the number of features in this file is 0.")
     print("       No shapefile information will be added.")
     return(new(1,graphic))
+  end if
+
+  if(gnres) then
+    gnres2 = gnres      ; Make a copy so that we don't keep gsSegments
+  else
+    gnres2 = True
   end if
 
 ;---Get the number of colors
@@ -5191,7 +5205,11 @@ begin
 
 ;---This is all that's needed in V6.2.0.
   gnres2@gsSegments = f->segments(:,0)
-  poly = gsn_add_polygon(wks, plot, f->x, f->y, gnres2)
+  nplots = dimsizes(plots)
+  poly   = new(nplots,graphic)
+  do i=0,nplots-1
+    poly(i) = gsn_add_polygon(wks, plots(i), f->x, f->y, gnres2)
+  end do
   return(poly)
 end
 
@@ -5209,9 +5227,11 @@ end
 ; map. You have to set the special min/max/lat/lon attributes for this  ;
 ; to work.  I won't advertise this yet, because the interface could     ;
 ; probably be made better.                                              ;
+;                                                                       ;
+; In version 6.2.1, this function was modified to allow multiple plots. ;
 ;***********************************************************************;
 undef("gsn_add_shapefile_polymarkers")
-function gsn_add_shapefile_polymarkers(wks,plot,fname:string,mkres)
+function gsn_add_shapefile_polymarkers(wks,plots[*]:graphic,fname:string,mkres)
 local f, segments, geometry, segsDims, geomDims, geom_segIndex, \
 geom_numSegs, segs_xyzIndex, segs_numPnts, numFeatures, i, lat, lon, \
 startSegment, numSegments, seg, startPT, endPT, npoly, npl
@@ -5254,10 +5274,11 @@ begin
   segs_numPnts  = f@segs_numPnts
 
 ;---Create array to hold all polymarkers
-  npoly = sum(geometry(:,geom_numSegs)) 
-  poly  = new(npoly,graphic)
+  npoly  = sum(geometry(:,geom_numSegs)) 
+  nplots = dimsizes(plots)
+  poly   = new(npoly*nplots,graphic)
 
-;---Section to attach polymarkers to plot.
+;---Section to attach polymarkers to plots.
   lon = f->x
   lat = f->y
   npl = 0     ; polyline counter
@@ -5283,8 +5304,10 @@ begin
                    all(lat_sub.lt.mkres@minlat).or. \
                    all(lat_sub.gt.mkres@maxlat))) then
 ;---Attach the markers
-            poly(npl) = gsn_add_polymarker(wks, plot, lon_sub, lat_sub, mkres)
-            npl = npl + 1
+            do n=0,nplots-1
+              poly(npl) = gsn_add_polymarker(wks, plots(n), lon_sub, lat_sub, mkres)
+              npl = npl + 1
+            end do
            end if
            delete([/lat_sub,lon_sub/])
          end do
@@ -5297,9 +5320,11 @@ begin
           startPT = segments(seg, segs_xyzIndex)
           endPT   = startPT + segments(seg, segs_numPnts) - 1
 ;---Attach the markers
-          poly(npl) = gsn_add_polymarker(wks, plot, lon(startPT:endPT),  \
-                                         lat(startPT:endPT), mkres)
-          npl = npl + 1
+          do n=0,nplots-1
+            poly(npl) = gsn_add_polymarker(wks, plots(n), lon(startPT:endPT),  \
+                                           lat(startPT:endPT), mkres)
+            npl = npl + 1
+          end do
        end do
     end do
   end if
