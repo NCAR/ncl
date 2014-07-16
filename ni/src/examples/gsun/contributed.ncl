@@ -11626,7 +11626,7 @@ begin
   end if
                     
   binxBound(nbinsx)= binxBound(nbinsx) + epsx*binxBound(nbinsx)
-  binyBound(nbinsy)= binxBound(nbinsy) + epsy*binyBound(nbinsy)
+  binyBound(nbinsy)= binyBound(nbinsy) + epsy*binyBound(nbinsy)
                       ; ------------------------------------------- 
 
   pdf2 = pdfxy_bin(x,y, binxBound,binyBound, popt)
