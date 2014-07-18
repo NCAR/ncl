@@ -17081,6 +17081,13 @@ NhlErrorTypes _NclIGetVarDims
 					for(i = 0; i < ndims; ++i)
 						names[i] = grpnode->dim_rec->dim_node[i].name;
 				}
+				else
+				{
+					names[0] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+					ndims = 1;
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"getvardims: file %s contains no dimensions readable by NCL",
+				  		NrmQuarkToString(thefile->file.fname));
+				}
 			}
 			else
 			{
@@ -17093,13 +17100,13 @@ NhlErrorTypes _NclIGetVarDims
 				}
 
 				ndims = data->u.file->n_dims;
-			}
 
-			if (ndims == 0) {
-				names[0] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
-				ndims = 1;
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"getvardims: file %s contains no dimensions readable by NCL",
-				  	NrmQuarkToString(thefile->file.fname));
+				if (ndims == 0) {
+					names[0] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+					ndims = 1;
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"getvardims: file %s contains no dimensions readable by NCL",
+				  		NrmQuarkToString(thefile->file.fname));
+				}
 			}
 			ret = NclReturnValue((void*)names, 1, &ndims, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, 
 					     ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
