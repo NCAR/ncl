@@ -17050,7 +17050,7 @@ NhlErrorTypes _NclIGetVarDims
 	NclFile thefile = NULL;
 	NclMultiDValData file_md = NULL;
 	NclQuark names[2048];
-	ng_size_t ndims;
+	ng_size_t ndims = 0;
 
 
 
