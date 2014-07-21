@@ -64,15 +64,26 @@
 #   libdap-x.y.z           Required if you want OPeNDAP support
 #   libnc-dap-x.y.z        Required if you want OPeNDAP support
 
-# Parent location for installing external software
+#
+# PREFIX is the parent location for installing external software.
+#
+# PREFIX_NODAP is the parent location for installing a version
+# of NetCDF that is not opendap-enabled.  This is done because
+# the OPeNDAP version can have a lot of dependencies that make it
+# hard for a user who doesn't have the correct shared libraries on
+# their system. If you don't want to build the non-opendap version
+# of NetCDF (and ESMF), then set BUILD_NON_OPENDAP to 0.
+#
 PREFIX=/usr/local
 NCARG_ROOT=/usr/local
 PREFIX_NODAP=$PREFIX/nodap
+BUILD_NON_OPENDAP=1
 
 dd=`date +'%m%d%y'`
 un=`uname -n`
 um=`uname -m`
 os=`uname -s`
+
 #
 # Special test for yellowstone/geyser/caldera build.
 #
@@ -163,7 +174,7 @@ fi
 
 CAIRO_DIR="cairo-1.12.16"
 CURL_DIR="curl-7.35.0"
-ESMF_DIR="esmf-6.3.0r"
+ESMF_DIR="esmf-6.3.0rp1"
 EXPAT_DIR="expat-2.1.0"
 FREETYPE_DIR="freetype-2.5.0.1"
 G2CLIB_DIR="g2clib-1.5.0-patch"
@@ -175,8 +186,7 @@ HDFEOS5_DIR="hdfeos5-1.14"
 JASPER_DIR="jasper-1.900.1"
 JPEG_DIR="jpeg-6b"
 NETCDF4_DIR="netcdf-4.3.2"
-NETCDF4_FORTRAN_DIR="netcdf-fortran-4.2"
-NETCDF3_CXX_DIR="netcdf-cxx-4.2"
+NETCDF4_FORTRAN_DIR="netcdf-fortran-4.4.0"
 PIXMAN_DIR="pixman-0.30.0"
 PKGCONFIG_DIR="pkg-config-0.28"
 PNG_DIR="libpng-1.2.50"
@@ -207,7 +217,6 @@ INSTALL_HDF4=1
 INSTALL_HDFEOS=1
 INSTALL_NETCDF4=1
 INSTALL_NETCDF4_FORTRAN=1
-INSTALL_NETCDF3_CXX=1
 INSTALL_PROJ4=1
 INSTALL_GDAL=1
 INSTALL_G2CLIB=1
@@ -241,8 +250,10 @@ CLEAN_BEFORE=1                      # Whether to clean before making
 # End of user modification section.
 #----------------------------------------------------------------------
 
-if [ ! -d "$PREFIX_NODAP" ] ; then
-  mkdir $PREFIX_NODAP
+if [ $BUILD_NON_OPENDAP ] ; then
+  if [ ! -d "$PREFIX_NODAP" ] ; then
+    mkdir $PREFIX_NODAP
+  fi
 fi
 if [ ! -d "$PREFIX/lib" ] ; then
   mkdir $PREFIX/lib
@@ -309,10 +320,6 @@ if [ $INSTALL_NETCDF4 ] && [ ! -d $NETCDF4_DIR ] ; then
 fi
 if [ $INSTALL_NETCDF4_FORTRAN ] && [ ! -d $NETCDF4_FORTRAN_DIR ] ; then
   echo "$NETCDF4_FORTRAN_DIR does not exist"
-  exit
-fi
-if [ $INSTALL_NETCDF3_CXX ] && [ ! -d $NETCDF3_CXX_DIR ] ; then
-  echo "$NETCDF3_CXX_DIR does not exist"
   exit
 fi
 if [ $INSTALL_PROJ4 ] && [ ! -d $PROJ4_DIR ] ; then
@@ -766,12 +773,14 @@ then
     make distclean
     make clean
     if [ "$os" = "Darwin" ] ; then
-      export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
-      ./configure --enable-netcdf-4 --disable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX_NODAP
-      make all install
+      if [ $BUILD_NON_OPENDAP ] ; then
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
+        ./configure --enable-netcdf-4 --disable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX_NODAP
+        make all install
+        make distclean
+        make clean
+      fi
       echo "Cleaning $NETCDF4_DIR to do OPeNDAP build"
-      make distclean
-      make clean
       if [ "$un" = "cisl-denton.local" ] || [ "$os_version" = "10.8.4" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
       elif [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ] ; then
@@ -787,12 +796,14 @@ then
       else
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
       fi
-      ./configure --enable-netcdf-4 --disable-dap --disable-shared --prefix\=$PREFIX_NODAP
-      make all install
-      mv config.log config.log.nodap
+      if [ $BUILD_NON_OPENDAP ] ; then
+        ./configure --enable-netcdf-4 --disable-dap --disable-shared --prefix\=$PREFIX_NODAP
+        make all install
+        mv config.log config.log.nodap
+        make distclean
+        make clean
+      fi
       echo "Cleaning $NETCDF4_DIR to do OPeNDAP build"
-      make distclean
-      make clean
       if [ "$un" = "k5" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
       elif [ "$un" = "k6" ] ; then
@@ -847,6 +858,7 @@ then
     echo "Building $NETCDF4_FORTRAN_DIR..."
     export CPPFLAGS="-I$PREFIX/include"
     export LDFLAGS="-L$PREFIX/lib"
+    export LIBS="-lhdf5_hl -lhdf5 -lz -lcurl -ldl"
     ./configure --disable-shared --prefix\=$PREFIX
     make all install
     if [ $? ] ; then
@@ -865,41 +877,6 @@ then
   fi
 else
   echo "Not building NetCDF Fortran interface..."
-fi
-
-#--------------------------------------------------------------------
-# NetCDF-CXX (needed for ESMF, I think)
-#--------------------------------------------------------------------
-if [ "$INSTALL_NETCDF3_CXX" ]
-then
-  if [ -d "$NETCDF3_CXX_DIR" ] ; then
-    cd $NETCDF3_CXX_DIR
-    if [ $CLEAN_BEFORE ] ; then
-      echo "Cleaning $NETCDF3_CXX_DIR before making..."
-      make distclean
-      make clean
-    fi
-    echo "Building $NETCDF3_CXX_DIR..."
-    export CPPFLAGS="-I$PREFIX/include"
-    export LDFLAGS="-L$PREFIX/lib"
-    ./configure --disable-shared --prefix\=$PREFIX
-    make all install
-    if [ $? ] ; then
-      echo "$NETCDF3_CXX_DIR build successful."
-      if [ $CLEAN_AFTER ] ; then
-        echo "Cleaning $NETCDF3_CXX_DIR after making..."
-        make distclean
-        make clean
-      fi
-    else
-      echo "$NETCDF3_CXX_DIR build NOT successful."
-    fi
-    cd ..
-  else
-    echo "Directory $NETCDF3_CXX_DIR doesn't exist"
-  fi
-else
-  echo "Not building NetCDF C++ interface..."
 fi
 
 #--------------------------------------------------------------------
@@ -1289,9 +1266,6 @@ if [ $INSTALL_ESMF ] ; then
 # Do this before cleaning!
     export ESMF_DIR=`pwd`
 
-    echo "Cleaning $ESMF_DIR before building non-OPeNDAP version..."
-    make distclean
-    make clean
 #
 # This group of env vars will need to be changed before OPeNDAP build.
 #
@@ -1303,11 +1277,16 @@ if [ $INSTALL_ESMF ] ; then
 # The order of -L paths seems to be:
 #  -L$ESMF_LAPACK_LIBPATH -L$ESMF_NETCDF_LIBPATH ESMF_CXXLINKPATHS
 #
-    export ESMF_INSTALL_PREFIX=$PREFIX_NODAP
-    export ESMF_LAPACK_LIBPATH=$PREFIX_NODAP/lib
-    export ESMF_CXXLINKPATHS="-L$NCARG_ROOT/lib"
-    export ESMF_CXXCOMPILEPATHS="-I$PREFIX_NODAP/include"
-    export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz"
+    if [ $BUILD_NON_OPENDAP ] ; then
+      echo "Cleaning $ESMF_DIR before building non-OPeNDAP version..."
+      export ESMF_INSTALL_PREFIX=$PREFIX_NODAP
+      export ESMF_LAPACK_LIBPATH=$PREFIX_NODAP/lib
+      export ESMF_CXXLINKPATHS="-L$NCARG_ROOT/lib"
+      export ESMF_CXXCOMPILEPATHS="-I$PREFIX_NODAP/include"
+      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz"
+      make distclean
+      make clean
+    fi
 
 # The rest of the env vars should stay the same for both builds
     export ESMF_NETCDF_LIBPATH=$PREFIX/lib
@@ -1329,7 +1308,7 @@ if [ $INSTALL_ESMF ] ; then
     elif [ "$un" = "yellowstone_intel1215" ] ; then
       export ESMF_COMPILER="intel"
       export ESMFBUILDDIR="$os.intel.$ESMF_ABI.$ESMF_COMM.default"
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lssl -lidn -lrt -ldl -lsz -lz"
+      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lssl -lidn -lrt -ldl -lsz -lz"
     else
       export ESMFBUILDDIR="$os.gfortran.$ESMF_ABI.$ESMF_COMM.default"
     fi
@@ -1348,24 +1327,25 @@ if [ $INSTALL_ESMF ] ; then
     fi
 
 # Here's the non-OPeNDAP build
-    echo "Building non-OPeNDAP version of $ESMF_DIR..."
-    make all install
+    if [ $BUILD_NON_OPENDAP ] ; then
+      echo "Building non-OPeNDAP version of $ESMF_DIR..."
+      make all install
 
 # This is to get rid of libesmf shared library dependency.
-    /bin/rm -rf $ESMF_DIR/$ESMFSHAREDLIB $ESMF_INSTALL_PREFIX/$ESMFSHAREDLIB
-    make install
+      /bin/rm -rf $ESMF_DIR/$ESMFSHAREDLIB $ESMF_INSTALL_PREFIX/$ESMFSHAREDLIB
+      make install
 
-# If successful, move ESMF_RegridWeightGen to appropriate location and clean up.
-    if [ -f $ESMFREGRIDFILE ] ; then
-      echo "Moving $ESMFREGRIDFILE to $ESMF_INSTALL_PREFIX/bin/."
-      /bin/mv $ESMFREGRIDFILE $ESMF_INSTALL_PREFIX/bin/.
-      /bin/rm -rf $ESMF_INSTALL_PREFIX/bin/binO
-      /bin/rm -rf $ESMF_INSTALL_PREFIX/lib/libO
-      /bin/rm -rf $ESMF_INSTALL_PREFIX/include/ESMC*
-    else
-      echo "$ESMFREGRIDFILE doesn't exist"
+# If successful, move ESMF_RegridWeightGen to appropriate location.
+      if [ -f $ESMFREGRIDFILE ] ; then
+        echo "Moving $ESMFREGRIDFILE to $ESMF_INSTALL_PREFIX/bin/."
+        /bin/mv $ESMFREGRIDFILE $ESMF_INSTALL_PREFIX/bin/.
+        /bin/rm -rf $ESMF_INSTALL_PREFIX/bin/binO
+        /bin/rm -rf $ESMF_INSTALL_PREFIX/lib/libO
+        /bin/rm -rf $ESMF_INSTALL_PREFIX/include/ESMC*
+      else
+        echo "$ESMFREGRIDFILE doesn't exist"
+      fi
     fi
-
 #--------------------------------------------------
 # Now build OPeNDAP version
 #--------------------------------------------------
@@ -1381,17 +1361,17 @@ if [ $INSTALL_ESMF ] ; then
     unset ESMF_CXXLINKPATHS
 
     if [ "$un" = "cisl-denton.local" ] || [ "$os_version" = "10.8.4" ] ; then
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
+      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
     elif [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ] ; then
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
+      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
     elif [ "$un" = "k5" ] ; then
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
+      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
     elif [ "$un" = "k9" ] ; then
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl"
+      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl"
     elif [ "$un" = "harmon.cgd.ucar.edu" ] ; then
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lz -lidn -lrt -ldl -lsz -lz"
+      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lz -lidn -lrt -ldl -lsz -lz"
     else
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf_c++ -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lsz -lz"
+      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lsz -lz"
     fi
     echo "Building OPeNDAP version of $ESMF_DIR..."
     make all install
