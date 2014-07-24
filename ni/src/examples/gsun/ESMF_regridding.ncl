@@ -14,6 +14,13 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Important modifications:
+;       24 Jul 2014:
+;         Added a "NoPETLog" option to tell the regridder not
+;         to create the PET log file.  This was added as the
+;         "--no_log" option added in 6.3.0rp1.
+;         We'll keep the RemovePETLog option for people who 
+;         want to remove an existing PET file.
+;
 ;       8 Jul 2014:
 ;           Added a NetCDF4 option for source/destination files
 ;           and weight files. ESMF_RegridWeightGen uses the F90
@@ -767,7 +774,108 @@ begin
                                          "/" + max(grid_corner_lon))
     end if
 
+    delete([/grid_corner_lat2d,grid_corner_lon2d/])
+
 end     ; of calc_SCRIP_corners_boundaries(...)
+
+;======================================================================
+; This procedure is meant as a test to see if calling 
+; calc_SCRIP_corners_boundaries once for lat and once for lon is 
+; better than doing both lat/lon in one call. The reason for this
+; is doing both can be unnecessarily memory intensive.
+;======================================================================
+undef("calc_SCRIP_corners_boundaries_2")
+procedure calc_SCRIP_corners_boundaries_2(ll2d[*][*],grid_corner_ll,\
+                                        ll_dim_name,opt)
+local DEBUG, latlon_dims, grid_corner_ll2d, nlat, nlon, nlatp1, nlonp1
+begin
+    DEBUG = isatt_logical_true(opt,"Debug")
+
+;---Get dimension sizes
+    latlon_dims     = dimsizes(ll2d)
+    cnr_latlon_dims = dimsizes(grid_corner_ll)
+    cnr_rank        = dimsizes(cnr_latlon_dims)
+    nlat            = latlon_dims(0)
+    nlon            = latlon_dims(1)
+    nlatp1          = nlat+1
+    nlonp1          = nlon+1
+
+    if(cnr_rank.ne.2.or.cnr_latlon_dims(0).ne.(nlat*nlon).or. \
+       cnr_latlon_dims(1).ne.4) then
+      print("calc_SCRIP_corners_boundaries_2: grid_corner_lat/grid_corner_lon must be (nlat*nlon) x 4")
+      exit
+    end if
+
+    if(DEBUG) then
+      print("calc_SCRIP_corners_boundaries_2")
+      print("     min/max original " + ll_dim_nam + " : " + min(ll2d) + "/" + max(ll2d))
+    end if
+
+;---Create array to hold a 2D array of lat/lon corners
+    grid_corner_ll2d = new((/nlatp1,nlonp1/),typeof(ll2d))
+
+;---Calculate interior locations of corner grid
+    do i=1,nlat-1
+      do j=1,nlon-1
+        grid_corner_ll2d(i,j) = avg((/ll2d(i-1,j-1),ll2d(i,j-1),\
+                                      ll2d(i-1,j),  ll2d(i,j)/))
+      end do
+    end do
+
+;---Calculate bottom locations of corner grid
+    do j=1,nlon-1
+      grid_corner_ll2d(0,j) = avg((/ll2d(0,j),ll2d(0,j-1)/))
+    end do
+
+;---Calculate top locations of corner grid
+    do j=1,nlon-1
+      grid_corner_ll2d(nlat,j) = avg((/ll2d(nlat-1,j), \
+                                       ll2d(nlat-1,j-1)/))
+    end do
+
+;---Calculate left locations of corner grid
+    do i=1,nlat-1
+      grid_corner_ll2d(i,0) = avg((/ll2d(i,0),ll2d(i-1,0)/))
+    end do
+
+;---Calculate right locations of corner grid
+    do i=1,nlat-1
+      grid_corner_ll2d(i,nlon) = avg((/ll2d(i,nlon-1), \
+                                       ll2d(i-1,nlon-1)/))
+    end do
+
+;---Set four corners of corner grid
+    grid_corner_ll2d(0,0)       = ll2d(0,0)
+    grid_corner_ll2d(0,nlon)    = ll2d(0,nlon-1)
+    grid_corner_ll2d(nlat,nlon) = ll2d(nlat-1,nlon-1)
+    grid_corner_ll2d(nlat,0)    = ll2d(nlat-1,0)
+
+    if(DEBUG) then
+      print("calc_SCRIP_corners_boundaries_2")
+      print("     min/max grid_corner_" + ll_dim_name + ": " + \
+                  min(grid_corner_ll2d) + "/" + max(grid_corner_ll2d))
+    end if
+
+    n = 0
+    do i=0,nlat-1
+      do j=0,nlon-1
+        grid_corner_ll(n,0) = grid_corner_ll2d(i,  j)
+        grid_corner_ll(n,1) = grid_corner_ll2d(i,  j+1)
+        grid_corner_ll(n,2) = grid_corner_ll2d(i+1,j+1)
+        grid_corner_ll(n,3) = grid_corner_ll2d(i+1,j)
+        n=n+1
+      end do
+    end do
+
+    if(DEBUG) then
+      print("calc_SCRIP_corners_boundaries_2")
+      print("     min/max grid_corner_" + ll_dim_name + ": " + min(grid_corner_ll) + \
+                                         "/" + max(grid_corner_ll))
+    end if
+
+    delete(grid_corner_ll2d)
+
+end     ; of calc_SCRIP_corners_boundaries_2(...)
 
 ;======================================================================
 ; This procedure is used within the curvilinear_to_SCRIP function.
@@ -914,6 +1022,9 @@ begin
     grid_corner_lon(:,1) = ExtGridCenter_lon(jj*(nlonp1)+(ii+1))
     grid_corner_lon(:,2) = ExtGridCenter_lon((jj+1)*(nlonp1)+(ii+1))
     grid_corner_lon(:,3) = ExtGridCenter_lon((jj+1)*(nlonp1)+ii)
+
+;--Clean up
+    delete([/ExtGridCenter_lat,ExtGridCenter_lon,Extlat2d,Extlon2d/])
 
 end     ; of calc_SCRIP_corners_noboundaries(...)
 
@@ -1174,6 +1285,7 @@ begin
     end if
 
     DEBUG = isatt_logical_true(Opt,"Debug")
+    TESTIT = isatt_logical_true(Opt,"Testit")
 
 ;---Check if the file already exists
     check_for_file(FName,Opt)
@@ -1333,7 +1445,12 @@ begin
             print("       poles, so calculating grid corners using")
             print("       calc_SCRIP_corners_boundaries...")
           end if
-          calc_SCRIP_corners_boundaries(lat2d,lon2d,grid_corner_lat,grid_corner_lon,Opt)
+          if(TESTIT) then
+            calc_SCRIP_corners_boundaries_2(lat2d,grid_corner_lat,"lat",Opt)
+            calc_SCRIP_corners_boundaries_2(lon2d,grid_corner_lon,"lon",Opt)
+          else 
+            calc_SCRIP_corners_boundaries(lat2d,lon2d,grid_corner_lat,grid_corner_lon,Opt)
+          end if
         else
           if(DEBUG) then
             print("curvilinear_to_SCRIP: no lat values are at the poles, so")
@@ -1347,7 +1464,12 @@ begin
              print("       produced out-of-range latitude values.")
              print("       Trying calc_SCRIP_corners_boundaries...")
            end if
-           calc_SCRIP_corners_boundaries(lat2d,lon2d,grid_corner_lat,grid_corner_lon,Opt)
+            if(TESTIT) then
+              calc_SCRIP_corners_boundaries_2(lat2d,grid_corner_lat,"lat",Opt)
+              calc_SCRIP_corners_boundaries_2(lon2d,grid_corner_lon,"lon",Opt)
+            else 
+              calc_SCRIP_corners_boundaries(lat2d,lon2d,grid_corner_lat,grid_corner_lon,Opt)
+            end if
           end if
         end if
     end if
@@ -2470,9 +2592,17 @@ begin
     print("--------------------------------------------------")
   end if
 
+  if (isatt_logical_true(opt2,"NoPETLog")) then
+      ESMFCMD = ESMFCMD + " --no_log"
+  end if
+
 ;---Execute the regridding command
   RegridOut = systemfunc(ESMFCMD)
         
+;
+; This removes the PET log file. You can set NoPETLog=True to
+; have it not generated at all.
+;
   if(REMOVE_PET_LOG) then
     system("rm -rf PET0.RegridWeightGen.Log")
   end if
