@@ -15,23 +15,39 @@ c .   n   series length
 c .   p   the proportion of the time series to be tapered
 c .       [p=0.10 means 10 %]
 c .   xt  tapered series
-c .   iopt option not used ... set to zero
+c .   iopt  iopt=0 taper to series mean
+c .   iopt  iopt=1 means *force* taper to 0.0
 C                                            INPUT
       INTEGER N,IOPT
       DOUBLE PRECISION X(N),P
 C                                            OUTPUT
       DOUBLE PRECISION XT(N)
 C NCLEND
-      INTEGER I,M
+      INTEGER I,M,kopt
       DOUBLE PRECISION WEIGHT,PI,PIM,XAV
       DATA PI/3.141592653589D0/
 
+      kopt = iopt
+
+c pathological case: all values constant  
+c force taper to xav=0.0
+
+      do i=2,n
+         if (x(i).ne.x(1)) then
+             go to 10
+         end if
+      end do
+      kopt = 1
+   10 continue
+  
       XAV = 0.0D0
-      DO I = 1,N
-          XT(I) = X(I)
-          XAV = XAV + X(I)
-      END DO
-      XAV = XAV/N
+      if (kopt.ne.1) then
+          DO I = 1,N
+             XT(I) = X(I)
+             XAV = XAV + X(I)
+         END DO
+         XAV = XAV/N
+      end if
 
       M = MAX0(1,INT(P*DBLE(N)+0.5D0)/2)
       PIM = PI/DBLE(M)
