@@ -14129,9 +14129,9 @@ NhlErrorTypes _Nclfspan
 	    return NhlFATAL;
     }
 
-    if (dimsizes <= 0) {
+    if (dimsizes <= 1) {
         NhlPError(NhlFATAL, NhlEUNKNOWN,
-            "fspan: number of elements parameter is less-than-or-equal-to zero, can't continue");
+            "fspan: number of elements parameter is less-than-or-equal-to one, can't continue");
         return NhlFATAL;
     }
 
