@@ -2545,8 +2545,8 @@ begin
 ; Make sure the files don't already exist.
 ;
   if(first_time) then
-    if(isfilepresent(cdf_debug_file).or.isfilepresent(ncl_debug_file).or.\
-       isfilepresent(res_debug_file)) then
+    if(fileexists(cdf_debug_file).or.fileexists(ncl_debug_file).or.\
+       fileexists(res_debug_file)) then
       print("write_wrf_debug_info: error: debug files '" + cdf_debug_file + "',")
       print("'" + ncl_debug_file + "' and/or " + res_debug_file + " exist.")
       print("Please remove file(s) and start script again.")
