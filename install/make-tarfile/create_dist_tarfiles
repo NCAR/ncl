@@ -39,7 +39,7 @@ if ("$os" == "Darwin") then
 endif
 
 if ($?LIB_NCAR) then
-  set un="yellowstone"
+  set un="yellowstone_gnu472"
 endif
 
 if ("$un" == "harmon.cgd.ucar.edu") then
