@@ -110,10 +110,15 @@ extern Const char *NhlPError(
  * Scope:	Global Public
  * Returns:	void
  * Side Effect:	
+#ifdef NCLDEBUG
  */
+#if 1
 #define NHLPERROR(vargs)	{_NhlPErrorHack(__LINE__,\
 				(Const char*)__FILE__);\
 				(void)NhlPError vargs;}
+#else
+#define NHLPERROR(vargs)	{(void)NhlPError vargs;}
+#endif
 
 extern void _NhlPErrorHack(
 #if	NhlNeedProto
