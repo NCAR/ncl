@@ -2090,7 +2090,6 @@ NclStackEntry missing_expr;
 	NclScalar missing_val;
 	NclMultiDValData missing_md,tmp_md,size_md,tmp1_md;
 	void *tmp_val;
-	ng_size_t ndims = 1;
 	ng_size_t dim_sizes[NCL_MAX_DIMENSIONS];
 	long long *dim_size_list;
 	ng_size_t total;
@@ -2189,7 +2188,6 @@ NclStackEntry missing_expr;
 		}
 		ll_total = 1;
 		j = 0;
-		ndims = tmp1_md->multidval.dim_sizes[0];
 		if((tmp1_md->multidval.dim_sizes[0] == 1)&&(dim_size_list[0] > 0)) {
 			ll_total *= dim_size_list[0];
 			dim_sizes[0] = (ng_size_t)dim_size_list[0];
@@ -2211,7 +2209,6 @@ NclStackEntry missing_expr;
 			}
 		}
 		if(j == 0) {
-			ndims = 1;
 			dim_sizes[0] = 1;
 			j = 1;
 		}

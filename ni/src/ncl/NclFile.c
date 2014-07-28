@@ -2096,11 +2096,11 @@ int vtype;
 				}
 				n_elem = labs((finish[sel->dim_num] - start[sel->dim_num]) /tmpi) + 1;
 				if((sel->u.sub.start > thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size-1)||(sel->u.sub.start < 0)) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
+					NHLPERROR((NhlFATAL,NhlEUNKNOWN, "Subscript out of range, error in subscript #%d",i));
 					return(NULL);
 				}
 				if((sel->u.sub.finish> thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size-1)||(sel->u.sub.finish< 0)) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
+					NHLPERROR((NhlFATAL,NhlEUNKNOWN, "Subscript out of range, error in subscript #%d",i));
 					return(NULL);
 				}
 				
@@ -2116,11 +2116,11 @@ int vtype;
 			case Ncl_VECSUBSCR:
 				keeper[i] = 1;
 				if((sel->u.vec.min < 0)||(sel->u.vec.min >= thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size)) {	
-					NhlPError(NhlFATAL,NhlEUNKNOWN, "Subscript out of range, error in subscript #%d",i);
+					NHLPERROR((NhlFATAL,NhlEUNKNOWN, "Subscript out of range, error in subscript #%d",i));
 					return(NULL);
 				}
 				if((sel->u.vec.max < 0)||(sel->u.vec.max >= thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size)) {	
-					NhlPError(NhlFATAL,NhlEUNKNOWN, "Subscript out of range, error in subscript #%d",i);
+					NHLPERROR((NhlFATAL,NhlEUNKNOWN, "Subscript out of range, error in subscript #%d",i));
 					return(NULL);
 				}
 				n_elem = sel->u.vec.n_ind;
@@ -4428,7 +4428,7 @@ int type;
 
 						if((sel->u.sub.start > thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size-1 )||(sel->u.sub.start < 0)) {
 							if(!( thefile->file.file_dim_info[ thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->is_unlimited)||(sel->u.sub.start < 0)) {
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
+								NHLPERROR((NhlFATAL,NhlEUNKNOWN, "Subscript out of range, error in subscript #%d",i));
                                         			return(NhlFATAL);
 							} else if(sel->u.sub.start >= thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size){
 								update_unlimited = 1;
@@ -4436,7 +4436,7 @@ int type;
                                 		}
                                 		if((sel->u.sub.finish> thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size-1)||(sel->u.sub.finish < 0)) {
 							if(!( thefile->file.file_dim_info[ thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->is_unlimited)||(sel->u.sub.finish < 0)) {
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
+								NHLPERROR((NhlFATAL,NhlEUNKNOWN, "Subscript out of range, error in subscript #%d",i));
                                         			return(NhlFATAL);
 							} else if(sel->u.sub.finish >= thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size){
 								update_unlimited = 1;
