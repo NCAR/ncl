@@ -64,7 +64,7 @@ void            FindNeigh();
 void            TriNeigh();
 void            Gradient();
 void            FindProp();
-double          Surface();
+double          GridSurface();
 double          Meld();
 void            TooSteep();
 void            TooShallow();

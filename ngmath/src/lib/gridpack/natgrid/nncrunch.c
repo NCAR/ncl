@@ -38,15 +38,15 @@ void Gradient()
          wyd = points[i0][1];
          FindProp(wxd,wyd);
          if (error_status) return;
-         xc = Surface();
+         xc = GridSurface();
          wxde = wxd + wbit;
          FindProp(wxde,wyd);
          if (error_status) return;
-         xe = Surface();
+         xe = GridSurface();
          wydn = wyd + wbit;
          FindProp(wxd,wydn);
          if (error_status) return;
-         xn = Surface();
+         xn = GridSurface();
          points[i0][3] = (xc - xe) / wbit;
          points[i0][4] = (xc - xn) / wbit;
          asum /= nn_pi; 
@@ -702,7 +702,7 @@ GOTEM:;       }
       }
    }
 }
-double Surface()
+double GridSurface()
 {  int i0;
    double xx, asurf;
    curneig = rootneig;

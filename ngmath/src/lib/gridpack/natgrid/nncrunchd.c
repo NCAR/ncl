@@ -423,7 +423,7 @@ double **MakeGridd(int nxi, int nyi, double *xi, double *yi)
            if(single_point==1 && j7==1 && j8==1 && igrad==0) {
               jwts = 1;
             }
-            surf = Surface();
+            surf = GridSurface();
             jwts = 0;
             if (igrad>0) surf = Meld(surf,wxd,wyd);
             if (non_neg) if (surf < 0) surf = 0;
@@ -432,14 +432,14 @@ double **MakeGridd(int nxi, int nyi, double *xi, double *yi)
             wxde = wxd + wbit;
             FindProp(wxde,wyd);
             if (error_status) return ( (double **) NULL);
-            surfe = Surface();
+            surfe = GridSurface();
             if (igrad > 0) 
                surfe = Meld(surfe,wxde,wyd);
             if (non_neg) if (surfe < 0) surfe = 0;
             wydn = wyd + wbit;
             FindProp(wxd,wydn);
             if (error_status) return ( (double **) NULL);
-            surfn = Surface();
+            surfn = GridSurface();
             if (igrad > 0) 
                surfn = Meld(surfn,wxd,wydn);
             if (non_neg) if (surfn < 0) surfn = 0;
