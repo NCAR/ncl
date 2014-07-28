@@ -14356,3 +14356,35 @@ begin
   result = where(Y.lt.zero, -result, result)
   return(result)
 end
+; *****************************************************************
+; Generate latitudes for a Fixed (Rectilinear) grid
+; lat = latGridF (latStrt[1]:numeric, latLast[1]:numeric, nlat, "lat", "latitude", "degrees_north")
+;
+undef ("latGridF")
+function latGridF(latStrt[1]:numeric, latLast[1]:numeric, nlat[1]:integer \
+                 ,dimName[1]:string,longName[1]:string,units[1]:string)
+local lat
+begin
+  lat           = fspan(latStrt, latLast, nlat)
+  lat!0         = dimName
+  lat@long_name = longName
+  lat@units     = units
+  lat&$dimName$ = lat
+  return (lat)
+end
+; *****************************************************************
+; Generate longitudes for a Fixed (Rectilinear) grid
+; lon = lonGridF (lonStrt[1]:numeric, lonLast[1]:numeric, nlon, "lon", "longitude", "degrees_east")
+;
+undef ("lonGridF")
+function lonGridF(lonStrt[1]:numeric, lonLast[1]:numeric, nlon[1]:integer \
+                 ,dimName[1]:string,longName[1]:string,units[1]:string)
+local lon
+begin
+  lon           = fspan(lonStrt, lonLast, nlon)
+  lon!0         = dimName
+  lon@long_name = longName
+  lon@units     = units
+  lon&$dimName$ = lon
+  return (lon)
+end
