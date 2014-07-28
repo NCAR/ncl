@@ -80,6 +80,8 @@ typedef struct _NhlCairoWorkstationClassRec   *NhlCairoWorkstationClass;
 extern NhlCairoWorkstationClassRec    NhlcairoDocumentWorkstationClassRec;
 extern NhlCairoWorkstationClassRec    NhlcairoImageWorkstationClassRec;
 extern NhlCairoWorkstationClassRec    NhlcairoWindowWorkstationClassRec;
+#ifdef BuildQtEnabled
 extern NhlCairoWorkstationClassRec    NhlcairoQtWorkstationClassRec;
+#endif
 
 # endif /* _NCairoWorkstationP_h */

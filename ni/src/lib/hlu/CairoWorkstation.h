@@ -68,6 +68,8 @@ typedef enum _NhlCairoFormat {
 extern NhlClass NhlcairoDocumentWorkstationClass;
 extern NhlClass NhlcairoImageWorkstationClass;
 extern NhlClass NhlcairoWindowWorkstationClass;
+#ifdef BuildQtEnabled
 extern NhlClass NhlcairoQtWorkstationClass;
+#endif
 
 #endif /* _NCairoWorkstation_h */

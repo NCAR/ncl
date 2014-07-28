@@ -159,6 +159,7 @@ static NhlResource resourcesWindowWS[] = {
         _NhlUSET((NhlPointer) False), _NhlRES_DEFAULT, NULL},
 };
 
+#ifdef BuildQtEnabled
 static NhlResource resourcesQtWS[] = {
     {NhlNwkFormat, NhlCwkFormat, NhlTCairoFormat, sizeof (NhlCairoFormat),
         Oset(format), NhlTImmediate, _NhlUSET((NhlPointer) NhlCQT),
@@ -203,6 +204,7 @@ static NhlResource resourcesQtWS[] = {
         sizeof (NhlBoolean), Oset(cairo_fill_hack), NhlTImmediate,
         _NhlUSET((NhlPointer) False), _NhlRES_DEFAULT, NULL},
 };
+#endif
 
 /* forward declarations of helper functions */
 static NhlErrorTypes fixupFilename(NhlCairoWorkstationLayer layer, char* filenameSuffix, char* callingFunc);
@@ -233,22 +235,29 @@ static NhlErrorTypes CairoImageWorkstationInitialize(NhlClass class, NhlLayer re
         NhlLayer new, _NhlArgList args, int num_args);
 static NhlErrorTypes CairoWindowWorkstationInitialize(NhlClass class, NhlLayer req,
         NhlLayer new, _NhlArgList args, int num_args);
+#ifdef BuildQtEnabled
 static NhlErrorTypes CairoQtWorkstationInitialize(NhlClass class, NhlLayer req,
         NhlLayer new, _NhlArgList args, int num_args);
-
+#endif
 
 static NhlErrorTypes CairoDocumentWorkstationOpen(NhlLayer instance);
 static NhlErrorTypes CairoImageWorkstationOpen(NhlLayer instance);
 static NhlErrorTypes CairoWindowWorkstationOpen(NhlLayer instance);
+#ifdef BuildQtEnabled
 static NhlErrorTypes CairoQtWorkstationOpen(NhlLayer instance);
+#endif
 
 static NhlErrorTypes CairoDocumentWorkstationActivate(NhlLayer instance);
 static NhlErrorTypes CairoImageWorkstationActivate(NhlLayer instance);
 static NhlErrorTypes CairoWindowWorkstationActivate(NhlLayer instance);
+#ifdef BuildQtEnabled
 static NhlErrorTypes CairoQtWorkstationActivate(NhlLayer instance);
+#endif
 
 static NhlErrorTypes CairoWindowWorkstationClear(NhlLayer instance);
+#ifdef BuildQtEnabled
 static NhlErrorTypes CairoQtWorkstationClear(NhlLayer instance);
+#endif
 
 /* class-record for PS/PDF output formats */
 NhlCairoWorkstationClassRec NhlcairoDocumentWorkstationClassRec = {
@@ -445,6 +454,7 @@ NhlCairoWorkstationClassRec NhlcairoWindowWorkstationClassRec = {
 
 };
 
+#ifdef BuildQtEnabled
 /* class-record for qt-based output formats */
 NhlCairoWorkstationClassRec NhlcairoQtWorkstationClassRec = {
     {
@@ -509,11 +519,14 @@ NhlCairoWorkstationClassRec NhlcairoQtWorkstationClassRec = {
     }
 
 };
+#endif
 
 NhlClass NhlcairoDocumentWorkstationClass = (NhlClass) & NhlcairoDocumentWorkstationClassRec;
 NhlClass NhlcairoImageWorkstationClass = (NhlClass) & NhlcairoImageWorkstationClassRec;
 NhlClass NhlcairoWindowWorkstationClass = (NhlClass) & NhlcairoWindowWorkstationClassRec;
+#ifdef BuildQtEnabled
 NhlClass NhlcairoQtWorkstationClass = (NhlClass) & NhlcairoQtWorkstationClassRec;
+#endif
 
 /*
  * Function:    nhlfcairoXXXXXworkstationclass
@@ -541,9 +554,11 @@ NhlClass
 _NHLCALLF(nhlfcairowindowworkstationclass, NHLFCAIROWINDOWWORKSTATIONCLASS)
 (void) { return NhlcairoWindowWorkstationClass; }
 
+#ifdef BuildQtEnabled
 NhlClass
 _NHLCALLF(nhlfcairoqtworkstationclass, NHLFCAIROQTWORKSTATIONCLASS)
 (void) { return NhlcairoQtWorkstationClass; }
+#endif
 
 /*
  * Function:    CairoWorkstationClassPartInitialize
@@ -621,8 +636,10 @@ CairoWorkstationClassInitialize(void) {
                 imageFormats, NhlNumber(imageFormats));
         (void) _NhlRegisterEnumType(NhlcairoWindowWorkstationClass, NhlTCairoFormat,
                 windowFormats, NhlNumber(windowFormats));
+#ifdef BuildQtEnabled
         (void) _NhlRegisterEnumType(NhlcairoQtWorkstationClass, NhlTCairoFormat,
                 qtFormats, NhlNumber(qtFormats));
+#endif
 
         (void) _NhlRegisterEnumType(NhlcairoDocumentWorkstationClass, NhlTWorkOrientation,
                 orientvals, NhlNumber(orientvals));
@@ -825,6 +842,7 @@ CairoWindowWorkstationInitialize(NhlClass lclass, NhlLayer req, NhlLayer new, _N
     return ret;
 }
 
+#ifdef BuildQtEnabled
 static NhlErrorTypes
 CairoQtWorkstationInitialize(NhlClass lclass, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args) {
     char func[] = "CairoQtWorkstationInitialize";
@@ -892,7 +910,7 @@ CairoQtWorkstationInitialize(NhlClass lclass, NhlLayer req, NhlLayer new, _NhlAr
 
     return ret;
 }
-
+#endif
 
 /*
  * Function:    CairoWorkstationSetValues
@@ -1217,6 +1235,7 @@ CairoWindowWorkstationOpen(NhlLayer l) {
 *****/
 }
 
+#ifdef BuildQtEnabled
 static NhlErrorTypes
 CairoQtWorkstationOpen(NhlLayer l) {
     char func[] = "QtWorkstationOpen";
@@ -1249,6 +1268,7 @@ CairoQtWorkstationOpen(NhlLayer l) {
 
     return ret;
 }
+#endif
 
 /*
  * Function:    CairoXXXXXWorkstationActivate
@@ -1302,11 +1322,13 @@ CairoWindowWorkstationActivate(NhlLayer l) {
     return (*(lc->work_class.activate_work))(l);
 }
 
+#ifdef BuildQtEnabled
 static NhlErrorTypes
 CairoQtWorkstationActivate(NhlLayer l) {
     NhlWorkstationClass lc = (NhlWorkstationClass) NhlworkstationClass;
     return (*(lc->work_class.activate_work))(l);
 }
+#endif
 
 /*
  * Function:	CairoWindowWorkstationClear
@@ -1333,12 +1355,14 @@ CairoWindowWorkstationClear(NhlLayer layer) {
     return (*(wksClass->work_class.clear_work))(layer);
 }
 
+#ifdef BuildQtEnabled
 static NhlErrorTypes
 CairoQtWorkstationClear(NhlLayer layer) {
     NhlWorkstationClass wksClass = (NhlWorkstationClass) NhlworkstationClass;
 
     return (*(wksClass->work_class.clear_work))(layer);
 }
+#endif
 
 /*
  * fixupFilename()
