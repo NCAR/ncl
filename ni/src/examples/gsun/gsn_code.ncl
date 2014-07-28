@@ -10562,9 +10562,16 @@ begin
 ;
   width  = 1./ncols
   height = 1./nrows
-  xpos  = fspan(0,1-width,ncols)
-  ypos  = fspan(1-height,0,nrows)
-
+  if(ncols.gt.1) then
+    xpos = fspan(0,1-width,ncols)
+  else
+    xpos = 0.
+  end if
+  if(nrows.gt.1) then
+    ypos = fspan(1-height,0,nrows)
+  else
+    ypos = 1.-height
+  end if
 ;
 ; Box coordinates.
 ;
