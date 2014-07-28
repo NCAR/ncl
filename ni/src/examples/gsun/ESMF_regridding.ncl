@@ -2844,11 +2844,11 @@ begin
   v   = fid->S
 
 ;---Check that the column indexes will map into src_grid_dims
-  if ( max(col).gt.product(srcData_rgt_dims) ) then
-    print("ESMF_regrid_with_weights: error: source data on the description")
-    print("     file does not have proper dimensions.")
-    return(fmsg)
-  end if
+;;  if ( max(col).gt.product(srcData_rgt_dims) ) then
+;;    print("ESMF_regrid_with_weights: error: source data on the description")
+;;    print("     file does not have proper dimensions.")
+;;    return(fmsg)
+;;  end if
     
 ;
 ; We have to convert the src grid to 1D no matter what.
