@@ -63,6 +63,10 @@ NhlErrorTypes taper_W( void )
           NULL,
           DONT_CARE);
   
+  if(*option < 0 || *option > 2) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"taper: the third argument can currently only be 0 or 1. Defaulting to 0.");
+    *option = 0;
+  }
 /*
  * Compute the total size of the output array.
  */
@@ -242,6 +246,11 @@ NhlErrorTypes taper_n_W( void )
           NULL,
           DONT_CARE);
 
+  if(*option < 0 || *option > 2) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"taper_n: the third argument can currently only be 0 or 1. Defaulting to 0.");
+    *option = 0;
+  }
+
   dim = (int*)NclGetArgValue(
           3,
           4,
@@ -345,7 +354,7 @@ NhlErrorTypes taper_n_W( void )
                                        type_taper,npts,missing_dx.doubleval);
       }
       else {
-	NGCALLF(dtaper,DTAPER)(tmp_x,&inpts,tmp_p,tmp_taper,option);
+        NGCALLF(dtaper,DTAPER)(tmp_x,&inpts,tmp_p,tmp_taper,option);
 
         coerce_output_float_or_double_step(taper,tmp_taper,type_taper,npts,
                                            index_x,size_rightmost);
