@@ -784,7 +784,7 @@ then
       echo "Cleaning $NETCDF4_DIR to do OPeNDAP build"
       if [ "$un" = "cisl-denton.local" ] || [ "$os_version" = "10.8.4" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
-      elif [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ] ; then
+      elif [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ]  || [ "$os_version" = "10.9.4" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
       else
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
@@ -859,7 +859,7 @@ then
     echo "Building $NETCDF4_FORTRAN_DIR..."
     export CPPFLAGS="-I$PREFIX/include"
     export LDFLAGS="-L$PREFIX/lib"
-    export LIBS="-lhdf5_hl -lhdf5 -lz -lcurl -ldl"
+    export LIBS="-lnetcdf -lhdf5_hl -lhdf5 -lz -lcurl -ldl"
     ./configure --disable-shared --prefix\=$PREFIX
     make all install
     if [ $? ] ; then
@@ -1363,7 +1363,7 @@ if [ $INSTALL_ESMF ] ; then
 
     if [ "$un" = "cisl-denton.local" ] || [ "$os_version" = "10.8.4" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
-    elif [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ] ; then
+    elif [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ] || [ "$os_version" = "10.9.4" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
     elif [ "$un" = "k5" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
