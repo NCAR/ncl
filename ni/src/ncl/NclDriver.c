@@ -444,7 +444,7 @@ int NclDriver(int argc, char **argv)
 
     /* Pre-Load script */
 
-    for(i = 0; i < numberOfPreloadedScripts; ++i)
+    for(i = 0; i < numberOfPreloadedScripts - 1; ++i)
     {
         strcpy(buffer, _NGResolvePath(preload_scripts[i]));
 #ifdef NCLDEBUG
