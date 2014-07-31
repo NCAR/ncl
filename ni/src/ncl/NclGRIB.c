@@ -5662,12 +5662,16 @@ static GribParamList *_NewListNode
 	list->next = NULL;
 	tmp->thelist = list;
 	tmp->var_info.var_name_quark = grib_rec->var_name_q;
-	if (grib_rec->ptable_rec) {
+	if (grib_rec->ptable_rec && grib_rec->ptable_rec->long_name && strlen(grib_rec->ptable_rec->long_name) > 0) {
 		tmp->var_info.long_name_q = NrmStringToQuark(grib_rec->ptable_rec->long_name);
-		tmp->var_info.units_q = NrmStringToQuark(grib_rec->ptable_rec->units);
 	}
 	else {
 		tmp->var_info.long_name_q = grib_rec->long_name_q;
+	}
+	if (grib_rec->ptable_rec && grib_rec->ptable_rec->units && strlen(grib_rec->ptable_rec->units) > 0) {
+		tmp->var_info.units_q = NrmStringToQuark(grib_rec->ptable_rec->units);
+	}
+	else {
 		tmp->var_info.units_q = grib_rec->units_q;
 	}
 	tmp->var_info.data_type = GribMapToNcl((void*)&(grib_rec->int_or_float));
@@ -6430,7 +6434,7 @@ char *name;
 	int len;
 	char *tablename = NULL;
 	TBLE2 *param;
-	char *abrev, *units, *long_name;
+	char *abrev, *units , *long_name;
 	PtableInfo *ptable = NULL;
 	int table_count = 0;
 	
@@ -6527,6 +6531,7 @@ char *name;
 		}
 		param = &(ptable->table[ptable->pcount++]);
 		param->num = index;
+		param->abrev = param->units = param->long_name = NULL;
 		TOKENSTART(cp);
 		if (cp) {
 			lcp = cp;
@@ -7348,8 +7353,8 @@ int wr_status;
 					tmp_name_rec = NclMalloc(sizeof(TBLE2));
 					tmp_name_rec->abrev = NclMalloc(strlen("VAR_") + 4);
 					sprintf(tmp_name_rec->abrev,"VAR_%d",grib_rec->param_number);
-					tmp_name_rec->long_name = NclMalloc(strlen("Unknown Variable Name") + 1);
-					sprintf(tmp_name_rec->long_name,"Unknown Variable Name");
+					tmp_name_rec->long_name = NclMalloc(strlen("unknown variable name") + 1);
+					sprintf(tmp_name_rec->long_name,"unknown variable name");
 					tmp_name_rec->units= NclMalloc(strlen("unknown") + 1);
 					sprintf(tmp_name_rec->units,"unknown");
 					name_rec = tmp_name_rec;
@@ -7445,7 +7450,7 @@ int wr_status;
 						}
 					}
 
-					if (strlen(name_rec->abrev) > 0) {
+					if (name_rec->abrev && strlen(name_rec->abrev) > 0) {
 						strcpy((char*)buffer,name_rec->abrev);
 					}
 					else {
@@ -7607,8 +7612,14 @@ int wr_status;
 					grib_rec->var_name = (char*)NclMalloc((unsigned)strlen((char*)buffer) + 1);
 					strcpy(grib_rec->var_name,(char*)buffer);
 					grib_rec->var_name_q = NrmStringToQuark(grib_rec->var_name);
-					grib_rec->long_name_q = NrmStringToQuark(name_rec->long_name);
-					grib_rec->units_q = NrmStringToQuark(name_rec->units);
+					if (name_rec->long_name && strlen(name_rec->long_name) > 0) 
+						grib_rec->long_name_q = NrmStringToQuark(name_rec->long_name);
+					else 
+						grib_rec->long_name_q = NrmStringToQuark("unknown variable name");
+					if (name_rec->units && strlen(name_rec->units) > 0)
+						grib_rec->units_q = NrmStringToQuark(name_rec->units);
+					else
+						grib_rec->units_q = NrmStringToQuark("unknown");
 
 					if(therec->var_list == NULL) {
 						therec->var_list = _NewListNode(grib_rec);

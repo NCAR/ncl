@@ -395,7 +395,7 @@ STATIC_IO_SRCS  =       AddFileFormats.c AttSupport.c DataSupport.c \
 			NclAdvancedFile.c NclAdvancedGroup.c \
 			InitData.c Memory.c NclAtt.c NclCCM.c \
 			NclCoordVar.c NclData.c NclGroup.c NclFile.c NclFileVar.c \
-			NclGRIB.c NclHDF.c NclMultiDValnclfileData.c \
+			NclGRIB.c NclMultiDValnclfileData.c \
 			NclNetCdf.c NclOneDValCoordData.c NclType.c \
 			NclTypelist.c NclVar.c VarSupport.c \
 			ctoiee.c date.c 
