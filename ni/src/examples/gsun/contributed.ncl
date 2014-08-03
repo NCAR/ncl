@@ -6772,6 +6772,117 @@ begin
 end
 
 ; ******************************************************************
+; Mary Haley
+; wrapper for NCL function escorc
+;
+; This wrapper is unique because of the multiple
+; dimensionality possibilities of x and y.
+
+undef ("escorc_Wrap")
+function escorc_Wrap(x:numeric, y:numeric)
+local ccr, ndims_x, ndims_y, rank_x, rank_y, xnames, ynames
+begin
+  dsizes_x = dimsizes(x)
+  dsizes_y = dimsizes(y)
+  rank_x   = dimsizes(dsizes_x)
+  rank_y   = dimsizes(dsizes_y)
+
+  ccr = escorc (x, y)
+
+  if(rank_x.gt.1.and.rank_x.eq.rank_y) then
+    copy_VarCoords_not_n (x, ccr, dsizes_x(rank_x-1))
+  else
+    ccr_n = 0   ; dimension counter for ccr 
+    if(rank_x.gt.1) then
+      xnames = getvardims(x)
+      do n=0,rank_x-2
+        if (ismissing(xnames(n))) then
+          xnames(n) = "ncl_"+ccr_n
+        end if
+        ccr!ccr_n = xnames(n)
+        if(iscoord(x,xnames(n))) then
+          ccr&$ccr!ccr_n$ = x&$xnames(n)$
+        end if
+        ccr_n = ccr_n + 1
+      end do
+    end if
+    if(rank_y.gt.1) then
+      ynames = getvardims(y)
+      do n=0,rank_y-2
+        if (ismissing(ynames(n))) then
+          ynames(n) = "ncl_"+ccr_n
+        end if
+        ccr!ccr_n = ynames(n)
+        if(iscoord(y,ynames(n))) then
+          ccr&$ccr!ccr_n$ = y&$ynames(n)$
+        end if
+      end do
+    end if
+  end if
+  ccr@escorc_op_ncl = "escorc"
+  return(ccr)
+end
+
+; ******************************************************************
+; Mary Haley
+; wrapper for NCL function escorc_n
+;
+; This wrapper is a pain because of the multiple
+; dimensionality possibilities of x and y.
+
+undef ("escorc_n_Wrap")
+function escorc_n_Wrap(x:numeric,y:numeric,xdims[*]:integer,\
+                       ydims[*]:integer)
+local ccr, rank_x, rank_y, xnames, ynames, n, ccr_n
+begin
+  rank_x = dimsizes(dimsizes(x))
+  rank_y = dimsizes(dimsizes(y))
+
+  ccr = escorc_n (x, y, xdims, ydims)
+; copy_VarAtts(x, ccr)
+
+  if(rank_x.gt.1.and.rank_x.eq.rank_y) then
+    copy_VarCoords_not_n (x, ccr, xdims)
+  else
+    ccr_n = 0   ; dimension counter for ccr 
+    if(rank_x.gt.1) then
+      xnames = getvardims(x)
+      do n=0,rank_x-1
+        if (.not.any(n.eq.xdims)) then
+          if(ismissing(xnames(n))) then
+            xnames(n) = "ncl_"+ccr_n
+          end if
+          ccr!ccr_n = xnames(n)
+          if(iscoord(x,xnames(n))) then
+            ccr&$ccr!ccr_n$ = x&$xnames(n)$
+          end if
+          ccr_n = ccr_n + 1
+        end if
+      end do
+    end if
+    if(rank_x.gt.1) then
+      ynames = getvardims(y)
+      do n=0,rank_y-1
+        if (.not.any(n.eq.ydims)) then
+          if (ismissing(ynames(n))) then
+            ynames(n) = "ncl_"+ccr_n
+          end if
+          ccr!ccr_n = ynames(n)
+          if(iscoord(y,ynames(n))) then
+            ccr&$ccr!ccr_n$ = y&$ynames(n)$
+          end if
+          ccr_n = ccr_n + 1
+        end if
+      end do
+    end if
+  end if
+
+  ccr@escorc_op_ncl = "escorc_n"
+
+  return(ccr)
+end
+
+; ******************************************************************
 ; Dennis Shea
 ; wrapper for NCL function wgt_areaave
 
