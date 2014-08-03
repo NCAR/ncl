@@ -6790,7 +6790,7 @@ begin
   ccr = escorc (x, y)
 
   if(rank_x.gt.1.and.rank_x.eq.rank_y) then
-    copy_VarCoords_not_n (x, ccr, dsizes_x(rank_x-1))
+    copy_VarCoords_not_n (x, ccr, rank_x-1)
   else
     ccr_n = 0   ; dimension counter for ccr 
     if(rank_x.gt.1) then
