@@ -117,6 +117,11 @@ FILE *fp;
 	        case Ncl_List:
 	 		ret = nclfprintf(fp,"\tList\n");
 			break;
+	        case Ncl_MultiDValData:
+			/*
+	 		ret = nclfprintf(fp,"\tMultiDValData\n");
+			*/
+			break;
 	        default:
 		    fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
 		    fprintf(stderr, "\tUNRECOGANIZED cur_obj->obj.obj_type %d: %o\n", nv, cur_obj->obj.obj_type);
