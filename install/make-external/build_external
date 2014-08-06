@@ -2,7 +2,7 @@
 # 
 # This script is attempt to make it easier to build and install all the
 # optional and non-optional external software packages needed for
-# NCL/NCAR Graphics V6.2.0.
+# NCL/NCAR Graphics V6.2.1.
 # 
 # You will need to read through the notes below, to:
 # 
@@ -36,7 +36,7 @@
 #
 # Note on cairo above: We've had problems with cairo-1.12.x (NCL-1860 
 # and NCL-1862), so we've decided to stick with cairo-1.10.2 for 
-# V6.2.0. Also, Rick recommends using the system fontconfig to avoid
+# V6.2.x. Also, Rick recommends using the system fontconfig to avoid
 # some quirky problems with that and the high-res map database (NCL-1210).
 #
 # NCL only:
@@ -92,7 +92,7 @@ os=`uname -s`
 # 4.4.7 and 4.7.2, and the intel compiler 12.1.5.
 # You may need to update as necessary.
 # 
-if [ -n "$LIB_NCAR" ] ; then
+if [ -n "$COMPILER_VERSION" ] ; then
   if [ "$COMPILER_VERSION" = "4.7.2" ] ; then
     export PATH=$PREFIX/bin:/glade/apps/opt/gnu/4.7.2/bin:/usr/lib64/qt-3.3/bin:/glade/apps/opt/bin:/glade/apps/el6/usr/bin:/glade/apps/el6/bin:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/etc:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/openssh/5.7p1krb/bin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/ncar/opt/hpss
     export LD_LIBRARY_PATH=/glade/apps/opt/gnu/4.7.2/lib64:/glade/apps/opt/gnu/lib:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/lib
@@ -187,7 +187,8 @@ HDFEOS5_DIR="hdfeos5-1.15"
 JASPER_DIR="jasper-1.900.1"
 JPEG_DIR="jpeg-6b"
 NETCDF4_DIR="netcdf-4.3.2"
-NETCDF4_FORTRAN_DIR="netcdf-fortran-4.4.0"
+# We had problems with 4.4.0, so use 4.2 for now
+NETCDF4_FORTRAN_DIR="netcdf-fortran-4.2"
 PIXMAN_DIR="pixman-0.32.6"
 PKGCONFIG_DIR="pkg-config-0.28"
 PNG_DIR="libpng-1.2.51"
@@ -784,7 +785,7 @@ then
       echo "Cleaning $NETCDF4_DIR to do OPeNDAP build"
       if [ "$un" = "cisl-denton.local" ] || [ "$os_version" = "10.8.4" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
-      elif [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ]  || [ "$os_version" = "10.9.4" ] ; then
+      elif [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ] || [ "$os_version" = "10.9.4" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
       else
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
