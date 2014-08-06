@@ -1,5 +1,3 @@
-load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
-
 ;--------------------------------------------------------------------------------
 ; function wrf_user_set_xy( var:numeric, xp:numeric, yp:numeric, x1:numeric, \
 ;                           y1:numeric,angle:numeric ,opts )
