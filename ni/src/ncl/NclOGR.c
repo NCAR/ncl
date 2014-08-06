@@ -750,7 +750,7 @@ void *storage;
 {
         FieldExtractor helper;
         long i, offset;
-        int fieldNum = varNum - GEOMVAR_Z;
+        int fieldNum = varNum - rec->numGeomVariables;
 
         /* Based upon the type of the variable we're after, we'll invoke a different 
          * helper function in the loop below.  Note that the caller has already 
