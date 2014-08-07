@@ -41,6 +41,7 @@
 #endif
 
 #define HDFEOS5_BUF_SIZE	32768
+#define	HE5_MAX_STRING_LENGTH	2048
 #define MAX_SW	512
 #define MAX_GD	512
 #define MAX_PT	512
@@ -2031,7 +2032,13 @@ NclQuark path;
                 status = HE5_GDlocattrinfo(HE5_GDid,NrmQuarkToString(var_hdf_names[j]),NrmQuarkToString(loc_hdf_names[k]),&att_type,&att_size);
                 if(status == 0)
                 {
-                    tmp_value = (void *) NclMalloc(att_size * _NclSizeOf(HDFEOS5MapTypeNumber(att_type)));
+                    NclBasicDataTypes baseNclType = HDFEOS5MapTypeNumber(att_type);
+                    if(NCL_string == baseNclType)
+                    {
+                        tmp_value = (void*)NclCalloc(HE5_MAX_STRING_LENGTH, 1);
+                    }
+                    else
+                        tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(baseNclType));
                     status = HE5_GDreadlocattr(HE5_GDid,NrmQuarkToString(var_hdf_names[j]),NrmQuarkToString(loc_hdf_names[k]),tmp_value);
                     if(status < 0)
                     {
@@ -2053,12 +2060,8 @@ NclQuark path;
 				    /* fall through */
                             case NCL_string:
                                  {
-                                 char *new_value = (char *)NclMalloc(att_size+1);
-                                 strncpy(new_value, (char *)tmp_value, att_size);
-                                 new_value[att_size] = '\0';
-                                 free(tmp_value);
-                                 tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-                                 *(NclQuark*)tmp_value = NrmStringToQuark(new_value);
+                                 NclQuark *new_value = (NclQuark *)NclMalloc(sizeof(NclQuark));
+                                 *new_value = NrmStringToQuark(tmp_value);
 
                                  if(need_check > 0)
                                  {
@@ -2118,19 +2121,19 @@ NclQuark path;
                                  }
                                  }
 
-                                 HDFEOS5IntAddAtt(the_file->vars->var_inq,loc_ncl_names[k],(void*)tmp_value,1,NCL_string);
+                                 HDFEOS5IntAddAtt(the_file->vars->var_inq,loc_ncl_names[k],(void*)new_value,1,NCL_string);
                                  if(need_check > 0)
                                  {
                                      if((strcmp("Units", NrmQuarkToString(loc_ncl_names[k])) == 0) &&
-                                         strcmp("NoUnits", new_value))
+                                         strcmp("NoUnits", (char*)tmp_value))
                                      {  
                                          void *add_value;
                                          add_value = (void*)NclMalloc(sizeof(NclQuark));
-                                         *(NclQuark*)add_value = NrmStringToQuark(new_value);
+                                         *(NclQuark*)add_value = NrmStringToQuark((char*)tmp_value);
                                          HDFEOS5IntAddAtt(the_file->vars->var_inq,NrmStringToQuark("units"),(void*)add_value,1,NCL_string);
                                      }
                                  }
-                                 NclFree(new_value);
+                                 NclFree(tmp_value);
                                  break;
                                  }
                             default:
