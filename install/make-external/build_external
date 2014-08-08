@@ -1197,11 +1197,13 @@ if [ $INSTALL_CAIRO ] ; then
       make clean
     fi
     echo "Building $CAIRO_DIR..."
-    if [ "$os" = "Darwin" ] ; then
-      ./configure --prefix\=$PREFIX --enable-quartz-font=no --enable-quartz=no --enable-shared=no --enable-static=yes
-    else
-      ./configure --prefix\=$PREFIX --disable-shared
-    fi
+# Needed the quartz disabled on GNU 4.1.2 system, so make it default for all systems?
+    ./configure --prefix\=$PREFIX --enable-quartz-font=no --enable-quartz=no --enable-shared=no --enable-static=yes
+#    if [ "$os" = "Darwin" ] ; then
+#      ./configure --prefix\=$PREFIX --enable-quartz-font=no --enable-quartz=no --enable-shared=no --enable-static=yes
+#    else
+#      ./configure --prefix\=$PREFIX --disable-shared
+#    fi
     make all install
     if [ $? ] ; then
       echo "$CAIRO_DIR build successful."
