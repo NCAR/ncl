@@ -2762,10 +2762,10 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
                     deflate_level = varnode->compress_level;
 
                   /*
+                   *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+                   *fprintf(stderr, "\t\tvarnode->shuffle = %d, compress_level = %d\n",
+                   *                     varnode->shuffle, varnode->compress_level);
                    */
-                    fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-                    fprintf(stderr, "\t\tvarnode->shuffle = %d, compress_level = %d\n",
-                                         varnode->shuffle, varnode->compress_level);
 
                     nc_ret = nc_def_var_deflate(id, varnode->id, varnode->shuffle,
                                 deflate, deflate_level);
