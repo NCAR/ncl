@@ -2253,7 +2253,7 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
        *     The array must have one chunksize for each dimension in the variable. 
        */
         nc_inq_var_chunking(gid, i, &storage_in, chunksizes);
-        varnode->is_chunked = 0;
+        varnode->is_chunked = -1;
         if(NC_CHUNKED == storage_in)
         {
             nc_inq_var_deflate(gid, i, &(varnode->shuffle), &deflatep, &(varnode->compress_level));
@@ -2386,7 +2386,7 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
                                          unlimited_dim_idx, NrmQuarkToString(grpnode->real_name));
 
     /*check chunking info*/
-    if((NULL != grpnode->dim_rec) && (NULL != grpnode->var_rec) && (! grpnode->is_chunked))
+    if((NULL != grpnode->dim_rec) && (NULL != grpnode->var_rec) && (0 == grpnode->is_chunked))
     {
         grpnode->shuffle = 1;
         grpnode->compress_level = 0;
@@ -2700,7 +2700,6 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
     NclFileDimNode *dimnode;
     NclFileDimNode *chunkdimnode;
 
-    ng_size_t *dims;
     size_t *chunk_dims;
 
     int deflate = 1;
@@ -2712,39 +2711,12 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
 
     if(NULL != grpnode->chunk_dim_rec)
     {
-        dims = (ng_size_t *) NclCalloc(grpnode->dim_rec->n_dims, sizeof(ng_size_t));
-        assert(dims);
-        chunk_dims = (size_t *) NclCalloc(grpnode->dim_rec->n_dims, sizeof(size_t));
+        chunk_dims = (size_t *) NclCalloc(grpnode->chunk_dim_rec->n_dims, sizeof(size_t));
         assert(chunk_dims);
 
-        for(i = 0; i < grpnode->dim_rec->n_dims; i++)
+        for(i = 0; i < grpnode->chunk_dim_rec->n_dims; i++)
         {
-            dimnode = &(grpnode->dim_rec->dim_node[i]);
             chunkdimnode = &(grpnode->chunk_dim_rec->dim_node[i]);
-
-            if(NULL == chunkdimnode)
-            {
-              /*
-               *fprintf(stderr, "dim name: <%s> has no chunk name related.\n",
-               *                 NrmQuarkToString(dimnode->name));
-               *fprintf(stderr, "No more file-wise chunking and compress check.\n");
-               */
-
-                break;
-            }
-
-            if(dimnode->name != chunkdimnode->name)
-            {
-              /*
-               *fprintf(stderr, "dim name: <%s> and chunk_dim name: <%s> are different.\n",
-               *    NrmQuarkToString(dimnode->name), NrmQuarkToString(chunkdimnode->name));
-               *fprintf(stderr, "No more file-wise chunking and compress check.\n");
-               */
-
-                break;
-            }
-
-            dims[i] = dimnode->size;
 
             chunk_dims[i] = (size_t)chunkdimnode->size;
         }
@@ -2756,16 +2728,20 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
         {
             varnode = &(grpnode->var_rec->var_node[j]);
 
-            if(NULL == varnode->chunk_dim_rec)
+            if((NULL == varnode->chunk_dim_rec) && (-1 != varnode->is_chunked))
             {
                 for(i = 0; i < varnode->dim_rec->n_dims; i++)
                 {
                     chunkdimnode = _getChunkDimNodeFromNclFileGrpNode(grpnode,
                                        varnode->dim_rec->dim_node[i].name);
-                    _addNclDimNode(&(varnode->chunk_dim_rec),
-                                   varnode->dim_rec->dim_node[i].name,
-                                   chunkdimnode->size, chunkdimnode->id,
-                                   varnode->dim_rec->dim_node[i].is_unlimited);
+
+                    if(NULL != chunkdimnode)
+                    {
+                        _addNclDimNode(&(varnode->chunk_dim_rec),
+                                       varnode->dim_rec->dim_node[i].name,
+                                       chunkdimnode->size, chunkdimnode->id,
+                                       varnode->dim_rec->dim_node[i].is_unlimited);
+                    }
                 }
 
                 nc_ret = nc_def_var_chunking(id, varnode->id, storage, chunk_dims);
@@ -2814,7 +2790,6 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
             }
         }
 
-        free(dims);
         free(chunk_dims);
     }
 }
