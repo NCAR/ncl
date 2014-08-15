@@ -2538,8 +2538,8 @@ begin
     end if
     if(isvar("interp_method").and.isvar("pole").and.pole.eq."all".and.\
        any(interp_method.eq.(/"conserve","neareststod","nearestdtos"/))) then
-      print("ESMF_regrid_gen_weights: warning: 'Pole' cannot be set to 'all' when") 
-      print("                  using 'conserve' method. Defaulting to 'none'.")
+      print("ESMF_regrid_gen_weights: warning: 'Pole' cannot be set to 'all' when using") 
+      print("              'conserve' or 'nearest neighbor' methods. Defaulting to 'none'.")
       pole = "none"      
     end if
 
