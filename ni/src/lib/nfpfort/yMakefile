@@ -38,7 +38,13 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	plotfmt_rdhead.o plotfmt_rddata.o spareapoly.o KolmSmir2.o \
 	slatec_DPOLFT.o wrf_rip_phys_routines.o accumrun.o
 
-LibraryTarget($(MYNAME),$(FOBJS))
+COBJS =
+
+#COBJS = spei_ncl.o
+
+OBJS = $(FOBJS) $(COBJS)
+
+LibraryTarget($(MYNAME),$(OBJS))
 
 calc_uh.o: calc_uh.f90
         $(F77) $(FFLAGS) -c calc_uh.f90
