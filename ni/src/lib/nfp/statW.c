@@ -4625,34 +4625,19 @@ NhlErrorTypes dim_acumrun_n_W( void )
  */
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
 
+  tmp_x   = (double*)calloc(npts,sizeof(double));
+  tmp_acr = (double*)calloc(npts,sizeof(double));
   if(type_x != NCL_double) {
     type_acr = NCL_float;
-    tmp_x = (double*)calloc(npts,sizeof(double));
-    if( tmp_x == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_acumrun_n: Unable to allocate memory for coercing x array to double precision");
-      return(NhlFATAL);
-    }
+    acr = (void*)calloc(total_size_x,sizeof(float));
   }
   else {
-    type_acr = NCL_float;
-  }
-/*
- * Allocate space for output array
- */
-  if(type_acr != NCL_double) {
-    acr     = (void*)calloc(total_size_x,sizeof(float));
-    tmp_acr = (double*)calloc(npts,sizeof(double));
-    if( acr == NULL || tmp_acr == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_acumrun_n: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
-  }
-  else {
+    type_acr = NCL_double;
     acr = (void*)calloc(total_size_x,sizeof(double));
-    if( acr == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_acumrun_n: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
+  }
+  if( tmp_x == NULL || acr == NULL || tmp_acr == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_acumrun_n: Unable to allocate memory for coercing arrays to double precision");
+    return(NhlFATAL);
   }
 
 /*
@@ -4663,7 +4648,6 @@ NhlErrorTypes dim_acumrun_n_W( void )
     index_nrx = i*nrnx;
     for(j = 0; j < total_nr; j++) {
       index_x   = index_nrx + j;
-      if(type_acr == NCL_double) tmp_acr = &((double*)acr)[index_x];
       coerce_subset_input_double_step(x,tmp_x,index_x,total_nr,type_x,
                                       npts,0,NULL,NULL);
 
@@ -4678,7 +4662,7 @@ NhlErrorTypes dim_acumrun_n_W( void )
 /*
  * Free temp array.
  */
-  if(type_acr != NCL_double) NclFree(tmp_acr);
+  NclFree(tmp_acr);
   NclFree(tmp_x);
 /*
  * Return float if input isn't double, otherwise return double.
