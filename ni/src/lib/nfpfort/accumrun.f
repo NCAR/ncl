@@ -1,5 +1,5 @@
 C NCLORTSTART
-      subroutine acumrun(p,np,pmsg,nrun,pac,nmsg,iopt)
+      subroutine dacumrun(p,np,pmsg,nrun,pac,nmsg,iopt)
       implicit none
 c                               INPUT
       integer np, nrun, iopt

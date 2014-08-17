@@ -33,6 +33,9 @@ extern void NGCALLF(descros,DESCROS)(double*, double*, int*, double*,
                                      double*, double*, double*, double*,
                                      double*, int*, double*, double*, int*);
 
+extern void NGCALLF(dacumrun,DACUMRUN)(double *,int *,double *,int *,
+                                       double *, int *, int *);
+
 NhlErrorTypes stat2_W( void )
 {
 /*
@@ -4503,3 +4506,197 @@ NhlErrorTypes dim_stat4_n_W( void )
   NclFree(dsizes_out);
   return(ret);
 }
+
+NhlErrorTypes dim_acumrun_n_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *x;
+  int *lrun, *opt, *dims;
+  ng_size_t ndims;
+  double *tmp_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  NclScalar missing_x, missing_dx, missing_rx;
+  NclBasicDataTypes type_x;
+/*
+ * Output
+ */
+  void *acr;
+  double *tmp_acr;
+  int nmsg;
+  NclBasicDataTypes type_acr;
+/*
+ * various
+ */
+  ng_size_t i, j, index_x, nrnx, index_nrx;
+  ng_size_t total_nl, total_nr, total_size_x, total_elements;
+  ng_size_t npts;
+  int inpts;
+
+/*
+ * Retrieve parameter.
+ */
+  x = (void*)NclGetArgValue(
+           0,
+           4,
+           &ndims_x, 
+           dsizes_x,
+           &missing_x,
+           &has_missing_x,
+           &type_x,
+           DONT_CARE);
+
+  lrun = (int*)NclGetArgValue(
+           1,
+           4,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+
+  opt = (int*)NclGetArgValue(
+           2,
+           4,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+
+  dims = (int*)NclGetArgValue(
+           3,
+           4,
+           NULL,
+           &ndims,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+
+/*
+ * Some error checking. Make sure input dimensions are valid.
+ */
+  for(i = 0; i < ndims; i++ ) {
+    if(dims[i] < 0 || dims[i] >= ndims_x) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_acumrun_n: Invalid dimension sizes for accumulated sum dimension, can't continue");
+      return(NhlFATAL);
+    }
+    if(i > 0 && dims[i] != (dims[i-1]+1)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_acumrun_n: Invalid dimension sizes for accumulated sum dimension, can't continue");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Compute the total number of elements in output and input.
+ *
+ * The dimension(s) to do the sum across are "dims".
+ */
+  npts = total_nl = total_nr = total_elements = 1;
+  for(i = 0; i < dims[0]; i++) {
+    total_nl *= dsizes_x[i];
+  }
+  for(i = 0; i < ndims ; i++) {
+    npts = npts*dsizes_x[dims[i]];
+  }
+  for(i = dims[ndims-1]+1; i < ndims_x; i++) {
+    total_nr *= dsizes_x[i];
+  }
+  total_elements = total_nr * total_nl;
+  total_size_x   = total_elements * npts;
+
+/*
+ * Check input dimension size
+ */
+  if(npts > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_acumrun_n: npts = %ld is greater than INT_MAX", npts);
+    return(NhlFATAL);
+  }
+  inpts = (int) npts;
+
+/*
+ * Coerce missing values, if any.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+
+  if(type_x != NCL_double) {
+    type_acr = NCL_float;
+    tmp_x = (double*)calloc(npts,sizeof(double));
+    if( tmp_x == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_acumrun_n: Unable to allocate memory for coercing x array to double precision");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_acr = NCL_float;
+  }
+/*
+ * Allocate space for output array
+ */
+  if(type_acr != NCL_double) {
+    acr     = (void*)calloc(total_size_x,sizeof(float));
+    tmp_acr = (double*)calloc(npts,sizeof(double));
+    if( acr == NULL || tmp_acr == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_acumrun_n: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    acr = (void*)calloc(total_size_x,sizeof(double));
+    if( acr == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_acumrun_n: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Call the f77 double version of 'acr' with the full argument list.
+ */
+  nrnx = total_nr * npts;
+  for(i = 0; i < total_nl; i++) {
+    index_nrx = i*nrnx;
+    for(j = 0; j < total_nr; j++) {
+      index_x   = index_nrx + j;
+      if(type_acr == NCL_double) tmp_acr = &((double*)acr)[index_x];
+      coerce_subset_input_double_step(x,tmp_x,index_x,total_nr,type_x,
+                                      npts,0,NULL,NULL);
+
+      NGCALLF(dacumrun,DACUMRUN)(tmp_x,&inpts,&missing_dx.doubleval,
+                                 lrun,tmp_acr,&nmsg,opt);
+
+      coerce_output_float_or_double_step(acr,tmp_acr,type_acr,npts,index_x,
+                                         total_nr);
+    }
+  }
+
+/*
+ * Free temp array.
+ */
+  if(type_acr != NCL_double) NclFree(tmp_acr);
+  NclFree(tmp_x);
+/*
+ * Return float if input isn't double, otherwise return double.
+ */
+  if(type_acr != NCL_double) {
+/*
+ * Return float values. 
+ */
+    return(NclReturnValue(acr,ndims_x,dsizes_x,&missing_rx,
+                          NCL_float,0));
+  }
+  else {
+/*
+ * Return double values. 
+ */
+    return(NclReturnValue(acr,ndims_x,dsizes_x,&missing_dx,
+                          NCL_double,0));
+  }
+}
+
+

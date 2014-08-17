@@ -401,6 +401,7 @@ extern NhlErrorTypes dim_avg_wgt_W(void);
 extern NhlErrorTypes dim_avg_wgt_n_W(void);
 extern NhlErrorTypes dim_sum_wgt_W(void);
 extern NhlErrorTypes dim_sum_wgt_n_W(void);
+extern NhlErrorTypes dim_acumrun_n_W(void);
 extern NhlErrorTypes esacr_W(void);
 extern NhlErrorTypes esacv_W(void);
 extern NhlErrorTypes esccr_W(void);
@@ -5905,6 +5906,20 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
     NclRegisterFunc(dim_gamfit_n_W,args,"dim_gamfit_n",nargs);
+
+/*
+ * Register "dim_sum_wgt_n".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+
+    NclRegisterFunc(dim_acumrun_n_W,args,"dim_acumrun_n",nargs);
 
 /*
  * Register "dim_spi_n".
