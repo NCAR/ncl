@@ -14,6 +14,12 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Important modifications:
+;       17 Aug 2014:
+;         Added a "Check" option to tell the regridder to
+;         include "--check" on the regridder line. This
+;         will add some extra error reporting on the output
+;         results.
+;
 ;       24 Jul 2014:
 ;         Added a "NoPETLog" option to tell the regridder not
 ;         to create the PET log file.  This was added as the
@@ -2442,6 +2448,7 @@ begin
   end if
 
   DEBUG          = isatt_logical_true(opt2,"Debug")
+  CHECK          = isatt_logical_true(opt2,"Check")
   REMOVE_PET_LOG = isatt_logical_true(opt2,"RemovePETLog")
 
 ;---Check if the source grid file is a SCRIP file.
@@ -2585,15 +2592,19 @@ begin
 ;---Check if the user has requested to print out the full command to be run.
   end if  ; end of building the command (Second Pass - optional features)
 		
+  if (isatt_logical_true(opt2,"NoPETLog")) then
+      ESMFCMD = ESMFCMD + " --no_log"
+  end if
+
+  if (CHECK) then
+      ESMFCMD = ESMFCMD + " --check"
+  end if
+
   if (DEBUG)
     print("--------------------------------------------------")
     print("ESMF_regrid_gen_weights: the following command is about to be executed on the system:")
     print("'"+ESMFCMD+"'")
     print("--------------------------------------------------")
-  end if
-
-  if (isatt_logical_true(opt2,"NoPETLog")) then
-      ESMFCMD = ESMFCMD + " --no_log"
   end if
 
 ;---Execute the regridding command
@@ -2607,7 +2618,7 @@ begin
     system("rm -rf PET0.RegridWeightGen.Log")
   end if
 
-  if(DEBUG) then
+  if(DEBUG.or.CHECK) then
     print("ESMF_regrid_gen_weights: output from '" + ESMF_exec + "':")
     print("     " + RegridOut)
     print("--------------------------------------------------")
