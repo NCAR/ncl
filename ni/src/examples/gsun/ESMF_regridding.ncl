@@ -15,6 +15,13 @@
 ;
 ;    Important modifications:
 ;       17 Aug 2014:
+;         Added --norm_type fracarea for the "conserve" method.
+;           This replaces the old "ApplyFracB" code in 
+;           ESMF_regrid_with_weights.  You can turn this off
+;           by setting NormalizeWeights = False. The old
+;           code can still be invoked by setting WgtApplyFracB
+;           when calling ESMF_regrid_with_weights.
+;
 ;         Added a "Check" option to tell the regridder to
 ;         include "--check" on the regridder line. This
 ;         will add some extra error reporting on the output
@@ -2588,6 +2595,17 @@ begin
     if (isatt_logical_true(opt2,"WgtNetCDF4")) then
         ESMFCMD = ESMFCMD + " --netcdf4"
     end if
+;
+; Must normalize weights on destinatioin grid if using "conserve"
+; This was added in V6.2.1. in V6.2.0 or earlier, the weights were
+; normalized *after* the weights file was created
+; (see ESMF_regrid_with_weights).
+;
+    if((isvar("interp_method").and.interp_method.eq."conserve".and.\
+        .not.isatt_logical_false(opt2,"NormalizeWeights")).or.\
+        isatt_logical_true(opt2,"NormalizeWeights")) then
+      ESMFCMD = ESMFCMD + " --norm_type fracarea"
+    end if
 
 ;---Check if the user has requested to print out the full command to be run.
   end if  ; end of building the command (Second Pass - optional features)
@@ -2756,12 +2774,15 @@ begin
 ; "conserve" case, and they reconfirmed this Oct 2012.
 ;
   if(map_method.eq."Conservative remapping") then
-    ApplyFrac_B = True
+    ApplyFrac_B = isatt_logical_true(opt,"WgtApplyFracB")
+  else
+    ApplyFrac_B = False
+  end if
+
+  if(ApplyFrac_B) then
     frac_b = fid->frac_b
     frac_b@_FillValue = default_fillvalue(typeof(frac_b))
     frac_b = where(frac_b.eq.0,frac_b@_FillValue,frac_b)
-  else
-    ApplyFrac_B = False
   end if
 
 ;---Get the lat/lon of source and destination grids
@@ -2904,10 +2925,14 @@ begin
 ; We will need to reshape the return (M) x N grid from
 ; sparse_matrix_mult if the output dimensions are not 1D.
 ;
-; We also need to divide by frac_b if using the "conserve"
-; method. We are trying to avoid making a separate copy
-; of the array, if float return is desired. So, we have
-; 8 special "if" tests to avoid this as much as possible:
+; Pre V6.2.1, we also needed to divide by frac_b if using
+; the "conserve" method. Post V6.2.0, we can use the 
+; "--norm_type fracarea" option when generating the weights.
+; So, frac_b stuff only applies if the user sets the
+; *unadvertised* WgtApplyFracB.
+;
+; All the "if" tests below are to avoid unnecessary copying
+; of the return array.
 ;
 ; Return array has to be reshaped and converted to float
 ;   Case 1: Apply frac_b
