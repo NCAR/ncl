@@ -4579,6 +4579,11 @@ NhlErrorTypes dim_acumrun_n_W( void )
            NULL,
            DONT_CARE);
 
+  if(*lrun < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_acumrun_n: 'lrun' must be >= 2");
+    return(NhlFATAL);
+  }
+
 /*
  * Some error checking. Make sure input dimensions are valid.
  */
