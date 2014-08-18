@@ -8,8 +8,11 @@
 #define NUMSEASONSMAX 12
 
 /* Function prototypes:  'n' is length of 'dataSeries'  */
-void spei(float dataSeries[], int n, int seasons, float speiSeries[]);
-}
+extern void spei(float*,int,int, float*);
+extern void upward(float*,int);
+extern void pwm(float*,int,float*,float,float,int);
+extern void logLogisticFit(float*,float*);
+extern float gammaLn(float);
 
 /*
  * spei()
@@ -67,6 +70,7 @@ void upward(float series[], int n) {
 			}
 		}
 	}
+}
 
 /*
  * logLogisticFit()

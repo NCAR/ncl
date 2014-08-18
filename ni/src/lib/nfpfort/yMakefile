@@ -38,9 +38,7 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	plotfmt_rdhead.o plotfmt_rddata.o spareapoly.o KolmSmir2.o \
 	slatec_DPOLFT.o wrf_rip_phys_routines.o accumrun.o
 
-COBJS =
-
-#COBJS = spei_ncl.o
+COBJS = spei_ncl.o lmoments.o
 
 OBJS = $(FOBJS) $(COBJS)
 
