@@ -35,7 +35,7 @@
 ;         want to remove an existing PET file.
 ;
 ;       8 Jul 2014:
-;           Added a NetCDF4 option for source/destination files
+;           Added a WgtNetCDFType option for source/destination files
 ;           and weight files. ESMF_RegridWeightGen uses the F90
 ;           interface to read the source/destination files, which
 ;           is a problem because this interface doesn't support
@@ -1067,7 +1067,8 @@ begin
     end if
 
 ;---Do we need to create a netcdf-4 file?
-    if (isatt_logical_true(Opt,"NetCDF4")) then
+    if (isatt(Opt,"NetCDFType").and.\
+        str_lower(Opt@NetCDFType).eq."netcdf4") then
       setfileoption("nc","Format","netcdf4") 
       nc_file_type = "netcdf4"
     else
@@ -1309,7 +1310,8 @@ begin
     end if
 
 ;---Do we need to create a netcdf-4 file?
-    if (isatt_logical_true(Opt,"NetCDF4")) then
+    if (isatt(Opt,"NetCDFType").and.\
+        str_lower(Opt@NetCDFType).eq."netcdf4") then
       setfileoption("nc","Format","netcdf4") 
       nc_file_type = "netcdf4"
     else
@@ -2431,10 +2433,15 @@ begin
   check_both_atts(opt2,"RemoveFiles","RemoveSrcFile",False)
   check_both_atts(opt2,"WgtForceOverwrite","ForceOverwrite",False)
   check_both_atts(opt2,"WgtOverwrite","Overwrite",False)
+  check_both_atts(opt2,"WgtNetCDFType","NetCDFType","netcdf3")
 
   if(isatt_logical_true(opt2,"RemoveDstFile"))
     print("ESMF_regrid_gen_weights: Warning: RemoveDstFile was set to True.")
     print("  This file might be needed later to generate coordinates.")
+  end if
+
+  if(isatt(opt2,"WgtNetCDFType")) then
+    opt2@NetCDFType = opt2@WgtNetCDFType
   end if
 
   if(isatt_logical_true(opt2,"WgtOverwrite")) then
@@ -2592,7 +2599,8 @@ begin
     end if
 
 ;---This flag is necessary for writing vars > 4 GB
-    if (isatt_logical_true(opt2,"WgtNetCDF4")) then
+    if (isatt(opt2,"NetCDFType").and.\
+        str_lower(opt2@NetCDFType).eq."netcdf4") then
         ESMFCMD = ESMFCMD + " --netcdf4"
     end if
 ;
@@ -3477,7 +3485,8 @@ begin
 ; Check for generic attributes to pass through; that is,
 ; attributes like "Debug".
 ;
-  gen_atts = (/"GridCornerDelta","PrintTimings","Overwrite","ForceOverwrite","Debug"/)
+  gen_atts = (/"NetCDFType","GridCornerDelta","PrintTimings",\
+               "Overwrite","ForceOverwrite","Debug"/)
   do i=0,dimsizes(gen_atts)-1
     if(isatt(opt2,gen_atts(i))) then
       opt_new@$gen_atts(i)$ = opt2@$gen_atts(i)$
@@ -3492,7 +3501,7 @@ begin
 ; attribute, like "opt@SrcOverwrite".
 ;
   spc_atts = (/"Mask2D","TriangularMesh","LargeFile",\
-               "NetCDF4","Title","LLCorner","URCorner", \
+               "NetCDFType","Title","LLCorner","URCorner", \
                "Rotation","GridCornerLat","GridCornerLon",\
                "InputFileName","Overwrite","ForceOverwrite"/)
   do i=0,dimsizes(spc_atts)-1
@@ -3501,7 +3510,6 @@ begin
       opt_new@$spc_atts(i)$ = opt2@$tmp_att$
     end if
   end do
-
 ;
 ; Error checking added in V6.1.1 to make sure user doesn't 
 ; accidentally specify SrcFileName or DstFileName to be
@@ -3587,7 +3595,7 @@ end
 ;  DstGridType / DstGridLat / DstGridLon
 ;  SrcMask2D / DstMask2D
 ;  SrcLargeFile / DstLargeFile
-;  SrcNetCDF4 / DstNetCDF4
+;  SrcNetCDFType / DstNetCDFType
 ;  WgtFileName
 ;  SkipSrcGrid / SkipDstGrid / SkipWgtGen
 ;  Debug
