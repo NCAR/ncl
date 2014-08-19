@@ -947,19 +947,36 @@ NclQuark path;
 
                 if(HE5_SWattrinfo(HE5_SWid,NrmQuarkToString(att_hdf_names[k]),&att_type,&att_size)==0)
                 {
+                    NclBasicDataTypes baseNclType = HDFEOS5MapTypeNumber(att_type);
+                    if(NCL_string == baseNclType)
+                        tmp_value = (void*)NclCalloc(HE5_MAX_STRING_LENGTH, 1);
+                    else
+                        tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(baseNclType));
+
                   /*
                    *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
                    *fprintf(stderr, "\tatt_type = %d, att_size = %d\n", att_type, att_size);
                    */
 
-                    tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(HDFEOS5MapTypeNumber(att_type)));
-                    if(HE5_SWreadattr(HE5_SWid,NrmQuarkToString(att_hdf_names[k]),tmp_value)==0 )
+                    status = HE5_SWreadattr(HE5_SWid,NrmQuarkToString(att_hdf_names[k]),tmp_value);
+                    if(0 == status)
                     {
                         NclQuark att_name = -1;
 
-                        HDFEOS5IntFileAddAtt(the_file,sw_ncl_names[i],att_ncl_names[k],
-                                    tmp_value,(int) att_size,
-                                    HDFEOS5MapTypeNumber(att_type));
+                        if(NCL_string == baseNclType)
+                        {
+                            NclQuark *new_value = (NclQuark *)NclMalloc(sizeof(NclQuark));
+                            *new_value = NrmStringToQuark(tmp_value);
+                            att_size = 1;
+                            HDFEOS5IntFileAddAtt(the_file,sw_ncl_names[i],att_ncl_names[k],
+                                                 (void*)new_value,(int) att_size,baseNclType);
+                            NclFree(tmp_value);
+                        }
+                        else
+                        {
+                            HDFEOS5IntFileAddAtt(the_file,sw_ncl_names[i],att_ncl_names[k],
+                                                 tmp_value,(int) att_size,baseNclType);
+                        }
 
                         if(strcmp("ScaleFactor", NrmQuarkToString(att_ncl_names[k])) == 0)
                         {
@@ -1024,19 +1041,35 @@ NclQuark path;
 
                 if(HE5_EHglbattrinfo(HE5_SWfid,NrmQuarkToString(att_hdf_names[k]),&att_type,&att_size)==0)
                 {
+                    NclBasicDataTypes baseNclType = HDFEOS5MapTypeNumber(att_type);
                   /*
                    *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
                    *fprintf(stderr, "\tatt_type = %d, att_size = %d\n", att_type, att_size);
                    */
 
-                    tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(HDFEOS5MapTypeNumber(att_type)));
-                    if(HE5_EHreadglbattr(HE5_SWfid,NrmQuarkToString(att_hdf_names[k]),tmp_value)==0 )
+                    if(NCL_string == baseNclType)
+                        tmp_value = (void*)NclCalloc(HE5_MAX_STRING_LENGTH, 1);
+                    else
+                        tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(baseNclType));
+                    status = HE5_EHreadglbattr(HE5_SWfid,NrmQuarkToString(att_hdf_names[k]),tmp_value);
+                    if(0 == status)
                     {
                         NclQuark att_name = -1;
 
-                        HDFEOS5IntFileAddAtt(the_file,sw_ncl_names[i],att_ncl_names[k],
-                                    tmp_value,(int) att_size,
-                                    HDFEOS5MapTypeNumber(att_type));
+                        if(NCL_string == baseNclType)
+                        {
+                            NclQuark *new_value = (NclQuark *)NclMalloc(sizeof(NclQuark));
+                            *new_value = NrmStringToQuark(tmp_value);
+                            att_size = 1;
+                            HDFEOS5IntFileAddAtt(the_file,sw_ncl_names[i],att_ncl_names[k],
+                                                 (void*)new_value,(int) att_size,baseNclType);
+                            NclFree(tmp_value);
+                        }
+                        else
+                        {
+                            HDFEOS5IntFileAddAtt(the_file,sw_ncl_names[i],att_ncl_names[k],
+                                                 tmp_value,(int) att_size,baseNclType);
+                        }
 
                         if(strcmp("ScaleFactor", NrmQuarkToString(att_ncl_names[k])) == 0)
                         {
@@ -1677,6 +1710,8 @@ NclQuark path;
     hid_t att_type;
     hsize_t att_size;
 
+    herr_t status = FAIL;
+
     NclScalar missing;
     NclScalar *tmp_missing;
 
@@ -1826,11 +1861,30 @@ NclQuark path;
             { 
                 if(HE5_GDattrinfo(HE5_GDid,NrmQuarkToString(att_hdf_names[k]),&att_type,&att_size)==0)
                 {
-                    tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(HDFEOS5MapTypeNumber(att_type)));
-                    if(HE5_GDreadattr(HE5_GDid,NrmQuarkToString(att_hdf_names[k]),tmp_value)==0 )
+                    NclBasicDataTypes baseNclType = HDFEOS5MapTypeNumber(att_type);
+                    if(NCL_string == baseNclType)
                     {
-                        HDFEOS5IntFileAddAtt(the_file,gd_ncl_names[i],att_ncl_names[k],tmp_value,
-                                    (int) att_size,HDFEOS5MapTypeNumber(att_type));
+                        tmp_value = (void*)NclCalloc(HE5_MAX_STRING_LENGTH, 1);
+
+                        if(HE5_GDreadattr(HE5_GDid,NrmQuarkToString(att_hdf_names[k]),tmp_value)==0 )
+                        {
+                            NclQuark *new_value = (NclQuark *)NclMalloc(sizeof(NclQuark));
+                            *new_value = NrmStringToQuark(tmp_value);
+                            att_size = 1;
+                            HDFEOS5IntFileAddAtt(the_file,gd_ncl_names[i],att_ncl_names[k],
+                                                 (void*)new_value,(int) att_size,NCL_string);
+	                    NclFree(tmp_value);
+                        }
+                    }
+                    else
+                    {
+                        tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(baseNclType));
+
+                        if(HE5_GDreadattr(HE5_GDid,NrmQuarkToString(att_hdf_names[k]),tmp_value)==0 )
+                        {
+                            HDFEOS5IntFileAddAtt(the_file,gd_ncl_names[i],att_ncl_names[k],
+                                        tmp_value,(int) att_size,HDFEOS5MapTypeNumber(att_type));
+                        }
                     }
                 }
             }
@@ -1873,12 +1927,28 @@ NclQuark path;
             { 
                 if(HE5_EHglbattrinfo(HE5_GDfid,NrmQuarkToString(att_hdf_names[k]),&att_type,&att_size)==0)
                 {
-                    tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(HDFEOS5MapTypeNumber(att_type)));
-                    if(HE5_EHreadglbattr(HE5_GDfid,NrmQuarkToString(att_hdf_names[k]),tmp_value)==0 )
+                    NclBasicDataTypes baseNclType = HDFEOS5MapTypeNumber(att_type);
+                    if(NCL_string == baseNclType)
+                        tmp_value = (void*)NclCalloc(HE5_MAX_STRING_LENGTH, 1);
+                    else
+                        tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(baseNclType));
+                    status = HE5_EHreadglbattr(HE5_GDfid,NrmQuarkToString(att_hdf_names[k]),tmp_value);
+                    if(status == 0)
                     {
-                        HDFEOS5IntFileAddAtt(the_file,gd_ncl_names[i],att_ncl_names[k],
-                                    tmp_value,(int) att_size,
-                                    HDFEOS5MapTypeNumber(att_type));
+                        if(NCL_string == baseNclType)
+                        {
+                            NclQuark *new_value = (NclQuark *)NclMalloc(sizeof(NclQuark));
+                            *new_value = NrmStringToQuark(tmp_value);
+                            att_size = 1;
+                            HDFEOS5IntFileAddAtt(the_file,gd_ncl_names[i],att_ncl_names[k],
+                                                 (void*)new_value,(int) att_size,baseNclType);
+                            NclFree(tmp_value);
+                        }
+                        else
+                        {
+                            HDFEOS5IntFileAddAtt(the_file,gd_ncl_names[i],att_ncl_names[k],
+                                                 tmp_value,(int) att_size,baseNclType);
+                        }
 
                         if(strcmp("ScaleFactor", NrmQuarkToString(att_ncl_names[k])) == 0)
                         {
@@ -2571,14 +2641,31 @@ typedef struct
 
             for(att = 0; att < natts; att++)
             { 
-                if(HE5_PTattrinfo(HE5_PTid,NrmQuarkToString(att_hdf_names[att]),&att_type,&att_size)==0)
+                status = HE5_PTattrinfo(HE5_PTid,NrmQuarkToString(att_hdf_names[att]),&att_type,&att_size);
+                if(0 == status)
                 {
-                    tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(HDFEOS5MapTypeNumber(att_type)));
+                    NclBasicDataTypes baseNclType = HDFEOS5MapTypeNumber(att_type);
+                    if(NCL_string == baseNclType)
+                        tmp_value = (void*)NclCalloc(HE5_MAX_STRING_LENGTH, 1);
+                    else
+                        tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(baseNclType));
+
                     if(HE5_PTreadattr(HE5_PTid,NrmQuarkToString(att_hdf_names[att]),tmp_value)==0 )
                     {
-                        HDFEOS5IntFileAddAtt(the_file,pt_ncl_names[pt],att_ncl_names[att],
-                                    tmp_value,(int) att_size,
-                                    HDFEOS5MapTypeNumber(att_type));
+                        if(NCL_string == baseNclType)
+                        {
+                            NclQuark *new_value = (NclQuark *)NclMalloc(sizeof(NclQuark));
+                            *new_value = NrmStringToQuark(tmp_value);
+                            att_size = 1;
+                            HDFEOS5IntFileAddAtt(the_file,pt_ncl_names[pt],att_ncl_names[att],
+                                                 (void*)new_value,(int) att_size,baseNclType);
+                            NclFree(tmp_value);
+                        }
+                        else
+                        {
+                            HDFEOS5IntFileAddAtt(the_file,pt_ncl_names[pt],att_ncl_names[att],
+                                                 tmp_value,(int) att_size,baseNclType);
+                        }
                     }
                 }
             }
@@ -2676,7 +2763,11 @@ typedef struct
                                                     &att_type,&att_size);
                 if(status == 0)
                 {
-                    tmp_value = (void *) NclMalloc(att_size * _NclSizeOf(HDFEOS5MapTypeNumber(att_type)));
+                    NclBasicDataTypes baseNclType = HDFEOS5MapTypeNumber(att_type);
+                    if(NCL_string == baseNclType)
+                        tmp_value = (void*)NclCalloc(HE5_MAX_STRING_LENGTH, 1);
+                    else
+                        tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(baseNclType));
                     status = HE5_PTreadlocattr(HE5_PTid,NrmQuarkToString(lvl_hdf_names[lvl]),
                                                         NrmQuarkToString(loc_hdf_names[loc]),tmp_value);
                     if(status < 0)
@@ -2696,13 +2787,10 @@ typedef struct
 				    /* fall through */
                             case NCL_string:
                                  {
-                                 char *new_value = (char *)NclMalloc(att_size+1);
-                                 strncpy(new_value, (char *)tmp_value, att_size);
-                                 new_value[att_size] = '\0';
-                                 free(tmp_value);
-                                 tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-                                 *(NclQuark*)tmp_value = NrmStringToQuark(new_value);
-                                 HDFEOS5IntAddAtt(the_file->vars->var_inq,loc_ncl_names[loc],(void*)tmp_value,1,NCL_string);
+                                 void *new_value = (void*)NclMalloc(sizeof(NclQuark));
+                                 *(NclQuark*)new_value = NrmStringToQuark(tmp_value);
+                                 HDFEOS5IntAddAtt(the_file->vars->var_inq,loc_ncl_names[loc],new_value,1,NCL_string);
+                                 NclFree(tmp_value);
                                  break;
                                  }
                             default:
@@ -3030,12 +3118,28 @@ NclQuark path;
             { 
                 if(HE5_ZAattrinfo(HE5_ZAid,NrmQuarkToString(att_hdf_names[att]),&att_type,&att_size)==0)
                 {
-                    tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(HDFEOS5MapTypeNumber(att_type)));
-                    if(HE5_ZAreadattr(HE5_ZAid,NrmQuarkToString(att_hdf_names[att]),tmp_value)==0 )
+                    NclBasicDataTypes baseNclType = HDFEOS5MapTypeNumber(att_type);
+                    if(NCL_string == baseNclType)
+                        tmp_value = (void*)NclCalloc(HE5_MAX_STRING_LENGTH, 1);
+                    else
+                        tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(baseNclType));
+                    status = HE5_ZAreadattr(HE5_ZAid,NrmQuarkToString(att_hdf_names[att]),tmp_value);
+                    if(0 == status)
                     {
-                        HDFEOS5IntFileAddAtt(the_file,za_ncl_names[za],att_ncl_names[att],
-                                    tmp_value,(int) att_size,
-                                    HDFEOS5MapTypeNumber(att_type));
+                        if(NCL_string == baseNclType)
+                        {
+                            NclQuark *new_value = (NclQuark *)NclMalloc(sizeof(NclQuark));
+                            *new_value = NrmStringToQuark(tmp_value);
+                            att_size = 1;
+                            HDFEOS5IntFileAddAtt(the_file,za_ncl_names[za],att_ncl_names[att],
+                                                 (void*)new_value,(int) att_size,baseNclType);
+                            NclFree(tmp_value);
+                        }
+                        else
+                        {
+                            HDFEOS5IntFileAddAtt(the_file,za_ncl_names[za],att_ncl_names[att],
+                                                 tmp_value,(int) att_size,baseNclType);
+                        }
                     }
                 }
             }
@@ -3168,7 +3272,11 @@ NclQuark path;
                 status = HE5_ZAlocattrinfo(HE5_ZAid,NrmQuarkToString(var_hdf_names[nv]),NrmQuarkToString(loc_hdf_names[loc]),&att_type,&att_size);
                 if(status == 0)
                 {
-                    tmp_value = (void *) NclMalloc(att_size * _NclSizeOf(HDFEOS5MapTypeNumber(att_type)));
+                    NclBasicDataTypes baseNclType = HDFEOS5MapTypeNumber(att_type);
+                    if(NCL_string == baseNclType)
+                        tmp_value = (void*)NclCalloc(HE5_MAX_STRING_LENGTH, 1);
+                    else
+                        tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(baseNclType));
                     status = HE5_ZAreadlocattr(HE5_ZAid,NrmQuarkToString(var_hdf_names[nv]),NrmQuarkToString(loc_hdf_names[loc]),tmp_value);
                     if(status < 0)
                     {
@@ -3190,13 +3298,12 @@ NclQuark path;
 				    /* fall through */
                             case NCL_string:
                                  {
-                                 char *new_value = (char *)NclMalloc(att_size+1);
-                                 strncpy(new_value, (char *)tmp_value, att_size);
-                                 new_value[att_size] = '\0';
-                                 free(tmp_value);
-                                 tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-                                 *(NclQuark*)tmp_value = NrmStringToQuark(new_value);
-                                 HDFEOS5IntAddAtt(the_file->vars->var_inq,loc_ncl_names[loc],(void*)tmp_value,1,NCL_string);
+                                 NclQuark *new_value = (NclQuark *)NclMalloc(sizeof(NclQuark));
+                                 *new_value = NrmStringToQuark(tmp_value);
+                                 att_size = 1;
+                                 HDFEOS5IntAddAtt(the_file->vars->var_inq,loc_ncl_names[loc],
+                                                  (void*)new_value,(int) att_size,baseNclType);
+                                 NclFree(tmp_value);
                                  break;
                                  }
                             default:
