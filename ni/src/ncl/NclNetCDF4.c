@@ -3628,16 +3628,8 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 char **tmpstr = (char **)NclCalloc(n_elem, sizeof(char *));
                 NclQuark *qd = (NclQuark *)data;
 
-                n = 0;
-                for(i = 0; i < varnode->dim_rec->n_dims; i++)
-                {
-                    dimnode = &(varnode->dim_rec->dim_node[i]);
-                    for(j = locstart[i]; j < dimnode->size; j++)
-                    {
-                        tmpstr[n] = NrmQuarkToString(qd[n]);
-                        n++;
-                    }
-                }
+                for(n = 0; n < n_elem; ++n)
+                    tmpstr[n] = NrmQuarkToString(qd[n]);
                 
                 if(no_stride && in_whole)
                 {
@@ -3645,8 +3637,8 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 }
                 else
                 {
-                    ret = nc_put_vara_string(fid, varnode->id,
-                                             locstart, count, (const char **)tmpstr);
+                    ret = nc_put_vars_string(fid, varnode->id,
+                                             locstart, count, stride, (const char **)tmpstr);
                 }
 
                 NclFree(tmpstr);
