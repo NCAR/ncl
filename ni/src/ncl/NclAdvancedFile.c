@@ -1028,7 +1028,7 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
         _printNclTypeVal(fp, NCL_char, "Dimensions and sizes:", 0);
         _printNclFileVarDimRecord(fp, varnode->dim_rec);
 
-        if(varnode->is_chunked)
+        if(0 < varnode->is_chunked)
         {
             _printNclTypeVal(fp, NCL_char, "Chunking Info:", 0);
             _printNclFileVarDimRecord(fp, varnode->chunk_dim_rec);
