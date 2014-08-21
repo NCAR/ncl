@@ -1129,6 +1129,7 @@ CairoDocumentWorkstationOpen(NhlLayer l) {
 
 static NhlErrorTypes
 CairoImageWorkstationOpen(NhlLayer l) {
+    NhlWorkstationLayer work = (NhlWorkstationLayer) l;
     NhlCairoWorkstationLayerPart *cairo = &((NhlCairoWorkstationLayer) l)->cairo;
     Gescape_in_data gesc_in_pixconf;
     NhlErrorTypes ret;
@@ -1154,6 +1155,7 @@ CairoImageWorkstationOpen(NhlLayer l) {
     gesc_in_pixconf.escape_r1.data = &cairo->pixconfig;
     gesc_in_pixconf.escape_r1.size = sizeof (cairo->pixconfig);
     gescape(NGESC_CNATIVE, &gesc_in_pixconf, NULL, NULL);
+    work->work.vswidth_dev_units = minRange;
 
     ret = (*NhlworkstationClassRec.work_class.open_work)(l);
 
@@ -1163,6 +1165,7 @@ CairoImageWorkstationOpen(NhlLayer l) {
 static NhlErrorTypes
 CairoWindowWorkstationOpen(NhlLayer l) {
     char func[] = "XWorkstationOpen";
+    NhlWorkstationLayer work = (NhlWorkstationLayer) l;
     NhlCairoWorkstationLayerPart *cairo = &((NhlCairoWorkstationLayer) l)->cairo;
     Gescape_in_data gesc_in_xwconf;
     NhlErrorTypes ret;
@@ -1207,6 +1210,7 @@ CairoWindowWorkstationOpen(NhlLayer l) {
     gesc_in_xwconf.escape_r1.data = &cairo->xwinconfig;
     gesc_in_xwconf.escape_r1.size = sizeof(cairo->xwinconfig);
     gescape(NGESC_CNATIVE, &gesc_in_xwconf, NULL, NULL);
+    work->work.vswidth_dev_units = minRange;
 
     ret = (*NhlworkstationClassRec.work_class.open_work)(l);
 
@@ -1239,6 +1243,7 @@ CairoWindowWorkstationOpen(NhlLayer l) {
 static NhlErrorTypes
 CairoQtWorkstationOpen(NhlLayer l) {
     char func[] = "QtWorkstationOpen";
+    NhlWorkstationLayer work = (NhlWorkstationLayer) l;
     NhlCairoWorkstationLayerPart *cairo = &((NhlCairoWorkstationLayer) l)->cairo;
     Gescape_in_data gesc_in_xwconf;
     NhlErrorTypes ret;
@@ -1263,6 +1268,7 @@ CairoQtWorkstationOpen(NhlLayer l) {
     gesc_in_xwconf.escape_r1.data = &cairo->xwinconfig;
     gesc_in_xwconf.escape_r1.size = sizeof(cairo->xwinconfig);
     gescape(NGESC_CNATIVE, &gesc_in_xwconf, NULL, NULL);
+    work->work.vswidth_dev_units = minRange;
 
     ret = (*NhlworkstationClassRec.work_class.open_work)(l);
 
