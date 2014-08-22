@@ -4584,6 +4584,11 @@ NhlErrorTypes dim_acumrun_n_W( void )
     return(NhlFATAL);
   }
 
+  if(*opt !=0  && *opt != 1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_acumrun_n: 'opt' must be 0 or 1");
+    return(NhlFATAL);
+  }
+
 /*
  * Some error checking. Make sure input dimensions are valid.
  */
