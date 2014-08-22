@@ -28,7 +28,7 @@ C
       external NhlFCairoPSPDFWorkstationClass
       external NhlFCairoImageWorkstationClass
       external NhlFCairoWindowWorkstationClass
-      external nhlftickmarkclass
+      external NhlFTickmarkclass
       external NhlFTitleClass
 C  
 C  define label strings for explicit mode tick mark placement

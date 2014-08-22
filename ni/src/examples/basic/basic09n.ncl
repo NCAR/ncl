@@ -122,8 +122,8 @@ num_fonts = sizes(0)
 
 div = new(1,integer)
 div = num_fonts / num_lines
-mod = num_fonts % num_lines
-if (mod .ne. 0) then
+mod1 = num_fonts % num_lines
+if (mod1 .ne. 0) then
   div = div +1
 end if
 

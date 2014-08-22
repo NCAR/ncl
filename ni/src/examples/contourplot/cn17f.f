@@ -40,6 +40,7 @@ C
       external nhlfpdfworkstationclass
       external nhlfcairopspdfworkstationclass
       external nhlfcairoimageworkstationclass
+      external nhlfcairowindowworkstationclass
       external nhlfscalarfieldclass
       external nhlftextitemclass
       external nhlfcontourplotclass

@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/App.h>
+#include <ncarg/hlu/CairoWorkstation.h>
 #include <ncarg/hlu/CoordArrTable.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <Xm/Xm.h>

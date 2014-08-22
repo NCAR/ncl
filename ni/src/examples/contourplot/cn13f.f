@@ -21,16 +21,16 @@ C  Description:  This example emulates LLU example "mpex10".  It shows
 C                how to do inverse map tranformations and raster contour
 C                plots.
 C
-      external nhlfappclass
-      external nhlfxworkstationclass
-      external nhlfncgmworkstationclass
-      external nhlfpsworkstationclass
-      external nhlfpdfworkstationclass
-      external nhlfcairopspdfworkstationclass
-      external nhlfcairoimageworkstationclass
-      external nhlfscalarfieldclass
-      external nhlfcontourplotclass
-      external nhlfmapplotclass
+      external NhlFAppClass
+      external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
+      external NhlFCairoWindowWorkstationClass
+      external NhlFScalarFieldClass
+      external NhlFContourPlotClass
+      external NhlFMapPlotClass
 
       parameter(NCLS=300,NC=NCLS*NCLS,DTOR=.017453292519943,NCOLORS=66)
 

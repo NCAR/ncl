@@ -28,6 +28,7 @@
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrTable.h>
 #include <Xm/Xm.h>
