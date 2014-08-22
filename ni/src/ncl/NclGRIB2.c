@@ -10177,13 +10177,21 @@ static void *Grib2OpenFile
                     return NULL;
             }
 
-	    if (g2rec[nrecs]->sec4[i]->pds_num > 14) { /* why is this ?? */
-		    g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc = 255;
-		    g2rec[nrecs]->sec4[i]->prod_params->typeof_second_fixed_sfc = 255;
+            switch (g2rec[nrecs]->sec4[i]->pds_num) {
+	    case 20:
+	    case 30:
+	    case 31:
+	    case 254:
 		    g2rec[nrecs]->sec4[i]->prod_params->time_range_unit_id = 1;
 		    g2rec[nrecs]->sec4[i]->prod_params->forecast_time = 0;
-	    }
-	    else {
+		    break;
+	    case 53:
+	    case 54:
+		    g2rec[nrecs]->sec4[i]->prod_params->time_range_unit_id = 1;
+		    g2rec[nrecs]->sec4[i]->prod_params->forecast_time = 0;
+		    NhlPError(NhlWARNING, NhlEUNKNOWN, "NclGRIB2: Unsupported Product Definition Template.");
+		    break;
+	    default:
 		    if (g2fld->ipdtmpl != NULL) {
 			    g2rec[nrecs]->sec4[i]->prod_params->hrs_after_reftime_cutoff = g2fld->ipdtmpl[5];
 			    g2rec[nrecs]->sec4[i]->prod_params->min_after_reftime_cutoff = g2fld->ipdtmpl[6];
@@ -10205,19 +10213,7 @@ static void *Grib2OpenFile
 			    return NULL;
 		    }
 		    g2rec[nrecs]->sec4[i]->prod_params->time_range_unit = NULL;
-#if 0
-		    table = "4.4.table";
-		    cterr = Grib2ReadCodeTable(center, secid, table,
-					       g2rec[nrecs]->sec4[i]->prod_params->time_range,-1, ct);
-		    if (cterr < NhlWARNING) {
-			    NhlFree(g2rec);
-			    return NULL;
-		    }
 
-		    g2rec[nrecs]->sec4[i]->prod_params->time_range_unit
-			    = NclMalloc(strlen(ct->descrip) + 1);
-		    (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->time_range_unit, ct->descrip);
-#endif
 		    if (g2fld->ipdtmpl != NULL)
 			    g2rec[nrecs]->sec4[i]->prod_params->forecast_time = g2fld->ipdtmpl[8];
 		    else {
@@ -10226,10 +10222,48 @@ static void *Grib2OpenFile
 			    NhlFree(g2rec);
 			    return NULL;
 		    }
+	    }
+	    
+            switch (g2rec[nrecs]->sec4[i]->pds_num) {
+		    int level_off;
+	    case 20:
+	    case 30:
+	    case 31:
+	    case 254:
+	    case 32:
+	    case 33:
+	    case 34:
+	    case 1000:
+	    case 1001:
+	    case 1002:
+		    g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc = 255;
+		    g2rec[nrecs]->sec4[i]->prod_params->typeof_second_fixed_sfc = 255;
+		    break;
+	    default:
+		    switch (g2rec[nrecs]->sec4[i]->pds_num) {
+		    case 48:
+			    level_off = 20;
+			    break;
+		    case 47:
+		    case 46:
+		    case 45:
+		    case 44:
+			    level_off = 15;
+			    break;
+		    case 43:
+		    case 42:
+		    case 41:
+		    case 40:
+			    level_off = 10;
+			    break;
+		    default: 
+			    level_off = 9;
+			    break;
+		    }
 
 		    /* table 4.5: Fixed Surface Types and Units */
 		    if (g2fld->ipdtmpl != NULL)
-			    g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc = g2fld->ipdtmpl[9];
+			    g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc = g2fld->ipdtmpl[level_off];
 		    else {
 			    NhlPError(NhlFATAL, NhlEUNKNOWN,
 				      "NclGRIB2: Invalid Product Definition Template.");
@@ -10238,32 +10272,14 @@ static void *Grib2OpenFile
 		    }
 		    g2rec[nrecs]->sec4[i]->prod_params->first_fixed_sfc = NULL;
 		    g2rec[nrecs]->sec4[i]->prod_params->units_first_fixed_sfc = NULL;
-#if 0
-		    table = "4.5.table";
-		    cterr = Grib2ReadCodeTable(center, secid, table,
-					       g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc,-1, ct);
-		    if (cterr < NhlWARNING) {
-			    NhlFree(g2rec);
-			    return NULL;
-		    }
 
-		    g2rec[nrecs]->sec4[i]->prod_params->first_fixed_sfc
-			    = NclMalloc(strlen(ct->descrip) + 1);
-		    (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->first_fixed_sfc, ct->descrip);
-		    if (ct->units != NULL) {
-			    g2rec[nrecs]->sec4[i]->prod_params->units_first_fixed_sfc
-				    = NclMalloc(strlen(ct->units) + 1);
-			    (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->units_first_fixed_sfc,
-					  ct->units);
-		    }
-#endif
                     if (g2fld->ipdtmpl != NULL) {
-                            g2rec[nrecs]->sec4[i]->prod_params->scale_factor_first_fixed_sfc = g2fld->ipdtmpl[10];
-	    	    	if (g2fld->ipdtmpl[10] == -127)
+                            g2rec[nrecs]->sec4[i]->prod_params->scale_factor_first_fixed_sfc = g2fld->ipdtmpl[level_off + 1];
+	    	    	if (g2fld->ipdtmpl[level_off + 1] == -127)
 		    		    g2rec[nrecs]->sec4[i]->prod_params->scaled_val_first_fixed_sfc = 0;
 		        	else
 			        	g2rec[nrecs]->sec4[i]->prod_params->scaled_val_first_fixed_sfc
-				        	= g2fld->ipdtmpl[11];
+				        	= g2fld->ipdtmpl[level_off + 2];
             	    } else {
                 	    NhlPError(NhlFATAL, NhlEUNKNOWN,
                     		"NclGRIB2: Invalid Product Definition Template.");
@@ -10272,7 +10288,7 @@ static void *Grib2OpenFile
             	    }
 
 		    if (g2fld->ipdtmpl != NULL)
-			    g2rec[nrecs]->sec4[i]->prod_params->typeof_second_fixed_sfc = g2fld->ipdtmpl[12];
+			    g2rec[nrecs]->sec4[i]->prod_params->typeof_second_fixed_sfc = g2fld->ipdtmpl[level_off +3];
 		    else {
 			    NhlPError(NhlFATAL, NhlEUNKNOWN,
 				      "NclGRIB2: Invalid Product Definition Template.");
@@ -10281,38 +10297,20 @@ static void *Grib2OpenFile
 		    }
 		    g2rec[nrecs]->sec4[i]->prod_params->second_fixed_sfc = NULL;
 		    g2rec[nrecs]->sec4[i]->prod_params->units_second_fixed_sfc = NULL;
-#if 0
-		    cterr = Grib2ReadCodeTable(center, secid, table,
-					       g2rec[nrecs]->sec4[i]->prod_params->typeof_second_fixed_sfc,-1,ct);
-		    if (cterr < NhlWARNING) {
-			    NhlFree(g2rec);
-			    return NULL;
-		    }
-
-		    g2rec[nrecs]->sec4[i]->prod_params->second_fixed_sfc
-			    = NclMalloc(strlen(ct->descrip) + 1);
-		    (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->second_fixed_sfc, ct->descrip);
-		    if (ct->units != NULL) {
-			    g2rec[nrecs]->sec4[i]->prod_params->units_second_fixed_sfc
-				    = NclMalloc(strlen(ct->units) + 1);
-			    (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->units_first_fixed_sfc,
-					  ct->units);
-		    }
-#endif
 		    if (g2fld->ipdtmpl != NULL) {
-			    g2rec[nrecs]->sec4[i]->prod_params->scale_factor_second_fixed_sfc = g2fld->ipdtmpl[13];
-			    if (g2fld->ipdtmpl[13] == -127)
+			    g2rec[nrecs]->sec4[i]->prod_params->scale_factor_second_fixed_sfc = g2fld->ipdtmpl[level_off + 4];
+			    if (g2fld->ipdtmpl[level_off +4] == -127)
 				    g2rec[nrecs]->sec4[i]->prod_params->scaled_val_second_fixed_sfc = 0;
 			    else
 				    g2rec[nrecs]->sec4[i]->prod_params->scaled_val_second_fixed_sfc
-					    = g2fld->ipdtmpl[14];
+					    = g2fld->ipdtmpl[level_off + 5];
 		    } else {
 			    NhlPError(NhlFATAL, NhlEUNKNOWN,
 				      "NclGRIB2: Invalid Product Definition Template.");
 			    NhlFree(g2rec);
 			    return NULL;
 		    }
-
+#if 0
 		    switch (g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc) {
 		    case 1: /* ground or water surface */
 		    case 9: /* sea bottom */
@@ -10335,6 +10333,7 @@ static void *Grib2OpenFile
 
 			    break;
 		    }
+#endif
 	    }
             /*
              * Depending on type of product, there may or may not be more info
