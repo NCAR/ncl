@@ -63,7 +63,7 @@ NhlErrorTypes taper_W( void )
           NULL,
           DONT_CARE);
   
-  if(*option < 0 || *option > 2) {
+  if(*option != 0 && *option != 1) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"taper: the third argument can currently only be 0 or 1. Defaulting to 0.");
     *option = 0;
   }
@@ -246,7 +246,7 @@ NhlErrorTypes taper_n_W( void )
           NULL,
           DONT_CARE);
 
-  if(*option < 0 || *option > 2) {
+  if(*option != 0 && *option != 1) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"taper_n: the third argument can currently only be 0 or 1. Defaulting to 0.");
     *option = 0;
   }
