@@ -234,11 +234,11 @@
 #endif	/* BuildSunViewctrans */
 
 #ifndef	PNGlib
-#define	PNGlib	/Users/haley/dev/external/lib/libpng.a -lz
+#define	PNGlib	-lpng -lz
 #endif	/* PNGlib */
 
 #ifndef CAIROlib
-#define CAIROlib  /Users/haley/dev/external/lib/libcairo.a -lfontconfig /Users/haley/dev/external/lib/libpixman-1.a /Users/haley/dev/external/lib/libfreetype.a /Users/haley/dev/external/lib/libexpat.a /Users/haley/dev/external/lib/libpng.a -lz -liconv -lXrender -lbz2
+#define CAIROlib -lcairo -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -liconv -lXrender -lbz2
 #endif
 
 /* This should be same as CAIROlib except with no explicit paths */
@@ -295,11 +295,13 @@
 #endif
 
 #ifndef	GRIB2lib
-#define       GRIB2lib   -lgrib2c -ljasper /Users/haley/dev/external/lib/libpng.a -lz -ljpeg
+#define       GRIB2lib   -lgrib2c -ljasper -lpng -lz -ljpeg
 #endif	/* GRIB2lib */
 
 #ifndef	NetCDFlib
-#define	NetCDFlib	-lnetcdf -lcurl -lcrypto -lldap -lssl
+#define	NetCDFlib	-lnetcdf -lcurl
+/*#define	NetCDFlib	-lnetcdf -lcurl -lssl -lidn -lrt -lldap */
+/*#define	NetCDFlib	-lnetcdf -lcurl -lcrypto -lldap -lssl */
 #endif	/* NetCDFlib */
 
 #ifndef	NetCDF4lib
@@ -307,7 +309,7 @@
 #endif	/* NetCDF4lib */
 
 #ifndef	UdUnitslib
-#define	UdUnitslib	-ludunits2 /Users/haley/dev/external/lib/libexpat.a
+#define	UdUnitslib	-ludunits2 -lexpat
 #endif	/* UdUnitslib */
 
 #ifdef BuildV5D
