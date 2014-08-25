@@ -34,7 +34,6 @@ MYXQFBIN	=	ncl.xq.fix
 MYLIB		=	libncl
 MYLIB_API	=	libnclapi
 YACC		=	$(NYACC)
-LEX		= 	flex
 
 #if defined(Darwin)
  EXTRA_CCOPTIONS =

@@ -31,11 +31,9 @@
 
 
 MYBIN		=	wrapit77
-LEX 		= 	flex
-YACC		=	yacc
 
 EXTRA_DEFINES = $(OS1_DEF) $(MAJOR_DEF)
-SYS_LIBS        = -ll
+EXTRA_SYS_LIBS= $(LEXLIB)
 
 HDRS		=	$(GEN_HDRS) $(STATIC_HDRS) 
 

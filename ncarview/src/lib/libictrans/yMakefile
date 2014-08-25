@@ -48,7 +48,7 @@ lex.yy.c: lex.l Makefile
 	@echo 's/yylex/my_yylex/g' >>  sedscript
 	@echo 's/getc/my_getc/g' >>  sedscript
 	@echo 's/static void __yy__unused() { main(); }//g' >>  sedscript
-	lex lex.l
+	$(LEX) lex.l
 	@$(MV) lex.yy.c lex.yy.c.sed
 	@sed -f sedscript < lex.yy.c.sed > lex.yy.c
 	@$(RM) lex.yy.c.sed sedscript
