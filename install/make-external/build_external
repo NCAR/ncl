@@ -101,7 +101,7 @@ if [ -n "$COMPILER_VERSION" ] ; then
     un="yellowstone_gnu447"
   else
     un="yellowstone_intel1215"
-    export PATH=$PREFIX/bin:/glade/apps/opt/ncl/6.1.2/intel/12.1.5/bin:/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/etc:/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/bin:/usr/lib64/qt-3.3/bin:/ncar/opt/intel/12.1.0.233/composer_xe_2011_sp1.11.339/bin/intel64:/glade/apps/opt/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/openssh/5.7p1krb/bin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/ncar/opt/hpss:/glade/apps/opt/netcdf/4.3.0/intel/12.1.5/bin:/usr/lpp/mmfs/bin
+    export PATH=$PREFIX/bin:/glade/apps/opt/ncl/6.2.1/intel/12.1.5/bin:/glade/p/work/haley/dev/external/intel/12.1.5/bin:/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/etc:/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/bin:/usr/lib64/qt-3.3/bin:/ncar/opt/intel/12.1.0.233/composer_xe_2011_sp1.11.339/bin/intel64:/glade/apps/opt/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/openssh/5.7p1krb/bin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/ncar/opt/hpss:/glade/apps/opt/netcdf/4.3.0/intel/12.1.5/bin:/usr/lpp/mmfs/bin
   fi
   unset LIB_NCAR
   unset INC_NCAR
