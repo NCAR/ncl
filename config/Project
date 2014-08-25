@@ -238,12 +238,12 @@
 #endif	/* PNGlib */
 
 #ifndef CAIROlib
-#define CAIROlib -lcairo -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -liconv -lXrender -lbz2
+#define CAIROlib -lcairo -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -lpthread -lXrender -lbz2
 #endif
 
 /* This should be same as CAIROlib except with no explicit paths */
 #ifndef CAIROlibuser
-#define CAIROlibuser  -lcairo -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -liconv -lXrender -lbz2
+#define CAIROlibuser  -lcairo -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -lpthread -lXrender -lbz2
 #endif
 
 #ifdef	BuildHDFEOS
