@@ -56,14 +56,9 @@ UNIX_SRCS = mpdbdi.f
 
 UNIX_OBJS = mpdbdi.o
 
-#if defined(BuildPNG) || defined(BuildCAIRO)
 PNG_SRCS        =  mapnga.c mapngb.c
 PNG_OBJS        =  mapnga.o mapngb.o
-EXTRA_CDEFINES   = -DBuildPNG -DBuildCAIRO
-#else
-#define PNG_SRCS
-#define PNG_OBJS
-#endif
+
 
 SOURCES = $(GENERIC_SRCS) $(UNIX_SRCS) $(PNG_SRCS)
 
