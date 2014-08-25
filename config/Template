@@ -491,6 +491,18 @@ NGCOMM########################################################################
 #define	ArQuickOpt	q
 #endif	/* ArQuickOpt */
 
+#ifndef	LexCommand
+#define	LexCommand	flex
+#endif	/* LexCommand */
+
+#ifndef	LexLibrary
+#define	LexLibrary	-ll
+#endif	/* LexLibrary */
+
+#ifndef	YaccCommand
+#define	YaccCommand	yacc
+#endif	/* YaccCommand */
+
 #ifndef	RmCommand
 #define	RmCommand	rm -f
 #endif	/* RmCommand */
@@ -786,6 +798,9 @@ AR_REG		= $(AR) ArRegOpt
 AR_QUICK	= $(AR) ArQuickOpt
 
 RM		= RmCommand
+LEX		= LexCommand
+YACC		= YaccCommand
+LEXLIB		= LexLibrary
 CAT		= CatCommand
 CP		= CopyCommand
 MV		= MoveCommand
