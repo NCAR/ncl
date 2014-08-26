@@ -793,7 +793,7 @@ then
       ./configure --enable-netcdf-4 --enable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
       make all install
     else
-      if [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
+      if [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] || [ "$un" = "k9" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -ldl"
       else
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
