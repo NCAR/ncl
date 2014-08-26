@@ -63,7 +63,7 @@ if ($?NCLONLY && $?NCARGONLY) then
 endif
 
 
-set nclversion = "6.2.0"
+set nclversion = "6.2.1"
 set pwddir  = `pwd`
 
 echo "============================================================"

@@ -5,22 +5,24 @@
 # non-OPenDAP. There are certain assumptions about this
 # script:
 #
-#  1. The non-OPeDNAP version of the NetCDF library
+#  1. The non-OPeDNAP version of the NetCDF C library
 #     is in $NCARG_EXTERNAL/nodap, and the OPeNDAP
 #     version is in $NCARG_EXTERNAL.
 #
-#  2. ESMF_RegridWeightGen is installed to $NCARG_EXTERNAL/bin
-#     and $NCARG_EXTERNAL/nodap/bin
+#  2. The OPenDAP-enabled ESMF_RegridWeightGen is installed to
+#     $NCARG_EXTERNAL/bin/ESMF_RegridWeightGen.dap and the 
+#     non-OPenDAP-enabled one to 
+#     $NCARG_EXTERNAL/bin/ESMF_RegridWeightGen.nodap
 #
-#  3. The $NCARG/config/Site.local,Site.local.orig,Site.local.nodap
-#     $NCARG/config/Project,Project.orig,Project.nodap
+#  3. The $NCARG/config/Site.local,Site.local.dap,Site.local.nodap
+#     $NCARG/config/Project,Project.dap,Project.nodap
 #     files all exist. The Site.local.nodap should just have an
 #     extra -L$NCARG_EXTERNAL/nodap/lib path so that the non
 #     OPenDAP NetCDF gets loaded first. The Project.nodap file
 #     has the "-lcurl" stuff removed from the netcdf libs line.
 #
-#  4. You are able to display an NCL X11 window, because an
-#     ESMF test example is executed below where you need this.
+#  4. You are able to display an NCL X11 window, because various
+#     X11 tests are executed.
 #
 
 
@@ -32,73 +34,89 @@ set TAR_FILES       # Whether to tar up files
 set ASK             # Whether to ask to continue at various locations
 
 if ("$os" == "Darwin") then
+  set ldd = "otool -L"
   set macosv = `sw_vers -productVersion`
   if( $macosv == "10.9.2") then
     set un="riley.local"
   endif
+else
+  set ldd = "ldd"
 endif
 
-if ($?LIB_NCAR) then
-  set un="yellowstone_gnu472"
+if ($?COMPILER_VERSION) then
+  if ( "$COMPILER_VERSION" = "4.7.2" ) then
+    set un="yellowstone_gnu472"
+  else if ( "$COMPILER_VERSION" = "4.4.7" ) then
+    set un="yellowstone_gnu447"
+  else
+    set un="yellowstone_intel1215"
+  endif
 endif
 
 if ("$un" == "harmon.cgd.ucar.edu") then
   setenv NCARGTEST /project/yampa02/haley/ncargtest
-  setenv NCARG_EXTERNAL /contrib/ncl-6.2.0/external
-  setenv NCARG_ROOT /contrib/ncl-6.2.0
-  setenv NCARG /contrib/ncl-6.2.0/src/ncarg
+  setenv NCARG_EXTERNAL /contrib/ncl-6.2.1/external
+  setenv NCARG_ROOT /contrib/ncl-6.2.1
+  setenv NCARG /contrib/ncl-6.2.1/src/ncarg
   set dap_string   = "Linux_SL6.5_x86_64_gcc447"
   set nodap_string = "Linux_SL6.5_x86_64_nodap_gcc447"
 else if ("$un" == "k5") then
   setenv NCARGTEST /d2/haley/ncargtest
   setenv NCARG_EXTERNAL /d2/haley/external
-  setenv NCARG_ROOT /d2/haley/ncl-6.2.0
+  setenv NCARG_ROOT /d2/haley/ncl-6.2.1
   setenv NCARG /d2/haley/src/ncarg
   set dap_string   = "Linux_RHEL5.10_i686_gcc412"
   set nodap_string = "Linux_RHEL5.10_i686_nodap_gcc412"
 else if ("$un" == "k6") then
   setenv NCARGTEST /d2/haley/ncargtest
   setenv NCARG_EXTERNAL /d2/haley/external
-  setenv NCARG_ROOT /d2/haley/ncl-6.2.0
+  setenv NCARG_ROOT /d2/haley/ncl-6.2.1
   setenv NCARG /d2/haley/src/ncarg
   set dap_string   = "Linux_Debian6.0_i686_gcc445"
   set nodap_string = "Linux_Debian6.0_i686_nodap_gcc445"
 else if ("$un" == "k7") then
   setenv NCARGTEST /d2/haley/ncargtest
   setenv NCARG_EXTERNAL /d2/haley/external
-  setenv NCARG_ROOT /d2/haley/ncl-6.2.0
+  setenv NCARG_ROOT /d2/haley/ncl-6.2.1
   setenv NCARG /d2/haley/src/ncarg
   set dap_string   = "Linux_Debian6.0_x86_64_gcc445"
   set nodap_string = "Linux_Debian6.0_x86_64_nodap_gcc445"
 else if ("$un" == "k8") then
   setenv NCARGTEST /d2/haley/ncargtest
   setenv NCARG_EXTERNAL /d2/haley/external
-  setenv NCARG_ROOT /d2/haley/ncl-6.2.0
+  setenv NCARG_ROOT /d2/haley/ncl-6.2.1
   setenv NCARG /d2/haley/src/ncarg
   set dap_string   = "Linux_RHEL5.10_x86_64_gcc412"
   set nodap_string = "Linux_RHEL5.10_x86_64_nodap_gcc412"
 else if ("$un" == "k9") then
   setenv NCARGTEST /d2/haley/ncargtest
   setenv NCARG_EXTERNAL /d2/haley/external
-  setenv NCARG_ROOT /d2/haley/ncl-6.2.0
+  setenv NCARG_ROOT /d2/haley/ncl-6.2.1
   setenv NCARG /d2/haley/src/ncarg
-  set dap_string   = "Linux_Debian7.4_x86_64_gcc472"
-  set nodap_string = "Linux_Debian7.4_x86_64_nodap_gcc472"
+  set dap_string   = "Linux_Debian7.6_x86_64_gcc472"
+  set nodap_string = "Linux_Debian7.6_x86_64_nodap_gcc472"
   set gccv = `gcc --version`
-else if ("$un" == "yellowstone_gnu446") then
+else if ("$un" == "yellowstone_gnu447") then
   setenv NCARGTEST /glade/u/ncldev/test/ncargtest
-  setenv NCARG_EXTERNAL /glade/p/work/haley/dev/external/gnu/4.4.6
-  setenv NCARG_ROOT /glade/apps/opt/ncl/6.2.0/gnu/4.4.6
-  setenv NCARG /glade/p/work/haley/src/ncl-trunk-gnu446
-  set dap_string   = "Linux_RHEL6.2_x86_64_gcc446"
-  set nodap_string = "Linux_RHEL6.2_x86_64_nodap_gcc446"
+  setenv NCARG_EXTERNAL /glade/p/work/haley/dev/external/gnu/4.4.7
+  setenv NCARG_ROOT /glade/apps/opt/ncl/6.2.1/gnu/4.4.7
+  setenv NCARG /glade/p/work/haley/src/ncl-trunk-gnu447
+  set dap_string   = "Linux_RHEL6.4_x86_64_gcc447"
+  set nodap_string = "Linux_RHEL6.4_x86_64_nodap_gcc447"
 else if ("$un" == "yellowstone_gnu472") then
   setenv NCARGTEST /glade/u/ncldev/test/ncargtest
   setenv NCARG_EXTERNAL /glade/p/work/haley/dev/external/gnu/4.7.2
-  setenv NCARG_ROOT /glade/apps/opt/ncl/6.2.0/gnu/4.7.2
+  setenv NCARG_ROOT /glade/apps/opt/ncl/6.2.1/gnu/4.7.2
   setenv NCARG /glade/p/work/haley/src/ncl-trunk-gnu472
-  set dap_string   = "Linux_RHEL6.2_x86_64_gcc472"
-  set nodap_string = "Linux_RHEL6.2_x86_64_nodap_gcc472"
+  set dap_string   = "Linux_RHEL6.4_x86_64_gcc472"
+  set nodap_string = "Linux_RHEL6.4_x86_64_nodap_gcc472"
+else if ("$un" == "yellowstone_intel1215") then
+  setenv NCARGTEST /glade/u/ncldev/test/ncargtest
+  setenv NCARG_EXTERNAL /glade/p/work/haley/dev/external/intel/12.1.5
+  setenv NCARG_ROOT /glade/apps/opt/ncl/6.2.1/intel/12.1.5
+  setenv NCARG /glade/p/work/haley/src/ncl-trunk-intel
+  set dap_string   = "Linux_RHEL6.4_x86_64_intel1215"
+  set nodap_string = "Linux_RHEL6.4_x86_64_nodap_intel1215"
 else if ("$un" == "riley.local") then
   setenv NCARGTEST /Users/haley/ncargtest
   setenv NCARG_EXTERNAL /Users/haley/dev/external
@@ -131,6 +149,7 @@ endif
 setenv PATH $NCARG_ROOT/bin:$PATH
 rehash
 
+# Error checking
 set copy_files   = ("Site.local" "Project")
 cd $NCARG/config
 foreach f($copy_files)
@@ -138,8 +157,8 @@ foreach f($copy_files)
     echo "$f doesn't exist...can't continue"
     exit
   endif
-  if(! -f  $f.orig) then
-    echo "$f.orig doesn't exist...can't continue"
+  if(! -f  $f.dap) then
+    echo "$f.dap doesn't exist...can't continue"
     exit
   endif
   if(! -f  $f.nodap) then
@@ -147,6 +166,16 @@ foreach f($copy_files)
     exit
   endif
 end
+
+# Test to see if ESMF_RegridWeightGen is to be tarred up.
+set ESMF
+set esmf_files = ("$NCARG_EXTERNAL/bin/ESMF_RegridWeightGen.nodap $NCARG_EXTERNAL/bin/ESMF_RegridWeightGen.dap")
+foreach f($esmf_files)
+  if(! -f  $f) then
+    echo "$f doesn't exist...unsetting ESMF..."
+    unset ESMF
+  endif
+endif
 
 set path=($NCARG_ROOT/bin $path)
 rehash
@@ -182,6 +211,17 @@ foreach dir($dirs)
   /bin/rm ncl
   make me
   make all install
+  echo "----------------------------------------------------------------------"
+  echo "Executing ldd on this non-OPenDAP binary..."
+  echo "----------------------------------------------------------------------"
+  $ldd ncl
+  if( $?ASK ) then
+    echo -n "Continue? (y/n) "
+    set answer="$<"
+    if ("$answer" != "y") then
+      exit
+    endif
+  endif
 end
 
 echo "----------------------------------------------------------------------"
@@ -198,13 +238,18 @@ if( $?ASK ) then
 endif
 
 #----------------------------------------------------------------------
-# Copy over appropriate ESMF_RegridWeightGen
+# Copy over non-OPeNDAP ESMF_RegridWeightGen
 #----------------------------------------------------------------------
-if ("$un" != "k5" && "$un" != "k8" ) then
-  /bin/cp $NCARG_EXTERNAL/nodap/bin/ESMF_RegridWeightGen $NCARG_ROOT/bin/.
+if( $?ESMF ) then
+  /bin/rm $NCARG_ROOT/bin/ESMF_RegridWeightGen
+  /bin/cp $NCARG_EXTERNAL/bin/ESMF_RegridWeightGen.nodap $NCARG_ROOT/bin/ESMF_RegridWeightGen
+  echo "----------------------------------------------------------------------"
+  echo "Executing ldd on this non-OPenDAP binary..."
+  echo "----------------------------------------------------------------------"
+  $ldd $NCARG_ROOT/bin/ESMF_RegridWeightGen
 
   echo "----------------------------------------------------------------------"
-  echo "Running ESMF_RegridTest test...should succeed"
+  echo "Running ESMF_RegridWeightGen test...should succeed"
   echo "----------------------------------------------------------------------"
   ncl 'wtype="x11"' $esmf_test
 
@@ -260,7 +305,7 @@ if ($?TAR_FILES) then
   echo "Creating tarfile..."
   echo "----------------------------------------------------------------------"
   cd $NCARG_ROOT
-  $NCARG/install/make-tarfile/create_dist -d $tar_dir -f $nodap_string
+  $NCARG/install/make-tarfile/create_dist -p -d $tar_dir -f $nodap_string
   if( $?ASK ) then
     echo -n "Continue? (y/n) "
     set answer="$<"
@@ -275,7 +320,7 @@ endif
 #----------------------------------------------------------------------
 cd $NCARG/config
 foreach f($copy_files)
-  /bin/cp $f.orig $f
+  /bin/cp $f.dap $f
 end
 
 set dirs = ($NCARG/ni/src/ncl)
@@ -284,6 +329,17 @@ foreach dir($dirs)
   /bin/rm ncl
   make me
   make all install
+  echo "----------------------------------------------------------------------"
+  echo "Executing ldd on this OPenDAP binary..."
+  echo "----------------------------------------------------------------------"
+  $ldd ncl
+  if( $?ASK ) then
+    echo -n "Continue? (y/n) "
+    set answer="$<"
+    if ("$answer" != "y") then
+      exit
+    endif
+  endif
 end
 
 echo "----------------------------------------------------------------------"
@@ -300,13 +356,19 @@ if( $?ASK ) then
 endif
 
 #----------------------------------------------------------------------
-# Copy over appropriate ESMF_RegridWeightGen
+# Copy over DAP ESMF_RegridWeightGen
 #----------------------------------------------------------------------
-if ("$un" != "k5" && "$un" != "k8" ) then
-  /bin/cp $NCARG_EXTERNAL/bin/ESMF_RegridWeightGen $NCARG_ROOT/bin/.
+if( $?ESMF ) then
+  /bin/rm $NCARG_ROOT/bin/ESMF_RegridWeightGen
+  /bin/cp $NCARG_EXTERNAL/bin/ESMF_RegridWeightGen.dap $NCARG_ROOT/bin/ESMF_RegridWeightGen
+
+  echo "----------------------------------------------------------------------"
+  echo "Executing ldd on this OPenDAP binary..."
+  echo "----------------------------------------------------------------------"
+  $ldd $NCARG_ROOT/bin/ESMF_RegridWeightGen
  
   echo "----------------------------------------------------------------------"
-  echo "Running ESMF_RegridTest test...should succeed"
+  echo "Running ESMF_RegridWeightGen test...should succeed"
   echo "----------------------------------------------------------------------"
   ncl 'wtype="x11"' $esmf_test
 
@@ -338,7 +400,7 @@ if ($?TAR_FILES) then
   echo "Creating tarfile..."
   echo "----------------------------------------------------------------------"
   cd $NCARG_ROOT
-  $NCARG/install/make-tarfile/create_dist -d $tar_dir -f $dap_string
+  $NCARG/install/make-tarfile/create_dist -p -d $tar_dir -f $dap_string
   if( $?ASK ) then
     echo -n "Continue? (y/n) "
     set answer="$<"
