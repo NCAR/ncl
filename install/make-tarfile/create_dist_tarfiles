@@ -24,7 +24,7 @@
 #  4. You are able to display an NCL X11 window, because various
 #     X11 tests are executed.
 #
-
+# set echo verbose timestamp
 
 set un=`uname -n`
 set um=`uname -m`
@@ -36,7 +36,7 @@ set ASK             # Whether to ask to continue at various locations
 if ("$os" == "Darwin") then
   set ldd = "otool -L"
   set macosv = `sw_vers -productVersion`
-  if( $macosv == "10.9.2") then
+  if( $macosv == "10.9.4") then
     set un="riley.local"
   endif
 else
@@ -48,8 +48,10 @@ if ($?COMPILER_VERSION) then
     set un="yellowstone_gnu472"
   else if ( "$COMPILER_VERSION" = "4.4.7" ) then
     set un="yellowstone_gnu447"
-  else
+  else if ( "$COMPILER_VERSION" = "12.1.5" ) then
     set un="yellowstone_intel1215"
+  else
+    echo "I don't recognize this yellowstone system"
   endif
 endif
 
@@ -132,9 +134,6 @@ else if ("$un" == "cisl-denton.scd.ucar.edu" ||"$un" == "cisl-denton.local") the
   set dap_string   = "MacOS_10.8_64bit_gcc471"
   set nodap_string = "MacOS_10.8_64bit_nodap_gcc471"
 else
-  if ("$un" == "yellowstone") then
-    echo "Need to set yellowstone_gnu446 or yellowstone_gnu472"
-  endif
   echo "I DON'T RECOGNIZE THIS SYSTEM. EXITING..."
   exit
 endif
