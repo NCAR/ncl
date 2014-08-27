@@ -1304,21 +1304,14 @@ if [ $INSTALL_ESMF ] ; then
 # k6/7/9.rap.ucar.edu need extra hand-holding for some reason.
 # The ESMF build system doesn't see them as being Linux systems.
 #
-    if [ "$un" = "k6" ] || [ "$un" = "k9" ] ; then
+    if [ "$un" = "k6" ] || [ "$un" = "k7" ] || [ "$un" = "k9" ] ; then
       export ESMF_COMPILER=gfortran
       export ESMF_OS=Linux
       export ESMF_CXXCOMPILER=/usr/bin/g++
       export ESMF_F90COMPILER=/usr/bin/gfortran
-    elif [ "$un" = "k7" ] ; then
-      export ESMF_COMPILER=gfortran
-      export ESMF_OS=Linux
-      export ESMF_CXXCOMPILER=/usr/bin/g++
-      export ESMF_F90COMPILER=/usr/bin/gfortran
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lldap -lrt -lssl"
     elif [ "$un" = "yellowstone_intel1215" ] ; then
       export ESMF_COMPILER="intel"
       export ESMFBUILDDIR="$os.intel.$ESMF_ABI.$ESMF_COMM.default"
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lssl -lidn -lrt -ldl -lsz -lz"
     else
       export ESMFBUILDDIR="$os.gfortran.$ESMF_ABI.$ESMF_COMM.default"
     fi
@@ -1377,6 +1370,8 @@ if [ $INSTALL_ESMF ] ; then
     elif [ "$un" = "k5" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
     elif [ "$un" = "k6" ] ; then
+      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lldap -lrt -lssl"
+    elif [ "$un" = "k7" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lldap -lrt -lssl"
     elif [ "$un" = "k9" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl"
