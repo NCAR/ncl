@@ -21,4 +21,7 @@ InstallTarget($(INCLUDES),$(INSTALL_INC),$(NCARGINCPATH))
 
 BuildSharedFromArch(libNGgks,libbasegks.a,1,0,-lNGgksCTXT -lNGgksX -lNGgksPS)
 CleanFilesTarget(libbasegks.a)
+#ifdef JIRA1530
+CleanFilesTarget(libncarg_gks_xq_fix.a)
+#endif
 
