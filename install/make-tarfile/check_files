@@ -2393,7 +2393,6 @@ sort $that_file_list > $sort_that_file_list
 
 diff $sort_this_file_list $sort_that_file_list
 
-echo ""
 if ($status == 0) then
    echo "FILES ARE EXACTLY THE SAME."
 else

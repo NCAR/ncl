@@ -822,6 +822,8 @@ then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lz -lidn -lrt -ldl"
       elif [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lz -lrt -ldl -lssl -lidn"
+      elif [ "$un" = "yellowstone_intel1215" ] ; then
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lssl -lidn -lrt -ldl"
       else
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl -ldl"
       fi
@@ -1315,10 +1317,10 @@ if [ $INSTALL_ESMF ] ; then
       export ESMF_COMPILER=gfortran
       export ESMF_OS=Linux
     elif [ "$un" = "yellowstone_intel1215" ] ; then
-      export ESMF_COMPILER="intel"
-      export ESMFBUILDDIR="$os.intel.$ESMF_ABI.$ESMF_COMM.default"
+      export ESMF_COMPILER=intel
+      export ESMF_OS=Linux
     else
-      export ESMFBUILDDIR="$os.gfortran.$ESMF_ABI.$ESMF_COMM.default"
+      export ESMF_COMPILER=gfortran
     fi
     if [ "$um" = "x86_64" ] ; then
       export ESMF_ABI=64
@@ -1326,7 +1328,7 @@ if [ $INSTALL_ESMF ] ; then
       export ESMF_ABI=32
     fi
 # Don't use ESMF_BUILD_DIR here
-    export ESMFBUILDDIR="$os.gfortran.$ESMF_ABI.$ESMF_COMM.default"
+    export ESMFBUILDDIR="$os.$ESMF_COMPILER.$ESMF_ABI.$ESMF_COMM.default"
     export ESMFREGRIDFILE="$ESMF_INSTALL_PREFIX/bin/binO/$ESMFBUILDDIR/ESMF_RegridWeightGen"
     if [ "$os" = "Darwin" ] ; then
       export ESMFSHAREDLIB="lib/libO/$ESMFBUILDDIR/libesmf.dylib"
@@ -1370,8 +1372,10 @@ if [ $INSTALL_ESMF ] ; then
 
     if [ "$un" = "cisl-denton.local" ] || [ "$os_version" = "10.8.4" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
-    elif [ "$un" = "yellowstone_gnu472" ] ; then
+    elif [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lcrypto -lz -lrt -ldl -lssl -lidn -lsz -lz"
+    elif [ "$un" = "yellowstone_intel1215" ] ; then
+      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lssl -lidn -lrt -ldl"
     elif [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ] || [ "$os_version" = "10.9.4" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
     elif [ "$un" = "k5" ] ; then
