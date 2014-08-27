@@ -8856,10 +8856,16 @@ procedure wallClockElapseTime(wcStrt:string, title:string, opt:integer)
 ;            wallClockElapseTime(wcStrt, "short_info", 0)
 ; opt not used right now
 ; this will not handle case where year or month changes
-local wcNow, wcStrt_c, tSTRT, wcNow_c, tNOW, sec, NLINE
+;
+; Haley: updated Aug 2014 to return the date in the correct format.
+;
+local wcNow, wcStrt_c, tSTRT, wcNow_c, tNOW, sec, NLINE, dq, date_cmd
 begin
-  wcNow     = systemfunc("date")     ; current ("now") time
-  wcNow_c   = stringtochar(wcNow)
+  dq        = str_get_dq()
+  date_cmd  = "date +" + dq + "%a %b %d %H:%M:%S %Z %Y" + dq
+;;wcNow     = systemfunc("date")
+  wcNow     = systemfunc(date_cmd)   ; current ("now") time; must be
+  wcNow_c   = stringtochar(wcNow)    ;    be 'Wed Aug 27 08:38:33 MDT 2014' format
   wcStrt_c  = stringtochar(wcStrt)
 
   if (dimsizes(wcNow_c).eq.dimsizes(wcStrt_c) .and. \
