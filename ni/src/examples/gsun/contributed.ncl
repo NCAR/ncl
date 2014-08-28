@@ -14505,3 +14505,30 @@ begin
   lon&$dimName$ = lon
   return (lon)
 end
+; *****************************************************************
+; Generate index values that can be used for resampling
+;
+undef("resample_indices")
+function resample_indices(N[1]:integer, method[1]:integer, opt[1] )
+;
+; simple function to generate indices
+;           N = sample size
+;      method = 0   ==> sample *without* replacement; reshuffle the order 
+;                       mean/std/... unchanged
+;                       use when the order of sampling may be important
+;
+;      method = 1   ==> sample *with* replacement
+;                       mean/std/... will change
+;
+;         opt = 0   ==> currently not used
+local k
+begin
+    if (method.eq.0) then                  
+        k = generate_unique_indices( N )  
+    else
+        k = round(random_uniform(-0.499999,N-0.500001,N), 3)
+    end if`
+
+    return(k)
+end
+
