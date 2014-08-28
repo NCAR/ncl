@@ -1933,7 +1933,8 @@ static NhlErrorTypes CnStdRender
 		}
 	}
 	
-	if (cnp->do_labels && cnp->label_order == order) {
+	if (cnp->do_labels && cnp->label_order == order &&
+		cnp->llabel_placement != NhlCONSTANT) {
 #if 0
 		subret = SetTransBoundsState
 			(cnl,False,&csrp->do_bounds);

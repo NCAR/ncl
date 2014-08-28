@@ -23,7 +23,9 @@
 #include <stdlib.h>
 #include <math.h>
 #include <ctype.h>
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/CnTriMeshRendererP.h>
 #include <ncarg/hlu/WorkstationI.h>
@@ -1532,8 +1534,13 @@ static NhlErrorTypes BuildDelaunayMesh
 	private(tbp,block_ix,ys,ye,ye_adj,xs,xe,xe_adj,npnt,ntri,nedg,npnt_alloc,xt,yt,i,j,in,out,vout, \
 		snodes,stris,sedges,vedges,cpoints,cedges,ctris,tid,xmx,xmn,ymx,ymn,ytmp,xtmp)
 	{
+#ifdef _OPENMP
 	  tid = omp_get_thread_num();
 	  nthreads = omp_get_num_threads();
+#else
+    tid = 0;
+    nthreads = 1;
+#endif
 	  if (tid == 0) {
 		  /* printf("%d threads\n",nthreads);*/
 		  if (nthreads > block_count) {
@@ -3424,7 +3431,11 @@ static NhlErrorTypes RasterFillRender (
 #pragma omp parallel shared(cnp, tmp,entry_name,Lopn,Loen,Lotn,nthreads,bbox,msize,nsize,min_cell_size,fill_op) \
   private(tbp,i)							 
 	{
+#ifdef _OPENMP
 		nthreads = omp_get_num_threads();
+#else
+    nthreads = 1;
+#endif
 		if (nthreads > 1) fill_op = 2;
 
 #pragma omp for schedule(static,1)
@@ -4671,10 +4682,12 @@ NhlErrorTypes _NhlTriMeshRasterFill
 	  tbp = (TriBlock *) info;
 	}
 /*
+#ifdef _OPENMP
 	{
 	int tid = omp_get_thread_num();
 	printf("%d x s&e %f %f y s&e %f %f\n", tid, tbp->xs,tbp->xe,tbp->ys,tbp->ye);
 	}
+#endif
 */
         if (Cnp == NULL) {
 		e_text = "%s: invalid call to _NhlRasterFill";

@@ -93,7 +93,7 @@ subroutine plotgrids_var(fname,plotvar)
    plotvar(11,1) = mproj_int
    plotvar(12,1) = pole_lat
    plotvar(13,1) = pole_lon
-   do j=1,max_dom
+   do j=1,int(max_dom)
      plotvar(14,j) = parent_id(j)
      plotvar(15,j) = parent_grid_ratio(j)
      plotvar(16,j) = i_parent_start(j)

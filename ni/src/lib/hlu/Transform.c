@@ -36,7 +36,9 @@
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/color.h>
 #include <ncarg/hlu/WorkstationP.h>
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 
 static _NhlRawObjCB callbacks[] = {
 	{_NhlCBtfOverlayStatus,
