@@ -65,11 +65,13 @@ int NclDriver(int argc, char **argv)
     yydebug = 1;
 #endif /* YYDEBUG */
 
+#ifdef _OPENMP
     /* make sure that only one OMP thread runs unless OMP_NUM_THREADS is explicitly defined  -- on Darwin at least the default is not a single thread */
 
     if (! getenv("OMP_NUM_THREADS")) {
 	    omp_set_num_threads(1);
     }
+#endif
 
     strcpy(buffer,(char *)GetNCARGPath("tmp"));
     sr = access(buffer,W_OK|X_OK|F_OK);
