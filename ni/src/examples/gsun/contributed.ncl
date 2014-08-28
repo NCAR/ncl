@@ -14525,7 +14525,7 @@ begin
         k = generate_unique_indices( N )  
     else
         k = round(random_uniform(-0.499999,N-0.500001,N), 3)
-    end if`
+    end if
 
     return(k)
 end
