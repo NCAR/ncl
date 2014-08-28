@@ -16,6 +16,10 @@ static short *check;
 static int lowzero;
 static int high;
 
+void save_column(int symbol, int default_state);
+void output_stored_text();
+void output_trailing_text();
+void output_semantic_actions();
 
 output()
 {
@@ -355,7 +359,7 @@ int symbol;
 
 
 
-save_column(symbol, default_state)
+void save_column(symbol, default_state)
 int symbol;
 int default_state;
 {
@@ -825,7 +829,7 @@ output_defines()
 }
 
 
-output_stored_text()
+void output_stored_text()
 {
     register int c;
     register FILE *in, *out;
@@ -1076,7 +1080,7 @@ output_stype()
 }
 
 
-output_trailing_text()
+void output_trailing_text()
 {
     register int c, last;
     register FILE *in, *out;
@@ -1133,7 +1137,7 @@ output_trailing_text()
 }
 
 
-output_semantic_actions()
+void output_semantic_actions()
 {
     register int c, last;
     register FILE *out;

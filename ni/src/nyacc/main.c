@@ -101,7 +101,7 @@ usage()
 }
 
 
-getargs(argc, argv)
+void getargs(argc, argv)
 int argc;
 char *argv[];
 {

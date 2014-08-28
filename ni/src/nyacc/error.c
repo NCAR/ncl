@@ -34,7 +34,7 @@ unexpected_EOF()
 }
 
 
-print_pos(st_line, st_cptr)
+void print_pos(st_line, st_cptr)
 char *st_line;
 char *st_cptr;
 {
