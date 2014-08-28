@@ -14508,8 +14508,8 @@ end
 ; *****************************************************************
 ; Generate index values that can be used for resampling
 ;
-undef("resample_indices")
-function resample_indices(N[1]:integer, method[1]:integer, opt[1] )
+undef("generate_resample_indices")
+function generate_resample_indices(N[1]:integer, method[1]:integer, opt[1] )
 ;
 ; simple function to generate indices
 ;           N = sample size
