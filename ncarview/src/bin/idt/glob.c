@@ -49,7 +49,7 @@ const	int	magicLen = (sizeof(Magic) / sizeof(Magic[0]));
  *	to_child[1]	: fd for writing to spawned process
  *	to_parent[0]	: fd for reading from spawned process
  */
-static	talkto(argv) 
+static void	talkto(argv) 
 	char	**argv;
 {
 	int	pid;

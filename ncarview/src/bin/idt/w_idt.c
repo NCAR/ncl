@@ -570,7 +570,7 @@ create_main_panel(parent, select_action)
 
 
 
-void 
+int 
 main(argc, argv)
 	int argc;
 	char **argv;
@@ -653,5 +653,6 @@ main(argc, argv)
 	}
 
 	XtAppMainLoop(app_con);
+  return 0;
 }
 
