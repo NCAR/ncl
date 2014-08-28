@@ -1430,8 +1430,6 @@ NhlErrorTypes _addNclVarNodeToGrpNode(NclFileGrpNode *grpnode, NclQuark name,
     n = var_rec->n_vars;
     var_node = &(var_rec->var_node[n]);
 
-    memset(var_node, 0, sizeof(NclFileVarNode));
-
     var_node->name = name;
     var_node->id = varid;
     var_node->type = type;
@@ -1554,6 +1552,7 @@ static void _NclInitNclFileVarRecord(NclFileVarRecord *var_rec, int start)
         for(i = start; i < var_rec->max_vars; i++)
         {
             varnode = &(var_rec->var_node[i]);
+            memset(varnode, 0, sizeof(NclFileVarNode));
             varnode->name = -1;
             varnode->real_name = -1;
             varnode->type = NCL_none;
