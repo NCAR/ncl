@@ -14521,6 +14521,11 @@ function generate_resample_indices(N[1], method[1]:integer)
 ;                       mean/std/... will change
 local k
 begin
+    if (method.lt.0 .or. method.gt.1) then
+        print("generate_resample_indices: method="+method+": only 0 or 1 allowed")
+        exit
+    end if
+
     if (method.eq.0) then                  
         k = generate_unique_indices( N )  
     else
@@ -14529,4 +14534,5 @@ begin
 
     return(k)
 end
+
 
