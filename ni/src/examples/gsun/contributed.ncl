@@ -14509,7 +14509,7 @@ end
 ; Generate index values that can be used for resampling
 ;
 undef("generate_resample_indices")
-function generate_resample_indices(N[1]:integer, method[1]:integer, opt[1] )
+function generate_resample_indices(N[1], method[1]:integer)
 ;
 ; simple function to generate indices
 ;           N = sample size
@@ -14519,8 +14519,6 @@ function generate_resample_indices(N[1]:integer, method[1]:integer, opt[1] )
 ;
 ;      method = 1   ==> sample *with* replacement
 ;                       mean/std/... will change
-;
-;         opt = 0   ==> currently not used
 local k
 begin
     if (method.eq.0) then                  
