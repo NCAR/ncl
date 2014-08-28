@@ -136,7 +136,7 @@ main(int argc, char **argv) {
             fprintf(stderr,"%s: Can't reopen file \"%s\".\n",objectname,pkeyword);
             return errorflag=6;
           } else printf("%s: Opening file \"%s\".\n",objectname,pkeyword);
-          strcpy(lastfile,pkeyword);
+          if (lastfile != pkeyword) strcpy(lastfile,pkeyword);
           if (!nosplit) {
             if (cvs==2||cvs==3) {
               fprintf(pdst,"C\nC $I");
