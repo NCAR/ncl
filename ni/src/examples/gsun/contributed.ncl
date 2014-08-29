@@ -14506,10 +14506,10 @@ begin
   return (lon)
 end
 ; *****************************************************************
-; Generate index values that can be used for resampling
+; Generate index values that can be used for sampling
 ;
-undef("generate_resample_indices")
-function generate_resample_indices(N[1], method[1]:integer)
+undef("generate_sample_indices")
+function generate_sample_indices(N[1], method[1]:integer)
 ;
 ; simple function to generate indices
 ;           N = sample size
