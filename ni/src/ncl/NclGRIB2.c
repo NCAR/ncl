@@ -3449,10 +3449,15 @@ unsigned char *offset;
 		}
 		/* this condition must be met in order to do a valid conversion */
 		if (cix < NhlNumber(Unit_Code_Order) && tix < NhlNumber(Unit_Code_Order)) { 
-			c_factor = Unit_Convert[tix] / Unit_Convert[cix];
+				c_factor = Unit_Convert[tix] / Unit_Convert[cix];
 		}
 	}
-	return ((int)(time_offset * c_factor));
+	if (cix > 6 || tix > 6) { /* fuzzy number -- unit > day */
+		return ((int)(time_offset * c_factor + 0.5));
+	}
+	else { /* do it the way it's always been done */
+		return ((int)(time_offset * c_factor));
+	}
 }
 
 
@@ -5268,6 +5273,7 @@ Grib2RecordInqRec *grec;
 						   13, /* the time indicator for seconds */
 						   grec->overall_interval_seconds);
 		grec->time_offset = MIN(grec->time_offset, end_time);
+		/*grec->time_offset = MAX(grec->time_offset,grec->forecast_time);*/
 	}
 }
 
