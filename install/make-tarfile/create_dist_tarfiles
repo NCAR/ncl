@@ -36,7 +36,7 @@ set ASK             # Whether to ask to continue at various locations
 if ("$os" == "Darwin") then
   set ldd = "otool -L"
   set macosv = `sw_vers -productVersion`
-  if( $macosv == "10.9.4") then
+  if( $macosv = "10.9.4") then
     set un="riley.local"
   endif
 else
@@ -44,14 +44,37 @@ else
 endif
 
 if ($?COMPILER_VERSION) then
-  if ( "$COMPILER_VERSION" = "4.7.2" ) then
+  if ( "$COMPILER_VERSION" == "4.7.2" ) then
     set un="yellowstone_gnu472"
-  else if ( "$COMPILER_VERSION" = "4.4.7" ) then
+  else if ( "$COMPILER_VERSION" == "4.4.7" ) then
     set un="yellowstone_gnu447"
-  else if ( "$COMPILER_VERSION" = "12.1.5" ) then
+  else if ( "$COMPILER_VERSION" == "12.1.5" ) then
     set un="yellowstone_intel1215"
   else
     echo "I don't recognize this yellowstone system"
+  endif
+endif
+
+if ("$un" == "yellowstone_gnu447" || "$un" == "yellowstone_gnu472" || "$un" == "yellowstone_intel1215") then
+  echo "----------------------------------------------------------------------"
+  echo "ON YELLOWSTONE: building a binary for $un"
+  echo "----------------------------------------------------------------------"
+  if ("$un" == "yellowstone_gnu447" || "$un" == "yellowstone_gnu472") then
+    gcc --version
+    echo "----------------------------------------------------------------------"
+    gfortran --version
+  else
+    icc --version
+    echo "----------------------------------------------------------------------"
+    ifort --version
+  endif
+  echo "----------------------------------------------------------------------"
+  if( $?ASK ) then
+    echo -n "Continue? (y/n) "
+    set answer="$<"
+    if ("$answer" != "y") then
+      exit
+    endif
   endif
 endif
 
@@ -103,20 +126,45 @@ else if ("$un" == "yellowstone_gnu447") then
   setenv NCARG_EXTERNAL /glade/p/work/haley/dev/external/gnu/4.4.7
   setenv NCARG_ROOT /glade/apps/opt/ncl/6.2.1/gnu/4.4.7
   setenv NCARG /glade/p/work/haley/src/ncl-trunk-gnu447
+
+  unsetenv LIB_NCAR
+  unsetenv INC_NCAR
+  unsetenv NETCDF
+
+  set path=($NCARG_ROOT/bin /ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/etc /ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/bin /usr/lib64/qt-3.3/bin /glade/apps/opt/usr/bin /usr/bin /bin /usr/sbin /sbin /usr/local/openssh/5.7p1krb/bin /usr/lpp/mmfs/bin /opt/ibutils/bin /ncar/opt/hpss)
+  rehash
+
   set dap_string   = "Linux_RHEL6.4_x86_64_gcc447"
   set nodap_string = "Linux_RHEL6.4_x86_64_nodap_gcc447"
 else if ("$un" == "yellowstone_gnu472") then
   setenv NCARGTEST /glade/u/ncldev/test/ncargtest
   setenv NCARG_EXTERNAL /glade/p/work/haley/dev/external/gnu/4.7.2
-  setenv NCARG_ROOT /glade/apps/opt/ncl/6.2.1/gnu/4.7.2
+  setenv NCARG_ROOT /glade/p/work/haley/dev/ncl-trunk-gnu472-opt
   setenv NCARG /glade/p/work/haley/src/ncl-trunk-gnu472
+
+  unsetenv LIB_NCAR
+  unsetenv INC_NCAR
+  unsetenv NETCDF
+
+  set path=($NCARG_ROOT/bin /glade/apps/opt/gnu/4.7.2/bin /usr/lib64/qt-3.3/bin /glade/apps/opt/usr/bin /ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/etc /ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/bin /usr/bin /bin /usr/sbin /sbin /usr/local/openssh/5.7p1krb/bin /usr/lpp/mmfs/bin /opt/ibutils/bin /ncar/opt/hpss)
+  rehash
+
   set dap_string   = "Linux_RHEL6.4_x86_64_gcc472"
   set nodap_string = "Linux_RHEL6.4_x86_64_nodap_gcc472"
 else if ("$un" == "yellowstone_intel1215") then
+  setenv NCARG /glade/p/work/haley/src/ncl-trunk-intel
   setenv NCARGTEST /glade/u/ncldev/test/ncargtest
   setenv NCARG_EXTERNAL /glade/p/work/haley/dev/external/intel/12.1.5
   setenv NCARG_ROOT /glade/apps/opt/ncl/6.2.1/intel/12.1.5
-  setenv NCARG /glade/p/work/haley/src/ncl-trunk-intel
+  setenv YMAKE_DEV_FILE $NCARG/ymakedevfile
+
+  unsetenv LIB_NCAR
+  unsetenv INC_NCAR
+  unsetenv NETCDF
+
+  set path=($NCARG_ROOT/bin /usr/lib64/qt-3.3/bin /ncar/opt/intel/12.1.0.233/composer_xe_2011_sp1.11.339/bin/intel64 /glade/apps/opt/usr/bin /ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/etc /ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/bin /usr/bin /bin /usr/sbin /sbin /usr/local/openssh/5.7p1krb/bin /usr/lpp/mmfs/bin /opt/ibutils/bin /ncar/opt/hpss /glade/apps/opt/netcdf/4.3.0/intel/12.1.5/bin)
+  rehash
+
   set dap_string   = "Linux_RHEL6.4_x86_64_intel1215"
   set nodap_string = "Linux_RHEL6.4_x86_64_nodap_intel1215"
 else if ("$un" == "riley.local") then
@@ -261,9 +309,18 @@ if( $?ESMF ) then
   endif
 endif
 
-foreach f($ncargex_tests)
-  ncargex $f -clean -W x11
-end
+if ("$un" == "yellowstone_gnu447" || "$un" == "yellowstone_gnu472" || "$un" == "yellowstone_intel1215") then
+  ncargex cpex08 c_shex03 -W x11 -n
+  ncargf77 -L$e/lib cpexcc.f cpex08.f -o cpex08
+  ./cpex08
+  ncargcc -ngmath -L$e/lib c_shex03.c -o c_shex03
+  ./c_shex03
+  /bin/rm cpex08* cpexcc* c_shex*
+else
+  foreach f($ncargex_tests)
+    ncargex $f -clean -W x11
+  end
+endif
 
 if( $?ASK ) then
   echo -n "Continue? (y/n) "
@@ -273,9 +330,20 @@ if( $?ASK ) then
   endif
 endif
 
-foreach f($ng4ex_tests)
-  ng4ex $f -clean -W x11
-end
+if ("$un" == "yellowstone_gnu447" || "$un" == "yellowstone_gnu472" || "$un" == "yellowstone_intel1215") then
+  ng4ex xy04f cn02c nm04c -W x11 -n 
+  nhlf77 -L$e/lib xy04f.f -o xy04f
+  ./xy04f
+  nhlcc -L$e/lib cn02c.c -o cn02c
+  ./cn02c
+  nhlcc -L$e/lib -ngmath nm04c.c -o nm04c
+  ./nm04c
+  /bin/rm xy04* cn02* nm04*
+else
+  foreach f($ng4ex_tests)
+    ng4ex $f -clean -W x11
+  end
+endif
 
 if( $?ASK ) then
   echo -n "Continue? (y/n) "
@@ -414,7 +482,7 @@ if ($?TAR_FILES) then
     echo "Copying files to yellowstone..."
     echo "----------------------------------------------------------------------"
     cd $tar_dir
-    if ("$un" == "yellowstone") then
+    if ("$un" == "yellowstone_gnu447" || "$un" == "yellowstone_gnu472" || "$un" == "yellowstone_intel1215") then
       /bin/cp $nodap_gzfile $dap_gzfile ${sys_dir}/.
     else
       scp $nodap_gzfile $dap_gzfile ${sys_name}:${sys_dir}/.
