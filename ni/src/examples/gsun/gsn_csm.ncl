@@ -6196,7 +6196,11 @@ begin
 ;
       if(.not.polar_time) then
         ngrid = floattoint(360/label_spacing)
-        plon  = fspan(0.,360.-label_spacing,ngrid)
+        if(ngrid.gt.0)
+          plon = fspan(0.,360.-label_spacing,ngrid)
+        else
+	  plon = 0.
+        end if
       else
 ;
 ; If labeling with time, we calculate the longitudes, given nice

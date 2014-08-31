@@ -9626,7 +9626,11 @@ begin
 ; Calculate location for tickmarks.
 ;
   nlbs = dimsizes(lbs)
-  lbs_vals = fspan(0.,1.,nlbs)
+  if(nlbs.gt.1) then
+    lbs_vals = fspan(0.,1.,nlbs)
+  else
+    lbs_vals = 0.0
+  end if
 
   if(count_msg.and.setinterval) then
     dx               = lbs_vals(nlbs-1) - lbs_vals(nlbs-2)
@@ -10696,9 +10700,17 @@ begin
 ;
   width  = 1./ncols
   height = 1./nrows
-  xpos  = fspan(0,1-width,ncols)
-  ypos  = fspan(1-height,0,nrows)
 
+  if(ncols.gt.1) then
+    xpos = fspan(0,1-width,ncols)
+  else
+    xpos = 0.
+  end if
+  if(nrows.gt.1) then
+    ypos = fspan(1-height,0,nrows)
+  else
+    ypos = 1.-height
+  end if
 ;
 ; Box coordinates.
 ;
