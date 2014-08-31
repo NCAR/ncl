@@ -50,7 +50,6 @@ c
       k = 0
       do j=1,N 
          k = k+1
-         print *,'k',k,N
          if (wi(j).eq.0.0d0) then     !   not a complex conjugate
              do i=1,N
                 EVLR(i,k,1,1) = VL(i,j) 
