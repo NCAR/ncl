@@ -18,6 +18,7 @@ c     These are work arrays originally created by Fortran routine.
 c     LWORK should be N*(N+6)
 c     LIWORK should be 2*N-1
 c
+      INTEGER          LWORK,LIWORK
       DOUBLE PRECISION SCALEM(N), RCONDE(N), RCONDV(N)
       DOUBLE PRECISION VL(N,N), VR(N,N)
       DOUBLE PRECISION WORK(LWORK)
@@ -26,7 +27,8 @@ C NCLEND
 C --------------------------------------------------------------------------------
 C                                                      local dynamically allocated
       INTEGER LDA, ILO, IHI, INFO, I, J
-     +      , LDVR, LDVL, LWORK, LIWORK, K , KP1
+     +      , LDVR, LDVL, K , KP1
+C    +      , LDVR, LDVL, LWORK, LIWORK, K , KP1
       DOUBLE PRECISION ABNRM
 
 C just for consistency with LAPACK description   (make large)
@@ -34,8 +36,9 @@ C just for consistency with LAPACK description   (make large)
       LDVR    = N
       LDVL    = N
       INFO    = 0   
-      LWORK   = N*(N+6)
-      LIWORK  = 2*N-1
+C These are passed in above.
+C     LWORK   = N*(N+6)
+C     LIWORK  = 2*N-1
 
       CALL DGEEVX( BALANC, JOBVL, JOBVR, SENSE, N, A, LDA, WR, WI,  
      &             VL, LDVL, VR, LDVR, ILO, IHI, SCALEM, ABNRM,
@@ -47,6 +50,7 @@ c
       k = 0
       do j=1,N 
          k = k+1
+         print *,'k',k,N
          if (wi(j).eq.0.0d0) then     !   not a complex conjugate
              do i=1,N
                 EVLR(i,k,1,1) = VL(i,j) 
@@ -54,18 +58,18 @@ c
                 EVLR(i,k,1,2) = VR(i,j)
                 EVLR(i,k,2,2) = 0.0d0  
              end do
-         else if (WR(J).eq.WR(J+1) .and. WI(J).eq.-WI(J+1)) then  ! conjugate
+         else if (WR(J).eq.WR(J+1) .and. WI(J).eq.-(WI(J+1))) then  ! conjugate
               kp1 = k+1
               do i=1,N
-                 EVLR(i,k  ,1,1) = VL(i,j)
-                 EVLR(i,k  ,2,1) = VL(i,j+1) 
-                 EVLR(i,k  ,1,2) = VR(i,j)
-                 EVLR(i,k  ,2,2) = VR(i,j+1)
+                 EVLR(i,k  ,1,1) =   VL(i,j)
+                 EVLR(i,k  ,2,1) =   VL(i,j+1) 
+                 EVLR(i,k  ,1,2) =   VR(i,j)
+                 EVLR(i,k  ,2,2) =   VR(i,j+1)
 
-                 EVLR(i,kp1,1,1) = VL(i,j)
-                 EVLR(i,kp1,2,1) = -VL(i,j+1)
-                 EVLR(i,kp1,1,2) = VR(i,j)
-                 EVLR(i,kp1,2,2) = -VR(i,j+1)
+                 EVLR(i,kp1,1,1) =   VL(i,j)
+                 EVLR(i,kp1,2,1) = -(VL(i,j+1))
+                 EVLR(i,kp1,1,2) =   VR(i,j)
+                 EVLR(i,kp1,2,2) = -(VR(i,j+1))
               end do
               k = kp1-1
          end if
