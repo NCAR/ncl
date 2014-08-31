@@ -36,7 +36,7 @@ set ASK             # Whether to ask to continue at various locations
 if ("$os" == "Darwin") then
   set ldd = "otool -L"
   set macosv = `sw_vers -productVersion`
-  if( $macosv = "10.9.4") then
+  if( $macosv == "10.9.4") then
     set un="riley.local"
   endif
 else
@@ -70,9 +70,9 @@ if ("$un" == "yellowstone_gnu447" || "$un" == "yellowstone_gnu472" || "$un" == "
   endif
   echo "----------------------------------------------------------------------"
   if( $?ASK ) then
-    echo -n "Continue? (y/n) "
+    echo -n "Continue? <enter> for y, n for no "
     set answer="$<"
-    if ("$answer" != "y") then
+    if ("$answer" == "n") then
       exit
     endif
   endif
@@ -263,9 +263,9 @@ foreach dir($dirs)
   echo "----------------------------------------------------------------------"
   $ldd ncl
   if( $?ASK ) then
-    echo -n "Continue? (y/n) "
+    echo -n "Continue? <enter> for y, n for no "
     set answer="$<"
-    if ("$answer" != "y") then
+    if ("$answer" == "n") then
       exit
     endif
   endif
@@ -277,9 +277,9 @@ echo "----------------------------------------------------------------------"
 ncl $opendap_test
 
 if( $?ASK ) then
-  echo -n "Continue? (y/n) "
+  echo -n "Continue? <enter> for y, n for no "
   set answer="$<"
-  if ("$answer" != "y") then
+  if ("$answer" == "n") then
     exit
   endif
 endif
@@ -301,9 +301,9 @@ if( $?ESMF ) then
   ncl 'wtype="x11"' $esmf_test
 
   if( $?ASK ) then
-    echo -n "Continue? (y/n) "
+    echo -n "Continue? <enter> for y, n for no "
     set answer="$<"
-    if ("$answer" != "y") then
+    if ("$answer" == "n") then
       exit
     endif
   endif
@@ -323,9 +323,9 @@ else
 endif
 
 if( $?ASK ) then
-  echo -n "Continue? (y/n) "
+  echo -n "Continue? <enter> for y, n for no "
   set answer="$<"
-  if ("$answer" != "y") then
+  if ("$answer" == "n") then
     exit
   endif
 endif
@@ -346,9 +346,9 @@ else
 endif
 
 if( $?ASK ) then
-  echo -n "Continue? (y/n) "
+  echo -n "Continue? <enter> for y, n for no "
   set answer="$<"
-  if ("$answer" != "y") then
+  if ("$answer" == "n") then
     exit
   endif
 endif
@@ -359,9 +359,9 @@ echo "----------------------------------------------------------------------"
 $NCARG/install/make-tarfile/check_files
 
 if( $?ASK ) then
-  echo -n "Continue? (y/n) "
+  echo -n "Continue? <enter> for y, n for no "
   set answer="$<"
-  if ("$answer" != "y") then
+  if ("$answer" == "n") then
     exit
   endif
 endif
@@ -369,14 +369,14 @@ endif
 # Create the tarfile
 if ($?TAR_FILES) then
   echo "----------------------------------------------------------------------"
-  echo "Creating tarfile..."
+  echo "Creating non-OPeNDAP tarfile from files in $NCARG_ROOT..."
   echo "----------------------------------------------------------------------"
   cd $NCARG_ROOT
   $NCARG/install/make-tarfile/create_dist -p -d $tar_dir -f $nodap_string
   if( $?ASK ) then
-    echo -n "Continue? (y/n) "
+    echo -n "Continue? <enter> for y, n for no "
     set answer="$<"
-    if ("$answer" != "y") then
+    if ("$answer" == "n") then
       exit
     endif
   endif
@@ -401,9 +401,9 @@ foreach dir($dirs)
   echo "----------------------------------------------------------------------"
   $ldd ncl
   if( $?ASK ) then
-    echo -n "Continue? (y/n) "
+    echo -n "Continue? <enter> for y, n for no "
     set answer="$<"
-    if ("$answer" != "y") then
+    if ("$answer" == "n") then
       exit
     endif
   endif
@@ -415,9 +415,9 @@ echo "----------------------------------------------------------------------"
 ncl $opendap_test
 
 if( $?ASK ) then
-  echo -n "Continue? (y/n) "
+  echo -n "Continue? <enter> for y, n for no "
   set answer="$<"
-  if ("$answer" != "y") then
+  if ("$answer" == "n") then
     exit
   endif
 endif
@@ -440,9 +440,9 @@ if( $?ESMF ) then
   ncl 'wtype="x11"' $esmf_test
 
   if( $?ASK ) then
-    echo -n "Continue? (y/n) "
+    echo -n "Continue? <enter> for y, n for no "
     set answer="$<"
-    if ("$answer" != "y") then
+    if ("$answer" == "n") then
       exit
     endif
   endif
@@ -454,9 +454,9 @@ echo "----------------------------------------------------------------------"
 $NCARG/install/make-tarfile/check_files
 
 if( $?ASK ) then
-  echo -n "Continue? (y/n) "
+  echo -n "Continue? <enter> for y, n for no "
   set answer="$<"
-  if ("$answer" != "y") then
+  if ("$answer" == "n") then
     exit
   endif
 endif
@@ -464,14 +464,14 @@ endif
 # Create the tarfile
 if ($?TAR_FILES) then
   echo "----------------------------------------------------------------------"
-  echo "Creating tarfile..."
+  echo "Creating OPeNDAP tarfile from files in $NCARG_ROOT..."
   echo "----------------------------------------------------------------------"
   cd $NCARG_ROOT
   $NCARG/install/make-tarfile/create_dist -p -d $tar_dir -f $dap_string
   if( $?ASK ) then
-    echo -n "Continue? (y/n) "
+    echo -n "Continue? <enter> for y, n for no "
     set answer="$<"
-    if ("$answer" != "y") then
+    if ("$answer" == "n") then
       exit
     endif
   endif
