@@ -621,13 +621,8 @@ static void HDFEOS5IntFileAddAtt(HDFEOS5FileRecord *the_file,NclQuark sw_ncl_nam
         {
 	    case NCL_string:
 		tmp_node->att_inq->type = NCL_string;
-		memcpy(buffer,value,n_elem);
-		buffer[n_elem] = '\0';
-		tmp_quark = (NclQuark*)NclMalloc(sizeof(NclQuark));	
-		*tmp_quark = NrmStringToQuark(buffer);
-		tmp_node->att_inq->value = (void*)tmp_quark;
-		tmp_node->att_inq->n_elem = 1;
-		NclFree(value);
+		tmp_node->att_inq->value = (void*)value;
+		tmp_node->att_inq->n_elem = n_elem;
                 break;
 	    default:
 		tmp_node->att_inq->value = value;
