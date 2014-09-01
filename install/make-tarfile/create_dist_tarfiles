@@ -124,7 +124,7 @@ else if ("$un" == "k9") then
 else if ("$un" == "yellowstone_gnu447") then
   setenv NCARGTEST /glade/u/ncldev/test/ncargtest
   setenv NCARG_EXTERNAL /glade/p/work/haley/dev/external/gnu/4.4.7
-  setenv NCARG_ROOT /glade/apps/opt/ncl/6.2.1/gnu/4.4.7
+  setenv NCARG_ROOT /glade/p/work/haley/dev/ncl-trunk-gnu447-opt
   setenv NCARG /glade/p/work/haley/src/ncl-trunk-gnu447
 
   unsetenv LIB_NCAR
