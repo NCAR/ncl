@@ -240,7 +240,7 @@ cd $tar_dir
 /bin/rm $dap_gzfile $nodap_gzfile $dap_tarfile $nodap_tarfile
 
 set opendap_test  = "$NCARGTEST/nclscripts/opendap.ncl"
-set esmf_test     = "$NCARGTEST/nclscripts/plotting/ESMF_1.ncl"
+set esmf_test     = "$NCARGTEST/nclscripts/plotting/ESMF_JIRA_1984.ncl"
 set ncargex_tests = ("cpex08" "c_shex03")
 set ng4ex_tests   = ("cn02c" "xy04f" "nm04c") 
 
