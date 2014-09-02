@@ -14,6 +14,9 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Important modifications:
+;       01 Sep 2014:
+;           Renamed print_elapsed_time to print_elapsed_esmf_time
+
 ;       17 Aug 2014:
 ;         Added --norm_type fracarea for the "conserve" method.
 ;           This replaces the old "ApplyFracB" code in 
@@ -302,7 +305,7 @@
 ;======================================================================
 ; This function returns the start time, either in CPU or wall
 ; clock seconds, depending on your version of NCL. Use this function
-; with print_elapsed_time, below.
+; with print_elapsed_esmf_time, below.
 ;======================================================================
 undef("get_start_time")
 function get_start_time()
@@ -321,8 +324,8 @@ end
 ; clock seconds, depending on your version of NCL. Use this procedure
 ; with get_start_time, above.
 ;======================================================================
-undef("print_elapsed_time")
-procedure print_elapsed_time(stime,title)
+undef("print_elapsed_esmf_time")
+procedure print_elapsed_esmf_time(stime,title)
 local s 
 begin
   s = str_split(get_ncl_version(),".")        
@@ -1265,7 +1268,7 @@ begin
     fid->elementMask = (/elementMask/)
 
     if(PrintTimings) then
-      print_elapsed_time(start_time,"unstructured_to_ESMF")
+      print_elapsed_esmf_time(start_time,"unstructured_to_ESMF")
     end if
 end     ; of unstructured_to_ESMF(...)
 ;======================================================================
@@ -1500,7 +1503,7 @@ begin
     fid->grid_corner_lon = (/ todouble(grid_corner_lon) /)
 
     if(PrintTimings) then
-      print_elapsed_time(start_time,"curvilinear_to_SCRIP")
+      print_elapsed_esmf_time(start_time,"curvilinear_to_SCRIP")
     end if
 end     ; of curvilinear_to_SCRIP(...)
 
@@ -1544,7 +1547,7 @@ begin
     curvilinear_to_SCRIP(FName,grid_center_lat,grid_center_lon,Opt2)
 
     if(PrintTimings) then
-      print_elapsed_time(start_time,"rectilinear_to_SCRIP")
+      print_elapsed_esmf_time(start_time,"rectilinear_to_SCRIP")
     end if
 end     ; of rectilinear_to_SCRIP
 
@@ -1938,7 +1941,7 @@ begin
   end if
 
   if(PrintTimings) then
-    print_elapsed_time(start_time,"latlon_to_SCRIP")
+    print_elapsed_esmf_time(start_time,"latlon_to_SCRIP")
   end if
 end     ; of latlon_to_SCRIP(...)
 
@@ -2684,7 +2687,7 @@ begin
   end if
 
   if(PrintTimings) then
-    print_elapsed_time(start_time,"ESMF_regrid_gen_weights")
+    print_elapsed_esmf_time(start_time,"ESMF_regrid_gen_weights")
   end if
 
 end     ; of ESMF_regrid_gen_weights(...)
@@ -2911,7 +2914,10 @@ begin
 ;    print("ESMF_regrid_with_weights: error: weight file has internal mistmatched data or is corrupted.")
 ;    return(fmsg)
 ;  end if
-      
+
+; 01 Sep 2014: I don't think the above is an issue any more,
+; so will not use "max(row)" below.
+;
   if(DEBUG)
     print("ESMF_regrid_with_weights: calling sparse_matrix_mult to apply weights...")
   end if
@@ -2921,13 +2927,20 @@ begin
 ; of length N because ESMF gives us the indices into a
 ; 1D array. 
 ;
-; If dst_grid_dims is 1, then we have to set N=max(row).
-;
-  if(dst_grid_rank.eq.1) then
-    dst_grid_dims_in = max(row)
-  else
-    dst_grid_dims_in = product(dst_grid_dims)
-  end if
+;; NOTE: 01 Sep 2014: removed the N=max(row) below, because
+;; it causes a problem if you have a destination mask and
+;; a curvilinear or unstructured grid. Don't think this
+;; has been needed for awhile.
+;;
+;; If dst_grid_dims is 1, then we have to set N=max(row).
+;;
+;;  if(dst_grid_rank.eq.1) then
+;;    dst_grid_dims_in = max(row)
+;;  else
+;;    dst_grid_dims_in = product(dst_grid_dims)
+;;  end if
+
+  dst_grid_dims_in = product(dst_grid_dims)
 
 ;
 ; We will need to reshape the return (M) x N grid from
@@ -3090,7 +3103,7 @@ begin
   end if
 
   if(PrintTimings) then
-    print_elapsed_time(start_time,"ESMF_regrid_with_weights")
+    print_elapsed_esmf_time(start_time,"ESMF_regrid_with_weights")
   end if
 
   return(dstData)

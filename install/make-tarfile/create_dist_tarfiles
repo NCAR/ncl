@@ -29,9 +29,11 @@
 set un=`uname -n`
 set um=`uname -m`
 set os=`uname -s`
-set SCP_FILES       # Whether to scp files to yellowstone
 set TAR_FILES       # Whether to tar up files
-set ASK             # Whether to ask to continue at various locations
+set SCP_FILES       # Whether to scp files to another machine.. NOTE: you can't scp files to yellowstone unattended. Grrr.
+
+#set ASK            # Whether to ask to continue at various locations
+set RUN_X11_TESTS   # Whether to run the X11 tests or PDF tests.
 
 if ("$os" == "Darwin") then
   set ldd = "otool -L"
@@ -52,30 +54,14 @@ if ($?COMPILER_VERSION) then
     set un="yellowstone_intel1215"
   else
     echo "I don't recognize this yellowstone system"
+    exit
   endif
 endif
 
-if ("$un" == "yellowstone_gnu447" || "$un" == "yellowstone_gnu472" || "$un" == "yellowstone_intel1215") then
-  echo "----------------------------------------------------------------------"
-  echo "ON YELLOWSTONE: building a binary for $un"
-  echo "----------------------------------------------------------------------"
-  if ("$un" == "yellowstone_gnu447" || "$un" == "yellowstone_gnu472") then
-    gcc --version
-    echo "----------------------------------------------------------------------"
-    gfortran --version
-  else
-    icc --version
-    echo "----------------------------------------------------------------------"
-    ifort --version
-  endif
-  echo "----------------------------------------------------------------------"
-  if( $?ASK ) then
-    echo -n "Continue? <enter> for y, n for no "
-    set answer="$<"
-    if ("$answer" == "n") then
-      exit
-    endif
-  endif
+if ($?RUN_X11_TESTS) then
+  set wtype="X11"
+else
+  set wtype="pdf"
 endif
 
 if ("$un" == "harmon.cgd.ucar.edu") then
@@ -124,7 +110,7 @@ else if ("$un" == "k9") then
 else if ("$un" == "yellowstone_gnu447") then
   setenv NCARGTEST /glade/u/ncldev/test/ncargtest
   setenv NCARG_EXTERNAL /glade/p/work/haley/dev/external/gnu/4.4.7
-  setenv NCARG_ROOT /glade/apps/opt/ncl/6.2.1/gnu/4.4.7
+  setenv NCARG_ROOT /glade/p/work/haley/dev/ncl-trunk-gnu447-opt
   setenv NCARG /glade/p/work/haley/src/ncl-trunk-gnu447
 
   unsetenv LIB_NCAR
@@ -196,20 +182,67 @@ endif
 setenv PATH $NCARG_ROOT/bin:$PATH
 rehash
 
+set datestr     = `date +%m%d%y_%H%M`
+set output_file = "$NCARG_ROOT/make-tarfile-output.$datestr"
+if (-f $output_file) /bin/rm $output_file
+set ncl_version=`ncl -V`
+set which_ncl=`which ncl`
+
+echo "======================================================================"
+echo "Date:        $datestr"
+echo "Machine:     $un" 
+echo "NCARGTEST:   $NCARGTEST"
+echo "NCARG_ROOT:  $NCARG_ROOT"
+echo "which ncl:   $which_ncl" 
+echo "NCL version: $ncl_version" 
+echo "This file:   $output_file"
+echo "======================================================================"
+echo "======================================================================" >&! $output_file
+echo "Date:        $datestr" >>& $output_file
+echo "Machine:     $un"  >>& $output_file
+echo "NCARGTEST:   $NCARGTEST" >>& $output_file
+echo "NCARG_ROOT:  $NCARG_ROOT" >>& $output_file
+echo "which ncl:   $which_ncl"  >>& $output_file
+echo "NCL version: $ncl_version" >>& $output_file
+echo "======================================================================" >>& $output_file
+if ("$un" == "yellowstone_gnu447" || "$un" == "yellowstone_gnu472" || "$un" == "yellowstone_intel1215") then
+  echo "----------------------------------------------------------------------" >>& $output_file
+  echo "ON YELLOWSTONE: building a binary for $un" >>& $output_file
+  echo "----------------------------------------------------------------------" >>& $output_file
+  if ("$un" == "yellowstone_gnu447" || "$un" == "yellowstone_gnu472") then
+    gcc --version >>& $output_file
+    gfortran --version >>& $output_file
+    echo "----------------------------------------------------------------------" >>& $output_file
+  else
+    icc --version >>& $output_file
+    ifort --version >>& $output_file
+    echo "----------------------------------------------------------------------" >>& $output_file
+  endif
+  echo "----------------------------------------------------------------------" >>& $output_file
+  if( $?ASK ) then
+    echo -n "Continue? <enter> for y, n for no "
+    set answer="$<"
+    if ("$answer" == "n") then
+      exit
+    endif
+  endif
+endif
+
+
 # Error checking
 set copy_files   = ("Site.local" "Project")
 cd $NCARG/config
 foreach f($copy_files)
   if(! -f  $f) then
-    echo "$f doesn't exist...can't continue"
+    echo "$f doesn't exist...can't continue" >>& $output_file
     exit
   endif
   if(! -f  $f.dap) then
-    echo "$f.dap doesn't exist...can't continue"
+    echo "$f.dap doesn't exist...can't continue" >>& $output_file
     exit
   endif
   if(! -f  $f.nodap) then
-    echo "$f.nodap doesn't exist...can't continue"
+    echo "$f.nodap doesn't exist...can't continue" >>& $output_file
     exit
   endif
 end
@@ -219,7 +252,7 @@ set ESMF
 set esmf_files = ("$NCARG_EXTERNAL/bin/ESMF_RegridWeightGen.nodap $NCARG_EXTERNAL/bin/ESMF_RegridWeightGen.dap")
 foreach f($esmf_files)
   if(! -f  $f) then
-    echo "$f doesn't exist...unsetting ESMF..."
+    echo "$f doesn't exist...unsetting ESMF..." >>& $output_file
     unset ESMF
   endif
 endif
@@ -232,15 +265,22 @@ set nodap_tarfile = "ncl_ncarg-$version.$nodap_string.tar"
 set dap_gzfile    = "$dap_tarfile.gz"
 set nodap_gzfile  = "$nodap_tarfile.gz"
 
-set sys_name = "yellowstone.ucar.edu"
-set sys_dir  = "/glade/u/ncldev/src/tarfiles/dist/ncl/$version"
+#set sys_name = "yellowstone.ucar.edu"
+set sys_name = "cisl-denton.scd.ucar.edu"
+set sys_dir  = "/Users/haley/tmp/6.2.1"
 
+echo "----------------------------------------------------------------------"
+echo "Tar files: $tar_dir/$dap_gzfile"
+echo "           $tar_dir/$nodap_gzfile"
+set df_cmd = `df -h $tar_dir`
+echo " df -h $tar_dir $df_cmd" 
+echo "----------------------------------------------------------------------"
 # Clean up
 cd $tar_dir
 /bin/rm $dap_gzfile $nodap_gzfile $dap_tarfile $nodap_tarfile
 
 set opendap_test  = "$NCARGTEST/nclscripts/opendap.ncl"
-set esmf_test     = "$NCARGTEST/nclscripts/plotting/ESMF_1.ncl"
+set esmf_test     = "$NCARGTEST/nclscripts/plotting/ESMF_JIRA_1984.ncl"
 set ncargex_tests = ("cpex08" "c_shex03")
 set ng4ex_tests   = ("cn02c" "xy04f" "nm04c") 
 
@@ -256,12 +296,12 @@ set dirs = ($NCARG/ni/src/ncl)
 foreach dir($dirs)
   cd $dir
   /bin/rm ncl
-  make me
-  make all install
-  echo "----------------------------------------------------------------------"
-  echo "Executing ldd on this non-OPenDAP binary..."
-  echo "----------------------------------------------------------------------"
-  $ldd ncl
+  make me >>& $output_file
+  make all install >>& $output_file
+  echo "----------------------------------------------------------------------" >>& $output_file
+  echo "Executing ldd on this non-OPenDAP binary..." >>& $output_file
+  echo "----------------------------------------------------------------------" >>& $output_file
+  $ldd ncl >>& $output_file
   if( $?ASK ) then
     echo -n "Continue? <enter> for y, n for no "
     set answer="$<"
@@ -271,10 +311,10 @@ foreach dir($dirs)
   endif
 end
 
-echo "----------------------------------------------------------------------"
-  echo "Running opendap test...should fail"
-  echo "----------------------------------------------------------------------"
-ncl $opendap_test
+echo "----------------------------------------------------------------------" >>& $output_file
+echo "Running opendap test...should fail" >>& $output_file
+echo "----------------------------------------------------------------------" >>& $output_file
+ncl $opendap_test >>& $output_file
 
 if( $?ASK ) then
   echo -n "Continue? <enter> for y, n for no "
@@ -290,15 +330,15 @@ endif
 if( $?ESMF ) then
   /bin/rm $NCARG_ROOT/bin/ESMF_RegridWeightGen
   /bin/cp $NCARG_EXTERNAL/bin/ESMF_RegridWeightGen.nodap $NCARG_ROOT/bin/ESMF_RegridWeightGen
-  echo "----------------------------------------------------------------------"
-  echo "Executing ldd on this non-OPenDAP binary..."
-  echo "----------------------------------------------------------------------"
-  $ldd $NCARG_ROOT/bin/ESMF_RegridWeightGen
+  echo "----------------------------------------------------------------------" >>& $output_file
+  echo "Executing ldd on this non-OPenDAP binary..." >>& $output_file
+  echo "----------------------------------------------------------------------" >>& $output_file
+  $ldd $NCARG_ROOT/bin/ESMF_RegridWeightGen >>& $output_file
 
-  echo "----------------------------------------------------------------------"
-  echo "Running ESMF_RegridWeightGen test...should succeed"
-  echo "----------------------------------------------------------------------"
-  ncl 'wtype="x11"' $esmf_test
+  echo "----------------------------------------------------------------------" >>& $output_file
+  echo "Running ESMF_RegridWeightGen test...should succeed" >>& $output_file
+  echo "----------------------------------------------------------------------" >>& $output_file
+  eval ncl wtype=\\\"$wtype\\\" $esmf_test >>& $output_file
 
   if( $?ASK ) then
     echo -n "Continue? <enter> for y, n for no "
@@ -310,15 +350,15 @@ if( $?ESMF ) then
 endif
 
 if ("$un" == "yellowstone_gnu447" || "$un" == "yellowstone_gnu472" || "$un" == "yellowstone_intel1215") then
-  ncargex cpex08 c_shex03 -W x11 -n
-  ncargf77 -L$e/lib cpexcc.f cpex08.f -o cpex08
-  ./cpex08
-  ncargcc -ngmath -L$e/lib c_shex03.c -o c_shex03
-  ./c_shex03
-  /bin/rm cpex08* cpexcc* c_shex*
+  ncargex cpex08 c_shex03 -W $wtype -n >>& $output_file
+  ncargf77 -L$e/lib cpexcc.f cpex08.f -o cpex08 >>& $output_file
+  ./cpex08 >>& $output_file
+  ncargcc -ngmath -L$e/lib c_shex03.c -o c_shex03 >>& $output_file
+  ./c_shex03 >>& $output_file
+  /bin/rm cpex08* cpexcc* c_shex* >>& $output_file
 else
   foreach f($ncargex_tests)
-    ncargex $f -clean -W x11
+    ncargex $f -clean -W $wtype >>& $output_file
   end
 endif
 
@@ -331,17 +371,17 @@ if( $?ASK ) then
 endif
 
 if ("$un" == "yellowstone_gnu447" || "$un" == "yellowstone_gnu472" || "$un" == "yellowstone_intel1215") then
-  ng4ex xy04f cn02c nm04c -W x11 -n 
-  nhlf77 -L$e/lib xy04f.f -o xy04f
-  ./xy04f
-  nhlcc -L$e/lib cn02c.c -o cn02c
-  ./cn02c
-  nhlcc -L$e/lib -ngmath nm04c.c -o nm04c
-  ./nm04c
+  ng4ex xy04f cn02c nm04c -W $wtype -n  >>& $output_file
+  nhlf77 -L$e/lib xy04f.f -o xy04f >>& $output_file
+  ./xy04f >>& $output_file
+  nhlcc -L$e/lib cn02c.c -o cn02c >>& $output_file
+  ./cn02c >>& $output_file
+  nhlcc -L$e/lib -ngmath nm04c.c -o nm04c >>& $output_file
+  ./nm04c >>& $output_file
   /bin/rm xy04* cn02* nm04*
 else
   foreach f($ng4ex_tests)
-    ng4ex $f -clean -W x11
+    ng4ex $f -clean -W $wtype >>& $output_file
   end
 endif
 
@@ -352,11 +392,11 @@ if( $?ASK ) then
     exit
   endif
 endif
-
-echo "----------------------------------------------------------------------"
-echo "Running check_files..."
-echo "----------------------------------------------------------------------"
-$NCARG/install/make-tarfile/check_files
+  
+echo "----------------------------------------------------------------------" >>& $output_file
+echo "Running check_files..." >>& $output_file
+echo "----------------------------------------------------------------------" >>& $output_file
+$NCARG/install/make-tarfile/check_files >>& $output_file
 
 if( $?ASK ) then
   echo -n "Continue? <enter> for y, n for no "
@@ -368,11 +408,11 @@ endif
 
 # Create the tarfile
 if ($?TAR_FILES) then
-  echo "----------------------------------------------------------------------"
-  echo "Creating non-OPeNDAP tarfile from files in $NCARG_ROOT..."
-  echo "----------------------------------------------------------------------"
+  echo "----------------------------------------------------------------------" >>& $output_file
+  echo "Creating non-OPeNDAP tarfile from files in $NCARG_ROOT..." >>& $output_file
+  echo "----------------------------------------------------------------------" >>& $output_file
   cd $NCARG_ROOT
-  $NCARG/install/make-tarfile/create_dist -p -d $tar_dir -f $nodap_string
+  $NCARG/install/make-tarfile/create_dist -p -d $tar_dir -f $nodap_string >>& $output_file
   if( $?ASK ) then
     echo -n "Continue? <enter> for y, n for no "
     set answer="$<"
@@ -394,12 +434,12 @@ set dirs = ($NCARG/ni/src/ncl)
 foreach dir($dirs)
   cd $dir
   /bin/rm ncl
-  make me
-  make all install
-  echo "----------------------------------------------------------------------"
-  echo "Executing ldd on this OPenDAP binary..."
-  echo "----------------------------------------------------------------------"
-  $ldd ncl
+  make me >>& $output_file
+  make all install >>& $output_file
+  echo "----------------------------------------------------------------------" >>& $output_file
+  echo "Executing ldd on this OPenDAP binary..." >>& $output_file
+  echo "----------------------------------------------------------------------" >>& $output_file
+  $ldd ncl >>& $output_file
   if( $?ASK ) then
     echo -n "Continue? <enter> for y, n for no "
     set answer="$<"
@@ -409,10 +449,10 @@ foreach dir($dirs)
   endif
 end
 
-echo "----------------------------------------------------------------------"
-echo "Running opendap test...should succeed"
-echo "----------------------------------------------------------------------"
-ncl $opendap_test
+echo "----------------------------------------------------------------------" >>& $output_file
+echo "Running opendap test...should succeed" >>& $output_file
+echo "----------------------------------------------------------------------" >>& $output_file
+ncl $opendap_test >>& $output_file
 
 if( $?ASK ) then
   echo -n "Continue? <enter> for y, n for no "
@@ -429,15 +469,15 @@ if( $?ESMF ) then
   /bin/rm $NCARG_ROOT/bin/ESMF_RegridWeightGen
   /bin/cp $NCARG_EXTERNAL/bin/ESMF_RegridWeightGen.dap $NCARG_ROOT/bin/ESMF_RegridWeightGen
 
-  echo "----------------------------------------------------------------------"
-  echo "Executing ldd on this OPenDAP binary..."
-  echo "----------------------------------------------------------------------"
-  $ldd $NCARG_ROOT/bin/ESMF_RegridWeightGen
+  echo "----------------------------------------------------------------------" >>& $output_file
+  echo "Executing ldd on this OPenDAP binary..." >>& $output_file
+  echo "----------------------------------------------------------------------" >>& $output_file
+  $ldd $NCARG_ROOT/bin/ESMF_RegridWeightGen >>& $output_file
  
-  echo "----------------------------------------------------------------------"
-  echo "Running ESMF_RegridWeightGen test...should succeed"
-  echo "----------------------------------------------------------------------"
-  ncl 'wtype="x11"' $esmf_test
+  echo "----------------------------------------------------------------------" >>& $output_file
+  echo "Running ESMF_RegridWeightGen test...should succeed" >>& $output_file
+  echo "----------------------------------------------------------------------" >>& $output_file
+  eval ncl wtype=\\\"$wtype\\\" $esmf_test >>& $output_file
 
   if( $?ASK ) then
     echo -n "Continue? <enter> for y, n for no "
@@ -448,10 +488,10 @@ if( $?ESMF ) then
   endif
 endif
 
-echo "----------------------------------------------------------------------"
-echo "Running check_files..."
-echo "----------------------------------------------------------------------"
-$NCARG/install/make-tarfile/check_files
+echo "----------------------------------------------------------------------" >>& $output_file
+echo "Running check_files..." >>& $output_file
+echo "----------------------------------------------------------------------" >>& $output_file
+$NCARG/install/make-tarfile/check_files >>& $output_file
 
 if( $?ASK ) then
   echo -n "Continue? <enter> for y, n for no "
@@ -463,11 +503,11 @@ endif
 
 # Create the tarfile
 if ($?TAR_FILES) then
-  echo "----------------------------------------------------------------------"
-  echo "Creating OPeNDAP tarfile from files in $NCARG_ROOT..."
-  echo "----------------------------------------------------------------------"
+  echo "----------------------------------------------------------------------" >>& $output_file
+  echo "Creating OPeNDAP tarfile from files in $NCARG_ROOT..." >>& $output_file
+  echo "----------------------------------------------------------------------" >>& $output_file
   cd $NCARG_ROOT
-  $NCARG/install/make-tarfile/create_dist -p -d $tar_dir -f $dap_string
+  $NCARG/install/make-tarfile/create_dist -p -d $tar_dir -f $dap_string >>& $output_file
   if( $?ASK ) then
     echo -n "Continue? <enter> for y, n for no "
     set answer="$<"
@@ -476,16 +516,28 @@ if ($?TAR_FILES) then
     endif
   endif
 
+echo "----------------------------------------------------------------------"
+ls -lh $tar_dir/$dap_gzfile
+ls -lh $tar_dir/$nodap_gzfile
+echo "----------------------------------------------------------------------"
+echo "----------------------------------------------------------------------" >>& $output_file
+ls -lh $tar_dir/$dap_gzfile >>& $output_file
+ls -lh $tar_dir/$nodap_gzfile >>& $output_file
+echo "----------------------------------------------------------------------" >>& $output_file
+
 # Copy files over to yellowstone                                                
   if ($?SCP_FILES) then
-    echo "----------------------------------------------------------------------"
-    echo "Copying files to yellowstone..."
-    echo "----------------------------------------------------------------------"
+    echo "----------------------------------------------------------------------" >>& $output_file
+    echo "Copying files to $sys_name..." >>& $output_file
+    echo "----------------------------------------------------------------------" >>& $output_file
     cd $tar_dir
-    if ("$un" == "yellowstone_gnu447" || "$un" == "yellowstone_gnu472" || "$un" == "yellowstone_intel1215") then
-      /bin/cp $nodap_gzfile $dap_gzfile ${sys_dir}/.
+#   if ("$un" == "yellowstone_gnu447" || "$un" == "yellowstone_gnu472" || "$un" == "yellowstone_intel1215") then
+    if ("$un" == "cisl-denton.scd.ucar.edu") then
+      /bin/mv $nodap_gzfile $dap_gzfile ${sys_dir}/. >>& $output_file
     else
-      scp $nodap_gzfile $dap_gzfile ${sys_name}:${sys_dir}/.
+      scp $nodap_gzfile $dap_gzfile ${sys_name}:${sys_dir}/. >>& $output_file
     endif
   endif
 endif
+
+echo "See $output_file for more details"
