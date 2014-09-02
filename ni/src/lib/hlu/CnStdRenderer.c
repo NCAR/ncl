@@ -1614,7 +1614,7 @@ static NhlErrorTypes CnStdRender
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,cnp->fill_mode == NhlAREAFILL ? "AreaFill" : "RasterFill");
 			}
 			else if (cnp->lines_on || cnp->line_lbls.on) {
-				e_text =  "%s: out of range coordinates encountered; standard %s rendering method may be unreliable;\n consider setting the resource trGridType to \"TriangularMesh\" if coordinates contain missing values";
+				e_text =  "%s: out of range coordinates encountered; standard line rendering method may be unreliable;\n consider setting the resource trGridType to \"TriangularMesh\" if coordinates contain missing values";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			}
 		}
