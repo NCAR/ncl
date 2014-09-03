@@ -3134,9 +3134,10 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
         case H5T_REFERENCE:
             if (H5Tequal(type, H5T_STD_REF_OBJ))
             {
-#if 0
-                fprintf(stderr, "object reference, file: %s, line: %d\n\n", __FILE__, __LINE__);
-#endif
+              /*
+               *fprintf(stderr, "file: %s, line: %d\n\n", __FILE__, __LINE__);
+               *fprintf(stderr, "object reference, file: %s, line: %d\n\n", __FILE__, __LINE__);
+               */
                 strcpy(NclHDF5datatype->type_name, "object reference");
             }
             else if (H5Tequal(type, H5T_STD_REF_DSETREG))
@@ -3149,15 +3150,16 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
             }
             else
             {
-              /*
-               *fprintf(stderr, "file: %s, line: %d\n\n", __FILE__, __LINE__);
-               */
                 strcpy(NclHDF5datatype->type_name, "unknown reference");
               /*
+               *fprintf(stderr, "file: %s, line: %d\n\n", __FILE__, __LINE__);
                *fprintf(stderr, "%lu-byte unknown reference\n", (unsigned long)size);
                */
-                NclHDF5datatype->bit = (unsigned) (8*size);
             }
+
+            setHDF5endian(type, size, NclHDF5datatype);
+            strcpy(NclHDF5datatype->endian, NclHDF5datatype->endian);
+            NclHDF5datatype->bit = (unsigned) (8*size);
 
             return NclHDF5datatype;
             break;
