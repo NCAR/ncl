@@ -437,7 +437,6 @@ int n_dims;
 
     HDF5DimInqRecList *cur_dim_list;
     int j, n;
-    int check_dims = 0;
 
     var_info->var_name_quark = var_inq->name;
     var_info->var_real_name_quark = var_inq->hdf5_name;
@@ -477,8 +476,6 @@ int n_dims;
         quark_name = NrmStringToQuark(long_name);
     else
         quark_name = NrmStringToQuark(short_name+1);
-
-    check_dims = 0;
 
     if(var_inq->has_dim_name)
     {
@@ -682,6 +679,14 @@ static NclBasicDataTypes _HDF52Ncl_type(const char *type_name)
         type = NCL_ubyte;
     else if(strcmp(type_name, "compound") == 0)
         type = NCL_compound;
+    else if(0 == strcmp("opaque", type_name))
+        return(NCL_opaque);
+    else if(0 == strcmp("enum", type_name))
+        return(NCL_enum);
+    else if(0 == strcmp("object reference", type_name))
+        return(NCL_reference);
+    else if(0 == strcmp("dataset region reference", type_name))
+        return(NCL_reference);
     else
     {
       /*
