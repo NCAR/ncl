@@ -101,7 +101,6 @@ void
 # endif /* NhlNeedProto */
 );
 
-
 extern NhlErrorTypes _NclIprintFileVarSummary(
 #if NhlNeedProto
 void
@@ -1079,6 +1078,8 @@ NhlErrorTypes _NclCreateGraphic(
 void
 #endif
 );
+
+NhlErrorTypes _NclIgetPath(void);
 
 void _NclAddBuiltIns
 #if     NhlNeedProto
@@ -2562,7 +2563,6 @@ void _NclAddBuiltIns
     SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
     NclRegisterProc(_NclIprintFileVarSummary,args,"printFileVarSummary",nargs);
 
-
     nargs = 0;
     args = NewArgs(3);
     dimsizes[0] = 1;
@@ -2654,6 +2654,11 @@ void _NclAddBuiltIns
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
     NclRegisterFunc(_Ncldefault_fillvalue, args, "default_fillvalue", nargs);
+
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"file",0,NclANY); nargs++;
+    NclRegisterFunc(_NclIgetPath,args,"getPath",nargs);
 
     nargs = 0;
     args = NewArgs(2);

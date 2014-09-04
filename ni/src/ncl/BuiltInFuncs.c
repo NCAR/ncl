@@ -19898,6 +19898,44 @@ NhlErrorTypes _NclIprintFileVarSummary( void )
 
 }
 
+NhlErrorTypes _NclIgetPath( void )
+{
+	NclFile thefile;
+	obj *thefile_id;
+	ng_size_t dimsz[1];
+	int ndims = 1;
+	NclQuark* filepath = (NclQuark*) NclMalloc(sizeof(NclQuark));
+
+	if(NULL == filepath)
+	{
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"problem to allocate memory for filepath.\n"));
+		return(NhlFATAL);
+	}
+
+        thefile_id = (obj*)NclGetArgValue(
+                        0,
+                        1,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+	thefile = (NclFile)_NclGetObj((int)*thefile_id);
+
+        *filepath = thefile->file.fpath;
+
+	dimsz[0] = 1;
+
+	/*
+        *NclScalar missing;
+        *missing.stringval = NrmStringToQuark("missing");
+        **filepath = NrmStringToQuark("missing");
+        *return NclReturnValue((void *) filepath, ndims, dimsz, &missing, NCL_string, 0);
+	*/
+	return NclReturnValue((void *) filepath, ndims, dimsz, NULL, NCL_string, 0);
+}
+
 NhlErrorTypes _NclIGetFileGroups( void )
 {
 	NclFile thefile;
@@ -20322,6 +20360,7 @@ NhlErrorTypes _NclIListIndex(void)
 	int nm = 0;
 	int i;
 
+	NrmQuark symbol_name;
 	NclObj the_obj;
 	NclVar cur_var;
 	NclMultiDValData the_value;
@@ -20351,6 +20390,12 @@ NhlErrorTypes _NclIListIndex(void)
 	{
 		comp_val = 1;
 		the_value = (NclMultiDValData)data.u.data_obj;
+
+		if(NCL_string == the_value->multidval.data_type)
+		{
+			comp_val = -1;
+			symbol_name = *(NrmQuark *)the_value->multidval.val;
+		}
 	}
 	else
 	{
@@ -20366,11 +20411,11 @@ NhlErrorTypes _NclIListIndex(void)
 	}
 
 	ret_val[0] = -1;
-
 	step = thelist->list.first;
-	for(i = 0; i < thelist->list.nelem; i++)
+
+	if(0 < comp_val)
 	{
-		if(comp_val)
+		for(i = 0; i < thelist->list.nelem; i++)
 		{
 			cur_var = (NclVar)_NclGetObj(step->obj_id);
 
@@ -20388,16 +20433,35 @@ NhlErrorTypes _NclIListIndex(void)
 						ret_val[nm++] = i;
 				}
 			}
+
+			step = step->next;
 		}
-		else
+	}
+	else if(0 > comp_val)
+	{
+		for(i = 0; i < thelist->list.nelem; i++)
+		{
+			cur_var = (NclVar)_NclGetObj(step->obj_id);
+
+			if(symbol_name == cur_var->var.var_quark)
+			{
+				ret_val[nm++] = i;
+			}
+
+			step = step->next;
+		}
+	}
+	else
+	{
+		for(i = 0; i < thelist->list.nelem; i++)
 		{
 			if(the_obj->obj.id == step->obj_id)
 			{
 				ret_val[nm++] = i;
 			}
-		}
 
-		step = step->next;
+			step = step->next;
+		}
 	}
 
 	if(nm < 1)
