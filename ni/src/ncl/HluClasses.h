@@ -41,6 +41,7 @@ extern NhlClass NhlirregularPlotClass;
 extern NhlClass NhlmapPlotClass;
 extern NhlClass NhlappClass;
 extern NhlClass NhlannoManagerClass;
+extern NhlClass NhlcairoQtWorkstationClass;
 extern NhlClass NhlpsWorkstationClass;
 extern NhlClass NhlpdfWorkstationClass;
 extern NhlClass NhlvectorPlotClass;
