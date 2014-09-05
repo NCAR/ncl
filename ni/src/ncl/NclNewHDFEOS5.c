@@ -627,6 +627,12 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
     NclFileDimNode   *dimnode = NULL;
     NclFileDimRecord *dimrec  = NULL;
 
+    hid_t       dtype;
+    H5T_class_t classid;
+    H5T_order_t order;
+    size_t      size;
+    int         count;
+
     nsw = HE5_SWinqswath(NrmQuarkToString(path),NULL,&str_buf_size);
     if(nsw < 1)
     {
@@ -727,9 +733,16 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
             if(HE5_EHglbattrinfo(HE5_SWfid,NrmQuarkToString(att_hdf_names[k]),&att_type,&att_size)==0)
             {
                 baseNclType = HE5MapTypeNumber(att_type);
+              /*
+               *Note: size should be datatype size in bytes
+               *(max number of charcters for character string arrays
+               */
+                status = HE5_EHinqglbdatatype(HE5_SWfid, NrmQuarkToString(att_hdf_names[k]),
+                                             &dtype, &classid, &order, &size);
+
                 if(NCL_string == baseNclType)
                 {
-                    tmp_value = (void*)NclCalloc(HE5_MAX_STRING_LENGTH, 1);
+                    tmp_value = (void*)NclCalloc((att_size+1) * size, 1);
                     if(HE5_EHreadglbattr(HE5_SWfid,NrmQuarkToString(att_hdf_names[k]),tmp_value)==0 )
                     {
                         NclQuark *new_value = (NclQuark *)NclMalloc(sizeof(NclQuark));
@@ -742,7 +755,7 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
                 }
                 else
                 {
-                    tmp_value = (void*)NclCalloc(att_size, _NclSizeOf(baseNclType));
+                    tmp_value = (void*)NclCalloc(size, att_size);
                     if(HE5_EHreadglbattr(HE5_SWfid,NrmQuarkToString(att_hdf_names[k]),tmp_value)==0 )
                     {
                         _addHE5Att(attnode, att_ncl_names[k], tmp_value,
@@ -762,10 +775,10 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
             continue;
 
       /*
+       *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\ti = %d, HE5_SWid = %d, sw_hdf_names[%d]: <%s>\n",
+       *                  i, HE5_SWid, i, NrmQuarkToString(sw_hdf_names[i]));
        */
-        fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\ti = %d, HE5_SWid = %d, sw_hdf_names[%d]: <%s>\n",
-                          i, HE5_SWid, i, NrmQuarkToString(sw_hdf_names[i]));
 
         grpnode = (NclFileGrpNode *)NclCalloc(1, sizeof(NclFileGrpNode));
         grprec->grp_node[i] = grpnode;
@@ -806,9 +819,9 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
             buffer[str_buf_size] = '\0';
 
           /*
+           *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tglobal natts = %ld, attnames: <%s>\n", natts, buffer);
            */
-            fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\tglobal natts = %ld, attnames: <%s>\n", natts, buffer);
 
             HE5ParseName(buffer, att_hdf_names, att_ncl_names, natts);
 
@@ -828,6 +841,15 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
 
                 if(HE5_SWattrinfo(HE5_SWid,NrmQuarkToString(att_hdf_names[k]),&att_type,&att_size)==0)
                 {
+                  /*
+                   *Note: size should be datatype size in bytes
+                   *(max number of charcters for character string arrays
+                    status = HE5_EHinqdatatype(HE5_SWid, NrmQuarkToString(att_hdf_names[k]),
+                                            &dtype, &classid, &order, &size);
+                    tmp_value = (void*)NclCalloc((att_size+1) * size, 1);
+                    tmp_value = (void*)NclCalloc(size, att_size);
+                   */
+
                     attnode->type = HE5MapTypeNumber(att_type);
                     if(NCL_string == attnode->type)
                         tmp_value = (void*)NclCalloc(HE5_MAX_STRING_LENGTH, 1);
@@ -871,9 +893,9 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
         }
 
       /*
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tndims = %d, str_buf_size = %ld\n", ndims, str_buf_size);
        */
-        fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-        fprintf(stderr, "\tndims = %d, str_buf_size = %ld\n", ndims, str_buf_size);
 
         if(str_buf_size >= cur_buf_size)
         {
@@ -1031,6 +1053,16 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
                                                NrmQuarkToString(att_hdf_names[k]),&att_type,&att_size);
                     if(status)
                         continue;
+
+                  /*
+                   *Note: size should be datatype size in bytes
+                   *(max number of charcters for character string arrays
+                   *status = HE5_EHinqlocdatatype(HE5_SWid, NrmQuarkToString(att_hdf_names[k]),
+                   *                        &dtype, &classid, &order, &size);
+                   *tmp_value = (void*)NclCalloc((att_size+1) * size, 1);
+                   *tmp_value = (void*)NclCalloc(size, att_size);
+                   */
+
                     attnode->type = HE5MapTypeNumber(att_type);
                     if(NCL_string == attnode->type)
                         tmp_value = (void*)NclCalloc(HE5_MAX_STRING_LENGTH, 1);
@@ -1203,6 +1235,18 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
                         continue;
 
                     baseNclType = HE5MapTypeNumber(att_type);
+
+                  /*
+                   *Note: size should be datatype size in bytes
+                   *(max number of charcters for character string arrays
+                   *status = HE5_EHinqlocdatatype(HE5_SWid, NrmQuarkToString(var_hdf_names[j]),NrmQuarkToString(att_hdf_names[k]),
+                   *                        &dtype, &classid, &order, &size);
+                   *if(NCL_string == baseNclType)
+                   *    tmp_value = (void*)NclCalloc((att_size+1) * size, 1);
+                   *else
+                   *    tmp_value = (void*)NclCalloc(size, att_size);
+                   */
+
                     if(NCL_string == baseNclType)
                         tmp_value = (void*)NclCalloc(HE5_MAX_STRING_LENGTH, 1);
                     else
@@ -1415,6 +1459,12 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
     NclFileDimNode   *dimnode = NULL;
     NclFileDimRecord *dimrec  = NULL;
 
+    hid_t       dtype;
+    H5T_class_t classid;
+    H5T_order_t order;
+    size_t      size;
+    int         count;
+
   /*
    *NrmQuark dim_names[2];
    *hsize_t dim_sizes[2];
@@ -1550,7 +1600,27 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
             {
                 if(HE5_EHglbattrinfo(HE5_GDfid,NrmQuarkToString(att_hdf_names[k]),&att_type,&att_size)==0)
                 {
-                    tmp_value = (void*)NclCalloc(att_size, _NclSizeOf(HE5MapTypeNumber(att_type)));
+                    NclBasicDataTypes baseNclType = HE5MapTypeNumber(att_type);
+                  /*
+                   *Note: size should be datatype size in bytes
+                   *(max number of charcters for character string arrays
+                   */
+                    status = HE5_EHinqglbdatatype(HE5_GDfid, NrmQuarkToString(att_hdf_names[k]),
+                                              &dtype, &classid, &order, &size);
+
+                  /*
+                   *fprintf(stderr, "\tstatus = %ld, dtype = %ld, classid = %ld\n",
+                   *       (long) status, (long) dtype, (long) classid);
+                   *fprintf(stderr, "\torder = %ld, array_element_Byte_size = %ld\n",
+                   *       (long) order, (long) size);
+                   */
+
+                    if(NCL_string == baseNclType)
+                       tmp_value = (void*)NclCalloc((att_size+1) * size, 1);
+                    else
+                       tmp_value = (void*)NclCalloc(size, att_size);
+
+                  /*tmp_value = (void*)NclCalloc(att_size, _NclSizeOf(HE5MapTypeNumber(att_type)));*/
                     if(HE5_EHreadglbattr(HE5_GDfid,NrmQuarkToString(att_hdf_names[k]),tmp_value)==0 )
                     {
                       /*
@@ -1558,9 +1628,21 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
                        *fprintf(stderr, "Att No. %d, name: <%s>, size = %d\n",
                        *                 k, NrmQuarkToString(att_hdf_names[k]), att_size);
                        */
+                        if(NCL_string == baseNclType)
+                        {
+                            NclQuark *new_value = (NclQuark *)NclMalloc(sizeof(NclQuark));
+                            *new_value = NrmStringToQuark(tmp_value);
 
-                        _addHE5Att(attnode, att_ncl_names[k], tmp_value,
-                                   (int) att_size, HE5MapTypeNumber(att_type));
+                            _addHE5Att(attnode, att_ncl_names[k], new_value,
+                                       (int) att_size, HE5MapTypeNumber(att_type));
+
+                            NclFree(tmp_value);
+                        }
+                        else
+                        {
+                            _addHE5Att(attnode, att_ncl_names[k], tmp_value,
+                                       (int) att_size, HE5MapTypeNumber(att_type));
+                        }
                     }
                 }
             }
