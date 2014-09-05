@@ -19898,7 +19898,7 @@ NhlErrorTypes _NclIprintFileVarSummary( void )
 
 }
 
-NhlErrorTypes _NclIgetPath( void )
+NhlErrorTypes _NclIgetfilepath( void )
 {
 	NclFile thefile;
 	obj *thefile_id;

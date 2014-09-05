@@ -1079,7 +1079,7 @@ void
 #endif
 );
 
-NhlErrorTypes _NclIgetPath(void);
+NhlErrorTypes _NclIgetfilepath(void);
 
 void _NclAddBuiltIns
 #if     NhlNeedProto
@@ -2658,7 +2658,7 @@ void _NclAddBuiltIns
     nargs = 0;
     args = NewArgs(1);
     SetArgTemplate(args,nargs,"file",0,NclANY); nargs++;
-    NclRegisterFunc(_NclIgetPath,args,"getPath",nargs);
+    NclRegisterFunc(_NclIgetfilepath,args,"getfilepath",nargs);
 
     nargs = 0;
     args = NewArgs(2);
