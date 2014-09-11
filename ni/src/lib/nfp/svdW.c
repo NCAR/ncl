@@ -1981,8 +1981,9 @@ NhlErrorTypes svd_lapack_W( void )
  * Free memory.
  */
   NclFree(work);
-  NclFree(tmp_a);
 
+  if(type_a != NCL_double)
+      NclFree(tmp_a);
 
 /*
  * Set up variable to return and assign values for "info" attribute.
