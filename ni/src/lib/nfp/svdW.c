@@ -1981,6 +1981,7 @@ NhlErrorTypes svd_lapack_W( void )
  * Free memory.
  */
   NclFree(work);
+  NclFree(tmp_a);
 
 
 /*
