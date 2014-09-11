@@ -12790,7 +12790,9 @@ function calculate_monthly_values (x:numeric, arith:string, nDim[1]:integer, opt
 ;    if 5D [case,time,lev,lat,lon]
 ; arith: "avg" [also, "ave"], "sum","min","max"     others may be added later
 ; nDim : scalar integer that specifies the 'time' dimension [generally, 0]
-; opt  : option ... not used here 
+; opt  : only used to eliminate a warning message 
+;        opt= 0 ... default ... print Warning
+;        opt=-1 ... do not print Warning
 ;
 ; Sample usage:  x(time,lat,lon) where time are n-hrly or daily values.
 ;        xMonthAvg = calculate_monthly_values(x, "avg", 0, False)
@@ -12880,86 +12882,89 @@ begin
          if (.not.ismissing(ii(0))) then
 
              dimii = dimsizes(ii)     ; should be > 1
-             if (dimii.eq.1) then
-                 print("calculate_monthly_values: there should be more than one element")
-                 print("This is unsupported code.                                      ")
-                 exit
+             if (dimii.eq.1 .and. opt.ne.-1 ) then
+                 print("calculate_monthly_values: Warning: there should be more than one element")
+            ;    print("This is unsupported code.                                      ")
+            ;    exit
              end if
+
+             iStrt = ii(0)            
+             iLast = ii(dimii-1)
 
              xMonth(NT) = (/ x&time(ii(0)) /)
 
              if (rankx.eq.1) then
                  if (arith.eq."avg" .or. arith.eq."ave") then
-                     xReturn(NT) = dim_avg_n(x(ii) , nDim)
+                     xReturn(NT) = dim_avg_n(x(iStrt:iLast) , nDim)
                  end if
                  if (arith.eq."sum") then
-                     xReturn(NT) = dim_sum_n(x(ii) , nDim)
+                     xReturn(NT) = dim_sum_n(x(iStrt:iLast) , nDim)
                  end if
                  if (arith.eq."min") then
-                     xReturn(NT) = dim_min_n(x(ii) , nDim)
+                     xReturn(NT) = dim_min_n(x(iStrt:iLast) , nDim)
                  end if
                  if (arith.eq."max") then
-                     xReturn(NT) = dim_max_n(x(ii) , nDim)
+                     xReturn(NT) = dim_max_n(x(iStrt:iLast) , nDim)
                  end if
              end if
 
              if (rankx.eq.2) then
                  if (arith.eq."avg" .or. arith.eq."ave") then
-                     xReturn(NT,:) = dim_avg_n(x(ii,:) , nDim)
+                     xReturn(NT,:) = dim_avg_n(x(iStrt:iLast,:) , nDim)
                  end if
                  if (arith.eq."sum") then
-                     xReturn(NT,:) = dim_sum_n(x(ii,:) , nDim)
+                     xReturn(NT,:) = dim_sum_n(x(iStrt:iLast,:) , nDim)
                  end if
                  if (arith.eq."min") then
-                     xReturn(NT,:) = dim_min_n(x(ii,:) , nDim)
+                     xReturn(NT,:) = dim_min_n(x(iStrt:iLast,:) , nDim)
                  end if
                  if (arith.eq."max") then
-                     xReturn(NT,:) = dim_max_n(x(ii,:) , nDim)
+                     xReturn(NT,:) = dim_max_n(x(iStrt:iLast,:) , nDim)
                  end if
              end if
 
              if (rankx.eq.3) then
                  if (arith.eq."avg" .or. arith.eq."ave") then
-                     xReturn(NT,:,:) = dim_avg_n(x(ii,:,:) , nDim)
+                     xReturn(NT,:,:) = dim_avg_n(x(iStrt:iLast,:,:) , nDim)
                  end if
                  if (arith.eq."sum") then
-                     xReturn(NT,:,:) = dim_sum_n(x(ii,:,:) , nDim)
+                     xReturn(NT,:,:) = dim_sum_n(x(iStrt:iLast,:,:) , nDim)
                  end if
                  if (arith.eq."min") then
-                     xReturn(NT,:,:) = dim_min_n(x(ii,:,:) , nDim)
+                     xReturn(NT,:,:) = dim_min_n(x(iStrt:iLast,:,:) , nDim)
                  end if
                  if (arith.eq."max") then
-                     xReturn(NT,:,:) = dim_max_n(x(ii,:,:) , nDim)
+                     xReturn(NT,:,:) = dim_max_n(x(iStrt:iLast,:,:) , nDim)
                  end if
              end if
 
              if (rankx.eq.4) then
                  if (arith.eq."avg" .or. arith.eq."ave") then
-                     xReturn(NT,:,:,:) = dim_avg_n(x(ii,:,:,:) , nDim)
+                     xReturn(NT,:,:,:) = dim_avg_n(x(iStrt:iLast,:,:,:) , nDim)
                  end if
                  if (arith.eq."sum") then
-                     xReturn(NT,:,:,:) = dim_sum_n(x(ii,:,:,:) , nDim)
+                     xReturn(NT,:,:,:) = dim_sum_n(x(iStrt:iLast,:,:,:) , nDim)
                  end if
                  if (arith.eq."min") then
-                     xReturn(NT,:,:,:) = dim_min_n(x(ii,:,:,:) , nDim)
+                     xReturn(NT,:,:,:) = dim_min_n(x(iStrt:iLast,:,:,:) , nDim)
                  end if
                  if (arith.eq."max") then
-                     xReturn(NT,:,:,:) = dim_max_n(x(ii,:,:,:) , nDim)
+                     xReturn(NT,:,:,:) = dim_max_n(x(iStrt:iLast,:,:,:) , nDim)
                  end if
              end if
 
              if (rankx.eq.5) then        ; note the location of time
                  if (arith.eq."avg" .or. arith.eq."ave") then
-                     xReturn(:,NT,:,:,:) = dim_avg_n(x(:,ii,:,:,:) , nDim)
+                     xReturn(:,NT,:,:,:) = dim_avg_n(x(:,iStrt:iLast,:,:,:) , nDim)
                  end if
                  if (arith.eq."sum") then
-                     xReturn(:,NT,:,:,:) = dim_sum_n(x(:,ii,:,:,:) , nDim)
+                     xReturn(:,NT,:,:,:) = dim_sum_n(x(:,iStrt:iLast,:,:,:) , nDim)
                  end if
                  if (arith.eq."min") then
-                     xReturn(:,NT,:,:,:) = dim_min_n(x(:,ii,:,:,:) , nDim)
+                     xReturn(:,NT,:,:,:) = dim_min_n(x(:,iStrt:iLast,:,:,:) , nDim)
                  end if
                  if (arith.eq."max") then
-                     xReturn(:,NT,:,:,:) = dim_max_n(x(:,ii,:,:,:) , nDim)
+                     xReturn(:,NT,:,:,:) = dim_max_n(x(:,iStrt:iLast,:,:,:) , nDim)
                  end if
              end if
          end if
