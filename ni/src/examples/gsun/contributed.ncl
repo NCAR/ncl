@@ -12849,7 +12849,12 @@ begin
         dAvg(1)= NTIM
     end if
 
-    xReturn= new ( dAvg , typeof(x), getFillValue(x))
+    if (typeof(x).eq."float" .or. typeof(x).eq."double") then
+        xReturn= new ( dAvg , typeof(x), getFillValue(x))
+    else
+        xReturn= new ( dAvg , "float", tofloat(getFillValue(x)))
+    end if
+
     xMonth = new ( NTIM , typeof(x&time), "No_FillValue")
   ;;printVarSummary(xMonth)
 
