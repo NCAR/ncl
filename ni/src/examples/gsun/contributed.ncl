@@ -1481,7 +1481,7 @@ end
 ; "The following is much simpler and more robust" ... than 'closest_val' 
 ; DA's original name was 'closest_val_AnyOrder'
 undef("closest_val")
-function closest_val(xVal[1]:numeric, x:numeric)
+function closest_val(xVal[1]:snumeric, x:snumeric)
 local xAbsDif, xMinVal, iClose
 begin
    xAbsDif = abs(xVal-x)
