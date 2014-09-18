@@ -1475,6 +1475,19 @@ begin
   return( get1Dindex_Exclude(cv, cvWant) )
 end
 
+;*************************************************************
+; From: Dave Allured 
+; Date: Thu, 15 Mar 2007 14:00:43 -0600
+; "The following is much simpler and more robust" ... than 'closest_val' 
+undef("closest_val_AnyOrder")
+function closest_val_AnyOrder(xVal[1]:numeric, x:numeric)
+local xAbsDif, xMinVal, iClose
+begin
+   xAbsDif = abs(xVal-x)
+   iClose = minind(xAbsDif)
+   return(iClose) ; original doc says "first occurence"
+end 
+
 ;****************************************************************
 ; S. Murphy
 ; Finds the index of the array point closest to the desired value
@@ -14544,5 +14557,3 @@ begin
 
     return(k)
 end
-
-
