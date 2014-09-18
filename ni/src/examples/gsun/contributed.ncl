@@ -1479,8 +1479,9 @@ end
 ; From: Dave Allured 
 ; Date: Thu, 15 Mar 2007 14:00:43 -0600
 ; "The following is much simpler and more robust" ... than 'closest_val' 
-undef("closest_val_AnyOrder")
-function closest_val_AnyOrder(xVal[1]:numeric, x:numeric)
+; DA's original name was 'closest_val_AnyOrder'
+undef("closest_val")
+function closest_val(xVal[1]:numeric, x:numeric)
 local xAbsDif, xMinVal, iClose
 begin
    xAbsDif = abs(xVal-x)
@@ -1495,8 +1496,8 @@ end
 ; values in array2ck = 17.0 17.5 18.0 18.5
 ; this function would return 3.
 
-undef("closest_val")
-function closest_val(var2ck:numeric,array2ck[*])
+undef("closest_val_original")
+function closest_val_original(var2ck:numeric,array2ck[*])
 local size, narray,loc, test1,test2
 begin
   size = dimsizes(array2ck)            ; get size of original array
