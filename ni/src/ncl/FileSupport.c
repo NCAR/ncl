@@ -52,6 +52,11 @@
 #include <HdfEosDef.h>
 #endif
 
+#ifdef BuildGDAL
+#include <ogr_api.h>
+#include <ogr_srs_api.h>
+#endif
+
 #include "defs.h"
 #include "NclMultiDValData.h"
 #include "NclFile.h"
@@ -68,6 +73,8 @@
 #include "VarSupport.h"
 #include "ApiRecords.h"
 #include "NclAtt.h"
+#include "NclGRIB.h"
+#include "NclGRIB2.h"
 
 #include <sys/stat.h>
 
@@ -3539,6 +3546,7 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 
 	char *the_path = NrmQuarkToString(path);
 	char *last_slash = NULL;
+	char *extname = NULL;
 	char buffer[NCL_MAX_STRING];
 	struct stat buf;
 
@@ -3557,7 +3565,34 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 		last_slash++;
 	}
 
-	*end_of_name = strrchr(last_slash,'.');
+	extname = strrchr(last_slash,'.');
+
+	if((NULL != extname) &&
+           (strcmp(extname, ".nc") ||
+	    strcmp(extname, ".cdf") ||
+	    strcmp(extname, ".nc3") ||
+	    strcmp(extname, ".nc4") ||
+	    strcmp(extname, ".netcdf") ||
+	    strcmp(extname, ".hdf") ||
+	    strcmp(extname, ".h4") ||
+	    strcmp(extname, ".hdf4") ||
+	    strcmp(extname, ".h5") ||
+	    strcmp(extname, ".hdf5") ||
+	    strcmp(extname, ".he") ||
+	    strcmp(extname, ".he2") ||
+	    strcmp(extname, ".he4") ||
+	    strcmp(extname, ".hdfeos") ||
+	    strcmp(extname, ".he5") ||
+	    strcmp(extname, ".hdfeos5") ||
+	    strcmp(extname, ".shp") ||
+	    strcmp(extname, ".grb") ||
+	    strcmp(extname, ".grb1") ||
+	    strcmp(extname, ".grb2") ||
+	    strcmp(extname, ".gr")))
+            extname = NULL;
+
+	*end_of_name = extname;
+
 	if (*is_http) {
 		if (*end_of_name == NULL) {
 			*end_of_name = &last_slash[strlen(last_slash)];
@@ -3637,11 +3672,10 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 
 	char *fext = NrmQuarkToString(pre_file_ext_q);
 
-#ifdef BuildHDF5
-        char *ext_list[] = {"h5"
-                          , "nc"
-#else
         char *ext_list[] = {"nc"
+                          , "gr"
+#ifdef BuildHDF5
+                          , "h5"
 #endif
 #ifdef BuildHDFEOS5
 			   , "he5"
@@ -3664,8 +3698,9 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 	for(n = 0; n < strlen(fext); ++n)
  		fext[n] = tolower(fext[n]);
 
-	if(0 == strncmp(fext, "gr", 2))
-		return file_ext_q;
+	if((0 == strncmp(fext, "gr", 2)) || (0 == strncmp(fext, "grb", 3)) ||
+           (0 == strncmp(fext, "grb1", 4)) || (0 == strncmp(fext, "grb2", 4)))
+		ori_file_ext_q = NrmStringToQuark("gr");
 #ifdef BuildGDAL
 	else if(0 == strncmp(fext, "shp", 3))
 	{
@@ -3682,11 +3717,11 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 					     + NCLadvancedFileStructure[0];
 	}
 #ifdef BuildHDF4
-	else if((0 == strcmp(fext, "hd")) || (0 == strcmp(fext, "h4")))
+	else if((0 == strcmp(fext, "hdf")) || (0 == strcmp(fext, "h4")) || (0 == strcmp(fext, "hd")))
 		ori_file_ext_q = NrmStringToQuark("hdf");
 #endif
 #ifdef BuildHDF5
-	else if(0 == strcmp(fext, "hdf5"))
+	else if(0 == strcmp(fext, "hdf5") || 0 == strcmp(fext, "h5"))
 	{
 		*use_advanced_file_structure = NCLadvancedFileStructure[_NclHDF5]
                                              + NCLadvancedFileStructure[_NclNewHDF5]
@@ -3699,7 +3734,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 		ori_file_ext_q = NrmStringToQuark("he2");
 #endif
 #ifdef BuildHDFEOS5
-	else if(0 == strcmp(fext, "hdfeos5"))
+	else if(0 == strcmp(fext, "hdfeos5") || (0 == strcmp(fext, "he5")))
 	{
 		ori_file_ext_q = NrmStringToQuark("he5");
 		*use_advanced_file_structure = NCLadvancedFileStructure[_NclHDFEOS5]
@@ -3886,6 +3921,59 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 				found = 0;
 		}
 #endif
+#ifdef BuildGDAL
+		else if(NrmStringToQuark("shp") == cur_ext_q)
+        	{
+                	found = 0;
+
+        		OGRDataSourceH dataSource = OGROpen(filename, 0, NULL);
+        		if(NULL != dataSource)
+			{
+        			file_ext_q = cur_ext_q;
+        			found = 1;
+				OGR_DS_Destroy(dataSource);
+				break;
+        		}
+        	}
+#endif
+		else if(NrmStringToQuark("gr") == cur_ext_q)
+		{
+			g2int   lgrib;
+			size_t  lskip = 0;
+			size_t  seek = 0;
+
+			FILE *fd = fopen(filename, "r");
+
+			_g2_seekgb(fd, seek, (size_t)32 * GBUFSZ_T, &lskip, &lgrib);
+			if (lgrib == 0)
+				break;
+
+			found = 0;
+
+			if(lgrib)
+			{
+        			file_ext_q = cur_ext_q;
+        			found = 1;
+				break;
+			}
+
+			{
+				off_t offset = 0;
+				off_t nextoff = 0;
+				unsigned int size = 0;
+				int version;
+				int fid = open(filename, O_RDONLY);
+				int ret = GetNextGribOffset(fid,&offset,&size,offset,&nextoff,&version);
+                        	if((ret != GRIBEOF) && (ret != GRIBERROR))
+                        	{
+                                	file_ext_q = cur_ext_q;
+                                	found = 1;
+                               		break;
+                        	}
+			}
+		}
+#if 0
+		/*We do not need to say anything, but let it return -1. Wei 09/21/2014*/
 		else
 		{
 			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
@@ -3893,6 +3981,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 				 	NrmQuarkToString(cur_ext_q),
 					"But NCL will try its best to figure out the file format."));
 		}
+#endif
 	}
 
 	return file_ext_q;

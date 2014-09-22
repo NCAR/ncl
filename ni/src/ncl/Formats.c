@@ -10,6 +10,7 @@
 #include "defs.h"
 #include "NclFile.h"
 #include "NclFileInterfaces.h"
+#include "NclGRIB2.h"
 #include <ctype.h>
 #include <unistd.h>
 
@@ -157,7 +158,6 @@ int _NclGribVersion
     NclQuark path;
 #endif
 {
-# define GBUFSZ_T 1024
     unsigned char buf[4 * GBUFSZ_T];
     int len,
         version = -1;

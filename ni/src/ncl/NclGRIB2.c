@@ -27,7 +27,6 @@
 #include "NclGRIB.h"
 #include "NclFile.h"
 
-# include <grib2.h>
 # include "NclGRIB2.h"
 
 static void Grib2FreeCodeTableRec(
@@ -9269,7 +9268,6 @@ static void *Grib2OpenFile
     int wr_status;
 # endif /* NhlNeedProto */
 {
-# define GBUFSZ_T   1024
     FILE    *fd;
     int err,
         i,

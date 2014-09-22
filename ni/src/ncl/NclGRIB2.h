@@ -1,3 +1,4 @@
+#include <grib2.h>
 #include "NclMultiDValData.h"
 #include "NclOneDValCoordData.h"
 
@@ -5,6 +6,8 @@
 # define GRIB2EOF    0
 # define GRIB2ERROR -1
 # define GRIB2OK     1
+
+#define        GBUFSZ_T        1024
 
 typedef struct _git2{
 	short year;
@@ -827,3 +830,4 @@ typedef struct codeTable {
 # define    G2_DEFAULT_MISSING_INT \
         ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval
 
+extern void _g2_seekgb(FILE *lugb, size_t iseek, size_t mseek, size_t *lskip, g2int *lgrib);
