@@ -2179,7 +2179,7 @@ static NhlErrorTypes PolyDraw
 (
 	NhlLayer layer,
 	NhlString entry_name
-	)
+)
 #else
 (l,entry_name)
         NhlLayer l;
@@ -3028,9 +3028,9 @@ NhlErrorTypes NhlAddPrimitive
 	int transform_id, 
 	int primitive_id, 
 	int before_id
-	)
+)
 #else
-(transform_id, int primitive_id, int before_id)
+(transform_id, primitive_id, before_id)
         int transform_id;
 	int primitive_id;
 	int before_id;
@@ -3155,7 +3155,7 @@ void _NHLCALLF(nhlpfaddprimitive,NHLPFADDPRIMITIVE)
 	int	*ierr
 )
 #else
-(itid,ipid,ibid,ierr
+(itid,ipid,ibid,ierr)
 	int	*itid;
 	int	*ipid;
 	int	*ibid;
@@ -3175,7 +3175,7 @@ NhlErrorTypes NhlRemovePrimitive
 	int primitive_id
 )
 #else
-(transform_id, int primitive_id)
+(transform_id, primitive_id)
         int transform_id;
 	int primitive_id;
 #endif
@@ -3260,7 +3260,7 @@ void _NHLCALLF(nhlpfremoveprimitive,NHLPFREMOVEPRIMITIVE)
 	int	*ierr
 )
 #else
-(itid,ipid,ibid,ierr
+(itid,ipid,ibid,ierr)
 	int	*itid;
 	int	*ipid;
 	int	*ibid;
