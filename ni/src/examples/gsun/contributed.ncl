@@ -9319,11 +9319,17 @@ begin
       print("omega_ccm_driver: got      ranku="+ranku+"  and rankps="+rankps)
       exit
   end if
-
-  ntim   = dimu(0)
-  klev   = dimu(1)
-  nlat   = dimu(2)
-  mlon   = dimu(3)
+                          ; only klev is used below: ntim, nlat, mlon  are FYI only
+  if (ranku.eq.3) then
+      klev   = dimu(0)
+      nlat   = dimu(1)
+      mlon   = dimu(2)
+  else
+      ntim   = dimu(0)
+      klev   = dimu(1)
+      nlat   = dimu(2)
+      mlon   = dimu(3)
+  end if
 
   omega = u                                 ; create space
   omega@long_name = "Vertical pressure velocity"
