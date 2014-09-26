@@ -3552,6 +3552,12 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 
 	int i;
 
+        char *ext_list[] = {".nc", ".cdf", ".nc3", ".nc4", ".netcdf", ".hdf", ".h4", ".hdf4", ".h5", ".hdf5",
+			    ".he", ".he2", ".he4", ".hdfeos", ".he5", ".hdfeos5", ".shp", ".grb", ".grb1", ".grb2", ".gr" };
+
+	int n = -1;
+	int sizeofextlist = sizeof(ext_list) / sizeof(ext_list[0]);
+
 	if(strncmp(the_path,"http://",7))
 		*is_http = False;
 	else
@@ -3566,32 +3572,19 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 	}
 
 	extname = strrchr(last_slash,'.');
+        *end_of_name = NULL;
 
-	if((NULL != extname) &&
-           (strcmp(extname, ".nc") ||
-	    strcmp(extname, ".cdf") ||
-	    strcmp(extname, ".nc3") ||
-	    strcmp(extname, ".nc4") ||
-	    strcmp(extname, ".netcdf") ||
-	    strcmp(extname, ".hdf") ||
-	    strcmp(extname, ".h4") ||
-	    strcmp(extname, ".hdf4") ||
-	    strcmp(extname, ".h5") ||
-	    strcmp(extname, ".hdf5") ||
-	    strcmp(extname, ".he") ||
-	    strcmp(extname, ".he2") ||
-	    strcmp(extname, ".he4") ||
-	    strcmp(extname, ".hdfeos") ||
-	    strcmp(extname, ".he5") ||
-	    strcmp(extname, ".hdfeos5") ||
-	    strcmp(extname, ".shp") ||
-	    strcmp(extname, ".grb") ||
-	    strcmp(extname, ".grb1") ||
-	    strcmp(extname, ".grb2") ||
-	    strcmp(extname, ".gr")))
-            extname = NULL;
-
-	*end_of_name = extname;
+	if(NULL != extname)
+        {
+            for(n = 0; n < sizeofextlist; ++n)
+            {
+                if(0 == strcmp(extname, ext_list[n]))
+                {
+                    *end_of_name = extname;
+                    break;
+                }
+	    }
+        }
 
 	if (*is_http) {
 		if (*end_of_name == NULL) {
