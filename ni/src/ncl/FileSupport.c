@@ -3547,12 +3547,14 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 	char *the_path = NrmQuarkToString(path);
 	char *last_slash = NULL;
 	char *extname = NULL;
+	NclQuark lcq;
+	NclQuark lcn;
 	char buffer[NCL_MAX_STRING];
 	struct stat buf;
 
 	int i;
 
-        char *ext_list[] = {".nc", ".cdf", ".nc3", ".nc4", ".netcdf", ".hdf", ".h4", ".hdf4", ".h5", ".hdf5",
+        char *ext_list[] = {".nc", ".cdf", ".nc3", ".nc4", ".netcdf", ".hdf", ".h4", ".hdf4", ".h5", ".hdf5", ".grib1", ".grib2",
 			    ".he", ".he2", ".he4", ".hdfeos", ".he5", ".hdfeos5", ".shp", ".grb", ".grb1", ".grb2", ".gr" };
 
 	int n = -1;
@@ -3576,9 +3578,11 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 
 	if(NULL != extname)
         {
+            lcn = NrmStringToQuark(extname);
             for(n = 0; n < sizeofextlist; ++n)
             {
-                if(0 == strcmp(extname, ext_list[n]))
+                lcq = _NclGetLower(NrmStringToQuark(ext_list[n]));
+                if(lcn == lcq)
                 {
                     *end_of_name = extname;
                     break;
