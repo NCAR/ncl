@@ -161,9 +161,7 @@ int _NclGribVersion
     unsigned char buf[4 * GBUFSZ_T];
     int len,
         version = -1;
-
-    int i,
-        j;
+    int j;
 
     static void *vbuf;
     FILE    *fd;
@@ -176,30 +174,21 @@ int _NclGribVersion
      * Read file, look for sequence 'G' 'R' 'I' 'B' ; version will follow
      */
     (void) fseek(fd, 0L, SEEK_SET);
-    i = 0;
-    while (i < 100) {
-        len = fread((void *) buf, 1, 4 * GBUFSZ_T, fd);
-        if (len > 0) {
+    while ((len = fread((void *) buf, 1, 4 * GBUFSZ_T, fd)) > 0) {
             for (j = 0; j < len - 8; j++) {
-                /* look for "GRIB" indicator */
-                if (buf[j] != 'G') {
-                    continue;
-                } else {
-                    if ((buf[j + 1] == 'R' && buf[j + 2] == 'I' && buf[j + 3] == 'B')) {
-                        version = buf[j + 7];
-			/* we have the version; return immediately */
-			fclose(fd);
-			NclFree(vbuf);
-			return version;
-                    }
-                }
+		    /* look for "GRIB" indicator */
+		    if (buf[j] != 'G') {
+			    continue;
+		    } else {
+			    if ((buf[j + 1] == 'R' && buf[j + 2] == 'I' && buf[j + 3] == 'B')) {
+				    version = buf[j + 7];
+				    /* we have the version; return immediately */
+				    fclose(fd);
+				    NclFree(vbuf);
+				    return version;
+			    }
+		    }
             }
-            i++;
-        }
-	else {
-	    /* end of file reached */
-	    break;		
-	}
     }
 
     if (fd) {

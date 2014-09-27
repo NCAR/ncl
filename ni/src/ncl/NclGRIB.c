@@ -5024,11 +5024,13 @@ int *version;
 	off = startoff;
 	while(1) {
 		tries++;
+		/*
 		if (tries > 100) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"100 blocks read without finding start of GRIB record -- is this a GRIB file?");
 			*totalsize = 0;
 			return(GRIBEOF);
-		}	 
+		}	
+		*/
 		/* jump into GRIB file, read vbuflen bytes at a time */
 		lseek(gribfile,off,SEEK_SET);
 		ret1 = read(gribfile,(void*)vbuf,vbuflen);
