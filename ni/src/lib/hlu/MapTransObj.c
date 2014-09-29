@@ -2503,7 +2503,7 @@ int upordown;
 	
 	if (! mpl->mptrans.great_circle_lines_on && ! mpl->trobj.line_interpolation_on) {
 		c_mapitd(y,x,2);
-		x_last = x;
+		x_last = fmod(x + 180, 360) - 180;
 		y_last = y;
 		xw_last = xw;
 		yw_last = yw;
@@ -2524,7 +2524,7 @@ int upordown;
 		for (i = 0; i < npoints; i++)
 			c_mapitd(ybuf[i],xbuf[i],1);
 		c_mapitd(y,x,2);
-		x_last = x;
+		x_last = fmod(x + 180, 360) - 180;
 		y_last = y;
 		xw_last = xw;
 		yw_last = yw;
@@ -2539,7 +2539,7 @@ int upordown;
 		c_mapitd(yc,xc,1);
 	}
 	c_mapitd(y,x,2);
-	x_last = x;
+	x_last = fmod(x + 180, 360) - 180;
 	y_last = y;
 	xw_last = xw;
 	yw_last = yw;
