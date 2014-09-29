@@ -3578,7 +3578,7 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 
 	if(NULL != extname)
         {
-            lcn = NrmStringToQuark(extname);
+            lcn = _NclGetLower(NrmStringToQuark(extname));
             for(n = 0; n < sizeofextlist; ++n)
             {
                 lcq = _NclGetLower(NrmStringToQuark(ext_list[n]));
