@@ -19,6 +19,7 @@ DATA = 941110_P.cdf 941110_UV.cdf 95031800_sao.cdf 95031801_sao.cdf \
 	meccatemp.cdf sst30e_netcdf.nc hswm_d000000p000.g2.nc seam.nc pop.nc \
 	sstdata_netcdf.nc traj_data.nc trinidad.nc meteo_data.nc scatter1.nc \
 	vinth2p.nc chi200_ud_smooth.nc ice5g_21k_1deg.nc \
+	nc4uvt.nc \
 	sstanom.robinsonproj.nc hgt.nc panel2.nc uv300.nc
 
 InstallTarget($(DATA),$(INSTALL_LIB),$(DATAROOT)/cdf)
