@@ -956,6 +956,8 @@ void
 #endif
 );
 
+extern NhlErrorTypes _NclIGetFileVarChunkDimsizes(void);
+
 extern NhlErrorTypes _NclIFileVarDimsizes(
 #if     NhlNeedProto
 void
@@ -2326,6 +2328,13 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
 	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
 	NclRegisterFunc(_NclIGetFileVarDims,args,"getfilevardims",nargs);
+
+	nargs = 0;
+	args = NewArgs(2);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,"file",0,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
+	NclRegisterFunc(_NclIGetFileVarChunkDimsizes,args,"getfilevarchunkdimsizes",nargs);
 
 	nargs = 0;
 	args = NewArgs(2);

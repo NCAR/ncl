@@ -3392,6 +3392,36 @@ void _NclExit(int status) {
 	exit(status);
 }
 
+extern long _NclGetFileVarChunkInfo(NclFile thefile, NclQuark file_var_name, long *chunkdimsizes)
+{
+	int j;
+	long ncds = 0;
+
+	chunkdimsizes[0] = -4294967296;
+
+	if(thefile != NULL)
+	{
+#ifdef USE_NETCDF4_FEATURES
+		if(thefile->file.advanced_file_structure)
+		{
+			NclAdvancedFile theadvancedfile = (NclAdvancedFile) thefile;
+			NclFileVarNode *varnode = _getVarNodeFromNclFileGrpNode(theadvancedfile->advancedfile.grpnode, file_var_name);
+
+			if(NULL != varnode->chunk_dim_rec)
+			{
+				ncds = varnode->chunk_dim_rec->n_dims;
+				for(j = 0 ; j < varnode->chunk_dim_rec->n_dims ; ++j)
+				{
+					chunkdimsizes[j] = varnode->chunk_dim_rec->dim_node[j].size;
+				}
+			}
+		}
+#endif
+	}
+
+	return ncds;
+}
+
 
 #ifdef __cplusplus
 }

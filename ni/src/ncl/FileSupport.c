@@ -4227,9 +4227,11 @@ ng_size_t *_NclFileReadChunkSizes(NclFile thefile, int *nchunks)
 
 	char *class_name;
 
+	*nchunks = 0;
+
 	if(thefile == NULL)
 	{
-		return(NULL);
+		return chunksize;
 	}
 
 	class_name = thefile->obj.class_ptr->obj_class.class_name;
@@ -4251,20 +4253,10 @@ ng_size_t *_NclFileReadChunkSizes(NclFile thefile, int *nchunks)
 			}
 			for(n = 0; n < chunkdimrec->n_dims; n++)
 				chunksize[n] = chunkdimrec->dim_node[n].size;
-
-			return chunksize;
-		}
-		else
-		{
-			*nchunks = 0;
-			return NULL;
 		}
 	}
 
-	*nchunks = 0;
-	NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-		"_NclFileReadChunkSizes: Unknown Class <%s>\n", class_name));
-	return (NULL);
+	return chunksize;
 }
 
 int _NclFileReadCompressionLevel(NclFile thefile)

@@ -30973,6 +30973,73 @@ NhlErrorTypes _Nclget_cpu_time(void)
         ));
 
 }
+
+NhlErrorTypes _NclIGetFileVarChunkDimsizes(void)
+{
+	NclQuark *name;
+	NclQuark fname;
+	NclScalar name_missing;
+	int name_has_missing;
+	ng_size_t nchunkdims = 1;
+	NclStackEntry val;
+	NclVar tmp_var;
+	NclMultiDValData tmp_md = NULL;
+	NclFile thefile = NULL;
+	long chunkdim_sizes[NCL_MAX_DIMENSIONS];
+	int i;
+
+	chunkdim_sizes[0] = -4294967296;
+
+        val = _NclGetArg(0,2,DONT_CARE);
+        switch(val.kind) {
+	case NclStk_VAR:
+		tmp_var = val.u.data_var;
+		if(tmp_var->var.var_quark > 0) {
+			fname = tmp_var->var.var_quark;
+		} else {
+			fname = -1;
+		}
+		break;
+	case NclStk_VAL:
+	default:
+		return(NclReturnValue(&chunkdim_sizes[0], 1, &nchunkdims,
+			&((NclTypeClass)nclTypelongClass)->type_class.default_mis, NCL_long, 1));
+	}
+
+        name = (NclQuark*)NclGetArgValue(
+                        1,
+                        2,
+                        NULL,
+                        NULL,
+                        &name_missing,
+                        &name_has_missing,
+                        NULL,
+                        0);
+
+	if(name_has_missing) {
+		if(*name == name_missing.stringval) {
+		        return(NclReturnValue(
+               			&chunkdim_sizes[0],
+                		1,
+                		&nchunkdims,
+                		&name_missing,
+                		NCL_long,
+                		1
+        		));
+		}
+	}
+
+	tmp_md = _NclVarValueRead(tmp_var,NULL,NULL);
+	if(tmp_md != NULL)
+	{
+		thefile = (NclFile)_NclGetObj(*(obj*)tmp_md->multidval.val);
+		if(thefile != NULL )
+			nchunkdims = _NclGetFileVarChunkInfo(thefile, *name, chunkdim_sizes);
+	}
+
+	return(NclReturnValue(chunkdim_sizes, 1, &nchunkdims, NULL, NCL_long, 1));
+}
+
 #ifdef __cplusplus
 }
 #endif
