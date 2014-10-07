@@ -1977,7 +1977,16 @@ NclQuark path;
                     if(NCL_string == baseNclType)
                         tmp_value = (void*)NclCalloc(HE5_MAX_STRING_LENGTH, 1);
                     else
-                        tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(baseNclType));
+                    {
+                        if(0 < att_size)
+                            tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(baseNclType));
+                        else
+                        {
+                            fprintf(stderr, "File: %s, line: %d\n", __FILE__, __LINE__);
+                            fprintf(stderr, "attsize = %ld\n", att_size);
+                            tmp_value = NULL;
+                        }
+                    }
                     status = HE5_EHreadglbattr(HE5_GDfid,NrmQuarkToString(att_hdf_names[k]),tmp_value);
                     if(status == 0)
                     {
@@ -2002,9 +2011,6 @@ NclQuark path;
                             add_value = (void *)NclMalloc(sizeof(NclQuark));
                             *(NclQuark *)add_value = NrmStringToQuark("scale_factor");
 
-                            att_size = strlen("scale_factor") - 1;
-                            tmp_value = (void*)NclMalloc(att_size + 1);
-                            strcpy((char *)tmp_value, "scale_factor");
                             HDFEOS5IntFileAddAtt(the_file,gd_ncl_names[i],
                                     *(NclQuark *)add_value, tmp_value, (int) att_size,
                                     HDFEOS5MapTypeNumber(att_type));
@@ -2014,9 +2020,6 @@ NclQuark path;
                             void *add_value;
                             add_value = (void *)NclMalloc(sizeof(NclQuark));
                             *(NclQuark *)add_value = NrmStringToQuark("scale_factor");
-                            att_size = strlen("add_offset") - 1;
-                            tmp_value = (void*)NclMalloc(att_size + 1);
-                            strcpy((char *)tmp_value, "add_offset");
                             HDFEOS5IntFileAddAtt(the_file,gd_ncl_names[i],
                                     *(NclQuark *)add_value, tmp_value, (int) att_size,
                                     HDFEOS5MapTypeNumber(att_type));
