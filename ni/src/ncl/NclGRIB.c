@@ -55,6 +55,14 @@
 #include "ecmwf_201_gtb.h"
 #include "ecmwf_210_gtb.h"
 #include "ecmwf_211_gtb.h"
+#include "ecmwf_213_gtb.h"
+#include "ecmwf_214_gtb.h"
+#include "ecmwf_215_gtb.h"
+#include "ecmwf_217_gtb.h"
+#include "ecmwf_218_gtb.h"
+#include "ecmwf_219_gtb.h"
+#include "ecmwf_220_gtb.h"
+#include "ecmwf_221_gtb.h"
 #include "ecmwf_228_gtb.h"
 #include "ecmwf_230_gtb.h"
 #include "ecmwf_234_gtb.h"
@@ -1366,7 +1374,7 @@ GribFileRecord *therec;
 		if (step->time_range_indicator > 50) { /* climatological and other statistically processed data - not including simple averages and accumulations, etc. */
 			int tr_ix = -1;
 			int num, test_num, need_array = 0;
-			int j, num_found;
+			int j;
 			if (grib_rec->center_ix == 32 && grib_rec->ptable_version == 200) {
 				for (i = 0; i < sizeof(jra55_local_time_range_indicator) / sizeof(int); i++) {
 					if (jra55_local_time_range_indicator[i] == step->time_range_indicator) {
@@ -2128,7 +2136,6 @@ int GdsCompare(unsigned char *gds1,int gds_size1,unsigned char *gds2,int gds_siz
 		return(1);
 	}
 	if (gds1[3] > 0 || gds2[3] > 0) {
-		int top1,top2;
 		int size;
 		if ((gds_size1 - (int)gds1[3] * 4  != gds_size2 - (int)gds2[3] * 4))
 			return 0;
@@ -3990,7 +3997,7 @@ int** valid_lv_vals1;
 #endif
 {
 	int i;
-	GribRecordInqRecList *strt,*fnsh,*istep,*last;
+	GribRecordInqRecList *strt,*fnsh,*istep;
 	int n_its = 0;
 	ITLIST header;
 	ITLIST *the_end;
@@ -4007,7 +4014,6 @@ int** valid_lv_vals1;
 	
 	strt = istep = step;
 
-	last = istep;
 	current_it = strt->rec_inq->initial_time;
 	while(istep->next != NULL) {
 		if((istep->next->rec_inq->initial_time.year == current_it.year)
@@ -4017,7 +4023,6 @@ int** valid_lv_vals1;
 			continue;
 		}
 		fnsh = istep;
-		last = istep;
 		istep = istep->next;
 		fnsh->next = NULL;
 		the_end->next = (ITLIST*)NclMalloc((unsigned)sizeof(ITLIST));
@@ -7131,6 +7136,38 @@ int wr_status;
 							case 211:
 								ptable = &ecmwf_211_params[0];
 								ptable_count = sizeof(ecmwf_211_params)/sizeof(TBLE2);
+								break;
+							case 213:
+								ptable = &ecmwf_213_params[0];
+								ptable_count = sizeof(ecmwf_213_params)/sizeof(TBLE2);
+								break;
+							case 214:
+								ptable = &ecmwf_214_params[0];
+								ptable_count = sizeof(ecmwf_214_params)/sizeof(TBLE2);
+								break;
+							case 215:
+								ptable = &ecmwf_215_params[0];
+								ptable_count = sizeof(ecmwf_215_params)/sizeof(TBLE2);
+								break;
+							case 217:
+								ptable = &ecmwf_217_params[0];
+								ptable_count = sizeof(ecmwf_217_params)/sizeof(TBLE2);
+								break;
+							case 218:
+								ptable = &ecmwf_218_params[0];
+								ptable_count = sizeof(ecmwf_218_params)/sizeof(TBLE2);
+								break;
+							case 219:
+								ptable = &ecmwf_219_params[0];
+								ptable_count = sizeof(ecmwf_219_params)/sizeof(TBLE2);
+								break;
+							case 220:
+								ptable = &ecmwf_220_params[0];
+								ptable_count = sizeof(ecmwf_220_params)/sizeof(TBLE2);
+								break;
+							case 221:
+								ptable = &ecmwf_221_params[0];
+								ptable_count = sizeof(ecmwf_221_params)/sizeof(TBLE2);
 								break;
 							case 228:
 								ptable = &ecmwf_228_params[0];

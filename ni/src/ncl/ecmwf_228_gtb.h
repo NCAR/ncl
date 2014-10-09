@@ -1,11 +1,7 @@
 /*
- *
- * European Centre for Medium-Range Weather Forecasts: Reading
- * Standard 2
- *
- * Center: 98
- * Subcenter: 0
- * Parameter table version: 228
+ * Center: 
+ * Subcenter: 
+ * Parameter table version: 
  */
 
 TBLE2 ecmwf_228_params[] = {
@@ -28,16 +24,71 @@ TBLE2 ecmwf_228_params[] = {
 {17, "Duct base height", "m", "DCTB"},
 {18, "Trapping layer base height", "m", "TPLB"},
 {19, "Trapping layer top height", "m", "TPLT"},
+{21, "Total sky direct solar radiation at surface", "J m**-2", "FDIR"},
+{22, "Clear-sky direct solar radiation at surface", "J m**-2", "CDIR"},
+{23, "Cloud base height", "m", "CBH"},
+{24, "Zero degree level", "m", "DEG0L"},
+{25, "Horizontal visibility", "m", "HVIS"},
+{26, "Maximum temperature at 2 metres in the last 3 hours", "K", "MX2T3"},
+{27, "Minimum temperature at 2 metres in the last 3 hours", "K", "MN2T3"},
+{28, "10 metre wind gust in the last 3 hours", "m s**-1", "10FG3"},
+{29, "Instantaneous 10 metre wind gust", "m s**-1", "I10FG"},
 {39, "Soil Moisture", "kg m**-3", "SM"},
-{131, "Neutral wind at 10 m x-component", "m s**-1", "U10N"},
-{132, "Neutral wind at 10 m y-component", "m s**-1", "V10N"},
+{40, "Soil wetness index in layer 1", "dimensionless", "SWI1"},
+{41, "Soil wetness index in layer 2", "dimensionless", "SWI2"},
+{42, "Soil wetness index in layer 3", "dimensionless", "SWI3"},
+{43, "Soil wetness index in layer 4", "dimensionless", "SWI4"},
+{80, "Accumulated Carbon Dioxide Net Ecosystem Exchange", "kg m**-2", "ACO2NEE"},
+{81, "Accumulated Carbon Dioxide Gross Primary Production", "kg m**-2", "ACO2GPP"},
+{82, "Accumulated Carbon Dioxide Ecosystem Respiration", "kg m**-2", "ACO2REC"},
+{83, "Flux of Carbon Dioxide Net Ecosystem Exchange", "kg m**-2 s**-1", "FCO2NEE"},
+{84, "Flux of Carbon Dioxide Gross Primary Production", "kg m**-2 s**-1", "FCO2GPP"},
+{85, "Flux of Carbon Dioxide Ecosystem Respiration", "kg m**-2 s**-1", "FCO2REC"},
+{88, "Total column supercooled liquid water", "kg m**-2", "TCSLW"},
+{89, "Total column rain water", "kg m**-2", "TCRW"},
+{90, "Total column snow water", "kg m**-2", "TCSW"},
+{91, "Canopy cover fraction", "(0 - 1)", "CCF"},
+{92, "Soil texture fraction", "(0 - 1)", "STF"},
+{93, "Volumetric soil moisture", "m**3 m**-3", "SWV"},
+{94, "Ice temperature", "K", "IST"},
+{129, "Surface solar radiation downward clear-sky", "J m**-2", "SSRDC"},
+{130, "Surface thermal radiation downward clear-sky", "J m**-2", "STRDC"},
+{131, "Neutral wind at 10 m u-component", "m s**-1", "U10N"},
+{132, "Neutral wind at 10 m v-component", "m s**-1", "V10N"},
 {134, "V-tendency from non-orographic wave drag", "m s**-2", "VTNOWD"},
 {136, "U-tendency from non-orographic wave drag", "m s**-2", "UTNOWD"},
 {139, "Soil Temperature", "K", "ST"},
-{141, "Snow Depth water equivalent", "m", "SD"},
+{141, "Snow depth water equivalent", "kg m**-2", "SD"},
 {144, "Snow Fall water equivalent", "kg m**-2", "SF"},
 {164, "Total Cloud Cover", "%", "TCC"},
 {170, "Field capacity", "kg m**-3", "CAP"},
 {171, "Wilting point", "kg m**-3", "WILT"},
-{228, "Total Precipitation", "kg m**-2", "TP"}
+{217, "Instantaneous large-scale surface precipitation fraction", "(0 - 1)", "ILSPF"},
+{218, "Convective rain rate", "kg m**-2 s**-1", "CRR"},
+{219, "Large scale rain rate", "kg m**-2 s**-1", "LSRR"},
+{220, "Convective snowfall rate water equivalent", "kg m**-2 s**-1", "CSFR"},
+{221, "Large scale snowfall rate water equivalent", "kg m**-2 s**-1", "LSSFR"},
+{222, "Maximum total precipitation rate in the last 3 hours", "kg m**-2 s**-1", "MXTPR3"},
+{223, "Minimum total precipitation rate in the last 3 hours", "kg m**-2 s**-1", "MNTPR3"},
+{224, "Maximum total precipitation rate in the last 6 hours", "kg m**-2 s**-1", "MXTPR6"},
+{225, "Minimum total precipitation rate in the last 6 hours", "kg m**-2 s**-1", "MNTPR6"},
+{226, "Maximum total precipitation rate since previous post-processing", "kg m**-2 s**-1", "MXTPR"},
+{227, "Minimum total precipitation rate since previous post-processing", "kg m**-2 s**-1", "MNTPR"},
+{228, "Total Precipitation", "kg m**-2", "TP"},
+{229, "SMOS first Brightness Temperature Bias Correction parameter", "K", "SMOS_TB_CDFA"},
+{230, "SMOS second Brightness Temperature Bias Correction parameter", "dimensionless", "SMOS_TB_CDFB"},
+{242, "Surface solar radiation diffuse total sky", "J m**-2", "FDIF"},
+{243, "Surface solar radiation diffuse clear-sky", "J m**-2", "CDIF"},
+{244, "Surface albedo of direct radiation", "(0 - 1)", "ALDR"},
+{245, "Surface albedo of diffuse radiation", "(0 - 1)", "ALDF"},
+{246, "100 metre U wind component", "m s**-1", "100U"},
+{247, "100 metre V wind component", "m s**-1", "100V"},
+{249, "100 metre wind speed", "m s**-1", "100SI"},
+{250, "Irrigation fraction", "Proportion", "IRRFR"},
+{251, "Potential evaporation", "m", "PEV"},
+{252, "Irrigation", "m", "IRR"},
+{253, "ASCAT first soil moisture CDF matching parameter", "m**3 m**-3", "ASCAT_SM_CDFA"},
+{254, "ASCAT second soil moisture CDF matching parameter", "dimensionless", "ASCAT_SM_CDFB"},
+{121, "K index", "K", "KX"},
+{123, "Total totals index", "K", "TOTALX"}
 };
