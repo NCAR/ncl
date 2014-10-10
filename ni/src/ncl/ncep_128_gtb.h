@@ -154,7 +154,7 @@ TBLE2 ncep_128_params[] = {
 {147, "S12 - 1,2 component of ice stress tensor", "non-dim", "S12"},
 {148, "S22 - 2,2 component of ice stress tensor", "non-dim", "S22"},
 {149, "T1 - First invariant of stress tensor", "non-dim", "INV1"},
-{150, "T2 - First invariant of stress tensor", "non-dim", "INV2"},
+{150, "T2 - Second invariant of stress tensor", "non-dim", "INV2"},
 {155, "Wave roughness", "non-dim", "WVRGH"},
 {156, "Wave stresses", "non-dim", "WVSTRS"},
 {157, "Whitecap coverage", "non-dim", "WHITE"},
@@ -186,5 +186,8 @@ TBLE2 ncep_128_params[] = {
 {192, "Layer Thickness", "m", "LAYTH"},
 {193, "Surface temperature trend", "deg/day", "SSTT"},
 {194, "Surface salinity trend", "psu/day", "SSST"},
+{195, "Ocean Vertical Heat Diffusivity", "m^2s^-1", "OVHD"},
+{196, "Ocean Vertical Salt Diffusivity", "m^2s^-1", "OVSD"},
+{197, "Ocean Vertical Momentum Diffusivity", "m^2s^-1", "OVMD"},
 {254, "Relative error variance", "non-dim", "REV"}
 };
