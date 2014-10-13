@@ -67,6 +67,10 @@ static ng_usize_t ChunkSizeHint;
 static NrmQuark Qmissing_val;
 static NrmQuark Qfill_val;
 
+/*
+static int machine_endianness = NC_ENDIAN_NATIVE;
+*/
+
 #define NC_NUM_OPTIONS  (1 + Ncl_RECORD_MARKER_SIZE)
 
 static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
@@ -325,6 +329,19 @@ static int NC4InitializeOptions(NclFileGrpNode *grpnode)
     *(float *)options[Ncl_CACHE_PREEMPTION].values = 0.25;
 
     grpnode->options = options;
+
+  /*Check Machine Endianness*/
+#if 0
+    {
+        int num = 1;
+
+        if(*(char *)&num == 1)
+            machine_endianness = NC_ENDIAN_LITTLE:
+        else
+            machine_endianness = NC_ENDIAN_BIG:
+    }
+#endif
+
     return 0;
 }
 
@@ -3479,7 +3496,7 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
     ng_size_t n_elem = 1;
     int in_whole = 0;
     int no_stride = 1;
-    int i,j,n;
+    int i,n;
     int ret;
     int fill_mode;
 
@@ -3604,7 +3621,7 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
 
                 for(n = 0; n < n_elem; ++n)
                 {
-                    NclList vlist = (NclList)_NclGetObj(dlist[n]);
+                    vlist = (NclList)_NclGetObj(dlist[n]);
                     list_list = vlist->list.first;
                     listobj = (NclObj)_NclGetObj(list_list->obj_id);
                     listvar = (NclVar)_NclGetObj(listobj->obj.id);

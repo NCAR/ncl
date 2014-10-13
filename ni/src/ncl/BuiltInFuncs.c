@@ -21556,6 +21556,7 @@ NhlErrorTypes   _NclIFileIsPresent
     int ndims;
     ng_size_t dimsz[NCL_MAX_DIMENSIONS];
     int sz = 1;
+    int retcode = 0;
 
     logical *filemanuable;        /* file manuable? */
     int i = 0;
@@ -21578,7 +21579,7 @@ NhlErrorTypes   _NclIFileIsPresent
         sz *= dimsz[i];
 
     /* logical array to return */
-    filemanuable = (logical *) NclMalloc((unsigned int) sizeof(logical) * sz);
+    filemanuable = (logical *) NclCalloc(sz, (unsigned int) sizeof(logical));
     if (filemanuable == (logical *) NULL)
     {
         NhlPError(NhlFATAL, errno, "isfilepresent: memory allocation error");
@@ -21587,7 +21588,6 @@ NhlErrorTypes   _NclIFileIsPresent
 
     for(i = 0; i < sz; i++)
     {
-	filemanuable[i] = 0;
 	fpath = (char *) NrmQuarkToString(files[i]);
         if(0 == strncmp(fpath, "http", 4))
 	{
@@ -21597,7 +21597,15 @@ NhlErrorTypes   _NclIFileIsPresent
         }
         else
 	{
-            if(stat(_NGResolvePath(fpath),&st))
+            retcode = stat(_NGResolvePath(fpath),&st);
+	  /*
+	   *fprintf(stderr, "File: %s, line: %d\n", __FILE__, __LINE__);
+	   *fprintf(stderr, "File retcode: \t\t%d\n", retcode);
+	   *fprintf(stderr, "File Size: \t\t%d bytes\n", st.st_size);
+	   *fprintf(stderr, "Number of Links: \t%d\n", st.st_nlink);
+	   *fprintf(stderr, "File inode: \t\t%d\n", st.st_ino);
+	   */
+            if(retcode)
             {
                 char tmp_path[NCL_MAX_STRING];
                 char *ext_name;
@@ -21620,11 +21628,34 @@ NhlErrorTypes   _NclIFileIsPresent
             }
             else
             {
-	        file = _NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,files[i],rw_v);
-	        if(NULL != file)
-                {
-                    filemanuable[i] = 1;     /* true */
-                    _NclDestroyObj((NclObj)file);
+	      /*
+	       *fprintf(stderr, "File: %s, line: %d\n", __FILE__, __LINE__);
+	       *fprintf(stderr, "File retcode: \t\t%d\n", retcode);
+	       *fprintf(stderr, "File Size: \t\t%d bytes\n", st.st_size);
+	       *fprintf(stderr, "Number of Links: \t%d\n", st.st_nlink);
+	       *fprintf(stderr, "File inode: \t\t%d\n", st.st_ino);
+	       *fprintf(stderr, "\nFile Permissions: \t");
+	       *fprintf(stderr,  (S_ISDIR(st.st_mode)) ? "d" : "-");
+	       *fprintf(stderr,  (st.st_mode & S_IRUSR) ? "r" : "-");
+	       *fprintf(stderr,  (st.st_mode & S_IWUSR) ? "w" : "-");
+	       *fprintf(stderr,  (st.st_mode & S_IXUSR) ? "x" : "-");
+	       *fprintf(stderr,  (st.st_mode & S_IRGRP) ? "r" : "-");
+	       *fprintf(stderr,  (st.st_mode & S_IWGRP) ? "w" : "-");
+	       *fprintf(stderr,  (st.st_mode & S_IXGRP) ? "x" : "-");
+	       *fprintf(stderr,  (st.st_mode & S_IROTH) ? "r" : "-");
+	       *fprintf(stderr,  (st.st_mode & S_IWOTH) ? "w" : "-");
+	       *fprintf(stderr,  (st.st_mode & S_IXOTH) ? "x" : "-");
+	       *fprintf(stderr, "\n");
+	       */
+
+		if((! S_ISDIR(st.st_mode)) && st.st_size)
+	        {
+	            file = _NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,files[i],rw_v);
+	            if(NULL != file)
+                    {
+                        filemanuable[i] = 1;     /* true */
+                        _NclDestroyObj((NclObj)file);
+                    }
                 }
             }
         }

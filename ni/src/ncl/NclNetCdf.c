@@ -704,7 +704,9 @@ int wr_status;
 			}
 		}
 
-		NhlPError(NhlFATAL,NhlEUNKNOWN,emsg,NrmQuarkToString(path));
+		/*
+		NhlPError(NhlWARNING,NhlEUNKNOWN,emsg,NrmQuarkToString(path));
+		*/
 		NclFree(tmp);
 		return(NULL);
 	}

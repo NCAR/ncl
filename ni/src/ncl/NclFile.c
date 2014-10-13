@@ -4187,7 +4187,9 @@ NclFile _NclFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 					 NrmStringToQuark(_NGResolvePath(NrmQuarkToString(the_real_path))),rw_status);	
 				if(NULL == file_out->file.private_rec)
 				{
+					/*
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not open (%s)",NrmQuarkToString(the_real_path));
+					*/
 					if(file_out_free) 
 						NclFree((void*)file_out);
 					return(NULL);
