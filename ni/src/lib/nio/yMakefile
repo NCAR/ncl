@@ -145,8 +145,9 @@ STATIC_HDRS	=	ApiRecords.h AttSupport.h DataSupport.h FileSupport.h  \
 			ecmwf_160_gtb.h ecmwf_162_gtb.h ecmwf_170_gtb.h ecmwf_171_gtb.h ecmwf_172_gtb.h \
 			ecmwf_173_gtb.h ecmwf_174_gtb.h ecmwf_175_gtb.h ecmwf_180_gtb.h ecmwf_190_gtb.h \
 			ecmwf_200_gtb.h ecmwf_201_gtb.h ecmwf_210_gtb.h ecmwf_211_gtb.h ecmwf_228_gtb.h \
-			ecmwf_230_gtb.h ecmwf_234_gtb.h fnmoc_gtb.h \
-			fsl0_gtb.h fsl1_gtb.h fsl2_gtb.h ncep_opn_gtb.h \
+			ecmwf_230_gtb.h ecmwf_234_gtb.h ecmwf_213_gtb.h ecmwf_214_gtb.h ecmwf_215_gtb.h \
+			ecmwf_217_gtb.h ecmwf_218_gtb.h ecmwf_219_gtb.h ecmwf_220_gtb.h ecmwf_221_gtb.h \
+			fnmoc_gtb.h fsl0_gtb.h fsl1_gtb.h fsl2_gtb.h ncep_opn_gtb.h \
 			ncep_reanal_gtb.h ncep_128_gtb.h ncep_129_gtb.h	 ncep_130_gtb.h \
 			ncep_131_gtb.h	ncep_133_gtb.h	ncep_140_gtb.h	ncep_141_gtb.h jma_3_gtb.h \
 			jra55_gtb.h mpi_128_gtb.h mpi_180_gtb.h mpi_199_gtb.h mpi_181_gtb.h \
@@ -198,7 +199,7 @@ GEN_SRCS	=	$(GEN_TYPE_SRCS)
 
 CSRCS		=	$(STATIC_SRCS) $(HDFEOS_SRCS) $(HDF4_SRCS) $(HDFEOS5_SRCS) $(HDF5_SRCS) $(GRIB2_SRCS) $(GDAL_SRCS)
 
-OPT_CSRCS	=	NclHDF.c NclHDFEOS.c NclHDFEOS5.c NclHDF5.c NclGRIB2.c NclOGR.c h5reader.c h5writer.c
+OPT_CSRCS	=	NclHDF.c NclHDFEOS.c NclHDFEOS5.c NclHDF5.c NclGRIB2.c NclOGR.c h5reader.c h5writer.c NclAdvancedOGR.c
 
 FSRCS		=	qu2reg3.f rowina3.f scm0.f ncepcode.f
 

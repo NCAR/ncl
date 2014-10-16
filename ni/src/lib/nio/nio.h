@@ -11,5 +11,11 @@
 #include "NclMdInc.h"
 #include "TypeSupport.h"
 
+#include "NclAdvancedFileStructure.h"
+#include "NclAdvancedFile.h"
+#include "NclAdvancedGroup.h"
+
+#include "ListSupport.h"
 
 extern void NioInitialize(void);
+

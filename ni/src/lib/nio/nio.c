@@ -10,7 +10,7 @@ void NioInitialize ( void )
 {
 
 	_NclInitTypeClasses();
-	_NclInitClass(nclFileClass);
+	_NclInitFileClasses();
 	_NclAddFileFormats();
 
 	return;
