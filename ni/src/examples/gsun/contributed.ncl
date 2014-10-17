@@ -12521,7 +12521,8 @@ begin
       ;statx(1) = stddev(x)             ; std. deviation
        moment   = dim_stat4( work ) 
        statx(0) = moment(0)             ; mean
-       statx(1) = moment(1)             ; std. deviation
+       statx(1) = sqrt(moment(1))       ; sample std. deviation
+                                        ; fixed 15 Oct 2014; had returned variance
        
        qsort( work )                    ; sort into ascending order
        statx(2) = work(0)               ; min ( work )
