@@ -1985,12 +1985,15 @@ GribFileRecord *therec;
 *  sub_center
 */
 		if (grib_rec->pds[25] != 0 && grib_rec->pds[25] != 255) {
+			int center = grib_rec->pds[4];
 			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
 			att_list_ptr->next = step->theatts;
 			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
 			att_list_ptr->att_inq->name = NrmStringToQuark("sub_center");
 			/* if we can find a name for the sub_center, use it -- otherwise just give the number */
-			if (grib_rec->pds[4] == 7) { 
+			tmp_string = NULL;
+			
+			if (center == 7 || center == 59 || center == 8 || center == 9) { 
 				for( i = 0; i < sizeof(sub_centers)/sizeof(GribTable);i++) {
 					if(sub_centers[i].index == (int)grib_rec->pds[25]) {
 						tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -2003,7 +2006,7 @@ GribFileRecord *therec;
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 				*tmp_string = NrmStringToQuark("Max Plank Institute for Meteorology");
 			}
-			else {
+			if (tmp_string == NULL) {
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 				sprintf(buffer,"%d",(int)grib_rec->pds[25]);
 				*tmp_string = NrmStringToQuark(buffer);

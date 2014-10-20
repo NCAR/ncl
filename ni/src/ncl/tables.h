@@ -249,7 +249,7 @@ GribTable sub_centers[] = {
         {13, "Federal Aviation Administration"},
         {14, "NWS Meteorological Development Laboratory (MDL)"},
         {15, "The North American Regional Reanalysis (NARR) Project"},
-	{16, "Space Weather Prediciont Center"},
+	{16, "Space Weather Predicion Center"},
 	{150, "ABRFC - Arkansas-Red River RFC, Tulsa OK"},
 	{151, "Alaska RFC, Anchorage, AK"}, 
 	{152, "CBRFC - Colorado Basin RFC, Salt Lake City, UT"},
