@@ -181,24 +181,16 @@ OGRwkbGeometryType type;
  * of the total number of line-segments and numbers of XY(Z) tuples.
  *
  */
-static void _countGeometry
-#if    NhlNeedProto
-(OGRGeometryH geom, ng_size_t *numSegments, ng_size_t *numPoints)
-#else
-(geom, numSegments, numPoints)
-OGRGeometryH geom;
-ng_size_t    *numSegments;
-ng_size_t    *numPoints;
-#endif
+static void _countGeometry(OGRGeometryH geom, ng_size_t *numSegments, ng_size_t *numPoints)
 {
     int geomCount = OGR_G_GetGeometryCount(geom);
+
     if (geomCount == 0) {
         /* presumed to be Point or LineString */
         (*numSegments)++;
         *numPoints += OGR_G_GetPointCount(geom);
     }
     else {
-
         OGRGeometryH subGeom;
         int i, numPts;  
         for (i=0; i<geomCount; i++) {
@@ -325,6 +317,14 @@ static int _AdvancedLoadGeometry(NclFileGrpNode *grpnode, NclList vlist)
     OGRGeometryH geom;
     int segmentNum = 0;
     int pointNum   = 0;
+    int geomRecord   = 0;
+
+    char buffer[16];
+
+    NclList glist = NULL;
+    NclMultiDValData g_md;
+    ng_size_t one = 1;
+    int *id = NULL;
 
   /*
    *fprintf(stderr, "\nEnter _AdvancedLoadGeometry, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -335,10 +335,27 @@ static int _AdvancedLoadGeometry(NclFileGrpNode *grpnode, NclList vlist)
 
     while(NULL != feature)
     {
+        id = (int *)NclMalloc(sizeof(int));
+        sprintf(buffer, "geo_%6.6d", geomRecord);
+        glist = (NclList)_NclListCreate(NULL, NULL, 0, 0, NCL_FIFO);
+        assert(glist);
+        _NclListSetType((NclObj)glist,NCL_FIFO);
+        glist->list.list_quark = NrmStringToQuark(buffer);
+        glist->list.list_type = NrmStringToQuark("FIFO");
+        glist->obj.obj_type = Ncl_List;
+        *id = glist->obj.id;
+        g_md = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,0,id,
+                                           NULL,1,&one,TEMPORARY,NULL);
+
+        _NclListAppend((NclObj)vlist, (NclObj)g_md);
+
         geom = OGR_F_GetGeometryRef(feature);
-        _AdvancedLoadFeatureGeometry(rec, geom, vlist, &segmentNum, &pointNum);
+        _AdvancedLoadFeatureGeometry(rec, geom, glist, &segmentNum, &pointNum);
         OGR_F_Destroy(feature);
         feature = OGR_L_GetNextFeature(rec->layer);
+	++geomRecord;
+	segmentNum = 0;
+	pointNum = 0;
     }
  
   /*
@@ -458,10 +475,12 @@ static void _setGroupDims(NclFileGrpNode *grpnode,
 static void _setGroupAtts(NclFileGrpNode *grpnode, OGRFeatureDefnH layerDefn,
                           int numGeometry,
                           int numSegments,
-                          int numPoints)
+                          int numPoints,
+                          int *geometryRecord)
 {
     int iv = 0;
     NclQuark qname = -1;
+    int *ipv = (int *)NclMalloc(numGeometry * sizeof(int));
 
     /* the layer name */
     qname =  NrmStringToQuark(OGR_FD_GetName(layerDefn));
@@ -488,6 +507,10 @@ static void _setGroupAtts(NclFileGrpNode *grpnode, OGRFeatureDefnH layerDefn,
     iv = numPoints;
     _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("numPnts"),
                    NCL_int, 1, (void *) &iv);
+
+    memcpy(ipv, geometryRecord, numGeometry*sizeof(int));
+    _addNclAttNode(&(grpnode->att_rec), NrmStringToQuark("geoRecord"),
+                   NCL_int, numGeometry, (void *) ipv);
 }
 
 /*
@@ -499,10 +522,7 @@ static void _setGroupAtts(NclFileGrpNode *grpnode, OGRFeatureDefnH layerDefn,
  *
  */
 static void _setGroupVars(NclFileGrpNode *grpnode,
-                          OGRFeatureDefnH layerDefn,
-                          int numGeometry,
-                          int numSegments,
-                          int numPoints)
+                          OGRFeatureDefnH layerDefn)
 {
     OGRFieldDefnH fldDef;
     int numVars;
@@ -555,9 +575,18 @@ static void *AdvancedOGROpenFile(void *therec, NclQuark path, int wr_status)
     OGRSpatialReferenceH sSrs;
     OGRwkbGeometryType geomType;
 
-    ng_size_t numGeometry = 0;
-    ng_size_t numSegments = 0;
-    ng_size_t numPoints = 0;
+    int numGeometry = 0;
+    int numSegments = 0;
+    int numPoints = 0;
+    int segmentsCounter = 0;
+    int geometryCounter = 1024;
+    int *geometryRecord = (int *)NclCalloc(geometryCounter, sizeof(int));
+    if(NULL == geometryRecord)
+    {
+	NhlPError(NhlFATAL, NhlEUNKNOWN,
+			    "Unable to allocate memeory for geometryRecord\n");
+    	return grpnode;
+    }
 
     rec = (AdvancedOGRRecord*)NclCalloc(1, sizeof(AdvancedOGRRecord));
     if(NULL == rec)
@@ -629,15 +658,32 @@ static void *AdvancedOGROpenFile(void *therec, NclQuark path, int wr_status)
     while(NULL != feature)
     {
         geom = OGR_F_GetGeometryRef(feature);
-        _countGeometry(geom, &numSegments, &numPoints);
+        _countGeometry(geom, &segmentsCounter, &numPoints);
         OGR_F_Destroy(feature);
+        geometryRecord[numGeometry] = segmentsCounter;
+
         ++numGeometry;
+        if(numGeometry > geometryCounter)
+	{
+            geometryCounter *= 2;
+            geometryRecord = (int *)NclRealloc(geometryRecord, geometryCounter*sizeof(ng_size_t));
+            if(NULL == geometryRecord)
+            {
+	        NhlPError(NhlFATAL, NhlEUNKNOWN,
+			           "Unable to reallocate memeory for geometryRecord\n");
+    	       return grpnode;
+            }
+        }
         feature = OGR_L_GetNextFeature(layer);
+        segmentsCounter = 0;
+        numSegments += segmentsCounter;
     }
 
     _setGroupDims(grpnode, numGeometry, numSegments, numPoints);
-    _setGroupAtts(grpnode, rec->layerDefn, numGeometry, numSegments, numPoints);
-    _setGroupVars(grpnode, rec->layerDefn, numGeometry, numSegments, numPoints);
+    _setGroupAtts(grpnode, rec->layerDefn, numGeometry, numSegments, numPoints, geometryRecord);
+    _setGroupVars(grpnode, rec->layerDefn);
+
+    NclFree(geometryRecord);
 
     return((void*)grpnode);
 }
