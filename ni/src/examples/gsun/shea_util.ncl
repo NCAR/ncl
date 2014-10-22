@@ -4625,3 +4625,54 @@ begin
     return(xStat)
 end
 
+;---------------------------------------------
+; 22 Oct 2014
+; in respose to an ncl-talk question:
+; Hopefully the following is helpful.  It returns both partial and 
+; part correlations, but if you want you can ask for only one of them 
+; to be returned using the optional argument "opt"
+;
+; e.g opt=True
+;     opt@partialcorrelation=True
+; Saji Hameed saji.nh@gmail.com
+;-------------------
+
+function mreg_part_corr(x1,x2,y,opt)
+local opt
+begin
+  x1x2 = escorc(x1,x2)
+  tol = sqrt(1-x1x2^2)
+
+  nx1 = dimsizes(x1)
+  X = new( (/3,nx1/), float)
+  X(0,:) = 1.0
+  X(1,:) = x1
+  X(2,:) = x2
+
+  beta = reg_multlin(y, X, False)
+  dreg = beta(1)
+  nreg = beta(2)
+
+  Xstd = dim_stddev(X)
+  Ystd = stddev(y)
+  XstdYstd = Xstd/Ystd
+  B = beta*XstdYstd
+  B(0) = 0.0
+  part_corr_x1 = B(1)*tol
+  part_corr_x2 = B(2)*tol
+  partial_corr_x1 = part_corr_x1/sqrt((1-(escorc(y,x2))^2))
+  partial_corr_x2 = part_corr_x2/sqrt((1-(escorc(y,x1))^2))
+  if opt .and. isatt(opt,"part_correlation")
+    if opt@part_correlation
+    return((/part_corr_x1, part_corr_x2/))
+    end if 
+end if
+  if opt .and. isatt(opt,"partal_correlation")
+    if opt@partial_correlation
+      return((/partial_corr_x1, partial_corr_x2/))
+    end if
+  end if
+  res=(/partial_corr_x1,partial_corr_x2,part_corr_x1,part_corr_x2/)
+  return(res)
+end
+
