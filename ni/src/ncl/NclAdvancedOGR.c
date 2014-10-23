@@ -659,7 +659,7 @@ static void *AdvancedOGROpenFile(void *therec, NclQuark path, int wr_status)
     {
         geom = OGR_F_GetGeometryRef(feature);
         _countGeometry(geom, &segmentsCounter, &numPoints);
-        OGR_F_Destroy(feature);
+      /*OGR_F_Destroy(feature);*/
         geometryRecord[numGeometry] = segmentsCounter;
 
         ++numGeometry;
