@@ -127,17 +127,17 @@ GEN_HDRS	=	NclTypeobj.h NclTypelogical.h \
 			NclTypeubyte.h NclTypebyte.h NclTypechar.h TypeSupport.h 
 
 STATIC_HDRS	=	ApiRecords.h AttSupport.h DataSupport.h FileSupport.h  \
-			NclAtt.h NclCallBacksI.h NclData.h \
+			NclAtt.h NclCallBacksI.h NclData.h AdvancedFileSupport.h \
 			NclFile.h NclFileInterfaces.h NclMdInc.h NclHLUObj.h\
 			NclAdvancedFile.h NclAdvancedGroup.h NclAdvancedFileStructure.h \
 			NclMultiDValData.h NclMultiDValHLUObjData.h \
-			OpsList.h Symbol.h VarSupport.h \
+			OpsList.h Symbol.h VarSupport.h ListSupport.h \
 			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h \
 			NclType.h defs.h NclGroup.h NclVar.h NclDataDefs.h NclFileInterfaces.h \
 			NclList.h NclMultiDValnclfileData.h \
 			NclOneDValCoordData.h \
 			date.h NclCCM.h NclGRIB.h NclGRIB2.h date.h tables.h \
-			NclMultiDVallistData.h NclTypelist.h ccmhdr.h \
+			NclMultiDVallistData.h NclTypelist.h ccmhdr.h h5data_struct.h \
 			cptec_254_gtb.h dwd_002_gtb.h dwd_201_gtb.h dwd_202_gtb.h \
 			dwd_203_gtb.h dwd_204_gtb.h dwd_205_gtb.h dwd_206_gtb.h dwd_207_gtb.h \
 			ecmwf_128_gtb.h ecmwf_129_gtb.h ecmwf_130_gtb.h ecmwf_131_gtb.h \
@@ -155,7 +155,7 @@ STATIC_HDRS	=	ApiRecords.h AttSupport.h DataSupport.h FileSupport.h  \
 
 INSTALL_HDRS	=	nio.h niohlu.h nioNresDB.h defs.h Symbol.h NclDataDefs.h NclFile.h \
 			nioc.h nioError.h NclData.h nioBase.h nioCallbacks.h nioConvertP.h NclType.h \
-			nioConvert.h niohluP.h nioNgSizeT.h \
+			nioConvert.h niohluP.h nioNgSizeT.h nioUtils.h ListSupport.h AdvancedFileSupport.h \
 			NclGroup.h NclVar.h NclFileInterfaces.h DataSupport.h FileSupport.h NclMdInc.h \
 			TypeSupport.h NclTypedouble.h NclTypefloat.h NclTypelong.h NclTypeint.h \
 			NclTypeshort.h NclTypestring.h NclTypelogical.h NclTypeubyte.h NclTypebyte.h NclTypechar.h \
@@ -165,7 +165,7 @@ INSTALL_HDRS	=	nio.h niohlu.h nioNresDB.h defs.h Symbol.h NclDataDefs.h NclFile.
 
 NIO_ONLY_HDRS	=	cmpf.h nioBase.h nioBaseI.h nioBaseP.h nioCallbacks.h nioCallbacksP.h \
 			nioc.h nioConvert.h nioConvertP.h nioError.h nio.h niohlu.h niohluP.h \
-			nioNresDB.h nio_path.h nioResList.h nioVarArg.h nioNgSizeT.h 
+			nioNresDB.h nio_path.h nioResList.h nioVarArg.h nioNgSizeT.h nioUtils.h
 
 HDRS		=	$(GEN_HDRS) $(STATIC_HDRS) $(NIO_ONLY_HDRS)
 
@@ -187,10 +187,12 @@ STATIC_SRCS	=	AddFileFormats.c AttSupport.c DataSupport.c \
 			NclGRIB.c NclMultiDValnclfileData.c \
 			NclNetCdf.c NclOneDValCoordData.c NclType.c \
 			NclTypelist.c NclGroup.c NclVar.c VarSupport.c \
+			AdvancedFileSupport.c ListSupport.c NclList.c \
+			NclMultiDVallistData.c NclNetCDF4.c NclNewHDF5.c NclNewHDFEOS5.c \
 			ctoiee.c date.c cmpf.c
 
 NIO_ONLY_CSRCS	=	cmpf.c nioBase.c nio.c nioCallbacks.c nioConvert.c nioError.c niohlu.c nio_io.c \
-			nioNclHLUStub.c nioNresDB.c nioQuarks.c nio_path.c
+			nioNclHLUStub.c nioNresDB.c nioQuarks.c nio_path.c nioUtils.c
 
 NIO_ONLY_FSRCS	=	llmap.f llmisc.f
 
@@ -225,12 +227,14 @@ STATIC_OBJS	=	AddFileFormats.o AttSupport.o DataSupport.o \
 			NclGRIB.o NclHDF.o NclMultiDValnclfileData.o \
 			NclNetCdf.o NclOneDValCoordData.o NclType.o \
 			NclTypelist.o NclGroup.o NclVar.o VarSupport.o \
+			AdvancedFileSupport.o ListSupport.o NclList.o \
+			NclMultiDVallistData.o NclNetCDF4.o NclNewHDF5.o NclNewHDFEOS5.o \
 			ctoiee.o date.o
 
 NIO_ONLY_COBJS	=	nio.o nio_io.o nioError.o nioNresDB.o nioCallbacks.o \
 			nioQuarks.o cmpf.o nioBase.o \
 			nioConvert.o  niohlu.o \
-			nioNclHLUStub.o nio_path.o
+			nioNclHLUStub.o nio_path.o nioUtils.o
 
 NIO_ONLY_FOBJS	=	llmap.o llmisc.o
 
