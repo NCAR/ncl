@@ -21,9 +21,15 @@
  *	Description:	
  */
 
-#include <stdio.h>
+#ifdef NIO_LIB_ONLY
+#include "niohlu.h"
+#include "nioNresDB.h"
+#else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#endif
+
+#include <stdio.h>
 #include "defs.h"
 #include <errno.h>
 #include "NclVar.h"
@@ -33,6 +39,7 @@
 #include "DataSupport.h"
 #include <math.h>
 #include "NclTypelist.h"
+#include "VarSupport.h"
 #include "ListSupport.h"
 
 static NhlErrorTypes MultiDValListPrintSummary(NclObj self, FILE *fp)

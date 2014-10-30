@@ -76,9 +76,7 @@ extern NclFormatFunctionRecPtr OGRAddFileFormat(
 void
 #endif
 );
-#ifndef NIO_LIB_ONLY
 extern NclFormatFunctionRecPtr AdvancedOGRAddFileFormat(void);
-#endif
 #endif
 
 void _NclAddFileFormats
@@ -110,11 +108,10 @@ void _NclAddFileFormats
 #ifdef BuildHDF5
         _NclRegisterFormat(H5AddFileFormat,"h5");
         _NclRegisterFormat(H5AddFileFormat,"hdf5");
-
-#ifndef NIO_LIB_ONLY
+	/*
         _NclRegisterFormat(HDF5AddFileFormat,"h5");
         _NclRegisterFormat(HDF5AddFileFormat,"hdf5");
-#endif
+	*/
 #endif
 	_NclRegisterFormat(GribAddFileFormat,"gr");
 	_NclRegisterFormat(GribAddFileFormat,"gr1");
@@ -165,7 +162,6 @@ void _NclAddFileFormats
         /* TIGER: see http://www.census.gov/geo/www/tiger/tiger2006se/tgr2006se.html */
 #endif
 
-#ifndef NIO_LIB_ONLY
 #ifdef  USE_NETCDF4_FEATURES
 	/*
 	 *where this file will be scanned to find the second match.
@@ -192,7 +188,6 @@ void _NclAddFileFormats
         _NclRegisterFormat(AdvancedOGRAddFileFormat, "shp");  /* shapefile */
         _NclRegisterFormat(AdvancedOGRAddFileFormat, "mif");  /* mapinfo */
         _NclRegisterFormat(AdvancedOGRAddFileFormat, "gmt");  /* GMT   */
-#endif
 #endif
 #endif
 	return;

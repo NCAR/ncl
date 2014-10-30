@@ -37,20 +37,19 @@
 
 #ifdef BuildHDF5
 #include <hdf5.h>
+#ifdef BuildHDFEOS5
+#include <HE5_HdfEosDef.h>
+#endif
 #endif
 
 #ifdef BuildHDF4
 #include <dfi.h>
 #include <mfhdf.h>
-#endif
-
-#ifdef BuildHDFEOS5
-#include <HE5_HdfEosDef.h>
-#endif
-
 #ifdef BuildHDFEOS
 #include <HdfEosDef.h>
 #endif
+#endif
+
 
 #ifdef BuildGDAL
 #include <ogr_api.h>
@@ -74,7 +73,9 @@
 #include "ApiRecords.h"
 #include "NclAtt.h"
 #include "NclGRIB.h"
+#ifdef BuildGRIB2
 #include "NclGRIB2.h"
+#endif
 
 #include <sys/stat.h>
 
@@ -3835,7 +3836,6 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 			else
 				found = 0;
 		}
-#endif
 #ifdef BuildHDFEOS5
 		else if(NrmStringToQuark("he5") == cur_ext_q)
 		{
@@ -3872,6 +3872,9 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 			}
 		}
 #endif
+#endif
+
+#ifdef BuildHDF4
 #ifdef BuildHDFEOS
 		else if(NrmStringToQuark("he2") == cur_ext_q)
 		{
@@ -3903,7 +3906,6 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 			}
 		}
 #endif
-#ifdef BuildHDF4
 		else if(NrmStringToQuark("hdf") == cur_ext_q)
 		{
 			intn status = Hishdf(filename);
@@ -3935,6 +3937,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 #endif
 		else if(NrmStringToQuark("gr") == cur_ext_q)
 		{
+#ifdef BuildGRIB2			
 			g2int   lgrib;
 			size_t  lskip = 0;
 			size_t  seek = 0;
@@ -3953,7 +3956,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
         			found = 1;
 				break;
 			}
-
+#endif
 			{
 				off_t offset = 0;
 				off_t nextoff = 0;
@@ -4106,7 +4109,6 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 		}
 	}
 
-#ifndef NIO_LIB_ONLY
 
       /*Make h5 works for two file strucuture.
 
@@ -4146,12 +4148,9 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	}					
 	else
 	{
-#endif
 		file_out = _NclFileCreate(inst, theclass, obj_type, obj_type_mask, status,
 				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
-#ifndef NIO_LIB_ONLY
 	}		
-#endif			
 
 	return file_out;
 }

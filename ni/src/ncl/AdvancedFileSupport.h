@@ -48,8 +48,10 @@
 #endif
 */
 
+#ifdef BuildHDF4
 #ifdef BuildHDFEOS5
 #include <HE5_HdfEosDef.h>
+#endif
 #endif
 
 #include "defs.h"

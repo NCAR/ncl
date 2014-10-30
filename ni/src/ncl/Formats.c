@@ -134,6 +134,7 @@ NclQuark file_ext2;
 	for(i = 0; i<num_formats; i++) {
 		if(formats[i].file_extension == qext1) {
 			format_func1 = formats[i].format_func;
+			break;
 		}
 	}
 	if (!format_func1) 

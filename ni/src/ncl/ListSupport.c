@@ -17,15 +17,19 @@
  *      $Date: 2004-04-28 17:02:12 $
  */
 
+#ifdef NIO_LIB_ONLY
+#include "niohlu.h"
+#include "nioNresDB.h"
+#include "nioCallbacks.h"
+#else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Callbacks.h>
+#endif
 #include "defs.h"
 #include "Symbol.h"
 #include "NclList.h"
 #include "ListSupport.h"
-
-
 
 int _NclListGetNext(NclObj thelist)
 {
