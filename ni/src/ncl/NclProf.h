@@ -54,7 +54,9 @@ void NclProfRegisterMData(int type, char *str);
  * void NclProfExit(...);
  */
 
+/*
 NhlErrorTypes NclGetWTime(float *time);
+*/
 
 #define NCL_PROF_INIT(filename) NclProfInit(filename)
 #define NCL_PROF_FINALIZE() NclProfFinalize()
