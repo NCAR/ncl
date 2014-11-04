@@ -8394,21 +8394,21 @@ begin
 ; colors and only append colors 2 and on.  If it is named colors, 
 ; then we'll append all of the named colors.
 ;
-    rgb_values = namedcolor2rgb(cmap2)
-    indices    = ind(.not.ismissing(rgb_values(:,0)))
-	if(all(ismissing(indices)))
-      gsn_define_colormap(wks,cmap2)    ; Must be a color map name.
-      tmp_cmap2 = gsn_retrieve_colormap(wks)
-      new_cmap2 = tmp_cmap2(2:,:)
-    else
+    if(all(is_valid_named_colors(cmap2))) then
+      rgb_values = namedcolor2rgb(cmap2)
+      indices    = ind(.not.ismissing(rgb_values(:,0)))
       new_cmap2 = new((/dimsizes(indices),3/),"float")
       new_cmap2(:,0) = rgb_values(indices,0)   ; Must be named colors.
       new_cmap2(:,1) = rgb_values(indices,1)
       new_cmap2(:,2) = rgb_values(indices,2)
+      delete([/indices,rgb_values/])
+    else
+      gsn_define_colormap(wks,cmap2)    ; Must be a color map name.
+      tmp_cmap2 = gsn_retrieve_colormap(wks)
+      new_cmap2 = tmp_cmap2(2:,:)
+      delete(tmp_cmap2)
     end if
     len_cmap2 = dimsizes(new_cmap2(:,0))
-    delete(indices)
-    delete(rgb_values)
   end if
 
 ;
