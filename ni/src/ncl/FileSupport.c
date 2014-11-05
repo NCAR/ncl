@@ -35,13 +35,6 @@
 #include <unistd.h>
 #include <netcdf.h>
 
-#ifdef BuildHDF5
-#include <hdf5.h>
-#ifdef BuildHDFEOS5
-#include <HE5_HdfEosDef.h>
-#endif
-#endif
-
 #ifdef BuildHDF4
 #include <dfi.h>
 #include <mfhdf.h>
@@ -50,6 +43,12 @@
 #endif
 #endif
 
+#ifdef BuildHDF5
+#include <hdf5.h>
+#ifdef BuildHDFEOS5
+#include <HE5_HdfEosDef.h>
+#endif
+#endif
 
 #ifdef BuildGDAL
 #include <ogr_api.h>
