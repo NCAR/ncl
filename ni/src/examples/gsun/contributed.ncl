@@ -14565,3 +14565,45 @@ begin
 
     return(k)
 end
+;==========================
+undef("getTimeFromBnds")
+function getTimeFromBnds(f, opt[1]:logical)   ; f is of type 'list' or 'file'
+local ftype, TIME, DATE, YEAR, nt
+begin
+  ftype = typeof(f)
+
+  if (.not.(ftype.eq."file" .or. ftype.eq."list")) then 
+      print("getTimeFromBnds: argument f must be type file or list: ftype="+ftype)
+      exit
+  end if
+
+  if (ftype.eq."file" .and. isfilevar(f,"time_bnds")) then
+      TIME          = f->time_bnds(:, 0)     ; address 'off-by-one' time    
+      TIME@units    = f->time@units          ; appropriate for CESM
+      TIME@calendar = f->time@calendar
+  else if (isfilevar(f[0],"time_bnds")) then ; must be type 'list'
+           TIME          = f[:]->time_bnds(:, 0)  ; address 'off-by-one' time    
+           TIME@units    = f->time@units     ; appropriate for CESM
+           TIME@calendar = f->time@calendar
+       end if
+  end if
+
+  DATE   = cd_calendar(TIME, -2)             ; YYYYMMDD
+  DATE@long_name = "current date (YYYYMMDD)"
+  DATE!0 = "time"
+ 
+  if (opt) then
+      if (isatt(opt,"yrStrtEnd")) then
+          YEAR = DATE
+          YEAR = DATE/10000
+          YEAR@long_name = "YYYY"
+          nt   = ind(YEAR.ge.yrStrtEnd(0) .and. YEAR.le.yrStrtEnd(1))
+          nt@long_name = "indices for Start/End period: "+yrStrtEnd(0)+"-"+yrStrtEnd(1)
+          return( [/TIME(nt), DATE(nt), nt/] )
+      end if
+  else
+      return([/TIME, DATE/])
+  end if
+    
+end
+
