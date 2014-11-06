@@ -689,7 +689,7 @@ struct _NclObjRec *parent;
 	NclAtt my_inst;
 	NclObjClass class_ptr;
 
-	InitializeAttClass();
+	_NclInitClass(nclAttClass);
 	if(inst == NULL) {
 		my_inst = (NclAtt)NclCalloc(1, (unsigned)sizeof(NclAttRec));
 	} else {
