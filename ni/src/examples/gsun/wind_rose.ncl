@@ -42,7 +42,20 @@ function WindRoseBasicF(wks:graphic, wspd[*]:numeric, wdir[*]:numeric \
  
   opts = True           ; local and default options
   if (wrRes) then
-      opts = wrRes     ; if True over ride local/defaults with input
+      opts = wrRes      ; if True over ride local/defaults with input
+
+                        ; avoid warning messages and delete the following 'wr' (wind rose) attributes 
+                        ; use them explicitly later
+      if (isatt(wrRes,"petalLabExtF")) then
+         delete(opt@petalLabExtF)
+      end if
+      if (isatt(wrRes,"txFontHeightF")) then
+          delete(opt@txFontHeightF)
+      end if
+      if (isatt(wrRes,"minWindPrintF")) then
+          delete(opt@minWindPrintF)
+      end if
+
   end if
 
   nP     = numPetals            ; for convenience only
@@ -112,7 +125,7 @@ function WindRoseBasicF(wks:graphic, wspd[*]:numeric, wdir[*]:numeric \
   end if
 
                                       ; Draw the "percentage frequency" circles
-  dirFrMaxNumCircles = floattointeger(dirFrMax/circFr +1.)
+  dirFrMaxNumCircles = toint(dirFrMax/circFr +1.)
   dirFrMaxNum        = circFr*dirFrMaxNumCircles   ; number of circles
 
   nCirc = 361                         ; do this once
@@ -148,40 +161,68 @@ function WindRoseBasicF(wks:graphic, wspd[*]:numeric, wdir[*]:numeric \
   plotWr = gsn_xy(wks,xCirc,yCirc,opts) ; GSUN routine to draw circles 
 
   wAveStr = new ( 1, string)            ; pre-define variable of type string
-  txRes = True                          ; set text resources
+  txRes   = True                        ; set text resources
   txRes@txFontHeightF     = 0.0100
   txRes@txAngleF          = -60.
-  gsRes = True                          ; set polyline resources
+  gsRes   = True                        ; set polyline resources
   gsRes@gsLineThicknessF  = 3.0         ; Extra thick lines
 
   do n=0,dirFrMaxNumCircles-1           ; label % Freq circles
-     xP = 1.+ (n+1)*circFr*cos((dirWr(0)+wedge2)*rad)
-     yP = 1.+ (n+1)*circFr*sin((dirWr(0)+wedge2)*rad)
-     wAveStr = floattointeger((n+1)*circFr)+"%"  
+     xP = 1.0+ (n+1)*circFr*cos((dirWr(0)+wedge2)*rad)
+     yP = 1.0+ (n+1)*circFr*sin((dirWr(0)+wedge2)*rad)
+     wAveStr = toint((n+1)*circFr)+"%"  
      astring = systemfunc("echo text1$$")
      plotWr@$astring$ = gsn_add_text(wks,plotWr,wAveStr,xP,yP,txRes) ; add text at end
   end do
   delete(txRes@txAngleF)
-  txRes@txFontHeightF     = 0.0140
                                         ; draw petals (or spokes .. whatever)
+  cext         = 1.00                   ; good for numPetals=8 
+  minWindPrintF = 0.0
+  txRes@txFontHeightF     = 0.0140
+
+  if (numPetals.ge.12 .and. numPetals.le.16) then
+      cext = 0.75 
+      txRes@txFontHeightF = 0.0125
+  end if
+  if (numPetals.gt.16 .and. numPetals.le.24) then
+      cext = 0.50 
+      txRes@txFontHeightF = 0.0100
+  end if
+  if (numPetals.gt.24) then
+      cext = 0.25 
+      txRes@txFontHeightF = 0.0100
+  end if
+
+  if (isatt(wrRes,"petalLabExtF")) then
+      cext = wrRes@petalLabExtF
+  end if
+  if (isatt(wrRes,"txFontHeightF")) then
+      txRes@txFontHeightF = wrRes@txFontHeightF
+  end if
+  if (isatt(wrRes,"minWindPrintF")) then
+      minWindPrintF = wrRes@minWindPrintF
+  end if
+
   do n=0,nP-1                           ; loop thru each petal (wedge)
      if (dirWg(n).gt.0.) then           
          xP      = dirFr(n)*sin(dirWr(n)*rad)         ; math coords
          yP      = dirFr(n)*cos(dirWr(n)*rad)
-         astring = systemfunc("echo line1$$")
+         astring = systemfunc("echo line1$$")         ; some unique id
          plotWr@$astring$ = gsn_add_polyline(wks,plotWr,(/0.,xP/),(/0.,yP/),gsRes) ; draw spoke
                                                       ; write mean speed 
-         xPtx    = xP + 2.*sin(dirWr(n)*rad)          ; "2" is arbitrary
-         yPtx    = yP + 2.*cos(dirWr(n)*rad)
-         wAveStr = floattointeger(spdWg(n)+0.5)       ; round mean speed
-         astring = systemfunc("echo text2$$")
-         plotWr@$astring$ = gsn_add_text(wks,plotWr,wAveStr,xPtx,yPtx,txRes) ; add text at end
+         xPtx    = xP + cext*sin(dirWr(n)*rad)  
+         yPtx    = yP + cext*cos(dirWr(n)*rad)
+         if ((spdWg(n)+0.5) .gt. minWindPrintF) then
+             wAveStr = toint(spdWg(n)+0.5)       ; round mean speed
+             astring = systemfunc("echo text2$$")
+             plotWr@$astring$ = gsn_add_text(wks,plotWr,wAveStr,xPtx,yPtx,txRes) ; add text at end
+         end if
      end if
   end do
                                                       ; Manually anotate plot
-  wAveStr = "SpdAve="+floattointeger(wAve+0.5)+"  "+ \
-            "SpdStd="+floattointeger(wStd+0.5)+"  "+ \
-            "DirAve="+floattointeger(wDir+0.5)
+  wAveStr = "SpdAve="+toint(wAve+0.5)+"  "+ \
+            "SpdStd="+toint(wStd+0.5)+"  "+ \
+            "DirAve="+toint(wDir+0.5)
   if (nCalm.gt.0) then
       calmFr = (nCalm/wNum)*100.                      ; % freq Calm
       wAveStr = wAveStr +"   Calm="+sprintf("%4.1f", calmFr)+"%"
@@ -197,8 +238,8 @@ function WindRoseBasicF(wks:graphic, wspd[*]:numeric, wdir[*]:numeric \
 
   wAveStr = "Frequency circles every "+circFr+"%. Mean speed indicated."  
   astring = systemfunc("echo text4$$")
- ;plotWr@$astring$ = gsn_add_text(wks,plotWr,wAveStr, 0.0,-dirFrMaxNum-extraSpace,txRes)
-  txRes@txFontHeightF     = 0.70*txRes@txFontHeightF
+ ;plotWr@$astring$    = gsn_add_text(wks,plotWr,wAveStr, 0.0,-dirFrMaxNum-extraSpace,txRes)
+  txRes@txFontHeightF = 0.70*txRes@txFontHeightF
   plotWr@$astring$ = gsn_add_text(wks,plotWr,wAveStr, 0.0,dirFrMaxNum+0.4*extraSpace,txRes)
 
   if (isatt(wrRes,"gsnDraw")) then 
@@ -218,7 +259,6 @@ function WindRoseBasicF(wks:graphic, wspd[*]:numeric, wdir[*]:numeric \
   return (plotWr)
 
  end
-
 ;---------------------------------------
 undef("WindRoseColorF")
 function WindRoseColorF(wks:graphic, wspd[*]:numeric, wdir[*]:numeric \
@@ -255,7 +295,20 @@ function WindRoseColorF(wks:graphic, wspd[*]:numeric, wdir[*]:numeric \
  
   opts = True           ; local and default options
   if (wrRes) then
-      opts = wrRes     ; if True over ride local/defaults with input
+      opts = wrRes      ; if True over ride local/defaults with input
+
+                        ; avoid warning messages and delete the following 'wr' (wind rose) attributes 
+                        ; use them explicitly later
+      if (isatt(wrRes,"petalLabExtF")) then
+         delete(opts@petalLabExtF)
+      end if
+      if (isatt(wrRes,"txFontHeightF")) then
+          delete(opts@txFontHeightF)
+      end if
+      if (isatt(wrRes,"minWindPrintF")) then
+          delete(opts@minWindPrintF)
+      end if
+
   end if
 
   nP     = numPetals            ; for convenience only
@@ -324,7 +377,7 @@ function WindRoseColorF(wks:graphic, wspd[*]:numeric, wdir[*]:numeric \
       print ("wNum="+wNum+"   wTot="+wTot+"   total="+total)
   end if
                                       ; Draw the "percentage frequency" circles
-  dirFrMaxNumCircles = floattointeger(dirFrMax/circFr +1.)
+  dirFrMaxNumCircles = toint(dirFrMax/circFr +1.)
   dirFrMaxNum        = circFr*dirFrMaxNumCircles   ; number of circles
 
   nCirc = 361                         ; do this once
@@ -356,7 +409,7 @@ function WindRoseColorF(wks:graphic, wspd[*]:numeric, wdir[*]:numeric \
   opts@gsnFrame     = False                    ; do not advance frame
   opts@gsnDraw      = False                    ; do not draw
   opts@xyMonoDashPattern = True                ; set all circles to solid
- 
+
   plotWr = gsn_xy(wks,xCirc,yCirc,opts) ; GSUN routine to draw circles 
 
   wAveStr = new ( 1, string)            ; pre-define variable of type string
@@ -369,7 +422,7 @@ function WindRoseColorF(wks:graphic, wspd[*]:numeric, wdir[*]:numeric \
   do n=0,dirFrMaxNumCircles-1           ; plot coordinates for %freq
      xP = 0.5 + (n+1)*circFr*cos((dirWr(0)+wedge2)*rad)
      yP = 0.5 + (n+1)*circFr*sin((dirWr(0)+wedge2)*rad)
-     wAveStr = floattointeger((n+1)*circFr)+"%"  
+     wAveStr = toint((n+1)*circFr)+"%"  
      astring = systemfunc("echo text1$$")
      plotWr@$astring$ = gsn_add_text(wks,plotWr,wAveStr,xP,yP,txRes) ; add text at end
   end do
@@ -382,6 +435,33 @@ function WindRoseColorF(wks:graphic, wspd[*]:numeric, wdir[*]:numeric \
   spdWork(0) = 0.
   spdWork(1:) = spdBounds
                                         ; draw petals (or spokes .. whatever)
+  cext = 1.00                           ; good for numPetals=8 
+  minWindPrintF = 0.0
+  txRes@txFontHeightF     = 0.0140
+
+  if (numPetals.ge.12 .and. numPetals.le.16) then
+      cext = 0.75 
+      txRes@txFontHeightF = 0.0125
+  end if
+  if (numPetals.gt.16 .and. numPetals.le.24) then
+      cext = 0.50 
+      txRes@txFontHeightF = 0.0100
+  end if
+  if (numPetals.gt.24) then
+      cext = 0.25 
+      txRes@txFontHeightF = 0.0100
+  end if
+
+  if (isatt(wrRes,"petalLabExtF")) then
+      cext = wrRes@petalLabExtF
+  end if
+  if (isatt(wrRes,"txFontHeightF")) then
+      txRes@txFontHeightF = wrRes@txFontHeightF
+  end if
+  if (isatt(wrRes,"minWindPrintF")) then
+      minWindPrintF = wrRes@minWindPrintF
+  end if
+
   do n=0,nP-1                           ; loop thru each petal (wedge)
      xP    = 0.
      yP    = 0.
@@ -431,17 +511,19 @@ function WindRoseColorF(wks:graphic, wspd[*]:numeric, wdir[*]:numeric \
    end do
                                                       ; write mean speed 
      if (dirWg(n).gt.0.)
-         xPtx    = xP + 2.*sin(dirWr(n)*rad)          ; "2" is arbitrary
-         yPtx    = yP + 2.*cos(dirWr(n)*rad)
-         wAveStr = floattointeger(spdWg(n)+0.5)       ; round mean speed
-         astring = systemfunc("echo text2$$")
-         plotWr@$astring$ = gsn_add_text(wks,plotWr,wAveStr,xPtx,yPtx,txRes) ; add text at end
+         xPtx    = xP +cext*sin(dirWr(n)*rad)          
+         yPtx    = yP +cext*cos(dirWr(n)*rad)
+         if ((spdWg(n)+0.5) .gt. minWindPrintF) then
+             wAveStr = toint(spdWg(n)+0.5)       ; round mean speed
+             astring = systemfunc("echo text2$$")
+             plotWr@$astring$ = gsn_add_text(wks,plotWr,wAveStr,xPtx,yPtx,txRes) ; add text at end
+         end if
      end if
   end do
                                                       ; Manually anotate plot
-  wAveStr = "SpdAve="+floattointeger(wAve+0.5)+"  "+ \
-            "SpdStd="+floattointeger(wStd+0.5)+"  "+ \
-            "DirAve="+floattointeger(wDir+0.5)
+  wAveStr = "SpdAve="+toint(wAve+0.5)+"  "+ \
+            "SpdStd="+toint(wStd+0.5)+"  "+ \
+            "DirAve="+toint(wDir+0.5)
   if (nCalm.gt.0) then
       calmFr = (nCalm/wNum)*100.                      ; % freq Calm
       wAveStr = wAveStr +"   Calm="+sprintf("%4.1f", calmFr)+"%"
@@ -478,7 +560,6 @@ function WindRoseColorF(wks:graphic, wspd[*]:numeric, wdir[*]:numeric \
   return (plotWr)
 
  end
-
 ; -------------------------------------------
 
 undef("WindRoseThickLineF")
@@ -514,7 +595,20 @@ function WindRoseThickLineF(wks:graphic, wspd[*]:numeric, wdir[*]:numeric \
  
   opts = True           ; local and default options
   if (wrRes) then
-      opts = wrRes     ; if True over ride local/defaults with input
+      opts = wrRes      ; if True over ride local/defaults with input
+
+                        ; avoid warning messages and delete the following 'wr' (wind rose) attributes 
+                        ; use them explicitly later
+      if (isatt(wrRes,"petalLabExtF")) then
+         delete(opts@petalLabExtF)
+      end if
+      if (isatt(wrRes,"txFontHeightF")) then
+          delete(opts@txFontHeightF)
+      end if
+      if (isatt(wrRes,"minWindPrintF")) then
+          delete(opts@minWindPrintF)
+      end if
+
   end if
 
   nP     = numPetals            ; for convenience only
@@ -640,6 +734,33 @@ function WindRoseThickLineF(wks:graphic, wspd[*]:numeric, wdir[*]:numeric \
   spdWork = new (nW, float )
   spdWork(0) = 0.
   spdWork(1:) = spdBounds
+
+                                        ; draw petals (or spokes .. whatever)
+  cext          = 1.00                           ; good for numPetals=8 
+  minWindPrintF = 0.0
+  txRes@txFontHeightF     = 0.0140
+  if (numPetals.ge.12 .and. numPetals.le.16) then
+      cext = 0.75 
+      txRes@txFontHeightF = 0.0125
+  end if
+  if (numPetals.gt.16 .and. numPetals.le.24) then
+      cext = 0.50 
+      txRes@txFontHeightF = 0.0100
+  end if
+  if (numPetals.gt.24) then
+      cext = 0.25 
+      txRes@txFontHeightF = 0.0100
+  end if
+
+  if (isatt(wrRes,"petalLabExtF")) then
+      cext = wrRes@petalLabExtF
+  end if
+  if (isatt(wrRes,"txFontHeightF")) then
+      txRes@txFontHeightF = wrRes@txFontHeightF
+  end if
+  if (isatt(wrRes,"minWindPrintF")) then
+      minWindPrintF = wrRes@minWindPrintF
+  end if
                                         ; draw petals (or spokes .. whatever)
   do n=0,nP-1                           ; loop thru each petal (wedge)
      xP    = 0.
@@ -688,11 +809,13 @@ function WindRoseThickLineF(wks:graphic, wspd[*]:numeric, wdir[*]:numeric \
    end do
                                                       ; write mean speed 
      if (dirWg(n).gt.0.)
-         xPtx    = xP + 2.*sin(dirWr(n)*rad)          ; "2" is arbitrary
-         yPtx    = yP + 2.*cos(dirWr(n)*rad)
-         wAveStr = floattointeger(spdWg(n)+0.5)       ; round mean speed
-         astring = systemfunc("echo text2$$")
-         plotWr@$astring$ = gsn_add_text(wks,plotWr,wAveStr,xPtx,yPtx,txRes) ; add text at end
+         xPtx    = xP + cext*sin(dirWr(n)*rad)      
+         yPtx    = yP + cext*cos(dirWr(n)*rad)
+         if ((spdWg(n)+0.5) .gt. minWindPrintF) then
+             wAveStr = floattointeger(spdWg(n)+0.5)       ; round mean speed
+             astring = systemfunc("echo text2$$")
+             plotWr@$astring$ = gsn_add_text(wks,plotWr,wAveStr,xPtx,yPtx,txRes) ; add text at end
+         end if
      end if
   end do
                                                       ; Manually anotate plot
@@ -880,5 +1003,22 @@ begin
   wrData = new ( (/2,nMax/) , "float")
   wrData(0,:) = wspd
   wrData(1,:) = wdir
+  return (wrData)
+end
+;------------------------
+undef("wr_GenBogusDataRandom")
+function wr_GenBogusDataRandom (nMax:integer) 
+begin
+
+  wspd  = random_uniform(18,    42,nMax)
+  wdir  = random_uniform( 0,359.25,nMax)
+
+  wspd@long_name = "Wind Speed"
+  wspd@units     = "m/s"
+  wdir@long_name = "Wind Direction"
+
+  wrData = new ( (/2,nMax/) , "float")
+  wrData(0,:) = (/ wspd /)
+  wrData(1,:) = (/ wdir /)
   return (wrData)
 end
