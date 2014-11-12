@@ -10853,7 +10853,7 @@ NhlErrorTypes CellFill2D
 	int             *ibnd;
 	int xmaxix, xminix;
 	int jc, jcp1, jcm1;
-	int lxsize, xc_count,yc_count;
+	int lxsize, xc_count;
 	float xb[BUFSIZE][5];
 	float yb[BUFSIZE][5];
 	float zb[BUFSIZE];
@@ -10861,9 +10861,6 @@ NhlErrorTypes CellFill2D
 	int *glist = NULL;
 	int glist_alloc_count = 0;
 	float flx,frx,fby,fuy,wlx,wrx,wby,wuy; int ll;
-	char climit[4];
-	float r1[2],r2[2],r3[2],r4[2];
-	float sr[4][2];
 	int bufcount;
 	int status;
 	int yminix,ymaxix;
@@ -10914,7 +10911,6 @@ NhlErrorTypes CellFill2D
 
 	lxsize = cnp->sfp->xc_is_bounds ? xsize + 1 : xsize;
 	xc_count = cnp->sfp->xc_is_bounds ? xcount + 1 : xcount;
-	yc_count = cnp->sfp->yc_is_bounds ? ycount + 1 : ycount;
 	xrow_count = 0;
 	yminix = -1;
 	ymaxix = 0;
@@ -11232,24 +11228,8 @@ NhlErrorTypes CellFill2D
 		}
 	}
 		
-
-	sr[0][0] = sr[1][0] = sr[2][0] = sr[3][0] = 0.0;
-	sr[0][1] = sr[1][1] = sr[2][1] = sr[3][1] = 0.0;
-	if (ezmap) {
-		c_mpgetc("AR",climit,4);
-		c_mpgetr("P1",&r1[0]);
-		c_mpgetr("P2",&r2[0]);
-		c_mpgetr("P3",&r3[0]);
-		c_mpgetr("P4",&r4[0]);
-		c_mpgetr("P5",&r1[1]);
-		c_mpgetr("P6",&r2[1]);
-		c_mpgetr("P7",&r3[1]);
-		c_mpgetr("P8",&r4[1]);
-		c_mapset("MA",sr[0],sr[2],sr[3],sr[3]);
-		c_mapint();
-	}
-
 	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
+
 #if 0
 	printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
 	       flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
@@ -11280,9 +11260,21 @@ NhlErrorTypes CellFill2D
 		if (! GetXYIn2D(xa,ya,jc,jcm1,jcp1,i,
 				xcount,mode,ezmap,xi,yi))
 			continue;
-		_NhlDataToWin(cnp->trans_obj,
-			      xi,yi,4,xo,yo,
-			      &status,NULL,NULL);
+		if (ezmap) {
+			int n;
+			for (n = 0; n< 4; n++) {
+				c_maptrn(yi[n],xi[n],&xo[n],&yo[n]);
+				if (xo[n] > 1e10) {
+					status = 1;
+					break;
+				}
+			}
+		}
+		else {
+			_NhlDataToWin(cnp->trans_obj,
+				      xi,yi,4,xo,yo,
+				      &status,NULL,NULL);
+		}
 		if (status) {
 			points = GoodPoints(cnp->trans_obj,
 					     xi,yi,xo,yo,
@@ -11315,10 +11307,7 @@ NhlErrorTypes CellFill2D
 		}
 		if (bufcount == BUFSIZE) {
 			int n;
-			if (ezmap) {
-				c_mapset(climit,r1,r2,r3,r4);
-				c_mapint();
-			}
+
 			for (n = 0; n < bufcount; n++) {
 				if (gpoints[n] != 15) {
 					DrawAdjustedCell
@@ -11332,10 +11321,6 @@ NhlErrorTypes CellFill2D
 					DrawCell(cnl,zb[n],xb[n],yb[n],
 						 do_softfill,entry_name);
 				}
-			}
-			if (ezmap) {
-				c_mapset("MA",sr[0],sr[2],sr[3],sr[3]);
-				c_mapint();
 			}
 			bufcount = 0;
 		}
@@ -11351,15 +11336,7 @@ NhlErrorTypes CellFill2D
 		gpoints[bufcount] = points;
 		bufcount++;
 	}
-#if 0
-	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
-	printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
-	       flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
-#endif
-	if (ezmap) {
-		c_mapset(climit,r1,r2,r3,r4);
-		c_mapint();
-	}
+
 #if 0
 	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
 		printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
@@ -11423,7 +11400,7 @@ NhlErrorTypes CellFill1D
 {
 	NhlContourPlotLayerPart 	  *cnp = &cnl->contourplot;
 	NhlErrorTypes	ret = NhlNOERROR;
-	float 		*xa, *ya, *da, *levels;
+	float 		*xa, *ya, *da;
 	int		xcount,ycount;
 	int		xsize;
 	int             i,j,k;
@@ -11435,7 +11412,6 @@ NhlErrorTypes CellFill1D
 	int             over_sized = 0;
 	int             partial_oor = 0;
 	NhlBoolean      free_xa = False, free_ya = False;
-	NhlBoolean      modular = False;
 	int             adj_count;
 	float           xcellthreshold,ycellthreshold;
 	NhlBoolean      ezmap = False;
@@ -11453,9 +11429,6 @@ NhlErrorTypes CellFill1D
 	int *glist = NULL;
 	int glist_alloc_count = 0;
 	float xt[5],yt[5];
-	char climit[4];
-	float r1[2],r2[2],r3[2],r4[2];
-	float sr[4][2];
 	int empty_count;
 	int bufcount;
 	int status;
@@ -11479,7 +11452,6 @@ NhlErrorTypes CellFill1D
 	xsize = cnp->sfp->fast_dim;
 	xcount = cnp->sfp->fast_len;
 	ycount = cnp->sfp->slow_len;
-        levels = (float*) cnp->levels->data;
 	ibnd = NhlMalloc(ycount * 2 * sizeof(int));
 
 	/*
@@ -11515,8 +11487,6 @@ NhlErrorTypes CellFill1D
 
 	NhlVAGetValues(cnp->trans_obj->base.id,
 		       NhlNtrOutOfRangeF,&out_of_range,NULL);
-
-	modular = ezmap ? True : False;
 
 	xc_count = cnp->sfp->xc_is_bounds ? xcount + 1 : xcount;
 	xrow_count = 0;
@@ -11966,23 +11936,6 @@ NhlErrorTypes CellFill1D
 			empty_count++;
 	}
 		
-	
-	sr[0][0] = sr[1][0] = sr[2][0] = sr[3][0] = 0.0;
-	sr[0][1] = sr[1][1] = sr[2][1] = sr[3][1] = 0.0;
-	if (ezmap) {
-		c_mpgetc("AR",climit,4);
-		c_mpgetr("P1",&r1[0]);
-		c_mpgetr("P2",&r2[0]);
-		c_mpgetr("P3",&r3[0]);
-		c_mpgetr("P4",&r4[0]);
-		c_mpgetr("P5",&r1[1]);
-		c_mpgetr("P6",&r2[1]);
-		c_mpgetr("P7",&r3[1]);
-		c_mpgetr("P8",&r4[1]);
-		c_mapset("MA",sr[0],sr[2],sr[3],sr[3]);
-		c_mapint();
-	}
-
 	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
 #if 0
 	printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
@@ -11992,12 +11945,10 @@ NhlErrorTypes CellFill1D
 	memset(xt,0,5 * sizeof(float));
 	memset(yt,0,5 * sizeof(float));
 	for (k = 0; k < partial_oor; k++) {
-		int jd;
 		float zval = *(da + glist[k]);
 
 		j = glist[k] / xsize;
 		i = glist[k] % xsize;
-		jd = j * xsize;
 
 		if (cnp->sfp->yc_is_bounds) {
 			yi[0] = ya[j]; 
@@ -12047,9 +11998,21 @@ NhlErrorTypes CellFill1D
 			xi[2] = (xa[i]+ xa[i+1]) / 2.; 
 			xi[3] = (xa[i-1]+ xa[i]) / 2.; 
 		}
-		_NhlDataToWin(cnp->trans_obj,
-			      xi,yi,4,xo,yo,
-			      &status,NULL,NULL);
+		if (ezmap) {
+			int n;
+			for (n = 0; n< 4; n++) {
+				c_maptrn(yi[n],xi[n],&xo[n],&yo[n]);
+				if (xo[n] > 1e10) {
+					status = 1;
+					break;
+				}
+			}
+		}
+		else {
+			_NhlDataToWin(cnp->trans_obj,
+				      xi,yi,4,xo,yo,
+				      &status,NULL,NULL);
+		}
 		if (status) {
 			points = GoodPoints(cnp->trans_obj,
 					     xi,yi,xo,yo,
@@ -12082,10 +12045,6 @@ NhlErrorTypes CellFill1D
 		}
 		if (bufcount == BUFSIZE) {
 			int n;
-			if (ezmap) {
-				c_mapset(climit,r1,r2,r3,r4);
-				c_mapint();
-			}
 			for (n = 0; n < bufcount; n++) {
 				if (gpoints[n] != 15) {
 					DrawAdjustedCell
@@ -12100,10 +12059,6 @@ NhlErrorTypes CellFill1D
 						 do_softfill,entry_name);
 				}
 			}
-			if (ezmap) {
-				c_mapset("MA",sr[0],sr[2],sr[3],sr[3]);
-				c_mapint();
-			}
 			bufcount = 0;
 		}
 		if (points == 15) {
@@ -12117,15 +12072,6 @@ NhlErrorTypes CellFill1D
 		zb[bufcount] = zval;
 		gpoints[bufcount] = points;
 		bufcount++;
-	}
-#if 0
-	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
-	printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
-	       flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
-#endif
-	if (ezmap) {
-		c_mapset(climit,r1,r2,r3,r4);
-		c_mapint();
 	}
 #if 0
 	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
