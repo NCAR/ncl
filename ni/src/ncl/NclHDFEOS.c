@@ -884,13 +884,15 @@ int wr_status;
 				HDFEOSParseName(buffer,&att_hdf_names,&att_ncl_names,natts);
 				for(k = 0; k < natts; k++) { 
 					if(SWattrinfo(SWid,NrmQuarkToString(att_hdf_names[k]),&att_type,&att_size)==0) {
+					    if(att_size > 0)
+					    {
 						tmp_value = (void*)NclMalloc(att_size);
 						if(SWreadattr(SWid,NrmQuarkToString(att_hdf_names[k]),tmp_value)==0 ) {
 							HDFEOSIntFileAddAtt(the_file,sw_ncl_names[i],att_ncl_names[k],
 									    tmp_value,att_size/_NclSizeOf(HDFEOSMapTypeNumber(att_type)),
 									    HDFEOSMapTypeNumber(att_type));
 						}
-			
+					    }
 					}
 				}
 				NclFree(att_hdf_names);
