@@ -14606,4 +14606,541 @@ begin
   end if
     
 end
+;==========================
+undef("pot_temp_n")
+function pot_temp_n (p:numeric, t:numeric, npr[*]:integer, opt:integer)
+;
+; Compute potential temperature
+; Nomenclature
+;     p       - pressure levels (default: Pa) 
+;               if a 'units' attribute is present this may be altered
+;     t       - temperature (K)   
+;               Also: equivalent temperature (teqv) could be input
+;                     teqv =  temperature of an air parcel from which all the water vapor 
+;                             has been extracted by an adiabatic process.
+;                     teqv = t + (Lv/cpd)*r  ; 
+;                     cpd  = 1004. or 1005.7 ; specific heat dry air [J/kg/K]
+;                     Lv   = 2.5104e6        ; [J/kg]=[m2/s2]  Latent Heat of Vaporization of Water
+;                     r    = mixing ratio 
+;     npr     - dimension number(s) of 'p' corresponding to temperature 
+;               npr=-1 means that p and t have the same dimensions
+;     opt     - options: not used
+;
+local rankp, rankt, theta, p0
+begin
+  rankp  = dimsizes(dimsizes(p)) 
+  rankt  = dimsizes(dimsizes(t)) 
 
+  p0     = 100000.           ; default [units = Pa]
+  if (isatt(p,"units") .and. (p@units.eq."mb"   .or. \
+                              p@units.eq."MB"   .or. \
+                              p@units.eq."millibar"    .or. \
+                              p@units.eq."millibars"   .or. \
+                              p@units.eq."hPa"  .or. \
+                              p@units.eq."HPA"  .or. \
+                              p@units.eq."hPA"  .or. \
+                              p@units.eq."hpa"  )    ) then
+      p0 = 1000.
+ ;else
+    ;print("pot_temp_n: WARNING:  units of pressure not recognized: p0="+p0+" Pa used")
+  end if
+
+  if (isatt(t,"units") .and. \
+     .not.(t@units.eq."K" .or. t@units.eq."degK")) then
+     print("pot_temp_n: WARNING:  units of temperature not recognized")
+  end if
+
+  if (rankp.eq.rankt) then
+      theta = t*(p0/p)^0.286  
+  else
+      theta = t*(p0/conform(t,p,npr))^0.286  
+  end if
+
+  theta@long_name = "potential temperature"
+  theta@units     = "K"
+  copy_VarCoords(t, theta)
+
+  return( theta )
+end
+;=========================
+undef("static_stability_n") 
+function static_stability_n (p:numeric, t:numeric, npr[1]:integer, sopt:integer)
+;
+; Compute Static Stability
+; Bluestein: Synoptic-Dynamic Meteorology in Midlatitudes
+;            pg 197
+;            s = -T*d[log(theta)]/dp = -(T/theta)*d(theta)/dp
+;
+; Nomenclature
+;     p       - pressure levels (Pa is default)  
+;     t       - temperature (K)    
+;               Also: equivalent temperature (teqv) could be input
+;                     teqv = temperature of an air parcel from which all the water vapor 
+;                            has been extracted by an adiabatic process.
+;                     teqv = t + (Lv/cpd)*r  ; 
+;                     cpd  = 1004. or 1005.7 ; specific heat dry air [J/kg/K]
+;                     Lv   = 2.5104e6        ; [J/kg]=[m2/s2]  Latent Heat of Vaporization of Water
+;                     r    = mixing ratio    ; (kg/kg) 
+;     npr     - dimension number for pressure
+;     sopt    - =0, Return static stability only
+;             - =1, Return static stability, theta, dthdp as type list
+;
+; Note: In a statically stable atmosphere: d(theta)/dp < 0, hence s > 0       
+;
+local theta, rankt, rankp, dthdp, s
+begin
+  theta  = pot_temp_n(p, t, npr, 0)      
+
+  rankp  = dimsizes(dimsizes(p))
+  rankt  = dimsizes(dimsizes(t))   ; rankt = rank(theta)
+
+; dthdp = -T*d[log(theta)]/dp = -(T/theta)*d(theta)/dp
+
+  if (rankp.eq.rankt) then
+      dthdp  = center_finite_diff_n (theta,p,False,0, npr)
+  else
+      if (rankp.eq.1) then
+          dthdp  = center_finite_diff_n (theta,conform(t,p,npr), False,0, npr)
+      else
+          print("static_stability_n: rank problem:  rankp="+rankp+"; rankt="+rankt)
+          exit
+      end if
+  end if
+
+  s = -(t/theta)*dthdp
+  copy_VarCoords(t,s)
+
+  s@long_name = "static stability"
+  if (isatt(p,"units") .and. (p@units.eq."mb"   .or. \
+                              p@units.eq."MB"   .or. \
+                              p@units.eq."millibar"    .or. \
+                              p@units.eq."millibars"   .or. \
+                              p@units.eq."hPa"  .or. \
+                              p@units.eq."HPA"  .or. \
+                              p@units.eq."hPA"  .or. \
+                              p@units.eq."hpa"  )    ) then
+      s@units     = "K/hPa"   
+  else
+      s@units     = "K/Pa"       ; or "K-m-s2/kg"
+  end if
+
+  if (sopt.eq.0) then
+      return(s)
+  else
+      dthdp@long_name = "vertical derivative of theta with pressure"
+      dthdp@units     = s@units
+      copy_VarCoords(t,dthdp)
+      return( [/ s, theta, dthdp /] )
+  end if
+end
+;=========================
+undef("pot_vort_hybrid")
+function pot_vort_hybrid\
+            (p:numeric, u:numeric, v:numeric, t:numeric
+            ,lat[*]:numeric, gridType[1]:integer, opt:integer)
+;
+; Compute Isentropic Potential Vorticity on hybrid levels
+; CCM Processor User's Guide: May 1994: page B-19
+; Original source P Rasch and B Boville
+;
+; Nomenclature
+;     p       - pressure levels (Pa)  [3D or 4D]
+;     u       - zonal wind  (m/s)     [3D or 4D]          
+;     v       - meridional wind (m/s) [3D or 4D]          
+;     t       - temperature (K)       [3D or 4D]          
+;     gridType- grid type
+;               =0 means gaussian grid
+;               =1 means regular or fixed grid
+;     lat     - latitudes
+;     opt     - options: not used
+;
+; Note: u,v,t,p MUST:
+;    [1] be SOUTH-TO-NORTH 
+;    [2] be GLOBAL because spherical harmonics are used
+;    [3] have named dimensions because data are reordered
+;   
+; Usage:
+;   f    = addfile ("foo.nc", "r")
+;   U    = f->U    ; (time,lev,lat,lon) or (lev,lat,lon)
+;   V    = f->V
+;   T    = f->T
+;   lat  = f->lat
+;   hyam = f->hyam
+;   hybm = f->hybm
+;   p0   = f->P0  ; p0=100000
+;   ps   = f->PS  ; Pa
+;   p    = pres_hybrid_ccm (ps,p0,hyam,hybm)  ; Pa [kg/(m s2)]
+;   copy_VarCoords(U,p)
+;
+;               ; Potential Vorticity
+;   PV = pot_vort_hybrid(p,u,v,t,lat, 0,  0)
+;
+; Note: A nice basic discussion of PV may be found at:
+; Mid-Latitude Atmospheric Dynamics: A First Course
+; Jonathan E. Martin, Wiley 2006,   QC880.M36   , pp276-onward
+; 
+local ranku, rankv, rankt, rankp, npr, nlt, dthdp  \
+    , dudp, dvdp ,theta, W, f, vr, dthdx, dthdy, G, W, rad, pv
+begin
+                                   ; ERROR CHECK
+  ranku  = dimsizes(dimsizes(u)) 
+  if (.not.(ranku.eq.3 .or. ranku.eq.4)) then
+      print("pot_vort_hybrid: only 3D and 4D arrays allowed: rank="+ranku)
+      exit
+  end if
+  rankv  = dimsizes(dimsizes(v)) 
+  rankt  = dimsizes(dimsizes(t)) 
+  rankp  = dimsizes(dimsizes(p)) 
+  if (.not.(ranku.eq.rankv .and. ranku.eq.rankt .and. ranku.eq.rankp)) then
+      print("pot_vort_hybrid: u, v, t, p must be the same rank: ranku=" \
+            +ranku+"  rankv="+rankv+"  rankt="+rankt+"  rankp="+rankp)
+      exit
+  end if
+
+  if (.not.(gridType.eq.0 .or. gridType.eq.1)) then
+      print("pot_vort_hybrid: unrecognized gridType: only 0 and 1 allowed")
+      print("               gridType="+gridType)
+      ier = 1
+  end if
+
+  if ((lat(1)-lat(0)).le.0) then
+      print("pot_vort_hybrid: data must be in S-N order")
+      exit
+  end if
+
+  if (ranku.eq.3) then       ; (lev,lat,lon)  => (0,1,2) => (npr,nlt,2)
+      npr = 0
+      nlt = 1                 
+  end if
+  if (ranku.eq.4) then       ; (time,lev,lat,lon)  => (0,1,2,3) > (0,npr,nlt,2)
+      npr = 1
+      nlt = 2                  
+  end if
+
+  S           = static_stability_n(p,t,npr,1)   ; variable of type list
+
+  s           = S[0]    ; [...] is list syntax    
+  theta       = S[1]    ; theta = pot_tmp_n(p, t, npr, 0)
+  dthdp       = S[2]    ; dthdp = center_finite_diff_n (theta,p,False,0,npr)
+  s@_FillValue= 1e20
+  delete(S)
+
+ ;printVarSummary( s )  ; s not used for this formulation
+ ;printMinMax( s, True )
+ ;printVarSummary( theta )
+ ;printMinMax( theta, True )
+ ;printVarSummary( dthdp )
+ ;printMinMax( dth2p, True )
+                              ; compute VERTICAL (pressure) derivatives
+  dudp  = center_finite_diff_n (    u,p,False,0,npr)
+  dvdp  = center_finite_diff_n (    v,p,False,0,npr)
+                              ; compute 
+                              ; (1) lat/lon temperature gradients [K/m]
+                              ; (2) relative vorticity            [1/s]
+  dthdx   = theta             ; create E-W gradient array
+  dthdy   = theta             ;        S-N        
+  dthx@long_name = "longitudinal gradient (derivative)"
+  dthdy@long_name = "latitudinal gradient (derivative)"
+  dthdx@units     = "K/m"
+  dthdy@units     = "K/m"
+
+  if (gridType.eq.0) then
+      gradsg (theta, dthdx, dthdy) 
+      vr = uv2vrG(u,v)
+  end if
+  if (gridType.eq.1) then
+      gradsf (theta, dthdx, dthdy) 
+      vr = uv2vrF(u,v)
+  end if
+
+  G   = 9.80665                    ; m/s2 ; gravity at 45 deg lat used by the WMO
+  W   = 7.292e-5                   ; (1/s)     ; earth ang rotation
+  rad = 4.*atan(1.)/180.
+  if (typeof(lat).eq.typeof(vr)) then
+      f = 2.*W*sin(lat*rad)          ; (1/s)     ; coriolis parameter
+  else 
+      f = 2.*W*sin(tofloat(lat)*rad)
+  end if
+
+  vr  = vr + conform(vr,f,nlt)     ; absolute vorticity   
+                                   ; G used for commonly used units
+  pv    = -G*(vr*dthdp - (dthdx*dvdp-dthdy*dudp) )  
+  pv@long_name  = "potential vorticity"
+  pv@short_name = "PV"
+  pv@units      = "K m2/kg/s"      ; common units
+  copy_VarCoords(t,pv)
+
+  if (opt.eq.0) then
+      return( pv )
+  else
+      return( [/pv, s, theta, dthdp, dudp, dvdp, dtdx, dtdy/] )
+  end if
+end
+
+;----------------------------------------------------------------------------
+undef("pot_vort_isobaric")
+function pot_vort_isobaric\
+            (p[*]:numeric, u:numeric, v:numeric, t:numeric
+            ,lat[*]:numeric, gridType[1]:integer, opt:integer)
+;
+; Compute Potential Vorticity on constant pressure levels
+; Bluestein: Synoptic-Dynamic Meteorology in Midlatitudes
+;            pg 264  Eq 4.5.93
+;
+; Nomenclature
+;     p       - pressure levels (Pa)  [1D]
+;     u       - zonal wind  (m/s)     [3D or 4D]          
+;     v       - meridional wind (m/s) [3D or 4D]          
+;     t       - temperature (K)       [3D or 4D]          
+;     lat     - latitudes
+;     gridType- grid type
+;               =0 means gaussian grid
+;               =1 means regular or fixed grid
+;     opt     - options: not used
+;
+; Note: u,v,t MUST be SOUTH-TO-NORTH 
+;       and must be GLOBAL because spherical harmonics are used
+;   
+; Usage:
+;   f   = addfile ("foo.nc", "r")
+;   U   = f->U    ; (time,lev,lat,lon) or (lev,lat,lon)
+;   V   = f->V
+;   T   = f->T    ; K
+;   lat = f->lat
+;   lev = f->lev  
+;   lev = lev*100
+;   lev@units = "Pa"
+;               ; Potential Vorticity
+;   PV = pot_vort_isobaric(lev,u,v,t,lat, 0, 0)
+;
+; Note: A nice basic discussion of PV may be found at:
+; Mid-Latitude Atmospheric Dynamics: A First Course
+; Jonathan E. Martin, Wiley 2006,   QC880.M36   , pp276-onward
+;
+local ranku, rankv, rankt, npr, nlt, dthdp, dudp, dvdp \
+     ,theta, S, s, con, R, W, f, vr, dtdx, dtdy, rad, pv
+begin
+                                   ; ERROR CHECK
+  ranku  = dimsizes(dimsizes(u)) 
+  if (.not.(ranku.eq.3 .or. ranku.eq.4)) then
+      print("StaticStabilityP: only 3D and 4D arrays allowed: rank="+ranku)
+      exit
+  end if
+  rankv  = dimsizes(dimsizes(v)) 
+  rankt  = dimsizes(dimsizes(t)) 
+  if (.not.(ranku.eq.rankv .and. ranku.eq.rankt)) then
+      print("pot_vort_isobaric: u, v, t must be the same rank: ranku=" \
+            +ranku+"  rankv="+rankv+"  rankt="+rankt)
+      exit
+  end if
+
+  if (.not.(gridType.eq.0 .or. gridType.eq.1)) then
+      print("pot_vort_isobaric: unrecognized gridType: only 0 and 1 allowed")
+      print("           gridType="+gridType)
+      ier = 1
+  end if
+
+  if ((lat(1)-lat(0)).le.0) then
+      print("pot_vort_isobaric: data must be in S-N order")
+      exit
+  end if
+
+  if (ranku.eq.3) then       ; (lev,lat,lon)  => (0,1,2) > (0,npr,nlt)
+      npr = 0
+      nlt = 1
+  end if
+  if (ranku.eq.4) then       ; (time,lev,lat,lon)  => (0,1,2,3) > (0,npr,nlt,2)
+      npr = 1
+      nlt = 2
+  end if
+
+  S           = static_stability_n(p,t,npr,1)   ; variable of type list
+
+  s           = S[0]    ; [...] is list syntax    
+  theta       = S[1]
+  dthdp       = S[2]
+  s@_FillValue= 1e20
+  delete(S)
+
+ ;printVarSummary( s )
+ ;printMinMax( s, True )
+ ;printVarSummary( theta )
+ ;printMinMax( theta, True )
+ ;printVarSummary( dthdp )
+ ;printMinMax( dthdp, True )
+                              ; compute VERTICAL (pressure) derivatives ; shear
+  dudp        = center_finite_diff_n (    u,p,False,0,npr)
+  dvdp        = center_finite_diff_n (    v,p,False,0,npr)
+
+                              ; compute 
+                              ; (1) lat/lon temperature gradients [K/m]
+                              ; (2) relative vorticity            [1/s]
+
+  dtdx   = t                  ; create E-W gradient array with coordinate info
+  dtdy   = t                  ;        S-N        
+  dtdx@long_name = "longitudinal gradient (derivative)"
+  dtdy@long_name = "latitudinal gradient (derivative)"
+  dtdx@units     = "K/m"
+  dtdy@units     = "K/m"
+
+  if (gridType.eq.0) then
+      gradsg (t, dtdx, dtdy) 
+      vr = uv2vrG(u,v)
+  end if
+  if (gridType.eq.1) then
+      gradsf (t, dtdx, dtdy) 
+      vr = uv2vrF(u,v)
+  end if
+
+  G   = 9.80665                    ; m/s2 ; gravity at 45 deg lat used by the WMO
+  R   = 287.04                     ; m2/(s2-K) ; gas constant dry air
+  W   = 7.292e-5                   ; (1/s)     ; earth ang rotation
+  rad = 4.*atan(1.)/180.
+  if (typeof(lat).eq.typeof(vr)) then
+      f = 2.*W*sin(lat*rad)          ; (1/s)     ; coriolis parameter
+  else
+      f = 2.*W*sin(tofloat(lat)*rad)
+  end if
+
+  vr  = vr + conform(vr,f,nlt)     ; absolute vorticity   
+  s   = where(s.eq.0, s@_FillValue, s)    ; safety
+  con = R/(s*conform(t,p,npr))  
+                                   ; G* added to get common pv units 
+  pv  = -G*(vr + con*(dvdp*dtdx-dudp*dtdy))*dthdp  
+  pv@long_name  = "potential vorticity"
+  pv@short_name = "PV"
+  pv@units      = "K m2/kg/s"      ; common units
+  copy_VarCoords(t,pv)
+
+  if (opt.eq.0) then
+      return( pv )
+  else
+      return( [/pv, s, theta, dthdp, dudp, dvdp, dtdx, dtdy/] )
+  end if
+end
+;====================
+undef("advect_scalar")
+function advect_scalar (u:numeric, v:numeric, x:numeric \
+                       ,gridType[1]:integer, con[1]:numeric \
+                       ,long_name:string, units:string, iopt[1]:integer)
+;
+; linear advection of a scalar quantity: UV.GRADIENT(X)
+;                                      : U*(dX/dlon) + V*(dX/dlat)
+;
+; Requires:
+;    (1) grid be global cuz spherical harmonics are used
+;    (2) required dimension order ([time,[lev,]lat,lon)
+;    (3) the input grids *must* be ordered South==>North
+; 
+; Nomenclature:
+;   u, v      - zonal and meridional wind components [m/s]
+;               rightmost dimensions must be ([...,]lat,lon)
+;   x         - scalar quantity to be advected 
+;               rightmost dimensions must be ([...,]lat,lon)
+;               eg: T, Z, divergence, vorticity, latent energy,..., whatever
+;   gridType  - type of grid: 0=gaussian, 1=fixed
+;   con       - constant which will multiply the final result
+;               usually  con=1
+;   long_name - descriptive name (eg: "Temperature Advection" )
+;   units     - units of result  (eg: "m-K/s" )
+;   iopt      - flag: =0 means input dimension names will be retained
+;                     =1 means input dimension names will be renamed
+;                      to "time", "lev", "lat", "lon" where appropriate.
+;   
+; Usage:
+;   f = addfile ("foo.nc", "r")
+;   u = f->U    ; (time,lev,lat,lon)
+;   v = f->V
+;   T = f->T
+;               ; linear advection of temperature
+;   Tadv = advect_scalar(u,v,T,0, 1.0,"linear advection of temperature","m-K/s",0)
+;
+local dimu, dimv, dimx, ranku, rankv, rankx, ier \
+    , x_grad_lon, x_grad_lat, advect
+begin
+                             ; ERROR CHECKING
+  dimu  = dimsizes(u)
+  dimv  = dimsizes(v)
+  dimx  = dimsizes(x)
+  ranku = dimsizes(dimu)
+  rankv = dimsizes(dimv)
+  rankx = dimsizes(dimx)
+
+  ier   = 0
+  if (.not.(gridType.eq.0 .or. gridType.eq.1)) then
+      print("advect_scalar: unrecognized gridType: only 0 and 1 allowed")
+      print("           gridType="+gridType)
+      ier = 1
+  end if
+  if (.not.(ranku.eq.rankv .and. ranku.eq.rankx)) then
+      print("advect_scalar: all input arguments must have the same rank")
+      print("           ranku="+ranku)
+      print("           rankv="+rankv)
+      print("           rankx="+rankx)
+      ier = ier + 10
+  end if
+  if (.not.(all(dimu.eq.dimv) .and. all(dimu.eq.dimx))) then
+      print("advect_scalar: all input arguments must have the same dimension sizes")
+      print("           ranku="+ranku)
+      print("           rankv="+rankv)
+      print("           rankx="+rankx)
+      ier = ier + 100
+  end if
+  if (rankx.lt.2) then
+      print("advect_scalar: variable rank must be at least 2D: ([time,[lev,]]lat,lon)")
+      print("advect_scalar: rank="+rankx+"D")
+      ier = ier + 1000
+  end if
+
+  dnam  = getvardims(x)             ; dimension names
+  ynam  = dnam(rankx-2)             ; latitude dimension name
+  if (.not.ismissing(ynam) .and. iscoord(x,ynam)) then
+      yord  = isMonotonic(x&$ynam$)
+      if (yord.le.0) then
+          print("advect_scalar: grid is not in South-to-North order.")
+          ier = ier + 10000
+      end if
+  else
+      print("advect_scalar: Warning: No named dimensions. Can not check grid order.")
+  end if
+
+  if (ier.ne.0) then
+      print("advect_scalar: fatal error(s) encountered: ier="+ier)
+      exit
+  end if
+
+  x_grad_lon = new( dimx, typeof(x), getFillValue(x) )
+  x_grad_lat = new( dimx, typeof(x), getFillValue(x) )
+  if (gridType.eq.0) then
+      gradsg  (x, x_grad_lon, x_grad_lat)
+  end if
+  if (gridType.eq.1) then
+      gradsf  (x, x_grad_lon, x_grad_lat)
+  end if
+                                        ; advection
+  advect = con*(u*x_grad_lon + v*x_grad_lat)
+                                        ; add meta data
+  copy_VarCoords(x, advect)
+  advect@long_name = long_name
+  advect@units     = units
+
+  if (iopt.eq.1) then
+      if (rankx.eq.2) then
+          advect!0 = "lat"
+          advect!1 = "lon"
+      end if
+      if (rankx.eq.3) then
+          advect!0 = "lev"
+          advect!1 = "lat"
+          advect!2 = "lon"
+      end if
+      if (rankx.eq.4) then
+          advect!0 = "time"
+          advect!1 = "lev"
+          advect!2 = "lat"
+          advect!3 = "lon"
+      end if
+   end if
+
+  return(advect)
+end
