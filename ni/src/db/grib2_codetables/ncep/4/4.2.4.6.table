@@ -3,7 +3,7 @@
 1:1:Solar X-ray flux (XRS long):W m-2:XLONG
 2:2:Solar X-ray flux (XRS short):W m-2:XSHORT
 3:3:Solar EUV irradiance:W m-2:EUVIRR
-4:4:Solar spectral irradiance:W m-2:SPECIRR
+4:4:Solar spectral irradiance:W m-2 nm-1:SPECIRR
 5:5:F10.7:W m-2 Hz-1:F107
 6:6:Solar radio emissions:W m-2 Hz-1:SOLRF
 # 7-191:7-191:Reserved:-:		

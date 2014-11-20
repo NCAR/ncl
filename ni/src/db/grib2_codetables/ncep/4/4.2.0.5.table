@@ -7,11 +7,10 @@
 5:5:Net long-wave radiation flux:W m-2:NLWRF
 6:6:Net long-wave radiation flux, clear sky:W m-2:NLWRCS
 # 7-191:7-191:Reserved:-:
-# 192-254:192-254:Reserved for Local Use:-:
-192:192:Downward long-wave rad. flux:W m-2:DLWRF
-193:193:Upward long-wave rad. flux:W m-2:ULWRF
+192:192:Downward long-wave radiation flux:W m-2:DLWRF
+193:193:Upward long-wave radiation flux:W m-2:ULWRF
 194:194:Long-wave radiative heating rate:K s-1:LWHR
-195:195:Clear sky upward long-wave flux:W m-2:CSULF
-196:196:Clear sky downward long-wave flux:W m-2:CSDLF
-197:197:Cloud forcing net long-wave flux:W m-2:CFNLF
+195:195:Clear sky upward long wave flux:W m-2:CSULF
+196:196:Clear sky downward long wave flux:W m-2:CSDLF
+197:197:Cloud forcing net long wave flux:W m-2:CFNLF
 255:255:Missing:-:

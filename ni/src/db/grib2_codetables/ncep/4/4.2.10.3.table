@@ -3,11 +3,11 @@
 1:1:Deviation of sea level from mean:m:DSLM
 # 2-191:2-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
-192:192:Storm surge:m:SURGE
+192:192:Hurricane storm surge:m:SURGE
 193:193:Extra tropical storm surge:m:ETSRG
 194:194:Ocean surface elevation relative to geoid:m:ELEV
 195:195:Sea surface height relative to geoid:m:SSHG
-196:196:Ocean mixed layer potential density (reference 2000m)<br:kg m-3:P2OMLT
+196:196:Ocean mixed layer potential density (reference 2000m):kg m-3:P2OMLT
 197:197:Net air-ocean heat flux:W m-2:AOHFLX
 198:198:Assimilative heat flux:W m-2:ASHFL
 199:199:Surface temperature trend:degree per day:SSTT

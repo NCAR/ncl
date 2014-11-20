@@ -13,6 +13,38 @@
 11:11:Simulated brightness temperature for AMSRE on Aqua, channel 10:K:AMSRE10
 12:12:Simulated brightness temperature for AMSRE on Aqua, channel 11:K:AMSRE11
 13:13:Simulated brightness temperature for AMSRE on Aqua, channel 12:K:AMSRE12
-# 14-191:14-191:Reserved:-:
+14:14:Simulated reflectance factor for ABI GOES-16, band-1::SRFA161
+15:15:Simulated reflectance factor for ABI GOES-16, band-2::SRFA162
+16:16:Simulated reflectance factor for ABI GOES-16, band-3::SRFA163
+17:17:Simulated reflectance factor for ABI GOES-16, band-4::SRFA164
+18:18:Simulated reflectance factor for ABI GOES-16, band-5::SRFA165
+19:19:Simulated reflectance factor for ABI GOES-16, band-6::SRFA166
+20:20:Simulated brightness temperature for ABI GOES-16, band-7:K:SBTA167
+21:21:Simulated brightness temperature for ABI GOES-16, band-8:K:SBTA168
+22:22:Simulated brightness temperature for ABI GOES-16, band-9:K:SBTA169
+23:23:Simulated brightness temperature for ABI GOES-16, band-10:K:SBTA1610
+24:24:Simulated brightness temperature for ABI GOES-16, band-11:K:SBTA1611
+25:25:Simulated brightness temperature for ABI GOES-16, band-12:K:SBTA1612
+26:26:Simulated brightness temperature for ABI GOES-16, band-13:K:SBTA1613
+27:27:Simulated brightness temperature for ABI GOES-16, band-14:K:SBTA1614
+28:28:Simulated brightness temperature for ABI GOES-16, band-15:K:SBTA1615
+29:29:Simulated brightness temperature for ABI GOES-16, band-16:K:SBTA1616
+30:30:Simulated reflectance factor for ABI GOES-17, band-1::SRFA171
+31:31:Simulated reflectance factor for ABI GOES-17, band-2::SRFA172
+32:32:Simulated reflectance factor for ABI GOES-17, band-3::SRFA173
+33:33:Simulated reflectance factor for ABI GOES-17, band-4::SRFA174
+34:34:Simulated reflectance factor for ABI GOES-17, band-5::SRFA175
+35:35:Simulated reflectance factor for ABI GOES-17, band-6::SRFA176
+36:36:Simulated brightness temperature for ABI GOES-17, band-7:K:SBTA177
+37:37:Simulated brightness temperature for ABI GOES-17, band-8:K:SBTA178
+38:38:Simulated brightness temperature for ABI GOES-17, band-9:K:SBTA179
+39:39:Simulated brightness temperature for ABI GOES-17, band-10:K:SBTA1710
+40:40:Simulated brightness temperature for ABI GOES-17, band-11:K:SBTA1711
+41:41:Simulated brightness temperature for ABI GOES-17, band-12:K:SBTA1712
+42:42:Simulated brightness temperature for ABI GOES-17, band-13:K:SBTA1713
+43:43:Simulated brightness temperature for ABI GOES-17, band-14:K:SBTA1714
+44:44:Simulated brightness temperature for ABI GOES-17, band-15:K:SBTA1715
+45:45:Simulated brightness temperature for ABI GOES-17, band-16:K:SBTA1716
+# 46-191:46-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 255:255:Missing:-:

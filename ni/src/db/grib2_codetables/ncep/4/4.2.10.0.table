@@ -1,54 +1,51 @@
 # GRIBv2 - Table 4.2-10-0 Oceanographic - Waves
-0:0:Wave spectra (1):non-dim:WVSP1
-1:1:Wave spectra (2):non-dim:WVSP2
-2:2:Wave spectra (3):non-dim:WVSP3
+0:0:Wave spectra (1):-:WVSP1
+1:1:Wave spectra (2):-:WVSP2
+2:2:Wave spectra (3):-:WVSP3
 3:3:Significant height of combined wind waves and swell:m:HTSGW
-4:4:Direction of wind waves:Degree True:WVDIR
+4:4:Direction of wind waves:degree true:WVDIR
 5:5:Significant height of wind waves:m:WVHGT
 6:6:Mean period of wind waves:s:WVPER
-7:7:Direction of swell waves:Degree True:SWDIR
 8:8:Significant height of swell waves:m:SWELL
 9:9:Mean period of swell waves:s:SWPER
-10:10:Primary wave direction:Degree True:DIRPW
+10:10:Primary wave direction:degree true:DIRPW
 11:11:Primary wave mean period:s:PERPW
-12:12:Secondary wave direction:Degree True:DIRSW
+12:12:Secondary wave direction:degree true:DIRSW
 13:13:Secondary wave mean period:s:PERSW
-14:14:Direction of combined wind waves and swell:Degree True:WWSDIR
+14:14:Direction of combined wind waves and swell:degree true:WWSDIR
 15:15:Mean period of combined wind waves and swell:s:MWSPER
-16:16:Coefficient of drag with waves:non-dim:
-17:17:Friction velocity:m s-1:
-18:18:Wave stress:N m-2:
-19:19:Normalised waves stress:non-dim:
-20:20:Mean square slope of waves:non-dim:
-21:21:U-component surface stokes drift:m s-1:
-22:21:V-component surface stokes drift:m s-1:
-23:23:Period of maximum individual wave height:s:
-24:24:Maximum individual wave height:m:
-25:25:Inverse mean wave frequency:s:
-26:26:Inverse mean frequency of the wind waves:s:
-27:27:Inverse mean frequency of the total swell:s:
-28:28:Mean zero-crossing wave period:s:
-29:29:Mean zero-crossing period of the wind waves:s:
-30:30:Mean zero-crossing period of the total swell:s:
-31:31:Wave directional width:non-dim:
-32:32:Directional width of the wind waves:non-dim:
-33:33:Directional width of the total swell:non-dim:
-34:34:Peak wave period:s:
-35:35:Peak period of the wind waves:s:
-36:36:Peak period of the total swell:s:
-37:37:Altimeter wave height:m:
-38:38:Altimeter corrected wave height:m:
-39:39:Altimeter range relative correction:non-dim:
-40:40:10 Meter neutral wind speed over waves:ms-1:
-41:41:10 Meter wind direction over waves:Degree True:
-42:42:Wave energy spectrum:m-2s rad-1:
-43:43:Kurtosis of the sea surface elevation due to waves:non-dim
-44:44:Benjamin-Feir index:non-dim:
-45:45:Spectral peakedness factor:s-1:
-46:46:2-Dimension spectral energy density E(f,theta):m s-2:
-47:47:Frequency spectral energy density E(f)=Integral(E(f,theta))dtheta:m s-2:
-48:48:Directional spectral energy density E(theta)=IntegralE(f,theta)dtheta/m0:m s-2:
-# 49-191:49-191:Reserved:-:
+16:16:Coefficient of drag with waves:-:CDWW
+17:17:Friction velocity:m s-1:FRICV
+18:18:Wave stress:N m-2:WSTR
+19:19:Normalised waves stress:-:NWSTR
+20:20:Mean square slope of waves:-:MSSW
+21:21:U-component surface stokes drift:m s-1:USSD
+22:22:V-component surface stokes drift:m s-1:VSSD
+23:23:Period of maximum individual wave height:s:PMAXWH
+24:24:Maximum individual wave height:m:MAXWH
+25:25:Inverse mean wave frequency:s:IMWF
+26:26:Inverse mean frequency of the wind waves:s:IMFWW
+27:27:Inverse mean frequency of the total swell:s:IMFTSW
+28:28:Mean zero-crossing wave period:s:MZWPER
+29:29:Mean zero-crossing period of the wind waves:s:MZPWW
+30:30:Mean zero-crossing period of the total swell:s:MZPTSW
+31:31:Wave directional width:-:WDIRW
+32:32:Directional width of the wind waves:-:DIRWWW
+33:33:Directional width of the total swell:-:DIRWTS
+34:34:Peak wave period:s:PWPER
+35:35:Peak period of the wind waves:s:PPERWW
+36:36:Peak period of the total swell:s:PPERTS
+37:37:Altimeter wave height:m:ALTWH
+38:38:Altimeter corrected wave height:m:ALCWH
+39:39:Altimeter range relative correction:-:ALRRC
+40:40:10 metre neutral wind speed over waves:m s-1:MNWSOW
+41:41:10 metre wind direction over waves:degree true:MWDIRW
+42:42:Wave engery spectrum:m-2 s rad-1:WESP
+43:43:Kurtosis of the sea surface elevation due to waves:-:KSSEW
+44:44:Benjamin-feir index:-:BENINX
+45:45:Spectral peakedness factor:s-1:SPFTR
+# 46-191:46-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
-192:192:Wave steepness:-:WSTP
+192:192:Wave steepness:proportion:WSTP
+193:193:Wave length::WLENG
 255:255:Missing:-:

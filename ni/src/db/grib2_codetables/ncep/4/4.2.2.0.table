@@ -32,7 +32,9 @@
 30:30:Deciduous Forest:Numeric:
 31:31:Normalized Differential Vegetation Index (NDVI):Numeric:
 32:32:Root Depth of Vegetation:m:
-# 33-191:33-191:Reserved:-:
+33:33:Water runoff and drainage:kg m-2:WROD
+34:34:Surface water runoff:kg m-2:SFCWRO
+# 35-191:35191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:Volumetric soil moisture content:Fraction:SOILW
 193:193:Ground heat flux:W m-2:GFLUX
@@ -50,27 +52,27 @@
 205:205:Soil moisture parameter in canopy conductance:Fraction:RCSOL
 206:206:Rate of water dropping from canopy to ground:-:RDRIP
 207:207:Ice-free water surface:%:ICWAT
-208:208:Surface exchange coefficients for t and q divided by delta z:m/s:AKHS
-209:209:Surface exchange coefficients for u and v divided by delta z:m/s:AKMS
+208:208:Surface exchange coefficients for t and q divided by delta z:m s-1:AKHS
+209:209:Surface exchange coefficients for u and v divided by delta z:m s-1:AKMS
 210:210:Vegetation canopy temperature:K:VEGT
-211:211:Surface water storage:Kg/m2:SSTOR
-212:212:Liquid soil moisture content (non-frozen):Kg/m2:LSOIL
-213:213:Open water evaporation (standing water):W/m2:EWATR
-214:214:Groundwater recharge:kg/m2:GWREC
-215:215:Flood plain recharge:kg/m2:QREC
+211:211:Surface water storage:Kg m-2:SSTOR
+212:212:Liquid soil moisture content (non-frozen):Kg m-2:LSOIL
+213:213:Open water evaporation (standing water):W m-2:EWATR
+214:214:Groundwater recharge:kg m-2:GWREC
+215:215:Flood plain recharge:kg m-2:QREC
 216:216:Roughness length for heat:m:SFCRH
 217:217:Normalized difference vegetation index:-:NDVI
 218:218:Land-sea coverage (nearest neighbor) [land=1,sea=0]:-:LANDN
 219:219:Asymptotic mixing length scale:m:AMIXL
-220:220:Water vapor added by precip assimilation:kg/m2:WVINC
-221:221:Water condensate added by precip assimilation:kg/m2:WCINC
-222:222:Water vapor flux convergance (vertical int):kg/m2:WVCONV
-223:223:Water condensate flux convergance (vertical int):kg/m2:WCCONV
-224:224:Water vapor zonal flux (vertical int):kg/m2:WVUFLX
-225:225:Water vapor meridional flux (vertical int):kg/m2:WVVFLX
-226:226:Water condensate zonal flux (vertical int):kg/m2:WCUFLX
-227:227:Water condensate meridional flux (vertical int):kg/m2:WCVFLX
-228:228:Aerodynamic conductance:m/s:ACOND
-229:229:Canopy water evaporation:W/m2:EVCW
-230:230:Transpiration:W/m2:TRANS
+220:220:Water vapor added by precip assimilation:kg m-2:WVINC
+221:221:Water condensate added by precip assimilation:kg m-2:WCINC
+222:222:Water vapor flux convergance (vertical int):kg m-2:WVCONV
+223:223:Water condensate flux convergance (vertical int):kg m-2:WCCONV
+224:224:Water vapor zonal flux (vertical int):kg m-2:WVUFLX
+225:225:Water vapor meridional flux (vertical int):kg m-2:WVVFLX
+226:226:Water condensate zonal flux (vertical int):kg m-2:WCUFLX
+227:227:Water condensate meridional flux (vertical int):kg m-2:WCVFLX
+228:228:Aerodynamic conductance:m s-1:ACOND
+229:229:Canopy water evaporation:W m-2:EVCW
+230:230:Transpiration:W m-2:TRANS
 255:255:Missing:-:

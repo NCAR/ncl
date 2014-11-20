@@ -1,0 +1,17 @@
+# GRIBv2 - Table 4.2-1-2 Hydrological - Inland water and sediment properties
+0:0:Water depth:m:WDPTHIL
+1:1:Water temperature:K:WTMPIL
+2:2:Water fraction:Proportion:WFRACT
+3:3:Sediment thickness:m:SEDTK
+4:4:Sediment temperature:K:SEDTMP
+5:5:Ice thickness:m:ICTKIL
+6:6:Ice temperature:K:ICETIL
+7:7:Ice cover:Proportion:ICECIL
+8:8:Land cover (0=water, 1=land):Proportion:LANDIL
+9:9:Shape factor with respect to salinity profile:-:SFSAL
+10:10:Shape factor with respect to temperature profile in thermocline:-:SFTMP
+11:11:Attenuation coefficient of water with respect to solar radiation:m-1:ACWSR
+12:12:Salinity:kg kg-1:SALTIL
+# 12-191:12-191:Reserved:-:
+# 192-254:192-254:Reserved for Local Use:-:
+255:255:Missing:-:

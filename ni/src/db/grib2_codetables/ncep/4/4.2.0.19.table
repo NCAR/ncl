@@ -3,7 +3,7 @@
 1:1:Albedo:%:ALBDO
 2:2:Thunderstorm probability:%:TSTM
 3:3:Mixed layer depth:m:MIXHT
-4:4:Volcanic ash:Code Table 4.206:VOLASH
+4:4:Volcanic ash:Code Table 4.20:VOLASH
 5:5:Icing top:m:ICIT
 6:6:Icing base:m:ICIB
 7:7:Icing:Code Table 4.207:ICI
@@ -21,11 +21,12 @@
 19:19:Snow albedo:%:SALBD
 20:20:Icing:%:ICIP
 21:21:In-cloud turbulence:%:CTP
-22:22:Clear air turbulence (CAT):%:CAT
-23:23:Supercooled large droplet (SLD) probability:%:SLDP
-24:24:Convective turbulent kinetic energy:J kg-1:
-25:25:Weather interpretation ww (WMO):non-dim:
+22:22:Clear air turbulence:%:CAT
+23:23:Supercooled large droplet probability:%:SLDP
+24:24:Convective turbulent kinetic energy:J kg-1:CONTKE
+25:25:Weather:Code Table 4.225:WIWW
 26:26:Convective outlook:Code Table 4.224:CONVO
+27:27:Icing scenario:Code Table 4.227:ICESC
 # 27-191:27-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:Maximum snow albedo:%:MXSALB
@@ -39,7 +40,7 @@
 200:200:Significant tornado probability:%:STORPROB
 201:201:Significant hail probability:%:SHAILPRO
 202:202:Significant wind probability:%:SWINDPRO
-203:203:Categorical thunderstorm (1-yes, 0-no):categorical:TSTMC
+203:203:Categorical thunderstorm:Code table 4.222:TSTMC
 204:204:Number of mixed layers next to surface:integer:MIXLY
 205:205:Flight category:-:FLGHT
 206:206:Confidence - ceiling:-:CICEL
@@ -53,14 +54,14 @@
 214:214:Near IR, white sky albedo:%:NWSALB
 215:215:Total probability of severe thunderstorms (days 2,3):%:PRSVR
 216:216:Total probability of extreme severe thunderstorms (days 2,3):%:PRSIGSVR
-217:217:Supercooled large droplet (SLD) icing:Code Table 4.207:SIPD
+217:217:Supercooled large droplet icing:Code Table 4.207:SIPD
 218:218:Radiative emissivity:-:EPSR
 219:219:Turbulence potential forecast index:-:TPFI
 220:220:Categorical severe thunderstorm:Code table 4.222:SVRTS
 221:221:Probability of convection:%:PROCON
 222:222:Convection potential:Code table 4.222:CONVP
 # 220-231:220-231:Reserved:-:
-232:232:Volcanic ash forecast transport and dispersion:log10(kg/m3):VAFTD
+232:232:Volcanic ash forecast transport and dispersion:log10 (kg m-3):VAFTD
 233:233:Icing probability:non-dim:ICPRB
 234:234:Icing severity:non-dim:ICSEV
 255:255:Missing:-:

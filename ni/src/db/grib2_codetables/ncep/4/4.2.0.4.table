@@ -1,24 +1,23 @@
 # GRIBv2 - Table 4.2-0-4 Meteorological - Short-Wave Radiation
 0:0:Net short-wave radiation flux (surface):W m-2:NSWRS
-1:1:Net short-wave radiation flux (top of atmosphere):W m-2:NSWRT
+1:1:Net short-wave radiation flux (top of atmosphere):W m-3:NSWRT
 2:2:Short-wave radiation flux:W m-2:SWAVR
 3:3:Global radiation flux:W m-2:GRAD
 4:4:Brightness temperature:K:BRTMP
 5:5:Radiance (with respect to wave number):W m-1 sr-1:LWRAD
 6:6:Radiance (with respect to wavelength):W m-3 sr-1:SWRAD
-7:7:Downward short-wave rad. flux:W m-2:DSWRF
-8:8:Upward short-wave rad. flux:W m-2:USWRF
+7:7:Downward short-wave radiation flux:W m-2:DSWRF
+8:8:Upward short-wave radiation flux:W m-2:USWRF
 9:9:Net short wave radiation flux:W m-2:NSWRF
 10:10:Photosynthetically active radiation:W m-2:PHOTAR
 11:11:Net short-wave radiation flux, clear sky:W m-2:NSWRFCS
 12:12:Downward UV radiation:W m-2:DWUVR
-# 13-49:13-49:Reserved:-:
+#12-49:12-49:Reserved:-:
 50:50:UV index (under clear sky):Numeric:UVIUCS
 51:51:UV index:W m-2:UVI
-# 52-191:52-191:Reserved:-:
-# 192-254:192-254:Reserved for Local Use:-:
-192:192:Downward short-wave rad. flux:W m-2:DSWRF
-193:193:Upward short-wave rad. flux:W m-2:USWRF
+#52-191:52-191:Reserved:-:
+192:192:Downward short-wave radiation flux:W m-2:DSWRF
+193:193:Upward short-wave radiation flux:W m-2:USWRF
 194:194:UV-B downward solar flux:W m-2:DUVB
 195:195:Clear sky UV-B downward solar flux:W m-2:CDUVB
 196:196:Clear sky downward solar flux:W m-2:CSDSF
@@ -27,8 +26,7 @@
 199:199:Cloud forcing net solar flux:W m-2:CFNSF
 200:200:Visible beam downward solar flux:W m-2:VBDSF
 201:201:Visible diffuse downward solar flux:W m-2:VDDSF
-202:202:Near ir beam downward solar flux:W m-2:NBDSF
-203:203:Near ir diffuse downward solar flux:W m-2:NDDSF
+202:202:Near IR beam downward solar flux:W m-2:NBDSF
+203:203:Near IR diffuse downward solar flux:W m-2:NDDSF
 204:204:Downward total radiation flux:W m-2:DTRF
 205:205:Upward total radiation flux:W m-2:UTRF
-255:255:Missing:-:

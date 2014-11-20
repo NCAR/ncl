@@ -2,8 +2,8 @@
 0:0:Aerosol type:Code Table 4.205:AEROT
 # 1-191:1-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
-192:192:Particulate matter (coarse):mcg/m3:PMTC
-193:193:Particulate matter (fine):mcg/m3:PMTF
-194:194:Particulate matter (fine):log10(mcg/m3):LPMTF
-195:195:Integrated column particulate matter (fine):log10(mcg/m3):LIPMF
+192:192:Particulate matter (coarse):mcg m-3:PMTC
+193:193:Particulate matter (fine):mcg m-3:PMTF
+194:194:Particulate matter (fine):log10(mcg m-3):LPMTF
+195:195:Integrated column particulate matter (fine):log10(mcg m-3):LIPMF
 255:255:Missing:-:

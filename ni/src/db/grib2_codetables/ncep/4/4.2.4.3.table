@@ -3,10 +3,10 @@
 1:1:First vector component of magnetic field:T:BVEC1
 2:2:Second vector component of magnetic field:T:BVEC2
 3:3:Third vector component of magnetic field:T:BVEC3
-4:4:Electric field magnitude:T:ETOT
-5:5:First vector component of electric field:T:EVEC1
-6:6:Second vector component of electric field:T:EVEC2
-7:7:Third vector component of electric field:T:EVEC3
-# 7-191:7-191:Reserved:-:		
+4:4:Electric field magnitude:V m-1:ETOT
+5:5:1st vector component of electric field:V m-1:EVEC1
+6:6:2nd vector component of electric field:V m-1:EVEC2
+7:7:3rd vector component of electric field:V m-1:EVEC3
+# 8-191:8-191:Reserved:-:		
 # 192-254:192:254:Reserved for Local Use:-:
 255:255:Missing:-:

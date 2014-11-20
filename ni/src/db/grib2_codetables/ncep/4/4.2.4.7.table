@@ -1,8 +1,8 @@
 # GRIBv2 - Table 4.2-4.6 Space Weather Products, Terrestrial Electromagnetic Emissions
-0:0:Limb intensity:m-2s-1:LMBINT
-1:1:Disk intensity:m-2s-1:DSKINT
-2:2:Disk intensity day:m-2s-1:DSKDAY
-3:3:Disk intensity night:DSKNGT
+0:0:Limb intensity:m-2 s-1:LMBINT
+1:1:Disk intensity:m-2 s-1:DSKINT
+2:2:Disk intensity day:m-2 s-1:DSKDAY
+3:3:Disk intensity night:m-2 s-1:DSKNGT
 # 4-191:4-191:Reserved:-:		
 # 192-254:192:254:Reserved for Local Use:-:
 255:255:Missing:-:

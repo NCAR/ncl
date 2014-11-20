@@ -1,13 +1,12 @@
 # GRIBv2 - Table 4.2-0-191 Meteorological - Miscellaneous
 0:0:Seconds prior to initial reference time (defined in section 1):s:TSEC
-1:1:Geographical latitude:deg N:
-2:2:Geographical longitude:deg E:
-# 1-191:1-191:Reserved:-:
-# 192-254:192-254:Reserved for Local Use:-:
-192:192:Latitude (-90 to +90):deg:NLAT
-193:193:East longitude (0 - 360):deg:ELON
+1:1:Geographical latitude:deg N:GEOLAT
+2:2:Geographical longitude:deg E:GEOLON
+3:3:Days since last observation:d:DSLOBSM
+192:192:Latitude (-90 to 90):deg:NLAT
+193:193:East longitude (0 to 360):deg:ELON
 194:194:Seconds prior to initial reference time:s:TSEC
 195:195:Model layer number (from bottom up):-:MLYNO
-196:196:Latitude (nearest neighbor) (-90 to +90):deg:NLATN
-197:197:East longitude (nearest neighbor) (0 - 360):deg:ELONN
+196:196:Latitude (nearest neighbor) (-90 to 90):deg:NLATN
+197:197:East longitude (nearest neighbor) (0 to 360):deg:ELONN
 255:255:Missing:-:

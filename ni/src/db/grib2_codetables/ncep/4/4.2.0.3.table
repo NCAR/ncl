@@ -20,14 +20,15 @@
 18:18:Planetary boundary layer height:m:HPBL
 19:19:5-wave geopotential height anomaly:gpm:5WAVA
 20:20:Standard deviation of sub-grid scale orography:m:SDSGSO
-21:21:Angle of sub-grid scale orography:Rad:AOSGSO
+21:21:Angle of sub-grid scale orography:rad:AOSGSO
 22:22:Slope of sub-grid scale orography:Numeric:SSGSO
-23:23:Gravity of sub-grid scale orography:W m-2:GSGSO
+23:23:Gravity wave dissipation:W m-2:GWD
 24:24:Anisotropy of sub-grid scale orography:Numeric:ASGSO
-25:25:Natural logarithm of pressure in Pa:Numeric:NLPRES
-# 25-191:25-191:Reserved:-:
+25:25:Natural logarithm of pressure in pa:Numeric:NLPRES
+26:26:Exner pressure:Numeric:EXPRES
+# 27-191:25-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
-192:192:MSLP (Eta model reduction):Pa:MSLET
+192:192:MSLP (ETA model reduction):Pa:MSLET
 193:193:5-wave geopotential height:gpm:5WAVH
 194:194:Zonal flux of gravity wave stress:N m-2:UGWD
 195:195:Meridional flux of gravity wave stress:N m-2:VGWD
@@ -36,16 +37,26 @@
 198:198:MSLP (MAPS system reduction):Pa:MSLMA
 199:199:3-hr pressure tendency (std. atmos. reduction):Pa s-1:TSLSA
 200:200:Pressure of level from which parcel was lifted:Pa:PLPL
-201:201:X-gradient of log pressure:1/m:LPSX
-202:202:Y-gradient of log pressure:1/m:LPSY
-203:203:X-gradient of height:1/m:HGTX
-204:204:Y-gradient of height:1/m:HGTY
+201:201:X-gradient of log pressure:m-1:LPSX
+202:202:Y-gradient of log pressure:m-1:LPSY
+203:203:X-gradient of height:m-1:HGTX
+204:204:Y-gradient of height:m-1:HGTY
 205:205:Layer thickness:m:LAYTH
 206:206:Natural log of surface pressure:ln(kPa):NLGSP
-207:207:Convective updraft mass flux:kg/m2/s:CNVUMF
-208:208:Convective downdraft mass flux:kg/m2/s:CNVDMF
-209:209:Convective detrainment mass flux:kg/m2/s:CNVDEMF
+207:207:Convective updraft mass flux:kg m-2 s-1:CNVUMF
+208:208:Convective downdraft mass flux:kg m-2 s-1:CNVDMF
+209:209:Convective detrainment mass flux:kg m-2 s-1:CNVDEMF
 210:210:Mass point model surface:-:LMH
 211:211:Geopotential height (nearest grid point):gpm:HGTN
 212:212:Pressure (nearest grid point):Pa:PRESN
+213:213:Orographic convexity:-:ORCONV
+214:214:Orographic asymmetry, w component:-:ORASW
+215:215:Orographic asymmetry, s component:-:ORASS
+216:216:Orographic asymmetry, sw component:-:ORASSW
+217:217:Orographic asymmetry, nw component:-:ORASNW
+218:218:Orographic length scale, w component:-:ORLSW
+219:219:Orographic length scale, s component:-:ORLSS
+220:220:Orographic length scale, sw component:-:ORLSSW
+221:221:Orographic length scale, nw component:-:ORLSNW
 255:255:Missing:-:
+

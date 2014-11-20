@@ -1,7 +1,7 @@
 # GRIBv2 - Table 4.2-1-1 Hydrological - Hydrology Probabilities
 0:0:Conditional percent precipitation amount fractile for an overall period (encoded as an accumulation):kg m-2:CPPOP
 1:1:Percent precipitation in a sub-period of an overall period (encoded as a percent accumulation over the sub-period):%:PPOSP
-2:2:Probability of 0.01 inch of precipitation (POP):%:POP
+2:2:Probability of 0.01 inch of precipitation:%:POP
 # 3-191:3-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:Probability of freezing precipitation:%:CPOZP

@@ -23,7 +23,7 @@
 21:21:Soil ice:kg m-3:
 22:22:Column-integrated soil ice:kg m-2:
 # 22-191:22-191:Reserved:-:
-# 192-254:192-254:Reserved for Local Use:-:
+# 204-254:204-254:Reserved for Local Use:-:
 192:192:Liquid volumetric soil moisture (non frozen):Proportion:SOILL
 193:193:Number of soil layers in root zone:non-dim:RLYRS
 194:194:Surface slope type:Index:SLTYP

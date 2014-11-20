@@ -1,17 +1,16 @@
 # GRIBv2 - Table 4.2-0-18 Meteorological - Nuclear/Radiology
-0:0:Air concentration of Cesium 137:Bq m-3:ACCES
-1:1:Air concentration of Iodine 131:Bq m-3:ACIOD
+0:0:Air concentration of caesium 137:Bq m-3:ACCES
+1:1:Air concentration of iodine 131:Bq m-3:ACIOD
 2:2:Air concentration of radioactive pollutant:Bq m-3:ACRADP
-3:3:Ground deposition of Cesium 137:Bq m-2:GDCES
-4:4:Ground deposition of Iodine 131:Bq m-2:GDIOD
+3:3:Ground deposition of caesium 137:Bq m-2:GDCES
+4:4:Ground deposition of iodine 131:Bq m-2:GDIOD
 5:5:Ground deposition of radioactive pollutant:Bq m-2:GDRADP
-6:6:Time integrated air concentration of cesium pollutant:Bq m-3:TIACCP
-7:7:Time integrated air concentration of iodine pollutant:Bq m-3:TIACIP
-8:8:Time integrated air concentration of radioactive pollutant:Bq m-3:TIACRP
+6:6:Time integrated air concentration of cesium pollutant:Bq s m-3:TIACCP
+8:8:Time integrated air concentration of radioactive pollutant:Bq s m-3:TIACRP
 10:10:Air concentration:Bq m-3:AIRCON
 11:11:Wet deposition:Bq m-2:WETDEP
 12:12:Dry deposition:Bq m-2:DRYDEP
-13:13:Total Deposition (Wet + Dry):Bq m-2:TOTLWD
-# 24-191:24-191:Reserved:-:
+13:13:Total deposition (wet + dry):Bq m-2:TOTLWD
+# 14-191:14-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 255:255:Missing:-:

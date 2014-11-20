@@ -6,7 +6,8 @@
 4:4:Snow water equivalent percent of normal:%:SWEPON
 5:5:Baseflow-groundwater runoff:kg m-2:BGRUN
 6:6:Storm surface runoff:kg m-2:SSRUN
-# 7-191:7-191:Reserved:-:
+7:7:Discharge from rivers or streams:m3 s-1:DISRS
+# 8-191:8-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:Baseflow-groundwater runoff:kg m-2:BGRUN
 193:193:Storm surface runoff:kg m-2:SSRUN

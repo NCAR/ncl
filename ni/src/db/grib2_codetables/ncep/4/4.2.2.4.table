@@ -2,6 +2,8 @@
 0:0:Fire outlook:Code table 4.224:FIREOLK
 1:1:Fire outlook due to dry thunderstorm:Code table 4.224:FIREODT
 2:2:Haines index:Numeric:HINDEX
-# 3-191:3-191:Reserved:-:
+3:3:Fire burned area:%:FBAREA
+4:4:Fosberg index:Numeric:FOSINDX
+# 5-191:5-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 255:255:Missing:-:

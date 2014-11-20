@@ -5,15 +5,15 @@
 # 3-191:3-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:Ozone mixing ratio:kg kg-1:O3MR
-193:193:Ozone concentration (PPB):PPB:OZCON
-194:194:Categorical ozone concentration:Non-Dim:OZCAT
-195:195:Ozone vertical diffusion:kg/kg/s:VDFOZ
-196:196:Ozone production:kg/kg/s:POZ
-197:197:Ozone tendency:kg/kg/s:TOZ
-198:198:Ozone production from temperature term:kg/kg/s:POZT
-199:199:Ozone production from column ozone term:kg/kg/s:POZO
+193:193:Ozone concentration:ppb:OZCON
+194:194:Categorical ozone concentration:non-dim:OZCAT
+195:195:Ozone vertical diffusion:kg kg-1 s-1:VDFOZ
+196:196:Ozone production:kg kg-1 s-1:POZ
+197:197:Ozone tendency:kg kg-1 s-1:TOZ
+198:198:Ozone production from temperature term:kg kg-1 s-1:POZT
+199:199:Ozone production from column ozone term:kg kg-1 s-1:POZO
 200:200:Ozone daily max from 1-hour average:ppbV:OZMAX1
 201:201:Ozone daily max from 8-hour average:ppbV:OZMAX8
-202:202:PM 2.5 daily max from 1-hour average:mcg/m3:PDMAX1
-203:203:PM 2.5 daily max from 24-hour average:mcg/m3:PDMAX24
+202:202:Pm 2.5 daily max from 1-hour average:mcg m-3:PDMAX1
+203:203:Pm 2.5 daily max from 24-hour average:mcg m-3:PDMAX24
 255:255:Missing:-:
