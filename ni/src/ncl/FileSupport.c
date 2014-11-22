@@ -103,6 +103,8 @@ NhlErrorTypes _NclBuildOriginalFileCoordRSelection
 	
 	int index = -1;
 	int vindex = -1;
+	ng_size_t len_dims = 1;
+	void *tval;
 /*
 * Preconditions: subscripts are SCALAR and integer guarenteed!!!!
 */
@@ -161,12 +163,22 @@ NhlErrorTypes _NclBuildOriginalFileCoordRSelection
 			coord_md = _NclVarValueRead((NclVar)cvar,NULL,NULL);
 			the_type = _NclGetVarRepValue((NclVar)cvar);
 			if(!(the_type & range->finish->multidval.type->type_class.type)) {
-				tmp_md = _NclCoerceData(range->finish,the_type,NULL);
-				if(tmp_md == NULL) {
+				/*tmp_md = _NclCoerceData(range->finish,the_type,NULL);
+				  if(tmp_md == NULL) {*/
+				tval = NclMalloc(coord_md->multidval.type->type_class.size);
+                                if (! _NclScalarForcedCoerce(range->finish->multidval.val,range->finish->multidval.data_type,tval,coord_md->multidval.data_type)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",dim_num);
+					if(cvar->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)cvar);
+					}
+					if(coord_md->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)coord_md);
+					}
+					NclFree(tval);
                                         return(NhlFATAL);
-
 				} else {
+					tmp_md = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)tval,
+								     NULL,1,&len_dims,TEMPORARY,NULL,coord_md->multidval.type);
 					if(range->finish->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)range->finish);
 					}
@@ -187,8 +199,10 @@ NhlErrorTypes _NclBuildOriginalFileCoordRSelection
 			coord_md = _NclVarValueRead((NclVar)cvar,NULL,NULL);
 			the_type = _NclGetVarRepValue((NclVar)cvar);
 			if(!(the_type & range->start->multidval.type->type_class.type)) {
-				tmp_md = _NclCoerceData(range->start,the_type,NULL);
-				if(tmp_md == NULL) {
+				/*tmp_md = _NclCoerceData(range->start,the_type,NULL);
+				  if(tmp_md == NULL) {*/
+				tval = NclMalloc(coord_md->multidval.type->type_class.size);
+				if (! _NclScalarForcedCoerce(range->start->multidval.val,range->start->multidval.data_type,tval,coord_md->multidval.data_type)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",dim_num);
 					if(cvar->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)cvar);
@@ -196,13 +210,16 @@ NhlErrorTypes _NclBuildOriginalFileCoordRSelection
 					if(coord_md->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)coord_md);
 					}
+					NclFree(tval);
                                         return(NhlFATAL);
 
 				} else {
 					if(range->start->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)range->start);
 					}
-					range->start= tmp_md;
+					tmp_md = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)tval,
+								     NULL,1,&len_dims,TEMPORARY,NULL,coord_md->multidval.type);
+					range->start = tmp_md;
 				}
 			}
 			if(_NclGetCoordRange(coord_md,range->start->multidval.val,NULL,&sel->u.sub.start,&sel->u.sub.finish) == NhlFATAL) {
@@ -222,8 +239,10 @@ NhlErrorTypes _NclBuildOriginalFileCoordRSelection
                         the_type = _NclGetVarRepValue((NclVar)cvar);
 
                         if(!(the_type & range->start->multidval.type->type_class.type)) {
-                                tmp_md = _NclCoerceData(range->start,the_type,NULL);
-                                if(tmp_md == NULL) {
+                                /*tmp_md = _NclCoerceData(range->start,the_type,NULL);
+				  if(tmp_md == NULL) {*/
+				tval = NclMalloc(coord_md->multidval.type->type_class.size);
+				if (! _NclScalarForcedCoerce(range->start->multidval.val,range->start->multidval.data_type,tval,coord_md->multidval.data_type)) {
                                         NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",dim_num);
                                         if(cvar->obj.status != PERMANENT) {
                                                 _NclDestroyObj((NclObj)cvar);
@@ -231,12 +250,15 @@ NhlErrorTypes _NclBuildOriginalFileCoordRSelection
                                         if(coord_md->obj.status != PERMANENT) {
                                                 _NclDestroyObj((NclObj)coord_md);
                                         }
+					NclFree(tval);
                                         return(NhlFATAL);
 
                                 } else {
                                         if(range->start->obj.status != PERMANENT) {
                                                 _NclDestroyObj((NclObj)range->start);
                                         }
+					tmp_md = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)tval,
+								     NULL,1,&len_dims,TEMPORARY,NULL,coord_md->multidval.type);
                                         range->finish = range->start= tmp_md;
                                 }
                         }
@@ -262,36 +284,50 @@ NhlErrorTypes _NclBuildOriginalFileCoordRSelection
 			the_type = _NclGetVarRepValue((NclVar)cvar);
 
 			if(!(the_type & range->start->multidval.type->type_class.type)) {
-				tmp_md = _NclCoerceData(range->start,the_type,NULL);
-				if(tmp_md == NULL) {
+				/*tmp_md = _NclCoerceData(range->start,the_type,NULL);
+				  if(tmp_md == NULL) {*/
+				tval = NclMalloc(coord_md->multidval.type->type_class.size);
+				if (! _NclScalarForcedCoerce(range->start->multidval.val,range->start->multidval.data_type,tval,coord_md->multidval.data_type)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",dim_num);
+					if(coord_md->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)coord_md);
+					}
 					if(cvar->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)cvar);
 					}
-                                        return(NhlFATAL);
-
+					NclFree(tval);
+					return(NhlFATAL);
 				} else {
 					if(range->start->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)range->start);
 					}
+					tmp_md = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)tval,
+								     NULL,1,&len_dims,TEMPORARY,NULL,coord_md->multidval.type);
 					range->start= tmp_md;
 				}
 			}
 
 			tmp_md = NULL;
 			if(!(the_type & range->finish->multidval.type->type_class.type)) {
-				tmp_md = _NclCoerceData(range->finish,the_type,NULL);
-				if(tmp_md == NULL) {
+				/*tmp_md = _NclCoerceData(range->finish,the_type,NULL);
+				  if(tmp_md == NULL) {*/
+				tval = NclMalloc(coord_md->multidval.type->type_class.size);
+				if (! _NclScalarForcedCoerce(range->finish->multidval.val,range->finish->multidval.data_type,tval,coord_md->multidval.data_type)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",dim_num);
+					if(coord_md->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)coord_md);
+					}
 					if(cvar->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)cvar);
 					}
-                                        return(NhlFATAL);
-
+					NclFree(tval);
+					return(NhlFATAL);
 				} else {
 					if(range->finish->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)range->finish);
 					}
+					tmp_md = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)tval,
+								     NULL,1,&len_dims,TEMPORARY,NULL,coord_md->multidval.type);
 					range->finish = tmp_md;
 				}
 			}
@@ -340,10 +376,11 @@ NhlErrorTypes _NclBuildAdvancedFileCoordRSelection(struct _NclFileRec* file,
 
     char* v_name;
     char* f_name;
-    
     int i;
-
     NclCoordVar cvar = NULL;
+    ng_size_t len_dims = 1;
+    void *tval;
+
 
 /*
 * Preconditions: subscripts are SCALAR and integer guarenteed!!!!
@@ -424,20 +461,30 @@ NhlErrorTypes _NclBuildAdvancedFileCoordRSelection(struct _NclFileRec* file,
             coord_md = _NclVarValueRead((NclVar)cvar,NULL,NULL);
             the_type = _NclGetVarRepValue((NclVar)cvar);
             if(!(the_type & range->finish->multidval.type->type_class.type))
-            {
-                tmp_md = _NclCoerceData(range->finish,the_type,NULL);
-                if(tmp_md == NULL)
-                {
+	    {
+		      /*tmp_md = _NclCoerceData(range->finish,the_type,NULL);
+			if(tmp_md == NULL)*/
+		tval = NclMalloc(coord_md->multidval.type->type_class.size);
+		if (! _NclScalarForcedCoerce(range->finish->multidval.val,range->finish->multidval.data_type,tval,coord_md->multidval.data_type))
+		{
                     NhlPError(NhlFATAL,NhlEUNKNOWN,
                               "Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",
                               dim_num);
-                    return(NhlFATAL);
+		    if(coord_md->obj.status != PERMANENT) {
+			    _NclDestroyObj((NclObj)coord_md);
+		    }
+		    if(cvar->obj.status != PERMANENT) {
+			    _NclDestroyObj((NclObj)cvar);
+		    }
+		    NclFree(tval);
+		    return(NhlFATAL);
                 }
                 else
                 {
                     if(range->finish->obj.status != PERMANENT)
                         _NclDestroyObj((NclObj)range->finish);
-
+		    tmp_md = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)tval,
+						 NULL,1,&len_dims,TEMPORARY,NULL,coord_md->multidval.type);
                     range->finish = tmp_md;
                 }
             }
@@ -460,8 +507,10 @@ NhlErrorTypes _NclBuildAdvancedFileCoordRSelection(struct _NclFileRec* file,
 
             if(!(the_type & range->start->multidval.type->type_class.type))
             {
-                tmp_md = _NclCoerceData(range->start,the_type,NULL);
-                if(tmp_md == NULL)
+		/*tmp_md = _NclCoerceData(range->start,the_type,NULL);
+		  if(tmp_md == NULL)*/
+		tval = NclMalloc(coord_md->multidval.type->type_class.size);
+		if (! _NclScalarForcedCoerce(range->start->multidval.val,range->start->multidval.data_type,tval,coord_md->multidval.data_type)) 
                 {
                     if(cvar->obj.status != PERMANENT)
                         _NclDestroyObj((NclObj)cvar);
@@ -469,6 +518,7 @@ NhlErrorTypes _NclBuildAdvancedFileCoordRSelection(struct _NclFileRec* file,
                     if(coord_md->obj.status != PERMANENT)
                         _NclDestroyObj((NclObj)coord_md);
 
+		    NclFree(tval);
                     NhlPError(NhlFATAL,NhlEUNKNOWN,
                               "Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",
                               dim_num);
@@ -479,7 +529,8 @@ NhlErrorTypes _NclBuildAdvancedFileCoordRSelection(struct _NclFileRec* file,
                 {
                     if(range->start->obj.status != PERMANENT)
                         _NclDestroyObj((NclObj)range->start);
-
+		    tmp_md = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)tval,
+						 NULL,1,&len_dims,TEMPORARY,NULL,coord_md->multidval.type);
                     range->start= tmp_md;
                 }
             }
@@ -505,14 +556,18 @@ NhlErrorTypes _NclBuildAdvancedFileCoordRSelection(struct _NclFileRec* file,
 
             if(!(the_type & range->start->multidval.type->type_class.type))
             {
-                tmp_md = _NclCoerceData(range->start,the_type,NULL);
-                if(tmp_md == NULL)
+	        /*tmp_md = _NclCoerceData(range->start,the_type,NULL);
+		  if(tmp_md == NULL)*/
+		tval = NclMalloc(coord_md->multidval.type->type_class.size);
+		if (! _NclScalarForcedCoerce(range->start->multidval.val,range->start->multidval.data_type,tval,coord_md->multidval.data_type))
                 {
                     if(cvar->obj.status != PERMANENT)
                         _NclDestroyObj((NclObj)cvar);
 
                     if(coord_md->obj.status != PERMANENT)
                         _NclDestroyObj((NclObj)coord_md);
+
+		    NclFree(tval);
 
                     NhlPError(NhlFATAL,NhlEUNKNOWN,
                               "Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",
@@ -523,7 +578,8 @@ NhlErrorTypes _NclBuildAdvancedFileCoordRSelection(struct _NclFileRec* file,
                 {
                     if(range->start->obj.status != PERMANENT)
                         _NclDestroyObj((NclObj)range->start);
-
+		    tmp_md = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)tval,
+						 NULL,1,&len_dims,TEMPORARY,NULL,coord_md->multidval.type);
                     range->finish = range->start= tmp_md;
                 }
             }
@@ -551,22 +607,30 @@ NhlErrorTypes _NclBuildAdvancedFileCoordRSelection(struct _NclFileRec* file,
 
             if(!(the_type & range->start->multidval.type->type_class.type))
             {
-                tmp_md = _NclCoerceData(range->start,the_type,NULL);
-                if(tmp_md == NULL)
+		/*tmp_md = _NclCoerceData(range->start,the_type,NULL);
+		  if(tmp_md == NULL)*/
+		tval = NclMalloc(coord_md->multidval.type->type_class.size);
+		if (! _NclScalarForcedCoerce(range->start->multidval.val,range->start->multidval.data_type,tval,coord_md->multidval.data_type))
                 {
-                    if(cvar->obj.status != PERMANENT)
-                        _NclDestroyObj((NclObj)cvar);
-
                     NhlPError(NhlFATAL,NhlEUNKNOWN,
                               "Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",
                               dim_num);
-                    return(NhlFATAL);
+		    if(coord_md->obj.status != PERMANENT) {
+			    _NclDestroyObj((NclObj)coord_md);
+		    }
+		    if(cvar->obj.status != PERMANENT) {
+			    _NclDestroyObj((NclObj)cvar);
+		    }
+		    NclFree(tval);
+		    return(NhlFATAL);
                 }
                 else
                 {
                     if(range->start->obj.status != PERMANENT) {
                         _NclDestroyObj((NclObj)range->start);
                     }
+		    tmp_md = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)tval,
+						 NULL,1,&len_dims,TEMPORARY,NULL,coord_md->multidval.type);
                     range->start= tmp_md;
                 }
             }
@@ -574,22 +638,29 @@ NhlErrorTypes _NclBuildAdvancedFileCoordRSelection(struct _NclFileRec* file,
             tmp_md = NULL;
             if(!(the_type & range->finish->multidval.type->type_class.type))
             {
-                tmp_md = _NclCoerceData(range->finish,the_type,NULL);
-                if(tmp_md == NULL)
+		/*tmp_md = _NclCoerceData(range->finish,the_type,NULL);
+		  if(tmp_md == NULL)*/
+		tval = NclMalloc(coord_md->multidval.type->type_class.size);
+		if (! _NclScalarForcedCoerce(range->finish->multidval.val,range->finish->multidval.data_type,tval,coord_md->multidval.data_type))
                 {
-                    if(cvar->obj.status != PERMANENT)
-                        _NclDestroyObj((NclObj)cvar);
-
                     NhlPError(NhlFATAL,NhlEUNKNOWN,
                               "Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",
                               dim_num);
+		    if(coord_md->obj.status != PERMANENT) {
+			    _NclDestroyObj((NclObj)coord_md);
+		    }
+		    if(cvar->obj.status != PERMANENT) {
+			    _NclDestroyObj((NclObj)cvar);
+		    }
+		    NclFree(tval);
                     return(NhlFATAL);
                 }
                 else
                 {
                     if(range->finish->obj.status != PERMANENT)
                         _NclDestroyObj((NclObj)range->finish);
-
+		    tmp_md = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)tval,
+						 NULL,1,&len_dims,TEMPORARY,NULL,coord_md->multidval.type);
                     range->finish = tmp_md;
                 }
             }
@@ -4223,8 +4294,6 @@ ng_size_t *_NclFileReadChunkSizes(NclFile thefile, int *nchunks)
 {
 	ng_size_t *chunksize = NULL;
 
-	char *class_name;
-
 	*nchunks = 0;
 
 	if(thefile == NULL)
@@ -4232,7 +4301,6 @@ ng_size_t *_NclFileReadChunkSizes(NclFile thefile, int *nchunks)
 		return chunksize;
 	}
 
-	class_name = thefile->obj.class_ptr->obj_class.class_name;
 
 	if (thefile->file.advanced_file_structure) 
 	{
