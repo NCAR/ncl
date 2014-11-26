@@ -1,4 +1,4 @@
-;
+; 
 ;      $Id: contributed.ncl,v 1.273 2010-05-07 17:38:12 haley Exp $
 ;
 ;
@@ -15019,13 +15019,11 @@ begin
   end if
 end
 ;====================
-undef("advect_scalar")
-function advect_scalar (u:numeric, v:numeric, x:numeric \
-                       ,gridType[1]:integer, con[1]:numeric \
+undef("advect_var")
+function advect_var (u:numeric, v:numeric, x:numeric,gridType[1]:integer 
                        ,long_name:string, units:string, iopt[1]:integer)
 ;
-; linear advection of a scalar quantity: UV.GRADIENT(X)
-;                                      : U*(dX/dlon) + V*(dX/dlat)
+; compute advection of a variable: UV.GRADIENT(X) ; U*(dX/dlon) + V*(dX/dlat)
 ;
 ; Requires:
 ;    (1) grid be global cuz spherical harmonics are used
@@ -15039,21 +15037,18 @@ function advect_scalar (u:numeric, v:numeric, x:numeric \
 ;               rightmost dimensions must be ([...,]lat,lon)
 ;               eg: T, Z, divergence, vorticity, latent energy,..., whatever
 ;   gridType  - type of grid: 0=gaussian, 1=fixed
-;   con       - constant which will multiply the final result
-;               usually  con=1
 ;   long_name - descriptive name (eg: "Temperature Advection" )
 ;   units     - units of result  (eg: "m-K/s" )
-;   iopt      - flag: =0 means input dimension names will be retained
-;                     =1 means input dimension names will be renamed
-;                      to "time", "lev", "lat", "lon" where appropriate.
-;   
+;   iopt      - flag: =0 means return only the advect result          
+;                     =1 means return the advect, longitidinal and latitudinal gradient
+;                        as part of a list
 ; Usage:
 ;   f = addfile ("foo.nc", "r")
 ;   u = f->U    ; (time,lev,lat,lon)
 ;   v = f->V
 ;   T = f->T
 ;               ; linear advection of temperature
-;   Tadv = advect_scalar(u,v,T,0, 1.0,"linear advection of temperature","m-K/s",0)
+;   Tadv = advect_var(u,v,T,0,"linear advection of temperature","m-K/s",0)
 ;
 local dimu, dimv, dimx, ranku, rankv, rankx, ier \
     , x_grad_lon, x_grad_lat, advect
@@ -15068,27 +15063,27 @@ begin
 
   ier   = 0
   if (.not.(gridType.eq.0 .or. gridType.eq.1)) then
-      print("advect_scalar: unrecognized gridType: only 0 and 1 allowed")
-      print("           gridType="+gridType)
+      print("advect_var: unrecognized gridType: only 0 and 1 allowed")
+      print("            gridType="+gridType)
       ier = 1
   end if
   if (.not.(ranku.eq.rankv .and. ranku.eq.rankx)) then
-      print("advect_scalar: all input arguments must have the same rank")
-      print("           ranku="+ranku)
-      print("           rankv="+rankv)
-      print("           rankx="+rankx)
+      print("advect_var: all input arguments must have the same rank")
+      print("            ranku="+ranku)
+      print("            rankv="+rankv)
+      print("            rankx="+rankx)
       ier = ier + 10
   end if
   if (.not.(all(dimu.eq.dimv) .and. all(dimu.eq.dimx))) then
-      print("advect_scalar: all input arguments must have the same dimension sizes")
-      print("           ranku="+ranku)
-      print("           rankv="+rankv)
-      print("           rankx="+rankx)
+      print("advect_var: all input arguments must have the same dimension sizes")
+      print("            ranku="+ranku)
+      print("            rankv="+rankv)
+      print("            rankx="+rankx)
       ier = ier + 100
   end if
   if (rankx.lt.2) then
-      print("advect_scalar: variable rank must be at least 2D: ([time,[lev,]]lat,lon)")
-      print("advect_scalar: rank="+rankx+"D")
+      print("advect_var: variable rank must be at least 2D: ([time,[lev,]lat,plon)")
+      print("advect_var: rank="+rankx+"D")
       ier = ier + 1000
   end if
 
@@ -15097,20 +15092,21 @@ begin
   if (.not.ismissing(ynam) .and. iscoord(x,ynam)) then
       yord  = isMonotonic(x&$ynam$)
       if (yord.le.0) then
-          print("advect_scalar: grid is not in South-to-North order.")
+          print("advect_var: grid is not in South-to-North order.")
           ier = ier + 10000
       end if
   else
-      print("advect_scalar: Warning: No named dimensions. Can not check grid order.")
+      print("advect_var: Warning: No named dimensions. Can not check grid order.")
   end if
 
   if (ier.ne.0) then
-      print("advect_scalar: fatal error(s) encountered: ier="+ier)
+      print("advect_var fatal error(s) encountered: ier="+ier)
       exit
   end if
 
   x_grad_lon = new( dimx, typeof(x), getFillValue(x) )
   x_grad_lat = new( dimx, typeof(x), getFillValue(x) )
+
   if (gridType.eq.0) then
       gradsg  (x, x_grad_lon, x_grad_lat)
   end if
@@ -15118,29 +15114,142 @@ begin
       gradsf  (x, x_grad_lon, x_grad_lat)
   end if
                                         ; advection
-  advect = con*(u*x_grad_lon + v*x_grad_lat)
+  advect = u*x_grad_lon + v*x_grad_lat
                                         ; add meta data
   copy_VarCoords(x, advect)
   advect@long_name = long_name
   advect@units     = units
 
-  if (iopt.eq.1) then
-      if (rankx.eq.2) then
-          advect!0 = "lat"
-          advect!1 = "lon"
-      end if
-      if (rankx.eq.3) then
-          advect!0 = "lev"
-          advect!1 = "lat"
-          advect!2 = "lon"
-      end if
-      if (rankx.eq.4) then
-          advect!0 = "time"
-          advect!1 = "lev"
-          advect!2 = "lat"
-          advect!3 = "lon"
-      end if
-   end if
+  if (iopt.eq.0) then
+      return(advect)
+  else
+      copy_VarCoords(x, x_grad_lon)
+      x_grad_lon@long_name = "longitudinal gradient"
+
+      copy_VarCoords(x, x_grad_lat)
+      x_grad_lat@long_name = "latitudinal gradient"
+
+      return([/ advect, x_grad_lon, x_grad_lat /] )
+  end if
 
   return(advect)
+end
+;---
+undef("wgt_vertavg")
+function wgt_vertavg (X:numeric, dp:numeric, lev_dim[1]:integer, iopt:integer)
+; 
+; Perform weighted vertical average
+; 
+; Requirement: X must be in the following order: ([time,],lev,lat,lon)
+;
+; Nomenclature:
+; X         - array to be integrated. No missing data allowed
+; dp        - pressure thickness computed by "dpres_hybrid_ccm" or "dpres_plevel"
+;             Must be the same size/shape as X
+;             No missing data allowed.
+; lev_dim   - level dimension
+;             lev_dim = 0                            ; (lev), (0); (time,lev),  (0,1) 
+;                                                    ; (lev,lat,lon),  (0,1,2) 
+;             lev_dim = 1                            ; (time,lev,lat,lon), (0,1,2,3)
+;             lev_dim = 2                            ; (case,time,lev,lat,lon), (01,2,3,4)
+; iopt      - flag: =0 means input dimension names will be retained
+;                   =1 means input dimension names will be renamed
+;                      to "time", "lat", "lon" where appropriate.
+;+++++++++++++++++++++++
+; Usage for hybrid levels
+;        f = addfile("....", "r")
+;        hyai = f->hyai
+;        hybi = f->hybi
+;        p0   = f->P0                               ; p0=1000 or p0=100000
+;        ps   = f->PS
+;    
+;        dp   = dpres_hybrid_ccm (ps,p0,hyai,hybi)  ; Pa [kg/(m s2)]
+;--------------------
+; Usage for pressure levels
+;        f   = addfile("....", "r")
+;        lev = f->lev  ; (/  1,  2,  3,  5,   7, 10, 20, 30, \   ; hPa 
+;                           50, 70,100,150, 200,250,300,400, \
+;                          500,600,700,775, 850,925,1000 /)
+;                      ; uniys of lev and psfc must match
+;        psfc= f->PS   ; PA         (time,lat,lon)
+;        lev = lev*100 ; make PA to match psfc       
+;        lev@units = "PA"
+;
+;        ptop= 0       ; integrate 0==>psfc at each grid point
+;
+;                      ; dp(klev,nlat,mlon) or dp(ntim,klev,nlat,mlon)
+;        dp  = dpres_plevel(lev, psfc, ptop, 0)     ; Pa [kg/(m s2)]
+;--------------------
+; Use the 'dp' from above
+;        t    = f->T                                ; (time,lev,lat,lon)
+;        xvi  = wgt_vertavg(t, dp,  1, 0)
+
+local dimX, dimDP, rankX, Xdp, vsum, wsum, vavg
+begin
+
+  dimX  = dimsizes( X )
+  dimDP = dimsizes( dp )
+  rankX = dimsizes( dimX )
+
+  if (.not.all(dimDP.eq.dimX) ) then  ; error check
+      print("wgt_vertavg: dimension sizes are not equal")
+      print("wgt_vertavg:  dimX="+dimX)
+      print("wgt_vertavg: dimDP="+dimsizes(dp) )
+      exit
+  end if
+
+  if (isatt(X,"_FillValue") .and. any(ismissing(X)) ) then  ; error check
+      print("wgt_vertavg: No _FillValue allowed")
+      print("wgt_vertavg: X: nFill="+num(ismissing(X)))
+      exit
+  end if
+
+  if (isatt(dp,"_FillValue") .and. any(ismissing(dp)) ) then  ; error check
+      print("wgt_vertavg: No _FillValue allowed")
+      print("wgt_vertavg: dp: nFill="+num(ismissing(dp)))
+      exit
+  end if
+
+  Xdp  = X*dp                                ; [? kg/(m s2)]   (temporary variable)
+  copy_VarCoords(X, Xdp)
+
+  vsum = dim_sum_n_Wrap( Xdp, lev_dim )      ; sum vertically [ie integrate]
+  wsum = dim_sum_n_Wrap( dp , lev_dim )      ;  "      " 
+  vavg = vsum/wsum                           ; one less dimension (no vertical dim)
+  copy_VarMeta(vsum, vavg) 
+
+  vavg@NCL_op = "Weighted Vertical Average"
+  vsum@NCL_op = "Weighted Vertical Sum"
+  wsum@NCL_op = "Summed Weights"
+
+  if (iopt.eq.0) then
+      return(vavg)
+  else
+      return([/ vavg, vsum, wsum /] )
+  end if
+
+  return( vavg )
+end
+;---
+undef("log1px")
+function log1px(x:numeric)
+; Common function in other languages 
+local y, Fill
+begin
+  if (isatt(x,"_FillValue")) then
+      Fill = x@_FillValue
+  else
+      if (typeof(x).eq."double") then
+          Fill = 1d20
+      else
+          Fill = 1e20
+      end if
+  end if
+
+  y = where((1+x).gt.0, log(1+x), Fill)   
+
+  if (any(y.eq.Fill)) then
+      y@_FillValue = Fill
+  end if
+  return (y)
 end
