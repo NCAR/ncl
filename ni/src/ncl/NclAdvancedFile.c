@@ -1940,7 +1940,7 @@ NclFileGrpNode *_getGrpNodeFromNclFileGrpNode(NclFileGrpNode *ingrpnode,
    *fprintf(stderr, "\tgrpname: <%s>\n", NrmQuarkToString(grpname));
    */
 
-    if(grpname == ingrpnode->name)
+    if((grpname == ingrpnode->name) || (grpname == ingrpnode->real_name))
     {
        outgrpnode =  ingrpnode;
        goto done_getGrpNodeFromNclFileGrpNode;

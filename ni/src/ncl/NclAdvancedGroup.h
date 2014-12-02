@@ -25,7 +25,7 @@
 #include "NclAdvancedFile.h"
 #include "NclFileInterfaces.h"
 
-extern NclGroup *_NclAdvancedGroupCreate(NclObj       inst,
+extern NclAdvancedFile _NclAdvancedGroupCreate(NclObj       inst,
                                     NclObjClass  theclass,
                                     NclObjTypes  obj_type,
                                     unsigned int obj_type_mask,

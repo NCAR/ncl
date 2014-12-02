@@ -4076,7 +4076,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 	if(! is_http)
 	{
-#if 0
+#if 1
 		NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 		/* Check if want advanced file-strucuture */
 		if(NULL != fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value)

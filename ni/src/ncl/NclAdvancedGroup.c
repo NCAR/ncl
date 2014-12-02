@@ -16,7 +16,6 @@
 #include "NclVar.h"
 #include "NclFile.h"
 #include "NclAdvancedFile.h"
-#include "NclGroup.h"
 #include "NclAdvancedGroup.h"
 #include "NclFileInterfaces.h"
 #include "DataSupport.h"
@@ -274,9 +273,9 @@ static void UpdateAdvancedGroupDims(NclAdvancedFile group_out, NclFileGrpNode *g
 }
 #endif
 
-NclGroup *_NclAdvancedGroupCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
-                             unsigned int obj_type_mask, NclStatus status,
-                             NclFile file_in, NclQuark group_name)
+NclAdvancedFile _NclAdvancedGroupCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
+                                        unsigned int obj_type_mask, NclStatus status,
+                                        NclFile file_in, NclQuark group_name)
 {
     NclAdvancedFile thefile = (NclAdvancedFile) file_in;
     NclAdvancedFile group_out = NULL;
@@ -389,6 +388,6 @@ NclGroup *_NclAdvancedGroupCreate(NclObj inst, NclObjClass theclass, NclObjTypes
    *fprintf(stderr, "Leave _NclAdvancedGroupCreate, file: %s, line:%d\n\n", __FILE__, __LINE__);
    */
 
-    return ((NclGroup *)group_out);
+    return group_out;
 }
 
