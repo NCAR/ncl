@@ -40,6 +40,7 @@
 #ifdef NIO_LIB_ONLY
 #include "niohlu.h"
 #include "nioNresDB.h"
+#include "nioUtils.h"
 #else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
@@ -6887,6 +6888,8 @@ NhlErrorTypes H5AddCompound(void *rec, NclQuark compound_name, NclQuark var_name
         }
 
         varnode->comprec = comp_rec;
+
+        varnode->udt_type = NCL_UDT_compound;
     }
 
     NclFree(udt_mem_name);
@@ -7204,6 +7207,7 @@ NclFileVarNode *H5AddEnumVar(void* therec, NclQuark thevar,
     varnode->id   =  -1;
     varnode->type = (NCL_enum | ncl_type);
     varnode->udt  = NULL;
+    varnode->udt_type = NCL_UDT_enum;
 
     for(i = 0 ; i < n_dims; i++)
     {
@@ -7338,6 +7342,7 @@ static NhlErrorTypes H5AddOpaqueVar(void* therec, NclQuark thevar,
 
     varnode->udt = (void *) grpnode->udt_rec;
     varnode->type = (varnode->type | NCL_opaque);
+    varnode->udt_type = NCL_UDT_opaque;
 
   /*
    *fprintf(stderr, "Leave H5AddOpaqueVar, file: %s, line: %d\n\n", __FILE__, __LINE__);
@@ -7385,7 +7390,7 @@ NhlErrorTypes H5AddOpaque(void *rec, NclQuark opaque_name, NclQuark var_name,
     return ret;
 }
 
-static NhlErrorTypes H5AddVlenVar(void* therec, NclQuark thevar,
+static NhlErrorTypes H5AddVlenVar(void* therec, NclQuark thevar, NclBasicDataTypes ncl_type,
                                   ng_size_t n_dims, NclQuark *dim_names, long *dim_sizes)
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
@@ -7412,6 +7417,8 @@ static NhlErrorTypes H5AddVlenVar(void* therec, NclQuark thevar,
     i = grpnode->var_rec->n_vars - 1;
     varnode = &(grpnode->var_rec->var_node[i]);
     varnode->gid = grpnode->fid;
+    varnode->base_type = ncl_type;
+    varnode->udt_type = NCL_UDT_vlen;
     for(i = 0 ; i < n_dims; i++)
     {
         for(j = 0; j < grpnode->dim_rec->n_dims; j++)
@@ -7481,7 +7488,7 @@ NhlErrorTypes H5AddVlen(void *rec, NclQuark vlen_name, NclQuark var_name,
         dim_sizes[n] = (long) dimnode->size;
     }
 
-    ret = H5AddVlenVar(rec, var_name, n_dims, dim_names, dim_sizes);
+    ret = H5AddVlenVar(rec, var_name, ncl_type, n_dims, dim_names, dim_sizes);
 
   /*
    *fprintf(stderr, "\tdim_sizes[0]= %d\n", dim_sizes[0]);

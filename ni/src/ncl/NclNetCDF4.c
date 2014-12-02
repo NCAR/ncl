@@ -67,10 +67,6 @@ static ng_usize_t ChunkSizeHint;
 static NrmQuark Qmissing_val;
 static NrmQuark Qfill_val;
 
-/*
-static int machine_endianness = NC_ENDIAN_NATIVE;
-*/
-
 #define NC_NUM_OPTIONS  (1 + Ncl_RECORD_MARKER_SIZE)
 
 static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
@@ -329,19 +325,6 @@ static int NC4InitializeOptions(NclFileGrpNode *grpnode)
     *(float *)options[Ncl_CACHE_PREEMPTION].values = 0.25;
 
     grpnode->options = options;
-
-  /*Check Machine Endianness*/
-#if 0
-    {
-        int num = 1;
-
-        if(*(char *)&num == 1)
-            machine_endianness = NC_ENDIAN_LITTLE:
-        else
-            machine_endianness = NC_ENDIAN_BIG:
-    }
-#endif
-
     return 0;
 }
 
@@ -621,7 +604,9 @@ int set_compound_attnode(int ncid, int aid, NclFileAttNode **thenode)
         compnode->sides = sides;
         compnode->nvals = 1;
 
-        nc_inq_compound_size(ncid, xtype, &size);
+      /*
+       *nc_inq_compound_size(ncid, xtype, &size);
+       */
 
         for(i = 0; i < rank; i++)
         {
@@ -1176,8 +1161,8 @@ NclFileCompoundRecord *get_nc4_compoundrec(int ncid, nc_type xtype, NrmQuark **c
     comprec->xtype = xtype;
     comprec->base_nc_type = base_nc_type;
 
-    *componentnamesptr = (NrmQuark*)NclMalloc(nfields * sizeof(NrmQuark));
-    componentnames = *componentnamesptr;
+    componentnames = (NrmQuark*)NclMalloc(nfields * sizeof(NrmQuark));
+    *componentnamesptr = componentnames;
 
     for(fidx = 0; fidx < nfields; fidx++)
     {
@@ -1233,6 +1218,131 @@ NclFileCompoundRecord *get_nc4_compoundrec(int ncid, nc_type xtype, NrmQuark **c
    */
 
     return comprec;
+}
+
+NclMultiDValData get_nc4_compoundlist(int ncid, int varid)
+{
+    NclList compoundlist;
+    size_t size;
+    size_t nfields;
+    nc_type base_nc_type, xtype;
+    int ncl_class;
+
+    int dimids[NCL_MAX_DIMENSIONS];
+    char var_name[NC_MAX_NAME];
+    char buffer[NC_MAX_NAME];
+    int natts, ndims, ncompounddims;
+    nc_type var_type;
+    int i, k;
+    int  complength = 1;
+
+    size_t nvals = 1;
+    void *values;
+
+    NclQuark  dimnames[NCL_MAX_DIMENSIONS];
+    ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+    ng_size_t compounddimsizes[1];
+
+    void *compoundvalues;
+    NclVar compoundvar;
+
+    obj *listids = NULL;
+
+    size_t offset;
+    nc_type field_typeid;
+    int field_sizes[64];
+    int field_ndims = 0;
+
+    NclMultiDValData compound_md;
+
+    nc_inq_var(ncid, varid, buffer, &xtype, &ndims, dimids, &natts);
+    nc_inq_user_type(ncid, xtype, buffer, &size, 
+                    &base_nc_type, &nfields, &ncl_class);
+
+  /*
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tname: <%s>\n", buffer);
+   *fprintf(stderr, "\tsize: %d, base_nc_type: %d, nfields: %d, ncl_class: %d\n",
+   *                  size, base_nc_type, nfields, ncl_class);
+   */
+
+    switch(ncl_class)
+    {
+        case NC_COMPOUND:
+             break;
+        default:
+             fprintf(stderr, "\tfile: %s, line: %d\n\n", __FILE__, __LINE__);
+             fprintf(stderr, "\tncl_class  %d\n", ncl_class);
+             fprintf(stderr, "\tWe Thought It Was COMPOUND Data, But NOT.\n");
+             exit ( -1 );
+             break;
+    }
+
+    nc_inq_compound(ncid, xtype, buffer, &size, &nfields);
+    complength = (int)size;
+  /*
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tsize = %d, nfields = %d\n", (int)size, nfields);
+   */
+
+    nc_inq_var(ncid, varid, var_name, &var_type, &ndims, dimids, &natts);
+
+  /*
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tvar_name: <%s>, var_type = %d, ndims = %d, dimids[0] = %d, natts = %d\n",
+   *                   var_name, var_type, ndims, dimids[0], natts);
+   */
+
+    nvals = 1;
+    for(i = 0; i < ndims; ++i)
+    {
+        nc_inq_dim(ncid, dimids[i], buffer, &size);
+        dimsizes[i] = (ng_size_t)size;
+        dimnames[i] = NrmStringToQuark(buffer);
+        nvals *= size;
+      /*
+       *fprintf(stderr, "\tdim[%d] name: %s, size: %d\n", i, buffer, (int)size);
+       */
+    }
+
+  /*
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tnvals = %d, complength = %d\n", (int)nvals, (int)complength);
+   */
+
+    values = (void *)NclCalloc(nvals * complength, sizeof(void));
+    assert(values);
+
+    listids = (obj *)NclMalloc(nvals * sizeof(obj));
+    assert(listids);
+
+    _NclBuildArrayOfList(listids, ndims, dimsizes);
+
+    nc_get_var(ncid, varid, values);
+
+    ncompounddims = 1;
+    compounddimsizes[0] = complength;
+    dimnames[0] = NrmStringToQuark("compound_dim");
+    for(i = 0; i < nvals; i++)
+    {
+        compoundvalues = (void *)NclCalloc(complength, sizeof(void));
+        assert(compoundvalues);
+        memcpy(compoundvalues, values + i * complength, complength);
+
+        sprintf(buffer, "%s_%3.3d", var_name, i);
+        compoundvar = _NclCreateVlenVar(buffer, compoundvalues,
+                                    ncompounddims, dimnames,
+                                    compounddimsizes, NCL_char);
+        compoundlist = _NclGetObj(listids[i]);
+        _NclListAppend((NclObj)compoundlist, (NclObj)compoundvar);
+    }
+
+    free(values);
+
+    compound_md = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,0,listids,
+                                              NULL,ndims,dimsizes,TEMPORARY,NULL);
+
+    return compound_md;
 }
 
 NclMultiDValData get_nc4_vlenlist(int ncid, int varid, nc_type xtype, NclBasicDataTypes* vlentype)
@@ -2270,7 +2380,7 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
        *     The array must have one chunksize for each dimension in the variable. 
        */
         nc_inq_var_chunking(gid, i, &storage_in, chunksizes);
-        varnode->is_chunked = -1;
+        varnode->is_chunked = 0;
         if(NC_CHUNKED == storage_in)
         {
             nc_inq_var_deflate(gid, i, &(varnode->shuffle), &deflatep, &(varnode->compress_level));
@@ -2403,7 +2513,7 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
                                          unlimited_dim_idx, NrmQuarkToString(grpnode->real_name));
 
     /*check chunking info*/
-    if((NULL != grpnode->dim_rec) && (NULL != grpnode->var_rec) && (0 == grpnode->is_chunked))
+    if((NULL != grpnode->dim_rec) && (NULL != grpnode->var_rec) && (! grpnode->is_chunked))
     {
         grpnode->shuffle = 1;
         grpnode->compress_level = 0;
@@ -2717,6 +2827,7 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
     NclFileDimNode *dimnode;
     NclFileDimNode *chunkdimnode;
 
+    ng_size_t *dims;
     size_t *chunk_dims;
 
     int deflate = 1;
@@ -2728,12 +2839,39 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
 
     if(NULL != grpnode->chunk_dim_rec)
     {
-        chunk_dims = (size_t *) NclCalloc(grpnode->chunk_dim_rec->n_dims, sizeof(size_t));
+        dims = (ng_size_t *) NclCalloc(grpnode->dim_rec->n_dims, sizeof(ng_size_t));
+        assert(dims);
+        chunk_dims = (size_t *) NclCalloc(grpnode->dim_rec->n_dims, sizeof(size_t));
         assert(chunk_dims);
 
-        for(i = 0; i < grpnode->chunk_dim_rec->n_dims; i++)
+        for(i = 0; i < grpnode->dim_rec->n_dims; i++)
         {
+            dimnode = &(grpnode->dim_rec->dim_node[i]);
             chunkdimnode = &(grpnode->chunk_dim_rec->dim_node[i]);
+
+            if(NULL == chunkdimnode)
+            {
+              /*
+               *fprintf(stderr, "dim name: <%s> has no chunk name related.\n",
+               *                 NrmQuarkToString(dimnode->name));
+               *fprintf(stderr, "No more file-wise chunking and compress check.\n");
+               */
+
+                break;
+            }
+
+            if(dimnode->name != chunkdimnode->name)
+            {
+              /*
+               *fprintf(stderr, "dim name: <%s> and chunk_dim name: <%s> are different.\n",
+               *    NrmQuarkToString(dimnode->name), NrmQuarkToString(chunkdimnode->name));
+               *fprintf(stderr, "No more file-wise chunking and compress check.\n");
+               */
+
+                break;
+            }
+
+            dims[i] = dimnode->size;
 
             chunk_dims[i] = (size_t)chunkdimnode->size;
         }
@@ -2745,20 +2883,16 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
         {
             varnode = &(grpnode->var_rec->var_node[j]);
 
-            if((NULL == varnode->chunk_dim_rec) && (-1 != varnode->is_chunked))
+            if(NULL == varnode->chunk_dim_rec)
             {
                 for(i = 0; i < varnode->dim_rec->n_dims; i++)
                 {
                     chunkdimnode = _getChunkDimNodeFromNclFileGrpNode(grpnode,
                                        varnode->dim_rec->dim_node[i].name);
-
-                    if(NULL != chunkdimnode)
-                    {
-                        _addNclDimNode(&(varnode->chunk_dim_rec),
-                                       varnode->dim_rec->dim_node[i].name,
-                                       chunkdimnode->size, chunkdimnode->id,
-                                       varnode->dim_rec->dim_node[i].is_unlimited);
-                    }
+                    _addNclDimNode(&(varnode->chunk_dim_rec),
+                                   varnode->dim_rec->dim_node[i].name,
+                                   chunkdimnode->size, chunkdimnode->id,
+                                   varnode->dim_rec->dim_node[i].is_unlimited);
                 }
 
                 nc_ret = nc_def_var_chunking(id, varnode->id, storage, chunk_dims);
@@ -2779,10 +2913,10 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
                     deflate_level = varnode->compress_level;
 
                   /*
-                   *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-                   *fprintf(stderr, "\t\tvarnode->shuffle = %d, compress_level = %d\n",
-                   *                     varnode->shuffle, varnode->compress_level);
                    */
+                    fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+                    fprintf(stderr, "\t\tvarnode->shuffle = %d, compress_level = %d\n",
+                                         varnode->shuffle, varnode->compress_level);
 
                     nc_ret = nc_def_var_deflate(id, varnode->id, varnode->shuffle,
                                 deflate, deflate_level);
@@ -2807,6 +2941,7 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
             }
         }
 
+        free(dims);
         free(chunk_dims);
     }
 }
@@ -2959,6 +3094,7 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
            */
 
             nc_inq_var(varnode->gid, varnode->id, name, &xtype, &ndims, dimids, &natts);
+            varnode->udt_type = NCL_UDT_compound;
 
           /*
            *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -2981,86 +3117,92 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
                 numval *= varnode->dim_rec->dim_node[i].size;
 
             component_name =  _getComponentName(NrmQuarkToString(thevar), &struct_name);
-            if(NULL == component_name)
+            if(NULL != component_name)
             {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,
-                    "NclNetCDF4: Variable (%s) is not in file (%s)",
-                    NrmQuarkToString(thevar),NrmQuarkToString(grpnode->path));
-                return(NULL);
-            }
-
-            for(n = 0; n < nfields; n++)
-            {
-                nc_inq_compound_field(varnode->gid, xtype, n, name, &offset, &field_typeid,
-                                     &field_ndims, field_sizes);
-              /*
-               *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
-               *fprintf(stderr, "\tname[%d]: <%s>\n", n, name);
-               *fprintf(stderr, "\toffset = %d, field_typeid = %d, field_ndims = %d, field_sizes[0] = %d\n",
-               *                   offset, field_typeid, field_ndims, field_sizes[0]);
-               */
-                if(0 == strcmp(component_name, name))
+                found = 0;
+                for(n = 0; n < nfields; n++)
                 {
-                    for(i = 0; i < varnode->comprec->n_comps; i++)
+                    nc_inq_compound_field(varnode->gid, xtype, n, name, &offset, &field_typeid,
+                                         &field_ndims, field_sizes);
+                  /*
+                   *fprintf(stderr, "\n\tfile: %s, line: %d\n", __FILE__, __LINE__);
+                   *fprintf(stderr, "\tname[%d]: <%s>\n", n, name);
+                   *fprintf(stderr, "\toffset = %d, field_typeid = %d, field_ndims = %d, field_sizes[0] = %d\n",
+                   *                   offset, field_typeid, field_ndims, field_sizes[0]);
+                   */
+                    if(0 == strcmp(component_name, name))
                     {
-                        compnode = &(varnode->comprec->compnode[i]);
-                      /*
-                       *fprintf(stderr, "\tname[%d]: <%s>, compnode[%d]->name: <%s>\n", n, name,
-                       *                   i, NrmQuarkToString(compnode->name));
-                       */
-                        if(0 == strcmp(NrmQuarkToString(compnode->name), component_name))
+                        for(i = 0; i < varnode->comprec->n_comps; i++)
                         {
-                            for(k = 0; k < field_ndims; k++)
-                                complength *= field_sizes[k];
-
-                            ret = 0;
-                            found = 1;
+                            compnode = &(varnode->comprec->compnode[i]);
                           /*
-                           *fprintf(stderr, "\toffset = %d, complength = %d\n", offset, complength);
                            *fprintf(stderr, "\tname[%d]: <%s>, compnode[%d]->name: <%s>\n", n, name,
-                           *                  i, NrmQuarkToString(compnode->name));
+                           *                   i, NrmQuarkToString(compnode->name));
                            */
-                            goto found_component;
+                            if(0 == strcmp(NrmQuarkToString(compnode->name), component_name))
+                            {
+                                for(k = 0; k < field_ndims; k++)
+                                    complength *= field_sizes[k];
+
+                                ret = 0;
+                                found = 1;
+                              /*
+                               *fprintf(stderr, "\toffset = %d, complength = %d\n", offset, complength);
+                               *fprintf(stderr, "\tname[%d]: <%s>, compnode[%d]->name: <%s>\n", n, name,
+                               *                  i, NrmQuarkToString(compnode->name));
+                               */
+                                break;
+                            }
+                            compnode = NULL;
                         }
-                        compnode = NULL;
                     }
                 }
-            }
 
-found_component:
+               if(found)
+               {
+                   values = NclCalloc(numval * size, 1);
+                   assert(values);
+               }
+               else
+               {
+                   NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                       "NclNetCDF4: Can not find variable (%s) from file (%s)",
+                       NrmQuarkToString(thevar),NrmQuarkToString(grpnode->path)));
 
-            if(found)
-            {
-                values = NclCalloc(numval * size, 1);
-                assert(values);
+                   return(NULL);
+               }
+
+               nc_get_var(varnode->gid, varnode->id, values);
+
+               complength *= _NclSizeOf(compnode->type);
+
+             /*
+              *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+              *fprintf(stderr, "\toffset = %d, complength = %d\n", offset, complength);
+              *fprintf(stderr, "\tnumval = %d, size = %d\n", numval, size);
+              */
+
+               for(i = 0; i < numval; i++)
+               {
+                   memcpy(out_data + i * complength, values + i * size + offset, complength);
+               }
+
+               free(values);
+               ret = 0;
+               return(storage);
             }
             else
             {
-                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                    "NclNetCDF4: Can not find variable (%s) from file (%s)",
-                    NrmQuarkToString(thevar),NrmQuarkToString(grpnode->path)));
+              /*
+               *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+               *fprintf(stderr, "\tvarnode->name: <%s>\n", NrmQuarkToString(varnode->name));
+               */
 
-                return(NULL);
+                varnode->udt_type = NCL_UDT_compound;
+                storage = (void *)get_nc4_compoundlist(varnode->gid, varnode->id);
+                ret = 0;
+                return(storage);
             }
-
-            nc_get_var(varnode->gid, varnode->id, values);
-
-            complength *= _NclSizeOf(compnode->type);
-
-          /*
-           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-           *fprintf(stderr, "\toffset = %d, complength = %d\n", offset, complength);
-           *fprintf(stderr, "\tnumval = %d, size = %d\n", numval, size);
-           */
-
-            for(i = 0; i < numval; i++)
-            {
-                memcpy(out_data + i * complength, values + i * size + offset, complength);
-            }
-
-            free(values);
-            ret = 0;
-            return(storage);
         }
         else if(NCL_list == varnode->type)
         {
@@ -3496,7 +3638,7 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
     ng_size_t n_elem = 1;
     int in_whole = 0;
     int no_stride = 1;
-    int i,n;
+    int i,j,n;
     int ret;
     int fill_mode;
 
@@ -3621,7 +3763,7 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
 
                 for(n = 0; n < n_elem; ++n)
                 {
-                    vlist = (NclList)_NclGetObj(dlist[n]);
+                    NclList vlist = (NclList)_NclGetObj(dlist[n]);
                     list_list = vlist->list.first;
                     listobj = (NclObj)_NclGetObj(list_list->obj_id);
                     listvar = (NclVar)_NclGetObj(listobj->obj.id);
@@ -3645,8 +3787,18 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 char **tmpstr = (char **)NclCalloc(n_elem, sizeof(char *));
                 NclQuark *qd = (NclQuark *)data;
 
-                for(n = 0; n < n_elem; ++n)
-                    tmpstr[n] = NrmQuarkToString(qd[n]);
+                n = 0;
+                for(i = 0; i < varnode->dim_rec->n_dims; i++)
+                {
+                    dimnode = &(varnode->dim_rec->dim_node[i]);
+                    if(dimnode->is_unlimited)
+                        in_whole = 0;
+                    for(j = locstart[i]; j < dimnode->size; j++)
+                    {
+                        tmpstr[n] = NrmQuarkToString(qd[n]);
+                        n++;
+                    }
+                }
                 
                 if(no_stride && in_whole)
                 {
@@ -3654,8 +3806,8 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 }
                 else
                 {
-                    ret = nc_put_vars_string(fid, varnode->id,
-                                             locstart, count, stride, (const char **)tmpstr);
+                    ret = nc_put_vara_string(fid, varnode->id,
+                                             locstart, count, (const char **)tmpstr);
                 }
 
                 NclFree(tmpstr);
@@ -3718,7 +3870,7 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                     for(i = 0; i < data_size; ++i)
                     {
                         comp_list = (NclList)_NclGetObj(obj_id[i]);
-                        step = comp_list->list.last;
+                        step = comp_list->list.first;
                         for(n = 0; n < comp_rec->n_comps; ++n)
                         {
                             cur_var = (NclVar)_NclGetObj(step->obj_id);
@@ -3736,7 +3888,7 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                                 fprintf(stderr, "\tUnknown cur_var->obj.obj_type: 0%x\n", cur_var->obj.obj_type);
                             }
 
-                            step = step->prev;
+                            step = step->next;
                         }
                     }
         
@@ -3755,6 +3907,7 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                                         start, (long *)count, stride, NULL,
                                         data_value);
                     }
+
                     NclFree(data_value);
                 }
             }
@@ -6147,7 +6300,9 @@ static NclFileVarNode *defNC4CompoundVar(void* therec, NclQuark thevar,
             if(nc_ret != NC_NOERR)
             {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,(char*)nc_strerror(nc_ret)));
-                check_err(nc_ret, __LINE__, __FILE__);
+              /*
+               *check_err(nc_ret, __LINE__, __FILE__);
+               */
                 return (varnode);
             } 
 
@@ -6196,8 +6351,6 @@ NhlErrorTypes NC4AddCompound(void *rec, NclQuark compound_name, NclQuark var_nam
                              NclQuark *mem_name, NclQuark *mem_type, int *mem_size)
 {
     NclFileGrpNode   *grpnode = (NclFileGrpNode *) rec;
-    NclFileDimNode   *dimnode = NULL;
-    NclFileVarNode   *varnode = NULL;
     int n = -1;
     int nc_ret = 0;
     NhlErrorTypes ret = NhlNOERROR;
@@ -6207,20 +6360,17 @@ NhlErrorTypes NC4AddCompound(void *rec, NclQuark compound_name, NclQuark var_nam
     NclQuark *udt_mem_name = NULL;
     NclBasicDataTypes *udt_mem_type = NULL;
 
-    int *dim_size = NULL;
-    long *long_dim_size = NULL;
-
     size_t compound_length = 0;
     size_t component_size  = 4;
     size_t *mem_offset = NULL;
+    int ims = 0;
     nc_type **mem_nc_type;
     nc_type *tmp_nc_type;
 
   /*
    *fprintf(stderr, "\nEnter NC4AddCompound, file: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tcompound_name: <%s>, var_name: <%s>, n_dims = %d, dim_name[0]: <%s>\n",
-   *                 NrmQuarkToString(compound_name), NrmQuarkToString(var_name),
-   *                 n_dims, NrmQuarkToString(dim_name[0]));
+   *fprintf(stderr, "\tcompound_name: <%s>, var_name: <%s>\n",
+   *                 NrmQuarkToString(compound_name), NrmQuarkToString(var_name));
    */
 
     udt_mem_name = (NclQuark *)NclCalloc(n_mems, sizeof(NclQuark));
@@ -6233,12 +6383,6 @@ NhlErrorTypes NC4AddCompound(void *rec, NclQuark compound_name, NclQuark var_nam
 
     mem_offset = (size_t *)NclCalloc(n_mems, sizeof(size_t));
     assert(mem_offset);
-
-    dim_size = (int *)NclCalloc(n_dims, sizeof(int));
-    assert(dim_size);
-
-    long_dim_size = (long *)NclCalloc(n_dims, sizeof(long));
-    assert(long_dim_size);
 
     for(n = 0; n < n_mems; n++)
     {
@@ -6306,10 +6450,10 @@ NhlErrorTypes NC4AddCompound(void *rec, NclQuark compound_name, NclQuark var_nam
            *                   n, NrmQuarkToString(mem_name[n]));
            */
 
-            dim_size[0] = (int) mem_size[n];
+            ims = (int) mem_size[n];
             nc_insert_array_compound(grpnode->gid, nc_compound_type_id,
                                      NrmQuarkToString(mem_name[n]),
-                                     mem_offset[n], *tmp_nc_type, 1, dim_size);
+                                     mem_offset[n], *tmp_nc_type, 1, &ims);
         }
         else
         {
@@ -6332,55 +6476,70 @@ NhlErrorTypes NC4AddCompound(void *rec, NclQuark compound_name, NclQuark var_nam
                   NC_COMPOUND, NC_COMPOUND,
                   compound_length, n_mems, udt_mem_name, udt_mem_type);
 
-    for(n = 0; n < n_dims; n++)
+    if(n_dims)
     {
-        dimnode = _getDimNodeFromNclFileGrpNode(grpnode, dim_name[n]);
-        dim_size[n] = dimnode->size;
-        long_dim_size[n] = (long) dimnode->size;
+        NclFileDimNode   *dimnode = NULL;
+        NclFileVarNode   *varnode = NULL;
+        int *dim_size = NULL;
+        long *long_dim_size = NULL;
 
-      /*
-       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\tdim %d, name: <%s>, size: %d\n",
-       *                 n, NrmQuarkToString(dim_name[n]), dim_size[n]);
-       */
-    }
+        dim_size = (int *)NclCalloc(n_dims, sizeof(int));
+        assert(dim_size);
 
-    varnode = defNC4CompoundVar(grpnode, var_name, nc_compound_type_id,
-                                n_dims, dim_name, long_dim_size);
+        long_dim_size = (long *)NclCalloc(n_dims, sizeof(long));
+        assert(long_dim_size);
 
-    if(NULL != varnode)
-    {
-        NclFileCompoundRecord *comp_rec = _NclFileCompoundAlloc(n_mems);
-        NclFileCompoundNode   *compnode = NULL;
-
-        comp_rec->name = compound_name;
-        comp_rec->size = compound_length;
-        comp_rec->type = NC_COMPOUND;
-        comp_rec->xtype = nc_compound_type_id;
-        comp_rec->base_nc_type = nc_compound_type_id;
-
-        for(n = 0; n < n_mems; n++)
+        for(n = 0; n < n_dims; n++)
         {
-            compnode = &(comp_rec->compnode[n]);
+            dimnode = _getDimNodeFromNclFileGrpNode(grpnode, dim_name[n]);
+            dim_size[n] = dimnode->size;
+            long_dim_size[n] = (long) dimnode->size;
 
-            compnode->name = udt_mem_name[n];
-            compnode->type = udt_mem_type[n];
-            compnode->the_nc_type = *(mem_nc_type[n]);
-            compnode->offset = mem_offset[n];
-            compnode->rank = 1;
-            compnode->nvals = mem_size[n];
-            compnode->sides = NULL;
-            compnode->value = NULL;
+          /*
+           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "\tdim %d, name: <%s>, size: %d\n",
+           *                 n, NrmQuarkToString(dim_name[n]), dim_size[n]);
+           */
         }
 
-        varnode->comprec = comp_rec;
+        varnode = defNC4CompoundVar(grpnode, var_name, nc_compound_type_id,
+                                    n_dims, dim_name, long_dim_size);
+
+        if(NULL != varnode)
+        {
+            NclFileCompoundRecord *comp_rec = _NclFileCompoundAlloc(n_mems);
+            NclFileCompoundNode   *compnode = NULL;
+
+            comp_rec->name = compound_name;
+            comp_rec->size = compound_length;
+            comp_rec->type = NC_COMPOUND;
+            comp_rec->xtype = nc_compound_type_id;
+            comp_rec->base_nc_type = nc_compound_type_id;
+
+            for(n = 0; n < n_mems; n++)
+            {
+                compnode = &(comp_rec->compnode[n]);
+
+                compnode->name = udt_mem_name[n];
+                compnode->type = udt_mem_type[n];
+                compnode->the_nc_type = *(mem_nc_type[n]);
+                compnode->offset = mem_offset[n];
+                compnode->rank = 1;
+                compnode->nvals = mem_size[n];
+                compnode->sides = NULL;
+                compnode->value = NULL;
+            }
+
+            varnode->comprec = comp_rec;
+        }
+
+        NclFree(dim_size);
+        NclFree(long_dim_size);
     }
 
     NclFree(udt_mem_name);
     NclFree(udt_mem_type);
     NclFree(mem_offset);
-    NclFree(dim_size);
-    NclFree(long_dim_size);
 
     for(n = 0; n < n_mems; n++)
     {

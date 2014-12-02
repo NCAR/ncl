@@ -569,9 +569,9 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
     long nsw;
     long ngeofields;
     long ndata = 0;
+    long ndims;
     long nmaps;
     long ngrp_atts;
-    int ndims;
 
     char maxdimlist[HE5_BUF_SIZE];
     long str_buf_size;
@@ -1389,8 +1389,8 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
 
     long ngd;
     long ndata = 0;
+    long ndims;
     long ngrp_atts;
-    int ndims;
 
     long str_buf_size;
 
@@ -2407,7 +2407,7 @@ typedef struct
             dimsizes[1] = nrecs;
 
             fprintf(stderr, "\tat line: %d, file: %s\n", __LINE__, __FILE__);
-            fprintf(stderr, "\tndims = %d\n", ndims);
+            fprintf(stderr, "\tndims = %ld\n", ndims);
 
             dimrec = _NclFileDimAlloc(ndims);
             dimrec->gid = HE5_PTid;
@@ -2598,7 +2598,7 @@ void getHE5ZonalAverageData(NclFileGrpNode *parentgrpnode, NclQuark path)
 
     long nza = 0;
     long ndata = 0;
-    int ndims = 0;
+    long ndims = 0;
 
     long str_buf_size;
 
@@ -3529,7 +3529,7 @@ static void *HE5ReadVarAtt(void *therec, NclQuark thevar, NclQuark theatt, void 
             if(attnode->is_virtual)
             {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,
-                    "NclNetCDF4: Error retrieving value for is_virtual attribute (%s) of (%s->%s)",
+                    "NclNewHDFEOS5: Error retrieving value for is_virtual attribute (%s) of (%s->%s)",
                     NrmQuarkToString(theatt),NrmQuarkToString(grpnode->name),NrmQuarkToString(thevar));
                 return NULL;
             }
