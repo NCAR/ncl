@@ -2501,7 +2501,7 @@ int upordown;
 	ydist = y - y_last;
 	c_maptrn(y,x,&xw,&yw);
 	
-	if (! mpl->mptrans.great_circle_lines_on && ! mpl->trobj.line_interpolation_on) {
+	if (! mpl->trobj.line_interpolation_on) {
 		c_mapitd(y,x,2);
 		x_last = fmod(x + 180, 360) - 180;
 		y_last = y;
@@ -3142,7 +3142,7 @@ static NhlErrorTypes GreatCircleRenderPolygon
 	int i;
 	float *xbuf,*ybuf;
 	ng_size_t current_size = 256;
-	ng_size_t tcount, npoints,cix;
+	ng_size_t tcount, npoints;
 	float usize,vsize;
 	int malloced = 0;
 	static int tdebug = 0;
@@ -3191,7 +3191,6 @@ static NhlErrorTypes GreatCircleRenderPolygon
 #endif
 			 
 	tcount = 0;
-	cix = 0;
 	if (len < uv_cut) {
 		xbuf = xw;
 		ybuf = yw;
@@ -3361,7 +3360,7 @@ int n;
 	NhlBoolean	closed;
 	int		gsid;
 	float		*xw,*yw;
-	int		nl,nt;
+	int		nt;
 	int             status;
 	int             fill_color, fill_index;
 	int 		init;
@@ -3391,8 +3390,8 @@ int n;
 		return StandardMapDataPolygon(instance,x,y,n);
 	}
 	if (mptrans->mptrans.projection == NhlLAMBERTEQUALAREA || 
-	    mptrans->mptrans.projection== NhlAZIMUTHALEQUIDISTANT ||
-	    mptrans->mptrans.great_circle_lines_on)
+	     mptrans->mptrans.projection== NhlAZIMUTHALEQUIDISTANT ||
+	     (mptrans->trobj.line_interpolation_on && mptrans->mptrans.great_circle_lines_on))
 		use_great_circle = 1;
 
 	closed = x[0] == x[n-1] && y[0] == y[n-1] ? True : False;
@@ -3400,13 +3399,11 @@ int n;
 		xw = (float*)NhlMalloc(sizeof(float) * (n+ 10));
 		yw = (float*)NhlMalloc(sizeof(float) * (n+10));
 		pval = (double*)NhlMalloc(sizeof(double) * (n+10));
-		nl = n;
 	}
 	else {
 		xw = (float*)NhlMalloc(sizeof(float) * (n+10));
 		yw = (float*)NhlMalloc(sizeof(float) * (n+10));
 		pval = (double*)NhlMalloc(sizeof(double) * (n+10));
-		nl = n+1;
 	}
 
 
@@ -3416,11 +3413,13 @@ int n;
 	fail_ix = -1;
 	/*printf("MapDataPolygon %d:",count);*/
 	for (i = 0; i <= n; i++) {
-		/*printf(" (%f %f)",x[i%n]-360,y[i%n]); */
+		/*
+		printf(" (%f %f)",x[i%n]-360,y[i%n]); 
 		if (i > 0) {
 			float gcd = great_circle_distance(y[i%n],x[i%n],y[i-1], x[i-1]);
-			/*printf("gcd %f\n",gcd);*/
+			printf("gcd %f\n",gcd);
 		}
+		*/
 		if (mptrans->mptrans.map_poly_mode == NhlAUTOPOLY && ! init) {
 			if (great_circle_distance(y[i%n],x[i%n],y[i-1], x[i-1]) > 10) {
 				NhlFree(xw);
@@ -3447,7 +3446,6 @@ int n;
 	if (is_cyclic) {
 		float *xw_ret, *yw_ret;
 		float *x_ret, *y_ret;
-		/*goto end; */
 		xw_ret = (float*)NhlMalloc(sizeof(float) * (n+10));
 		yw_ret  = (float*)NhlMalloc(sizeof(float) * (n+10));
 		x_ret = (float*)NhlMalloc(sizeof(float) * (n+10));
@@ -3502,7 +3500,6 @@ int n;
 	else {
 		ret = use_great_circle ? GreatCircleRenderPolygon(instance,x,y,xw,yw,n,closed) : RenderPolygon(xw,yw,n,closed);
 	}       
-end:
 	NhlFree(xw);
 	NhlFree(yw);
 	NhlFree(pval);
@@ -3621,72 +3618,74 @@ int n;
 	if ((ret = MIN(subret,ret)) < NhlWARNING) goto err_ret;
 
 
-	if (mptrans->mptrans.great_circle_lines_on) {
-		float	*xbuf,*ybuf;
-		int	lastsize = 0;
-		for (i = 0; i < n; i++) {
-			nexti = i + 1;
-			if (i == n - 1) {
-				if (closed)
-					break;
-				else
-					nexti = 0;
-			}
-			xdist = xl[nexti] - xl[i];
-			ydist = yl[nexti] - yl[i];
-			size =  MAX(1.0,(int)(fabs(xdist) + fabs(ydist)));
-			if (lastsize == 0) {
-				xbuf = NhlMalloc(size*sizeof(float));
-				ybuf = NhlMalloc(size*sizeof(float));
-				lastsize = size;
-			}
-			else if (lastsize < size) {
-				xbuf = NhlRealloc(xbuf,size*sizeof(float));
-				ybuf = NhlRealloc(ybuf,size*sizeof(float));
-				lastsize = size;
-			}
-			if (! xbuf || !ybuf) {
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name);
-				ret = NhlFATAL;
-				goto err_ret;
-			}
-			c_mapgci(yl[i],xl[i],
-				 yl[nexti],xl[nexti],size,ybuf,xbuf);
-			for (j = 0; j < size; j++) {
-				subret = _NhlMapita(aws,ybuf[j],xbuf[j],
-					   2,3,left_id,right_id,entry_name);
+	if (mptrans->trobj.line_interpolation_on) {
+		if (mptrans->mptrans.great_circle_lines_on) {
+			float	*xbuf,*ybuf;
+			int	lastsize = 0;
+			for (i = 0; i < n; i++) {
+				nexti = i + 1;
+				if (i == n - 1) {
+					if (closed)
+						break;
+					else
+						nexti = 0;
+				}
+				xdist = xl[nexti] - xl[i];
+				ydist = yl[nexti] - yl[i];
+				size =  MAX(1.0,(int)(fabs(xdist) + fabs(ydist)));
+				if (lastsize == 0) {
+					xbuf = NhlMalloc(size*sizeof(float));
+					ybuf = NhlMalloc(size*sizeof(float));
+					lastsize = size;
+				}
+				else if (lastsize < size) {
+					xbuf = NhlRealloc(xbuf,size*sizeof(float));
+					ybuf = NhlRealloc(ybuf,size*sizeof(float));
+					lastsize = size;
+				}
+				if (! xbuf || !ybuf) {
+					e_text = "%s: dynamic memory allocation error";
+					NhlPError(NhlFATAL,
+						  NhlEUNKNOWN,e_text,entry_name);
+					ret = NhlFATAL;
+					goto err_ret;
+				}
+				c_mapgci(yl[i],xl[i],
+					 yl[nexti],xl[nexti],size,ybuf,xbuf);
+				for (j = 0; j < size; j++) {
+					subret = _NhlMapita(aws,ybuf[j],xbuf[j],
+							    2,3,left_id,right_id,entry_name);
+					if ((ret = MIN(subret,ret)) < NhlWARNING)
+						goto err_ret;
+				}
+				subret = _NhlMapita(aws,yl[nexti],xl[nexti],
+						    2,3,left_id,right_id,entry_name);
 				if ((ret = MIN(subret,ret)) < NhlWARNING)
 					goto err_ret;
 			}
-			subret = _NhlMapita(aws,yl[nexti],xl[nexti],
-					    2,3,left_id,right_id,entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING)
-				goto err_ret;
+			NhlFree(xbuf);
+			NhlFree(ybuf);
 		}
-		NhlFree(xbuf);
-		NhlFree(ybuf);
-	}
-	else if (mptrans->trobj.line_interpolation_on) {
-		for (i = 0; i < n; i++) {
-			nexti = i + 1;
-			if (i == n - 1) {
-				if (closed)
-					break;
-				else
-					nexti = 0;
-			}
-			xdist = xl[nexti] - xl[i];
-			ydist = yl[nexti] - yl[i];
-			size =  MAX(1.0,(int)(fabs(xdist) + fabs(ydist)));
-			for (j = 0; j < size; j++) {
-				subret = _NhlMapita(aws,
-					   yl[i] + ydist *(j+1)/ (float)size,
-					   xl[i] + xdist *(j+1)/ (float)size,2,
-					   3,left_id,right_id,entry_name);
-				if ((ret = MIN(subret,ret)) < NhlWARNING)
-					goto err_ret;
+		else {
+			for (i = 0; i < n; i++) {
+				nexti = i + 1;
+				if (i == n - 1) {
+					if (closed)
+						break;
+					else
+						nexti = 0;
+				}
+				xdist = xl[nexti] - xl[i];
+				ydist = yl[nexti] - yl[i];
+				size =  MAX(1.0,(int)(fabs(xdist) + fabs(ydist)));
+				for (j = 0; j < size; j++) {
+					subret = _NhlMapita(aws,
+							    yl[i] + ydist *(j+1)/ (float)size,
+							    xl[i] + xdist *(j+1)/ (float)size,2,
+							    3,left_id,right_id,entry_name);
+					if ((ret = MIN(subret,ret)) < NhlWARNING)
+						goto err_ret;
+				}
 			}
 		}
 	}
