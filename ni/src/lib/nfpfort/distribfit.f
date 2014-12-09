@@ -48,7 +48,7 @@ C****************************************************
 
       n = 0
       do 10 i=1,maxn
-         if (xin(i).ne.xmsg) then
+         if (xin(i).ne.xmsg .and. xin(i).gt.0.0d0) then
              n = n+1
          end if
 10    continue
@@ -66,7 +66,7 @@ c c c     print *,"weibfit: not enough values: n=",n
       L = 1
       DO 20 I=1,N
 C C C   IF (CENSOR(I) .EQ. 0) THEN
-        IF (xin(i).ne.xmsg) THEN
+        IF (xin(i).ne.xmsg .and. xin(i).gt.0.0d0) THEN
 C C C     X(J) = CYCLE(I)
           X(J) = xin(i)
           J = J + 1
