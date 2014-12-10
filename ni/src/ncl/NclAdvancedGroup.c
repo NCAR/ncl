@@ -306,10 +306,12 @@ NclAdvancedFile _NclAdvancedGroupCreate(NclObj inst, NclObjClass theclass, NclOb
     grpnode = _getGrpNodeFromNclFileGrpNode(thefile->advancedfile.grpnode, group_name);
     if(NULL == grpnode)
     {
-        NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-            "_NclAdvancedGroupCreate: Unable to find group <%s> from file <%s>.\n",
-             NrmQuarkToString(group_name),
-             NrmQuarkToString(thefile->advancedfile.fname)));
+      /*
+       *NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+       *    "_NclAdvancedGroupCreate: Unable to find group <%s> from file <%s>.\n",
+       *     NrmQuarkToString(group_name),
+       *     NrmQuarkToString(thefile->advancedfile.fname)));
+       */
 
         return NULL;
     }
