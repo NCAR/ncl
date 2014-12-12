@@ -1826,8 +1826,9 @@ begin
           ; names to check
  oNames = (/"add_offset", "offset", "OFFSET", "Offset", "_offset" \
            ,"Intercept", "intercept", "add_off", "ADD_OFF"/)
- sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor", "factor" \
-           ,"Scale_factor", "Slope" , "slope", "ScaleFactor", "Scale_Factor" /)
+ sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor", "factor"    \
+           ,"Scale_factor", "Slope" , "slope", "ScaleFactor", "Scale_Factor" \
+           ,"SCALING_FACTOR" /)
 
  offset = 0.0   ; establish as type float
  scale  = 1.0
@@ -1913,8 +1914,9 @@ begin
           ; names to check
  oNames = (/"add_offset", "offset", "OFFSET", "Offset", "_offset" \
            ,"Intercept", "intercept", "add_off", "ADD_OFF"/)
- sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor" , "factor" \
-           ,"Scale_factor", "Slope" , "slope", "ScaleFactor", "Scale_Factor" /)
+ sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor" , "factor"   \
+           ,"Scale_factor", "Slope" , "slope", "ScaleFactor", "Scale_Factor" \
+           ,"SCALING_FACTOR" /)
 
 
  offset = 0.0   ; establish as type float
@@ -2012,7 +2014,7 @@ begin
            ,"Intercept", "intercept", "scalingIntercept" /)
  sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor" \
            ,"Scale_factor", "Slope" , "slope", "ScaleFactor"      \
-           ,"Scale_Factor", "scalingSlope" /)
+           ,"Scale_Factor", "scalingSlope", "SCALING_FACTOR" /)
 
 
  offset = 0.0   ; establish as type float
@@ -2102,7 +2104,8 @@ begin
  oNames = (/"add_offset", "offset", "OFFSET", "Offset", "_offset" \
            ,"Intercept", "intercept"/)
  sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor" \
-           ,"Scale_factor", "Slope" , "slope", "ScaleFactor", "Scale_Factor" /)
+           ,"Scale_factor", "Slope" , "slope", "ScaleFactor"    \
+           ,"Scale_Factor", "SCALING_FACTOR" /)
 
 
  offset = 0.0   ; establish as type float
