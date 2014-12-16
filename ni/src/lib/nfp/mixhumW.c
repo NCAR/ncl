@@ -362,19 +362,23 @@ NhlErrorTypes dewtemp_trh_W( void )
   coerce_missing(type_tk,has_missing_tk,&missing_tk,&missing_dtk,NULL);
   coerce_missing(type_rh,has_missing_rh,&missing_rh,&missing_drh,NULL);
 
+/*
+ * Go ahead and set the output missing value, because we'll need to
+ * use this if rh < 0 at any point. This change was made in NCL V6.3.0
+ */
   if(has_missing_tk || has_missing_rh) {
-    if(type_tdk == NCL_double) {
-      missing_tdk.doubleval  = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-      missing_dtdk.doubleval = missing_tdk.doubleval;
-    }
-    else {
-      missing_tdk.floatval   = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-      missing_dtdk.doubleval = (double)missing_tdk.floatval;
-    }
     has_missing_tdk = 1;
   }
   else {
-    has_missing_tdk = 0;
+    has_missing_tdk = 0;  /* This will change if rh < 0 anywhere. */
+  }
+  if(type_tdk == NCL_double) {
+    missing_tdk.doubleval  = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    missing_dtdk.doubleval = missing_tdk.doubleval;
+  }
+  else {
+    missing_tdk.floatval   = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    missing_dtdk.doubleval = (double)missing_tdk.floatval;
   }
 /*
  * Call the Fortran version of this routine.
@@ -411,6 +415,10 @@ NhlErrorTypes dewtemp_trh_W( void )
                            *tmp_rh == missing_drh.doubleval)) {
       *tmp_tdk = missing_dtdk.doubleval;
     }
+    else if(*tmp_rh < 0.0) {
+      has_missing_tdk = 1;
+      *tmp_tdk = missing_dtdk.doubleval;
+    }
     else {
       NGCALLF(ddewtemp,DDEWTEMP)(tmp_tk,tmp_rh,tmp_tdk);
     }
@@ -422,7 +430,7 @@ NhlErrorTypes dewtemp_trh_W( void )
     }
   }
 /*
- * free memory.
+ * Free memory.
  */
   if(type_tk != NCL_double) NclFree(tmp_tk);
   if(type_rh != NCL_double) NclFree(tmp_rh);
