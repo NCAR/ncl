@@ -36,8 +36,7 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	xy1pdf77.o potmp_dpth2pres.o ocean.o plotgrids_var.o \
 	covcorm_xy_matrix_ncl.o dgeevx_interface.o plotfmt_open.o \
 	plotfmt_rdhead.o plotfmt_rddata.o spareapoly.o KolmSmir2.o \
-	slatec_DPOLFT.o wrf_rip_phys_routines.o accumrun.o
-
+	slatec_DPOLFT.o wrf_rip_phys_routines.o accumrun.o thornthwaite_v2.o
 
 COBJS =
 
