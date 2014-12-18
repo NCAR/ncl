@@ -15256,3 +15256,65 @@ begin
   end if
   return (y)
 end
+;================
+undef("dpres_hybrid_ccm_se")
+function dpres_hybrid_ccm_se(ps:numeric,p0[1]:numeric,hya[*]:numeric,hyb[*]:numeric)
+local dimNames, dim_ps, ntim, ncol, ps_dumy, dpres_dumy, dpres
+begin
+
+  dimNames = getvardims(ps) ; (time,ncol)
+  if (dimNames(1).ne."ncol") then
+      print("dpres_hybrid_ccm_se: You are a MORON! This is not an SE grid!")
+      exit
+  end if
+
+  dim_ps = dimsizes(ps)
+  ntim = dim_ps(0)
+  ncol = dim_ps(1)
+
+  ps_dumy = conform_dims( (/ntim,1,ncol/), ps, (/0,2/))
+
+  dpres_dumy = dpres_hybrid_ccm (ps_dumy,p0,hya,hyb) ; (ntim,klev,1,ncol)
+  dpres = dpres_dumy(:,:,0,:) ; (ntim,klev,ncol)
+
+; the following is not needed for builtin function
+
+  dpres@long_name = "layer thickness"
+  dpres@units = "Pa" ; [kg/(m s2)]
+
+  copy_VarCoords(ps, dpres(:,0,:))
+  dpres!1 = "lev"
+
+  return(dpres)
+end 
+;================
+undef("pres_hybrid_ccm_se")
+function pres_hybrid_ccm_se(ps:numeric,p0[1]:numeric,hya[*]:numeric,hyb[*]:numeric)
+local dimNames, dim_ps, ntim, ncol, ps_dumy, pres_dumy, pres
+begin
+
+  dimNames = getvardims(ps) ; (time,ncol)
+  if (dimNames(1).ne."ncol") then
+      print("pres_hybrid_ccm_se: You are a MORON! This is not an SE grid!")
+      exit
+  end if
+
+  dim_ps  = dimsizes(ps)
+  ntim    = dim_ps(0)
+  ncol    = dim_ps(1)
+
+  ps_dumy = conform_dims( (/ntim,1,ncol/), ps, (/0,2/))
+
+  pres_dumy = pres_hybrid_ccm (ps_dumy,p0,hya,hyb) ; (ntim,klev,1,ncol)
+  pres = pres_dumy(:,:,0,:) ; (ntim,klev,ncol)
+
+; the following is not needed for builtin function
+
+  pres@long_name = "pressure at hybrid levels"
+  pres@units = "Pa" ; [kg/(m s2)]
+
+  copy_VarCoords(ps, pres(:,0,:))
+  pres!1 = "lev"
+
+  return(pres)
+end 
