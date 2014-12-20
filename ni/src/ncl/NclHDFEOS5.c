@@ -621,7 +621,7 @@ static void HDFEOS5IntFileAddAtt(HDFEOS5FileRecord *the_file,NclQuark sw_ncl_nam
 
 	tmp_node->att_inq = (HDFEOS5AttInqRec*)NclMalloc(sizeof(HDFEOS5AttInqRec));
 	tmp_node->att_inq->name = NrmStringToQuark(buffer);
-	tmp_node->att_inq->type = NCL_string;
+	tmp_node->att_inq->type = type;
 	tmp_node->att_inq->value = (void*)value;
 	tmp_node->att_inq->n_elem = n_elem;
 
