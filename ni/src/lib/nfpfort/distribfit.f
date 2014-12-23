@@ -17,8 +17,9 @@ c  J. Bert Keats, Frederick P. Lawrence, and F. K. Wang
 c  Journal of Quality Technology, Volume 29, Number 1, pp. 105--110, January 1997
 
 C                                                 ! LOCAL
-      double precision x(maxn), y(maxn), cycle(maxn)
-      integer censor(maxn)
+      double precision x(maxn)
+c     double precision y(maxn), cycle(maxn)
+C      integer censor(maxn)
 C****************************************************
 C* FORTRAN PROGRAM USES MAXIMUM LIKELIHOOD TO       *
 C* ESTIMATE THE PARAMETERS OF TWO-PARAMETER WEIBULL *
@@ -29,7 +30,8 @@ C*     CASE 2: SINGLY CENSORED DATA                 *
 C*     CASE 3: COMPLETE DATA                        *
 C* CENSORED TYPE (0: FAILURE; 1: NON-FAILURE)*
 C****************************************************
-      INTEGER I,R,S,J,L,CC,ERROR,INDEX,CASE
+      INTEGER I,R,S,J,L,CC,ERROR,CASE
+C     INTEGER INDEX
       INTEGER N,K,K1
       DOUBLE PRECISION BETA, THETA
       DOUBLE PRECISION PI,T2,T3,T4,ST1,ST2,NUM,NUM1
@@ -245,7 +247,7 @@ C C C*1X,'------------------------------------------',
 C C C*'--------',/)
 C C C WRITE(*,700) BETA,LOW1,UP1
 C C C WRITE(1,700) BETA,LOW1,UP1
-700   FORMAT(3X,'BETA',5X,F9.4,5X,F9.4,4X,F9.4,/)
+C C C700   FORMAT(3X,'BETA',5X,F9.4,5X,F9.4,4X,F9.4,/)
 C C C WRITE(*,800) THETA,LOW2,UP2
 C C C WRITE(1,800) THETA,LOW2,UP2
 C800  FORMAT(3X,'THETA',4X,F9.4,5X,F9.4,4X,F9.4,/)
