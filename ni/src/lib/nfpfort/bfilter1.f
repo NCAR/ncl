@@ -39,17 +39,22 @@ c
 c.......nmax = total possible number of time series points
 c       mmax = highest possible order of butterworth filter
 c
+      implicit none
+c
+      integer nmax, mmax
       parameter (nmax=65000,mmax=10)
 c
+      integer n, m, j, k, mzer
       double complex z1(nmax),z2(nmax),a1(mmax),a2(mmax),
      &               a1c(mmax),a2c(mmax),p,s,ctemp
-      double precision pi,w0,wc,w1,w2,dtemp,dtt
-      dimension xr(n),yr(n),er(n)
+      double precision pi,w0,wc,w1,w2,dtemp,f0,fc,dt
+      double precision xr(n),yr(n),er(n), ermx
+      double precision fnyq,xmean
 c
 c.......error check on frequencies
 c
-      fnyq=1.0/(2.0*dt)
-      if ((f0-fc).le.0.0) then
+      fnyq=1.d0/(2.d0*dt)
+      if ((f0-fc).le.0.d0) then
         write(6,*)'low corner frequency (f0-fc) <= 0.0'
         stop
       endif
@@ -58,19 +63,18 @@ c
         stop
       endif
 c
-c.......initialize double precision pi, dtt, angular frequencies w0,wc
+c.......initialize double precision pi, angular frequencies w0,wc
 c
       pi=3.14159265358979d0
-      w0=2.0d0*pi*dble(f0)
-      wc=2.0d0*pi*dble(fc)
-      dtt=dble(dt)
+      w0=2.0d0*pi*f0
+      wc=2.0d0*pi*fc
 c
 c.......prewarp frequencies for bilinear z-transform
 c
       w1=w0-wc
       w2=w0+wc
-      w1=2.0d0/dtt*dtan(w1*dtt/2.0d0)
-      w2=2.0d0/dtt*dtan(w2*dtt/2.0d0)
+      w1=2.0d0/dt*dtan(w1*dt/2.0d0)
+      w2=2.0d0/dt*dtan(w2*dt/2.0d0)
       w0=(w1+w2)/2.0d0
       wc=(w2-w1)/2.0d0
 c
@@ -83,8 +87,8 @@ c
         ctemp=dcmplx(0.0d0,dtemp)
         p=cdexp(ctemp)
         s=p*wc+dcmplx(0.0d0,w0)
-        a1(j)=wc*dtt/(2.0d0-s*dtt)
-        a2(j)=(2.0d0+s*dtt)/(2.0d0-s*dtt)
+        a1(j)=wc*dt/(2.0d0-s*dt)
+        a2(j)=(2.0d0+s*dt)/(2.0d0-s*dt)
         a1c(j)=dconjg(a1(j))
         a2c(j)=dconjg(a2(j))
       enddo
