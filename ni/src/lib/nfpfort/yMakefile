@@ -36,8 +36,8 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	xy1pdf77.o potmp_dpth2pres.o ocean.o plotgrids_var.o \
 	covcorm_xy_matrix_ncl.o dgeevx_interface.o plotfmt_open.o \
 	plotfmt_rdhead.o plotfmt_rddata.o spareapoly.o KolmSmir2.o \
-	slatec_DPOLFT.o wrf_rip_phys_routines.o accumrun.o thornthwaite_v2.o
-
+	slatec_DPOLFT.o wrf_rip_phys_routines.o accumrun.o \
+	thornthwaite_v2.o bfilter1.o distribfit.o
 COBJS =
 
 OBJS = $(FOBJS) $(COBJS)
@@ -60,4 +60,5 @@ plotfmt_rdhead.o: plotfmt_rdhead.f90
 #if defined(AIX)
 EXTRA_FCOPTIONS = -qextname=flush 
 #endif
+
 
