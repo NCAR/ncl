@@ -308,13 +308,8 @@ NhlErrorTypes dim_bfband_n_W( void )
 /*
  * Call the Fortran routine.
  */
-      printf("xr[1]  = %g\n", tmp_xr[0]);
-      printf("xr[nx] = %g\n", tmp_xr[nx-1]);
       NGCALLF(buttfilt,BUTTFILT)(tmp_xr, tmp_yr, tmp_er, tmp_fca, tmp_fcb, 
                                  tmp_dt, m, &inx, iflag, &ier);
-
-      printf("xbf[1]  = %g\n", tmp_yr[0]);
-      printf("xbf[nx] = %g\n", tmp_yr[nx-1]);
 /*
  * Copy/coerce back to output array
  */
