@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <strings.h>
 #include "wrapper.h"
 
 extern void NGCALLF(weibfit,WEIBFIT)(int *, double *, double *, int *, 
