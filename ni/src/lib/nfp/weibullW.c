@@ -153,7 +153,8 @@ NhlErrorTypes dim_weibull_n_W( void )
             nmin      = *(int *) attr_list->attvalue->multidval.val;
             set_nmin  = True;
           }
-          else if(!strcasecmp(attr_list->attname, "confi")) {
+          else if( !strcasecmp(attr_list->attname, "confidence") || 
+                   !strcasecmp(attr_list->attname, "confi")){
             confi      = attr_list->attvalue->multidval.val;
             type_confi = attr_list->attvalue->multidval.data_type;
             set_confi  = True;
@@ -164,17 +165,6 @@ NhlErrorTypes dim_weibull_n_W( void )
         break;
       }
     }
-  }
-  if(!set_nmin) {
-    nmin = inx;
-  }
-  if(set_confi) {
-    tmp_confi = coerce_input_double(confi,type_confi,1,0,NULL,NULL);
-  }
-  else {
-    type_confi = NCL_double;
-    tmp_confi  = (double *)calloc(1,sizeof(double));
-    *tmp_confi = 1.0;
   }
 
 /* 
@@ -208,6 +198,20 @@ NhlErrorTypes dim_weibull_n_W( void )
   }
   inx = (int) nx;
 
+/*
+ * Provide defaults for nmin and confidence if not specified by user.
+ */
+  if(!set_nmin) {
+    nmin = (int)(0.75*(float)inx);    /* 75% of the total number of points */
+  }
+  if(set_confi) {
+    tmp_confi = coerce_input_double(confi,type_confi,1,0,NULL,NULL);
+  }
+  else {
+    type_confi = NCL_double;
+    tmp_confi  = (double *)calloc(1,sizeof(double));
+    *tmp_confi = 0.95;
+  }
 /*
  * Allocate space for tmp_x.
  */
