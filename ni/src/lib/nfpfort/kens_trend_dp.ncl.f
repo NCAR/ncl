@@ -38,8 +38,8 @@ C                                     ! OUTPUT
       DOUBLE PRECISION    eps
       LOGICAL tieflg(n)
 C                                     ! LOCAL
-      INTEGER j, k, nc, ntie, ncrit, nt
-      DOUBLE PRECISION  diff, dave, var, vartie, zero
+      INTEGER j, k, nc, ntie, ncrit
+      DOUBLE PRECISION  nt, diff, dave, var, vartie, zero
 
       zero = 0.0d0
       ncrit  =  10    ! series must be at least this length
