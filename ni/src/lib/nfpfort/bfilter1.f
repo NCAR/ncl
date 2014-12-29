@@ -113,9 +113,6 @@ c local
       double precision pi,w0,wc,w1,w2,dtemp,dtt,fnyq,xmean
 c
 c
-      print *,'dt ',dt
-      print *,'fca',fca
-      print *,'fcb',fcb
       fnyq=1.0d0/(2.0d0*dt)
 c
 c.......initialize double precision pi, dtt, angular frequencies w0,wc
