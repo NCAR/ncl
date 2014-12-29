@@ -107,8 +107,10 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o 
         sg_toolsW.o colconvW.o convert_datum.o cfftW.o wksmoothW.o dzheightW.o          \
 	covcormW.o kronprodW.o space_timeW.o spcorrW.o bindataW.o tropwmoW.o pdfW.o     \
 	mocloopsW.o spanW.o vinth2pnodesW.o vinth2penodesW.o objanalW.o                 \
-	areaconremapW.o	nctime.o cdtimeW.o dimnumrunW.o sparse_matrixW.o \
-	gammaW.o gamfitW.o spiW.o oceanW.o dgeevxW.o areapolyW.o kolsm2W.o
+	areaconremapW.o	nctime.o cdtimeW.o dimnumrunW.o sparse_matrixW.o 		\
+	gammaW.o gamfitW.o spiW.o oceanW.o dgeevxW.o areapolyW.o kolsm2W.o		\
+	bfilterW.o weibullW.o
+
 
 OBJS = $(COBJS) $(UDUNITS_OBJS) $(V5D_OBJS) $(ESMF_OBJS) $(KML_OBJS)
 SRCS = $(CSRCS) $(UDUNITS_SRCS) $(V5D_SRCS) $(ESMF_SRCS) $(KML_SRCS)
@@ -122,3 +124,4 @@ DependTarget($(SRCS))
 wrfW.o: wrfW.c
         $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c wrfW.c
 #endif
+

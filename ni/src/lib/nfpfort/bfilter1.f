@@ -1,12 +1,12 @@
 C NCLFORTSTART
-      subroutine buttfilt(xr,yer,fca,fcb,dt,m,n,mzer,ier)
+      subroutine buttfilt(xr,yr,er,fca,fcb,dt,m,n,mzer,ier)
       implicit none
 c                                                  INPUT
       integer m, n, mzer, ier
       double precision xr(n), dt, fca,fcb
 c
 c                                                  OUTPUT
-      double precision yer(n,2)
+      double precision yr(n), er(n)
 C NCLEND
 c
 c NCL: y  = bfband(x,m,fca,fcb,dt,iflag)            ; y(2,:)
@@ -21,11 +21,11 @@ c
 c initialize
 c
       ier  = 0
-      ermx = 0.0d0
+      ermx = 1.0d0
 
       do k=1,n
-         yer(k,1) = 1.0d20
-         yer(k,2) = 1.0d20
+         yr(k) = 1.0d20
+         er(k) = 1.0d20
       end do
 
       f0   = (fca+fcb)*0.5d0
@@ -46,7 +46,7 @@ ccccc     write(6,*)'high corner frequency [fcb=(f0+fc)] >= nyquist'
       endif
       if (ier.ne.0) return
 
-      call bfilter(xr,yer(1,1),yer(1,2),ermx,f0,fc,dt,m,n,mzer,ier)
+      call bfilter(xr,yr,er,ermx,f0,fc,dt,m,n,mzer,ier)
 
       return
       end
@@ -113,6 +113,9 @@ c local
       double precision pi,w0,wc,w1,w2,dtemp,dtt,fnyq,xmean
 c
 c
+      print *,'dt ',dt
+      print *,'fca',fca
+      print *,'fcb',fcb
       fnyq=1.0d0/(2.0d0*dt)
 c
 c.......initialize double precision pi, dtt, angular frequencies w0,wc

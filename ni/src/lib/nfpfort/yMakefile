@@ -37,7 +37,8 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	covcorm_xy_matrix_ncl.o dgeevx_interface.o plotfmt_open.o \
 	plotfmt_rdhead.o plotfmt_rddata.o spareapoly.o KolmSmir2.o \
 	slatec_DPOLFT.o wrf_rip_phys_routines.o accumrun.o \
-	thornthwaite_v2.o bfilter1.o distribfit.o
+	thornthwaite_v2.o bfilter1.o distribfit.o kens_trend_dp.ncl.o
+
 COBJS =
 
 OBJS = $(FOBJS) $(COBJS)
