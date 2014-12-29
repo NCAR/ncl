@@ -54,6 +54,12 @@ extern NhlErrorTypes dgeevx_lapack_W(void);
 extern NhlErrorTypes svd_lapack_W(void);
 extern NhlErrorTypes svdpar_W(void);
 extern NhlErrorTypes sindex_yrmo_W(void);
+extern NhlErrorTypes dim_bfband_n_W(void);
+/*
+extern NhlErrorTypes dim_weibull_n_W(void);
+extern NhlErrorTypes trend_manken_n_W(void);
+extern NhlErrorTypes dim_thornthwaite_n_W(void);
+*/
 extern NhlErrorTypes snindex_yrmo_W(void);
 extern NhlErrorTypes x_skewt_W(void);
 extern NhlErrorTypes y_skewt_W(void);
@@ -125,7 +131,6 @@ extern NhlErrorTypes gc_inout_mask_func_W(void);
 extern NhlErrorTypes gc_inout_mask_proc_W(void);
 extern NhlErrorTypes gc_onarc_W(void);
 extern NhlErrorTypes area_poly_sphere_W(void);
-
 extern NhlErrorTypes dv2uvf_W(void);
 extern NhlErrorTypes dv2uvg_W(void);
 extern NhlErrorTypes dv2uvF_W(void);
@@ -2045,6 +2050,75 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     NclRegisterFunc(area_poly_sphere_W,args,"area_poly_sphere",nargs);
+
+
+/*
+ * Register "dim_bfband_n".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(8);
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+
+    NclRegisterFunc(dim_bfband_n_W,args,"dim_bfband_n",nargs);
+
+/*
+ * Register "dim_weibull_n".
+ *
+ * Create private argument array
+ */
+/*
+    nargs = 0;
+    args = NewArgs(3);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+
+    NclRegisterFunc(dim_weibull_n_W,args,"dim_weibull_n",nargs);
+*/
+/*
+ * Register "trend_manken_n".
+ *
+ * Create private argument array
+ */
+/*
+    nargs = 0;
+    args = NewArgs(3);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+
+    NclRegisterFunc(trend_manken_n_W,args,"trend_manken_n",nargs);
+*/
+/*
+ * Register "dim_thornthwaite_n".
+ *
+ * Create private argument array
+ */
+    /*
+    nargs = 0;
+    args = NewArgs(3);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+
+    NclRegisterFunc(dim_thornthwaite_n_W,args,"dim_thornthwaite_n",nargs);
+    */
 
 /*
  * Register "gc_pnt2gc".
