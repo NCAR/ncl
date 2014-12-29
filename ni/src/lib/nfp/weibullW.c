@@ -1,5 +1,3 @@
-/* THIS WRAPPER IS NOT DONE!! */
-
 #include <stdio.h>
 #include "wrapper.h"
 
@@ -20,7 +18,7 @@ NhlErrorTypes dim_weibull_n_W( void )
   int       ndims_x;
   ng_size_t nx, dsizes_x[NCL_MAX_DIMENSIONS];
   int inx, has_missing_x;
-  NclScalar missing_x, missing_flt_x, missing_dbl_x;
+  NclScalar missing_x, missing_dbl_x;
   NclBasicDataTypes type_x;
 
 /*
@@ -39,8 +37,7 @@ NhlErrorTypes dim_weibull_n_W( void )
   double tmp_wb[6];
   int       ndims_wb;
   ng_size_t *dsizes_wb;
-  int has_missing_wb;
-  NclScalar missing_wb, missing_flt_wb, missing_dbl_wb;
+  NclScalar missing_wb;
   NclBasicDataTypes type_wb;
 
 /*
@@ -57,8 +54,8 @@ NhlErrorTypes dim_weibull_n_W( void )
 /*
  * Various
  */
-  ng_size_t i, j, nrnx, total_nl, total_nr, total_elements;
-  ng_size_t index_nrx, index_x, index_wb, index_nr;
+  ng_size_t i, j, nrnx, nrnw, total_nl, total_nr, total_elements, size_output;
+  ng_size_t index_nrx, index_nrw, index_x, index_wb;
   int ier, ret;
 
 /*
@@ -83,8 +80,7 @@ NhlErrorTypes dim_weibull_n_W( void )
 /*
  * Coerce missing value to double if necessary.
  */
-  coerce_missing(type_x,has_missing_x,&missing_x,
-                 &missing_dbl_x,&missing_flt_x);
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dbl_x,NULL);
 
 /*
  * Get argument # 1
@@ -123,7 +119,7 @@ NhlErrorTypes dim_weibull_n_W( void )
   set_nmin = set_confi = False;
 
   if(*opt) {
-    stack_entry = _NclGetArg(2, 3, DONT_CARE);
+    stack_entry = _NclGetArg(1, 3, DONT_CARE);
     switch (stack_entry.kind) {
     case NclStk_VAR:
       if (stack_entry.u.data_var->var.att_id != -1) {
@@ -203,12 +199,9 @@ NhlErrorTypes dim_weibull_n_W( void )
     dsizes_wb[i-ndims] = dsizes_x[i];
   }
   total_elements = total_nr * total_nl;
-  if(set_confi) {
-    dsizes_wb[ndims_wb-1] = 6;
-  }
-  else {
-    dsizes_wb[ndims_wb-1] = 2;
-  }
+  if(set_confi) dsizes_wb[ndims_wb-1] = 6;
+  else          dsizes_wb[ndims_wb-1] = 2;
+
   if(nx > INT_MAX) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_weibull_n: nx = %ld is greater than INT_MAX", nx);
     return(NhlFATAL);
@@ -227,26 +220,19 @@ NhlErrorTypes dim_weibull_n_W( void )
 /* 
  * Allocate space for output array.
  */
-  if(type_x != NCL_double) type_wb = NCL_float;
-  else                     type_wb = NCL_double;
-  if(type_wb != NCL_double) {
-    if(set_confi) {
-      wb = (void *)calloc(6*total_elements, sizeof(float));
-    }
-    else {
-      wb = (void *)calloc(2*total_elements, sizeof(float));
-    }
+  size_output = dsizes_wb[ndims_wb-1] * total_elements; 
+  if(type_x != NCL_double) {
+    type_wb = NCL_float;
+    missing_wb.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    wb = (void *)calloc(size_output, sizeof(float));
   }
   else {
-    if(set_confi) {
-      wb = (void *)calloc(6*total_elements, sizeof(double));
-    }
-    else {
-      wb = (void *)calloc(2*total_elements, sizeof(double));
-    }
+    type_wb = NCL_double;
+    missing_wb.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    wb = (void *)calloc(size_output, sizeof(double));
   }
   if(wb == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_weibull_n: Unable to allocate memory for temporary output array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_weibull_n: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 
@@ -255,12 +241,13 @@ NhlErrorTypes dim_weibull_n_W( void )
  * subsection of the input arrays.
  */
   nrnx = total_nr * nx;
+  nrnw = total_nr * dsizes_wb[ndims_wb-1];
   for(i = 0; i < total_nl; i++) {
     index_nrx = i*nrnx;
-    index_nr  = i*total_nr;
+    index_nrw = i*nrnw;
     for(j = 0; j < total_nr; j++) {
       index_x  = index_nrx + j;
-      index_wb = index_nr + j;
+      index_wb = index_nrw + j;
 /*
  * Coerce subsection of x (tmp_x) to double.
  */
@@ -271,17 +258,12 @@ NhlErrorTypes dim_weibull_n_W( void )
  * Call the Fortran routine.
  */
       NGCALLF(weibfit,WEIBFIT)(&inx, tmp_x, &missing_dbl_x.doubleval, 
-			       &nmin, tmp_confi, tmp_wb, &ier);
+                               &nmin, tmp_confi, tmp_wb, &ier);
 
 /*
  * Coerce output array to appropriate type
  */
-      if(set_confi) {
-	coerce_output_float_or_double(wb,tmp_wb,type_wb,6,index_wb);
-      }
-      else {
-	coerce_output_float_or_double(wb,tmp_wb,type_wb,2,index_wb);
-      }
+      coerce_output_float_or_double(wb,tmp_wb,type_wb,dsizes_wb[ndims_wb-1],index_wb);
     }
   }
 
@@ -294,12 +276,8 @@ NhlErrorTypes dim_weibull_n_W( void )
 /*
  * Return value back to NCL script.
  */
-  if(type_wb != NCL_double) {
-    ret = NclReturnValue(wb,ndims_wb,dsizes_wb,&missing_flt_wb,type_wb,0);
-  }
-  else {
-    ret = NclReturnValue(wb,ndims_wb,dsizes_wb,&missing_dbl_wb,type_wb,0);
-  }
+  ret = NclReturnValue(wb,ndims_wb,dsizes_wb,&missing_wb,type_wb,0);
+
   NclFree(dsizes_wb);
   return(ret);
 }
