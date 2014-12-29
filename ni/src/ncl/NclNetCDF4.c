@@ -3155,6 +3155,9 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
                             }
                             compnode = NULL;
                         }
+
+                        if(found)
+                            break;
                     }
                 }
 
