@@ -55,8 +55,8 @@ NhlErrorTypes dim_weibull_n_W( void )
 /*
  * Various
  */
-  ng_size_t i, j, nrnx, nrnw, total_nl, total_nr, total_elements, size_output;
-  ng_size_t index_nrx, index_nrw, index_x, index_wb;
+  ng_size_t i, j, nrnx, total_nl, total_nr, size_output;
+  ng_size_t index_nrx, index_nr, index_x, index_wb;
   int ier, ret;
 
 /*
@@ -187,7 +187,7 @@ NhlErrorTypes dim_weibull_n_W( void )
     return(NhlFATAL);
   }
 
-  nx = total_nl = total_nr = total_elements = 1;
+  nx = total_nl = total_nr = 1;
   for(i = 0; i < dims[0]; i++) {
     total_nl *= dsizes_x[i];
     dsizes_wb[i] = dsizes_x[i];
@@ -199,7 +199,6 @@ NhlErrorTypes dim_weibull_n_W( void )
     total_nr *= dsizes_x[i];
     dsizes_wb[i-ndims] = dsizes_x[i];
   }
-  total_elements = total_nr * total_nl;
   if(set_confi) dsizes_wb[ndims_wb-1] = 6;
   else          dsizes_wb[ndims_wb-1] = 2;
 
@@ -221,7 +220,7 @@ NhlErrorTypes dim_weibull_n_W( void )
 /* 
  * Allocate space for output array.
  */
-  size_output = dsizes_wb[ndims_wb-1] * total_elements; 
+  size_output = dsizes_wb[ndims_wb-1] * total_nr * total_nl;
   if(type_x != NCL_double) {
     type_wb = NCL_float;
     missing_wb.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
@@ -242,13 +241,12 @@ NhlErrorTypes dim_weibull_n_W( void )
  * subsection of the input arrays.
  */
   nrnx = total_nr * nx;
-  nrnw = total_nr * dsizes_wb[ndims_wb-1];
   for(i = 0; i < total_nl; i++) {
     index_nrx = i*nrnx;
-    index_nrw = i*nrnw;
+    index_nr  = i*total_nr;
     for(j = 0; j < total_nr; j++) {
       index_x  = index_nrx + j;
-      index_wb = index_nrw + j;
+      index_wb = (index_nr + j)*dsizes_wb[ndims_wb-1];
 /*
  * Coerce subsection of x (tmp_x) to double.
  */
