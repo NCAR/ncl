@@ -41,20 +41,10 @@ NhlErrorTypes dim_bfband_n_W( void )
 /*
  * Argument # 4
  */
-  void *dt;
-  double *tmp_dt;
-  NclBasicDataTypes type_dt;
+  logical *opt;
 
 /*
  * Argument # 5
- */
-  int *iflag;
-/*
- * Argument # 6
- */
-  int *iret;
-/*
- * Argument # 7
  */
   int *dims;
   ng_size_t ndims;
@@ -66,6 +56,18 @@ NhlErrorTypes dim_bfband_n_W( void )
   double *tmp_yr, *tmp_er;
   ng_size_t *dsizes_bf;
   NclBasicDataTypes type_bf;
+
+/*
+ * Variables for retrieving attributes from "opt".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry stack_entry;
+  logical set_dt = False, rmv_mean = True, ret_filt = True, ret_env = False;
+  int iflag;
+  void *dt;
+  double *tmp_dt;
+  NclBasicDataTypes type_dt;
 
 /*
  * Various
@@ -85,7 +87,7 @@ NhlErrorTypes dim_bfband_n_W( void )
  */
   xr = (void*)NclGetArgValue(
            0,
-           8,
+           6,
            &ndims_xr,
            dsizes_xr,
            NULL,
@@ -98,7 +100,7 @@ NhlErrorTypes dim_bfband_n_W( void )
  */
   m = (int*)NclGetArgValue(
            1,
-           8,
+           6,
            NULL,
            NULL,
            NULL,
@@ -110,7 +112,7 @@ NhlErrorTypes dim_bfband_n_W( void )
  */
   fca = (void*)NclGetArgValue(
            2,
-           8,
+           6,
            NULL,
            NULL,
            NULL,
@@ -122,7 +124,7 @@ NhlErrorTypes dim_bfband_n_W( void )
  */
   fcb = (void*)NclGetArgValue(
            3,
-           8,
+           6,
            NULL,
            NULL,
            NULL,
@@ -132,60 +134,20 @@ NhlErrorTypes dim_bfband_n_W( void )
 /*
  * Get argument # 4
  */
-  dt = (void*)NclGetArgValue(
+  opt = (logical*)NclGetArgValue(
            4,
-           8,
+           6,
            NULL,
            NULL,
            NULL,
            NULL,
-           &type_dt,
+           NULL,
            DONT_CARE);
+
 /*
  * Get argument # 5
  */
-  iflag = (int*)NclGetArgValue(
-           5,
-           8,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           DONT_CARE);
-  if(*iflag < 0 || *iflag > 1) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_bfband_n: iflag must be 0 or 1");
-    return(NhlFATAL);
-  }
-
-/*
- * Get argument # 6
- *
- * This argument represents what is to be returned by 
- * this function.
- *
- *   iret = 0: return yr only (same dimensionality as x)
- *   iret = 1: return er only (same dimensionality as x)
- *   iret = 2: return yr and er (2 x [dimensionality of x])
- */
-  iret = (int*)NclGetArgValue(
-           6,
-           8,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           DONT_CARE);
-
-  if(*iret < 0 || *iret > 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_bfband_n: iret must be 0, 1, or 2");
-    return(NhlFATAL);
-  }
-/*
- * Get argument # 7
- */
-  dims = (int *)NclGetArgValue(7,8,NULL,&ndims,NULL,NULL,NULL,0);
+  dims = (int *)NclGetArgValue(5,6,NULL,&ndims,NULL,NULL,NULL,0);
 
 /*
  * Some error checking. Make sure input dimension is valid.
@@ -206,11 +168,90 @@ NhlErrorTypes dim_bfband_n_W( void )
   }
 
 /*
- * Calculate size and dimension sizes of output array.
- * See description for iret above.
+ * Check for attributes attached to "opt"
+ *
+ *   "dt"              - 1.0
+ *   "remove_mean"     - True
+ *   "return_filtered" - True
+ *   "return_envelope" - False
  */
-  if(*iret == 2) ndims_bf = ndims_xr + 1;
-  else           ndims_bf = ndims_xr;
+  if(*opt) {
+    stack_entry = _NclGetArg(4, 6, DONT_CARE);
+    switch (stack_entry.kind) {
+    case NclStk_VAR:
+      if (stack_entry.u.data_var->var.att_id != -1) {
+        attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+        if (attr_obj == NULL) {
+          break;
+        }
+      }
+      else {
+/*
+ * att_id == -1 ==> no optional args given.
+ */
+        break;
+      }
+/* 
+ * Get optional arguments.
+ */
+      if (attr_obj->att.n_atts > 0) {
+/*
+ * Get list of attributes.
+ */
+        attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them.
+ */
+        while (attr_list != NULL) {
+          if(!strcasecmp(attr_list->attname, "remove_mean")) {
+            rmv_mean = *(logical *) attr_list->attvalue->multidval.val;
+          }
+          else if(!strcasecmp(attr_list->attname, "return_filtered")) {
+            ret_filt = *(logical *) attr_list->attvalue->multidval.val;
+          }
+          else if(!strcasecmp(attr_list->attname, "return_envelope")) {
+            ret_env = *(logical *) attr_list->attvalue->multidval.val;
+          }
+          else if(!strcasecmp(attr_list->attname, "dt")) {
+            dt      = attr_list->attvalue->multidval.val;
+            type_dt = attr_list->attvalue->multidval.data_type;
+            set_dt  = True;
+          }
+          attr_list = attr_list->next;
+        }
+      default:
+        break;
+      }
+    }
+  }
+
+/*
+ * Provide default for dt if not specified by user.
+ */
+  if(set_dt) {
+    tmp_dt = coerce_input_double(dt,type_dt,1,0,NULL,NULL);
+  }
+  else {
+    type_dt = NCL_double;
+    tmp_dt  = (double *)calloc(1,sizeof(double));
+    *tmp_dt = 1.0;
+  }
+
+  if(!ret_filt && !ret_env) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_bfband_n: both return_filtered and return_envelope are False. One of these must be True");
+    return(NhlFATAL);
+  }
+
+/*
+ * Calculate size and dimension sizes of output array.
+ *
+ * If both ret_filt and ret_env are True, then the
+ * return array will be 2 x k x ...
+ * Otherwise it will be k x ...
+ *
+ */
+  if(ret_filt && ret_env) ndims_bf = ndims_xr + 1;
+  else                    ndims_bf = ndims_xr;
 
   dsizes_bf = (ng_size_t*)calloc(ndims_bf,sizeof(ng_size_t));  
   if( dsizes_bf == NULL ) {
@@ -218,10 +259,9 @@ NhlErrorTypes dim_bfband_n_W( void )
     return(NhlFATAL);
   }
 
-  if(*iret == 2) dsizes_bf[0] = 2;
+  if(ret_filt && ret_env) dsizes_bf[0] = 2;
   for(i = 0; i < ndims_xr; i++) 
     dsizes_bf[i+(ndims_bf-ndims_xr)] = dsizes_xr[i];
-
 
 /*
  * Calculate number of leftmost, rightmost, and middle elements.
@@ -235,8 +275,8 @@ NhlErrorTypes dim_bfband_n_W( void )
  * Calculate xr and output sizes.
  */
   size_xr = total_nr * total_nl * nx;
-  if(*iret == 2) size_output = size_xr * 2;
-  else           size_output = size_xr;
+  if(ret_filt && ret_env) size_output = size_xr * 2;
+  else                    size_output = size_xr;
 
   if(nx > INT_MAX) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_bfband_n: nx = %ld is greater than INT_MAX", nx);
@@ -245,12 +285,11 @@ NhlErrorTypes dim_bfband_n_W( void )
   inx = (int) nx;
 
 /*
- * Coerce fca, fcb, dt to double, if needed.
+ * Coerce fca, fcb to double, if needed.
  */
   tmp_fca = coerce_input_double(fca,type_fca,1,0,NULL,NULL);
   tmp_fcb = coerce_input_double(fcb,type_fcb,1,0,NULL,NULL);
-  tmp_dt  = coerce_input_double(dt,type_dt,  1,0,NULL,NULL);
-  if(tmp_fca == NULL || tmp_fcb == NULL || tmp_dt == NULL) { 
+  if(tmp_fca == NULL || tmp_fcb == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_bfband_n: Unable to allocate memory for coercing input scalars to double");
     return(NhlFATAL);
   }
@@ -296,6 +335,8 @@ NhlErrorTypes dim_bfband_n_W( void )
  * input arrays.
  */
   nrnx = total_nr * nx;
+  if(rmv_mean) iflag = 1;
+  else         iflag = 0;
   for(i = 0; i < total_nl; i++) {
     index_nrx = i*nrnx;
     for(j = 0; j < total_nr; j++) {
@@ -309,19 +350,19 @@ NhlErrorTypes dim_bfband_n_W( void )
  * Call the Fortran routine.
  */
       NGCALLF(buttfilt,BUTTFILT)(tmp_xr, tmp_yr, tmp_er, tmp_fca, tmp_fcb, 
-                                 tmp_dt, m, &inx, iflag, &ier);
+                                 tmp_dt, m, &inx, &iflag, &ier);
 /*
  * Copy/coerce back to output array
  */
-      if(*iret == 0) {
+      if(ret_filt && !ret_env) {
         coerce_output_float_or_double_step(bf,tmp_yr,type_bf,nx,
                                            index_xr,total_nr);
       }
-      else if(*iret == 1) {
+      else if(!ret_filt && ret_env) {
         coerce_output_float_or_double_step(bf,tmp_er,type_bf,nx,
                                            index_xr,total_nr);
       }
-      else if(*iret == 2) {
+      else {
         coerce_output_float_or_double_step(bf,tmp_yr,type_bf,nx,
                                            index_xr,total_nr);
         coerce_output_float_or_double_step(bf,tmp_er,type_bf,nx,
@@ -338,7 +379,7 @@ NhlErrorTypes dim_bfband_n_W( void )
   NclFree(tmp_yr);
   if(type_fca != NCL_double) NclFree(tmp_fca);
   if(type_fcb != NCL_double) NclFree(tmp_fcb);
-  if(type_dt  != NCL_double) NclFree(tmp_dt);
+  if(!set_dt || type_dt != NCL_double) NclFree(tmp_dt);
 
 /*
  * Return value back to NCL script.

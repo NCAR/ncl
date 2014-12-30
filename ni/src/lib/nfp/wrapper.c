@@ -2058,16 +2058,14 @@ void NclAddUserFuncs(void)
  * Create private argument array
  */
     nargs = 0;
-    args = NewArgs(8);
+    args = NewArgs(6);
 
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
     NclRegisterFunc(dim_bfband_n_W,args,"dim_bfband_n",nargs);
