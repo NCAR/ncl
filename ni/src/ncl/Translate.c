@@ -2611,7 +2611,7 @@ Unneeded translations
 				break;
 			case Ncl_PARAMIT:
 				_NclTranslate(filegroup->filegroupnode,fp);
-				_NclPutInstr(PARAM_FILE_VAR_OP,filegroup->line,filegroup->file);
+				_NclPutInstr(PARAM_FILE_GROUP_OP,filegroup->line,filegroup->file);
 				_NclPutInstr((NclValue)filegroup->dfile,filegroup->line,filegroup->file);
 				_NclPutIntInstr(nsubs,filegroup->line,filegroup->file);
 				break;

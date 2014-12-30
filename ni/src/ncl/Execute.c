@@ -8559,10 +8559,7 @@ NclExecuteReturnStatus _NclExecute
 				NHLPERROR((estatus,NhlEUNKNOWN,"Execute: Error occurred at or near line %d\n",(cmd_line ? (*lptr): *lptr)));
 				break;
 			case PARAM_FILE_GROUP_OP:
-				fprintf(stdout, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
-				fprintf(stdout, "\tstop *ptr: %ld\n", (long)*ptr);
-				fprintf(stdout, "\tstop PARAM_FILE_GROUP_OP: %d\n", PARAM_FILE_GROUP_OP);
-				exit ( -1 );
+				CallFILE_GROUP_OP();
 				break;
 			default:
 			      /*
