@@ -1,10 +1,10 @@
-/* THIS WRAPPER IS NOT DONE!! */
-
 #include <stdio.h>
+#include <strings.h>
 #include "wrapper.h"
 
-extern void NGCALLF(weibfit,WEIBFIT)(int *, double *, double *, int *, 
-                                     double *, double *, int *);
+extern void NGCALLF(kenstst,KENSTST)(double *, int *, int *, double *, 
+                                     double *, double *, int *, 
+                                     double *, logical *, double *);
 
 NhlErrorTypes trend_manken_n_W( void )
 {
@@ -19,8 +19,7 @@ NhlErrorTypes trend_manken_n_W( void )
   double *tmp_x;
   int       ndims_x;
   ng_size_t nx, dsizes_x[NCL_MAX_DIMENSIONS];
-  int inx, has_missing_x;
-  NclScalar missing_x, missing_flt_x, missing_dbl_x;
+  int inx;
   NclBasicDataTypes type_x;
 
 /*
@@ -35,31 +34,20 @@ NhlErrorTypes trend_manken_n_W( void )
 /*
  * Return variable
  */
-  void *wb;
-  double tmp_wb[6];
-  int       ndims_wb;
-  ng_size_t *dsizes_wb;
-  int has_missing_wb;
-  NclScalar missing_wb, missing_flt_wb, missing_dbl_wb;
-  NclBasicDataTypes type_wb;
-
-/*
- * Variables for retrieving attributes from "opt".
- */
-  NclAttList  *attr_list;
-  NclAtt  attr_obj;
-  NclStackEntry stack_entry;
-  int nmin, set_nmin, set_confi;
-  void *confi;
-  double *tmp_confi;
-  NclBasicDataTypes type_confi;
+  void *tm;
+  int       ndims_tm;
+  ng_size_t *dsizes_tm;
+  NclBasicDataTypes type_tm;
 
 /*
  * Various
  */
-  ng_size_t i, j, nrnx, total_nl, total_nr, total_elements;
-  ng_size_t index_nrx, index_x, index_wb, index_nr;
-  int ier, ret;
+  int nslp, s;
+  logical *tieflag;
+  double z, prob, trend, eps, *slope;
+  ng_size_t i, j, nrnx, total_nl, total_nr, size_output;
+  ng_size_t index_nrx, index_nr, index_x, index_tm;
+  int ret;
 
 /*
  * Retrieve parameters.
@@ -75,16 +63,10 @@ NhlErrorTypes trend_manken_n_W( void )
            3,
            &ndims_x,
            dsizes_x,
-           &missing_x,
-           &has_missing_x,
+           NULL,
+           NULL,
            &type_x,
            DONT_CARE);
-
-/*
- * Coerce missing value to double if necessary.
- */
-  coerce_missing(type_x,has_missing_x,&missing_x,
-                 &missing_dbl_x,&missing_flt_x);
 
 /*
  * Get argument # 1
@@ -117,104 +99,36 @@ NhlErrorTypes trend_manken_n_W( void )
     }
   }
 
-/*
- * Check for attributes attached to "opt"
- */
-  set_nmin = set_confi = False;
-
-  if(*opt) {
-    stack_entry = _NclGetArg(2, 3, DONT_CARE);
-    switch (stack_entry.kind) {
-    case NclStk_VAR:
-      if (stack_entry.u.data_var->var.att_id != -1) {
-        attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
-        if (attr_obj == NULL) {
-          break;
-        }
-      }
-      else {
-/*
- * att_id == -1 ==> no optional args given.
- */
-        break;
-      }
-/* 
- * Get optional arguments.
- */
-      if (attr_obj->att.n_atts > 0) {
-/*
- * Get list of attributes.
- */
-        attr_list = attr_obj->att.att_list;
-/*
- * Loop through attributes and check them. We are looking for:
- *
- *  nmin or confi
- */
-        while (attr_list != NULL) {
-          if(!strcasecmp(attr_list->attname, "nmin")) {
-            nmin      = *(int *) attr_list->attvalue->multidval.val;
-            set_nmin  = True;
-          }
-          else if(!strcasecmp(attr_list->attname, "confi")) {
-            confi      = attr_list->attvalue->multidval.val;
-            type_confi = attr_list->attvalue->multidval.data_type;
-            set_confi  = True;
-          }
-          attr_list = attr_list->next;
-        }
-      default:
-        break;
-      }
-    }
-  }
-  if(!set_nmin) {
-    nmin = inx;
-  }
-  if(set_confi) {
-    tmp_confi = coerce_input_double(confi,type_confi,1,0,NULL,NULL);
-  }
-  else {
-    type_confi = NCL_double;
-    tmp_confi  = (double *)calloc(1,sizeof(double));
-    *tmp_confi = 1.0;
-  }
-
 /* 
  * Allocate space for output dimension sizes and set them.
  */
-  ndims_wb = ndims_x - ndims + 1;
-  dsizes_wb = (ng_size_t*)calloc(ndims_wb,sizeof(ng_size_t));  
-  if( dsizes_wb == NULL ) {
+  ndims_tm = ndims_x - ndims + 1;
+  dsizes_tm = (ng_size_t*)calloc(ndims_tm,sizeof(ng_size_t));  
+  if( dsizes_tm == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken_n: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
   }
 
-  nx = total_nl = total_nr = total_elements = 1;
+  nx = total_nl = total_nr = 1;
   for(i = 0; i < dims[0]; i++) {
     total_nl *= dsizes_x[i];
-    dsizes_wb[i] = dsizes_x[i];
+    dsizes_tm[i] = dsizes_x[i];
   }
   for(i = 0; i < ndims ; i++) {
     nx = nx*dsizes_x[dims[i]];
   }
   for(i = dims[ndims-1]+1; i < ndims_x; i++) {
     total_nr *= dsizes_x[i];
-    dsizes_wb[i-ndims] = dsizes_x[i];
+    dsizes_tm[i-ndims] = dsizes_x[i];
   }
-  total_elements = total_nr * total_nl;
-  if(set_confi) {
-    dsizes_wb[ndims_wb-1] = 6;
-  }
-  else {
-    dsizes_wb[ndims_wb-1] = 2;
-  }
+  dsizes_tm[ndims_tm-1] = 2;
+
   if(nx > INT_MAX) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken_n: nx = %ld is greater than INT_MAX", nx);
     return(NhlFATAL);
   }
-  inx = (int) nx;
-
+  inx  = (int) nx;
+  nslp = inx*(inx-1)/2;
 /*
  * Allocate space for tmp_x.
  */
@@ -227,32 +141,35 @@ NhlErrorTypes trend_manken_n_W( void )
 /* 
  * Allocate space for output array.
  */
-  if(type_x != NCL_double) type_wb = NCL_float;
-  else                     type_wb = NCL_double;
-  if(type_wb != NCL_double) {
-    if(set_confi) {
-      wb = (void *)calloc(6*total_elements, sizeof(float));
-    }
-    else {
-      wb = (void *)calloc(2*total_elements, sizeof(float));
-    }
+  size_output = 2 * total_nr * total_nl;
+  if(type_x != NCL_double) {
+    type_tm = NCL_float;
+    tm = (void *)calloc(size_output, sizeof(float));
   }
   else {
-    if(set_confi) {
-      wb = (void *)calloc(6*total_elements, sizeof(double));
-    }
-    else {
-      wb = (void *)calloc(2*total_elements, sizeof(double));
-    }
+    type_tm = NCL_double;
+    tm = (void *)calloc(size_output, sizeof(double));
   }
-  if(wb == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken_n: Unable to allocate memory for temporary output array");
+  if(tm == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken_n: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 
+/* 
+ * Allocate space for various other arrays.
+ */
+  slope   = (double *)calloc(nslp, sizeof(double));
+  tieflag = (logical *)calloc(nslp, sizeof(logical));
+  if(slope == NULL || tieflag == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken_n: Unable to allocate memory for output arrays");
+    return(NhlFATAL);
+  }
+  eps = 1.0e-5;
+
 /*
- * Loop across leftmost dimensions and call the Fortran routine for each
- * subsection of the input arrays.
+ * Loop across rightmost/leftmost dimensions and call 
+ * the Fortran routine for each subsection of the 
+ * input arrays.
  */
   nrnx = total_nr * nx;
   for(i = 0; i < total_nl; i++) {
@@ -260,7 +177,7 @@ NhlErrorTypes trend_manken_n_W( void )
     index_nr  = i*total_nr;
     for(j = 0; j < total_nr; j++) {
       index_x  = index_nrx + j;
-      index_wb = index_nr + j;
+      index_tm = (index_nr + j)*2;
 /*
  * Coerce subsection of x (tmp_x) to double.
  */
@@ -270,18 +187,14 @@ NhlErrorTypes trend_manken_n_W( void )
 /*
  * Call the Fortran routine.
  */
-      NGCALLF(weibfit,WEIBFIT)(&inx, tmp_x, &missing_dbl_x.doubleval, 
-			       &nmin, tmp_confi, tmp_wb, &ier);
+      NGCALLF(kenstst,KENSTST)(tmp_x, &inx, &s, &z, &prob, &trend,
+                               &nslp, slope, tieflag, &eps);
 
 /*
  * Coerce output array to appropriate type
  */
-      if(set_confi) {
-	coerce_output_float_or_double(wb,tmp_wb,type_wb,6,index_wb);
-      }
-      else {
-	coerce_output_float_or_double(wb,tmp_wb,type_wb,2,index_wb);
-      }
+      coerce_output_float_or_double(tm,&prob,type_tm,1,index_tm);
+      coerce_output_float_or_double(tm,&trend,type_tm,1,index_tm+1);
     }
   }
 
@@ -289,17 +202,14 @@ NhlErrorTypes trend_manken_n_W( void )
  * Free unneeded memory.
  */
   NclFree(tmp_x);
-  if(type_confi != NCL_double) NclFree(tmp_confi);
+  NclFree(slope);
+  NclFree(tieflag);
 
 /*
  * Return value back to NCL script.
  */
-  if(type_wb != NCL_double) {
-    ret = NclReturnValue(wb,ndims_wb,dsizes_wb,&missing_flt_wb,type_wb,0);
-  }
-  else {
-    ret = NclReturnValue(wb,ndims_wb,dsizes_wb,&missing_dbl_wb,type_wb,0);
-  }
-  NclFree(dsizes_wb);
+  ret = NclReturnValue(tm,ndims_tm,dsizes_tm,NULL,type_tm,0);
+
+  NclFree(dsizes_tm);
   return(ret);
 }

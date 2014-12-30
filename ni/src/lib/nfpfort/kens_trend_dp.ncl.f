@@ -38,8 +38,8 @@ C                                     ! OUTPUT
       DOUBLE PRECISION    eps
       LOGICAL tieflg(n)
 C                                     ! LOCAL
-      INTEGER j, k, nc, ntie, ncrit
-      DOUBLE PRECISION  nt, diff, dave, var, vartie, zero
+      INTEGER j, k, nc, nt, ntie, ncrit
+      DOUBLE PRECISION  diff, dave, var, vartie, zero
 
       zero = 0.0d0
       ncrit  =  10    ! series must be at least this length
@@ -97,7 +97,7 @@ c c c       write(*,'("ntie=",i4,"  vartie=",f8.1)') ntie, vartie
         END IF
       END DO
                                                    ! adjustment
-      nt    = (1d0 + sqrt( 1d0 + 8d0*nc ))/2d0       
+      nt    = INT((1d0 + sqrt( 1d0 + 8d0*nc ))/2d0)
       var   = nt* (nt-1d0)* (2d0*nt + 5d0)/18d0    ! simple variance no ties
       var   = var - vartie                         ! adjust for ties
 
@@ -120,9 +120,9 @@ c Theil-Sen Trend Estimate: sort and take median
           trend = slope(nc/2+1)
       END IF
 
-      write(*,'(" n=",i3," s=",i5, " nc=",i6, "  nt=",i3
-     *         ," var=",f8.1," vartie=",f8.1," trend=",f10.5)') 
-     *         n, s, nc, nt, var, vartie, trend
+c c c      write(*,'(" n=",i3," s=",i5, " nc=",i6, "  nt=",i3
+c c c     *         ," var=",f8.1," vartie=",f8.1," trend=",f10.5)') 
+c c c     *         n, s, nc, nt, var, vartie, trend
     
       RETURN
       END 

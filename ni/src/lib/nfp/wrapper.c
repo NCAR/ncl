@@ -56,8 +56,8 @@ extern NhlErrorTypes svdpar_W(void);
 extern NhlErrorTypes sindex_yrmo_W(void);
 extern NhlErrorTypes dim_bfband_n_W(void);
 extern NhlErrorTypes dim_weibull_n_W(void);
-/*
 extern NhlErrorTypes trend_manken_n_W(void);
+/*
 extern NhlErrorTypes dim_thornthwaite_n_W(void);
 */
 extern NhlErrorTypes snindex_yrmo_W(void);
@@ -2091,7 +2091,6 @@ void NclAddUserFuncs(void)
  *
  * Create private argument array
  */
-/*
     nargs = 0;
     args = NewArgs(3);
 
@@ -2101,7 +2100,6 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
     NclRegisterFunc(trend_manken_n_W,args,"trend_manken_n",nargs);
-*/
 /*
  * Register "dim_thornthwaite_n".
  *
