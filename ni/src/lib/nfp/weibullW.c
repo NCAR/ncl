@@ -55,7 +55,7 @@ NhlErrorTypes dim_weibull_n_W( void )
 /*
  * Various
  */
-  ng_size_t i, j, nrnx, total_nl, total_nr, size_output;
+  ng_size_t i, j, nrnx, total_nl, total_nr, total_elements, size_output;
   ng_size_t index_nrx, index_nr, index_x, index_wb;
   int ier, ret;
 
@@ -178,20 +178,24 @@ NhlErrorTypes dim_weibull_n_W( void )
   }
 
   nx = total_nl = total_nr = 1;
+  
+  if(ndims_wb == 1) j = 0;
+  else              j = 1;
+
+  if(set_confi) dsizes_wb[0] = 6;
+  else          dsizes_wb[0] = 2;
+
   for(i = 0; i < dims[0]; i++) {
     total_nl *= dsizes_x[i];
-    dsizes_wb[i] = dsizes_x[i];
+    dsizes_wb[j+i] = dsizes_x[i];
   }
   for(i = 0; i < ndims ; i++) {
     nx = nx*dsizes_x[dims[i]];
   }
   for(i = dims[ndims-1]+1; i < ndims_x; i++) {
     total_nr *= dsizes_x[i];
-    dsizes_wb[i-ndims] = dsizes_x[i];
+    dsizes_wb[j+i-ndims] = dsizes_x[i];
   }
-  if(set_confi) dsizes_wb[ndims_wb-1] = 6;
-  else          dsizes_wb[ndims_wb-1] = 2;
-
   if(nx > INT_MAX) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_weibull_n: nx = %ld is greater than INT_MAX", nx);
     return(NhlFATAL);
@@ -224,7 +228,8 @@ NhlErrorTypes dim_weibull_n_W( void )
 /* 
  * Allocate space for output array.
  */
-  size_output = dsizes_wb[ndims_wb-1] * total_nr * total_nl;
+  total_elements = total_nr * total_nl;
+  size_output = dsizes_wb[0] * total_elements;
   if(type_x != NCL_double) {
     type_wb = NCL_float;
     missing_wb.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
@@ -250,7 +255,7 @@ NhlErrorTypes dim_weibull_n_W( void )
     index_nr  = i*total_nr;
     for(j = 0; j < total_nr; j++) {
       index_x  = index_nrx + j;
-      index_wb = (index_nr + j)*dsizes_wb[ndims_wb-1];
+      index_wb = index_nr + j;
 /*
  * Coerce subsection of x (tmp_x) to double.
  */
@@ -266,7 +271,8 @@ NhlErrorTypes dim_weibull_n_W( void )
 /*
  * Coerce output array to appropriate type
  */
-      coerce_output_float_or_double(wb,tmp_wb,type_wb,dsizes_wb[ndims_wb-1],index_wb);
+      coerce_output_float_or_double_step(wb,tmp_wb,type_wb,dsizes_wb[0],
+                                         index_wb,total_elements);
     }
   }
 
