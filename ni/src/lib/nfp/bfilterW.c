@@ -23,28 +23,24 @@ NhlErrorTypes dim_bfband_n_W( void )
 /*
  * Argument # 1
  */
-  int *m;
-/*
- * Argument # 2
- */
   void *fca;
   double *tmp_fca;
   NclBasicDataTypes type_fca;
 
 /*
- * Argument # 3
+ * Argument # 2
  */
   void *fcb;
   double *tmp_fcb;
   NclBasicDataTypes type_fcb;
 
 /*
- * Argument # 4
+ * Argument # 3
  */
   logical *opt;
 
 /*
- * Argument # 5
+ * Argument # 4
  */
   int *dims;
   ng_size_t ndims;
@@ -64,7 +60,7 @@ NhlErrorTypes dim_bfband_n_W( void )
   NclAtt  attr_obj;
   NclStackEntry stack_entry;
   logical set_dt = False, rmv_mean = True, ret_filt = True, ret_env = False;
-  int iflag;
+  int m=6, iflag;
   void *dt;
   double *tmp_dt;
   NclBasicDataTypes type_dt;
@@ -87,7 +83,7 @@ NhlErrorTypes dim_bfband_n_W( void )
  */
   xr = (void*)NclGetArgValue(
            0,
-           6,
+           5,
            &ndims_xr,
            dsizes_xr,
            NULL,
@@ -98,21 +94,9 @@ NhlErrorTypes dim_bfband_n_W( void )
 /*
  * Get argument # 1
  */
-  m = (int*)NclGetArgValue(
-           1,
-           6,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           DONT_CARE);
-/*
- * Get argument # 2
- */
   fca = (void*)NclGetArgValue(
-           2,
-           6,
+           1,
+           5,
            NULL,
            NULL,
            NULL,
@@ -120,11 +104,11 @@ NhlErrorTypes dim_bfband_n_W( void )
            &type_fca,
            DONT_CARE);
 /*
- * Get argument # 3
+ * Get argument # 2
  */
   fcb = (void*)NclGetArgValue(
-           3,
-           6,
+           2,
+           5,
            NULL,
            NULL,
            NULL,
@@ -132,11 +116,11 @@ NhlErrorTypes dim_bfband_n_W( void )
            &type_fcb,
            DONT_CARE);
 /*
- * Get argument # 4
+ * Get argument # 3
  */
   opt = (logical*)NclGetArgValue(
-           4,
-           6,
+           3,
+           5,
            NULL,
            NULL,
            NULL,
@@ -145,9 +129,9 @@ NhlErrorTypes dim_bfband_n_W( void )
            DONT_CARE);
 
 /*
- * Get argument # 5
+ * Get argument # 4
  */
-  dims = (int *)NclGetArgValue(5,6,NULL,&ndims,NULL,NULL,NULL,0);
+  dims = (int *)NclGetArgValue(4,5,NULL,&ndims,NULL,NULL,NULL,0);
 
 /*
  * Some error checking. Make sure input dimension is valid.
@@ -170,13 +154,14 @@ NhlErrorTypes dim_bfband_n_W( void )
 /*
  * Check for attributes attached to "opt"
  *
+ *   "m"               - 6
  *   "dt"              - 1.0
  *   "remove_mean"     - True
  *   "return_filtered" - True
  *   "return_envelope" - False
  */
   if(*opt) {
-    stack_entry = _NclGetArg(4, 6, DONT_CARE);
+    stack_entry = _NclGetArg(3, 5, DONT_CARE);
     switch (stack_entry.kind) {
     case NclStk_VAR:
       if (stack_entry.u.data_var->var.att_id != -1) {
@@ -216,6 +201,9 @@ NhlErrorTypes dim_bfband_n_W( void )
             dt      = attr_list->attvalue->multidval.val;
             type_dt = attr_list->attvalue->multidval.data_type;
             set_dt  = True;
+          }
+          else if(!strcasecmp(attr_list->attname, "m")) {
+            m = *(int *) attr_list->attvalue->multidval.val;
           }
           attr_list = attr_list->next;
         }
@@ -350,7 +338,7 @@ NhlErrorTypes dim_bfband_n_W( void )
  * Call the Fortran routine.
  */
       NGCALLF(buttfilt,BUTTFILT)(tmp_xr, tmp_yr, tmp_er, tmp_fca, tmp_fcb, 
-                                 tmp_dt, m, &inx, &iflag, &ier);
+                                 tmp_dt, &m, &inx, &iflag, &ier);
 /*
  * Copy/coerce back to output array
  */
