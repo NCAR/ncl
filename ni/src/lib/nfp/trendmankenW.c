@@ -45,7 +45,7 @@ NhlErrorTypes trend_manken_n_W( void )
   int nslp, s;
   logical *tieflag;
   double z, prob, trend, eps, *slope;
-  ng_size_t i, j, nrnx, total_nl, total_nr, size_output;
+  ng_size_t i, j, nrnx, total_nl, total_nr, total_elements, size_output;
   ng_size_t index_nrx, index_nr, index_x, index_tm;
   int ret;
 
@@ -109,19 +109,22 @@ NhlErrorTypes trend_manken_n_W( void )
     return(NhlFATAL);
   }
 
+  if(ndims_tm == 1) j = 0;
+  else              j = 1;
+  dsizes_tm[0] = 2;
+
   nx = total_nl = total_nr = 1;
   for(i = 0; i < dims[0]; i++) {
     total_nl *= dsizes_x[i];
-    dsizes_tm[i] = dsizes_x[i];
+    dsizes_tm[j+i] = dsizes_x[i];
   }
   for(i = 0; i < ndims ; i++) {
     nx = nx*dsizes_x[dims[i]];
   }
   for(i = dims[ndims-1]+1; i < ndims_x; i++) {
     total_nr *= dsizes_x[i];
-    dsizes_tm[i-ndims] = dsizes_x[i];
+    dsizes_tm[j+i-ndims] = dsizes_x[i];
   }
-  dsizes_tm[ndims_tm-1] = 2;
 
   if(nx > INT_MAX) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken_n: nx = %ld is greater than INT_MAX", nx);
@@ -141,7 +144,8 @@ NhlErrorTypes trend_manken_n_W( void )
 /* 
  * Allocate space for output array.
  */
-  size_output = 2 * total_nr * total_nl;
+  total_elements = total_nr * total_nl;
+  size_output    = 2 * total_elements;
   if(type_x != NCL_double) {
     type_tm = NCL_float;
     tm = (void *)calloc(size_output, sizeof(float));
@@ -177,7 +181,7 @@ NhlErrorTypes trend_manken_n_W( void )
     index_nr  = i*total_nr;
     for(j = 0; j < total_nr; j++) {
       index_x  = index_nrx + j;
-      index_tm = (index_nr + j)*2;
+      index_tm = index_nr + j;
 /*
  * Coerce subsection of x (tmp_x) to double.
  */
@@ -194,7 +198,7 @@ NhlErrorTypes trend_manken_n_W( void )
  * Coerce output array to appropriate type
  */
       coerce_output_float_or_double(tm,&prob,type_tm,1,index_tm);
-      coerce_output_float_or_double(tm,&trend,type_tm,1,index_tm+1);
+      coerce_output_float_or_double(tm,&trend,type_tm,1,index_tm+total_elements);
     }
   }
 
