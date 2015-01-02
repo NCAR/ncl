@@ -14611,7 +14611,7 @@ begin
 end
 ;==========================
 undef("pot_temp_n")
-function pot_temp_n (p:numeric, t:numeric, npr[*]:integer, opt:integer)
+function pot_temp_n (p:numeric, t:numeric, opt[1], npr[*]:integer)
 ;
 ; Compute potential temperature
 ; Nomenclature
@@ -14625,9 +14625,9 @@ function pot_temp_n (p:numeric, t:numeric, npr[*]:integer, opt:integer)
 ;                     cpd  = 1004. or 1005.7 ; specific heat dry air [J/kg/K]
 ;                     Lv   = 2.5104e6        ; [J/kg]=[m2/s2]  Latent Heat of Vaporization of Water
 ;                     r    = mixing ratio 
+;     opt     - options: Currently, not use, Set to 0
 ;     npr     - dimension number(s) of 'p' corresponding to temperature 
 ;               npr=-1 means that p and t have the same dimensions
-;     opt     - options: not used
 ;
 local rankp, rankt, theta, p0
 begin
@@ -14667,7 +14667,7 @@ begin
 end
 ;=========================
 undef("static_stability_n") 
-function static_stability_n (p:numeric, t:numeric, npr[1]:integer, sopt:integer)
+function static_stability_n (p:numeric, t:numeric, sopt[1]:integer, npr[1]:integer)
 ;
 ; Compute Static Stability
 ; Bluestein: Synoptic-Dynamic Meteorology in Midlatitudes
@@ -14684,15 +14684,15 @@ function static_stability_n (p:numeric, t:numeric, npr[1]:integer, sopt:integer)
 ;                     cpd  = 1004. or 1005.7 ; specific heat dry air [J/kg/K]
 ;                     Lv   = 2.5104e6        ; [J/kg]=[m2/s2]  Latent Heat of Vaporization of Water
 ;                     r    = mixing ratio    ; (kg/kg) 
-;     npr     - dimension number for pressure
 ;     sopt    - =0, Return static stability only
 ;             - =1, Return static stability, theta, dthdp as type list
+;     npr     - dimension number for pressure
 ;
 ; Note: In a statically stable atmosphere: d(theta)/dp < 0, hence s > 0       
 ;
 local theta, rankt, rankp, dthdp, s
 begin
-  theta  = pot_temp_n(p, t, npr, 0)      
+  theta  = pot_temp_n(p, t, False, npr)      
 
   rankp  = dimsizes(dimsizes(p))
   rankt  = dimsizes(dimsizes(t))   ; rankt = rank(theta)
@@ -14740,7 +14740,7 @@ end
 undef("pot_vort_hybrid")
 function pot_vort_hybrid\
             (p:numeric, u:numeric, v:numeric, t:numeric
-            ,lat[*]:numeric, gridType[1]:integer, opt:integer)
+            ,lat[*]:numeric, gridType[1]:integer, opt[1]:integer)
 ;
 ; Compute Isentropic Potential Vorticity on hybrid levels
 ; CCM Processor User's Guide: May 1994: page B-19
@@ -14755,7 +14755,7 @@ function pot_vort_hybrid\
 ;               =0 means gaussian grid
 ;               =1 means regular or fixed grid
 ;     lat     - latitudes
-;     opt     - options: not used
+;     opt     - options: not used. Set to 0
 ;
 ; Note: u,v,t,p MUST:
 ;    [1] be SOUTH-TO-NORTH 
@@ -15137,11 +15137,127 @@ begin
 
   return(advect)
 end
-;---
-undef("wgt_vertavg")
-function wgt_vertavg (X:numeric, dp:numeric, lev_dim[1]:integer, iopt:integer)
+;====================
+undef("advect_var")
+function advect_var (u:numeric, v:numeric, x:numeric,gridType[1]:integer 
+                       ,long_name:string, units:string, iopt[1]:integer)
+;
+; compute advection of a variable: UV.GRADIENT(X) ; U*(dX/dlon) + V*(dX/dlat)
+;
+; Requires:
+;    (1) grid be global cuz spherical harmonics are used
+;    (2) required dimension order ([time,[lev,]lat,lon)
+;    (3) the input grids *must* be ordered South==>North
 ; 
-; Perform weighted vertical average
+; Nomenclature:
+;   u, v      - zonal and meridional wind components [m/s]
+;               rightmost dimensions must be ([...,]lat,lon)
+;   x         - scalar quantity to be advected 
+;               rightmost dimensions must be ([...,]lat,lon)
+;               eg: T, Z, divergence, vorticity, latent energy,..., whatever
+;   gridType  - type of grid: 0=gaussian, 1=fixed
+;   long_name - descriptive name (eg: "Temperature Advection" )
+;   units     - units of result  (eg: "m-K/s" )
+;   iopt      - flag: =0 means return only the advect result          
+;                     =1 means return the advect, longitidinal and latitudinal gradient
+;                        as part of a list
+; Usage:
+;   f = addfile ("foo.nc", "r")
+;   u = f->U    ; (time,lev,lat,lon)
+;   v = f->V
+;   T = f->T
+;               ; linear advection of temperature
+;   Tadv = advect_var(u,v,T,0,"linear advection of temperature","m-K/s",0)
+;
+local dimu, dimv, dimx, ranku, rankv, rankx, ier \
+    , x_grad_lon, x_grad_lat, advect
+begin
+                             ; ERROR CHECKING
+  dimu  = dimsizes(u)
+  dimv  = dimsizes(v)
+  dimx  = dimsizes(x)
+  ranku = dimsizes(dimu)
+  rankv = dimsizes(dimv)
+  rankx = dimsizes(dimx)
+
+  ier   = 0
+  if (.not.(gridType.eq.0 .or. gridType.eq.1)) then
+      print("advect_var: unrecognized gridType: only 0 and 1 allowed")
+      print("            gridType="+gridType)
+      ier = 1
+  end if
+  if (.not.(ranku.eq.rankv .and. ranku.eq.rankx)) then
+      print("advect_var: all input arguments must have the same rank")
+      print("            ranku="+ranku)
+      print("            rankv="+rankv)
+      print("            rankx="+rankx)
+      ier = ier + 10
+  end if
+  if (.not.(all(dimu.eq.dimv) .and. all(dimu.eq.dimx))) then
+      print("advect_var: all input arguments must have the same dimension sizes")
+      print("            ranku="+ranku)
+      print("            rankv="+rankv)
+      print("            rankx="+rankx)
+      ier = ier + 100
+  end if
+  if (rankx.lt.2) then
+      print("advect_var: variable rank must be at least 2D: ([time,[lev,]lat,plon)")
+      print("advect_var: rank="+rankx+"D")
+      ier = ier + 1000
+  end if
+
+  dnam  = getvardims(x)             ; dimension names
+  ynam  = dnam(rankx-2)             ; latitude dimension name
+  if (.not.ismissing(ynam) .and. iscoord(x,ynam)) then
+      yord  = isMonotonic(x&$ynam$)
+      if (yord.le.0) then
+          print("advect_var: grid is not in South-to-North order.")
+          ier = ier + 10000
+      end if
+  else
+      print("advect_var: Warning: No named dimensions. Can not check grid order.")
+  end if
+
+  if (ier.ne.0) then
+      print("advect_var fatal error(s) encountered: ier="+ier)
+      exit
+  end if
+
+  x_grad_lon = new( dimx, typeof(x), getFillValue(x) )
+  x_grad_lat = new( dimx, typeof(x), getFillValue(x) )
+
+  if (gridType.eq.0) then
+      gradsg  (x, x_grad_lon, x_grad_lat)
+  end if
+  if (gridType.eq.1) then
+      gradsf  (x, x_grad_lon, x_grad_lat)
+  end if
+                                        ; advection
+  advect = u*x_grad_lon + v*x_grad_lat
+                                        ; add meta data
+  copy_VarCoords(x, advect)
+  advect@long_name = long_name
+  advect@units     = units
+
+  if (iopt.eq.0) then
+      return(advect)
+  else
+      copy_VarCoords(x, x_grad_lon)
+      x_grad_lon@long_name = "longitudinal gradient"
+
+      copy_VarCoords(x, x_grad_lat)
+      x_grad_lat@long_name = "latitudinal gradient"
+
+      return([/ advect, x_grad_lon, x_grad_lat /] )
+  end if
+
+  return(advect)
+end
+;---
+undef("wgt_vert_n")
+function wgt_vert_n (X:numeric, dp:numeric, iopt:integer, lev_dim[1]:integer)
+; 
+; Perform weighted vertical average or sum
 ; 
 ; Requirement: X must be in the following order: ([time,],lev,lat,lon)
 ;
@@ -15150,14 +15266,14 @@ function wgt_vertavg (X:numeric, dp:numeric, lev_dim[1]:integer, iopt:integer)
 ; dp        - pressure thickness computed by "dpres_hybrid_ccm" or "dpres_plevel"
 ;             Must be the same size/shape as X
 ;             No missing data allowed.
+; iopt      - =0 weighted vertical average
+;             =1 weighted vertical sum
+;             =2 weighted vertical sum, vertical avg
 ; lev_dim   - level dimension
 ;             lev_dim = 0                            ; (lev), (0); (time,lev),  (0,1) 
 ;                                                    ; (lev,lat,lon),  (0,1,2) 
 ;             lev_dim = 1                            ; (time,lev,lat,lon), (0,1,2,3)
 ;             lev_dim = 2                            ; (case,time,lev,lat,lon), (01,2,3,4)
-; iopt      - flag: =0 means input dimension names will be retained
-;                   =1 means input dimension names will be renamed
-;                      to "time", "lat", "lon" where appropriate.
 ;+++++++++++++++++++++++
 ; Usage for hybrid levels
 ;        f = addfile("....", "r")
@@ -15185,7 +15301,7 @@ function wgt_vertavg (X:numeric, dp:numeric, lev_dim[1]:integer, iopt:integer)
 ;--------------------
 ; Use the 'dp' from above
 ;        t    = f->T                                ; (time,lev,lat,lon)
-;        xvi  = wgt_vertavg(t, dp,  1, 0)
+;        xvi  = wgt_vert_n(t, dp,  0, 1)
 
 local dimX, dimDP, rankX, Xdp, vsum, wsum, vavg
 begin
@@ -15227,11 +15343,13 @@ begin
 
   if (iopt.eq.0) then
       return(vavg)
-  else
-      return([/ vavg, vsum, wsum /] )
   end if
 
-  return( vavg )
+  if (iopt.eq.1) then
+      return(vsum)
+  end if
+  
+  return([/ vavg, vsum, wsum /] )
 end
 ;---
 undef("log1px")
