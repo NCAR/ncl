@@ -223,6 +223,7 @@ extern NhlErrorTypes spcorr_n_W(void);
 extern NhlErrorTypes pdfxy_bin_W(void);
 extern NhlErrorTypes pdfx_bin_W(void);
 extern NhlErrorTypes kolsm2_n_W(void);
+extern NhlErrorTypes determinant_W(void);
 
 extern NhlErrorTypes nggcog_W(void);
 extern NhlErrorTypes ngritd_W(void);
@@ -3465,6 +3466,17 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
         NclRegisterFunc(kolsm2_n_W,args,"kolsm2_n",nargs);
+
+/*
+ * Register "determinant".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(1);
+
+        SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+        NclRegisterFunc(determinant_W,args,"determinant",nargs);
 
 /*
  * Register "simpeq"
