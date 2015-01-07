@@ -1220,7 +1220,8 @@ NclFileCompoundRecord *get_nc4_compoundrec(int ncid, nc_type xtype, NrmQuark **c
     return comprec;
 }
 
-NclMultiDValData get_nc4_compoundlist(int ncid, int varid)
+NclMultiDValData get_nc4_compoundlist(int ncid, int varid, size_t n_elem,
+                                      long *start, long *finish, long *stride, int get_all)
 {
     NclList compoundlist;
     size_t size;
@@ -1238,9 +1239,11 @@ NclMultiDValData get_nc4_compoundlist(int ncid, int varid)
 
     size_t nvals = 1;
     void *values;
+    int *position;
 
     NclQuark  dimnames[NCL_MAX_DIMENSIONS];
     ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+    size_t   fullsizes[NCL_MAX_DIMENSIONS];
     ng_size_t compounddimsizes[1];
 
     void *compoundvalues;
@@ -1297,7 +1300,8 @@ NclMultiDValData get_nc4_compoundlist(int ncid, int varid)
     for(i = 0; i < ndims; ++i)
     {
         nc_inq_dim(ncid, dimids[i], buffer, &size);
-        dimsizes[i] = (ng_size_t)size;
+        dimsizes[i] = (ng_size_t)floor((finish[i] - start[i])/(double)stride[i]) + 1;
+        fullsizes[i] = (size_t)size;
         dimnames[i] = NrmStringToQuark(buffer);
         nvals *= size;
       /*
@@ -1313,7 +1317,7 @@ NclMultiDValData get_nc4_compoundlist(int ncid, int varid)
     values = (void *)NclCalloc(nvals * complength, sizeof(void));
     assert(values);
 
-    listids = (obj *)NclMalloc(nvals * sizeof(obj));
+    listids = (obj *)NclMalloc(n_elem * sizeof(obj));
     assert(listids);
 
     _NclBuildArrayOfList(listids, ndims, dimsizes);
@@ -1323,18 +1327,96 @@ NclMultiDValData get_nc4_compoundlist(int ncid, int varid)
     ncompounddims = 1;
     compounddimsizes[0] = complength;
     dimnames[0] = NrmStringToQuark("compound_dim");
-    for(i = 0; i < nvals; i++)
-    {
-        compoundvalues = (void *)NclCalloc(complength, sizeof(void));
-        assert(compoundvalues);
-        memcpy(compoundvalues, values + i * complength, complength);
 
-        sprintf(buffer, "%s_%3.3d", var_name, i);
-        compoundvar = _NclCreateVlenVar(buffer, compoundvalues,
-                                    ncompounddims, dimnames,
-                                    compounddimsizes, NCL_char);
-        compoundlist = _NclGetObj(listids[i]);
-        _NclListAppend((NclObj)compoundlist, (NclObj)compoundvar);
+    if(get_all)
+    {
+        for(i = 0; i < nvals; i++)
+        {
+            compoundvalues = (void *)NclCalloc(complength, sizeof(void));
+            assert(compoundvalues);
+            memcpy(compoundvalues, values + i * complength, complength);
+
+            sprintf(buffer, "%s_%3.3d", var_name, i);
+            compoundvar = _NclCreateVlenVar(buffer, compoundvalues,
+                                        ncompounddims, dimnames,
+                                        compounddimsizes, NCL_char);
+            compoundlist = _NclGetObj(listids[i]);
+            _NclListAppend((NclObj)compoundlist, (NclObj)compoundvar);
+        }
+    }
+    else
+    {
+	size_t n, spnt, length;
+	long j, j1, j2;
+        position = (int *)NclCalloc(n_elem, sizeof(int));
+        assert(position);
+
+	if(1 == ndims)
+        {
+            spnt = 0;
+            nvals = 0;
+            for(j = start[0]; j <= finish[0]; j += stride[0])
+	    {
+                position[nvals] = j;
+                ++nvals;
+	    }
+	}
+	else if(2 == ndims)
+        {
+            spnt = 0;
+            nvals = 0;
+            for(j1 = start[1]; j1 <= finish[1]; j1 += stride[1])
+	    {
+                for(j = start[0]; j <= finish[0]; j += stride[0])
+	        {
+                    position[nvals] = fullsizes[0]*j1 + j;
+                    ++nvals;
+	        }
+	    }
+	}
+	else if(3 == ndims)
+        {
+            spnt = 0;
+            nvals = 0;
+            for(j2 = start[2]; j2 <= finish[2]; j1 += stride[2])
+	    {
+                for(j1 = start[1]; j1 <= finish[1]; j1 += stride[1])
+	        {
+		    length = fullsizes[1]*fullsizes[0]*j2;
+                    for(j = start[0]; j <= finish[0]; j += stride[0])
+	            {
+                        position[nvals] = (length + fullsizes[0])*j1 + j;
+                        ++nvals;
+	            }
+	        }
+	    }
+	}
+	else
+        {
+            free(values);
+            free(position);
+            fprintf(stderr, "\tCan not handle compound list with 4d and up.\n");
+            NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                          "%s: Error in get_nc4_compoundlist in file (%s), at line: %d\n",
+                                  __FILE__, __LINE__));
+	    return compound_md;
+        }
+
+        for(k = 0; k < n_elem; k++)
+        {
+            i = position[k];
+            compoundvalues = (void *)NclCalloc(complength, sizeof(void));
+            assert(compoundvalues);
+            memcpy(compoundvalues, values + i * complength, complength);
+
+            sprintf(buffer, "%s_%3.3d", var_name, i);
+            compoundvar = _NclCreateVlenVar(buffer, compoundvalues,
+                                        ncompounddims, dimnames,
+                                        compounddimsizes, NCL_char);
+            compoundlist = _NclGetObj(listids[k]);
+            _NclListAppend((NclObj)compoundlist, (NclObj)compoundvar);
+        }
+        free(position);
     }
 
     free(values);
@@ -3202,7 +3284,8 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
                */
 
                 varnode->udt_type = NCL_UDT_compound;
-                storage = (void *)get_nc4_compoundlist(varnode->gid, varnode->id);
+                storage = (void *)get_nc4_compoundlist(varnode->gid, varnode->id, n_elem,
+                                                       start, finish, stride, get_all);
                 ret = 0;
                 return(storage);
             }
