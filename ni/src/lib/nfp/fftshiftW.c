@@ -24,8 +24,8 @@ NhlErrorTypes fftshift_W( void )
 /*
  * Various
  */
-  ng_size_t i, j, nrows, ncols, size_x;
-  ng_size_t x_pos, xshift_pos;
+  ng_size_t i, j, k, nleft, nrows, ncols, nrowcol, size_x;
+  ng_size_t left_pos, x_pos, xshift_pos;
   int type_size, ret;
 
 /*
@@ -71,51 +71,60 @@ NhlErrorTypes fftshift_W( void )
   if(ndims_x == 1) {
     nrows = 1;
     ncols = dsizes_x[0];
+    nleft = 1;
   }
   else if(ndims_x == 2) {
     nrows = dsizes_x[0];
     ncols = dsizes_x[1];
+    nleft = 1;
   }
-  else {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"fftshift: Input array must be 1D or 2D");
-    return(NhlFATAL);
-  }
-  /*
   else {
     nrows = dsizes_x[ndims_x-2];
     ncols = dsizes_x[ndims_x-1];
+    nleft = size_x / (nrows*ncols);
   }
-  */    
-  if (*kmode == 0) {
-    for(j = 0; j < nrows; j++) {
-      x_pos      = j*ncols;
-      xshift_pos = indx(j,nrows)*ncols;
-      for(i = 0; i < ncols; i++) {
-        memcpy((void*)((char*)xshift + (xshift_pos+indx(i,ncols))*type_size),
-               (void*)((char*)tmp_md->multidval.val + (x_pos+i)*type_size),
-               type_size);
+  nrowcol = nrows * ncols;
+
+
+  if (*kmode == 0) {                           /* xshift(indx(j),indx(i)) = x(j,i) */
+    for(k = 0; k < nleft; k++) { 
+      left_pos = k*nrowcol;
+      for(j = 0; j < nrows; j++) {
+        x_pos      = j*ncols;
+        xshift_pos = indx(j,nrows)*ncols;
+        for(i = 0; i < ncols; i++) {
+          memcpy((void*)((char*)xshift + (left_pos+xshift_pos+indx(i,ncols))*type_size),
+                 (void*)((char*)tmp_md->multidval.val + (left_pos+x_pos+i)*type_size),
+                 type_size);
+        }
       }
     }
   }
-  else if (*kmode < 0) {
-    for(j = 0; j < nrows; j++) {
-      x_pos      = j*ncols;
-      xshift_pos = indx(j,nrows)*ncols;
-      for(i = 0; i < ncols; i++) {
-        memcpy((void*)((char*)xshift + (xshift_pos+i)*type_size),
-                       (void*)((char*)tmp_md->multidval.val + 
-                               (x_pos+i)*type_size),type_size);
+  else if (*kmode < 0) {                       /* xshift(indx(j),i) = x(j,i) */
+    for(k = 0; k < nleft; k++) { 
+      left_pos = k*nrowcol;
+      for(j = 0; j < nrows; j++) {
+        x_pos      = j*ncols;
+        xshift_pos = indx(j,nrows)*ncols;
+        for(i = 0; i < ncols; i++) {
+          memcpy((void*)((char*)xshift + (left_pos+xshift_pos+i)*type_size),
+                 (void*)((char*)tmp_md->multidval.val + 
+                         (left_pos+x_pos+i)*type_size),type_size);
+        }
       }
     }
   }
-  else {
-    for(j = 0; j < nrows; j++) {
-      x_pos      = j*ncols;
-      xshift_pos = x_pos;
-      for(i = 0; i < ncols; i++) {
-        memcpy((void*)((char*)xshift + (xshift_pos+indx(i,ncols))*type_size),
-               (void*)((char*)tmp_md->multidval.val + (x_pos+i)*type_size),
-               type_size);
+  else {                       /* xshift(j,indx(i)) = x(j,i) */
+    for(k = 0; k < nleft; k++) { 
+      left_pos = k*nrowcol;
+      for(j = 0; j < nrows; j++) {
+        x_pos      = j*ncols;
+        xshift_pos = x_pos;
+        for(i = 0; i < ncols; i++) {
+          memcpy((void*)((char*)xshift + (left_pos+xshift_pos+indx(i,ncols))*type_size),
+                 (void*)((char*)tmp_md->multidval.val + (left_pos+x_pos+i)*type_size),
+                 type_size);
+        }
       }
     }
   }
