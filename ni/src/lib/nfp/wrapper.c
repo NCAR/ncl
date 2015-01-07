@@ -556,7 +556,7 @@ extern NhlErrorTypes conform_W(void);
 extern NhlErrorTypes conform_dims_W(void);
 extern NhlErrorTypes reshape_W(void);
 extern NhlErrorTypes reshape_ind_W(void);
-extern NhlErrorTypes arrayshift_W(void);
+extern NhlErrorTypes fftshift_W(void);
 extern NhlErrorTypes paleo_outline_W(void);
 extern NhlErrorTypes inverse_matrix_W(void);
 extern NhlErrorTypes solve_linsys_W(void);
@@ -7559,7 +7559,7 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(reshape_W, args, "reshape", nargs);
 
 /*
- *  Register arrayshift
+ *  Register fftshift
  */
     nargs = 0;
     args = NewArgs(2);
@@ -7567,7 +7567,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
-    NclRegisterFunc(arrayshift_W, args, "arrayshift", nargs);
+    NclRegisterFunc(fftshift_W, args, "fftshift", nargs);
 
 /*
  *  Register reshape_ind

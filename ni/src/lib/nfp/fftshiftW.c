@@ -5,7 +5,7 @@
 
 extern ng_size_t indx(ng_size_t,ng_size_t);
 
-NhlErrorTypes arrayshift_W( void )
+NhlErrorTypes fftshift_W( void )
 {
 
 /*
@@ -40,7 +40,7 @@ NhlErrorTypes arrayshift_W( void )
     tmp_md = (NclMultiDValData)data.u.data_obj;
     break;
   default:
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"arrayshift: invalid first input argument.");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"fftshift: invalid first input argument.");
     return(NhlFATAL);
   }
   ndims_x   = tmp_md->multidval.n_dims;
@@ -64,7 +64,7 @@ NhlErrorTypes arrayshift_W( void )
   for(i = 0; i < ndims_x; i++) size_x *= dsizes_x[i];
   xshift = (void*)NclMalloc(size_x*type_size);
   if( xshift == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"arrayshift: Unable to allocate memory for output array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"fftshift: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 
@@ -77,7 +77,7 @@ NhlErrorTypes arrayshift_W( void )
     ncols = dsizes_x[1];
   }
   else {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"arrayshift: Input array must be 1D or 2D");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"fftshift: Input array must be 1D or 2D");
     return(NhlFATAL);
   }
   /*
