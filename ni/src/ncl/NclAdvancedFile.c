@@ -1413,6 +1413,7 @@ NhlErrorTypes _addNclVarNodeToGrpNode(NclFileGrpNode *grpnode, NclQuark name,
     NclFileDimNode   *var_dim_node;
     NclFileDimRecord *dim_rec;
     NclFileVarRecord *var_rec;
+    char buffer[NCL_MAX_NAME_LENGTH];
     int i, n = 0;
 
     var_rec = grpnode->var_rec;
@@ -1432,7 +1433,11 @@ NhlErrorTypes _addNclVarNodeToGrpNode(NclFileGrpNode *grpnode, NclQuark name,
     n = var_rec->n_vars;
     var_node = &(var_rec->var_node[n]);
 
+    strcpy(buffer, NrmQuarkToString(grpnode->real_name));
+    strcat(buffer, "/");
+    strcat(buffer, NrmQuarkToString(name));
     var_node->name = name;
+    var_node->real_name = NrmStringToQuark(buffer);
     var_node->id = varid;
     var_node->type = type;
     var_node->comprec = NULL;
