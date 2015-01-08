@@ -8899,7 +8899,11 @@ NclQuark *_NclGetGrpNames(void *therec, int *num_grps)
 
             for(i = 0; i < grpnode->grp_rec->n_grps; ++i)
             {
+#if 1
+                out_quarks[i] = grpnode->grp_rec->grp_node[i]->real_name;
+#else
                 out_quarks[i] = grpnode->grp_rec->grp_node[i]->name;
+#endif
             }
 
             for(n = 0; n < grpnode->grp_rec->n_grps; ++n)
