@@ -1065,6 +1065,8 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
 
                     if(NULL != tmp_md)
                     {
+                        dimvarnode->value = (void *)NclMalloc(tmp_md->multidval.totalsize);
+                        assert(dimvarnode->value);
                         memcpy(dimvarnode->value, tmp_md->multidval.val, tmp_md->multidval.totalsize);
                         if(NCL_float == tmp_md->multidval.data_type)
                         {
