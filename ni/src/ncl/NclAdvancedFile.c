@@ -472,13 +472,13 @@ void _justPrintTypeVal(FILE *fp, NclBasicDataTypes type, void *val, int newline)
         case NCL_float:
             {
              float *v = (float *)val;
-             nclfprintf(fp, "%f", v[0]);
+             nclfprintf(fp, "%2.7g", v[0]);
              break;
             }
         case NCL_double:
             {
              double *v = (double *)val;
-             nclfprintf(fp, "%f", v[0]);
+             nclfprintf(fp, "%4.16g", v[0]);
              break;
             }
         case NCL_byte:
