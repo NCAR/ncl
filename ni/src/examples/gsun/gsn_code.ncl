@@ -757,42 +757,107 @@ begin
 end
 
 ;***********************************************************************;
+; This function returns the list of colormap names.
+; This can be used to test for valid colormap names.
+;***********************************************************************;
+undef("get_colormap_names")
+function get_colormap_names()
+local cmap_dirs, nfiles, ndirs, cmaps, i, j, tmp_files, tmp_names
+begin
+;---Get the list of color map directories
+  cmap_dirs = str_split(ncargpath("colormaps"),":")
+  ndirs     = dimsizes(cmap_dirs)
+
+  max_files = 500
+  cmaps = new(max_files,string)
+  nfiles = 0
+  do i=0,ndirs-1
+    tmp_files := systemfunc("ls -1 " + cmap_dirs(i))
+    nt = dimsizes(tmp_files)
+    do j=0,nt-1
+      tmp_names     := str_split(tmp_files(j),".")
+      cmaps(nfiles) = str_join(tmp_names(0:dimsizes(tmp_names)-2),".")
+      nfiles = nfiles + 1
+      if(nfiles.ge.max_files) then
+        print("get_colormap_names: reached maximum limit of color maps")
+        print("Will only return " + max_files + " color map names.") 
+        break
+      end if
+    end do
+    if(nfiles.ge.max_files) then
+      break
+    end if 
+  end do
+  return(cmaps(0:nfiles-1))
+end
+
+;***********************************************************************;
+; This function checks the list of color map names to see if they are
+; all valid.  It will return a logical array of the same size as the 
+; input array.
+;***********************************************************************;
+undef("is_valid_colormap_names")
+function is_valid_colormap_names(colormap_names[*]:string)
+local i, valid_colormaps, ncmaps
+begin
+  cmaps  = get_colormap_names()
+  ncmaps = dimsizes(colormap_names)
+  valid_colormaps = new(ncmaps,logical)
+  valid_colormaps = False    ; initialize to False
+  do i=0,ncmaps-1
+    if(any(colormap_names(i).eq.cmaps)) then
+      valid_colormaps(i) = True
+    end if
+  end do
+  return(valid_colormaps)
+end
+
+;***********************************************************************;
 ; This function returns the type of color being used: 
+;
 ;    color index     - values 0 to 255    "index"
 ;    named color     - "blue"             "named"
 ;    RGB triplet     - (/1,0,0.5/)        "rgb"
 ;    RGBA quadruplet - (/1,0,0.5,0.5/)    "rgba"
+;    color map name  - "amwg"             "colormap"
 ;
 ; A missing string is returned if no valid type is detected.
 ;***********************************************************************;
 undef("get_color_type")
-function get_color_type(color)
+function get_color_type(colors)
 local dims_color, rank_color
 begin
-  dims_color = dimsizes(color)
+  dims_color = dimsizes(colors)
   rank_color = dimsizes(dims_color)
 
-  if(rank_color.eq.1.and.dims_color.eq.1.and.\
-     typeof(color).eq."string".and.is_valid_named_colors(color)) then
+  if(rank_color.eq.1.and.typeof(colors).eq."string".and.\
+     all(is_valid_named_colors(colors))) then
     return("named")
   end if
 
-  if(rank_color.eq.1.and.dims_color.eq.1.and.\ 
-    any(typeof(color).eq.(/"short","integer","long"/)).and.\
-     color.ge.0.and.color.le.255) then
-    return("index")
+  if(rank_color.eq.1.and.typeof(colors).eq."string".and.\
+     all(is_valid_colormap_names(colors))) then
+    return("colormap")
   end if
 
-  if((rank_color.eq.1.and.dims_color(0).eq.3.or.\ 
-      rank_color.eq.2.and.dims_color(1).eq.3).and.\
-     isnumeric(color).and.all(color.ge.0).and.all(color.le.1.0)) then
+  if(rank_color.eq.1.and.dims_color.eq.1.and.\
+     typeof(colors).eq."string".and.is_valid_colormap_names(color)) then
+    return("colormap")
+  end if
+
+  if(dims_color(rank_color-1).eq.3.and.isnumeric(colors).and.\
+     all(colors.ge.0).and.all(colors.le.1.0)) then
     return("rgb")
   end if
 
-  if((rank_color.eq.1.and.dims_color(0).eq.4.or.\ 
-      rank_color.eq.2.and.dims_color(1).eq.4).and.\
-     isnumeric(color).and.all(color.ge.0).and.all(color.le.1.0)) then
+  if(dims_color(rank_color-1).eq.4.and.isnumeric(colors).and.\
+     all(colors.ge.0).and.all(colors.le.1.0)) then
     return("rgba")
+  end if
+
+  if(any(typeof(colors).eq.(/"short","integer","long"/)).and.\
+     all(colors.ge.0.and.colors.le.255)) then
+    return("index")
   end if
 
   return(new(1,string))    ; otherwise return missing
@@ -959,6 +1024,9 @@ begin
   end if
   if(color_type.eq."named") then
     rgba_colors = namedcolor2rgba(colors)
+  end if
+  if(color_type.eq."colormap".and.dimsizes(dimsizes(colors)).eq.1) then
+    rgba_colors = read_colormap_file(colors)
   end if
   if(color_type.eq."rgb") then
     rgba_colors = rgb2rgba(colors)
@@ -10636,6 +10704,125 @@ begin
     end setvalues
     delete(cmap)
   end if
+  return
+end
+
+;***********************************************************************;
+; Procedure : gsn_draw_colors                                           ;
+;                   wks: workstation object                             ;
+;                   colors                                              ;
+;                                                                       ;
+; This procedure draws the given colors as a series of boxes.           ;
+; colors can be a color map name ("rainbow"), a list of named colors    ;
+; (/"red","blue"/), an RGB array (n x 3), an RGBA array (n x 4), a list ;
+; of color indexes (/2,5,3,8/).                                           ;
+;***********************************************************************;
+undef("gsn_draw_colors")
+procedure gsn_draw_colors(wks,colors)
+begin
+  color_type = get_color_type(colors)
+
+  if(color_type.eq."unknown")
+    print("Error: gsn_draw_colors: invalid color(s).")
+    return
+  end if
+
+  if(color_type.eq."rgba") then
+    rgba_colors = colors
+  end if
+  if(color_type.eq."index") then
+    rgba_colors = indexcolor2rgba(wks,colors)
+  end if
+  if(color_type.eq."named") then
+    rgba_colors = namedcolor2rgba(colors)
+  end if
+  if(color_type.eq."colormap".and.dimsizes(dimsizes(colors)).eq.1) then
+    rgba_colors = read_colormap_file(colors)
+  end if
+  if(color_type.eq."rgb") then
+    rgba_colors = rgb2rgba(colors)
+  end if
+
+  ncolors = dimsizes(rgba_colors(:,0))
+  nrows   = 16                   ; # of rows of colors per page.
+  maxcols = 256                  ; max # of colors per color table.
+
+;
+; Figure out ncols such that the columns will span across the page.
+; Or, just set ncols to 16, which is big enough to cover the largest
+; possible color map.
+;
+  ncols = floattoint(ncolors/nrows)
+  if(ncols*nrows.lt.ncolors)
+    ncols = ncols+1
+  end if
+
+  ntotal  = nrows * ncols        ; # of colors per page.
+;
+; X and Y positions of text and box in the view port.
+;
+  width  = 1./ncols
+  height = 1./nrows
+  if(ncols.gt.1) then
+    xpos = fspan(0,1-width,ncols)
+  else
+    xpos = 0.
+  end if
+  if(nrows.gt.1) then
+    ypos = fspan(1-height,0,nrows)
+  else
+    ypos = 1.-height
+  end if
+;
+; Box coordinates.
+;
+  xbox = (/0,width, width,     0,0/)
+  ybox = (/0,    0,height,height,0/)
+
+  font_height = 0.015
+  font_space  = font_height/2.
+
+  gonres   = True   ; variables to hold list of resources
+  lineres  = True
+  txres    = True
+
+  txres@txFontHeightF         = font_height
+  txres@txFont                = "helvetica-bold"
+  txres@txJust                = "BottomLeft"
+  txres@txPerimOn             = True
+  txres@txPerimColor          = "black"
+  txres@txFontColor           = "black"
+  txres@txBackgroundFillColor = "white"
+
+  lineres@gsLineColor        = "black"
+
+;
+; ntotal colors per page.
+;
+  do k = 1,ncolors,ntotal
+    jj = 0
+    do j=k,min((/k+ntotal-1,ncolors/)),nrows
+      ii = 0
+      do i=j,min((/j+nrows-1,ncolors/))
+;
+; Draw box and fill in the appropriate color.
+;
+        gonres@gsFillColor = rgba_colors(i-1,:)
+        gsn_polygon_ndc(wks,xbox+xpos(jj),ybox+ypos(ii),gonres) ; Draw box.
+;
+; Outline box in black.
+;
+        gsn_polyline_ndc(wks,xbox+xpos(jj),ybox+ypos(ii),lineres)
+;
+; Draw color label.
+;
+        gsn_text_ndc(wks,i-1,font_space+xpos(jj),ypos(ii)+font_space,txres)
+        ii = ii + 1
+      end do
+      jj = jj +1
+    end do
+    frame(wks)   ; Advance the frame.
+  end do
   return
 end
 
