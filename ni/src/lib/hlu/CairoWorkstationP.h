@@ -39,7 +39,6 @@ typedef struct _NhlCairoWorkstationLayerPart {
     /* fields for PS/PDF workstations */
     NhlString          paper_size;      /* standard paper name, e.g., "legal", "A2", etc. */
     NhlWorkOrientation orientation;     /* PORTRAIT or LANDSCAPE */
-    int                dpi;             /* dots/inch */
     float              page_width;      /* inches */
     float              page_height;
 

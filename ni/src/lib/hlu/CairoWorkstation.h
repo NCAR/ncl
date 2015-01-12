@@ -14,9 +14,6 @@
 #define    NhlNwkFileName   "wkFileName"
 #define    NhlCwkFileName   "WkFileName"
 
-#define    NhlNwkPDFResolution   "wkPDFResolution"
-#define    NhlCwkPDFResolution   "WkPDFResolution"
-
 #define    _NhlNwkPixConf   "_wkPixConf"
 #define    _NhlCwkPixConf   "_WkPixConf"
 

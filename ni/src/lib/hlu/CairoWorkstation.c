@@ -25,9 +25,6 @@ static NhlResource resourcesDocumentWS[] = {
     {NhlNwkOrientation, NhlCwkOrientation, NhlTWorkOrientation,
         sizeof (NhlWorkOrientation), Oset(orientation), NhlTImmediate,
         _NhlUSET((NhlPointer) NhlPORTRAIT), _NhlRES_DEFAULT, NULL},
-    {NhlNwkPDFResolution, NhlCwkPDFResolution, NhlTInteger,
-        sizeof (int), Oset(dpi), NhlTImmediate,
-        _NhlUSET((NhlPointer) 1800), _NhlRES_NOSACCESS, NULL},
 
     /* these page size and margins are initialized as "-1" here, and are given appropriate
      * values when the workstation is opened, depending upon which resources are actually
@@ -1105,7 +1102,6 @@ CairoDocumentWorkstationOpen(NhlLayer l) {
     c_ngsetc("me", cairo->filename);
     c_ngseti("pw", pageInfo.pageWidthPts);
     c_ngseti("ph", pageInfo.pageHeightPts);
-    c_ngseti("co", (cairo->dpi / 72 + 1));
     c_ngseti("lx", cairo->lower_x);
     c_ngseti("ux", cairo->upper_x);
     c_ngseti("ly", cairo->lower_y);
@@ -1120,7 +1116,6 @@ CairoDocumentWorkstationOpen(NhlLayer l) {
     w = cairo->upper_x - cairo->lower_x;
     h = cairo->upper_y - cairo->lower_y;
     d = MAX(w, h);
-    work->work.vswidth_dev_units = d / 72 * cairo->dpi;
     
     setCairoFillHackValue(l);
 
@@ -1155,7 +1150,6 @@ CairoImageWorkstationOpen(NhlLayer l) {
     gesc_in_pixconf.escape_r1.data = &cairo->pixconfig;
     gesc_in_pixconf.escape_r1.size = sizeof (cairo->pixconfig);
     gescape(NGESC_CNATIVE, &gesc_in_pixconf, NULL, NULL);
-    work->work.vswidth_dev_units = minRange;
 
     ret = (*NhlworkstationClassRec.work_class.open_work)(l);
 
@@ -1169,26 +1163,6 @@ CairoWindowWorkstationOpen(NhlLayer l) {
     NhlCairoWorkstationLayerPart *cairo = &((NhlCairoWorkstationLayer) l)->cairo;
     Gescape_in_data gesc_in_xwconf;
     NhlErrorTypes ret;
-    /*****
-            NhlXWorkstationLayer		xl = (NhlXWorkstationLayer)l;
-            NhlXWorkstationLayerPart	*xp = &xl->xwork;
-            NhlWorkstationClassPart	*wcp =
-                    &((NhlWorkstationClass)xl->base.layer_class)->work_class;
-            _NGCXGetSizeChg			xgsc;
-            Gescape_in_data			gesc_in_xgsc;
-            Gescape_in_data			gesc_in_xwconf;
-
-            if(xl->work.gkswkstype == NhlFATAL) {
-                    NhlPError(NhlFATAL,NhlEUNKNOWN,"Unknown workstation type");
-                    return(NhlFATAL);
-
-            }
-            if(xl->work.gkswksconid == NhlFATAL) {
-                    NhlPError(NhlFATAL,NhlEUNKNOWN,
-                            "Unknown workstation connection id");
-                    return(NhlFATAL);
-            }
-     *****/
 
     /* we need to calculate the NDC frame within the image... */
     int minRange = (cairo->xwinconfig.width < cairo->xwinconfig.height) ? cairo->xwinconfig.width : cairo->xwinconfig.height;
@@ -1210,33 +1184,10 @@ CairoWindowWorkstationOpen(NhlLayer l) {
     gesc_in_xwconf.escape_r1.data = &cairo->xwinconfig;
     gesc_in_xwconf.escape_r1.size = sizeof(cairo->xwinconfig);
     gescape(NGESC_CNATIVE, &gesc_in_xwconf, NULL, NULL);
-    work->work.vswidth_dev_units = minRange;
 
     ret = (*NhlworkstationClassRec.work_class.open_work)(l);
 
     return ret;
-    /****
-    _NhlUpdateGksWksRecs(l,True,&xl->work.gkswksid);
-     *wcp->hlu_wks_flag = True;
-    _NHLCALLF(gopwk,GOPWK)(&(xl->work.gkswksid),&(xl->work.gkswksconid),
-            &(xl->work.gkswkstype));
-    if(_NhlLLErrCheckPrnt(NhlFATAL,func))
-            return NhlFATAL;
-    gset_clip_ind(GIND_NO_CLIP);
-    if(_NhlLLErrCheckPrnt(NhlWARNING,func)){
-            return NhlFATAL;
-    }
-    gesc_in_xgsc.escape_r1.data = &xgsc;
-    gesc_in_xgsc.escape_r1.size = 0;
-    xgsc.type = NGC_XSIZECHG;
-    xgsc.work_id = xl->work.gkswksid;
-    xgsc.xget_size = GetSizeProc;
-    xgsc.closure = &xl->work.vswidth_dev_units;
-    gescape(NGESC_CNATIVE,&gesc_in_xgsc,NULL,NULL);
-
-    return _NhlAllocateColors((NhlWorkstationLayer)l);
-
-*****/
 }
 
 #ifdef BuildQtEnabled
@@ -1268,7 +1219,6 @@ CairoQtWorkstationOpen(NhlLayer l) {
     gesc_in_xwconf.escape_r1.data = &cairo->xwinconfig;
     gesc_in_xwconf.escape_r1.size = sizeof(cairo->xwinconfig);
     gescape(NGESC_CNATIVE, &gesc_in_xwconf, NULL, NULL);
-    work->work.vswidth_dev_units = minRange;
 
     ret = (*NhlworkstationClassRec.work_class.open_work)(l);
 
@@ -1311,7 +1261,6 @@ CairoDocumentWorkstationActivate(NhlLayer l) {
     w = pp->upper_x - pp->lower_x;
     h = pp->upper_y - pp->lower_y;
     d = MAX(w, h);
-    wp->vswidth_dev_units = d / 72 * pp->dpi;
 
     return (*(lc->work_class.activate_work))(l);
 }
