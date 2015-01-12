@@ -846,12 +846,12 @@ begin
   end if
 
   if(dims_color(rank_color-1).eq.3.and.isnumeric(colors).and.\
-     all(colors.ge.0).and.all(colors.le.1.0)) then
+     all(colors.ge.0.and.colors.le.1.0)) then
     return("rgb")
   end if
 
   if(dims_color(rank_color-1).eq.4.and.isnumeric(colors).and.\
-     all(colors.ge.0).and.all(colors.le.1.0)) then
+     all(colors.ge.0.and.colors.le.1.0)) then
     return("rgba")
   end if
 
