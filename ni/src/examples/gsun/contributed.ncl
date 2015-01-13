@@ -15436,3 +15436,43 @@ begin
 
   return(pres)
 end 
+undef ("eval_north")
+function eval_north(eval[*]:numeric, ntim[1]:integer, prinfo[1]:logical)
+;
+; North, G.R. et al (1982): Sampling Errors in the Estimation of Empirical Orthogonal Functions.
+; Mon. Wea. Rev., 110, 699–706.
+; doi: http://dx.doi.org/10.1175/1520-0493(1982)110<0699:SEITEO>2.0.CO;2
+;
+; Usage after 'eofunc':  
+;             prinfo = True
+;             sig    = eval_north(eof@eval, ntim, prinfo)
+
+begin
+  neval   = dimsizes(eval)
+
+  dlam    = eval * sqrt(2.0/ntim)   ; eq 22
+  low     = eval-dlam
+  high    = eval+dlam
+
+  sig     = new(dimsizes(eval), logical)
+  sig = False  ; default is not significantly separated
+
+  if (eval(0).gt.high(1)) then
+      sig(0) = True
+  end if
+  if (eval(neval-1).lt.low(neval-2)) then
+      sig(neval-1) = True
+  end if
+
+  do n=1,neval-2
+     if (eval(n).lt.low(n-1) .and. eval(n).gt.high(n+1)) then
+         sig(n) = True
+     end if
+  end do
+
+  if (prinfo) then
+      print(dlam+"   "+low+"   "+eval+"   "+high+"  "+sig)
+  end if
+  sig@long_name = "significantly separated"
+  return(sig)
+end
