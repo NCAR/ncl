@@ -15436,26 +15436,36 @@ begin
 
   return(pres)
 end 
-undef ("eval_north")
-function eval_north(eval[*]:numeric, ntim[1]:integer, prinfo[1]:logical)
+undef ("eof_north")
+function eof_north(eval[*]:numeric, N[1]:integer, prinfo[1]:logical)
 ;
 ; North, G.R. et al (1982): Sampling Errors in the Estimation of Empirical Orthogonal Functions.
 ; Mon. Wea. Rev., 110, 699–706.
 ; doi: http://dx.doi.org/10.1175/1520-0493(1982)110<0699:SEITEO>2.0.CO;2
 ;
-; Usage after 'eofunc':  
+; Usage after 'eofunc'. Here ntim was used,  
 ;             prinfo = True
 ;             sig    = eval_north(eof@eval, ntim, prinfo)
-
+;
+local neval, dlam, low, high, sig, n
 begin
   neval   = dimsizes(eval)
+  if (neval.eq.1)
+      print("eof_north: neval=1, no testing can be performed")
+      sig = True 
+      sig@long_name = "EOF separation is not testable N=1"
+      sig@N         =  N
+      return(sig)
+  end if
 
-  dlam    = eval * sqrt(2.0/ntim)   ; eq 22
+  dlam    = eval * sqrt(2.0/N)   ; eq 24
   low     = eval-dlam
   high    = eval+dlam
 
   sig     = new(dimsizes(eval), logical)
   sig = False  ; default is not significantly separated
+
+; first and last eigenvalues are special cales
 
   if (eval(0).gt.high(1)) then
       sig(0) = True
@@ -15464,15 +15474,22 @@ begin
       sig(neval-1) = True
   end if
 
-  do n=1,neval-2
-     if (eval(n).lt.low(n-1) .and. eval(n).gt.high(n+1)) then
-         sig(n) = True
-     end if
-  end do
+; loop over other eignvalues
+
+  if (N.gt.2) then
+      do n=1,neval-2
+         if (eval(n).lt.low(n-1) .and. eval(n).gt.high(n+1)) then
+             sig(n) = True
+         end if
+      end do
+  end if
 
   if (prinfo) then
       print(dlam+"   "+low+"   "+eval+"   "+high+"  "+sig)
   end if
-  sig@long_name = "significantly separated"
+
+  sig@long_name = "EOF separation"
+  sig@N         =  N
   return(sig)
 end
+
