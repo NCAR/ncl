@@ -9059,7 +9059,8 @@ int    has_missing_x,
 double missing
 )
 {
-  int l, found_missing = 0;
+  ng_size_t l;
+  int found_missing = 0;
 /*
  * Check for missing values.
  */
