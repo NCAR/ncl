@@ -9084,7 +9084,8 @@ int    has_missing_x,
 float missing
 )
 {
-  int l, found_missing = 0;
+  int found_missing = 0;
+  ng_size_t l;
 /*
  * Check for missing values.
  */
