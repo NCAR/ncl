@@ -15436,8 +15436,9 @@ begin
 
   return(pres)
 end 
-undef ("eof_north")
-function eof_north(eval[*]:numeric, N[1]:integer, prinfo[1]:logical)
+;===================
+undef ("eofunc_north")
+function eofunc_north(eval[*]:numeric, N[1]:integer, prinfo[1]:logical)
 ;
 ; North, G.R. et al (1982): Sampling Errors in the Estimation of Empirical Orthogonal Functions.
 ; Mon. Wea. Rev., 110, 699–706.
@@ -15451,7 +15452,7 @@ local neval, dlam, low, high, sig, n
 begin
   neval   = dimsizes(eval)
   if (neval.eq.1)
-      print("eof_north: neval=1, no testing can be performed")
+      print("eofunc_north: neval=1, no testing can be performed")
       sig = True 
       sig@long_name = "EOF separation is not testable N=1"
       sig@N         =  N
