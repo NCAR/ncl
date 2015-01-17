@@ -11291,14 +11291,14 @@ begin
       end if
     end if
 
-    overlay(vector_object,contour_object)
+    overlay(contour_object,vector_object)
 
 ;
 ; If gsnScale was set to True, then make sure the X and Y axis labels
 ; and tick marks are the same size.
 ; 
     if(scale)
-      gsnp_scale_plot(vector_object,"vf",resources)
+      gsnp_scale_plot(contour_object,"vf",resources)
     end if
 
 ;
@@ -11306,17 +11306,17 @@ begin
 ; the scales are proportionally correct.
 ; 
     if(shape)
-      gsnp_shape_plot(vector_object)
+      gsnp_shape_plot(contour_object)
     end if
 
-    draw_and_frame(wks,vector_object,calldraw,callframe,0,maxbb)
+    draw_and_frame(wks,contour_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
-    vector_object@vfdata = vfdata_object
-    vector_object@sfdata = sfdata_object
-    vector_object@contour = contour_object
-    return(vector_object)
+    contour_object@vfdata = vfdata_object
+    contour_object@sfdata = sfdata_object
+    contour_object@contour = contour_object
+    return(contour_object)
 end
 
 ;***********************************************************************;
@@ -11664,8 +11664,8 @@ begin
       end if
     end if
 
-    overlay(map_object,vector_object)
     overlay(map_object,contour_object)
+    overlay(map_object,vector_object)
 
 ;
 ; If gsnScale was set to True, then make sure the X and Y axis labels
