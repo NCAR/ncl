@@ -3577,7 +3577,14 @@ static NhlErrorTypes SetUpCrvTransObj
 		trans_class =  NhlcurvilinearTransObjClass;
 		break;
 	case NhltrSPHERICAL:
-		trans_class =  NhlsphericalTransObjClass;
+		if (tfp->overlay_status == _tfCurrentOverlayMember &&
+		    tfp->overlay_trans_obj->base.layer_class->base_class.class_name == NhlmapTransObjClass->base_class.class_name) {
+			/* the spherical trans object only works over a map */
+			trans_class =  NhlsphericalTransObjClass;
+		}
+		else {
+			trans_class =  NhlcurvilinearTransObjClass;
+		}
 		break;
 	default:
 		e_text = "%s:internal error determinining trans type";

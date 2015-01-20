@@ -2470,6 +2470,7 @@ static NhlErrorTypes UpdateFillInfo
 	float *levels = (float *) cnp->levels->data;
 	int i;
 
+	*almost_const = False;
         _NhlSetFillOpacity(cl, cnp->fill_opacity);
 /*
  * Since the missing value fill resources are not supposed to be affected
@@ -2486,7 +2487,6 @@ static NhlErrorTypes UpdateFillInfo
 
 	*do_fill = True;
 
-	*almost_const = False;
 	for (i = 0; i< cnp->level_count -1 ; i++) { 
 		if (cnp->zmin >= levels[i] &&
 		    cnp->zmax <= levels[i + 1]) {
