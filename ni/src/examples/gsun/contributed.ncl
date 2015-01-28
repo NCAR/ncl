@@ -9928,7 +9928,6 @@ begin
   end if
 
   if (isatt(yyyymm,"calendar")) then    ; retrofit to existing code
-      yrFrac@calendar = yyyymm@calendar
 
       if (yyyymm@calendar.eq."360_day" .or. yyyymm@calendar.eq."360") then
           con = (/ 360, 360 /)*one
@@ -15024,7 +15023,7 @@ end
 ;====================
 undef("advect_var")
 function advect_var (u:numeric, v:numeric, x:numeric,gridType[1]:integer 
-                       ,long_name:string, units:string, iopt[1]:integer)
+                    ,long_name:string, units:string, iopt[1]:integer)
 ;
 ; compute advection of a variable: UV.GRADIENT(X) ; U*(dX/dlon) + V*(dX/dlat)
 ;
@@ -15135,123 +15134,6 @@ begin
       return([/ advect, x_grad_lon, x_grad_lat /] )
   end if
 
-  return(advect)
-end
-;====================
-undef("advect_var")
-function advect_var (u:numeric, v:numeric, x:numeric,gridType[1]:integer 
-                       ,long_name:string, units:string, iopt[1]:integer)
-;
-; compute advection of a variable: UV.GRADIENT(X) ; U*(dX/dlon) + V*(dX/dlat)
-;
-; Requires:
-;    (1) grid be global cuz spherical harmonics are used
-;    (2) required dimension order ([time,[lev,]lat,lon)
-;    (3) the input grids *must* be ordered South==>North
-; 
-; Nomenclature:
-;   u, v      - zonal and meridional wind components [m/s]
-;               rightmost dimensions must be ([...,]lat,lon)
-;   x         - scalar quantity to be advected 
-;               rightmost dimensions must be ([...,]lat,lon)
-;               eg: T, Z, divergence, vorticity, latent energy,..., whatever
-;   gridType  - type of grid: 0=gaussian, 1=fixed
-;   long_name - descriptive name (eg: "Temperature Advection" )
-;   units     - units of result  (eg: "m-K/s" )
-;   iopt      - flag: =0 means return only the advect result          
-;                     =1 means return the advect, longitidinal and latitudinal gradient
-;                        as part of a list
-; Usage:
-;   f = addfile ("foo.nc", "r")
-;   u = f->U    ; (time,lev,lat,lon)
-;   v = f->V
-;   T = f->T
-;               ; linear advection of temperature
-;   Tadv = advect_var(u,v,T,0,"linear advection of temperature","m-K/s",0)
-;
-local dimu, dimv, dimx, ranku, rankv, rankx, ier \
-    , x_grad_lon, x_grad_lat, advect
-begin
-                             ; ERROR CHECKING
-  dimu  = dimsizes(u)
-  dimv  = dimsizes(v)
-  dimx  = dimsizes(x)
-  ranku = dimsizes(dimu)
-  rankv = dimsizes(dimv)
-  rankx = dimsizes(dimx)
-
-  ier   = 0
-  if (.not.(gridType.eq.0 .or. gridType.eq.1)) then
-      print("advect_var: unrecognized gridType: only 0 and 1 allowed")
-      print("            gridType="+gridType)
-      ier = 1
-  end if
-  if (.not.(ranku.eq.rankv .and. ranku.eq.rankx)) then
-      print("advect_var: all input arguments must have the same rank")
-      print("            ranku="+ranku)
-      print("            rankv="+rankv)
-      print("            rankx="+rankx)
-      ier = ier + 10
-  end if
-  if (.not.(all(dimu.eq.dimv) .and. all(dimu.eq.dimx))) then
-      print("advect_var: all input arguments must have the same dimension sizes")
-      print("            ranku="+ranku)
-      print("            rankv="+rankv)
-      print("            rankx="+rankx)
-      ier = ier + 100
-  end if
-  if (rankx.lt.2) then
-      print("advect_var: variable rank must be at least 2D: ([time,[lev,]lat,plon)")
-      print("advect_var: rank="+rankx+"D")
-      ier = ier + 1000
-  end if
-
-  dnam  = getvardims(x)             ; dimension names
-  ynam  = dnam(rankx-2)             ; latitude dimension name
-  if (.not.ismissing(ynam) .and. iscoord(x,ynam)) then
-      yord  = isMonotonic(x&$ynam$)
-      if (yord.le.0) then
-          print("advect_var: grid is not in South-to-North order.")
-          ier = ier + 10000
-      end if
-  else
-      print("advect_var: Warning: No named dimensions. Can not check grid order.")
-  end if
-
-  if (ier.ne.0) then
-      print("advect_var fatal error(s) encountered: ier="+ier)
-      exit
-  end if
-
-  x_grad_lon = new( dimx, typeof(x), getFillValue(x) )
-  x_grad_lat = new( dimx, typeof(x), getFillValue(x) )
-
-  if (gridType.eq.0) then
-      gradsg  (x, x_grad_lon, x_grad_lat)
-  end if
-  if (gridType.eq.1) then
-      gradsf  (x, x_grad_lon, x_grad_lat)
-  end if
-                                        ; advection
-  advect = u*x_grad_lon + v*x_grad_lat
-                                        ; add meta data
-  copy_VarCoords(x, advect)
-  advect@long_name = long_name
-  advect@units     = units
-
-  if (iopt.eq.0) then
-      return(advect)
-  else
-      copy_VarCoords(x, x_grad_lon)
-      x_grad_lon@long_name = "longitudinal gradient"
-
-      copy_VarCoords(x, x_grad_lat)
-      x_grad_lat@long_name = "latitudinal gradient"
-
-      return([/ advect, x_grad_lon, x_grad_lat /] )
-  end if
-
-  return(advect)
 end
 ;---
 undef("wgt_vert_n")
@@ -15493,4 +15375,88 @@ begin
   sig@N         =  N
   return(sig)
 end
+;=======================================
+undef ("get_nearest_grid_pts")
+function get_nearest_grid_pts(obslat[*]:numeric, obslon[*]:numeric        \
+                             ,ygrid:numeric, xgrid:numeric, opt[1]:logical)
+; 
+; Based upon great circle distance; find nearest grid point
+; Input grid: ygrid and xgrid  could be [*] or [*][*]
+; Can handle rectilinear, curvilinear, unstructured grids
+;
+local Nx, Ny, Nxg, Nyg, N, rankx, ranky, ylat2d, xlon2d, nm, dist, dmin, imin
+begin
 
+; error checks 
+
+   Nx = dimsizes(obslon)           ; 'observation' locations (input)
+   Ny = dimsizes(obslat)
+   if (Nx.ne.Ny) then              ; observation locations must be same size
+       print("get_nearest_grid_pts: obslon/obslat not same size: Nx="+Nx+"  Ny="+Ny)
+       exit
+   end if
+ 
+   Nxg   = dimsizes(xgrid)
+   Nyg   = dimsizes(ygrid)
+   rankx = dimsizes(Nxg)           ; grid rank 
+   ranky = dimsizes(Nxg)   
+   
+   if (rankx.ne.ranky .or. all(Nxg.ne.Nyg)) then       ; grid locations must be same size and shape
+       print("get_nearest_grid_pts: xgrid/ygrid not same size and/or shape")
+       print("xgrid="+Nxg)
+       print("ygrid="+Nyg)
+       exit
+   end if
+
+; allocate space; perform computations
+; complexity due to handling rectilinear, curvilinear and unstructured grids
+ 
+   N  = Nx                         ; number of observations
+   dd = new( N, "double")          ; allocate space for distance     
+   dd@long_name = "distance to grid point"
+   dd@units     = "km"
+ 
+   if (rankg.eq.1) then
+       if (Nxg.ne.Nyg) then        ; rectilinear
+           ylat2d = conform_dims( (/Nyg,Nxg/), ygrid, 0)  ; replicate to 2D; trick
+           xlon2d = conform_dims( (/Nyg,Nxg/), xgrid, 1)
+           ylat1d = ndtooned( ylat2d )
+           xlat1d = ndtooned( xlon2d )
+
+       else                                    ; unstructured (eg: spectral element) 
+           nm = new( N, "integer")
+           do n=0,N-1
+              dist := gc_latlon(obslat(n),obslon(n), ygrid,xgrid, 2,4)  ; any units ok; choose km 
+              dmin  = min( dist )              ; scalar
+              nm(n) = ind( dist.eq.dmin(0) )   ; may be more than one; hence, dmin(0)
+              dd(n) = (/ dmin /)               ; avoid a warning message since dd has meta data
+           end do                              ; (/.../)  means transfer value only
+
+           nm@long_name = "index to nearest grid pt"
+           if (opt .and. isatt(opt,"distance")) then
+               return( [/nm, dd/] )            ; return as list variable: index values and distances
+            else
+               return(nm)                      ; return index values as regular variable
+           end if                              ; end opt
+       end if
+    else                                       ; curvilinear
+       ylat1d = ndtooned( ygrid )
+       xlat1d = ndtooned( xgrid )
+   end if
+                                               ; must be curvilinear or rectilinear
+   nm = new( (/N,2/), "integer")
+   do n=0,N-1
+      dist := gc_latlon(obslat(n),obslon(n), lat1d,lon1d, 2,4)  ; any units ok; choose km
+      dmin  = min( dist )
+      imin  = ind(dist.eq.dmin(0))             ; may be more than one; hence, dmin(0)
+      nm(n,:) = ind_resolve(imin, Nxg)
+      dd(n) = (/ dmin /)                       ; avoid a warning message since dd has meta data
+   end do                                      ; (/.../)  means transfer value only
+ 
+   nm@long_name = "indices to nearest grid pt"
+   if (opt .and. isatt(opt,"distance")) then
+       return( [/nm, dd/] )                    ; return as list variable: index values and distance
+   else
+       return(nm)                              ; return index values as regular variable
+   end if
+end
