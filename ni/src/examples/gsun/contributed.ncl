@@ -15116,7 +15116,10 @@ begin
       gradsf  (x, x_grad_lon, x_grad_lat)
   end if
                                         ; advection
-  advect = u*x_grad_lon + v*x_grad_lat
+  
+  uxgrad_lon = u*x_grad_lon 
+  vxgrad_lat = v*x_grad_lat
+  advect     = uxgrad_lon + vxgrad_lat
                                         ; add meta data
   copy_VarCoords(x, advect)
   advect@long_name = long_name
@@ -15132,6 +15135,14 @@ begin
       x_grad_lat@long_name = "latitudinal gradient"
 
       return([/ advect, x_grad_lon, x_grad_lat /] )
+
+     ;copy_VarCoords(x, ux_grad_lon)
+     ;x_grad_lon@long_name = "zonal advection"
+
+     ;copy_VarCoords(x, vx_grad_lat)
+     ;x_grad_lat@long_name = "meridional advevtion"
+
+     ;return([/ advect, x_grad_lon, x_grad_lat, uxgrad_lon, vxgrad_lat  /] )
   end if
 
 end
@@ -15215,11 +15226,22 @@ begin
   copy_VarCoords(X, Xdp)
 
   vsum = dim_sum_n_Wrap( Xdp, lev_dim )      ; sum vertically [ie integrate]
+  if (iopt.eq.1) then
+      return(vsum)
+  end if
+
   wsum = dim_sum_n_Wrap( dp , lev_dim )      ;  "      " 
+  if (any(wsum.eq.0)) then
+      if (.not.isatt(wsum,"_FillValue")) then
+          wsum@_FillValue = default_fillvalue(typeof(wsum))
+      end if
+      wsum = where(wsum.eq.0, wsum@_FillValue, wsum)
+  end if
+      
   vavg = vsum/wsum                           ; one less dimension (no vertical dim)
   copy_VarMeta(vsum, vavg) 
-
   vavg@NCL_op = "Weighted Vertical Average"
+
   vsum@NCL_op = "Weighted Vertical Sum"
   wsum@NCL_op = "Summed Weights"
 
@@ -15227,11 +15249,7 @@ begin
       return(vavg)
   end if
 
-  if (iopt.eq.1) then
-      return(vsum)
-  end if
-  
-  return([/ vavg, vsum, wsum /] )
+  return([/ vavg, vsum, wsum /] )    ; iopt=2
 end
 ;---
 undef("log1px")
