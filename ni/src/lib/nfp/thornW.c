@@ -35,6 +35,11 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
   logical *opt;
 
 /*
+ * Argument # 3
+ */
+  int *dim;
+
+/*
  * Return variable
  */
   void *pet;
@@ -45,9 +50,9 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
 /*
  * Various
  */
-  int intim, ret, ier;
-  ng_size_t i, j, ntim, nlat, nlon, nlatlon;
-  ng_size_t index_temp, index_lat, size_temp;
+  int intim, ret, ier, num_rgt_dims;
+  ng_size_t i, j, ilt, iln, ntim, nlat, nlon, nrnt, nlatlon;
+  ng_size_t index_temp, index_lat, index_nrt, size_temp, total_nr, total_nl;
   char grid_type[13];
 /*
  * Retrieve parameters.
@@ -60,23 +65,13 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
  */
   temp = (void*)NclGetArgValue(
            0,
-           3,
+           4,
            &ndims_temp,
            dsizes_temp,
            &missing_temp,
            &has_missing_temp,
            &type_temp,
            DONT_CARE);
-
-/*
- * Check size of temp.
- */
-  ntim = dsizes_temp[0];
-  if(ntim > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: ntim = %ld is greater than INT_MAX", ntim);
-    return(NhlFATAL);
-  }
-  intim = (int) ntim;
 
 /*
  * Coerce missing value to double if necessary.
@@ -89,7 +84,7 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
  */
   lat = (void*)NclGetArgValue(
            1,
-           3,
+           4,
            &ndims_lat,
            dsizes_lat,
            NULL,
@@ -98,23 +93,63 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
            DONT_CARE);
 
 /*
- * Check dimension sizes.
- *
- *   t(ntim)           - lat is a scalar
- *
- *   t(ntim,ncol)      - the grid is unstructured (eg: spectral element), then lat(ncol)
- *
- *   t(ntim,nlat,mlon) - the grid is rectilinear, then lat(nlat)
- *
- *   t(ntim,nlat,mlon) - the grid is curvilinear, then lat(nlat,mlon) 
+ * Get argument # 2
  */
-  if(ndims_temp > 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: temp must be a 1D, 2D, or 3D array");
+  opt = (logical*)NclGetArgValue(
+           3,
+           4,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+
+/*
+ * Get argument # 3
+ */
+  dim = (int *)NclGetArgValue(3,4,NULL,NULL,NULL,NULL,NULL,0);
+
+/*
+ * Some error checking. Make sure input dimension is valid.
+ */
+  if(dim[0] < 0 || dim[0] >= ndims_temp) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: Invalid dimension argument, can't continue");
     return(NhlFATAL);
   }
-  if(ndims_temp == 1) {
+
+/*
+ * Check size of time dimension.
+ */
+  ntim = dsizes_temp[dim[0]];
+  if(ntim > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: ntim = %ld is greater than INT_MAX", ntim);
+    return(NhlFATAL);
+  }
+  intim = (int) ntim;
+
+/*
+ * Check dimension sizes. Note: anything to the left of the "ntim" dimension
+ * is considered to be a leftmost dimension that we have to loop across. 
+ * What we care about for error checking are the dimensions to the *right* of
+ * ntim, which will tell us what kind of lat/lon grid we have.
+ *
+ * t(...,ntim)           - lat is a scalar
+ *
+ * t(...,ntim,ncol)      - the grid is unstructured (eg: spectral element), then lat(ncol)
+ *
+ * t(...,ntim,nlat,mlon) - the grid is rectilinear, then lat(nlat)
+ *
+ * t(...,ntim,nlat,mlon) - the grid is curvilinear, then lat(nlat,mlon) 
+ */
+  num_rgt_dims = ndims_temp-dim[0];
+  if(num_rgt_dims < 1 || num_rgt_dims > 3) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: the temp array doesn't appear to have the correct dimensionality, or else 'dim' has the wrong value. Check your temp array and the 'dim' value.");
+    return(NhlFATAL);
+  }
+  if(num_rgt_dims == 1) {
     if(!is_scalar(ndims_lat,dsizes_lat)) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: If temp is a 1D array, lat must be a scalar.");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: If temp has no lat/lon dimensions, then lat must be a scalar. Check your temp array and the 'dim' value.");
       return(NhlFATAL);
     }
     else {
@@ -122,9 +157,9 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
       nlat = nlon = 1;
     }
   }
-  if(ndims_temp == 2) {
-    if(ndims_lat != 1 || (ndims_lat == 1 && dsizes_lat[0] != dsizes_temp[1])) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: If temp is a 2D array, then lat must be 1D and the same size as rightmost dimension of temp");
+  if(num_rgt_dims == 2) {
+    if(ndims_lat != 1 || (ndims_lat == 1 && dsizes_lat[0] != dsizes_temp[dim[0]+1])) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: If temp is on an unstructured grid, then lat must be 1D and the same size as rightmost dimension of temp. Check your temp array and the 'dim' value.");
       return(NhlFATAL);
     }
     else {
@@ -133,11 +168,11 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
       nlon = 1;
     }
   }
-  if( (ndims_temp == 3 && (ndims_lat == 1 && dsizes_lat[0] != dsizes_temp[1])) || 
-      (ndims_lat == 2 && (dsizes_lat[0] != dsizes_temp[1] || 
-                          dsizes_lat[1] != dsizes_temp[2])) ||
-      ndims_lat > 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: If temp is a 3D array, then lat must either be a 1D array of size nlat or a 2D array of size nlat x mlon");
+  if((num_rgt_dims == 3)&&((ndims_lat == 1 && (dsizes_lat[0] != dsizes_temp[dim[0]+1]))|| 
+                           (ndims_lat == 2 && (dsizes_lat[0] != dsizes_temp[dim[0]+1]  || 
+                                               dsizes_lat[1] != dsizes_temp[dim[0]+2])))||
+                            ndims_lat > 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: If temp is on a rectilinear or curvilinear grid, then lat must either be a 1D array of size nlat or a 2D array of size nlat x mlon. Check your temp array and the 'dim' value.");
     return(NhlFATAL);
   }
   else {
@@ -154,23 +189,17 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
   }
 
 /*
- * Get argument # 2
- */
-  opt = (logical*)NclGetArgValue(
-           2,
-           3,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           DONT_CARE);
-
-/*
  * Calculate temp size (and hence output size).
  */
   size_temp = 1;
   for(i = 0; i < ndims_temp; i++) size_temp *= dsizes_temp[i];
+
+/*
+ * Calculate size of rightmost and leftmost dimensions.
+ */
+  total_nr = nlat * nlon;
+  total_nl = size_temp / ntim / total_nr;
+
 /*
  * Allocate space for coercing input arrays to double
  */
@@ -208,58 +237,63 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
  * Loop across nlat and nlon and pass in ntim subsections of temp
  * and single latitude values to Fortran routine.
  */
-  nlatlon = nlat * nlon;
-
-  for(i = 0; i < nlat; i++) {
+  nlatlon    = nlat * nlon;
+  nrnt       = total_nr * ntim;
+  for(i = 0; i < total_nl; i++) {
+    index_nrt = i*nrnt;
+    j         = 0;    /* this is a counter across lat/lon size */
+    for(ilt = 0; ilt < nlat; ilt++) {
 /* 
  * A rectilinear grid is a special case as it has
  * lat values for the lat dimension.  Scalar
  * and unstructured grids have nlon=1, and 
  * curvilinear grids have nlat x nlon latitude values
  */
-    if(!strcmp(grid_type,"rectilinear")) {
-      if(type_lat != NCL_double) {
-        coerce_subset_input_double(lat,tmp_lat,i,type_lat,1,0,NULL,NULL);
+      if(!strcmp(grid_type,"rectilinear")) {
+        if(type_lat != NCL_double) {
+          coerce_subset_input_double(lat,tmp_lat,ilt,type_lat,1,0,NULL,NULL);
+        }
+        else {
+          tmp_lat = &((double*)lat)[ilt];
+        }
       }
-      else {
-        tmp_lat = &((double*)lat)[i];
-      }
-    }
-    for(j = 0; j < nlon; j++) {
-      index_temp = i*nlon + j;
+      for(iln = 0; iln < nlon; iln++) {
+        index_temp = index_nrt + j;
 /*
  * Coerce subsection of temp (tmp_temp) to double if necessary.
  */
-      coerce_subset_input_double_step(temp,tmp_temp,index_temp,nlatlon,type_temp,
-                                      ntim,0,NULL,NULL);
+        coerce_subset_input_double_step(temp,tmp_temp,index_temp,nlatlon,type_temp,
+                                        ntim,0,NULL,NULL);
 /*
  * For anything but a rectilinear grid (which we handled above), 
  * coerce subsection of lat (tmp_lat) to double if necessary.
  */
-      if(strcmp(grid_type,"rectilinear")) {
-        index_lat = i*nlon+j;
-        if(type_lat != NCL_double) {
-          coerce_subset_input_double(lat,tmp_lat,index_lat,type_lat,1,0,NULL,NULL);
+        if(strcmp(grid_type,"rectilinear")) {
+          index_lat = ilt*nlon+iln;
+          if(type_lat != NCL_double) {
+            coerce_subset_input_double(lat,tmp_lat,index_lat,type_lat,1,0,NULL,NULL);
+          }
+          else {
+            tmp_lat = &((double*)lat)[index_lat];
+          }
         }
-        else {
-          tmp_lat = &((double*)lat)[index_lat];
-        }
-      }
 /*
  * Point temporary output array to void output array if appropriate.
  */
-      if(type_pet == NCL_double) tmp_pet = &((double*)pet)[index_temp];
+        if(type_pet == NCL_double) tmp_pet = &((double*)pet)[index_temp];
 /*
  * Call the Fortran routine.
  */
-      NGCALLF(thorn2,THORN2)(tmp_temp, &intim, &missing_dbl_temp.doubleval, tmp_lat, tmp_pet, &ier);
+        NGCALLF(thorn2,THORN2)(tmp_temp, &intim, &missing_dbl_temp.doubleval,
+                               tmp_lat, tmp_pet, &ier);
 /*
  * Coerce output back to float if necessary.
  */
-      if(type_pet == NCL_float) {
-        coerce_output_float_only(pet,tmp_pet,ntim,index_temp);
+        if(type_pet == NCL_float) {
+          coerce_output_float_only(pet,tmp_pet,ntim,index_temp);
+        }
+        j++;
       }
-      index_temp += ntim;
     }
   }
 

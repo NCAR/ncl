@@ -2103,12 +2103,13 @@ void NclAddUserFuncs(void)
  * Create private argument array
  */
     nargs = 0;
-    args = NewArgs(3);
+    args = NewArgs(4);
 
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(dim_thornthwaite_n_W,args,"dim_thornthwaite_n",nargs);
 
