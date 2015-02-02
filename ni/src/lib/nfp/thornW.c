@@ -129,8 +129,12 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
   intim = (int) ntim;
 
 /*
- * Check dimension sizes. Note: anything to the left of the "ntim" dimension
- * is considered to be a leftmost dimension that we have to loop across. 
+ * Check dimension sizes. This code is a bit complicated given the possible
+ * structure of the input temp and lat arrays.
+ *
+ * Note: anything to the left of the "ntim" dimension is
+ * considered to be a leftmost dimension that we have to loop across. 
+ *
  * What we care about for error checking are the dimensions to the *right* of
  * ntim, which will tell us what kind of lat/lon grid we have.
  *
@@ -143,10 +147,9 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
  * t(...,ntim,nlat,mlon) - the grid is curvilinear, then lat(nlat,mlon) 
  */
   num_rgt_dims = ndims_temp-dim[0];
-  if(num_rgt_dims < 1 || num_rgt_dims > 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: the temp array doesn't appear to have the correct dimensionality, or else 'dim' has the wrong value. Check your temp array and the 'dim' value.");
-    return(NhlFATAL);
-  }
+/*
+ * scalar case
+ */
   if(num_rgt_dims == 1) {
     if(!is_scalar(ndims_lat,dsizes_lat)) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: If temp has no lat/lon dimensions, then lat must be a scalar. Check your temp array and the 'dim' value.");
@@ -157,7 +160,10 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
       nlat = nlon = 1;
     }
   }
-  if(num_rgt_dims == 2) {
+/*
+ * unstructured grid case
+ */
+  else if(num_rgt_dims == 2) {
     if(ndims_lat != 1 || (ndims_lat == 1 && dsizes_lat[0] != dsizes_temp[dim[0]+1])) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: If temp is on an unstructured grid, then lat must be 1D and the same size as rightmost dimension of temp. Check your temp array and the 'dim' value.");
       return(NhlFATAL);
@@ -168,24 +174,36 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
       nlon = 1;
     }
   }
-  if((num_rgt_dims == 3)&&((ndims_lat == 1 && (dsizes_lat[0] != dsizes_temp[dim[0]+1]))|| 
-                           (ndims_lat == 2 && (dsizes_lat[0] != dsizes_temp[dim[0]+1]  || 
-                                               dsizes_lat[1] != dsizes_temp[dim[0]+2])))||
-                            ndims_lat > 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: If temp is on a rectilinear or curvilinear grid, then lat must either be a 1D array of size nlat or a 2D array of size nlat x mlon. Check your temp array and the 'dim' value.");
-    return(NhlFATAL);
-  }
-  else {
-    if(ndims_lat == 1) {
-      strcpy(grid_type,"rectilinear");
-      nlat = dsizes_lat[0];
-      nlon = 1;
+/*
+ * rectilinear or curvilinear grid case
+ */
+  else if(num_rgt_dims == 3) {
+    if((ndims_lat == 1 && (dsizes_lat[0] != dsizes_temp[dim[0]+1]))|| 
+       (ndims_lat == 2 && (dsizes_lat[0] != dsizes_temp[dim[0]+1]  || 
+                           dsizes_lat[1] != dsizes_temp[dim[0]+2]))||
+       ndims_lat > 2) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: If temp is on a rectilinear or curvilinear grid, then lat must either be a 1D array of size nlat or a 2D array of size nlat x mlon. Check your temp array and the 'dim' value.");
+      return(NhlFATAL);
     }
     else {
-      strcpy(grid_type,"curvilinear");
-      nlat = dsizes_lat[0];
-      nlon = dsizes_lat[1];
+      if(ndims_lat == 1) {
+        strcpy(grid_type,"rectilinear");
+        nlat = dsizes_lat[0];
+        nlon = dsizes_temp[ndims_temp-1];
+      }
+      else {
+        strcpy(grid_type,"curvilinear");
+        nlat = dsizes_lat[0];
+        nlon = dsizes_lat[1];
+      }
     }
+  }
+/*
+ * There's a problem with the input temp, lat, and/or dim variables.
+ */
+  else {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: the temp and/or lat arrays don't appear to have the correct dimensionality, or else 'dim' has the wrong value.");
+    return(NhlFATAL);
   }
 
 /*
