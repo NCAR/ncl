@@ -57,9 +57,7 @@ extern NhlErrorTypes sindex_yrmo_W(void);
 extern NhlErrorTypes dim_bfband_n_W(void);
 extern NhlErrorTypes dim_weibull_n_W(void);
 extern NhlErrorTypes trend_manken_n_W(void);
-/*
 extern NhlErrorTypes dim_thornthwaite_n_W(void);
-*/
 extern NhlErrorTypes snindex_yrmo_W(void);
 extern NhlErrorTypes x_skewt_W(void);
 extern NhlErrorTypes y_skewt_W(void);
@@ -2104,16 +2102,15 @@ void NclAddUserFuncs(void)
  *
  * Create private argument array
  */
-    /*
     nargs = 0;
     args = NewArgs(3);
 
+    dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
     NclRegisterFunc(dim_thornthwaite_n_W,args,"dim_thornthwaite_n",nargs);
-    */
 
 /*
  * Register "gc_pnt2gc".

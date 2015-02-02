@@ -85,8 +85,9 @@ CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cancorW.c cdf_dpW.c chiinvW.c 
         sg_toolsW.c colconvW.c convert_datum.c cfftW.c wksmoothW.c dzheightW.c          \
 	covcormW.c kronprodW.c space_timeW.c spcorrW.c  bindataW.c tropwmoW.c pdfW.c    \
 	mocloopsW.c spanW.c vinth2pnodesW.c vinth2penodesW.c objanalW.c                 \
-	areaconremapW.c nctime.c cdtimeW.c dimnumrunW.c sparse_matrixW.c \
-	gammaW.c gamfitW.c spiW.c oceanW.c dgeevxW.c areapolyW.c kolsm2W.c
+	areaconremapW.c nctime.c cdtimeW.c dimnumrunW.c sparse_matrixW.c                \
+	gammaW.c gamfitW.c spiW.c oceanW.c dgeevxW.c areapolyW.c kolsm2W.c              \
+	thornW.c
 	
 
 COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o         \
@@ -109,7 +110,7 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o 
 	mocloopsW.o spanW.o vinth2pnodesW.o vinth2penodesW.o objanalW.o                 \
 	areaconremapW.o	nctime.o cdtimeW.o dimnumrunW.o sparse_matrixW.o 		\
 	gammaW.o gamfitW.o spiW.o oceanW.o dgeevxW.o areapolyW.o kolsm2W.o		\
-	bfilterW.o weibullW.o trendmankenW.o determinantW.o fftshiftW.o
+	bfilterW.o weibullW.o trendmankenW.o determinantW.o fftshiftW.o thornW.o
 
 
 OBJS = $(COBJS) $(UDUNITS_OBJS) $(V5D_OBJS) $(ESMF_OBJS) $(KML_OBJS)
