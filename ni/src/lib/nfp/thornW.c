@@ -96,7 +96,7 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
  * Get argument # 2
  */
   opt = (logical*)NclGetArgValue(
-           3,
+           2,
            4,
            NULL,
            NULL,
