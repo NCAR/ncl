@@ -51,7 +51,7 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
  * Various
  */
   int intim, ret, ier, num_rgt_dims;
-  ng_size_t i, j, ilt, iln, ntim, nlat, nlon, nrnt, nlatlon;
+  ng_size_t i, ilt, iln, iltln, ntim, nlat, nlon, nrnt, nlatlon;
   ng_size_t index_temp, index_lat, index_nrt, size_temp, total_nr, total_nl;
   char grid_type[13];
 /*
@@ -213,24 +213,20 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
 /* 
  * Allocate space for output array.
  */
+  tmp_pet = (double *)calloc(ntim,sizeof(double));
   if(type_temp != NCL_double) {
-    pet     = (void *)calloc(size_temp, sizeof(float));
-    tmp_pet = (double *)calloc(ntim,sizeof(double));
-    if(pet == NULL || tmp_pet == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: Unable to allocate memory for temporary output array");
-      return(NhlFATAL);
-    }
+    pet         = (void *)calloc(size_temp, sizeof(float));
     type_pet    = NCL_float;
     missing_pet = missing_flt_temp;
   }
   else {
-    pet = (void *)calloc(size_temp, sizeof(double));
-    if(pet == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
+    pet         = (void *)calloc(size_temp, sizeof(double));
     type_pet    = NCL_double;
     missing_pet = missing_dbl_temp;
+  }
+  if(pet == NULL || tmp_pet == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: Unable to allocate memory for temporary output array");
+    return(NhlFATAL);
   }
 
 /*
@@ -239,9 +235,9 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
  */
   nlatlon    = nlat * nlon;
   nrnt       = total_nr * ntim;
+
   for(i = 0; i < total_nl; i++) {
     index_nrt = i*nrnt;
-    j         = 0;    /* this is a counter across lat/lon size */
     for(ilt = 0; ilt < nlat; ilt++) {
 /* 
  * A rectilinear grid is a special case as it has
@@ -258,7 +254,8 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
         }
       }
       for(iln = 0; iln < nlon; iln++) {
-        index_temp = index_nrt + j;
+        iltln      = (ilt*nlon)+iln;
+        index_temp = index_nrt + iltln;
 /*
  * Coerce subsection of temp (tmp_temp) to double if necessary.
  */
@@ -287,12 +284,9 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
         NGCALLF(thorn2,THORN2)(tmp_temp, &intim, &missing_dbl_temp.doubleval,
                                tmp_lat, tmp_pet, &ier);
 /*
- * Coerce output back to float if necessary.
+ * Coerce output back to appropriate location.
  */
-        if(type_pet == NCL_float) {
-          coerce_output_float_only(pet,tmp_pet,ntim,index_temp);
-        }
-        j++;
+        coerce_output_float_or_double_step(pet,tmp_pet,type_pet,ntim,index_temp,total_nr);
       }
     }
   }
@@ -300,9 +294,9 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
 /*
  * Free unneeded memory.
  */
-  if(type_temp != NCL_double) NclFree(tmp_temp);
+  NclFree(tmp_temp);
+  NclFree(tmp_pet);
   if(type_lat  != NCL_double) NclFree(tmp_lat);
-  if(type_pet  != NCL_double) NclFree(tmp_pet);
 
 /*
  * Return value back to NCL script.
