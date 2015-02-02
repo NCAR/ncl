@@ -219,7 +219,9 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
   total_nl = size_temp / ntim / total_nr;
 
 /*
- * Allocate space for coercing input arrays to double
+ * Allocate space for coercing temp and lat to double. We have to allocate space 
+ * for tmp_temp no matter what, because the output values may not be 
+ * contiguous in memory.
  */
   tmp_temp = (double *)calloc(ntim,sizeof(double));
   if(tmp_temp == NULL) {
@@ -232,6 +234,10 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
  * Allocate space for output array.
  */
   tmp_pet = (double *)calloc(ntim,sizeof(double));
+  if(tmp_pet == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: Unable to allocate memory for temporary output array");
+    return(NhlFATAL);
+  }
   if(type_temp != NCL_double) {
     pet         = (void *)calloc(size_temp, sizeof(float));
     type_pet    = NCL_float;
@@ -242,8 +248,8 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
     type_pet    = NCL_double;
     missing_pet = missing_dbl_temp;
   }
-  if(pet == NULL || tmp_pet == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: Unable to allocate memory for temporary output array");
+  if(pet == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 
@@ -292,10 +298,6 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
             tmp_lat = &((double*)lat)[index_lat];
           }
         }
-/*
- * Point temporary output array to void output array if appropriate.
- */
-        if(type_pet == NCL_double) tmp_pet = &((double*)pet)[index_temp];
 /*
  * Call the Fortran routine.
  */
