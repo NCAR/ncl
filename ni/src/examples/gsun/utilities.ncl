@@ -274,6 +274,41 @@ begin
 end
 
 ;***********************************************************************;
+; Function : read_colormap_files                                        ;
+;               colorMapNames : an array of names of an NCL-standard    ;
+;                              colormap, or the filenames of            ;
+;                              user-supplied colormaps.                 ;
+;                                                                       ;
+; This function behaves exactly like read_colormap_file, except it      ;
+; handles an array of color maps rather than just a single color map.   ;
+;***********************************************************************;
+undef("read_colormap_files")
+function read_colormap_files(colorMapNames[*]:string)
+local ncmaps, ncolors, i, cmap, nc
+begin
+  ncmaps  = dimsizes(colorMapNames)
+  ncolors = new(ncmaps,integer)
+
+  do i=0,ncmaps-1
+    cmap := read_colormap_file(colorMapNames(i))
+    if(any(ismissing(cmap))) then
+      print("read_colormap_files: Error: invalid color map name")
+      return(new((/1,4/),float))
+    end if
+    ncolors(i) = dimsizes(cmap(:,0))
+  end do
+
+  rgba_array = new((/sum(ncolors),4/),float)
+  nc = 0
+  do i=0,ncmaps-1
+   rgba_array(nc:nc+ncolors(i)-1,:) = read_colormap_file(colorMapNames(i))
+   nc = nc + ncolors(i)
+  end do
+
+  return(rgba_array)
+end
+
+;***********************************************************************;
 ; Given a color map and the number of desired colors, this function 
 ; returns an array of color indexes that nicely span the full colormap.
 ;
@@ -461,3 +496,146 @@ begin
 end
 
 
+;***********************************************************************;
+; Procedure : draw_color_palette                                        ;
+;                   wks[1] : graphic                                    ;
+;                   colors :                                            ;
+;                   opt[1] : logical                                    ;
+;                                                                       ;
+; This procedure draws the given colors as a series of boxes in the     ;
+; same fashion as the old gsn_draw_colormap procedure.                  ;
+;                                                                       ;
+; "wks" is the workstation to draw the colors to.                       ; 
+;                                                                       ;
+; "colors" can be a color map name ("rainbow"), a list of named colors  ;
+; (/"red","blue"/), an RGB array (n x 3), an RGBA array (n x 4), or a   ;
+; list of color indexes (/2,5,3,8/).                                    ;
+;                                                                       ;
+;  "opt" If set to True, then you can optionally attach attributes to   ;
+;        control behavior of this procedure.                            ;
+;                                                                       ;
+;***********************************************************************;
+undef("draw_color_palette")
+procedure draw_color_palette(wks,colors,opt)
+local label_boxes, color_type, rgba_colors, ncolors, nrows, ncols,\
+width,height
+begin
+;---Retrieve values for attributes
+  call_frame    = get_res_value_keep(opt,"Frame",True)
+  label_boxes   = get_res_value_keep(opt,"LabelBoxesOn",True)
+  label_strings = get_res_value_keep(opt,"Labels","")
+  font_height   = get_res_value_keep(opt,"FontHeight",0.015)
+  vertical      = get_res_value_keep(opt,"Vertical",False)
+
+;---Check for valid colors
+  color_type = get_color_type(colors)
+
+  if(color_type.eq."unknown")
+    print("Error: draw_color_palette: invalid color specification.")
+    return
+  end if
+
+  if(color_type.eq."rgba") then
+    rgba_colors = colors
+  end if
+  if(color_type.eq."index") then
+    rgba_colors = indexcolor2rgba(wks,colors)
+  end if
+  if(color_type.eq."colormap") then
+    rgba_colors = read_colormap_files(colors)
+  end if
+  if(color_type.eq."named") then
+    rgba_colors = namedcolor2rgba(colors)
+  end if
+  if(color_type.eq."rgb") then
+    rgba_colors = rgb2rgba(colors)
+  end if
+
+  ncolors = dimsizes(rgba_colors(:,0))
+  nrows   = toint(sqrt(ncolors))
+
+;---Figure out ncols such that the columns will span across the page.
+  ncols = floattoint(ncolors/nrows)
+  if((ncols*nrows).lt.ncolors)
+    ncols = ncols+1
+  end if
+
+  ntotal = nrows * ncols        ; # of colors per page.
+
+;---If drawing labels, test that we have valid number of labels
+  if(label_boxes) then
+    if(dimsizes(dimsizes(label_strings)).eq.1.and.\
+       typeof(label_strings).eq."string".and.label_strings.eq."") then
+      label_strings := "" + ispan(0,ncolors-1,1)    
+    else
+      if(dimsizes(labels).ne.ncolors) then
+        print("Error: draw_color_palette: invalid number of labels for boxes")
+        return
+      end if
+    end if
+  end if
+;---Calculate X and Y positions of text and box in the view port.
+  width  = 1./ncols
+  height = 1./nrows
+
+  if(ncols.gt.1) then
+    if(vertical) then
+      xpos = ndtooned(conform_dims((/ncols,nrows/),fspan(0,1-width,ncols),0))
+    else
+      xpos = ndtooned(conform_dims((/nrows,ncols/),fspan(0,1-width,ncols),1))
+    end if
+  else
+    xpos = new(ntotal,float)
+    xpos = 0.
+  end if
+  if(nrows.gt.1) then
+    if(vertical) then
+      ypos = ndtooned(conform_dims((/ncols,nrows/),fspan(1-height,0,nrows),1))
+    else
+      ypos = ndtooned(conform_dims((/nrows,ncols/),fspan(1-height,0,nrows),0))
+    end if
+  else
+    ypos = new(ntotal,float)
+    ypos = 1.-height
+  end if
+
+;---Calculate box coordinates.
+  xbox = (/0,width, width,     0,0/)
+  ybox = (/0,    0,height,height,0/)
+
+  gnres = True   ; variables to hold list of resources
+  lnres = True
+
+  if(label_boxes) then
+    font_space                  = font_height/2.
+    txres                       = True
+    txres@txFontHeightF         = font_height
+    txres@txFont                = "helvetica-bold"
+    txres@txJust                = "BottomLeft"
+    txres@txPerimOn             = True
+    txres@txPerimColor          = "black"
+    txres@txFontColor           = "black"
+    txres@txBackgroundFillColor = "white"
+  end if
+
+  lnres@gsLineColor  = "black"
+
+;---ntotal colors per page.
+  do i = 0,ncolors-1
+;---Draw box and fill in the appropriate color.
+    gnres@gsFillColor = rgba_colors(i,:)
+    gsn_polygon_ndc(wks,xbox+xpos(i),ybox+ypos(i),gnres) ; Draw box.
+
+;---Outline box in black.
+    gsn_polyline_ndc(wks,xbox+xpos(i),ybox+ypos(i),lnres)
+
+;---Draw color label.
+    if(label_boxes) then
+      gsn_text_ndc(wks,label_strings(i),font_space+xpos(i),ypos(i)+font_space,txres)
+    end if
+  end do
+  if(call_frame) then
+    frame(wks)   ; Advance the frame.
+  end if
+  return
+end

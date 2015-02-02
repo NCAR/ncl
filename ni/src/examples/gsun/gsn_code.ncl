@@ -744,7 +744,6 @@ function is_valid_named_colors(colors[*]:string)
 local i, valid_named_colors, ncolors
 begin
   named_colors = str_lower(get_named_color_list())   ; list of valid colors
-
   ncolors            = dimsizes(colors)
   valid_named_colors = new(ncolors,logical)
   valid_named_colors = False    ; initialize to False
@@ -831,18 +830,13 @@ begin
   rank_color = dimsizes(dims_color)
 
   if(rank_color.eq.1.and.typeof(colors).eq."string".and.\
-     all(is_valid_named_colors(colors))) then
-    return("named")
-  end if
-
-  if(rank_color.eq.1.and.typeof(colors).eq."string".and.\
      all(is_valid_colormap_names(colors))) then
     return("colormap")
   end if
 
-  if(rank_color.eq.1.and.dims_color.eq.1.and.\
-     typeof(colors).eq."string".and.is_valid_colormap_names(color)) then
-    return("colormap")
+  if(rank_color.eq.1.and.typeof(colors).eq."string".and.\
+     all(is_valid_named_colors(colors))) then
+    return("named")
   end if
 
   if(dims_color(rank_color-1).eq.3.and.isnumeric(colors).and.\
@@ -1004,8 +998,8 @@ begin
 end
 
 ;***********************************************************************;
-; Given a list of color indexes, named colors, RGB, or RGBA colors,
-; convert them to RGBA colors.
+; Given a list of color maps, color indexes, named colors, RGB, or RGBA ;
+; colors, convert them to RGBA colors.                                  ;
 ;***********************************************************************;
 undef("convert_color_to_rgba")
 function convert_color_to_rgba(wks,colors)
@@ -1018,18 +1012,18 @@ begin
 
   if(color_type.eq."rgba") then
     rgba_colors = colors
-  end if
-  if(color_type.eq."index") then
+  else if(color_type.eq."index") then
     rgba_colors = indexcolor2rgba(wks,colors)
-  end if
-  if(color_type.eq."named") then
-    rgba_colors = namedcolor2rgba(colors)
-  end if
-  if(color_type.eq."colormap".and.dimsizes(dimsizes(colors)).eq.1) then
+  else if(color_type.eq."colormap") then
     rgba_colors = read_colormap_file(colors)
-  end if
-  if(color_type.eq."rgb") then
+  else if(color_type.eq."named") then
+    rgba_colors = namedcolor2rgba(colors)
+  else if(color_type.eq."rgb") then
     rgba_colors = rgb2rgba(colors)
+  end if
+  end if
+  end if
+  end if
   end if
 
   if(all(dimsizes(rgba_colors).eq.(/1,4/))) then
@@ -10704,125 +10698,6 @@ begin
     end setvalues
     delete(cmap)
   end if
-  return
-end
-
-;***********************************************************************;
-; Procedure : gsn_draw_colors                                           ;
-;                   wks: workstation object                             ;
-;                   colors                                              ;
-;                                                                       ;
-; This procedure draws the given colors as a series of boxes.           ;
-; colors can be a color map name ("rainbow"), a list of named colors    ;
-; (/"red","blue"/), an RGB array (n x 3), an RGBA array (n x 4), a list ;
-; of color indexes (/2,5,3,8/).                                           ;
-;***********************************************************************;
-undef("gsn_draw_colors")
-procedure gsn_draw_colors(wks,colors)
-begin
-  color_type = get_color_type(colors)
-
-  if(color_type.eq."unknown")
-    print("Error: gsn_draw_colors: invalid color(s).")
-    return
-  end if
-
-  if(color_type.eq."rgba") then
-    rgba_colors = colors
-  end if
-  if(color_type.eq."index") then
-    rgba_colors = indexcolor2rgba(wks,colors)
-  end if
-  if(color_type.eq."named") then
-    rgba_colors = namedcolor2rgba(colors)
-  end if
-  if(color_type.eq."colormap".and.dimsizes(dimsizes(colors)).eq.1) then
-    rgba_colors = read_colormap_file(colors)
-  end if
-  if(color_type.eq."rgb") then
-    rgba_colors = rgb2rgba(colors)
-  end if
-
-  ncolors = dimsizes(rgba_colors(:,0))
-  nrows   = 16                   ; # of rows of colors per page.
-  maxcols = 256                  ; max # of colors per color table.
-
-;
-; Figure out ncols such that the columns will span across the page.
-; Or, just set ncols to 16, which is big enough to cover the largest
-; possible color map.
-;
-  ncols = floattoint(ncolors/nrows)
-  if(ncols*nrows.lt.ncolors)
-    ncols = ncols+1
-  end if
-
-  ntotal  = nrows * ncols        ; # of colors per page.
-;
-; X and Y positions of text and box in the view port.
-;
-  width  = 1./ncols
-  height = 1./nrows
-  if(ncols.gt.1) then
-    xpos = fspan(0,1-width,ncols)
-  else
-    xpos = 0.
-  end if
-  if(nrows.gt.1) then
-    ypos = fspan(1-height,0,nrows)
-  else
-    ypos = 1.-height
-  end if
-;
-; Box coordinates.
-;
-  xbox = (/0,width, width,     0,0/)
-  ybox = (/0,    0,height,height,0/)
-
-  font_height = 0.015
-  font_space  = font_height/2.
-
-  gonres   = True   ; variables to hold list of resources
-  lineres  = True
-  txres    = True
-
-  txres@txFontHeightF         = font_height
-  txres@txFont                = "helvetica-bold"
-  txres@txJust                = "BottomLeft"
-  txres@txPerimOn             = True
-  txres@txPerimColor          = "black"
-  txres@txFontColor           = "black"
-  txres@txBackgroundFillColor = "white"
-
-  lineres@gsLineColor        = "black"
-
-;
-; ntotal colors per page.
-;
-  do k = 1,ncolors,ntotal
-    jj = 0
-    do j=k,min((/k+ntotal-1,ncolors/)),nrows
-      ii = 0
-      do i=j,min((/j+nrows-1,ncolors/))
-;
-; Draw box and fill in the appropriate color.
-;
-        gonres@gsFillColor = rgba_colors(i-1,:)
-        gsn_polygon_ndc(wks,xbox+xpos(jj),ybox+ypos(ii),gonres) ; Draw box.
-;
-; Outline box in black.
-;
-        gsn_polyline_ndc(wks,xbox+xpos(jj),ybox+ypos(ii),lineres)
-;
-; Draw color label.
-;
-        gsn_text_ndc(wks,i-1,font_space+xpos(jj),ypos(ii)+font_space,txres)
-        ii = ii + 1
-      end do
-      jj = jj +1
-    end do
-    frame(wks)   ; Advance the frame.
-  end do
   return
 end
 
