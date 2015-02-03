@@ -10,7 +10,6 @@
 #include "defs.h"
 #include "NclFile.h"
 #include "NclFileInterfaces.h"
-#include "NclGRIB2.h"
 #include <ctype.h>
 #include <unistd.h>
 
@@ -159,7 +158,8 @@ int _NclGribVersion
     NclQuark path;
 #endif
 {
-    unsigned char buf[4 * GBUFSZ_T];
+    ng_size_t gbuf_size = 1024;
+    unsigned char buf[4 * gbuf_size];
     int len,
         version = -1;
     int j;
@@ -175,7 +175,7 @@ int _NclGribVersion
      * Read file, look for sequence 'G' 'R' 'I' 'B' ; version will follow
      */
     (void) fseek(fd, 0L, SEEK_SET);
-    while ((len = fread((void *) buf, 1, 4 * GBUFSZ_T, fd)) > 0) {
+    while ((len = fread((void *) buf, 1, 4 * gbuf_size, fd)) > 0) {
             for (j = 0; j < len - 8; j++) {
 		    /* look for "GRIB" indicator */
 		    if (buf[j] != 'G') {
