@@ -14,9 +14,15 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Important modifications:
+;       04 Feb 2015:                                                                                   
+;           Fixed the "remap" attribute that gets attached to regridded variable                       
+;           to be the ESMF_regrid_method attribute that's on the weights file,                         
+;           and not the "map_method" attribute, which doesn't always have the                          
+;           right interpolation method.                                                                
+;
 ;       01 Sep 2014:
 ;           Renamed print_elapsed_time to print_elapsed_esmf_time
-
+;
 ;       17 Aug 2014:
 ;         Added --norm_type fracarea for the "conserve" method.
 ;           This replaces the old "ApplyFracB" code in 
@@ -2885,6 +2891,11 @@ begin
   row = fid->row
   col = fid->col
   v   = fid->S
+  if(isatt(fid,"ESMF_regrid_method")) then
+    esmf_regrid_method = fid@ESMF_regrid_method
+  else
+    esmf_regrid_method = ""
+  end if
 
 ;---Check that the column indexes will map into src_grid_dims
 ;;  if ( max(col).gt.product(srcData_rgt_dims) ) then
@@ -3067,20 +3078,27 @@ begin
 ; Clean up, add, and remove attributes.
 ;
 ; Note that due to standards for the weights file, the map_method
-; attribute will say "Bilinear remapping" for both bilinear and patch
-; methods. If this routine is called by ESMF_regrid, then that routine
-; will set FixMapMethodForPatch to True so this routine knows to fix
-; the "remap" attribute. Otherwise if ESMF_regrid_with_weights is
-; called directly, there's no way to tell if patch or bilinear was
-; used.
+; attribute will say "Bilinear remapping" for bilinear, patch,
+; neareststod, and nearestdtos methods. In newer versions of
+; the offline regridder, there's a ESMF_regrid_method attribute.  Use this
+; attribute if available; otherwise use the old fixed map_method.
+; The ESMF_regrid routine will set FixMapMethod to the correct
+; value so this routine can fix the "remap" attribute. Otherwise if 
+; ESMF_regrid_with_weights is called directly, there's no way to 
+; tell which interpolation method is used.
 ;----------------------------------------------------------------------
   if (.not.isatt(dstData,"remap")) then
-    if(isatt_logical_true(opt,"FixMapMethodForPatch")) then
+    if(esmf_regrid_method.ne."") then
       dstData@remap = "remapped via ESMF_regrid_with_weights: " + \
-                       str_sub_str(map_method,"Bilinear","Patch")
+                      esmf_regrid_method
     else
-      dstData@remap = "remapped via ESMF_regrid_with_weights: " + \
-                      map_method
+      if(isatt(opt,"FixMapMethod")) then
+        dstData@remap = "remapped via ESMF_regrid_with_weights: " + \
+                         str_sub_str(map_method,"Bilinear",opt@FixMapMethod)
+      else
+        dstData@remap = "remapped via ESMF_regrid_with_weights: " + \
+                        map_method
+      end if
     end if
   end if
 
@@ -3728,8 +3746,8 @@ begin
 ; "remap" attribute.
 ;
   if(opt2.and.isatt(opt2,"InterpMethod").and. \
-     str_lower(opt2@InterpMethod).eq."patch") then
-   opt2@FixMapMethodForPatch = True
+     .not.any(str_lower(opt2@InterpMethod).eq.(/"bilinear","conserve"/)))
+   opt2@FixMapMethod = str_capital(opt2@InterpMethod)
   end if
 
 ;---Regrid the input variable
