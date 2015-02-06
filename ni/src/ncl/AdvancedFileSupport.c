@@ -105,7 +105,7 @@ NclQuark *GetGrpDimNames(void *therec, int *num_dims)
         {
             for(n = 0; n < grpnode->grp_rec->n_grps; n++)
             {
-                tmp_quarks = GetGrpDimNames((void *)grpnode->grp_rec->grp_node[i], &nv);
+                tmp_quarks = GetGrpDimNames((void *)grpnode->grp_rec->grp_node[n], &nv);
 
                 if(nv)
                 {
