@@ -436,6 +436,7 @@ NhlErrorTypes AddNewGrp(void *rec, NclQuark grpname, size_t id)
     NclFileGrpNode   *grpnode;
     NclFileGrpRecord *grprec;
     int n = -1;
+    char buffer[2 * NC_MAX_NAME + 1];
 
     ret = _addNclGrpNodeToGrpNode(rootgrpnode, grpname);
 
@@ -463,6 +464,7 @@ NhlErrorTypes AddNewGrp(void *rec, NclQuark grpname, size_t id)
     grpnode->gid = id;
     grpnode->fid = id;
     grpnode->pid = rootgrpnode->gid;
+    
     grpnode->pname = rootgrpnode->name;
     grpnode->path = rootgrpnode->path;
     grpnode->extension = rootgrpnode->extension;
@@ -477,6 +479,16 @@ NhlErrorTypes AddNewGrp(void *rec, NclQuark grpname, size_t id)
     grpnode->cache_size = rootgrpnode->cache_size;
     grpnode->cache_nelems = rootgrpnode->cache_nelems;
     grpnode->cache_preemption = rootgrpnode->cache_preemption;
+
+    if(strcmp("/", NrmQuarkToString(grpnode->pname)))
+    {
+	    sprintf(buffer, "/%s", NrmQuarkToString(grpname));
+    }
+    else
+    {
+            sprintf(buffer, "%s%s", NrmQuarkToString(rootgrpnode->real_name),  NrmQuarkToString(grpname));
+    }
+    grpnode->real_name = NrmStringToQuark(buffer);
 
     grpnode->n_options = rootgrpnode->n_options;
     grpnode->options = (NCLOptions *)NclCalloc(rootgrpnode->n_options, sizeof(NCLOptions));
