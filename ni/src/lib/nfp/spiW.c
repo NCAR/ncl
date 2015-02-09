@@ -4,6 +4,11 @@
 extern void NGCALLF(spigamd,SPIGAMD)(int *, double *, double *, int *, 
                                      double *);
 
+extern void NGCALLF(spi3ncdc,SPI3NCDC)(int *,double *,double *, int *,
+                                       double *,double *,double *,double *,
+                                       double *,double *,double *,int *, int*,
+                                       int *);
+
 NhlErrorTypes dim_spi_n_W( void )
 {
 
@@ -29,7 +34,15 @@ NhlErrorTypes dim_spi_n_W( void )
 /*
  * Argument # 2
  */
-  logical *optspi;
+  logical *opt;
+
+/*
+ * Variables for retrieving attributes from "opt".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry stack_entry;
+  int spi_type=0;
 
 /*
  * Argument # 3
@@ -49,9 +62,14 @@ NhlErrorTypes dim_spi_n_W( void )
  * Various
  */
   ng_size_t ntim;
-  int intim, ret;
+  int intim, max_years, max_years_p1, ier, ret;
   ng_size_t index_x, index_nrx;
   ng_size_t i, j, nrnx, total_nr, total_nl, size_output;
+
+ /*
+  * Various work arrays for spi_type=3 case .
+  */
+  double *probne, *pcpacc, *spi3_y, *spi3_x, *tmparr, *dindex;
 
 /*
  * Retrieve parameters.
@@ -88,7 +106,7 @@ NhlErrorTypes dim_spi_n_W( void )
 /*
  * Get argument # 2
  */
-  optspi = (logical*)NclGetArgValue(
+  opt = (logical*)NclGetArgValue(
            2,
            4,
            NULL,
@@ -97,6 +115,55 @@ NhlErrorTypes dim_spi_n_W( void )
            NULL,
            NULL,
            DONT_CARE);
+
+/*
+ * Check for attributes attached to "opt"
+ *
+ *   "spi_type"   0
+ */
+  if(*opt) {
+    stack_entry = _NclGetArg(2, 4, DONT_CARE);
+    switch (stack_entry.kind) {
+    case NclStk_VAR:
+      if (stack_entry.u.data_var->var.att_id != -1) {
+        attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+        if (attr_obj == NULL) {
+          break;
+        }
+      }
+      else {
+/*
+ * att_id == -1 ==> no optional args given.
+ */
+        break;
+      }
+/* 
+ * Get optional arguments.
+ */
+      if (attr_obj->att.n_atts > 0) {
+/*
+ * Get list of attributes.
+ */
+        attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them.
+ */
+        while (attr_list != NULL) {
+          if(!strcasecmp(attr_list->attname, "spi_type")) {
+            spi_type = *(int *) attr_list->attvalue->multidval.val;
+          }
+          attr_list = attr_list->next;
+        }
+      default:
+        break;
+      }
+    }
+  }
+
+  if(spi_type != 0 && spi_type != 3) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_spi_n: spi_type can only be 0 (default) or 3 (Pearson type III distribution");
+    return(NhlFATAL);
+  }
 
 /*
  * Coerce missing value to double if necessary.
@@ -195,6 +262,32 @@ NhlErrorTypes dim_spi_n_W( void )
     else                       missing_spi = missing_flt_x;
   }
 
+ /*
+  * As of NCL V6.3.0, if spi_type == 3, the SPI will be calculated
+  * using the Pearson type III distribution. The Fortran routine
+  * for this requires a bunch of work arrays.
+  */
+  if(spi_type == 3) {
+    if(ntim % 12) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_spi_n: if opt@spi_type= 3, then ntim must be divisable by 12");
+      return(NhlFATAL);
+    }
+    max_years    = intim / 12;
+    max_years_p1 = max_years+1;
+    probne = (double *)calloc(ntim, sizeof(double));
+    pcpacc = (double *)calloc(ntim, sizeof(double));
+    dindex = (double *)calloc(ntim, sizeof(double));
+    spi3_y = (double *)calloc(ntim, sizeof(double));
+    spi3_x = (double *)calloc(max_years, sizeof(double));
+    tmparr = (double *)calloc(max_years_p1, sizeof(double));
+
+    if(probne == NULL || pcpacc == NULL || dindex == NULL || 
+       spi3_y == NULL || spi3_x == NULL || tmparr == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_spi_n: Unable to allocate memory for temporary work arrays");
+      return(NhlFATAL);
+    }
+  }
+
 /*
  * Loop across leftmost dimensions and call the Fortran routine for each
  * subsection of the input arrays.
@@ -212,8 +305,16 @@ NhlErrorTypes dim_spi_n_W( void )
 /*
  * Call the Fortran routine.
  */
-      NGCALLF(spigamd,SPIGAMD)(&intim, tmp_x, &missing_dbl_x.doubleval, 
-                               nrun, tmp_spi);
+      if(spi_type == 0) {
+        NGCALLF(spigamd,SPIGAMD)(&intim, tmp_x, &missing_dbl_x.doubleval, 
+                                 nrun, tmp_spi);
+      }
+      else if(spi_type == 3) {
+        NGCALLF(spi3ncdc, SPI3NCDC)(&intim,tmp_x,&missing_dbl_x.doubleval,
+                                    nrun,tmp_spi,probne,pcpacc,dindex,
+                                    spi3_y, spi3_x, tmparr,&max_years,
+                                    &max_years_p1,&ier);
+      }
 /*
  * Coerce output back to float or double
  */
@@ -227,6 +328,14 @@ NhlErrorTypes dim_spi_n_W( void )
  */
   NclFree(tmp_x);
   NclFree(tmp_spi);
+  if(spi_type == 3) {
+    NclFree(probne);
+    NclFree(pcpacc);
+    NclFree(dindex);
+    NclFree(spi3_y);
+    NclFree(spi3_x);
+    NclFree(tmparr);
+  }
 
 /*
  * Return value back to NCL script.
