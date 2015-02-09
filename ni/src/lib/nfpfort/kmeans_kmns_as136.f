@@ -7,7 +7,7 @@ c                            ! INPUT
       double precision dat(m,n)
 c                            ! INPUT/OUTPUT
       integer ic1(m), nc(k), ier
-      double precision clcntr(k,n), wss(k)
+      double precision clcntr(n,k), wss(k)
 C NCLEND
 c                            ! LOCAL WORK ARRAYS
       integer          ic2(m), ncp(k), itran(k), live(k)
@@ -25,7 +25,7 @@ c . iseed=  'randomly' sample the dat array
              mm = m/kk
          end if
         do nv=1,n
-           clcntr(kk,nv) = dat(mm,nv)
+           clcntr(nv,kk) = dat(mm,nv)
 c c c      print *,"mm=", mm," kk=",kk,"  nv=",nv," clc=",clcntr(kk,nv) 
         end do
       end do
@@ -72,7 +72,7 @@ c    Input, integer M, the number of points.
 c
 c    Input, integer N, the number of spatial dimensions (aka, variables).
 c
-c    Input/output, double precision C(K,N), the cluster centers.
+c    Input/output, double precision C(N,K), the cluster centers.
 c
 c    Input, integer K, the number of clusters.
 c
@@ -117,7 +117,7 @@ c
       double precision aa
       double precision an1(k)
       double precision an2(k)
-      double precision c(k,n)
+      double precision c(n,k)
       double precision d(m)
       double precision da
       double precision db
@@ -160,7 +160,7 @@ c
         do il = 1, 2
           dt(il) = 0.0D+00
           do j = 1, n
-            da = a(i,j) - c(il,j)
+            da = a(i,j) - c(j,il)
             dt(il) = dt(il) + da * da
           end do
         end do
@@ -178,7 +178,7 @@ c
           db = 0.0D+00
 
           do j = 1, n
-            dc = a(i,j) - c(l,j)
+            dc = a(i,j) - c(j,l)
             db = db + dc * dc
           end do
 
@@ -205,7 +205,7 @@ c
       do l = 1, k
         nc(l) = 0
         do j = 1, n
-          c(l,j) = 0.0D+00
+          c(j,l) = 0.0D+00
         end do
       end do
 
@@ -213,7 +213,7 @@ c
         l = ic1(i)
         nc(l) = nc(l) + 1
         do j = 1, n
-          c(l,j) = c(l,j) + a(i,j)
+          c(j,l) = c(j,l) + a(i,j)
         end do
       end do
 c
@@ -237,7 +237,7 @@ c
         aa = dble ( nc(l) )
 
         do j = 1, n
-          c(l,j) = c(l,j) / aa
+          c(j,l) = c(j,l) / aa
         end do
 c
 c  Initialize AN1, AN2, ITRAN and NCP.
@@ -326,24 +326,24 @@ c
       do l = 1, k
         wss(l) = 0.0D+00
         do j = 1, n
-          c(l,j) = 0.0D+00
+          c(j,l) = 0.0D+00
         end do
       end do
 
       do i = 1, m
         ii = ic1(i)
         do j = 1, n
-          c(ii,j) = c(ii,j) + a(i,j)
+          c(j,ii) = c(j,ii) + a(i,j)
         end do
       end do
 
       do j = 1, n
         do l = 1, k
-          c(l,j) = c(l,j) / dble ( nc(l) )
+          c(j,l) = c(j,l) / dble ( nc(l) )
         end do
         do i = 1, m
           ii = ic1(i)
-          da = a(i,j) - c(ii,j)
+          da = a(i,j) - c(j,ii)
           wss(ii) = wss(ii) + da * da
         end do
       end do
@@ -390,7 +390,7 @@ c    Input, integer M, the number of points.
 c
 c    Input, integer N, the number of spatial dimensions.
 c
-c    Input/output, double precision C(K,N), the cluster centers.
+c    Input/output, double precision C(N,K), the cluster centers.
 c
 c    Input, integer K, the number of clusters.
 c
@@ -428,7 +428,7 @@ c
       double precision alw
       double precision an1(k)
       double precision an2(k)
-      double precision c(k,n)
+      double precision c(n,k)
       double precision d(m)
       double precision da
       double precision db
@@ -481,7 +481,7 @@ c
           if ( ncp(l1) .ne. 0 ) then
             de = 0.0D+00
             do j = 1, n
-              df = a(i,j) - c(l1,j)
+              df = a(i,j) - c(j,l1)
               de = de + df * df
             end do
             d(i) = de * an1(l1)
@@ -491,7 +491,7 @@ c  Find the cluster with minimum R2.
 c
          da = 0.0D+00
           do j = 1, n
-            db = a(i,j) - c(l2,j)
+            db = a(i,j) - c(j,l2)
             da = da + db * db
           end do
           r2 = da * an2(l2)
@@ -510,7 +510,7 @@ c
 
               dc = 0.0D+00
               do j = 1, n
-                dd = a(i,j) - c(l,j)
+                dd = a(i,j) - c(j,l)
                 dc = dc + dd * dd
               end do
 
@@ -544,8 +544,8 @@ c
             al2 = nc(l2)
             alt = al2 + 1.0D+00
             do j = 1, n
-              c(l1,j) = ( c(l1,j) * al1 - a(i,j) ) / alw
-              c(l2,j) = ( c(l2,j) * al2 + a(i,j) ) / alt
+              c(j,l1) = ( c(j,l1) * al1 - a(i,j) ) / alw
+              c(j,l2) = ( c(j,l2) * al2 + a(i,j) ) / alt
             end do
             nc(l1) = nc(l1) - 1
             nc(l2) = nc(l2) + 1
@@ -624,7 +624,7 @@ c    Input, integer M, the number of points.
 c
 c    Input, integer N, the number of spatial dimensions.
 c
-c    Input/output, double precision C(K,N), the cluster centers.
+c    Input/output, double precision C(N,K), the cluster centers.
 c
 c    Input, integer K, the number of clusters.
 c
@@ -661,7 +661,7 @@ c
       double precision alw
       double precision an1(k)
       double precision an2(k)
-      double precision c(k,n)
+      double precision c(n,k)
       double precision d(m)
       double precision da
       double precision db
@@ -711,7 +711,7 @@ c
 
               da = 0.0D+00
               do j = 1, n
-                db = a(i,j) - c(l1,j)
+                db = a(i,j) - c(j,l1)
                 da = da + db * db
               end do
 
@@ -728,7 +728,7 @@ c
 
               dd = 0.0D+00
               do j = 1, n
-                de = a(i,j) - c(l2,j)
+                de = a(i,j) - c(j,l2)
                 dd = dd + de * de
               end do
 c
@@ -749,8 +749,8 @@ c
                 al2 = nc(l2)
                 alt = al2 + 1.0D+00
                 do j = 1, n
-                  c(l1,j) = ( c(l1,j) * al1 - a(i,j) ) / alw
-                  c(l2,j) = ( c(l2,j) * al2 + a(i,j) ) / alt
+                  c(j,l1) = ( c(j,l1) * al1 - a(i,j) ) / alw
+                  c(j,l2) = ( c(j,l2) * al2 + a(i,j) ) / alt
                 end do
                 nc(l1) = nc(l1) - 1
                 nc(l2) = nc(l2) + 1
@@ -807,80 +807,3 @@ c
 
       return
       end
-      subroutine timestamp ( )
-
-c*********************************************************************72
-c
-cc TIMESTAMP prints out the current YMDHMS date as a timestamp.
-c
-c  Discussion:
-c
-c    This FORTRAN77 version is made available for cases where the
-c    FORTRAN90 version cannot be used.
-c
-c  Modified:
-c
-c    12 January 2007
-c
-c  Author:
-c
-c    John Burkardt
-c
-c  Parameters:
-c
-c    None
-c
-      implicit none
-
-      character * ( 8 ) ampm
-      integer d
-      character * ( 8 ) date
-      integer h
-      integer m
-      integer mm
-      character * ( 9 ) month(12)
-      integer n
-      integer s
-      character * ( 10 ) time
-      integer y
-
-      save month
-
-      data month /
-     &  'January  ', 'February ', 'March    ', 'April    ',
-     &  'May      ', 'June     ', 'July     ', 'August   ',
-     &  'September', 'October  ', 'November ', 'December ' /
-
-      call date_and_time ( date, time )
-
-      read ( date, '(i4,i2,i2)' ) y, m, d
-      read ( time, '(i2,i2,i2,1x,i3)' ) h, n, s, mm
-
-      if ( h .lt. 12 ) then
-        ampm = 'AM'
-      else if ( h .eq. 12 ) then
-        if ( n .eq. 0 .and. s .eq. 0 ) then
-          ampm = 'Noon'
-        else
-          ampm = 'PM'
-        end if
-      else
-        h = h - 12
-        if ( h .lt. 12 ) then
-          ampm = 'PM'
-        else if ( h .eq. 12 ) then
-          if ( n .eq. 0 .and. s .eq. 0 ) then
-            ampm = 'Midnight'
-          else
-            ampm = 'AM'
-          end if
-        end if
-      end if
-
-      write ( *,
-     &  '(i2,1x,a,1x,i4,2x,i2,a1,i2.2,a1,i2.2,a1,i3.3,1x,a)' )
-     &  d, month(m), y, h, ':', n, ':', s, '.', mm, ampm
-
-      return
-      end
-
