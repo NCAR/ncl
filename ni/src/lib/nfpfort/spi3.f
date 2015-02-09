@@ -1,9 +1,13 @@
 C NCLFORTSTART
-        subroutine spi3ncdc(ntim,pp,pmsg,nrun,spi3,ier)
+        subroutine spi3ncdc(ntim,pp,pmsg,nrun,spi3,probne,pcpacc,index,
+     +                      y, x, temparr,maxyrs,maxyrsp1,ier)
         implicit none
 c                                 INPUT
-        integer ntim, nrun, ier
+        integer ntim, nrun, ier, maxyrs, maxyrsp1
         double precision pp(ntim), pmsg
+        double precision probne(ntim),pcpacc(ntim)
+     +                 , y(ntim),x(maxyrs),temparr(maxyrsp1)
+     +                 , index(ntim)
 c                                 OUTPUT
         double precision spi3(ntim)
 C NCLEND
@@ -11,12 +15,10 @@ c
 c NCL:   spi3 = dim_spi3_n(p,nrun,opt,dims)   ; same as 'dim_spi_n' 
 c
 c                                 LOCAL
-        integer  num(12),numpos(12),maxyrs, nt
-        double precision pzero(12),probne(ntim),pcpacc(ntim)
-     +                 , y(ntim),x(ntim/12),temparr(ntim/12+1)
-     +                 , index(ntim)
-        double precision par1(12),par2(12),par3(12), para(3)
-     +                 , xmom1(12),xmom2(12),xmom3(12), xmom(3)
+        integer  num(12),numpos(12), nt
+        double precision pzero(12)
+        double precision par1(12),par2(12),par3(12),
+     +                   xmom1(12),xmom2(12),xmom3(12)
 
         do nt=1,ntim
            spi3(nt) = pmsg
@@ -27,7 +29,8 @@ c                                 LOCAL
             return
         end if
 
-        maxyrs = ntim/12
+C This is being passed in by C calling routine
+C       maxyrs = ntim/12     
        
         call  spipe3(nrun,pp,par1,par2,par3,pzero,spi3,probne
      1              ,pcpacc,xmom1,xmom2,xmom3,pmsg,num,numpos
@@ -78,7 +81,7 @@ c
         double precision par1(12),par2(12),par3(12),index(maxyrs*12),
      1    xmom1(12),xmom2(12),xmom3(12),xmom(3),para(3),
      2    y(maxyrs*12),x(maxyrs),temparr(maxyrs+1),
-     3    cdfpe3,derf,dlgamma,gamind,quastn
+     3    cdfpe3,quastn
 c
 c
 c       save par1,par2,par3 to 8 decimal places if you want to use
@@ -284,7 +287,7 @@ C***********************************************************************
 C
 C  DISTRIBUTION FUNCTION OF THE PEARSON TYPE 3 DISTRIBUTION
 C
-C  OTHER ROUTINES USED: DERF,DLGAMA,GAMIND
+C  OTHER ROUTINES USED: DERFLM,DLGAMALM,GAMINDLM
 C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DOUBLE PRECISION PARA(3)
@@ -302,14 +305,14 @@ C
       IF(DABS(GAMMA).LE.SMALL)GOTO 10
       ALPHA=FOUR/(GAMMA*GAMMA)
       Z=TWO*(X-PARA(1))/(PARA(2)*GAMMA)+ALPHA
-      IF(Z.GT.ZERO)CDFPE3=GAMIND(Z,ALPHA,DLGAMA(ALPHA))
+      IF(Z.GT.ZERO)CDFPE3=GAMINDLM(Z,ALPHA,DLGAMALM(ALPHA))
       IF(GAMMA.LT.ZERO)CDFPE3=ONE-CDFPE3
       RETURN
 C
 C         ZERO SKEWNESS
 C
    10 Z=(X-PARA(1))/PARA(2)
-      CDFPE3=HALF+HALF*DERF(Z*RTHALF)
+      CDFPE3=HALF+HALF*DERFLM(Z*RTHALF)
       RETURN
 C
 1000  WRITE(6,7000)
@@ -345,7 +348,7 @@ C                  LAMBDA-2 AND TAU-3.
 C  PARA   *OUTPUT* ARRAY OF LENGTH 3. ON EXIT, CONTAINS THE PARAMETERS
 C                  IN THE ORDER MU, SIGMA, GAMMA (MEAN, S.D., SKEWNESS).
 C
-C  OTHER ROUTINES USED: DLGAMA
+C  OTHER ROUTINES USED: DLGAMALM
 C
 C  METHOD: RATIONAL APPROXIMATION IS USED TO EXPRESS ALPHA, THE SHAPE
 C  PARAMETER OF THE GAMMA DISTRIBUTION, AS A FUNCTION OF TAU-3.
@@ -379,7 +382,7 @@ C
       ALPHA=T*(D1+T*(D2+T*D3))/(ONE+T*(D4+T*(D5+T*D6)))
    20 CONTINUE
       RTALPH=DSQRT(ALPHA)
-      BETA=ROOTPI*XMOM(2)*DEXP(DLGAMA(ALPHA)-DLGAMA(ALPHA+HALF))
+      BETA=ROOTPI*XMOM(2)*DEXP(DLGAMALM(ALPHA)-DLGAMALM(ALPHA+HALF))
       PARA(1)=XMOM(1)
       PARA(2)=BETA*RTALPH
       PARA(3)=TWO/RTALPH
@@ -400,7 +403,7 @@ c1000 WRITE(6,7000)
       ifail=1
       RETURN
 C
- 7000 FORMAT(' *** ERROR *** ROUTINE PELPE3 : L-MOMENTS INVALID')
+C 7000 FORMAT(' *** ERROR *** ROUTINE PELPE3 : L-MOMENTS INVALID')
       END
 c
 c
@@ -530,7 +533,8 @@ C
 c
 c
 c
-      DOUBLE PRECISION FUNCTION DERF(X)
+c RENAMED DERF to DERFLM to avoid name conflict.
+      DOUBLE PRECISION FUNCTION DERFLM(X)
 C***********************************************************************
 C*                                                                     *
 C*  FORTRAN CODE WRITTEN FOR INCLUSION IN IBM RESEARCH REPORT RC20525, *
@@ -570,38 +574,40 @@ C
      *  0.17556 67163 18264 2D1,   0.88388 34764 83184 4D-1/
 C
 C         C1 IS SQRT(2), C2 IS SQRT(2/PI)
-C         BIG IS THE POINT AT WHICH DERF=1 TO MACHINE PRECISION
+C         BIG IS THE POINT AT WHICH DERFLM=1 TO MACHINE PRECISION
 C
       DATA C1/1.4142 13562 37309 5D0/
       DATA C2/7.9788 45608 02865 4D-1/
       DATA BIG/6.25D0/,CRIT/5D0/
 C
-      DERF=ZERO
+      DERFLM=ZERO
       IF(X.EQ.ZERO)RETURN
       XX=DABS(X)
       IF(XX.GT.BIG)GOTO 20
       EXPNTL=DEXP(-X*X)
       ZZ=DABS(X*C1)
       IF(XX.GT.CRIT)GOTO 10
-      DERF=EXPNTL*((((((P6*ZZ+P5)*ZZ+P4)*ZZ+P3)*ZZ+P2)*ZZ+P1)*ZZ+P0)/
-     *  (((((((Q7*ZZ+Q6)*ZZ+Q5)*ZZ+Q4)*ZZ+Q3)*ZZ+Q2)*ZZ+Q1)*ZZ+Q0)
-      IF(X.GT.ZERO)DERF=ONE-TWO*DERF
-      IF(X.LT.ZERO)DERF=TWO*DERF-ONE
+      DERFLM=EXPNTL*((((((P6*ZZ+P5)*ZZ+P4)*ZZ+P3)*ZZ+P2)*ZZ+P1)
+     * *ZZ+P0)/(((((((Q7*ZZ+Q6)*ZZ+Q5)*ZZ+Q4)*ZZ+Q3)*ZZ+Q2)*ZZ+Q1)
+     * *ZZ+Q0)
+      IF(X.GT.ZERO)DERFLM=ONE-TWO*DERFLM
+      IF(X.LT.ZERO)DERFLM=TWO*DERFLM-ONE
       RETURN
 C
-   10 DERF=EXPNTL*C2/(ZZ+ONE/(ZZ+TWO/(ZZ+THREE/(ZZ+FOUR/(ZZ+P65)))))
-      IF(X.GT.ZERO)DERF=ONE-DERF
-      IF(X.LT.ZERO)DERF=DERF-ONE
+   10 DERFLM=EXPNTL*C2/(ZZ+ONE/(ZZ+TWO/(ZZ+THREE/(ZZ+FOUR/(ZZ+P65)))))
+      IF(X.GT.ZERO)DERFLM=ONE-DERFLM
+      IF(X.LT.ZERO)DERFLM=DERFLM-ONE
       RETURN
 C
-   20 DERF=ONE
-      IF(X.LT.ZERO)DERF=-ONE
+   20 DERFLM=ONE
+      IF(X.LT.ZERO)DERFLM=-ONE
       RETURN
       END
 c
 c
 c
-      DOUBLE PRECISION FUNCTION DLGAMA(X)
+c RENAMED DLGAMA to DLGAMALM to avoid name conflict.
+      DOUBLE PRECISION FUNCTION DLGAMALM(X)
 C***********************************************************************
 C*                                                                     *
 C*  FORTRAN CODE WRITTEN FOR INCLUSION IN IBM RESEARCH REPORT RC20525, *
@@ -625,7 +631,7 @@ C
       DATA SMALL,CRIT,BIG,TOOBIG/1D-7,13D0,1D9,2D36/
 C
 C         C0 IS 0.5*LOG(2*PI)
-C         C1...C7 ARE THE COEFFTS OF THE ASYMPTOTIC EXPANSION OF DLGAMA
+C         C1...C7 ARE THE COEFFTS OF THE ASYMPTOTIC EXPANSION OF DLGAMALM
 C
       DATA C0,C1,C2,C3,C4,C5,C6,C7/
      *   0.91893 85332 04672 742D 0,  0.83333 33333 33333 333D-1,
@@ -639,25 +645,25 @@ C
       DATA S2/ 0.82246 70334 24113 218D 0/
 C
       DATA ZERO/0D0/,HALF/0.5D0/,ONE/1D0/,TWO/2D0/
-      DLGAMA=ZERO
+      DLGAMALM=ZERO
       IF(X.LE.ZERO)GOTO 1000
       IF(X.GT.TOOBIG)GOTO 1000
 C
 C         USE SMALL-X APPROXIMATION IF X IS NEAR 0, 1 OR 2
 C
       IF(DABS(X-TWO).GT.SMALL)GOTO 10
-      DLGAMA=DLOG(X-ONE)
+      DLGAMALM=DLOG(X-ONE)
       XX=X-TWO
       GOTO 20
    10 IF(DABS(X-ONE).GT.SMALL)GOTO 30
       XX=X-ONE
-   20 DLGAMA=DLGAMA+XX*(S1+XX*S2)
+   20 DLGAMALM=DLGAMALM+XX*(S1+XX*S2)
       RETURN
    30 IF(X.GT.SMALL)GOTO 40
-      DLGAMA=-DLOG(X)+S1*X
+      DLGAMALM=-DLOG(X)+S1*X
       RETURN
 C
-C         REDUCE TO DLGAMA(X+N) WHERE X+N.GE.CRIT
+C         REDUCE TO DLGAMALM(X+N) WHERE X+N.GE.CRIT
 C
    40 SUM1=ZERO
       Y=X
@@ -675,19 +681,20 @@ C
       IF(Y.GE.BIG)GOTO 70
       Z=ONE/(Y*Y)
       SUM2=((((((C7*Z+C6)*Z+C5)*Z+C4)*Z+C3)*Z+C2)*Z+C1)/Y
-   70 DLGAMA=SUM1+SUM2
+   70 DLGAMALM=SUM1+SUM2
       RETURN
 C
  1000 WRITE(6,7000)X
       RETURN
 C
- 7000 FORMAT(' *** ERROR *** ROUTINE DLGAMA :',
+ 7000 FORMAT(' *** ERROR *** ROUTINE DLGAMALM :',
      *  ' ARGUMENT OUT OF RANGE :',D24.16)
       END
 c
 c
 c
-      DOUBLE PRECISION FUNCTION GAMIND(X,ALPHA,G)
+c RENAMED GAMIND to GAMINDLM to avoid name conflict.
+      DOUBLE PRECISION FUNCTION GAMINDLM(X,ALPHA,G)
 C***********************************************************************
 C*                                                                     *
 C*  FORTRAN CODE WRITTEN FOR INCLUSION IN IBM RESEARCH REPORT RC20525, *
@@ -711,9 +718,9 @@ C  PARAMETERS OF ROUTINE:
 C  X      * INPUT* ARGUMENT OF FUNCTION (UPPER LIMIT OF INTEGRATION)
 C  ALPHA  * INPUT* SHAPE PARAMETER
 C  G      * INPUT* LOG(GAMMA(ALPHA)). MUST BE SUPPLIED BY THE PROGRAM,
-C                  E.G. AS DLGAMA(ALPHA).
+C                  E.G. AS DLGAMALM(ALPHA).
 C
-C  OTHER ROUTINES USED: DERF
+C  OTHER ROUTINES USED: DERFLM
 C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DATA ZERO/0D0/,HALF/0.5D0/,ONE/1D0/,TWO/2D0/,THREE/3D0/,X13/13D0/,
@@ -727,7 +734,7 @@ C         UFL IS SUCH THAT EXP(UFL) IS JUST .GT. ZERO.
 C         AHILL CONTROLS THE SWITCH TO HILL'S APPROXIMATION.
 C
       DATA EPS/1D-12/,MAXIT/100000/,OFL/1D30/,UFL/-180D0/,AHILL/1D4/
-      GAMIND=ZERO
+      GAMINDLM=ZERO
       IF(ALPHA.LE.ZERO)GOTO 1000
       IF(X.LT.ZERO)GOTO 1010
       IF(X.EQ.ZERO)RETURN
@@ -748,8 +755,8 @@ C
    10 CONTINUE
       WRITE(6,7020)
    20 ARG=ALPHA*DLOG(X)-X-G+DLOG(SUM/ALPHA)
-      GAMIND=ZERO
-      IF(ARG.GE.UFL)GAMIND=DEXP(ARG)
+      GAMINDLM=ZERO
+      IF(ARG.GE.UFL)GAMINDLM=DEXP(ARG)
       RETURN
 C
 C         CONTINUED-FRACTION EXPANSION
@@ -787,8 +794,8 @@ C
    70 CONTINUE
       WRITE(6,7020)
    80 ARG=ALPHA*DLOG(X)-X-G+DLOG(RATIO)
-      GAMIND=ONE
-      IF(ARG.GE.UFL)GAMIND=ONE-DEXP(ARG)
+      GAMINDLM=ONE
+      IF(ARG.GE.UFL)GAMINDLM=ONE-DEXP(ARG)
       RETURN
 C
 C         ALPHA IS LARGE: USE HILL'S APPROXIMATION (N.L. JOHNSON AND
@@ -815,7 +822,7 @@ C
       H3=(-WW+X13)/X1620
       H4=(X42*WW+X119)*W/X38880
       Z=(((H4*R+H3)*R+H2)*R+H1)*R+W
-      GAMIND=HALF+HALF*DERF(Z*RTHALF)
+      GAMINDLM=HALF+HALF*DERFLM(Z*RTHALF)
       RETURN
 C
  1000 WRITE(6,7000)ALPHA
@@ -823,11 +830,11 @@ C
  1010 WRITE(6,7010)X
       RETURN
 C
- 7000 FORMAT(' *** ERROR *** ROUTINE GAMIND :',
+ 7000 FORMAT(' *** ERROR *** ROUTINE GAMINDLM :',
      *  ' SHAPE PARAMETER OUT OF RANGE :',D16.8)
- 7010 FORMAT(' *** ERROR *** ROUTINE GAMIND :',
+ 7010 FORMAT(' *** ERROR *** ROUTINE GAMINDLM :',
      *  ' ARGUMENT OF FUNCTION OUT OF RANGE :',D16.8)
- 7020 FORMAT(' ** WARNING ** ROUTINE GAMIND :',
+ 7020 FORMAT(' ** WARNING ** ROUTINE GAMINDLM :',
      *  ' ITERATION HAS NOT CONVERGED. RESULT MAY BE UNRELIABLE.')
       END
 c

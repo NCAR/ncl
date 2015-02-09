@@ -38,7 +38,7 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	plotfmt_rdhead.o plotfmt_rddata.o spareapoly.o KolmSmir2.o \
 	slatec_DPOLFT.o wrf_rip_phys_routines.o accumrun.o \
 	thornthwaite_v2.o bfilter1.o distribfit.o kens_trend_dp.ncl.o \
-	det_code42.o kmeans_kmns_as136.o
+	det_code42.o kmeans_kmns_as136.o spi3.o
 
 COBJS =
 
