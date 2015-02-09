@@ -325,6 +325,8 @@ NhlErrorTypes _addNclAttNode(NclFileAttRecord **attrec,
 NhlErrorTypes _addNclDimNode(NclFileDimRecord **dimrec,
                  NclQuark name, int dimid, ng_size_t size,
                  int is_unlimited);
+NhlErrorTypes _addNclChunkDimNode(NclFileDimRecord **thedimrec, NclQuark name, int dimid,
+                                  ng_size_t size, int is_unlimited);
 NhlErrorTypes _addNclVarNodeToGrpNode(NclFileGrpNode *grpnode,
                  NclQuark name, int varid, NclBasicDataTypes type,
                  int n_dims, NclQuark *dimnames, ng_size_t *dimsizes);

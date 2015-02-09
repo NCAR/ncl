@@ -3768,8 +3768,14 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
 
               /*
                *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-               *fprintf(stderr, "\tDim %d: count[%d] = %ld, locstart[%d] = %ld, n_elem = %ld, no_stride = %d, dimnode->is_unlimited = %d, dimnode->size = %d, finish[%d] = %ld, stride[%d] = %ld\n",
-               *                  i, i, count[i], i, locstart[i], n_elem, no_stride, dimnode->is_unlimited, dimnode->size, i, finish[i], i, stride[i]);
+               *fprintf(stderr, "\tDim %d: count[%d] = %ld, locstart[%d] = %ld\n",
+	       *		i, i, count[i], i, locstart[i]);
+	       *fprintf(stderr, "\tn_elem = %ld, no_stride = %d\n",
+	       *		n_elem, no_stride);
+	       *fprintf(stderr, "\tdimnode->is_unlimited = %d, dimnode->size = %d\n",
+	       *		dimnode->is_unlimited, dimnode->size);
+	       *fprintf(stderr, "\tfinish[%d] = %ld, stride[%d] = %ld\n",
+               *                i, finish[i], i, stride[i]);
                */
             }
                     
@@ -4934,23 +4940,41 @@ static NhlErrorTypes NC4AddChunkDim(void* therec, NclQuark thedim,
             }
         }
 
+        dimnode = _getDimNodeFromNclFileGrpNode(grpnode, thedim);
+        if(NULL == grpnode->chunk_dim_rec)
+        {
+            int n = 0;
+            NclFileDimRecord *dimrec = NULL;
+
+            dimrec = grpnode->dim_rec;
+            grpnode->chunk_dim_rec = _NclFileDimAlloc(dimrec->n_dims);
+            grpnode->chunk_dim_rec->n_dims = dimrec->n_dims;
+
+            for(n = 0; n < dimrec->n_dims; ++n)
+	    {
+                grpnode->chunk_dim_rec->dim_node[n].name = dimrec->dim_node[n].name;
+                grpnode->chunk_dim_rec->dim_node[n].size = dimrec->dim_node[n].size;
+                grpnode->chunk_dim_rec->dim_node[n].id   = dimrec->dim_node[n].id;
+                grpnode->chunk_dim_rec->dim_node[n].is_unlimited = 0;
+            }
+        }
+
+      /*
+       *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tthedim: <%s>, size: %d\n", NrmQuarkToString(thedim), size);
+       */
+
         if (add_scalar)
         {
             NclQuark ns_name = NrmStringToQuark("ncl_scalar");
             grpnode->has_scalar_dim = 1;
 
             dimnode = _getDimNodeFromNclFileGrpNode(grpnode, ns_name);
-            _addNclDimNode(&(grpnode->chunk_dim_rec), ns_name, dimnode->id, -5, 1);
+            _addNclChunkDimNode(&(grpnode->chunk_dim_rec), ns_name, dimnode->id, -5, 1);
         }
         else
         {
-            dimnode = _getDimNodeFromNclFileGrpNode(grpnode, thedim);
-            if(NULL == grpnode->chunk_dim_rec)
-            {
-                grpnode->chunk_dim_rec = _NclFileDimAlloc(NCL_MINIMUM_DIMS);
-                grpnode->chunk_dim_rec->n_dims = 0;
-            }
-            _addNclDimNode(&(grpnode->chunk_dim_rec), thedim, dimnode->id, size, is_unlimited);
+            _addNclChunkDimNode(&(grpnode->chunk_dim_rec), thedim, dimnode->id, size, is_unlimited);
         }
       /*
        *fprintf(stderr, "Leave NC4AddChunkDim, file: %s, line: %d\n\n", __FILE__, __LINE__);

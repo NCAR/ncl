@@ -1356,6 +1356,56 @@ NhlErrorTypes _addNclDimNode(NclFileDimRecord **thedimrec, NclQuark name, int di
     return (NhlNOERROR);
 }
 
+NhlErrorTypes _addNclChunkDimNode(NclFileDimRecord **thedimrec, NclQuark name, int dimid,
+			          ng_size_t size, int is_unlimited)
+{
+    NclFileDimRecord *dimrec = *thedimrec;
+    int n = 0;
+    int nfound = -1;
+
+    if(NULL == dimrec)
+    {
+        dimrec = _NclFileDimAlloc(NCL_MINIMUM_DIMS);
+        dimrec->n_dims = 0;
+        *thedimrec = dimrec;
+    }
+    else if(dimrec->n_dims >= dimrec->max_dims)
+    {
+        _NclFileDimRealloc(dimrec);
+        *thedimrec = dimrec;
+    }
+
+    for(n = 0; n < dimrec->n_dims; ++n)
+    {
+        if(dimrec->dim_node[n].name == name)
+        {
+            nfound = n;
+            break;
+        }
+    }
+
+    if(0 > nfound)
+        return (NhlNOERROR);
+
+    n = nfound;
+
+  /*
+   *fprintf(stderr, "\nEnter _addNclChunkDimNode, file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tchunk dim %d, name: %s, size: %ld\n", n, NrmQuarkToString(name), (long)size);
+   *fprintf(stderr, "\tend with dimrec->n_dims = %d\n", dimrec->n_dims);
+   *fprintf(stderr, "\tend with dimrec->max_dims = %d\n", dimrec->max_dims);
+   */
+
+    memset(&(dimrec->dim_node[n]), 0, sizeof(NclFileDimNode));
+
+    dimrec->dim_node[n].name = name;
+    dimrec->dim_node[n].id   = dimid;
+    dimrec->dim_node[n].size = size;
+    dimrec->dim_node[n].is_unlimited = is_unlimited;
+
+    return (NhlNOERROR);
+}
+
 NhlErrorTypes _addNclGrpNodeToGrpNode(NclFileGrpNode *rootgrpnode, NclQuark grpname)
 {
     NclFileGrpNode   *grpnode;
@@ -1466,6 +1516,34 @@ NhlErrorTypes _addNclVarNodeToGrpNode(NclFileGrpNode *grpnode, NclQuark name,
             }
             var_dim_node->name = dimnames[n];
             var_dim_node->size = dimsizes[n];
+        }
+    }
+
+    if(grpnode->is_chunked)
+    {
+        var_node->chunk_dim_rec = _NclFileDimAlloc(n_dims);
+        assert(var_node->chunk_dim_rec);
+
+        dim_rec = grpnode->chunk_dim_rec;
+        for(n = 0; n < n_dims; n++)
+        {
+            var_dim_node = &(var_node->dim_rec->dim_node[n]);
+            for(i = 0; i < dim_rec->n_dims; i++)
+            {
+                grp_dim_node = &(dim_rec->dim_node[i]);
+                if(grp_dim_node->name == dimnames[n])
+                {
+                   /*
+                    *if(grp_dim_node->size != dimsizes[n])
+                    *   grp_dim_node->size = dimsizes[n];
+                    */
+                     memcpy(var_dim_node, grp_dim_node, sizeof(NclFileDimNode));
+
+                     var_dim_node->name = dimnames[n];
+                     var_dim_node->size = grp_dim_node->size;
+                     break;
+                }
+            }
         }
     }
 
@@ -6254,29 +6332,21 @@ static NhlErrorTypes AdvancedFileAddChunkDim(NclFile infile, NclQuark chunkdimna
         chunkdimnode = _getChunkDimNodeFromNclFileGrpNode(thefile->advancedfile.grpnode, chunkdimname);
 
         if(NULL == chunkdimnode)
-        {
             thefile->advancedfile.grpnode->is_chunked = 1;
-            if(NULL != thefile->advancedfile.format_funcs->add_chunk_dim)
-            {
-                if(ds < 1)
-                    ds = 1;
-                ret = (*thefile->advancedfile.format_funcs->add_chunk_dim)
-                       (thefile->advancedfile.grpnode,
-                        chunkdimname, ds, is_unlimited);
-            }
-            else
-            {
-                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                    "FATAL:AdvancedFileAddChunkDim: function add_chunk_dim undefined.\n"));
-                ret = NhlFATAL;
-            }
+
+        if(NULL != thefile->advancedfile.format_funcs->add_chunk_dim)
+        {
+            if(ds < 1)
+                ds = 1;
+            ret = (*thefile->advancedfile.format_funcs->add_chunk_dim)
+                   (thefile->advancedfile.grpnode,
+                    chunkdimname, ds, is_unlimited);
         }
         else
         {
-            NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                "AdvancedFileAddChunkDim: ChunkDimension %s is already defined",
-                NrmQuarkToString(chunkdimname)));
-            ret = NhlWARNING;
+            NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                "FATAL:AdvancedFileAddChunkDim: function add_chunk_dim undefined.\n"));
+            ret = NhlFATAL;
         }
     }
 
