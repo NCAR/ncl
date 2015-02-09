@@ -58,6 +58,7 @@ extern NhlErrorTypes dim_bfband_n_W(void);
 extern NhlErrorTypes dim_weibull_n_W(void);
 extern NhlErrorTypes trend_manken_n_W(void);
 extern NhlErrorTypes dim_thornthwaite_n_W(void);
+extern NhlErrorTypes kmeans_as136_W(void);
 extern NhlErrorTypes snindex_yrmo_W(void);
 extern NhlErrorTypes x_skewt_W(void);
 extern NhlErrorTypes y_skewt_W(void);
@@ -2112,6 +2113,21 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(dim_thornthwaite_n_W,args,"dim_thornthwaite_n",nargs);
+
+/*
+ * Register "kmeans_as136".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(3);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+    NclRegisterFunc(kmeans_as136_W,args,"kmeans_as136",nargs);
 
 /*
  * Register "gc_pnt2gc".

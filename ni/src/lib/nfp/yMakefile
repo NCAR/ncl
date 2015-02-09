@@ -110,7 +110,8 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o 
 	mocloopsW.o spanW.o vinth2pnodesW.o vinth2penodesW.o objanalW.o                 \
 	areaconremapW.o	nctime.o cdtimeW.o dimnumrunW.o sparse_matrixW.o 		\
 	gammaW.o gamfitW.o spiW.o oceanW.o dgeevxW.o areapolyW.o kolsm2W.o		\
-	bfilterW.o weibullW.o trendmankenW.o determinantW.o fftshiftW.o thornW.o
+	bfilterW.o weibullW.o trendmankenW.o determinantW.o fftshiftW.o thornW.o	\
+	kmeansW.o
 
 
 OBJS = $(COBJS) $(UDUNITS_OBJS) $(V5D_OBJS) $(ESMF_OBJS) $(KML_OBJS)
