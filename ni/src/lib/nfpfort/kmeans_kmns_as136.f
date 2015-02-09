@@ -1,3 +1,9 @@
+C--------------------------------------------------------------
+C All the routines in this file were updated on 9 Feb 2015 to 
+C reverse the dimensions of "clcntr"/"c" (from "k x n" to 
+C "n x k") so that the calling C routine could have the 
+C dimensions be K x N.
+C--------------------------------------------------------------
 C NCLFORTSTART
       subroutine kmns136 (dat, m, n, clcntr, k,  ic1, nc
      +                   ,iter, iseed, wss, ier)
