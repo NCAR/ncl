@@ -193,6 +193,10 @@ NhlErrorTypes kmeans_as136_W( void )
       }
     }
   }
+  if(iseed != 1 && iseed != 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"kmeans_as136: iseed must be 1 or 2");
+    return(NhlFATAL);
+  }
 
 /* 
  * Allocate space for output array.
@@ -293,7 +297,7 @@ NhlErrorTypes kmeans_as136_W( void )
 
   _NclAddAtt(
              att_id,
-             "cl_id",
+             "id",
              att_md,
              NULL
              );
@@ -316,7 +320,7 @@ NhlErrorTypes kmeans_as136_W( void )
 
   _NclAddAtt(
              att_id,
-             "cl_npt",
+             "npts",
              att_md,
              NULL
              );
@@ -339,7 +343,7 @@ NhlErrorTypes kmeans_as136_W( void )
 
   _NclAddAtt(
              att_id,
-             "cl_ss2",
+             "ss2",
              att_md,
              NULL
              );

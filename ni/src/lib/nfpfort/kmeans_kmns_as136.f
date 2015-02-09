@@ -21,11 +21,11 @@ c                            ! LOCAL WORK ARRAYS
       integer nv, kk, mm
 
 c Currently: two methods to set the seed
-c . iseed=0 pick 1st k elements of the dat array
-c . iseed=  'randomly' sample the dat array
+c . iseed=1 pick 1st k elements of the dat array
+c . iseed=2 'randomly' sample the dat array
 
       do kk=1,k
-         if (iseed.eq.0) then
+         if (iseed.eq.1) then
              mm = kk
          else
              mm = m/kk
