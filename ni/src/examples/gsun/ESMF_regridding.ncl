@@ -14,6 +14,12 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Important modifications:
+;       10 Feb 2015:
+;           Added an (as yet unadvertised) "unstructured_to_SCRIP" function
+;           that writes the grid description file to a SCRIP file instead
+;           of an ESMF file, if SrcESMF or DstESMF is set to False. This
+;           is currently being tested.
+;
 ;       04 Feb 2015:                                                                                   
 ;           Fixed the "remap" attribute that gets attached to regridded variable                       
 ;           to be the ESMF_regrid_method attribute that's on the weights file,                         
@@ -1049,6 +1055,189 @@ begin
     delete([/ExtGridCenter_lat,ExtGridCenter_lon,Extlat2d,Extlon2d/])
 
 end     ; of calc_SCRIP_corners_noboundaries(...)
+
+;======================================================================
+; This procedure generates a SCRIP file for an unstructured grid.
+; This is still being tested as of Feb 10, 2015.  For now, "grid_area"
+; is not being written to the SCRIP file, and I'm not sure if this
+; is okay. Bob Oehmke said he thought it was optional.
+;======================================================================
+undef("unstructured_to_SCRIP")
+procedure unstructured_to_SCRIP(FName[1]:string,inLat,inLon,Opt[1]:logical)
+begin
+;---Check for options
+    PrintTimings = isatt_logical_true(Opt,"PrintTimings")
+    if(PrintTimings) then
+      start_time = get_start_time()
+    end if
+
+    DEBUG = isatt_logical_true(Opt,"Debug")
+
+;---Check if the file already exists
+    check_for_file(FName,Opt)
+
+;---Do we need to create a large file?
+    if (.not.isatt_logical_false(Opt,"LargeFile")) then
+      setfileoption("nc","Format","LargeFile") 
+    end if
+
+;---Do we need to create a netcdf-4 file?
+    if (isatt(Opt,"NetCDFType").and.\
+        str_lower(Opt@NetCDFType).eq."netcdf4") then
+      setfileoption("nc","Format","netcdf4") 
+      nc_file_type = "netcdf4"
+    else
+      nc_file_type = "netcdf3"
+    end if
+
+    lat_dims = dimsizes(inLat)
+    lon_dims = dimsizes(inLon)
+    lat_rank = dimsizes(lat_dims)
+    lon_rank = dimsizes(lon_dims)
+
+    if (lat_rank.ne.1.or.lon_rank.ne.1.or.lat_dims.ne.lon_dims) then
+        print("unstructured_to_SCRIP: latitude and longitude must be one-dimensional and the same length.")
+        exit
+    end if
+    grid_size = lat_dims
+    grid_rank = lat_rank  ; should be 1
+
+;---Were the grid corners provided?
+    if (isatt(Opt,"GridCornerLat").and.isatt(Opt,"GridCornerLon")) then
+        if(DEBUG) then
+          print("unstructured_to_SCRIP: using grid corners provided by user...")
+        end if
+        if(.not.any(typeof(Opt@GridCornerLat).eq.(/"float","double"/))) then
+          GridCornerLat = tofloat(Opt@GridCornerLat)
+        else
+          GridCornerLat = Opt@GridCornerLat
+        end if
+        if(.not.any(typeof(Opt@GridCornerLon).eq.(/"float","double"/))) then
+          GridCornerLon = tofloat(Opt@GridCornerLon)
+        else
+          GridCornerLon = Opt@GridCornerLon
+        end if
+        corner_lat_dims = dimsizes(GridCornerLat)
+        corner_lon_dims = dimsizes(GridCornerLon)
+        corner_lat_rank = dimsizes(corner_lat_dims)
+        corner_lon_rank = dimsizes(corner_lon_dims)
+        if(corner_lat_rank.ne.2.or.corner_lon_rank.ne.2.or.\
+           any(corner_lat_dims.ne.corner_lon_dims).or.corner_lat_dims(0).ne.grid_size) then
+          print("unstructured_to_SCRIP: the grid corners provided are not the correct dimensionality.")
+          print("Was expecting a " + lat_dims + " x n array, where 'n' represents the number of corners.")
+          exit
+        end if
+        grid_corners    = corner_lat_dims(1)
+        grid_corner_lat = reshape( GridCornerLat,(/ grid_size, grid_corners /))
+        grid_corner_lon = reshape( GridCornerLon,(/ grid_size, grid_corners /))
+    else
+      print("unstructured_to_SCRIP: no grid corners ([Src]/[Dst]GridCorner[Lat]/[Lon]) provided. Can't continue")
+      exit
+    end if
+
+;---Was a mask provided?
+    if(Opt.and.isatt(Opt,"Mask2D")) then
+      mask_dims = dimsizes(Opt@Mask2D)  
+      mask_rank = dimsizes(mask_dims)
+      if(mask_rank.ne.1.or.mask_dims.ne.grid_size) then
+        print("unstructured_to_SCRIP: Opt@Mask2D is not the correct dimensionality")
+        exit
+      end if   
+      grid_mask = Opt@Mask2D
+    else
+;---No masking
+      grid_mask = new(grid_size, "integer","No_FillValue")
+      grid_mask = 1
+    end if
+    
+    if(Opt.and.isatt(Opt,"InputFileName")) then
+      inputFName = Opt@InputFileName
+    else
+      inputFName = "none provided"
+    end if
+
+    if(Opt.and.isatt(Opt,"Title")) then
+      FTitle = Opt@Title
+    else
+      FTitle = "unstructured_to_SCRIP (" + grid_size + ")"
+    end if
+
+;---Create the file
+    fid = addfile(FName,"c")
+    setfileoption(fid,"DefineMode",True)
+
+;---Define the file attributes
+    FileAtt              = True
+    FileAtt@title        = FTitle
+    FileAtt@Conventions  = "SCRIP"
+    FileAtt@Createdby    = "ESMF_regridding.ncl"
+    FileAtt@date_created = systemfunc("date")
+    FileAtt@inputFile     = inputFName 
+    fileattdef(fid,FileAtt)
+    
+;---Define the SCRIP dimensions on the file
+    FDimNames = (/ "grid_size","grid_corners","grid_rank" /)
+    FDimSizes = (/ grid_size,grid_corners,grid_rank /)
+    FDimUnlim = (/ False,False,False /)
+	
+    filedimdef(fid,FDimNames,FDimSizes,FDimUnlim)
+	
+;---Define Variables
+    filevardef(fid,"grid_dims","integer","grid_rank")
+    filevardef(fid,"grid_center_lat","double","grid_size")
+    filevardef(fid,"grid_center_lon","double","grid_size")
+    filevardef(fid,"grid_corner_lat","double",(/ "grid_size", "grid_corners" /) )
+    filevardef(fid,"grid_corner_lon","double",(/ "grid_size", "grid_corners" /) )
+    filevardef(fid,"grid_imask","integer","grid_size")
+    
+;---Define the variables unit attribute
+    DummyAtt1       = 0
+    DummyAtt2       = 0
+;
+; The conversion to character arrays for NetCDF-4 files is a 
+; work-around.  ESMF_RegridWeightGen uses the F90 interface to 
+; read NetCDF-4 files, which doesn't yet have support for 
+; NetCDF-4 "string" types.
+; 
+    if(nc_file_type.eq."netcdf3") then
+      DummyAtt1@units = "degrees"
+      DummyAtt2@units = "unitless"
+    else
+      DummyAtt1@units = tochar("degrees")
+      DummyAtt2@units = tochar("unitless")
+    end if
+    filevarattdef(fid,"grid_center_lat",DummyAtt1)
+    filevarattdef(fid,"grid_center_lon",DummyAtt1)
+    filevarattdef(fid,"grid_imask",DummyAtt2)
+    filevarattdef(fid,"grid_corner_lat",DummyAtt1)
+    filevarattdef(fid,"grid_corner_lon",DummyAtt1)
+    delete(DummyAtt1)
+    delete(DummyAtt2)
+    
+;---Prepare the file to store the values
+    setfileoption(fid,"DefineMode",False)
+    
+;---Storing Grid Dims
+    fid->grid_dims = (/grid_size/)
+    
+;---Store Cell Center Lat/Lon
+    fid->grid_center_lat = (/inLat/)
+    fid->grid_center_lon = (/inLon/)
+
+;---Store Cell Corner Lat/Lon
+    fid->grid_corner_lat = (/grid_corner_lat/)
+    fid->grid_corner_lon = (/grid_corner_lon/)
+
+;---Store grid mask
+    fid->grid_imask = (/grid_mask/)
+
+;---Store grid mask
+    fid->grid_imask = (/grid_mask/)
+
+    if(PrintTimings) then
+      print_elapsed_esmf_time(start_time,"unstructured_to_SCRIP")
+    end if
+end     ; of unstructured_to_SCRIP(...)
 
 ;======================================================================
 ; This procedure generates an ESMF file for an unstructured grid.
@@ -3531,7 +3720,7 @@ begin
 ; set, like "opt@Overwrite", then ignore the specific
 ; attribute, like "opt@SrcOverwrite".
 ;
-  spc_atts = (/"Mask2D","TriangularMesh","LargeFile",\
+  spc_atts = (/"Mask2D","TriangularMesh","LargeFile","ESMF",\
                "NetCDFType","Title","LLCorner","URCorner", \
                "Rotation","GridCornerLat","GridCornerLon",\
                "InputFileName","Overwrite","ForceOverwrite"/)
@@ -3583,10 +3772,29 @@ begin
   else if(grid_type.eq."curvilinear") then
     curvilinear_to_SCRIP(grid_file,lat_vals,lon_vals,opt_new)
   else if(grid_type.eq."unstructured") then
-    unstructured_to_ESMF(grid_file,lat_vals,lon_vals,opt_new)
-
+;
+; This extra code for writing a SCRIP unstructured file
+; file was added Feb 10, 2015. I'm not sure it's robust
+; yet.  It is currently unadvertised, but can be 
+; done by the user if they set opt@SrcESMF = False or
+; opt@DstESMF = False.
+;
+    if(.not.isatt_logical_false(opt_new,"ESMF")) then
+      unstructured_to_ESMF(grid_file,lat_vals,lon_vals,opt_new)
+      tmp_att = grid_string + "ESMF"
+      if(DEBUG) then
+        print("write_grid_description_file: writing unstructured '" + grid_string + \
+        "' grid to an ESMF description file")
+      end if
+    else
+      unstructured_to_SCRIP(grid_file,lat_vals,lon_vals,opt_new)
 ;---Make sure SrcESMF or DstESMF is set (the default is to assume SCRIP)
-    tmp_att = grid_string + "ESMF"
+      tmp_att = grid_string + "SCRIP"
+      if(DEBUG) then
+        print("write_grid_description_file: writing unstructured '" + grid_string + \
+        "' grid to a SCRIP description file")
+      end if
+    end if
     opt@$tmp_att$ = True
   else
     latlon_to_SCRIP(grid_file,grid_type,opt_new)
