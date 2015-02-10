@@ -24,8 +24,8 @@
  *			etc are in the Template file.
  */
 
-#define NcargVersion 6.2.1
-#define NclVersion 6.2.1
+#define NcargVersion 6.3.0
+#define NclVersion 6.3.0
 
 #ifndef	BuildNCL
 #define	BuildNCL
