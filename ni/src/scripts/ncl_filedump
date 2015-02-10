@@ -189,7 +189,7 @@ endif
 # Make sure the file has an appropriate suffix so that NCL knows
 # what kind of file it is.
 #
-set valid_suffixes = ("nc" "cdf" "netcdf" "nc3" "nc4" "gr" "gr1" "grb" "grb1" "grib" "grib1" "gr2" "grb2" "grib2" "hdf" "h4" "hdfeos" "he2" "he4" "h5" "hdfeos5" "he5" "ccm" "shp" "mif" "gmt" "rt1" "rt2" "rt3" "rt4" "rt5" "rt6" "rt7" "rt8" "rt9" "rta" "rtb" "rtc" "rte" "rth" "rti" "rtm" "rtp" "rtr" "rts" "rtt" "rtu" "rtz")
+set valid_suffixes = ("nc" "cdf" "netcdf" "nc3" "nc4" "gr" "gr1" "grb" "grb1" "grib" "grib1" "gr2" "grb2" "grib2" "hdf" "h4" "hdfeos" "he2" "he4" "h5" "hdf5" "hdfeos5" "he5" "ccm" "shp" "mif" "gmt" "rt1" "rt2" "rt3" "rt4" "rt5" "rt6" "rt7" "rt8" "rt9" "rta" "rtb" "rtc" "rte" "rth" "rti" "rtm" "rtp" "rtr" "rts" "rtt" "rtu" "rtz")
 set no_suffix
 set psfx = "$file:e"
 set suffix = `echo $psfx | tr '[A-Z]' '[a-z]'`
