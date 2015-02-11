@@ -91,6 +91,11 @@ struct _NclMultiDValDataRec* _NclStripVarData
 	if(inst->obj.status == TEMPORARY) {
 		NclRefList *tref;
 		tmp = (NclMultiDValData)_NclGetObj(inst->var.thevalue_id);	
+		if(NULL == tmp) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclStripVarData: Trying to strip data from NULL variable!");
+			return(NULL);
+		}
+
 		tmp->obj.status = TEMPORARY;
 		tref = tmp->obj.parents;
 		while (tref != NULL && tref->pid == inst->obj.id) {

@@ -19841,6 +19841,7 @@ NhlErrorTypes _NclINewList( void )
 		return(NhlFATAL);
 	}
 
+	strncpy(buffer, tmp, 5);
 	buffer[4] = '\0';
 	buffer[3] = '\0';
 	for(i = 0; i < strlen(tmp); i++) {
