@@ -1966,8 +1966,10 @@ NclQuark path;
             buffer[str_buf_size] = '\0';
             HDFEOS5ParseName(buffer, att_hdf_names, att_ncl_names, ngrp_atts);
 
-            if(0 == strncmp(pathname, "OMI-Aura_L3-OMLER_", 18))
-		ngrp_atts -= 3;
+	  /*
+           *if(0 == strncmp(pathname, "OMI-Aura_L3-OMLER_", 18))
+	   *    ngrp_atts -= 3;
+	   */
 
             for(k = 0; k < ngrp_atts; k++)
             { 
