@@ -1030,6 +1030,7 @@ extern NhlErrorTypes _NclIListIndex(
 void
 #endif
 );
+extern NhlErrorTypes _NclIListIndexFromName(void);
 
 extern NhlErrorTypes _NclINhlGetErrorObjectId(
 #if NhlNeedProto
@@ -2553,6 +2554,13 @@ void _NclAddBuiltIns
     SetArgTemplate(args,nargs,"list",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,NclANY,1,NclANY);nargs++;
     NclRegisterFunc(_NclIListIndex,args,"ListIndex",nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"list",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+    NclRegisterFunc(_NclIListIndexFromName,args,"ListIndexFromName",nargs);
 
     nargs = 0;
     args = NewArgs(1);
