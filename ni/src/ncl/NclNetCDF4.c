@@ -2836,7 +2836,7 @@ void NC4GetDimVals(int ncid, NclFileGrpNode *grpnode)
     NclFileDimNode *dimnode;
     NclFileVarNode *varnode;
     long start = 0;
-    int i;
+    int i, n;
 
     if(NULL == grpnode->dim_rec)
         return;
@@ -2866,7 +2866,35 @@ void NC4GetDimVals(int ncid, NclFileGrpNode *grpnode)
         if(NULL == varnode->value)
         {
             varnode->value = NclCalloc(nctypelen(varnode->the_nc_type) * dimnode->size, 1);
-            ncvarget(ncid, varnode->id, &start, &(dimnode->size), varnode->value);
+
+            if(NCL_string == varnode->type)
+            {
+                char **tmp_strs;
+                NclQuark *qptr = (NclQuark *) varnode->value;
+
+                tmp_strs = (char **)NclCalloc(dimnode->size, sizeof(char *));
+                assert(tmp_strs);
+
+                ncvargetg(varnode->gid,
+                          varnode->id,
+                          &start,
+                          &(dimnode->size),
+                          NULL,
+                          NULL,
+                          (char *)tmp_strs);
+
+                for(n = 0; n < dimnode->size; n++)
+                {
+                    qptr[n] = NrmStringToQuark(tmp_strs[n]);
+                    free(tmp_strs[n]);
+                }
+
+                free(tmp_strs);
+            }
+            else
+            {
+                ncvarget(ncid, varnode->id, &start, &(dimnode->size), varnode->value);
+            }
         }
 
         _addNclCoordVarNode(&(grpnode->coord_var_rec), varnode);
