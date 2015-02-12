@@ -686,7 +686,7 @@ int access_type;
 		while(i != the_sym->level) {
 			i--;
 			if(i < 0) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclRetrieveRec: Stack underflow\n");
+				NhlPError(NhlINFO,NhlEUNKNOWN,"_NclRetrieveRec: Stack underflow\n");
 				return(NULL);
 			}
 			previous = (NclFrame*)((NclStackEntry*)thestack + previous->static_link.u.offset);
