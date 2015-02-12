@@ -496,7 +496,6 @@ NhlErrorTypes _NclInitMachine
 
 NhlErrorTypes _NclFinalizeMachine()
 {
-	_NclMachineRec* machrec;
 #if 0
 	int i;
 
@@ -1685,6 +1684,7 @@ if(the_list != NULL) {
 					} else {
 						data_ptr = _NclRetrieveRec(the_list->the_elements[i].var_sym,DONT_CARE);
 					}
+					if(NULL != data_ptr) {
 					anst_var = data_ptr->u.data_var;
 					if(data.u.data_var != NULL ) {
 						var_rep_type = _NclGetVarRepValue(data.u.data_var);
@@ -1797,6 +1797,7 @@ CONVERT_TO_LOCAL just pushes vars for parameters
 						if((the_list->the_elements[i].var_ptr != NULL)&&(anst_var->obj.id != the_list->the_elements[i].var_ptr->obj.id)) {
 							_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
 						}
+					}
 					}
 				} else if((the_list->the_elements[i].var_sym != NULL)&&(data.u.data_obj->obj.obj_type & Ncl_Var)){
 					if(the_list->the_elements[i].is_modified) {
