@@ -33,7 +33,7 @@
  *                       clean paths like "-lcairo".
  */
 #define HdfDefines  -DDARWIN
-#define StdDefines  -DSYSV -D_XOPEN_SOURCE -DByteSwapped -D__UNIXOS2__
+#define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -D__UNIXOS2__ -D_DARWIN_C_SOURCE
 #define ByteSwapped
 #define Cstatic 
 #define Cdynamic 
