@@ -1506,10 +1506,6 @@ NhlErrorTypes _addNclVarNodeToGrpNode(NclFileGrpNode *grpnode, NclQuark name,
                 grp_dim_node = &(dim_rec->dim_node[i]);
                 if(grp_dim_node->name == dimnames[n])
                 {
-                   /*
-                    *if(grp_dim_node->size != dimsizes[n])
-                    *   grp_dim_node->size = dimsizes[n];
-                    */
                      memcpy(var_dim_node, grp_dim_node, sizeof(NclFileDimNode));
                      break;
                 }
@@ -1524,23 +1520,24 @@ NhlErrorTypes _addNclVarNodeToGrpNode(NclFileGrpNode *grpnode, NclQuark name,
         var_node->chunk_dim_rec = _NclFileDimAlloc(n_dims);
         assert(var_node->chunk_dim_rec);
 
+        var_node->is_chunked = grpnode->is_chunked;
+
         dim_rec = grpnode->chunk_dim_rec;
         for(n = 0; n < n_dims; n++)
         {
-            var_dim_node = &(var_node->dim_rec->dim_node[n]);
+            var_dim_node = &(var_node->chunk_dim_rec->dim_node[n]);
             for(i = 0; i < dim_rec->n_dims; i++)
             {
                 grp_dim_node = &(dim_rec->dim_node[i]);
                 if(grp_dim_node->name == dimnames[n])
                 {
-                   /*
-                    *if(grp_dim_node->size != dimsizes[n])
-                    *   grp_dim_node->size = dimsizes[n];
-                    */
                      memcpy(var_dim_node, grp_dim_node, sizeof(NclFileDimNode));
 
                      var_dim_node->name = dimnames[n];
                      var_dim_node->size = grp_dim_node->size;
+                   /*
+                    *var_dim_node->size = dimsizes[n];
+                    */
                      break;
                 }
             }

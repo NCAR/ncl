@@ -3004,7 +3004,10 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
                                    chunkdimnode->size, chunkdimnode->id,
                                    varnode->dim_rec->dim_node[i].is_unlimited);
                 }
+	    }
 
+            if(varnode->is_chunked)
+            {
                 nc_ret = nc_def_var_chunking(id, varnode->id, storage, chunk_dims);
                 if(nc_ret != NC_NOERR)
                 {
