@@ -3107,7 +3107,7 @@ begin
 ;
 ; Initialization
 ;
-  dpi        = 72                       ; Dots per inch.
+  dpi        = 72.                       ; Dots per inch.
   dpi_pw     = paper_width  * dpi
   dpi_ph     = paper_height * dpi
   dpi_margin = paper_margin * dpi
