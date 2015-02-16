@@ -14,6 +14,12 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Important modifications:
+;       14 Feb 2015:
+;           Various cleanup for ESMF regridding:
+;              Created new "Src/DstGridMask" attribute to
+;              replace the misleading "Src/DstMask2D".
+;              The old one will still work.
+;
 ;       10 Feb 2015:
 ;           Added an (as yet unadvertised) "unstructured_to_SCRIP" function
 ;           that writes the grid description file to a SCRIP file instead
@@ -536,6 +542,27 @@ begin
 end     ; of totypeof(...)
 
 ;======================================================================
+; This function returns the grid mask name, if any, being provided
+; by the user.  This is to handle the old case of "Mask2D" being
+; used (pre NCL V6.3.0), and the new "GridMask" being used.
+;======================================================================
+undef("get_mask_name")
+function get_mask_name(opt)
+local valid_mask_names, i
+begin
+    if(.not.opt) then
+      return("")
+    end if
+    valid_mask_names = (/"GridMask","Mask2D"/)
+    do i=0,dimsizes(valid_mask_names)-1
+      if(isatt(opt,valid_mask_names(i))) then
+        return(valid_mask_names(i))
+      end if
+    end do
+    return("")
+end
+
+;======================================================================
 ; This procedure rotates the given lat/lon grid, given a rotation angle.
 ; It operates directly on the input lat/lon.
 ;======================================================================
@@ -924,7 +951,7 @@ undef("calc_SCRIP_corners_noboundaries")
 procedure calc_SCRIP_corners_noboundaries(lat2d[*][*],lon2d[*][*], \
                              grid_corner_lat,grid_corner_lon,opt)
 local latlon_dims, nlat, nlon, Extlon2d, Extlat2d, ExtGridCenter_lat, \
-      ExtGridCenter_lon, tmp, ii, jj, DEBUG
+      nm, found_mask, valid_mask_names, ExtGridCenter_lon, tmp, ii, jj, DEBUG
 begin
     DEBUG = isatt_logical_true(opt,"Debug")
     delta = get_att_value(opt,"GridCornerDelta",0.25)
@@ -1060,7 +1087,8 @@ end     ; of calc_SCRIP_corners_noboundaries(...)
 ; This procedure generates a SCRIP file for an unstructured grid.
 ; This is still being tested as of Feb 10, 2015.  For now, "grid_area"
 ; is not being written to the SCRIP file, and I'm not sure if this
-; is okay. Bob Oehmke said he thought it was optional.
+; is okay. Bob Oehmke said he thought it was optional unless you are
+; doing conservative regridding.
 ;======================================================================
 undef("unstructured_to_SCRIP")
 procedure unstructured_to_SCRIP(FName[1]:string,inLat,inLon,Opt[1]:logical)
@@ -1136,16 +1164,17 @@ begin
     end if
 
 ;---Was a mask provided?
-    if(Opt.and.isatt(Opt,"Mask2D")) then
-      mask_dims = dimsizes(Opt@Mask2D)  
+    grid_mask_name = get_mask_name(Opt)
+    if(grid_mask_name.ne."") then
+      mask_dims = dimsizes(Opt@$grid_mask_name$)
       mask_rank = dimsizes(mask_dims)
       if(mask_rank.ne.1.or.mask_dims.ne.grid_size) then
-        print("unstructured_to_SCRIP: Opt@Mask2D is not the correct dimensionality")
+        print("unstructured_to_SCRIP: Opt@" + grid_mask_name + \
+                  " is not the correct dimensionality")
         exit
       end if   
-      grid_mask = Opt@Mask2D
+      grid_mask = Opt@$grid_mask_name$
     else
-;---No masking
       grid_mask = new(grid_size, "integer","No_FillValue")
       grid_mask = 1
     end if
@@ -1246,7 +1275,7 @@ end     ; of unstructured_to_SCRIP(...)
 ;======================================================================
 undef("unstructured_to_ESMF")
 procedure unstructured_to_ESMF(FName[1]:string,inLat,inLon,Opt[1]:logical)
-local DEBUG, lat, lon, NodeMask, ElementVertices, title
+local DEBUG, lat, lon, NodeMask, ElementVertices, title, grid_mask_name
 begin
 ;---Check for options
     PrintTimings = isatt_logical_true(Opt,"PrintTimings")
@@ -1281,12 +1310,14 @@ begin
         exit
     end if
 ;---Was a mask provided?
-    if(Opt.and.isatt(Opt,"Mask2D")) then
-      if(.not.all(product(dimsizes(Opt@Mask2D)).eq.dimsizes(lat))) then
-        print("unstructured_to_ESMF: Opt@Mask2D is not the correct dimensionality")
+    grid_mask_name = get_mask_name(Opt)
+    if(grid_mask_name.ne."") then
+      if(.not.all(product(dimsizes(Opt@$grid_mask_name$)).eq.dimsizes(lat))) then
+        print("unstructured_to_ESMF: Opt@" + grid_mask_name + \ 
+              " is not the correct dimensionality")
         exit
       else
-        NodeMask = ndtooned(Opt@Mask2D)
+        NodeMask = ndtooned(Opt@$grid_mask_name$)
       end if
     else
 ;---No masking
@@ -1487,7 +1518,7 @@ procedure curvilinear_to_SCRIP(FName[1]:string,lat2d[*][*]:numeric,\
                                lon2d[*][*]:numeric,Opt[1]:logical)
 local latlon_dims, nlat, nlon, fid, FileAtt, grid_siz, grid_corners, \
 grid_rank, FDimNames, FDimSizes, FDimUnlim, DummyAtt1, DummyAtt2, \
-GridCornerLat, GridCornerLon, grid_corner_lat, grid_corner_lon, mask2d, \
+GridCornerLat, GridCornerLon, grid_corner_lat, grid_corner_lon, grid_mask, \
 lat_type, lon_type, DEBUG, nc_file_type
 begin
 ;---Check for options
@@ -1532,17 +1563,19 @@ begin
     end if
 
 ;---Was a mask provided?
-    if(Opt.and.isatt(Opt,"Mask2D")) then
-      if(.not.all(dimsizes(Opt@Mask2D).eq.latlon_dims)) then
-        print("curvilinear_to_SCRIP: Opt@Mask2D is not the correct dimensionality")
+    grid_mask_name = get_mask_name(Opt)
+    if(grid_mask_name.ne."") then
+      if(.not.all(dimsizes(Opt@$grid_mask_name$).eq.latlon_dims)) then
+        print("curvilinear_to_SCRIP: Opt@" + grid_mask_name + \
+              " is not the correct dimensionality")
         exit
       else
-        mask2d = Opt@Mask2D
+        grid_mask = Opt@$grid_mask_name$
       end if
     else
 ;---No masking
-      mask2d = new(latlon_dims, "integer","No_FillValue")
-      mask2d = 1
+      grid_mask = new(latlon_dims, "integer","No_FillValue")
+      grid_mask = 1
     end if
 
 ;---Create the file
@@ -1612,12 +1645,12 @@ begin
     fid->grid_center_lat = (/ndtooned(lat2d)/)
     fid->grid_center_lon = (/ndtooned(lon2d)/)
 	
-;---Store Cell Maskes
-    if (grid_size.ne.dimsizes(ndtooned(mask2d))) then
+;---Store Cell Masks
+    if (grid_size.ne.dimsizes(ndtooned(grid_mask))) then
         print("curvilinear_to_SCRIP: Mask array is not the appropriate size.")
         exit
     else
-        fid->grid_imask=(/ tointeger(ndtooned(mask2d)) /)
+        fid->grid_imask=(/ tointeger(ndtooned(grid_mask)) /)
     end if
 	
 ;---Get the grid lat/lon corners
@@ -1734,8 +1767,9 @@ begin
     grid_center_lon = conform_dims((/nlat, nlon/),lon,1)
 
 ;---Generate the mask
-    if(.not.isatt(Opt2,"Mask2D")) then
-      Opt2@Mask2D = onedtond(1,(/nlat,nlon/))
+    grid_mask_name = get_mask_name(Opt2)
+    if(grid_mask_name.eq."") then
+      Opt2@GridMask = onedtond(1,(/nlat,nlon/))
     end if
     
 ;---Convert to SCRIP
@@ -1968,9 +2002,9 @@ begin
     end if
     
 ;---Get mask
-    if (.not.isatt(Opt,"Mask2D")) then
-      Opt@Mask2D = new(dimsizes(grid_center_lat),"integer","No_FillValue")
-      Opt@Mask2D = 1
+    if(get_mask_name(Opt).eq."") then
+      Opt@GridMask = new(dimsizes(grid_center_lat),"integer","No_FillValue")
+      Opt@GridMask = 1
     end if
     Opt@Title = FTitle
 
@@ -2105,8 +2139,8 @@ begin
   grid_center_lat = conform_dims((/nlat, nlon/),lat,0)
   grid_center_lon = conform_dims((/nlat, nlon/),lon,1)
 	
-  if(.not.isatt(Opt,"Mask2D")) then
-    Opt@Mask2D = onedtond(1,(/nlat,nlon/))
+  if(get_mask_name(Opt).eq."") then
+    Opt@GridMask = onedtond(1,(/nlat,nlon/))
   end if
 
 ;---Rotate back the box, if needed.
@@ -3720,7 +3754,7 @@ begin
 ; set, like "opt@Overwrite", then ignore the specific
 ; attribute, like "opt@SrcOverwrite".
 ;
-  spc_atts = (/"Mask2D","TriangularMesh","LargeFile","ESMF",\
+  spc_atts = (/"GridMask","Mask2D","TriangularMesh","LargeFile","ESMF",\
                "NetCDFType","Title","LLCorner","URCorner", \
                "Rotation","GridCornerLat","GridCornerLon",\
                "InputFileName","Overwrite","ForceOverwrite"/)
@@ -3832,7 +3866,8 @@ end
 ;  SrcFileName / DstFileName
 ;  SrcGridType / SrcGridLat / SrcGridLon
 ;  DstGridType / DstGridLat / DstGridLon
-;  SrcMask2D / DstMask2D
+;  SrcGridMask / DstGridMask    (new names for mask as of NCL V6.3.0)
+;  SrcMask2D   / DstMask2D      (old names, use Src/DstGridMask)
 ;  SrcLargeFile / DstLargeFile
 ;  SrcNetCDFType / DstNetCDFType
 ;  WgtFileName
