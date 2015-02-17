@@ -2435,6 +2435,9 @@ NhlErrorTypes _NclIDelete
 							var->kind = NclStk_NOVAL;
 						}
 					}
+					else if (!sub_sel) {
+						_NclDestroyObj((NclObj)tmp);
+					}
 				}
 				else if (tmp->obj.obj_type == Ncl_MultiDValData) {
 					_NclDestroyObj((NclObj)tmp);
