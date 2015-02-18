@@ -453,6 +453,7 @@ lib/ncarg/colormaps/3saw.ncmap
 lib/ncarg/colormaps/3saw.rgb
 lib/ncarg/colormaps/BkBlAqGrYeOrReViWh200.gp
 lib/ncarg/colormaps/BkBlAqGrYeOrReViWh200.rgb
+lib/ncarg/colormaps/BlAqGrWh2YeOrReVi22.rgb
 lib/ncarg/colormaps/BlAqGrYeOrRe.gp
 lib/ncarg/colormaps/BlAqGrYeOrRe.rgb
 lib/ncarg/colormaps/BlAqGrYeOrReVi200.gp
@@ -783,6 +784,7 @@ lib/ncarg/data/cdf/ice5g_21k_1deg.nc
 lib/ncarg/data/cdf/landsea.nc
 lib/ncarg/data/cdf/meccatemp.cdf
 lib/ncarg/data/cdf/meteo_data.nc
+lib/ncarg/data/cdf/nc4uvt.nc
 lib/ncarg/data/cdf/ocean.nc
 lib/ncarg/data/cdf/panel2.nc
 lib/ncarg/data/cdf/pop.nc
@@ -1257,6 +1259,7 @@ lib/ncarg/grib2_codetables/ncep/4/4.2.1.0.table
 lib/ncarg/grib2_codetables/ncep/4/4.210.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.1.1.table
 lib/ncarg/grib2_codetables/ncep/4/4.211.table
+lib/ncarg/grib2_codetables/ncep/4/4.2.1.2.table
 lib/ncarg/grib2_codetables/ncep/4/4.212.table
 lib/ncarg/grib2_codetables/ncep/4/4.213.table
 lib/ncarg/grib2_codetables/ncep/4/4.215.table
@@ -1265,6 +1268,7 @@ lib/ncarg/grib2_codetables/ncep/4/4.217.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.2.0.table
 lib/ncarg/grib2_codetables/ncep/4/4.220.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.2.192.table
+lib/ncarg/grib2_codetables/ncep/4/4.2.2.1.table
 lib/ncarg/grib2_codetables/ncep/4/4.221.table
 lib/ncarg/grib2_codetables/ncep/4/4.222.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.2.3.table
