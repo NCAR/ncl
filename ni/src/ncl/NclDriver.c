@@ -109,6 +109,7 @@ int NclDriver(int argc, char **argv)
      *
      *  -n      element print: don't enumerate elements in print()
      *  -x      echo: turns on command echo
+     *  -Q      turn off echo of copyright and version information
      *  -V      version: output NCARG/NCL version, exit
      *  -m      turns on memory debug
      *  -o      old behavior: retain former behavior for backwards incompatible changes
@@ -169,13 +170,14 @@ int NclDriver(int argc, char **argv)
                 break;
 
             case 'h':
-                (void) fprintf(stdout, "Usage: ncl -fhnopxV <args> <file.ncl>\n");
+                (void) fprintf(stdout, "Usage: ncl -fhnopxQV <args> <file.ncl>\n");
 	        (void) fprintf(stdout, "\t -f: use new file structure and NetCDF4 features when possible\n");
                 (void) fprintf(stdout, "\t -h: print this message and exit\n");
                 (void) fprintf(stdout, "\t -n: don't enumerate values in print()\n");
                 (void) fprintf(stdout, "\t -o: retain former behavior for certain backwards-incompatible changes\n");
                 (void) fprintf(stdout, "\t -p: don't page output from the system() command\n");
                 (void) fprintf(stdout, "\t -x: echo NCL commands\n");
+                (void) fprintf(stdout, "\t -Q: turn off echo of NCL version and copyright info\n");
                 (void) fprintf(stdout, "\t -V: print NCL version and exit\n");
 #ifdef NCLDEBUG
                 (void) fprintf(stdout, "\t -m: turns on memory debug.\n");
