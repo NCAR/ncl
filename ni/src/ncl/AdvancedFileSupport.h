@@ -36,23 +36,21 @@
 
 #ifdef BuildHDF5
 #include <hdf5.h>
+
+#ifdef BuildHDFEOS5
+#include <HE5_HdfEosDef.h>
+#endif
 #endif
 
 /*
 #ifdef BuildHDF4
 #include <mfhdf.h>
-#endif
 
 #ifdef BuildHDFEOS
 #include <HdfEosDef.h>
 #endif
+#endif
 */
-
-#ifdef BuildHDF4
-#ifdef BuildHDFEOS5
-#include <HE5_HdfEosDef.h>
-#endif
-#endif
 
 #include "defs.h"
 #include "NclMultiDValData.h"

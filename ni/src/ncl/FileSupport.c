@@ -3744,15 +3744,15 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
                           , "gr"
 #ifdef BuildHDF5
                           , "h5"
-#endif
 #ifdef BuildHDFEOS5
 			   , "he5"
 #endif
+#endif
 #ifdef BuildHDF4
 			   , "hdf"
-#endif
 #ifdef BuildHDFEOS
 			   , "he2"
+#endif
 #endif
 			   };
 
@@ -3787,6 +3787,10 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 #ifdef BuildHDF4
 	else if((0 == strcmp(fext, "hdf")) || (0 == strcmp(fext, "h4")) || (0 == strcmp(fext, "hd")))
 		ori_file_ext_q = NrmStringToQuark("hdf");
+#ifdef BuildHDFEOS
+	else if((0 == strcmp(fext, "hdfeos")) || (0 == strcmp(fext, "he")) || (0 == strcmp(fext, "he4")))
+		ori_file_ext_q = NrmStringToQuark("he2");
+#endif
 #endif
 #ifdef BuildHDF5
 	else if(0 == strcmp(fext, "hdf5") || 0 == strcmp(fext, "h5"))
@@ -3796,11 +3800,6 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
                                              + NCLadvancedFileStructure[0];
 		ori_file_ext_q = NrmStringToQuark("h5");
 	}
-#endif
-#ifdef BuildHDFEOS
-	else if((0 == strcmp(fext, "hdfeos")) || (0 == strcmp(fext, "he")) || (0 == strcmp(fext, "he4")))
-		ori_file_ext_q = NrmStringToQuark("he2");
-#endif
 #ifdef BuildHDFEOS5
 	else if(0 == strcmp(fext, "hdfeos5") || (0 == strcmp(fext, "he5")))
 	{
@@ -3809,6 +3808,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 					     + NCLadvancedFileStructure[_NclNewHE5]
 					     + NCLadvancedFileStructure[0];
 	}
+#endif
 #endif
 
 	strcpy(filename, NrmQuarkToString(the_path));
