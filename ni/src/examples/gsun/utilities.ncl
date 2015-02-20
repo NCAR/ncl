@@ -530,7 +530,7 @@ begin
 ;---Check for valid colors
   color_type = get_color_type(colors)
 
-  if(color_type.eq."unknown")
+  if(ismissing(color_type).or.color_type.eq."unknown")
     print("Error: draw_color_palette: invalid color specification.")
     return
   end if
