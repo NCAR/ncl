@@ -14,6 +14,12 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Important modifications:
+;       20 Feb 2015:
+;         Created new "Src/DstGridArea" attribute to
+;          allow user to enter the "grid_area" quantity 
+;          required for SCRIP and "conserve" interpolation.
+;          I haven't tested this yet!
+;
 ;       14 Feb 2015:
 ;           Various cleanup for ESMF regridding:
 ;              Created new "Src/DstGridMask" attribute to
@@ -1085,10 +1091,7 @@ end     ; of calc_SCRIP_corners_noboundaries(...)
 
 ;======================================================================
 ; This procedure generates a SCRIP file for an unstructured grid.
-; This is still being tested as of Feb 10, 2015.  For now, "grid_area"
-; is not being written to the SCRIP file, and I'm not sure if this
-; is okay. Bob Oehmke said he thought it was optional unless you are
-; doing conservative regridding.
+; This is still being tested as of Feb 17, 2015.
 ;======================================================================
 undef("unstructured_to_SCRIP")
 procedure unstructured_to_SCRIP(FName[1]:string,inLat,inLon,Opt[1]:logical)
@@ -1179,6 +1182,18 @@ begin
       grid_mask = 1
     end if
     
+;---Was a grid area provided? (Required for conserve regridding)
+    if(Opt.and.isatt(Opt,"GridArea")) then
+      grid_area = todouble(Opt@GridArea)
+      if (dimsizes(dimsizes(grid_area).ne.1.and.grid_size.ne.dimsizes(grid_area)))
+        print("unstructured_to_SCRIP: Area array is not the appropriate size.")
+        exit
+      end if
+      grid_area_provided = True
+    else
+      grid_area_provided = False
+    end if
+
     if(Opt.and.isatt(Opt,"InputFileName")) then
       inputFName = Opt@InputFileName
     else
@@ -1219,6 +1234,10 @@ begin
     filevardef(fid,"grid_corner_lon","double",(/ "grid_size", "grid_corners" /) )
     filevardef(fid,"grid_imask","integer","grid_size")
     
+    if(grid_area_provided) then
+      filevardef(fid,"grid_area","double","grid_size")
+    end if
+    
 ;---Define the variables unit attribute
     DummyAtt1       = 0
     DummyAtt2       = 0
@@ -1240,6 +1259,20 @@ begin
     filevarattdef(fid,"grid_imask",DummyAtt2)
     filevarattdef(fid,"grid_corner_lat",DummyAtt1)
     filevarattdef(fid,"grid_corner_lon",DummyAtt1)
+
+    if(grid_area_provided) then
+      DummyAtt3 = 0
+      if(nc_file_type.eq."netcdf3") then
+        DummyAtt3@units     = "radians^2"
+        DummyAtt3@long_name = "area weights"
+      else
+        DummyAtt3@units     = tochar("radians^2")
+        DummyAtt3@long_name = tochar("area weights")
+      end if
+      filevarattdef(fid,"grid_area",DummyAtt3)
+      delete(DummyAtt3)
+    end if
+
     delete(DummyAtt1)
     delete(DummyAtt2)
     
@@ -1259,6 +1292,11 @@ begin
 
 ;---Store grid mask
     fid->grid_imask = (/grid_mask/)
+
+;---Store grid area
+    if(grid_area_provided) then
+      fid->grid_area = (/grid_area/)
+    end if
 
 ;---Store grid mask
     fid->grid_imask = (/grid_mask/)
@@ -1608,7 +1646,7 @@ begin
     filevardef(fid,"grid_imask","integer","grid_size")
     filevardef(fid,"grid_corner_lat","double",(/ "grid_size", "grid_corners" /) )
     filevardef(fid,"grid_corner_lon","double",(/ "grid_size", "grid_corners" /) )
-    
+
 ;---Define the variables unit attribute
     DummyAtt1       = 0
     DummyAtt2       = 0
@@ -3754,9 +3792,9 @@ begin
 ; set, like "opt@Overwrite", then ignore the specific
 ; attribute, like "opt@SrcOverwrite".
 ;
-  spc_atts = (/"GridMask","Mask2D","TriangularMesh","LargeFile","ESMF",\
-               "NetCDFType","Title","LLCorner","URCorner", \
-               "Rotation","GridCornerLat","GridCornerLon",\
+  spc_atts = (/"GridMask","Mask2D","GridArea","TriangularMesh",\
+               "LargeFile","ESMF","NetCDFType","Title","LLCorner",\
+               "URCorner","Rotation","GridCornerLat","GridCornerLon",\
                "InputFileName","Overwrite","ForceOverwrite"/)
   do i=0,dimsizes(spc_atts)-1
     tmp_att = grid_string + spc_atts(i)
@@ -3867,6 +3905,7 @@ end
 ;  SrcGridType / SrcGridLat / SrcGridLon
 ;  DstGridType / DstGridLat / DstGridLon
 ;  SrcGridMask / DstGridMask    (new names for mask as of NCL V6.3.0)
+;  SrcGridArea / DstGridArea
 ;  SrcMask2D   / DstMask2D      (old names, use Src/DstGridMask)
 ;  SrcLargeFile / DstLargeFile
 ;  SrcNetCDFType / DstNetCDFType
