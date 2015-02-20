@@ -3280,7 +3280,7 @@ float 		min_nonzero;
 			if((_NhlCmpFAny2(tmploc,min,7,min_nonzero/*min_compare*/)>=0.0)
 				&&(_NhlCmpFAny2(tmploc,max,7,min_nonzero/*max_compare*/) <= 0.0)) {
 				array[j] = tmploc;
-				larray[j] = ConvertToString(tmploc,cnvt_precision,compare_precision,NhlLINEAR,cutoff,left_sig_digit,format,func_code);
+				larray[j] = ConvertToString(array[j],cnvt_precision,compare_precision,NhlLINEAR,cutoff,left_sig_digit,format,func_code);
 				j++;
 				if(j == MAXTICKS) {
 					NhlPError(NhlWARNING,NhlEUNKNOWN,"AutoComputeMajorTickMarks: Maximum tickmarks (%d) has been reached, tickmarks may appear in complete",MAXTICKS);
@@ -3678,7 +3678,7 @@ float 		min_nonzero;
 					larray[k] = labels[i];
 				k++;
 				if(k == MAXTICKS) {
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"ManualComputeMajorTickMarks: Maximum tickmarks (%d) has been reached, tickmarks may appear in complete",MAXTICKS);
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"ExplicitComputeMajorTickMarks: Maximum tickmarks (%d) has been reached, tickmarks may appear in complete",MAXTICKS);
 					ret = NhlWARNING;
 					break;	
 				}
@@ -3991,7 +3991,6 @@ char		func_code;
 	char *tmpc;
 	NhlFormatRec *frec;
 	char *buf;
-	int *lsigp, *switchlenp;
 
 	if ((frec = _NhlScanFString(format->fstring,"TickMark")) == NULL) {
 		char * e_text = "%s: internal error getting format";
@@ -4013,14 +4012,12 @@ char		func_code;
 		return(tmpc);
 	case NhlLINEAR:
 	case NhlIRREGULAR:
-		lsigp = frec->left_sig_digit_flag == NhlffDYNAMIC ?
-			&left_sig_digit : NULL;
-		switchlenp = frec->exp_switch_flag != NhlffEXPLICIT ?
-			&cutoff : NULL;
 		if (frec->sig_digits_flag == NhlffUNSPECED)
 			frec->sig_digits_flag = NhlffDYNAMIC;
 		if (frec->exp_switch_flag == NhlffUNSPECED)
 			frec->exp_switch_flag = NhlffDYNAMIC;
+		if (frec->left_sig_digit_flag == NhlffUNSPECED)
+			frec->left_sig_digit_flag = NhlffDYNAMIC;
 		buf = _NhlFormatFloat(frec,value,NULL,&convert_precision,
 				      &left_sig_digit,
 				      NULL,&cutoff,NULL,func_code,"TickMark");
