@@ -517,13 +517,18 @@ end
 ;***********************************************************************;
 undef("draw_color_palette")
 procedure draw_color_palette(wks,colors,opt)
-local label_boxes, color_type, rgba_colors, ncolors, nrows, ncols,\
-width,height
+local label_boxes, call_frame, labels_on, label_strings, across, \
+color_type, rgba_colors, ncolors, nrows, ncols,width,height
 begin
 ;---Retrieve values for attributes
   call_frame    = get_res_value_keep(opt,"Frame",True)
   labels_on     = get_res_value_keep(opt,"LabelsOn",True)
-  label_strings = get_res_value_keep(opt,"LabelStrings","")
+  if(opt.and.isatt(opt,"LabelStrings")) then
+    set_label_strings = True
+    label_strings     = opt@LabelStrings
+  else
+    set_label_strings = False
+  end if
   font_height   = get_res_value_keep(opt,"LabelFontHeight",0.015)
   across        = get_res_value_keep(opt,"Across",True)
 
@@ -564,11 +569,10 @@ begin
 
 ;---If drawing labels, test that we have valid number of labels
   if(labels_on) then
-    if(dimsizes(dimsizes(label_strings)).eq.1.and.\
-       typeof(label_strings).eq."string".and.label_strings.eq."") then
-      label_strings := "" + ispan(0,ncolors-1,1)    
+    if(.not.set_label_strings) then
+      label_strings = "" + ispan(0,ncolors-1,1)    
     else
-      if(dimsizes(labels).ne.ncolors) then
+      if(dimsizes(label_strings).ne.ncolors) then
         print("Error: draw_color_palette: invalid number of labels for boxes")
         return
       end if
