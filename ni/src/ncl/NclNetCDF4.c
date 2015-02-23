@@ -2298,8 +2298,10 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
 
     NclFileVarRecord  *varrec;
     NclFileDimRecord  *dimrec;
+    NclFileAttRecord  *attrec;
 
     NclFileVarNode    *varnode;
+    NclFileAttNode    *attnode;
 
     int    storage_in = -1;
     size_t chunksizes[MAX_VAR_DIMS];
@@ -2446,7 +2448,62 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
 
         varnode->att_rec = _NC4_get_atts(gid, i, n_atts);
 
+        attrec = varnode->att_rec;
+
+      /*
+       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tn_atts %d\n", n_atts);
+       */
         
+        for(j = 0; j < n_atts; j++)
+        {
+            attnode = &attrec->att_node[j];
+
+          /*
+           *fprintf(stderr, "\tAtt No. %d, name: <%s>, type: %s, var-type: %s\n",
+           *                j, NrmQuarkToString(attnode->name),
+           *                _NclBasicDataTypeToName(attnode->type),
+           *                _NclBasicDataTypeToName(varnode->type));
+           */
+            if((Qfill_val == attnode->name) && (attnode->type != varnode->type))
+            {
+                NclFileAttNode *newattnode;
+                NclQuark Qori_fill_val = NrmStringToQuark("Ori_FillValue");
+
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+                    "_FillValue attribute type (%s) differs from variable (%s) type.\n\t%s\n",
+                     _NclBasicDataTypeToName(attnode->type), _NclBasicDataTypeToName(varnode->type),
+                    "forcing type conversion; it may result in overflow and/or loss of precision"));
+
+                _addNclAttNode(&varnode->att_rec, Qori_fill_val, attnode->type, attnode->n_elem, attnode->value);
+                newattnode = &attrec->att_node[n_atts];
+
+		NclFree(attnode->value);
+		varnode->att_rec->att_node[j].type = varnode->type;
+		varnode->att_rec->att_node[j].value = (void*)NclMalloc(attnode->n_elem * _NclSizeOf(varnode->type));
+
+                _NclScalarForcedCoerce(newattnode->value, newattnode->type,
+                                       varnode->att_rec->att_node[j].value,
+                                       varnode->att_rec->att_node[j].type);
+
+	      /*
+               *fprintf(stderr, "\tattnode->name: %s, type: %s\n",
+	       *		 NrmQuarkToString(attnode->name), _NclBasicDataTypeToName(attnode->type));
+               *fprintf(stderr, "\tattnode->value: %f, orig-value: %s\n",
+	       *		 *(float*)attnode->value, NrmQuarkToString(*(NrmQuark*)newattnode->value));
+	       */
+
+		break;
+            }
+
+          /*
+           *fprintf(stderr, "\tAtt No. %d, name: <%s>, type: %s, var-type: %s\n",
+           *                j, NrmQuarkToString(attnode->name),
+           *                _NclBasicDataTypeToName(attnode->type),
+           *                _NclBasicDataTypeToName(varnode->type));
+           */
+        }
+
       /* How to check variable chunking:
        * int nc_inq_var_chunking(int ncid, int varid, int *storagep, size_t *chunksizesp);
        * ncid
