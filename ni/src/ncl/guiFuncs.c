@@ -596,6 +596,9 @@ double* _readDoubleFromMD(NclMultiDValData tmp_md, size_t nelm)
     short *sp = NULL;
     int *ip = NULL;
 
+    if(nelm < 1)
+	return NULL;
+
     value = (double*)NclCalloc(nelm, sizeof(double));
     assert(value);
 
@@ -726,7 +729,7 @@ double** guiGetListArray(NclVar _nclvar, int** itemsizes)
 {
     int i = 0;
     size_t n = 0;
-    double** value = NULL;
+    double** dblval = NULL;
     int *ip = NULL;
     size_t nelm = 1;
     NclMultiDValData tmp_md;
@@ -734,6 +737,7 @@ double** guiGetListArray(NclVar _nclvar, int** itemsizes)
     int _vardimsizes[NCL_MAX_DIMENSIONS];
     int* length;
     NclList thelist = NULL;
+    NclList newlist = NULL;
     NclListObjList *tmp_list = NULL;
     NclObj tmp, tmp_obj;
 
@@ -750,8 +754,8 @@ double** guiGetListArray(NclVar _nclvar, int** itemsizes)
              nelm = thelist->list.nelem;
              ip = (int *) NclCalloc(nelm, sizeof(int));
              assert(ip);
-             value = (double **) NclCalloc(nelm, sizeof(double *));
-             assert(value);
+             dblval = (double **) NclCalloc(nelm, sizeof(double *));
+             assert(dblval);
 
            /*
             *fprintf(stderr, "\nfile %s, line: %d\n", __FILE__, __LINE__);
@@ -765,20 +769,38 @@ double** guiGetListArray(NclVar _nclvar, int** itemsizes)
                      continue;
 
                  tmp_md = (NclMultiDValData) _NclGetObj(tmp_obj->obj.id);
-                 ip[n] = tmp_md->multidval.dim_sizes[1];
-               /*
-                *fprintf(stderr, "\tip[%ld] = %d\n", n, ip[n]);
-                */
-                 value[n] = _readDoubleFromMD(tmp_md, 2*ip[n]);
-             }
+		 if(NCL_list == tmp_md->multidval.data_type)
+                 {
+                     newlist = (NclList) _NclGetObj(*(int*)tmp_md->multidval.val);
+                     tmp_obj = _popListObj(newlist);
+                     if(NULL == tmp_obj)
+                         continue;
 
+                     tmp_md = (NclMultiDValData) _NclGetObj(tmp_obj->obj.id);
+
+                     ip[n] = tmp_md->multidval.dim_sizes[1];
+                     dblval[n] = _readDoubleFromMD(tmp_md, 2*ip[n]);
+                   /*
+                    *fprintf(stderr, "\tip[%ld] = %d\n", n, ip[n]);
+                    *fprintf(stderr, "\tdblval[%ld][0] = %f\n", n, dblval[n][0]);
+                    */
+                 }
+		 else
+                 {
+                     ip[n] = tmp_md->multidval.dim_sizes[1];
+                   /*
+                    *fprintf(stderr, "\tip[%ld] = %d\n", n, ip[n]);
+                    */
+                     dblval[n] = _readDoubleFromMD(tmp_md, 2*ip[n]);
+                 }
+             }
              *itemsizes = ip;
-             return value;
+             return dblval;
         default:
-             *itemsizes = ip;
              break;
     }
 
+    *itemsizes = ip;
     return NULL;
 }
 
