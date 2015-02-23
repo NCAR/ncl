@@ -3625,8 +3625,27 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 
 	int i;
 
-        char *ext_list[] = {".nc", ".cdf", ".nc3", ".nc4", ".netcdf", ".hdf", ".h4", ".hdf4", ".h5", ".hdf5", ".grib1", ".grib2",
-			    ".he", ".he2", ".he4", ".hdfeos", ".he5", ".hdfeos5", ".shp", ".grb", ".grb1", ".grb2", ".gr" };
+        char *ext_list[] = {".nc", ".cdf", ".nc3", ".nc4",
+#ifdef BuildHDF4
+		            ".hdf", ".h4", ".hdf4",
+#ifdef BuildHDFEOS
+			    ".he", ".he2", ".he4", ".hdfeos",
+#endif
+#endif
+#ifdef BuildHDF5
+			    ".h5", ".hdf5",
+#ifdef BuildHDFEOS5
+			    ".he5", ".hdfeos5",
+#endif
+#endif
+#ifdef BuildGDAL
+			    ".shp",
+#endif
+#ifdef BuildGRIB2
+			    ".grib2", ".grb2",
+#endif
+			    ".grib1", ".grb1", ".grb", ".gr",
+	                    ".netcdf"};
 
 	int n = -1;
 	int sizeofextlist = sizeof(ext_list) / sizeof(ext_list[0]);
