@@ -4104,7 +4104,11 @@ NclFile _NclFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 	file_out->file.format_funcs = _NclGetFormatFuncs(file_ext_q);
 	if (! file_out->file.format_funcs) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"An internal error has occurred. The file format requested does not appear to be supported, could not open (%s)",NrmQuarkToString(path));
+#if 1
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"The file format requested does not appear to be supported, could not open (%s)",NrmQuarkToString(path));
+#else
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"The file format requested does not appear to be supported, could not open (%s)",NrmQuarkToString(path));
+#endif
 		if(file_out_free) 
 			NclFree((void*)file_out);
 		return(NULL);
