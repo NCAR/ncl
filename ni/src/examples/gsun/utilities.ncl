@@ -522,10 +522,10 @@ width,height
 begin
 ;---Retrieve values for attributes
   call_frame    = get_res_value_keep(opt,"Frame",True)
-  label_boxes   = get_res_value_keep(opt,"LabelBoxesOn",True)
-  label_strings = get_res_value_keep(opt,"Labels","")
-  font_height   = get_res_value_keep(opt,"FontHeight",0.015)
-  vertical      = get_res_value_keep(opt,"Vertical",False)
+  labels_on     = get_res_value_keep(opt,"LabelsOn",True)
+  label_strings = get_res_value_keep(opt,"LabelStrings","")
+  font_height   = get_res_value_keep(opt,"LabelFontHeight",0.015)
+  across        = get_res_value_keep(opt,"Across",True)
 
 ;---Check for valid colors
   color_type = get_color_type(colors)
@@ -563,7 +563,7 @@ begin
   ntotal = nrows * ncols        ; # of colors per page.
 
 ;---If drawing labels, test that we have valid number of labels
-  if(label_boxes) then
+  if(labels_on) then
     if(dimsizes(dimsizes(label_strings)).eq.1.and.\
        typeof(label_strings).eq."string".and.label_strings.eq."") then
       label_strings := "" + ispan(0,ncolors-1,1)    
@@ -579,20 +579,20 @@ begin
   height = 1./nrows
 
   if(ncols.gt.1) then
-    if(vertical) then
-      xpos = ndtooned(conform_dims((/ncols,nrows/),fspan(0,1-width,ncols),0))
-    else
+    if(across) then
       xpos = ndtooned(conform_dims((/nrows,ncols/),fspan(0,1-width,ncols),1))
+    else
+      xpos = ndtooned(conform_dims((/ncols,nrows/),fspan(0,1-width,ncols),0))
     end if
   else
     xpos = new(ntotal,float)
     xpos = 0.
   end if
   if(nrows.gt.1) then
-    if(vertical) then
-      ypos = ndtooned(conform_dims((/ncols,nrows/),fspan(1-height,0,nrows),1))
-    else
+    if(across) then
       ypos = ndtooned(conform_dims((/nrows,ncols/),fspan(1-height,0,nrows),0))
+    else
+      ypos = ndtooned(conform_dims((/ncols,nrows/),fspan(1-height,0,nrows),1))
     end if
   else
     ypos = new(ntotal,float)
@@ -606,7 +606,7 @@ begin
   gnres = True   ; variables to hold list of resources
   lnres = True
 
-  if(label_boxes) then
+  if(labels_on) then
     font_space                  = font_height/2.
     txres                       = True
     txres@txFontHeightF         = font_height
@@ -630,7 +630,7 @@ begin
     gsn_polyline_ndc(wks,xbox+xpos(i),ybox+ypos(i),lnres)
 
 ;---Draw color label.
-    if(label_boxes) then
+    if(labels_on) then
       gsn_text_ndc(wks,label_strings(i),font_space+xpos(i),ypos(i)+font_space,txres)
     end if
   end do
