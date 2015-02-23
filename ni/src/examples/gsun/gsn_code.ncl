@@ -1147,10 +1147,16 @@ begin
 
 ;---Get # of colors in color table.
   ncolt  = get_res_value_keep(opt2,"NumColorsInTable",256)
-  if(ncolt.le.0.or.ncolt.gt.256) then
-    print("Error:span_named_colors: Invalid number of colors requested.")
-    print("Defaulting to 256.")
-    ncolt = 256
+  if(ncolt.le.0) then
+    print("Error:span_named_colors: # of colors must be > 0")
+    return(new((/1,3/),float))
+  end if
+
+;---Background/foreground colors desired?
+  skip_bf = get_res_value_keep(opt2,"SkipBackgroundForeground",False)
+  if(ncolt.le.0) then
+    print("Error:span_named_colors: # of colors must be > 0")
+    return(new((/1,3/),float))
   end if
 
 ;---Check # of named colors.
@@ -1236,7 +1242,12 @@ begin
       nend = nbeg + ncols_per_rng(i+1) -1
     end if
   end do
-  return(rgb_array)
+  
+  if(skip_bf) then
+    return(rgb_array(2:,:))
+  else
+    return(rgb_array)
+  end if
 end
 
 ;***********************************************************************;
