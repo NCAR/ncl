@@ -1918,12 +1918,10 @@ NclBasicDataTypes totype;
 			return(0);
 		}
 	case NCL_string:
-		switch(totype) {
-		case NCL_string:
-			*(NclQuark*)to = *(NclQuark*)from;
-			return(1);
-		default:
-			return(0);
+		{
+			char *the_str = NrmQuarkToString(*(NrmQuark*)from);
+           
+			return _NclScalarForcedCoerce((void*)the_str, NCL_char, to, totype);
 		}
 	case NCL_logical:
 	default:
