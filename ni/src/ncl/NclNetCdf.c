@@ -810,8 +810,6 @@ int wr_status;
 						if ((*stepalptr)->att_inq->name == Qmissing_val) {
 							missing_val_recp = (*stepalptr)->att_inq;
 						}
-						if ((*stepalptr)->att_inq->name == Qfill_val)
-							has_fill = 1;
 						(*stepalptr)->att_inq->varid = i;
 						ncattinq(cdfid,i,buffer,
 							&((*stepalptr)->att_inq->data_type),
@@ -820,6 +818,24 @@ int wr_status;
 						fprintf(stderr,"ncattinq(%d,%d,buffer,&data_type,&size);\n",cdfid,i);
 #endif                
 						NetGetAttrVal(cdfid,(*stepalptr)->att_inq);
+						if ((*stepalptr)->att_inq->name == Qfill_val)
+						{
+							void *fv = NclMalloc(nctypelen((*stepvlptr)->var_inq->data_type));
+#if NETCDF_DEBUG
+							NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+								"NetOpenFile: _FillValue attribute (%s) type differs from variable (%s), forcing type conversion; may result in overflow and/or loss of precision",
+								buffer, NrmQuarkToString((*stepvlptr)->var_inq->name)));
+#endif                
+							_NclScalarForcedCoerce((*stepalptr)->att_inq->value,
+									       NetMapToNcl(&((*stepalptr)->att_inq->data_type)),
+									       fv, NetMapToNcl(&((*stepvlptr)->var_inq->data_type)));
+
+							NclFree((*stepalptr)->att_inq->value);
+							(*stepalptr)->att_inq->len = 1;
+							(*stepalptr)->att_inq->value = fv;
+							(*stepalptr)->att_inq->data_type = (*stepvlptr)->var_inq->data_type;
+							has_fill = 1;
+						}
 						stepalptr = &((*stepalptr)->next);
 					}
 					
