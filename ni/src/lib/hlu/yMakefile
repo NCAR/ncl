@@ -42,7 +42,13 @@ TRIANGLE_OBJ = triangle.o
 #define TRIANGLE_OBJ
 #endif 
 
-EXTRA_CDEFINES	=	$(OS_DEF) $(TRIANGLE_DEF) $(PNG_DEF)
+#ifdef BuildQtEnabled
+Qt_DEFINES      = -DBuildQtEnabled
+#else
+#define Qt_DEFINES
+#endif
+
+EXTRA_CDEFINES	=	$(OS_DEF) $(TRIANGLE_DEF) $(PNG_DEF) $(Qt_DEFINES)
 
 HDRS1   	= Base.h BaseI.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		CoordApprox.h Error.h ErrorI.h ErrorP.h IrregularTransObj.h \
