@@ -39,19 +39,7 @@
 #include   <dlfcn.h>
 #endif /*HPUX */
 
-extern short   NCLverbose;
-extern short   NCLecho;
-extern short   NCLoverrideEcho;
-extern short   NCLnoCopyright;
-extern short   NCLnoPrintElem;
-extern short   NCLnoSysPager;
-extern short   NCLoldBehavior;
-extern short   NCLuseAFS;
-extern short   NCLdebug_on;
-
-#ifdef NCLDEBUG
-extern NclMemoryRecord ncl_memory_record;
-#endif
+#include "NclGlobalParams.h"
 
 extern char *nclf;
 

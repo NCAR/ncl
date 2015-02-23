@@ -59,6 +59,7 @@
 #include "NclMultiDValData.h"
 #include "NclFile.h"
 #include "NclList.h"
+#include "NclGlobalParams.h"
 #include "NclAdvancedFile.h"
 #include "NclGroup.h"
 #include "NclAdvancedGroup.h"
@@ -3470,6 +3471,8 @@ struct _NclMultiDValDataRec *value;
 	NclFileClass fc = NULL;
 
 #ifdef USE_NETCDF4_FEATURES
+	NCLadvancedFileStructure[0] = NCLuseAFS;
+
 	if(NCLadvancedFileStructure[0] ||
 	   NCLadvancedFileStructure[_NclNewHDF5] ||
 	   NCLadvancedFileStructure[_NclNewHE5] ||
@@ -4091,6 +4094,8 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
         struct stat file_stat;
 	short use_advanced_file_structure = 0;
 
+	NCLadvancedFileStructure[0] = NCLuseAFS;
+
 	file_ext_q = _NclFindFileExt(path, &fname_q, &is_http, &end_of_name, &len_path, rw_status, &use_advanced_file_structure);
 
 	if(! is_http)
@@ -4257,6 +4262,8 @@ NclAdvancedFile _NclCreateAdvancedFile(NclObj inst, NclObjClass theclass, NclObj
 	int len_path;
 
 	short use_advanced_file_structure = 0;
+
+	NCLadvancedFileStructure[0] = NCLuseAFS;
 
 	file_ext_q = _NclFindFileExt(path, &fname_q, &is_http, &end_of_name, &len_path, rw_status, &use_advanced_file_structure);
 
