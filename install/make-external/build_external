@@ -986,7 +986,7 @@ if [ $INSTALL_GDAL ] ; then
     fi
     echo "Building $GDAL_DIR..."
 # Dave said you might also need --with-avx=no
-    ./configure --with-static-proj4\=$PREFIX --prefix\=$PREFIX --without-pam --with-png\=$PREFIX --with-gif=internal --with-libtiff=internal --with-geotiff=internal --with-jpeg\=$PREFIX --with-libz\=$PREFIX --with-sqlite3=no --with-expat=no --with-curl=no --without-ld-shared --with-hdf4=no --with-hdf5=no --with-pg=no --without-grib --disable-shared --with-freexl=no --with-geos=no --with-openjpeg=no --with-mysql=no --with-ecw=no --with-fgdb=no --with-odbc=no --with-xml2=no --with-ogdi=no
+    ./configure --with-static-proj4\=$PREFIX --prefix\=$PREFIX --without-pam --with-png\=$PREFIX --with-gif=internal --with-libtiff=internal --with-geotiff=internal --with-jpeg\=$PREFIX --with-libz\=$PREFIX --with-sqlite3=no --with-expat=no --with-curl=no --without-ld-shared --with-hdf4=no --with-hdf5=no --with-pg=no --without-grib --disable-shared --with-freexl=no --with-geos=no --with-openjpeg=no --with-mysql=no --with-ecw=no --with-fgdb=no --with-odbc=no --with-xml2=no --with-ogdi=no --with-pcraster=no
     make all install
     make install
     if [ $? ] ; then
