@@ -30,7 +30,8 @@ set un=`uname -n`
 set um=`uname -m`
 set os=`uname -s`
 set TAR_FILES       # Whether to tar up files
-set SCP_FILES       # Whether to scp files to another machine.. NOTE: you can't scp files to yellowstone unattended. Grrr.
+set SCP_FILES       # Whether to scp files to another machine. 
+                    # NOTE: you can't scp files to yellowstone unattended. Grrr.
 
 #set ASK            # Whether to ask to continue at various locations
 set RUN_X11_TESTS   # Whether to run the X11 tests or PDF tests.
@@ -64,48 +65,48 @@ else
   set wtype="pdf"
 endif
 
-if ("$un" == "harmon.cgd.ucar.edu") then
+if ("$un" == "logan.cgd.ucar.edu") then
   setenv NCARGTEST /project/yampa02/haley/ncargtest
-  setenv NCARG_EXTERNAL /contrib/ncl-6.2.1/external
-  setenv NCARG_ROOT /contrib/ncl-6.2.1
-  setenv NCARG /contrib/ncl-6.2.1/src/ncarg
-  set dap_string   = "Linux_SL6.5_x86_64_gcc447"
-  set nodap_string = "Linux_SL6.5_x86_64_nodap_gcc447"
+  setenv NCARG_EXTERNAL /contrib/ncl-6.3.0/external
+  setenv NCARG_ROOT /contrib/ncl-6.3.0
+  setenv NCARG /contrib/ncl-6.3.0/src/ncarg
+  set dap_string   = "Linux_CentOS7.0_x86_64_gcc447"
+  set nodap_string = "Linux_CentOS7.0_x86_64_nodap_gcc447"
 else if ("$un" == "k5") then
   setenv NCARGTEST /d2/haley/ncargtest
   setenv NCARG_EXTERNAL /d2/haley/external
-  setenv NCARG_ROOT /d2/haley/ncl-6.2.1
+  setenv NCARG_ROOT /d2/haley/ncl-6.3.0
   setenv NCARG /d2/haley/src/ncarg
-  set dap_string   = "Linux_RHEL5.10_i686_gcc412"
-  set nodap_string = "Linux_RHEL5.10_i686_nodap_gcc412"
+  set dap_string   = "Linux_RHEL5.11_i686_gcc412"
+  set nodap_string = "Linux_RHEL5.11_i686_nodap_gcc412"
 else if ("$un" == "k6") then
   setenv NCARGTEST /d2/haley/ncargtest
   setenv NCARG_EXTERNAL /d2/haley/external
-  setenv NCARG_ROOT /d2/haley/ncl-6.2.1
+  setenv NCARG_ROOT /d2/haley/ncl-6.3.0
   setenv NCARG /d2/haley/src/ncarg
   set dap_string   = "Linux_Debian6.0_i686_gcc445"
   set nodap_string = "Linux_Debian6.0_i686_nodap_gcc445"
 else if ("$un" == "k7") then
   setenv NCARGTEST /d2/haley/ncargtest
   setenv NCARG_EXTERNAL /d2/haley/external
-  setenv NCARG_ROOT /d2/haley/ncl-6.2.1
+  setenv NCARG_ROOT /d2/haley/ncl-6.3.0
   setenv NCARG /d2/haley/src/ncarg
   set dap_string   = "Linux_Debian6.0_x86_64_gcc445"
   set nodap_string = "Linux_Debian6.0_x86_64_nodap_gcc445"
 else if ("$un" == "k8") then
   setenv NCARGTEST /d2/haley/ncargtest
   setenv NCARG_EXTERNAL /d2/haley/external
-  setenv NCARG_ROOT /d2/haley/ncl-6.2.1
+  setenv NCARG_ROOT /d2/haley/ncl-6.3.0
   setenv NCARG /d2/haley/src/ncarg
-  set dap_string   = "Linux_RHEL5.10_x86_64_gcc412"
-  set nodap_string = "Linux_RHEL5.10_x86_64_nodap_gcc412"
+  set dap_string   = "Linux_RHEL5.11_x86_64_gcc412"
+  set nodap_string = "Linux_RHEL5.11_x86_64_nodap_gcc412"
 else if ("$un" == "k9") then
   setenv NCARGTEST /d2/haley/ncargtest
   setenv NCARG_EXTERNAL /d2/haley/external
-  setenv NCARG_ROOT /d2/haley/ncl-6.2.1
+  setenv NCARG_ROOT /d2/haley/ncl-6.3.0
   setenv NCARG /d2/haley/src/ncarg
-  set dap_string   = "Linux_Debian7.6_x86_64_gcc472"
-  set nodap_string = "Linux_Debian7.6_x86_64_nodap_gcc472"
+  set dap_string   = "Linux_Debian7.8_x86_64_gcc472"
+  set nodap_string = "Linux_Debian7.8_x86_64_nodap_gcc472"
   set gccv = `gcc --version`
 else if ("$un" == "yellowstone_gnu447") then
   setenv NCARGTEST /glade/u/ncldev/test/ncargtest
@@ -141,7 +142,7 @@ else if ("$un" == "yellowstone_intel1215") then
   setenv NCARG /glade/p/work/haley/src/ncl-trunk-intel
   setenv NCARGTEST /glade/u/ncldev/test/ncargtest
   setenv NCARG_EXTERNAL /glade/p/work/haley/dev/external/intel/12.1.5
-  setenv NCARG_ROOT /glade/apps/opt/ncl/6.2.1/intel/12.1.5
+  setenv NCARG_ROOT /glade/apps/opt/ncl/6.3.0/intel/12.1.5
   setenv YMAKE_DEV_FILE $NCARG/ymakedevfile
 
   unsetenv LIB_NCAR
@@ -172,8 +173,8 @@ else
   exit
 endif
 
-# harmon doesn't have enough disk space in /contrib for tar files.
-if ("$un" == "harmon.cgd.ucar.edu") then
+# logan doesn't have enough disk space in /contrib for tar files.
+if ("$un" == "logan.cgd.ucar.edu") then
   set tar_dir="/project/yampa02/haley"
 else
   set tar_dir="$NCARG_ROOT"
@@ -267,7 +268,7 @@ set nodap_gzfile  = "$nodap_tarfile.gz"
 
 #set sys_name = "yellowstone.ucar.edu"
 set sys_name = "cisl-denton.scd.ucar.edu"
-set sys_dir  = "/Users/haley/tmp/6.2.1"
+set sys_dir  = "/Users/haley/tmp/6.3.0"
 
 echo "----------------------------------------------------------------------"
 echo "Tar files: $tar_dir/$dap_gzfile"
