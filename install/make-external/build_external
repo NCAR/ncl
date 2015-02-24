@@ -104,6 +104,10 @@ os=`uname -s`
 # 4.4.7 and 4.7.2, and the intel compiler 12.1.5.
 # You may need to update as necessary.
 # 
+# Use one of these eval command to set the compiler version. It seems to work!
+#eval `/glade/apps/opt/lmod/lmod/libexec/lmod sh swap intel gnu/4.4.7`
+#eval `/glade/apps/opt/lmod/lmod/libexec/lmod sh swap intel gnu/4.7.2`
+
 if [ -n "$COMPILER_VERSION" ] ; then
   if [ "$COMPILER_VERSION" = "4.7.2" ] ; then
     export PATH=$PREFIX/bin:$NCARG_ROOT/bin:/usr/lib64/qt-3.3/bin:/glade/apps/opt/bin:/glade/apps/el6/usr/bin:/glade/apps/el6/bin:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/etc:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/openssh/5.7p1krb/bin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/ncar/opt/hpss
