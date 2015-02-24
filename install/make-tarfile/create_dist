@@ -91,7 +91,7 @@ set name        = `uname -n`
 set os          = `uname -s`
 set proc        = `uname -p`
 set exe_sfx     = ""
-set scpmach     = "mirage1.ucar.edu"
+set scpmach     = "yellowstone.ucar.edu"
 set version     = `$rootdir/bin/ncl -V`
 
 if ("$os" == "AIX") then
@@ -414,6 +414,10 @@ endif
 if ($?PROMPT) then
   echo "The tar file will be called '$tar_filename'"
   echo "and put in '$tardir.'"
+  if ($?SCP) then
+    echo "Gzipped tar file will be scp'ed to yellowstone via:"
+    echo "scp $tardir/$tar_filename.gz $scpmach\:$scpdir"
+  endif
   echo -n "Continue? (y/n) "
   set answer="$<"
   if ("$answer" != "y") then
@@ -501,12 +505,8 @@ else
 endif
 
 if ($?SCP) then
-  echo "scp (via mirage1) or mv file to $scpdir..."
-  if ("$name" == "mirage1.ucar.edu" || "$name" == "windom" || "$name" == "longs") then
-    /bin/mv $tardir/$tar_filename.gz $scpdir
-  else
-    scp $tardir/$tar_filename.gz $scpmach\:$scpdir
-  endif
+  echo "scp (via yellowstone) to $scpdir..."
+  scp $tardir/$tar_filename.gz $scpmach\:$scpdir
 endif
 
 exit 0
