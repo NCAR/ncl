@@ -836,6 +836,9 @@ then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
       elif [ "$un" = "k6" ] || [ "$un" = "k7" ] || [ "$un" = "k8" ] || [ "$un" = "k9" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lldap -lrt -lssl"
+# Might need this for k9 instead of the above statement.
+#      elif [ "$un" = "k9" ] ; then
+#        export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lssl -lldap -lrt -lssh2 -lrtmp"
       elif [ "$un" = "logan.cgd.ucar.edu" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lz -lidn -lrt -ldl"
       elif [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
