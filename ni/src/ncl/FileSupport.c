@@ -4974,6 +4974,22 @@ NhlErrorTypes InitializeFileOptions(NclFileOption *options)
 	options[Ncl_GRIB_CACHE_SIZE].valid_values = NULL;
 	/* End of options */
 
+	/* Binary option KeepOpen */
+	options[Ncl_KEEP_OPEN].format = NrmStringToQuark("bin");
+	options[Ncl_KEEP_OPEN].name = NrmStringToQuark("keepopen");
+	len_dims = 1;
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = False;
+	options[Ncl_KEEP_OPEN].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = True;
+	options[Ncl_KEEP_OPEN].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	options[Ncl_KEEP_OPEN].valid_values = NULL;
+
 	return ret;
 }
 
