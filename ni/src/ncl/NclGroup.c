@@ -385,7 +385,7 @@ NclQuark group_name;
 
     if(inst == NULL)
     {
-        group_out = (NclFile)NclMalloc(sizeof(NclFileRec));
+        group_out = (NclFile)NclCalloc(1, sizeof(NclFileRec));
         group_out_free = 1;
     }
     else
@@ -407,7 +407,7 @@ NclQuark group_name;
     group_out->file.file_ext_q = file_in->file.file_ext_q;
     group_out->file.wr_status = file_in->file.wr_status;
     group_out->file.file_format = file_in->file.file_format;
-
+    group_out->file.advanced_file_structure = 0;
     group_out->file.format_funcs = _NclGetFormatFuncs(group_out->file.file_ext_q);
     group_out->file.private_rec = (*group_out->file.format_funcs->initialize_file_rec)(&group_out->file.file_format);
 
