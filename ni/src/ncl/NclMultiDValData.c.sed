@@ -25,9 +25,11 @@
 #ifdef NIO_LIB_ONLY
 #include "niohlu.h"
 #include "nioNresDB.h"
+short    NCLnoPrintElem;  
 #else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+extern short    NCLnoPrintElem;     /* for multiple element print() stmts */
 #endif
 #include "defs.h"
 #include <errno.h>
@@ -39,7 +41,6 @@
 #include "NclTypestring.h"
 #include "NclTypechar.h"
 
-extern short    NCLnoPrintElem;     /* for multiple element print() stmts */
 
 INSERTHERE
 

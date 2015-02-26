@@ -19,7 +19,7 @@ extern int errno;
 extern int cmd_line;
 int	cmd_line_is_set = 0;
 
-#if 1
+#if 0
 #define DONTUSEPAGER 1
 #endif
 
