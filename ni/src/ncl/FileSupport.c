@@ -4480,7 +4480,7 @@ NhlErrorTypes UpdateDims(NclFile thefile)
 	NclQuark *name_list;
 	int n_names;
 	int i;
-	int index;
+	int index = -1;
 
 	name_list = (*thefile->file.format_funcs->get_dim_names)(thefile->file.private_rec,&n_names);
 	thefile->file.n_file_dims = n_names;
@@ -4489,7 +4489,8 @@ NhlErrorTypes UpdateDims(NclFile thefile)
 			NclFree(thefile->file.file_dim_info[i]);
 		thefile->file.file_dim_info[i] = (thefile->file.format_funcs->get_dim_info)
 			(thefile->file.private_rec,name_list[i]);
-		index = _NclFileIsVar(thefile,name_list[i]);
+		if(thefile->file.n_vars)
+		    index = _NclFileIsVar(thefile,name_list[i]);
 		if(index > -1 && thefile->file.var_info[index]->num_dimensions == 1) {
 			thefile->file.coord_vars[i] = thefile->file.var_info[index];
 		}
