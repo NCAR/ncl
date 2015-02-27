@@ -4661,8 +4661,17 @@ begin
  
 undef("yyyymmdd_to_yyyyddd")
 function yyyymmdd_to_yyyyddd (yyyymmdd[*]:integer)
-local yyyy, mmdd, mm, dd, yyyyddd
+local ntim, yyyy, mmdd, mm, dd, yyyyddd
 begin
+  ntim = dimsizes(yyyymmdd)
+
+;;if (isatt(yyyymmdd,"calendar") .and. yyyymmdd@calendar.eq."proleptic_gregorian") then  
+;;    print("yyyymmdd_to_yyyyddd:  proleptic_gregorian calendar not supported")
+;;    yyyyddd = new(ntim, "integer", -9999)
+;;    yyyyddd@long_name = "yyyymmdd_to_yyyyddd:  proleptic_gregorian calendar not supported"
+;;    return(yyyyddd)
+;;end if
+
   yyyy = yyyymmdd/10000
   mmdd = yyyymmdd - (yyyy*10000)
   mm   = mmdd/100
@@ -4692,6 +4701,14 @@ local nTime, yyyy, ddd, days, yyyymmdd, nt, iyr \
     , ndyr, skip, nmo, ndy, ndymo, foo
 begin
   nTime    = dimsizes( yyyyddd )
+
+;;if (isatt(yyyyddd,"calendar") .and. yyyyddd@calendar.eq."proleptic_gregorian") then  
+;;    print("yyyyddd_to_yyyymmdd:  proleptic_gregorian calendar not supported")
+;;    yyyymmdd = new(nTime, "integer", -9999)
+;;    yyyymmdd@long_name = "yyyyddd_to_yyyymmdd:  proleptic_gregorian calendar not supported"
+;;    return(yyyymmdd)
+;;end if
+
   yyyy     = yyyyddd/1000
   ddd      = yyyyddd - yyyy*1000
            ; non leap and leap [greorian, standard, or no 'calendar' attribute
@@ -7872,8 +7889,17 @@ end
 ;
 undef ("yyyymmdd2yyyyFrac") 
 function yyyymmdd2yyyyFrac (yyyymmdd:numeric, ddOffset[1]:numeric)
-local year, mmdd, mon, day, dayYear, nDay, yrFrac, n, con, varType, YYYYMMDD
+local ntim, year, mmdd, mon, day, dayYear, nDay, yrFrac, n, con, varType, YYYYMMDD
 begin
+     ntim = dimsizes(yyyymmdd)
+
+     if (isatt(yyyymmdd,"calendar") .and. yyyymmdd@calendar.eq."proleptic_gregorian") then  
+         print("yyyymmdd_to_yyyyfrac: yyyymmdd2yyyyFrac:  proleptic_gregorian calendar not supported")
+         yrFrac = new( ntim, typeof(yyyymmdd))
+         yrFrac@long_name = "yyyymmdd_to_yyyyfrac: yyyymmdd2yyyyFrac:  proleptic_gregorian calendar not supported"
+         return(yrFrac)
+     end if
+
      varType = typeof(yyyymmdd)
 
      if (varType.eq."integer") then
@@ -15147,10 +15173,10 @@ begin
 
 end
 ;---
-undef("wgt_vert_n")
-function wgt_vert_n (X:numeric, dp:numeric, iopt:integer, lev_dim[1]:integer)
+undef("wgt_vertical_n")
+function wgt_vertical_n (X:numeric, dp:numeric, iopt:integer, lev_dim[1]:integer)
 ; 
-; Perform weighted vertical average or sum
+; Perform weighted vertical average (integral) or sum
 ; 
 ; Requirement: X must be in the following order: ([time,],lev,lat,lon)
 ;
@@ -15204,21 +15230,21 @@ begin
   rankX = dimsizes( dimX )
 
   if (.not.all(dimDP.eq.dimX) ) then  ; error check
-      print("wgt_vertavg: dimension sizes are not equal")
-      print("wgt_vertavg:  dimX="+dimX)
-      print("wgt_vertavg: dimDP="+dimsizes(dp) )
+      print("wgt_vertical_n: dimension sizes are not equal")
+      print("wgt_vertical_n:  dimX="+dimX)
+      print("wgt_vertical_n: dimDP="+dimsizes(dp) )
       exit
   end if
 
   if (isatt(X,"_FillValue") .and. any(ismissing(X)) ) then  ; error check
-      print("wgt_vertavg: No _FillValue allowed")
-      print("wgt_vertavg: X: nFill="+num(ismissing(X)))
+      print("wgt_vertical_n: No _FillValue allowed")
+      print("wgt_vertical_n: X: nFill="+num(ismissing(X)))
       exit
   end if
 
   if (isatt(dp,"_FillValue") .and. any(ismissing(dp)) ) then  ; error check
-      print("wgt_vertavg: No _FillValue allowed")
-      print("wgt_vertavg: dp: nFill="+num(ismissing(dp)))
+      print("wgt_vertical_n: No _FillValue allowed")
+      print("wgt_vertical_n: dp: nFill="+num(ismissing(dp)))
       exit
   end if
 
@@ -15235,7 +15261,7 @@ begin
       if (.not.isatt(wsum,"_FillValue")) then
           wsum@_FillValue = default_fillvalue(typeof(wsum))
       end if
-      wsum = where(wsum.eq.0, wsum@_FillValue, wsum)
+      wsum = where(wsum.eq.0, wsum@_FillValue, wsum)   ; avoid division by 0
   end if
       
   vavg = vsum/wsum                           ; one less dimension (no vertical dim)
@@ -15304,37 +15330,6 @@ begin
   dpres!1 = "lev"
 
   return(dpres)
-end 
-;================
-undef("pres_hybrid_ccm_se")
-function pres_hybrid_ccm_se(ps:numeric,p0[1]:numeric,hya[*]:numeric,hyb[*]:numeric)
-local dimNames, dim_ps, ntim, ncol, ps_dumy, pres_dumy, pres
-begin
-
-  dimNames = getvardims(ps) ; (time,ncol)
-  if (dimNames(1).ne."ncol") then
-      print("pres_hybrid_ccm_se: You are a MORON! This is not an SE grid!")
-      exit
-  end if
-
-  dim_ps  = dimsizes(ps)
-  ntim    = dim_ps(0)
-  ncol    = dim_ps(1)
-
-  ps_dumy = conform_dims( (/ntim,1,ncol/), ps, (/0,2/))
-
-  pres_dumy = pres_hybrid_ccm (ps_dumy,p0,hya,hyb) ; (ntim,klev,1,ncol)
-  pres = pres_dumy(:,:,0,:) ; (ntim,klev,ncol)
-
-; the following is not needed for builtin function
-
-  pres@long_name = "pressure at hybrid levels"
-  pres@units = "Pa" ; [kg/(m s2)]
-
-  copy_VarCoords(ps, pres(:,0,:))
-  pres!1 = "lev"
-
-  return(pres)
 end 
 ;===================
 undef ("eofunc_north")
