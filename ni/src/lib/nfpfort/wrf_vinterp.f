@@ -2,7 +2,8 @@ CThe subroutines in this file were taken directly from RIP code written
 C by Dr. Mark Stoelinga.  They were modified by Sherrie
 C Fredrick(NCAR/MMM) to work with NCL February 2015.
 C NCLFORTSTART
-      subroutine monotonic(out,in,lvprs,cor,idir,delta,ew,ns,nz,icorsw)
+      subroutine wrf_monotonic(out,in,lvprs,cor,idir,delta,
+     &                         ew,ns,nz,icorsw)
        implicit none
        integer idir,ew,ns,nz,icorsw
        double precision delta
@@ -61,7 +62,7 @@ c
 c--------------------------------------------------------------------
 
 C NCLFORTSTART
-      FUNCTION intrp_value (wvalp0,wvalp1,vlev,vcp0,vcp1,icase)
+      FUNCTION wrf_intrp_value (wvalp0,wvalp1,vlev,vcp0,vcp1,icase)
       implicit none
 
       integer icase
@@ -69,7 +70,7 @@ C NCLFORTSTART
 C NCLEND
       double precision valp0,valp1,rvalue,rgas,ussalr,sclht
 
-      double precision intrp_value,chkdiff
+      double precision wrf_intrp_value,chkdiff
 
       rgas    = 287.04d0     !J/K/kg
       ussalr  = 0.0065d0      ! deg C per m
@@ -90,9 +91,9 @@ C NCLEND
  
       rvalue = (vlev-vcp0)*(valp1-valp0)/(vcp1-vcp0)+valp0
       if (icase .eq. 2) then  !GHT
-          intrp_value = -sclht*log(rvalue)
+          wrf_intrp_value = -sclht*log(rvalue)
       else
-          intrp_value = rvalue
+          wrf_intrp_value = rvalue
       endif
 
       return
@@ -128,7 +129,7 @@ C NCLEND
        double precision      vcp1,vcp0,valp0,valp1
        double precision      rgas,rgasmd,sclht,ussalr,cvc,eps
        double precision      qvlhsl,ttlhsl,vclhsl,vctophsl
-       double precision      intrp_value
+       double precision      wrf_intrp_value
        double precision      plhsl,zlhsl,ezlhsl,tlhsl,psurf,pratio,tlev
        double precision      ezsurf,psurfsm,zsurf,qvapor,vt
        double precision      rconst,expon,exponi
@@ -224,8 +225,8 @@ c                  print *,i,j,valp0,valp1
                      else 
                        tmpvlev = vlev
                      end if
-                     tempout(j,i) = intrp_value(valp0,valp1,tmpvlev,
-     &                                          vcp0,vcp1,icase)
+                     tempout(j,i) = wrf_intrp_value(valp0,valp1,
+     &                                  tmpvlev,vcp0,vcp1,icase)
 c                     print *,"one ",i,j,tempout(j,i)
                      ifound=1
                   end if
