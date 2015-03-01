@@ -2,11 +2,12 @@ CThe subroutines in this file were taken directly from RIP code written
 C by Dr. Mark Stoelinga.  They were modified by Sherrie
 C Fredrick(NCAR/MMM) to work with NCL February 2015.
 C NCLFORTSTART
-       subroutine monotonic(out,in,lvprs,cor,idir,delta,ew,ns,nz,icorsw)
-
+      subroutine monotonic(out,in,lvprs,cor,idir,delta,ew,ns,nz,icorsw)
+       implicit none
        integer idir,ew,ns,nz,icorsw
-       real    delta
-       real    in(ew,ns,nz),out(ew,ns,nz),lvprs(ew,ns,nz),cor(ew,ns)
+       double precision delta
+       double precision in(ew,ns,nz),out(ew,ns,nz)
+       double precision lvprs(ew,ns,nz),cor(ew,ns)
 C NCLEND
 
        integer i,j,k,ripk,k300
@@ -26,7 +27,7 @@ c      level.
 c
       do k = 1,nz
          ripk =  nz-k+1
-         if (lvprs(i,j,k) .le. 300.) then
+         if (lvprs(i,j,k) .le. 300.d0) then
             k300=k
             goto 40
          endif
@@ -57,21 +58,22 @@ c
       return
       end 
 
-c---------------------------------------------------------------------------------
+c--------------------------------------------------------------------
 
 C NCLFORTSTART
       FUNCTION intrp_value (wvalp0,wvalp1,vlev,vcp0,vcp1,icase)
+      implicit none
 
       integer icase
-      real    wvalp0,wvalp1,vlev,vcp0,vcp1
+      double precision wvalp0,wvalp1,vlev,vcp0,vcp1
 C NCLEND
-      real    valp0,valp1,rvalue,rgas,ussalr,sclht
+      double precision valp0,valp1,rvalue,rgas,ussalr,sclht
 
-      real    intrp_value,chkdiff
+      double precision intrp_value,chkdiff
 
-      rgas    = 287.04     !J/K/kg
-      ussalr  = .0065      ! deg C per m
-      sclht   = rgas*256./9.81
+      rgas    = 287.04d0     !J/K/kg
+      ussalr  = 0.0065d0      ! deg C per m
+      sclht   = rgas*256.d0/9.81d0
 
       valp0 = wvalp0
       valp1 = wvalp1
@@ -97,9 +99,10 @@ C NCLEND
       end
 c------------------------------------------------------------
 C NOTES:
-C      vcarray is the array holding the values for the vertical coordinate.
-c              It will always come in with the dimensions of the staggered U and V
-c              grid.  
+c      vcarray is the array holding the values for the vertical 
+c      coordinate.
+c              It will always come in with the dimensions of 
+c              the staggered U and V grid.  
 C NCLFORTSTART
 
       subroutine  wrf_vintrp(datain,dataout,pres,tk,qvp,ght,terrain,
@@ -110,46 +113,49 @@ C NCLFORTSTART
       implicit none
       integer   ew,ns,nz,icase,extrap
       integer   vcor,numlevels,logp
-      real      datain(ew,ns,nz),pres(ew,ns,nz),tk(ew,ns,nz)
-      real      ght(ew,ns,nz)
-      real      terrain(ew,ns),sfp(ew,ns),smsfp(ew,ns)
-      real      dataout(ew,ns,numlevels),qvp(ew,ns,nz)
-      real      vcarray(ew,ns,nz)
-      real      interp_levels(numlevels),rmsg
+      double precision   datain(ew,ns,nz),pres(ew,ns,nz),tk(ew,ns,nz)
+      double precision   ght(ew,ns,nz)
+      double precision   terrain(ew,ns),sfp(ew,ns),smsfp(ew,ns)
+      double precision   dataout(ew,ns,numlevels),qvp(ew,ns,nz)
+      double precision   vcarray(ew,ns,nz)
+      double precision   interp_levels(numlevels),rmsg
 C NCLEND     
        integer   njx,niy,nreqlvs,ripk
        integer   i,j,k,itriv,kupper
        integer   ifound,miy,mjx,isign
-       real      rlevel,vlev,diff
-       real      tempout(ew,ns),tmpvlev
-       real      vcp1,vcp0,valp0,valp1
-       real      rgas,rgasmd,sclht,ussalr,cvc,eps
-       real      qvlhsl,ttlhsl,vclhsl,vctophsl
-       real      intrp_value
-       real      plhsl,zlhsl,ezlhsl,tlhsl,psurf,pratio,tlev
-       real      ezsurf,psurfsm,zsurf,qvapor,vt,rconst,expon,exponi
-       real      ezlev,plev,zlev,ptarget,dpmin,dp,pbot,zbot,tbotextrap,e
-       real      tlclc1,tlclc2,tlclc3,tlclc4,thtecon1,thtecon2,thtecon3
-       real      tlcl,gamma,cp,cpmd,gammamd,gammam
+       double precision      rlevel,vlev,diff
+       double precision      tempout(ew,ns),tmpvlev
+       double precision      vcp1,vcp0,valp0,valp1
+       double precision      rgas,rgasmd,sclht,ussalr,cvc,eps
+       double precision      qvlhsl,ttlhsl,vclhsl,vctophsl
+       double precision      intrp_value
+       double precision      plhsl,zlhsl,ezlhsl,tlhsl,psurf,pratio,tlev
+       double precision      ezsurf,psurfsm,zsurf,qvapor,vt
+       double precision      rconst,expon,exponi
+       double precision      ezlev,plev,zlev,ptarget,dpmin,dp
+       double precision      pbot,zbot,tbotextrap,e
+       double precision      tlclc1,tlclc2,tlclc3,tlclc4
+       double precision      thtecon1,thtecon2,thtecon3
+       double precision      tlcl,gamma,cp,cpmd,gammamd,gammam
        character cvcord*1
 
-       rgas    = 287.04     !J/K/kg
-       rgasmd  = .608
-       ussalr  = .0065      ! deg C per m
-       sclht   = rgas*256./9.81
-       eps     = 0.622
-       rconst  = -9.81/(rgas * ussalr) 
-       expon   =  rgas*ussalr/9.81
+       rgas    = 287.04d0     !J/K/kg
+       rgasmd  = .608d0
+       ussalr  = .0065d0      ! deg C per m
+       sclht   = rgas*256.d0/9.81d0
+       eps     = 0.622d0
+       rconst  = -9.81d0/(rgas * ussalr) 
+       expon   =  rgas*ussalr/9.81d0
        exponi  =  1./expon
-       tlclc1   = 2840.
-       tlclc2   = 3.5
-       tlclc3   = 4.805
-       tlclc4   = 55.
-       thtecon1 = 3376. ! K
-       thtecon2 = 2.54
-       thtecon3 = .81
-       cp       = 1004.
-       cpmd     = .887
+       tlclc1   = 2840.d0
+       tlclc2   = 3.5d0
+       tlclc3   = 4.805d0
+       tlclc4   = 55.d0
+       thtecon1 = 3376.d0 ! K
+       thtecon2 = 2.54d0
+       thtecon3 = 0.81d0
+       cp       = 1004.d0
+       cpmd     = 0.887d0
        gamma    = rgas/cp
        gammamd  = rgasmd-cpmd
 
@@ -180,7 +186,7 @@ C NCLEND
          if(cvcord .eq. 'z') then
 !Convert rlevel to meters from km
 
-            rlevel = interp_levels(nreqlvs) * 1000.
+            rlevel = interp_levels(nreqlvs) * 1000.d0
             vlev = exp(-rlevel/sclht)              
          else if(cvcord .eq. 'p') then             
             vlev = interp_levels(nreqlvs)          
@@ -209,7 +215,7 @@ c                  print *,i,j,valp0,valp1
                      if(logp .eq. 1) then
                        vcp1  = log(vcp1)
                        vcp0  = log(vcp0)
-                       if(vlev .eq. 0.0) then
+                       if(vlev .eq. 0.0d0) then
                          print *,"Pressure value = 0"
                          print *,"Unable to take log of 0"
                          stop
@@ -249,10 +255,11 @@ c model domain.
       vctophsl = vcarray(j,i,nz)!highest model level
       diff     = vctophsl-vclhsl
       isign    = nint(diff/abs(diff))
-!
+C
       if(isign*vlev.ge.isign*vctophsl) then
-         tempout(j,i)=datain(j,i,nz)  !Assign the highest model level to the out array
-!         print *,"at warn",j,i,tempout(j,i)
+C Assign the highest model level to the out array
+         tempout(j,i)=datain(j,i,nz)  
+C         print *,"at warn",j,i,tempout(j,i)
          goto 333
       endif
                            
@@ -268,8 +275,9 @@ c
       endif
 
 c
-c   If the field comming in is not a pressure,temperature or height field
-c   we can set the output array to the value at the lowest model level.
+c   If the field comming in is not a pressure,temperature or height 
+C   field we can set the output array to the value at the lowest 
+c   model level.
 c
       tempout(j,i) = datain(j,i,1)      
 c
@@ -277,17 +285,18 @@ c   For the special cases of pressure on height levels or height on
 c   pressure levels, or temperature-related variables on pressure or
 c   height levels, perform a special extrapolation based on
 c   US Standard Atmosphere.  Here we calcualate the surface pressure
-c   with the altimeter equation.  This is how RIP calculates the surface
-c   pressure.
+c   with the altimeter equation.  This is how RIP calculates the 
+c   surface pressure.
 c
        if (icase.gt.0) then
-           plhsl  = pres(j,i,1) * 0.01    !pressure at lowest model level
+           plhsl  = pres(j,i,1) * 0.01d0  !pressure at lowest model level
            zlhsl  = ght(j,i,1)            !grid point height a lowest model level
            ezlhsl = exp(-zlhsl/sclht)
            tlhsl  = tk(j,i,1)             !temperature in K at lowest model level
            zsurf  = terrain(j,i)
-           qvapor = max((qvp(j,i,1)*.001),1.e-15)  
-c          vt     = tlhsl * (eps + qvapor)/(eps*(1.0 + qvapor)) !virtual temperature
+           qvapor = max((qvp(j,i,1)*.001d0),1.e-15)  
+c virtual temperature
+c          vt     = tlhsl * (eps + qvapor)/(eps*(1.0 + qvapor)) 
 c           psurf  = plhsl * (vt/(vt+ussalr * (zlhsl-zsurf)))**rconst
            psurf    = sfp(j,i)
            psurfsm  = smsfp(j,i) 
@@ -322,11 +331,11 @@ c
                 endif
 
             else   !else for checking above ground
-                ptarget=psurfsm-150.
+                ptarget=psurfsm-150.d0
                 dpmin=1.e4
                 do k=1,nz
                    ripk = nz-k+1
-                   dp=abs((pres(j,i,ripk) * 0.01)-ptarget)
+                   dp=abs((pres(j,i,ripk) * 0.01d0)-ptarget)
                    if (dp.gt.dpmin) goto 334
                    dpmin=min(dpmin,dp)
                 enddo
@@ -335,9 +344,10 @@ c
                 ripk       = nz - kupper + 1
                 pbot       = max(plhsl,psurf)
                 zbot       = min(zlhsl,zsurf)
-                pratio     = pbot/(pres(j,i,ripk) * 0.01)
+                pratio     = pbot/(pres(j,i,ripk) * 0.01d0)
                 tbotextrap = tk(j,i,ripk)*(pratio)**expon
-                vt   = tbotextrap * (eps + qvapor)/(eps*(1.0 + qvapor)) !virtual temperature
+c virtual temperature
+                vt = tbotextrap * (eps + qvapor)/(eps*(1.0d0+qvapor)) 
                 if (cvcord.eq.'p') then
                    plev=vlev
                    zlev=zbot+vt/ussalr*(1.-(vlev/pbot)**expon)
@@ -362,16 +372,19 @@ c
            qvapor = max(qvp(j,i,1),1.e-15)
            gammam = gamma*(1.+gammamd*qvapor)
            if(icase .eq. 3) then
-              tempout(j,i) = tlev - 273.16
+              tempout(j,i) = tlev - 273.16d0
            else if(icase .eq. 4) then
               tempout(j,i) = tlev
-           else if (icase. eq. 5) then !Potential temperature - theta
-               tempout(j,i)=tlev*(1000./plev)**gammam
-           else if (icase .eq. 6) then !extraolation for equivalent potential temperature
+C Potential temperature - theta
+           else if (icase. eq. 5) then 
+               tempout(j,i)=tlev*(1000.d0/plev)**gammam
+C extraolation for equivalent potential temperature
+           else if (icase .eq. 6) then 
                e    = qvapor*plev/(eps+qvapor)
                tlcl = tlclc1/(log(tlev**tlclc2/e)-tlclc3)+tlclc4
-               tempout(j,i)=tlev*(1000./plev)**(gammam)*
-     &         exp((thtecon1/tlcl-thtecon2)*qvapor*(1.+thtecon3*qvapor))   
+               tempout(j,i)=tlev*(1000.d0/plev)**(gammam)*
+     &         exp((thtecon1/tlcl-thtecon2)*qvapor*
+     &             (1.+thtecon3*qvapor))   
            end if            
        end if
        
