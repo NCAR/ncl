@@ -6271,7 +6271,7 @@ NhlErrorTypes _NclIgetenv
  * this version recognizes hexadecimal and decimal conventions, but not octal
  */
 
-static long _Nclstrtol 
+extern long _Nclstrtol 
 #if     NhlNeedProto
 (
 	const char *str, 
@@ -6296,7 +6296,7 @@ char **endptr;
 	return tval;
 }
 
-static unsigned long _Nclstrtoul
+extern unsigned long _Nclstrtoul
 #if     NhlNeedProto
 (
         const char *str,
@@ -6326,7 +6326,7 @@ char **endptr;
 }
 
 
-static long long _Nclstrtoll
+extern long long _Nclstrtoll
 #if     NhlNeedProto
 (
         const char *str,
@@ -6359,7 +6359,7 @@ char **endptr;
         return tval;
 }
 
-static unsigned long long _Nclstrtoull
+extern unsigned long long _Nclstrtoull
 #if     NhlNeedProto
 (
         const char *str,
