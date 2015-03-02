@@ -71,8 +71,7 @@ NhlErrorTypes wrf_vintrp_W( void )
  */
   void *ter;
   double *tmp_ter;
-  int       ndims_ter;
-  ng_size_t dsizes_ter[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_ter[2];
   NclBasicDataTypes type_ter;
 
 /*
@@ -129,7 +128,7 @@ NhlErrorTypes wrf_vintrp_W( void )
  */
   ng_size_t ninlev, nlat, nlon, ninlevlatlon, nlatlon;
   ng_size_t noutlev, noutlevlatlon;
-  ng_size_t index_field, index_ter, index_field_out;
+  ng_size_t index_field, index_sfp, index_field_out;
   ng_size_t i, size_leftmost, size_output;
   int ininlev, inlat, inlon, inoutlev, ret;
 
@@ -304,35 +303,19 @@ NhlErrorTypes wrf_vintrp_W( void )
   ter = (void*)NclGetArgValue(
            5,
            14,
-           &ndims_ter,
+           NULL,
            dsizes_ter,
            NULL,
            NULL,
            &type_ter,
            DONT_CARE);
-
 /*
  * Check dimension sizes for ter.  It can either be 2D, or one fewer
  * dimensions than field.
  */
-  if(ndims_ter != 2 && ndims_ter != (ndims_field-1)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: ter must either be a 2D array dimensioned south_north x west_east or it must have the same dimensionality as the field array, minus the level dimension");
+  if(dsizes_ter[0] != nlat || dsizes_ter[1] != nlon) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The dimensions of ter must be south_north x west_east");
     return(NhlFATAL);
-  }
-
-  if(ndims_ter == 2) {
-    if(dsizes_ter[0] != nlat || dsizes_ter[1] != nlon) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The dimensions of ter must be south_north x west_east");
-      return(NhlFATAL);
-    }
-  }
-  else {
-    for(i = 0; i < ndims_field-3; i++) {
-      if(dsizes_ter[i] != dsizes_field[i]) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: ter must either be a 2D array dimensioned south_north x west_east or it must have the same dimensionality as the field array, minus the level dimension");
-        return(NhlFATAL);
-      }
-    }
   }
 
 /*
@@ -581,24 +564,10 @@ NhlErrorTypes wrf_vintrp_W( void )
 /*
  * Coerce ter to double, if necessary.
  */
-  if(ndims_ter == 2) {
-    tmp_ter = coerce_input_double(ter,type_ter,nlatlon,0,NULL,NULL);
-    if(tmp_ter == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for coercing ter array to double");
-      return(NhlFATAL);
-    }
-  }
-  else {
-/*
- * Allocate space for tmp_ter.
- */
-    if(type_ter != NCL_double) {
-      tmp_ter = (double *)calloc(nlatlon,sizeof(double));
-      if(tmp_ter == NULL) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for coercing ter array to double");
-        return(NhlFATAL);
-      }
-    }
+  tmp_ter = coerce_input_double(ter,type_ter,nlatlon,0,NULL,NULL);
+  if(tmp_ter == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to coerce ter to double precision");
+    return(NhlFATAL);
   }
 
 /*
@@ -700,7 +669,7 @@ NhlErrorTypes wrf_vintrp_W( void )
  * Loop across leftmost dimensions and call the Fortran routine for each
  * subsection of the input arrays.
  */
-  index_field = index_ter = index_field_out = 0;
+  index_field = index_sfp = index_field_out = 0;
 
   for(i = 0; i < size_leftmost; i++) {
 /*
@@ -758,38 +727,25 @@ NhlErrorTypes wrf_vintrp_W( void )
     }
 
 /*
- * Coerce subsection of ter (tmp_ter) to double if necessary.
- */
-    if(ndims_ter != 2) {
-      if(type_ter != NCL_double) {
-        coerce_subset_input_double(ter,tmp_ter,index_ter,type_ter,
-                                   nlatlon,0,NULL,NULL);
-      }
-      else {
-        tmp_ter = &((double*)ter)[index_ter];
-      }
-    }
-
-/*
  * Coerce subsection of sfp (tmp_sfp) to double if necessary.
  */
     if(type_sfp != NCL_double) {
-      coerce_subset_input_double(sfp,tmp_sfp,index_ter,type_sfp,
+      coerce_subset_input_double(sfp,tmp_sfp,index_sfp,type_sfp,
                                  nlatlon,0,NULL,NULL);
     }
     else {
-      tmp_sfp = &((double*)sfp)[index_ter];
+      tmp_sfp = &((double*)sfp)[index_sfp];
     }
 
 /*
  * Coerce subsection of smsfp (tmp_smsfp) to double if necessary.
  */
     if(type_smsfp != NCL_double) {
-      coerce_subset_input_double(smsfp,tmp_smsfp,index_ter,type_smsfp,
+      coerce_subset_input_double(smsfp,tmp_smsfp,index_sfp,type_smsfp,
                                  nlatlon,0,NULL,NULL);
     }
     else {
-      tmp_smsfp = &((double*)smsfp)[index_ter];
+      tmp_smsfp = &((double*)smsfp)[index_sfp];
     }
 
 /*
@@ -830,9 +786,7 @@ NhlErrorTypes wrf_vintrp_W( void )
     }
     index_field     += ninlevlatlon;
     index_field_out += noutlevlatlon;
-    if(ndims_ter != 2) { 
-      index_ter     += nlatlon;
-    }
+    index_sfp       += nlatlon;
   }
 
 /*
@@ -890,8 +844,7 @@ NhlErrorTypes wrf_monotonic_W( void )
  */
   void *cor;
   double *tmp_cor;
-  int       ndims_cor;
-  ng_size_t dsizes_cor[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_cor[2];
   NclBasicDataTypes type_cor;
 
 /*
@@ -921,8 +874,7 @@ NhlErrorTypes wrf_monotonic_W( void )
  * Various
  */
   ng_size_t nlev, nlat, nlon, nlevlatlon, nlatlon;
-  ng_size_t index_x, index_cor;
-  ng_size_t i, size_leftmost, size_output;
+  ng_size_t i, index_x, size_leftmost, size_output;
   int inlev, inlat, inlon, ret;
 /*
  * Retrieve parameters.
@@ -1001,35 +953,16 @@ NhlErrorTypes wrf_monotonic_W( void )
   cor = (void*)NclGetArgValue(
            2,
            6,
-           &ndims_cor,
+           NULL,
            dsizes_cor,
            NULL,
            NULL,
            &type_cor,
            DONT_CARE);
 
-/*
- * Check dimension sizes for cor.  It can either be 2D, or one fewer
- * dimensions than x.
- */
-  if(ndims_cor != 2 && ndims_cor != (ndims_x-1)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: cor must either be a 2D array dimensioned south_north x west_east or it must have the same dimensionality as the x array, minus the level dimension");
+  if(dsizes_cor[0] != nlat || dsizes_cor[1] != nlon) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The dimensions of cor must be south_north x west_east");
     return(NhlFATAL);
-  }
-
-  if(ndims_cor == 2) {
-    if(dsizes_cor[0] != nlat || dsizes_cor[1] != nlon) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The dimensions of cor must be south_north x west_east");
-      return(NhlFATAL);
-    }
-  }
-  else {
-    for(i = 0; i < ndims_x-3; i++) {
-      if(dsizes_cor[i] != dsizes_x[i]) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_monotonic: cor must either be a 2D array dimensioned south_north x west_east or it must have the same dimensionality as the x array, minus the level dimension");
-        return(NhlFATAL);
-      }
-    }
   }
 
 /*
@@ -1112,27 +1045,10 @@ NhlErrorTypes wrf_monotonic_W( void )
 /*
  * Coerce cor to double, if necessary.
  */
-  if(ndims_cor == 2) {
-    tmp_cor = coerce_input_double(cor,type_cor,nlatlon,0,NULL,NULL);
-    if(type_cor != NCL_double) {
-      tmp_cor = (double *)calloc(nlatlon,sizeof(double));
-      if(tmp_cor == NULL) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_monotonic: Unable to allocate memory for coercing input array to double");
-        return(NhlFATAL);
-      }
-    }
-  }
-  else {
-/*
- * Allocate space for tmp_ter.
- */
-    if(type_cor != NCL_double) {
-      tmp_cor = (double *)calloc(nlatlon,sizeof(double));
-      if(tmp_cor == NULL) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_monotonic: Unable to allocate memory for coercing cor array to double");
-        return(NhlFATAL);
-      }
-    }
+  tmp_cor = coerce_input_double(cor,type_cor,nlatlon,0,NULL,NULL);
+  if(tmp_cor == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_monotonic: Unable to coerce cor to double precision");
+    return(NhlFATAL);
   }
 
 /*
@@ -1172,8 +1088,7 @@ NhlErrorTypes wrf_monotonic_W( void )
  * Loop across leftmost dimensions and call the Fortran routine for each
  * subsection of the input arrays.
  */
-  index_x = index_cor = 0;
-
+  index_x = 0;
   for(i = 0; i < size_leftmost; i++) {
 /*
  * Coerce subsection of x (tmp_x) to double if necessary.
@@ -1196,25 +1111,9 @@ NhlErrorTypes wrf_monotonic_W( void )
     }
 
 /*
- * Coerce subsection of cor (tmp_cor) to double if necessary, if
- * it is not a 2D array.
- */
-    if(ndims_cor != 2) { 
-      if(type_cor != NCL_double) {
-        coerce_subset_input_double(cor,tmp_cor,index_cor,
-                                   type_cor,nlatlon,0,NULL,NULL);
-      }
-      else {
-        tmp_cor = &((double*)cor)[index_cor];
-      }
-    }
-
-
-/*
  * Point temporary output array to void output array if appropriate.
  */
     if(type_xout == NCL_double) tmp_xout = &((double*)xout)[index_x];
-
 
 /*
  * Call the Fortran routine.
@@ -1222,17 +1121,13 @@ NhlErrorTypes wrf_monotonic_W( void )
     NGCALLF(wrf_monotonic,WRF_MONOTONIC)(tmp_xout, tmp_x, tmp_pres, 
                                          tmp_cor, idir, tmp_delta, &inlon,
                                          &inlat, &inlev, icorsw);
-
 /*
  * Coerce output back to float if necessary.
  */
     if(type_xout == NCL_float) {
       coerce_output_float_only(xout,tmp_xout,nlevlatlon,index_x);
     }
-    index_x   += nlevlatlon;
-    if(ndims_cor != 2) { 
-      index_cor += nlatlon;
-    }
+    index_x += nlevlatlon;
   }
 
 /*
