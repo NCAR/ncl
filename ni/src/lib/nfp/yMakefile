@@ -87,7 +87,7 @@ CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cancorW.c cdf_dpW.c chiinvW.c 
 	mocloopsW.c spanW.c vinth2pnodesW.c vinth2penodesW.c objanalW.c                 \
 	areaconremapW.c nctime.c cdtimeW.c dimnumrunW.c sparse_matrixW.c                \
 	gammaW.c gamfitW.c spiW.c oceanW.c dgeevxW.c areapolyW.c kolsm2W.c              \
-	kmeansW.c thornW.c wrf_vinterpW.c
+	kmeansW.c thornW.c wrf_vinterpW.c wrf_cloud_topW.c
 	
 
 COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o         \
@@ -111,7 +111,7 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o 
 	areaconremapW.o	nctime.o cdtimeW.o dimnumrunW.o sparse_matrixW.o 		\
 	gammaW.o gamfitW.o spiW.o oceanW.o dgeevxW.o areapolyW.o kolsm2W.o		\
 	bfilterW.o weibullW.o trendmankenW.o determinantW.o fftshiftW.o thornW.o	\
-	kmeansW.o wrf_vinterpW.o
+	kmeansW.o wrf_vinterpW.o wrf_cloud_topW.o
 
 
 OBJS = $(COBJS) $(UDUNITS_OBJS) $(V5D_OBJS) $(ESMF_OBJS) $(KML_OBJS)
