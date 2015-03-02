@@ -14635,8 +14635,8 @@ begin
     
 end
 ;==========================
-undef("pot_temp_n")
-function pot_temp_n (p:numeric, t:numeric, opt[1], npr[*]:integer)
+undef("pot_temp")
+function pot_temp (p:numeric, t:numeric, npr[*]:integer, opt[1]:logical)
 ;
 ; Compute potential temperature
 ; Nomenclature
@@ -14650,14 +14650,17 @@ function pot_temp_n (p:numeric, t:numeric, opt[1], npr[*]:integer)
 ;                     cpd  = 1004. or 1005.7 ; specific heat dry air [J/kg/K]
 ;                     Lv   = 2.5104e6        ; [J/kg]=[m2/s2]  Latent Heat of Vaporization of Water
 ;                     r    = mixing ratio 
-;     opt     - options: Currently, not use, Set to 0
 ;     npr     - dimension number(s) of 'p' corresponding to temperature 
-;               npr=-1 means that p and t have the same dimensions
+;               npr=-1 means that p and t have the same ranks and sizes
+;                      In this case this argument is ignored.
+;     opt     - options: Currently, not use, Set to False
 ;
-local rankp, rankt, theta, p0
+local dimp, dimt, rankp, rankt, theta, p0
 begin
-  rankp  = dimsizes(dimsizes(p)) 
-  rankt  = dimsizes(dimsizes(t)) 
+  dimp   = dimsizes(p) 
+  dimt   = dimsizes(t) 
+  rankp  = dimsizes(dimp) 
+  rankt  = dimsizes(dimt) 
 
   p0     = 100000.           ; default [units = Pa]
   if (isatt(p,"units") .and. (p@units.eq."mb"   .or. \
@@ -14670,16 +14673,22 @@ begin
                               p@units.eq."hpa"  )    ) then
       p0 = 1000.
  ;else
-    ;print("pot_temp_n: WARNING:  units of pressure not recognized: p0="+p0+" Pa used")
+    ;print("pot_temp: WARNING:  units of pressure not recognized: p0="+p0+" Pa used")
   end if
 
   if (isatt(t,"units") .and. \
      .not.(t@units.eq."K" .or. t@units.eq."degK")) then
-     print("pot_temp_n: WARNING:  units of temperature not recognized")
+     print("pot_temp: WARNING:  units of temperature not recognized")
   end if
 
   if (rankp.eq.rankt) then
-      theta = t*(p0/p)^0.286  
+      if (all(dimp.eq.dimt)) then
+          theta = t*(p0/p)^0.286  
+      else
+          print("pot_temp: FATAL error: dimension sizes do not match")
+          print("          dimp="+dimp+"   dimt="+dimt) 
+          exit
+      end if
   else
       theta = t*(p0/conform(t,p,npr))^0.286  
   end if
@@ -14691,8 +14700,8 @@ begin
   return( theta )
 end
 ;=========================
-undef("static_stability_n") 
-function static_stability_n (p:numeric, t:numeric, sopt[1]:integer, npr[1]:integer)
+undef("static_stability") 
+function static_stability (p:numeric, t:numeric, npr[1]:integer, sopt[1]:integer)
 ;
 ; Compute Static Stability
 ; Bluestein: Synoptic-Dynamic Meteorology in Midlatitudes
@@ -14709,18 +14718,21 @@ function static_stability_n (p:numeric, t:numeric, sopt[1]:integer, npr[1]:integ
 ;                     cpd  = 1004. or 1005.7 ; specific heat dry air [J/kg/K]
 ;                     Lv   = 2.5104e6        ; [J/kg]=[m2/s2]  Latent Heat of Vaporization of Water
 ;                     r    = mixing ratio    ; (kg/kg) 
+;     npr     - dimension number for pressure
 ;     sopt    - =0, Return static stability only
 ;             - =1, Return static stability, theta, dthdp as type list
-;     npr     - dimension number for pressure
 ;
 ; Note: In a statically stable atmosphere: d(theta)/dp < 0, hence s > 0       
 ;
-local theta, rankt, rankp, dthdp, s
+local dimp, dimt, theta, rankt, rankp, dthdp, s
 begin
-  theta  = pot_temp_n(p, t, False, npr)      
+  theta  = pot_temp(p, t, npr, False)      
 
-  rankp  = dimsizes(dimsizes(p))
-  rankt  = dimsizes(dimsizes(t))   ; rankt = rank(theta)
+  dimp   = dimsizes(p) 
+  dimt   = dimsizes(t) 
+
+  rankp  = dimsizes(dimp)
+  rankt  = dimsizes(dimt)   ; rankt = rank(theta)
 
 ; dthdp = -T*d[log(theta)]/dp = -(T/theta)*d(theta)/dp
 
@@ -14730,7 +14742,7 @@ begin
       if (rankp.eq.1) then
           dthdp  = center_finite_diff_n (theta,conform(t,p,npr), False,0, npr)
       else
-          print("static_stability_n: rank problem:  rankp="+rankp+"; rankt="+rankt)
+          print("static_stability: rank problem:  rankp="+rankp+"; rankt="+rankt)
           exit
       end if
   end if
@@ -14845,10 +14857,10 @@ begin
       nlt = 2                  
   end if
 
-  S           = static_stability_n(p,t,npr,1)   ; variable of type list
+  S           = static_stability(p,t,1,npr)   ; variable of type list
 
   s           = S[0]    ; [...] is list syntax    
-  theta       = S[1]    ; theta = pot_tmp_n(p, t, npr, 0)
+  theta       = S[1]    ; theta = pot_tmp(p, t, npr, 0)
   dthdp       = S[2]    ; dthdp = center_finite_diff_n (theta,p,False,0,npr)
   s@_FillValue= 1e20
   delete(S)
@@ -14982,7 +14994,7 @@ begin
       nlt = 2
   end if
 
-  S           = static_stability_n(p,t,npr,1)   ; variable of type list
+  S           = static_stability(p,t,npr,1)   ; variable of type list
 
   s           = S[0]    ; [...] is list syntax    
   theta       = S[1]
