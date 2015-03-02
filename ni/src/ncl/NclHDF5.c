@@ -2309,9 +2309,14 @@ int _HDF5Build_dim_list_from_dim_group(HDF5DimInqRecList **dim_list,
 
 static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHDF5group_node_t *HDF5group)
 {
-    NclHDF5dataset_list_t *dataset_list;
-    NclHDF5group_list_t   *group_list;
+    NclHDF5dataset_list_t *dataset_list = NULL;
+    NclHDF5group_list_t   *group_list = NULL;
     HDF5DimInqRecList *tmp_list = NULL;
+
+    NclHDF5dataset_node_t *dataset_node = NULL;
+    NclHDF5attr_list_t *attr_list = NULL;
+    NclHDF5attr_list_t *new_attr_list = NULL;
+    short need_add_fillvalue_attribute = 0;
 
     int i, k, n;
     int num_new_dim;
@@ -2340,11 +2345,11 @@ static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHD
 
     while(dataset_list)
     {
-        NclHDF5dataset_node_t *dataset_node = dataset_list->dataset_node;
-
-        NclHDF5attr_list_t *attr_list;
-
+        dataset_node = dataset_list->dataset_node;
         attr_list = dataset_node->attr_list;
+
+        new_attr_list = NULL;
+        need_add_fillvalue_attribute = 1;
 
         while(attr_list)
         {
@@ -2361,7 +2366,7 @@ static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHD
 
                 num_new_dim = 0;
                 ori_str = strdup((char *)attr_list->attr_node->value);
-                strcpy(delimiter, ",");
+                strcpy(delimiter, " ,");
                 result = strtok(ori_str, delimiter);
                 while(result != NULL)
                 {
@@ -2473,7 +2478,66 @@ static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHD
                     }
                 }
             }
+            else if(0 == strcmp(attr_list->attr_node->name, "_FillValue"))
+            {
+                need_add_fillvalue_attribute = 0;
+            }
             attr_list = attr_list->next;
+        }
+
+        if(need_add_fillvalue_attribute)
+        {
+            attr_list = dataset_node->attr_list;
+
+            while(attr_list)
+            {
+                if(0 == strcmp(attr_list->attr_node->name, "CodeMissingValue"))
+                {
+                   new_attr_list = (NclHDF5attr_list_t *)NclCalloc(1, sizeof(NclHDF5attr_list_t));
+                   new_attr_list->attr_node = NclCalloc(1, sizeof(NclHDF5attr_node_t));
+                   if(!new_attr_list->attr_node)
+                   {
+                       fprintf(stderr, "Failed to allocated memory for new_attr_list->attr_node. in file: %s, line: %d\n",
+                               __FILE__, __LINE__);
+                       return FAILED;
+                   }
+
+                   strcpy(new_attr_list->attr_node->name, "_FillValue");
+                   strcpy(new_attr_list->attr_node->type_name, dataset_node->type_name);
+                   strcpy(new_attr_list->attr_node->dataspace, attr_list->attr_node->dataspace);
+
+                   new_attr_list->attr_node->id = attr_list->attr_node->id;
+                   new_attr_list->attr_node->type = dataset_node->type;
+                   new_attr_list->attr_node->p_type = attr_list->attr_node->p_type;
+                   new_attr_list->attr_node->space = attr_list->attr_node->space;
+                   new_attr_list->attr_node->space_type = attr_list->attr_node->space_type;
+                   new_attr_list->attr_node->counter = 1 + dataset_node->attr_list->attr_node->counter;
+                   new_attr_list->attr_node->nbytes = _NclSizeOf(_HDF52Ncl_type(dataset_node->type_name));
+                   new_attr_list->attr_node->ndims = attr_list->attr_node->ndims;
+                   for(n = 0; n < new_attr_list->attr_node->ndims; ++n)
+                       new_attr_list->attr_node->dims[n] = attr_list->attr_node->dims[n];
+                   new_attr_list->attr_node->value = NclCalloc(1, new_attr_list->attr_node->nbytes);
+
+                   if(0 == strcmp("string", attr_list->attr_node->type_name))
+                   {
+                       NclQuark qav = NrmStringToQuark((char*)attr_list->attr_node->value);
+                       _NclScalarForcedCoerce((void*)&qav, NCL_string,
+                                              new_attr_list->attr_node->value, _HDF52Ncl_type(new_attr_list->attr_node->type_name));
+                   }
+                   else
+                   {
+                       _NclScalarForcedCoerce(attr_list->attr_node->value,
+                                              _HDF52Ncl_type(attr_list->attr_node->type_name),
+                                              new_attr_list->attr_node->value, _HDF52Ncl_type(new_attr_list->attr_node->type_name));
+                   }
+
+                   new_attr_list->next = dataset_node->attr_list;
+                   dataset_node->attr_list = new_attr_list;
+
+                   break;
+               }
+               attr_list = attr_list->next;
+            }
         }
 
         dataset_list = dataset_list->next;
