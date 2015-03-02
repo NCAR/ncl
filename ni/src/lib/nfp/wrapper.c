@@ -98,7 +98,7 @@ extern NhlErrorTypes wrf_wps_open_int_W(void);
 extern NhlErrorTypes wrf_wps_rdhead_int_W(void);
 extern NhlErrorTypes wrf_wps_rddata_int_W(void);
 extern NhlErrorTypes wrf_wps_read_int_W(void);
-extern NhlErrorTypes wrf_vinterp_W(void);
+extern NhlErrorTypes wrf_vintrp_W(void);
 extern NhlErrorTypes wrf_monotonic_W(void);
 
 extern NhlErrorTypes cape_thermo_W(void);
@@ -1856,7 +1856,7 @@ void NclAddUserFuncs(void)
         NclRegisterFunc(wrf_wps_read_nml_W,args,"wrf_wps_read_nml",nargs);
 
 /*
- * Register "wrf_vinterp".
+ * Register "wrf_vintrp".
  *
  * Create private argument array
  */
@@ -1880,7 +1880,7 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
-        NclRegisterFunc(wrf_vinterp_W,args,"wrf_vinterp",nargs);
+        NclRegisterFunc(wrf_vintrp_W,args,"wrf_vintrp",nargs);
 
 /*
  * Register "wrf_monotonic".
