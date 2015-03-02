@@ -2013,6 +2013,148 @@ begin
        return(tv)
   end if
 
+  if( variable .eq. "ctt") then
+      if ( time .eq. -1 ) then
+         explicit_time = 0
+         if(ISFILE) then
+            P     = nc_file->P
+            PB    = nc_file->PB
+            T     = nc_file->T
+
+;geopotential height
+            PHB   = nc_file->PHB
+            PH    = nc_file->PH
+
+            if(isfilevar(nc_file,"QVAPOR")) then
+               qvp =  nc_file->QVAPOR * 1000.  ; kg/kg -> g/kg
+            else
+               print("wrf_user_getvar: QVAPOR is needed to calculate the cloud top temperature.")
+               print("It has not been found in the data set.")
+               exit
+            end if
+
+
+            haveqci = 1
+            if(isfilevar(nc_file,"QICE")) then
+               qci =  nc_file->QICE * 1000.  ; kg/kg -> g/kg
+            else
+               qci  =  new( (/Pdims(0),Pdims(1),Pdims(2),Pdims(3)/),float)
+               qci  = -999.0
+               haveqci = 0
+            end if
+
+
+            if(isfilevar(nc_file,"QCLOUD")) then
+               qcw = nc_file->QCLOUD * 1000.  ; kg/kg -> g/kg
+            else
+               print("wrf_user_getvar: QCLOUD is needed to calculate the cloud top temperature.")
+               print("It has not been found in the data set.")
+               exit
+            end if
+
+            ter = nc_file->HGT(0,:,:)
+
+         else ; the else for ISFILE
+            P      = file_handle[:]->P
+            PB     = file_handle[:]->PB
+            T      = file_handle[:]->T
+            PHB    = file_handle[:]->PHB
+            PH     = file_handle[:]->PH
+            nc_file =  file_handle[0]
+            ter    = nc_file->HGT(0,:,:)
+            if(isfilevar(nc_file,"QVAPOR")) then
+               qvp = file_handle[:]->QVAPOR * 1000.  ; kg/kg -> g/kg
+            else
+               print("wrf_user_getvar: QVAPOR is needed to calculate the cloud top temperature.")
+               print("It has not been found in the data set.")
+               exit
+            end if 
+ 
+            haveqci = 1
+            if(isfilevar(nc_file,"QICE")) then
+               qci =  file_handle[:]->QICE * 1000.  ; kg/kg -> g/kg
+            else
+               qci  =  new( (/Pdims(0),Pdims(1),Pdims(2),Pdims(3)/),float)
+               qci  = -999.0
+               haveqci = 0
+            end if
+
+
+            if(isfilevar(nc_file,"QCLOUD")) then
+               qcw = file_handle[:]->QCLOUD * 1000.  ; kg/kg -> g/kg
+            else
+               print("wrf_user_getvar: QCLOUD is needed to calculate the cloud top temperature.")
+               print("It has not been found in the data set.")
+               exit
+            end if
+
+         end if ;if ISFILE
+       else     ;the else for time = -1
+          if(ISFILE) then
+            explicit_time = 1
+            P     = nc_file->P(time_in,:,:,:)
+            PB    = nc_file->PB(time_in,:,:,:)
+            T     = nc_file->T(time_in,:,:,:)
+
+;geopotential height
+            PHB   = nc_file->PHB(time_in,:,:,:)
+            PH    = nc_file->PH(time_in,:,:,:)
+
+            if(isfilevar(nc_file,"QVAPOR")) then
+               qvp =  nc_file->QVAPOR(time_in,:,:,:) * 1000.  ; kg/kg -> g/kg
+            else
+               print("wrf_user_getvar: QVAPOR is needed to calculate the cloud top temperature.")
+               print("It has not been found in the data set")
+               exit
+            end if
+
+
+            haveqci = 1
+            if(isfilevar(nc_file,"QICE")) then
+               qci =  nc_file->QICE(time_in,:,:,:) * 1000.  ; kg/kg -> g/kg
+            else
+               qci  =  new( (/Pdims(0),Pdims(1),Pdims(2),Pdims(3)/),float)
+               qci  = -999.0
+               haveqci = 0
+            end if
+
+
+            if(isfilevar(nc_file,"QCLOUD")) then
+               qcw = nc_file->QCLOUD(time_in,:,:,:) * 1000.  ; kg/kg -> g/kg
+            else
+               print("wrf_user_getvar: QCLOUD is needed to calculate the cloud top temperature.")
+               print("It has not been found in the data set.")
+               exit
+            end if
+
+            ter = nc_file->HGT(0,:,:)
+          end if ;end if for ISFILE
+       end if   ;time = -1
+
+
+;Get total pressure
+         Pdims = dimsizes(P)
+         pres  = P + PB
+         pres  = pres * 0.01
+
+;Get temperature in degrees K
+         T     = T +300.
+         tk    = wrf_tk( pres , T )
+
+;Get geopotential height on mass points
+         stag_ght   = PH
+         stag_ght   = (PHB + PH)/9.81
+         ght        =  wrf_user_unstagger(stag_ght,PHB@stagger)
+
+         fctt = wrf_ctt(pres,tk,qci,qcw,qvp,ght,ter,haveqci)
+
+       delete_VarAtts(T,(/"description","units"/))
+       copy_VarAtts(T,fctt)
+       fctt@description = "Cloud Top Temperature"
+       fctt@units = "K"
+       return(fctt)
+  end if         ;variable is ctt
+ 
 
   if( any( variable .eq. (/"ter","HGT","HGT_M"/) ) ) then
     variable = "HGT" 
