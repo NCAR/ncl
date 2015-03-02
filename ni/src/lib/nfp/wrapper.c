@@ -1868,12 +1868,11 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-        dimsizes[0] = 0;
-        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
         dimsizes[0] = 1;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;

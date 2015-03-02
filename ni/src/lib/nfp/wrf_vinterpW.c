@@ -71,7 +71,8 @@ NhlErrorTypes wrf_vintrp_W( void )
  */
   void *ter;
   double *tmp_ter;
-  ng_size_t dsizes_ter[2];
+  int       ndims_ter;
+  ng_size_t dsizes_ter[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_ter;
 
 /*
@@ -154,8 +155,8 @@ NhlErrorTypes wrf_vintrp_W( void )
 /*
  * Check dimension sizes.
  */
-  if(ndims_field < 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The field array must have at least 3 dimensions");
+  if(ndims_field < 3 || ndims_field > 4) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The field array must be 3D or 4D");
     return(NhlFATAL);
   }
 
@@ -173,7 +174,7 @@ NhlErrorTypes wrf_vintrp_W( void )
  * Test dimension sizes.
  */
   if(ninlev > INT_MAX || nlat > INT_MAX || nlon > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: one of nlev, nlat, or nlon is greater than INT_MAX");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: one of bottom_top, south_north, or west_east is greater than INT_MAX");
     return(NhlFATAL);
   }
   ininlev = (int) ninlev;
@@ -303,7 +304,7 @@ NhlErrorTypes wrf_vintrp_W( void )
   ter = (void*)NclGetArgValue(
            5,
            14,
-           NULL,
+           &ndims_ter,
            dsizes_ter,
            NULL,
            NULL,
@@ -311,11 +312,27 @@ NhlErrorTypes wrf_vintrp_W( void )
            DONT_CARE);
 
 /*
- * Check dimension sizes.
+ * Check dimension sizes for ter.  It can either be 2D, or one fewer
+ * dimensions than field.
  */
-  if(dsizes_ter[0] != nlat || dsizes_ter[1] != nlon) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The dimensions of ter must be nlat x nlon");
+  if(ndims_ter != 2 && ndims_ter != (ndims_field-1)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: ter must either be a 2D array dimensioned south_north x west_east or it must have the same dimensionality as the field array, minus the level dimension");
     return(NhlFATAL);
+  }
+
+  if(ndims_ter == 2) {
+    if(dsizes_ter[0] != nlat || dsizes_ter[1] != nlon) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The dimensions of ter must be south_north x west_east");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    for(i = 0; i < ndims_field-3; i++) {
+      if(dsizes_ter[i] != dsizes_field[i]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: ter must either be a 2D array dimensioned south_north x west_east or it must have the same dimensionality as the field array, minus the level dimension");
+        return(NhlFATAL);
+      }
+    }
   }
 
 /*
@@ -496,12 +513,6 @@ NhlErrorTypes wrf_vintrp_W( void )
   size_leftmost  = 1;
   for(i = 0; i < ndims_field-3; i++) size_leftmost *= dsizes_field[i];
 
-/*
- * The output type defaults to float, unless one or more input 
- * arrays are double.
- */
-  type_field_out = NCL_float;
-
 /* 
  * Allocate space for coercing input arrays.  If any of the input
  * is already double, then we don't need to allocate space for
@@ -522,9 +533,7 @@ NhlErrorTypes wrf_vintrp_W( void )
       return(NhlFATAL);
     }
   }
-  else {
-    type_field_out = NCL_double;
-  }
+
 /*
  * Allocate space for tmp_pres.
  */
@@ -535,9 +544,7 @@ NhlErrorTypes wrf_vintrp_W( void )
       return(NhlFATAL);
     }
   }
-  else {
-    type_field_out = NCL_double;
-  }
+
 /*
  * Allocate space for tmp_tk.
  */
@@ -548,9 +555,7 @@ NhlErrorTypes wrf_vintrp_W( void )
       return(NhlFATAL);
     }
   }
-  else {
-    type_field_out = NCL_double;
-  }
+
 /*
  * Allocate space for tmp_qvp.
  */
@@ -561,9 +566,7 @@ NhlErrorTypes wrf_vintrp_W( void )
       return(NhlFATAL);
     }
   }
-  else {
-    type_field_out = NCL_double;
-  }
+
 /*
  * Allocate space for tmp_ght.
  */
@@ -574,19 +577,28 @@ NhlErrorTypes wrf_vintrp_W( void )
       return(NhlFATAL);
     }
   }
-  else {
-    type_field_out = NCL_double;
-  }
+
 /*
  * Coerce ter to double, if necessary.
  */
-  tmp_ter = coerce_input_double(ter,type_ter,nlatlon,0,NULL,NULL);
-  if(tmp_ter == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for coercing ter array to double");
-    return(NhlFATAL);
+  if(ndims_ter == 2) {
+    tmp_ter = coerce_input_double(ter,type_ter,nlatlon,0,NULL,NULL);
+    if(tmp_ter == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for coercing ter array to double");
+      return(NhlFATAL);
+    }
   }
   else {
-    type_field_out = NCL_double;
+/*
+ * Allocate space for tmp_ter.
+ */
+    if(type_ter != NCL_double) {
+      tmp_ter = (double *)calloc(nlatlon,sizeof(double));
+      if(tmp_ter == NULL) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for coercing ter array to double");
+        return(NhlFATAL);
+      }
+    }
   }
 
 /*
@@ -599,9 +611,6 @@ NhlErrorTypes wrf_vintrp_W( void )
       return(NhlFATAL);
     }
   }
-  else {
-    type_field_out = NCL_double;
-  }
 
 /*
  * Allocate space for tmp_smsfp.
@@ -613,9 +622,7 @@ NhlErrorTypes wrf_vintrp_W( void )
       return(NhlFATAL);
     }
   }
-  else {
-    type_field_out = NCL_double;
-  }
+
 /*
  * Allocate space for tmp_vcarray.
  */
@@ -626,9 +633,6 @@ NhlErrorTypes wrf_vintrp_W( void )
       return(NhlFATAL);
     }
   }
-  else {
-    type_field_out = NCL_double;
-  }
 /*
  * Coerce intrp_levels to double, if necessary.
  */
@@ -638,12 +642,27 @@ NhlErrorTypes wrf_vintrp_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for coercing interp_levels array to double");
     return(NhlFATAL);
   }
-  else {
+
+/*
+ * The output type defaults to float, unless one or more input 
+ * arrays are double.
+ */
+  if(type_field   == NCL_double || type_pres  == NCL_double || 
+     type_tk      == NCL_double || type_qvp   == NCL_double || 
+     type_ght     == NCL_double || type_ter   == NCL_double || 
+     type_sfp     == NCL_double || type_smsfp == NCL_double || 
+     type_vcarray == NCL_double) {
     type_field_out = NCL_double;
+  }
+  else {
+    type_field_out = NCL_float;
   }
 
 /* 
- * Allocate space for output array.
+ * Allocate space for output array and set a missing value.
+ * Note: a missing value is returned even if the input doesn't
+ * have a missing value, because the output may contain missing 
+ * values after interpolation is done.
  */
   size_output = size_leftmost * noutlevlatlon;
   if(type_field_out != NCL_double) {
@@ -653,6 +672,7 @@ NhlErrorTypes wrf_vintrp_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for temporary output array");
       return(NhlFATAL);
     }
+    missing_field_out = missing_flt_field;
   }
   else {
     field_out = (void *)calloc(size_output, sizeof(double));
@@ -660,11 +680,7 @@ NhlErrorTypes wrf_vintrp_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
-  }
-
-  if(has_missing_field) {
-    if(type_field_out == NCL_double) missing_field_out = missing_dbl_field;
-    else                             missing_field_out = missing_flt_field;
+    missing_field_out = missing_dbl_field;
   }
 
 /* 
@@ -744,12 +760,14 @@ NhlErrorTypes wrf_vintrp_W( void )
 /*
  * Coerce subsection of ter (tmp_ter) to double if necessary.
  */
-    if(type_ter != NCL_double) {
-      coerce_subset_input_double(ter,tmp_ter,index_ter,type_ter,
-                                 nlatlon,0,NULL,NULL);
-    }
-    else {
-      tmp_ter = &((double*)ter)[index_ter];
+    if(ndims_ter != 2) {
+      if(type_ter != NCL_double) {
+        coerce_subset_input_double(ter,tmp_ter,index_ter,type_ter,
+                                   nlatlon,0,NULL,NULL);
+      }
+      else {
+        tmp_ter = &((double*)ter)[index_ter];
+      }
     }
 
 /*
@@ -811,8 +829,10 @@ NhlErrorTypes wrf_vintrp_W( void )
                                index_field_out);
     }
     index_field     += ninlevlatlon;
-    index_ter       += nlatlon;
     index_field_out += noutlevlatlon;
+    if(ndims_ter != 2) { 
+      index_ter     += nlatlon;
+    }
   }
 
 /*
@@ -927,7 +947,7 @@ NhlErrorTypes wrf_monotonic_W( void )
  * Check dimension sizes.
  */
   if(ndims_x < 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_monotonic: The x array must have at least 3 dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_monotonic: The x array must have at least three dimensions");
     return(NhlFATAL);
   }
   nlev = dsizes_x[ndims_x-3];
@@ -938,7 +958,7 @@ NhlErrorTypes wrf_monotonic_W( void )
  * Test dimension sizes.
  */
   if(nlev > INT_MAX || nlat > INT_MAX || nlon > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_monotonic: one of nlev, nlat, or nlon is greater than INT_MAX");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_monotonic: one of bottom_top, south_north, or west_east is greater than INT_MAX");
     return(NhlFATAL);
   }
   inlev = (int) nlev;
@@ -989,16 +1009,24 @@ NhlErrorTypes wrf_monotonic_W( void )
            DONT_CARE);
 
 /*
- * Check dimension sizes.
+ * Check dimension sizes for cor.  It can either be 2D, or one fewer
+ * dimensions than x.
  */
-  if(ndims_cor != (ndims_x-1)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_monotonic: The cor array must have the same dimensionality as the x array, minus the level dimension");
+  if(ndims_cor != 2 && ndims_cor != (ndims_x-1)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: cor must either be a 2D array dimensioned south_north x west_east or it must have the same dimensionality as the x array, minus the level dimension");
     return(NhlFATAL);
   }
+
+  if(ndims_cor == 2) {
+    if(dsizes_cor[0] != nlat || dsizes_cor[1] != nlon) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The dimensions of cor must be south_north x west_east");
+      return(NhlFATAL);
+    }
+  }
   else {
-    for(i = 0; i < ndims_x; i++) {
+    for(i = 0; i < ndims_x-3; i++) {
       if(dsizes_cor[i] != dsizes_x[i]) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_monotonic: The cor and x arrays must have the same dimensionality");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_monotonic: cor must either be a 2D array dimensioned south_north x west_east or it must have the same dimensionality as the x array, minus the level dimension");
         return(NhlFATAL);
       }
     }
@@ -1082,15 +1110,31 @@ NhlErrorTypes wrf_monotonic_W( void )
     }
   }
 /*
- * Allocate space for tmp_cor.
+ * Coerce cor to double, if necessary.
  */
-  if(type_cor != NCL_double) {
-    tmp_cor = (double *)calloc(nlatlon,sizeof(double));
-    if(tmp_cor == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_monotonic: Unable to allocate memory for coercing input array to double");
-      return(NhlFATAL);
+  if(ndims_cor == 2) {
+    tmp_cor = coerce_input_double(cor,type_cor,nlatlon,0,NULL,NULL);
+    if(type_cor != NCL_double) {
+      tmp_cor = (double *)calloc(nlatlon,sizeof(double));
+      if(tmp_cor == NULL) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_monotonic: Unable to allocate memory for coercing input array to double");
+        return(NhlFATAL);
+      }
     }
   }
+  else {
+/*
+ * Allocate space for tmp_ter.
+ */
+    if(type_cor != NCL_double) {
+      tmp_cor = (double *)calloc(nlatlon,sizeof(double));
+      if(tmp_cor == NULL) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_monotonic: Unable to allocate memory for coercing cor array to double");
+        return(NhlFATAL);
+      }
+    }
+  }
+
 /*
  * Allocate space for tmp_delta.
  */
@@ -1152,13 +1196,17 @@ NhlErrorTypes wrf_monotonic_W( void )
     }
 
 /*
- * Coerce subsection of cor (tmp_cor) to double if necessary.
+ * Coerce subsection of cor (tmp_cor) to double if necessary, if
+ * it is not a 2D array.
  */
-    if(type_cor != NCL_double) {
-      coerce_subset_input_double(cor,tmp_cor,index_cor,type_cor,nlatlon,0,NULL,NULL);
-    }
-    else {
-      tmp_cor = &((double*)cor)[index_cor];
+    if(ndims_cor != 2) { 
+      if(type_cor != NCL_double) {
+        coerce_subset_input_double(cor,tmp_cor,index_cor,
+                                   type_cor,nlatlon,0,NULL,NULL);
+      }
+      else {
+        tmp_cor = &((double*)cor)[index_cor];
+      }
     }
 
 
@@ -1182,7 +1230,9 @@ NhlErrorTypes wrf_monotonic_W( void )
       coerce_output_float_only(xout,tmp_xout,nlevlatlon,index_x);
     }
     index_x   += nlevlatlon;
-    index_cor += nlatlon;
+    if(ndims_cor != 2) { 
+      index_cor += nlatlon;
+    }
   }
 
 /*
