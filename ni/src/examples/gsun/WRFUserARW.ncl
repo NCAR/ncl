@@ -5,9 +5,9 @@
 ;                            loc_param:numeric, angle:numeric, opts:logical )
 ; function wrf_user_intrp2d( var2d:numeric, \
 ;                            loc_param:numeric, angle:numeric, opts:logical )
-; function wrf_vert_interp(file_handle,field:float,\
-;                       vert_coordinate[1]:string, \
-;                       interp_levels[*]:numeric,opts[1]:logical)
+; function wrf_user_vert_interp(file_handle,field:float,\
+;                               vert_coordinate[1]:string, \
+        ;                       interp_levels[*]:numeric,opts[1]:logical)
 ; function wrf_user_getvar( file_handle, variable:string, time:integer )
 ; function wrf_user_list_times( file_handle )
 ; function wrf_user_ll_to_ij( nc_file:file, longitude:numeric, latitude:numeric, \
@@ -503,16 +503,16 @@ begin
 end
 
 ;--------------------------------------------------------------------------------
-undef("wrf_vert_interp")
-function wrf_vert_interp(file_handle,field:numeric, \
-                         vert_coordinate[1]:string, \
-                         interp_levels[*]:numeric,opts[1]:logical)
+undef("wrf_user_vert_interp")
+function wrf_user_vert_interp(file_handle,field:numeric, \
+                              vert_coordinate[1]:string, \
+                              interp_levels[*]:numeric,opts[1]:logical)
 local valid_vert_coords, nc_file
 begin
 
   valid_vert_coords = (/"pressure","pres","ght_msl","ght_agl","theta","theta-e"/)
   if(.not.any(vert_coordinate.eq.valid_vert_coords)) then
-    print("wrf_vert_interp: Unrecognized vertical coordinate.")
+    print("wrf_user_vert_interp: Unrecognized vertical coordinate.")
     print("   Accepted vertical coordinates are:")
     print(     "pressure, pres   hPa")
     print(     "ght_msl          km")
@@ -529,7 +529,7 @@ begin
     ISFILE = False
     nc_file = file_handle[0]
   else
-    print("wrf_vert_interp: error: the first argument must be a file or a list of files opened with addfile or addfiles")
+    print("wrf_user_vert_interp: error: the first argument must be a file or a list of files opened with addfile or addfiles")
     return
   end if
   end if
@@ -553,19 +553,19 @@ begin
   num_field_dims = dimsizes(field_dims)
 
  if(num_field_dims .lt. 3 .or. num_field_dims .gt. 4) then
-    print("wrf_vert_interp: We can only interpolate a 3D or 4D field")
+    print("wrf_user_vert_interp: We can only interpolate a 3D or 4D field")
     exit
  end if
 
 ; Check to see if the field comes in unstaggered.
    if(field_dims(num_field_dims-3) .ne. nz) then
-      print("wrf_vert_interp: Please unstagger the field in the vertical")
+      print("wrf_user_vert_interp: Please unstagger the field in the vertical")
       exit
    end if
 
    if(field_dims(num_field_dims-2) .ne. ns .or. \
       field_dims(num_field_dims-1) .ne. ew) then
-      print("wrf_vert_interp: Please unstagger the field")
+      print("wrf_user_vert_interp: Please unstagger the field")
       exit
    end if
 
