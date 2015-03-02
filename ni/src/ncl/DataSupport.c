@@ -1919,9 +1919,70 @@ NclBasicDataTypes totype;
 		}
 	case NCL_string:
 		{
-			char *the_str = NrmQuarkToString(*(NrmQuark*)from);
-           
-			return _NclScalarForcedCoerce((void*)the_str, NCL_char, to, totype);
+		char *val = NrmQuarkToString(*(NrmQuark*)from);
+		char *end;
+
+		switch(totype) {
+		case NCL_byte:
+			*(byte*)to = (byte) _Nclstrtol(val, &end);
+			return(1);
+		case NCL_char:
+			*(char*)to = (char) _Nclstrtoul(val, &end);
+			return(1);
+		case NCL_short:
+			*(short*)to = (short) _Nclstrtol(val, &end);
+			return(1);
+                case NCL_int:
+			*(int*)to = (int) _Nclstrtol(val, &end);
+			return(1);
+		case NCL_long:
+			*(long*)to = _Nclstrtol(val, &end);
+			return(1);
+		case NCL_int64:
+			*(long long*)to = _Nclstrtoll(val, &end);
+			return(1);
+                case NCL_ubyte:
+                        *(unsigned char*)to = (unsigned char) _Nclstrtoul(val, &end);
+                        return(1);
+                case NCL_ushort:
+			*(unsigned short*)to = (unsigned short) _Nclstrtoul(val, &end);
+                        return(1);
+                case NCL_uint:
+			*(unsigned int*)to = (unsigned int) _Nclstrtoul(val, &end);
+                        return(1);
+                case NCL_ulong:
+			*(unsigned long*)to = (unsigned long) _Nclstrtoul(val, &end);
+                        return(1);
+                case NCL_uint64:
+			*(unsigned long long*)to = (unsigned long long) _Nclstrtoull(val, &end);
+                        return(1);
+                case NCL_float:
+			{
+			double dval = strtod(val,&end);
+                	if (end == val || errno == ERANGE) {
+                        	*(float*)to = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+                	} else
+                        	*(float*)to = (float)dval;
+			return(1);
+			}
+                case NCL_double:
+			{
+			double dval = strtod(val,&end);
+                	if (end == val || errno == ERANGE) {
+                        	*(double*)to = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+                	} else
+                        	*(double*)to = dval;
+			return(1);
+			}
+                case NCL_logical:
+			*(logical*)to = (logical)_Nclstrtol(val, &end);
+			return(1);
+		case NCL_string:
+			*(NclQuark*)to = (NclQuark*)from;
+			return(1);
+		default:
+			return(0);
+		}
 		}
 	case NCL_logical:
 	default:
