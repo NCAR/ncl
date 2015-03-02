@@ -13,7 +13,7 @@ extern void NGCALLF(wrf_monotonic,WRF_MONOTONIC)(double *, double *, double *,
                                                  int *, int *, int *, int *);
 
 
-NhlErrorTypes wrf_vinterp_W( void )
+NhlErrorTypes wrf_vintrp_W( void )
 {
 
 /*
@@ -155,7 +155,7 @@ NhlErrorTypes wrf_vinterp_W( void )
  * Check dimension sizes.
  */
   if(ndims_field < 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: The field array must have at least 3 dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The field array must have at least 3 dimensions");
     return(NhlFATAL);
   }
 
@@ -173,7 +173,7 @@ NhlErrorTypes wrf_vinterp_W( void )
  * Test dimension sizes.
  */
   if(ninlev > INT_MAX || nlat > INT_MAX || nlon > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: one of nlev, nlat, or nlon is greater than INT_MAX");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: one of nlev, nlat, or nlon is greater than INT_MAX");
     return(NhlFATAL);
   }
   ininlev = (int) ninlev;
@@ -197,13 +197,13 @@ NhlErrorTypes wrf_vinterp_W( void )
  * Check dimension sizes.
  */
   if(ndims_pres != ndims_field) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: The pres and field arrays must have the same dimensionality");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The pres and field arrays must have the same dimensionality");
     return(NhlFATAL);
   }
   else {
     for(i = 0; i < ndims_field; i++) {
       if(dsizes_pres[i] != dsizes_field[i]) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: The pres and field arrays must have the same dimensionality");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The pres and field arrays must have the same dimensionality");
         return(NhlFATAL);
       }
     }
@@ -226,13 +226,13 @@ NhlErrorTypes wrf_vinterp_W( void )
  * Check dimension sizes.
  */
   if(ndims_tk != ndims_field) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: The tk and field arrays must have the same dimensionality");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The tk and field arrays must have the same dimensionality");
     return(NhlFATAL);
   }
   else {
     for(i = 0; i < ndims_field; i++) {
       if(dsizes_tk[i] != dsizes_field[i]) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: The tk and field arrays must have the same dimensionality");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The tk and field arrays must have the same dimensionality");
         return(NhlFATAL);
       }
     }
@@ -256,13 +256,13 @@ NhlErrorTypes wrf_vinterp_W( void )
  * Check dimension sizes.
  */
   if(ndims_qvp != ndims_field) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: The qvp and field arrays must have the same dimensionality");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The qvp and field arrays must have the same dimensionality");
     return(NhlFATAL);
   }
   else {
     for(i = 0; i < ndims_field; i++) {
       if(dsizes_qvp[i] != dsizes_field[i]) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: The qvp and field arrays must have the same dimensionality");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The qvp and field arrays must have the same dimensionality");
         return(NhlFATAL);
       }
     }
@@ -285,13 +285,13 @@ NhlErrorTypes wrf_vinterp_W( void )
  * Check dimension sizes.
  */
   if(ndims_ght != ndims_field) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: The ght and field arrays must have the same dimensionality");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The ght and field arrays must have the same dimensionality");
     return(NhlFATAL);
   }
   else {
     for(i = 0; i < ndims_field; i++) {
       if(dsizes_ght[i] != dsizes_field[i]) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: The ght and field arrays must have the same dimensionality");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The ght and field arrays must have the same dimensionality");
         return(NhlFATAL);
       }
     }
@@ -314,7 +314,7 @@ NhlErrorTypes wrf_vinterp_W( void )
  * Check dimension sizes.
  */
   if(dsizes_ter[0] != nlat || dsizes_ter[1] != nlon) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: The dimensions of ter must be nlat x nlon");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The dimensions of ter must be nlat x nlon");
     return(NhlFATAL);
   }
 
@@ -335,18 +335,18 @@ NhlErrorTypes wrf_vinterp_W( void )
  * Check dimension sizes.
  */
   if(ndims_sfp != (ndims_field-1)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: The sfp array must have the same dimensionality as the field array, minus the level dimension");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The sfp array must have the same dimensionality as the field array, minus the level dimension");
     return(NhlFATAL);
   }
   else {
     for(i = 0; i < ndims_field-3; i++) {
       if(dsizes_sfp[i] != dsizes_field[i]) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: The sfp array must have the same dimensionality as the field array, minus the level dimension");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The sfp array must have the same dimensionality as the field array, minus the level dimension");
         return(NhlFATAL);
       }
     }
     if(dsizes_sfp[ndims_sfp-2] != nlat || dsizes_sfp[ndims_sfp-1] != nlon) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: The sfp array must have the same dimensionality as the field array, minus the level dimension");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The sfp array must have the same dimensionality as the field array, minus the level dimension");
       return(NhlFATAL);
     }
   }
@@ -369,19 +369,19 @@ NhlErrorTypes wrf_vinterp_W( void )
  * Check dimension sizes.
  */
   if(ndims_smsfp != (ndims_field-1)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: The smsfp array must have the same dimensionality as the field array, minus the level dimension");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The smsfp array must have the same dimensionality as the field array, minus the level dimension");
     return(NhlFATAL);
   }
   else {
     for(i = 0; i < ndims_field-3; i++) {
       if(dsizes_smsfp[i] != dsizes_field[i]) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: The smsfp array must have the same dimensionality as the field array, minus the level dimension");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The smsfp array must have the same dimensionality as the field array, minus the level dimension");
         return(NhlFATAL);
       }
     }
     if(dsizes_smsfp[ndims_smsfp-2] != nlat || 
        dsizes_smsfp[ndims_smsfp-1] != nlon) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: The smsfp array must have the same dimensionality as the field array, minus the level dimension");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The smsfp array must have the same dimensionality as the field array, minus the level dimension");
       return(NhlFATAL);
     }
   }
@@ -404,13 +404,13 @@ NhlErrorTypes wrf_vinterp_W( void )
  * Check dimension sizes.
  */
   if(ndims_vcarray != ndims_field) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: The vcarray and field arrays must have the same dimensionality");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The vcarray and field arrays must have the same dimensionality");
     return(NhlFATAL);
   }
   else {
     for(i = 0; i < ndims_field; i++) {
       if(dsizes_vcarray[i] != dsizes_field[i]) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: The vcarray and field arrays must have the same dimensionality");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The vcarray and field arrays must have the same dimensionality");
         return(NhlFATAL);
       }
     }
@@ -435,7 +435,7 @@ NhlErrorTypes wrf_vinterp_W( void )
  * Test dimension sizes.
  */
   if(noutlev > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: the # of output levels is greater than INT_MAX");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: the # of output levels is greater than INT_MAX");
     return(NhlFATAL);
   }
   inoutlev = (int) noutlev;
@@ -518,7 +518,7 @@ NhlErrorTypes wrf_vinterp_W( void )
   if(type_field != NCL_double) {
     tmp_field = (double *)calloc(ninlevlatlon,sizeof(double));
     if(tmp_field == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: Unable to allocate memory for coercing field array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for coercing field array to double");
       return(NhlFATAL);
     }
   }
@@ -531,7 +531,7 @@ NhlErrorTypes wrf_vinterp_W( void )
   if(type_pres != NCL_double) {
     tmp_pres = (double *)calloc(ninlevlatlon,sizeof(double));
     if(tmp_pres == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: Unable to allocate memory for coercing pressure array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for coercing pressure array to double");
       return(NhlFATAL);
     }
   }
@@ -544,7 +544,7 @@ NhlErrorTypes wrf_vinterp_W( void )
   if(type_tk != NCL_double) {
     tmp_tk = (double *)calloc(ninlevlatlon,sizeof(double));
     if(tmp_tk == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: Unable to allocate memory for coercing tk array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for coercing tk array to double");
       return(NhlFATAL);
     }
   }
@@ -557,7 +557,7 @@ NhlErrorTypes wrf_vinterp_W( void )
   if(type_qvp != NCL_double) {
     tmp_qvp = (double *)calloc(ninlevlatlon,sizeof(double));
     if(tmp_qvp == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: Unable to allocate memory for coercing qvp array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for coercing qvp array to double");
       return(NhlFATAL);
     }
   }
@@ -570,7 +570,7 @@ NhlErrorTypes wrf_vinterp_W( void )
   if(type_ght != NCL_double) {
     tmp_ght = (double *)calloc(ninlevlatlon,sizeof(double));
     if(tmp_ght == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: Unable to allocate memory for coercing ght array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for coercing ght array to double");
       return(NhlFATAL);
     }
   }
@@ -582,7 +582,7 @@ NhlErrorTypes wrf_vinterp_W( void )
  */
   tmp_ter = coerce_input_double(ter,type_ter,nlatlon,0,NULL,NULL);
   if(tmp_ter == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: Unable to allocate memory for coercing ter array to double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for coercing ter array to double");
     return(NhlFATAL);
   }
   else {
@@ -595,7 +595,7 @@ NhlErrorTypes wrf_vinterp_W( void )
   if(type_sfp != NCL_double) {
     tmp_sfp = (double *)calloc(nlatlon,sizeof(double));
     if(tmp_sfp == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: Unable to allocate memory for coercing sfp array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for coercing sfp array to double");
       return(NhlFATAL);
     }
   }
@@ -609,7 +609,7 @@ NhlErrorTypes wrf_vinterp_W( void )
   if(type_smsfp != NCL_double) {
     tmp_smsfp = (double *)calloc(nlatlon,sizeof(double));
     if(tmp_smsfp == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: Unable to allocate memory for coercing smsfp array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for coercing smsfp array to double");
       return(NhlFATAL);
     }
   }
@@ -622,7 +622,7 @@ NhlErrorTypes wrf_vinterp_W( void )
   if(type_vcarray != NCL_double) {
     tmp_vcarray = (double *)calloc(ninlevlatlon,sizeof(double));
     if(tmp_vcarray == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: Unable to allocate memory for coercing vcarray to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for coercing vcarray to double");
       return(NhlFATAL);
     }
   }
@@ -635,7 +635,7 @@ NhlErrorTypes wrf_vinterp_W( void )
   tmp_intrp_levels = coerce_input_double(intrp_levels,type_intrp_levels,
                                          noutlev,0,NULL,NULL);
   if(tmp_intrp_levels == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: Unable to allocate memory for coercing interp_levels array to double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for coercing interp_levels array to double");
     return(NhlFATAL);
   }
   else {
@@ -650,14 +650,14 @@ NhlErrorTypes wrf_vinterp_W( void )
     field_out = (void *)calloc(size_output, sizeof(float));
     tmp_field_out = (double *)calloc(noutlevlatlon,sizeof(double));
     if(field_out == NULL || tmp_field_out == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: Unable to allocate memory for temporary output array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for temporary output array");
       return(NhlFATAL);
     }
   }
   else {
     field_out = (void *)calloc(size_output, sizeof(double));
     if(field_out == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: Unable to allocate memory for output array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
   }
@@ -672,7 +672,7 @@ NhlErrorTypes wrf_vinterp_W( void )
  */
   dsizes_field_out = (ng_size_t*)calloc(ndims_field,sizeof(ng_size_t));  
   if( dsizes_field_out == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vinterp: Unable to allocate memory for holding dimension sizes");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
   }
   for(i = 0; i < ndims_field-3; i++) dsizes_field_out[i] = dsizes_field[i];
