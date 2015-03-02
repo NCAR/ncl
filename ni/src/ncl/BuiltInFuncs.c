@@ -20653,6 +20653,75 @@ NhlErrorTypes _NclIListIndexFromName(void)
 		0));
 }
 
+NhlErrorTypes _NclIListVarNameFromIndex(void)
+{
+	obj *list_id;
+	NclList thelist = NULL;
+	ng_size_t dimsize = 1;
+	NclQuark *ret_val;
+	int nm = 1;
+	int i;
+
+	int *idx;
+	NclQuark var_name = -1;
+	NclVar cur_var;
+
+	NclListObjList *step;
+
+	int comp_val = 0;
+
+   	list_id = (obj*)NclGetArgValue(
+           0,
+           2,
+           NULL, 
+           NULL,
+	   NULL,
+	   NULL,
+           NULL,
+           DONT_CARE);
+
+	thelist = (NclList)_NclGetObj(*list_id);
+
+        idx = (int*)NclGetArgValue(
+	           1,
+	           2,
+		   NULL,
+		   NULL,
+		   NULL,
+		   NULL,
+		   NULL,
+		   DONT_CARE);
+
+	ret_val = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	if(ret_val == NULL)
+	{
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"ListIndexFromName: problem to allocate memory.");
+		return(NhlFATAL);
+	}
+
+	ret_val[0] = -1;
+
+        if((idx[0] >= 0) && (idx[0] < thelist->list.nelem))
+	{
+		step = thelist->list.first;
+
+		for(i = 0; i < idx[0]; i++)
+			step = step->next;
+
+		cur_var = (NclVar)_NclGetObj(step->obj_id);
+
+		ret_val[0] = cur_var->var.var_quark;
+	}
+
+	return(NclReturnValue(
+		ret_val,
+		1,
+		&dimsize,
+		NULL,
+		NCL_string,
+		0));
+}
+
 static nc_type _MapType (NclBasicDataTypes data_type) {
 	nc_type the_type;
 		switch(data_type) {
