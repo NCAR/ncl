@@ -136,6 +136,7 @@ typedef struct
 void *H5OpenFile(void *rootgrp, NclQuark path, int status);
 static NclBasicDataTypes string2NclType(char* name);
 static int _buildH5dimlist(NclFileGrpNode **rootgrp);
+static int _updateH5attributes(NclFileGrpNode **rootgrp);
 static NhlErrorTypes _addH5dim(NclFileDimRecord **grpdimrec, NclQuark dimname,
                                ng_size_t dimsize, int is_unlimited);
 static NclFileEnumRecord *readH5EnumAtt(hid_t type);
@@ -3684,8 +3685,54 @@ static int _buildH5dimlist(NclFileGrpNode **rootgrp)
        *                   vardimrec->n_dims);
        */
 
+        if(NULL == grpnode->dim_rec)
+        {
+            NclFileAttRecord *attrec = NULL;
+            NclFileAttNode   *attnode = NULL;
+            short need_update_dimname = 0;
+            char *ori_str;
+            char *tmp_str;
+            char *result;
+            char delimiter[3];
+
+            vardimnode = &(vardimrec->dim_node[0]);
+            if(0 > vardimnode->name)
+            {
+                attrec = varnode->att_rec;
+                if(NULL != attrec)
+                {
+                    for(j = 0; j < attrec->n_atts; ++j)
+                    {
+                        attnode = &(attrec->att_node[j]);
+                        if(NrmStringToQuark("DimensionNames") == attnode->name)
+                        {
+                            i = 0;
+                            ori_str = NrmQuarkToString(*(NclQuark *)attnode->value);
+                            tmp_str = strdup(ori_str);
+                            strcpy(delimiter, " ,");
+                            result = strtok(tmp_str, delimiter);
+                            while(result != NULL)
+                            {
+                                vardimnode = &(vardimrec->dim_node[i]);
+                                vardimnode->name = NrmStringToQuark(result);
+                                _addH5dim(&grpdimrec, vardimnode->name, vardimnode->size, 0);
+                                result = strtok(NULL, delimiter);
+                                ++i;
+                                if(i >= vardimrec->n_dims)
+                                    break;
+                            }
+                            free(tmp_str);
+                            grpnode->dim_rec = grpdimrec;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         for(i = 0; i < vardimrec->n_dims; ++i)
         {
+            int new_dim = 1;
             vardimnode = &(vardimrec->dim_node[i]);
           /*
            *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -3700,16 +3747,21 @@ static int _buildH5dimlist(NclFileGrpNode **rootgrp)
                     sprintf(tmp_name, "phony_dim_%4.4d", i);
                     vardimnode->name = NrmStringToQuark(tmp_name);
                 }
-                _addH5dim(&grpdimrec, vardimnode->name,
-                          vardimnode->size, 0);
+                _addH5dim(&grpdimrec, vardimnode->name, vardimnode->size, 0);
                 grpnode->dim_rec = grpdimrec;
             }
             else
             {
-                int new_dim = 1;
 
                 for(j = 0; j < grpdimrec->n_dims; ++j)
                 {
+                    if((0 > vardimnode->name) || (vardimnode->size == grpdimrec->dim_node[j].size))
+                    {
+                        vardimnode->name = grpdimrec->dim_node[j].name;
+                        new_dim = 0;
+                        break;
+                    }
+
                     if(vardimnode->name == grpdimrec->dim_node[j].name)
                     {
                         new_dim = 0;

@@ -2491,7 +2491,8 @@ static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHD
 
             while(attr_list)
             {
-                if(0 == strcmp(attr_list->attr_node->name, "CodeMissingValue"))
+                if((0 == strcmp(attr_list->attr_node->name, "MissingValue")) ||
+                   (0 == strcmp(attr_list->attr_node->name, "CodeMissingValue")))
                 {
                    new_attr_list = (NclHDF5attr_list_t *)NclCalloc(1, sizeof(NclHDF5attr_list_t));
                    new_attr_list->attr_node = NclCalloc(1, sizeof(NclHDF5attr_node_t));
