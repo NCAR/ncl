@@ -504,22 +504,22 @@ end
 
 ;--------------------------------------------------------------------------------
 undef("wrf_vert_interp")
-function wrf_vert_interp(file_handle,field:numeric,\
-                      vert_coordinate[1]:string, \
-                      interp_levels[*]:numeric,opts[1]:logical)
-local valid_vert_coordinates, nc_file
+function wrf_vert_interp(file_handle,field:numeric, \
+                         vert_coordinate[1]:string, \
+                         interp_levels[*]:numeric,opts[1]:logical)
+local valid_vert_coords, nc_file
 begin
 
-  valid_vert_coordinates = (/"pressure","pres","ght_msl","ght_agl","theta","theta-e"/)
-  if(.not.any(vert_coordinate.eq.valid_vert_coordinates)) then
-     print("wrf_vert_interp: Unrecognized vertical coordinate.")
-     print("   Accepted vertical coordinates are:")
-     print(     "pressure, pres   hPa")
-     print(     "ght_msl          km")
-     print(     "ght_agl          km")
-     print(     "theta            K")
-     print(     "theta-e          K")
-     exit
+  valid_vert_coords = (/"pressure","pres","ght_msl","ght_agl","theta","theta-e"/)
+  if(.not.any(vert_coordinate.eq.valid_vert_coords)) then
+    print("wrf_vert_interp: Unrecognized vertical coordinate.")
+    print("   Accepted vertical coordinates are:")
+    print(     "pressure, pres   hPa")
+    print(     "ght_msl          km")
+    print(     "ght_agl          km")
+    print(     "theta            K")
+    print(     "theta-e          K")
+    exit
   end if
 
   if(typeof(file_handle).eq."file") then
@@ -529,7 +529,7 @@ begin
     ISFILE = False
     nc_file = file_handle[0]
   else
-    print("wrf_user_getvar: error: the first argument must be a file or a list of files opened with addfile or addfiles")
+    print("wrf_vert_interp: error: the first argument must be a file or a list of files opened with addfile or addfiles")
     return
   end if
   end if
@@ -537,47 +537,45 @@ begin
   rgas    = 287.04     ;J/K/kg
   ussalr  = .0065      ; deg C per m
   sclht   = rgas*256./9.81
-
   
 ;read grid sizes from the nc_file.  Check to make
 ;sure that we don't have a staggered field.
-  dNames  = getvardims(nc_file)
-  dSizes  =  getfiledimsizes(nc_file)
-  thedims = dimsizes(dSizes)
+  dNames      = getvardims(nc_file)
+  dSizes      = getfiledimsizes(nc_file)
+  thedims     = dimsizes(dSizes)
   number_dims = thedims(0)
 
-  ew = dSizes(ind(dNames.eq."west_east"))
-  ns = dSizes(ind(dNames.eq."south_north"))
-  nz = dSizes(ind(dNames.eq."bottom_top"))
+  ew = dSizes(ind(dNames .eq. "west_east"))
+  ns = dSizes(ind(dNames .eq. "south_north"))
+  nz = dSizes(ind(dNames .eq. "bottom_top"))
 
-  field_dims      = dimsizes(field)
-  num_field_dims  = dimsizes(field_dims)
-;  print(field_dims)
+  field_dims     = dimsizes(field)
+  num_field_dims = dimsizes(field_dims)
 
  if(num_field_dims .lt. 3 .or. num_field_dims .gt. 4) then
     print("wrf_vert_interp: We can only interpolate a 3D or 4D field")
     exit
  end if
 
-; check to see if the field comes in unstaggered
+; Check to see if the field comes in unstaggered.
    if(field_dims(num_field_dims-3) .ne. nz) then
       print("wrf_vert_interp: Please unstagger the field in the vertical")
       exit
    end if
 
-   if(field_dims(num_field_dims-2) .ne. ns .or. field_dims(num_field_dims-3) .ne. ew) then
+   if(field_dims(num_field_dims-2) .ne. ns .or. \
+      field_dims(num_field_dims-1) .ne. ew) then
       print("wrf_vert_interp: Please unstagger the field")
       exit
    end if
 
-;see what options we have
+; See what options we have
   if(opts) then
-     extrap_field = get_res_value(opts,"extrapolate",False)
+     extrap_field    = get_res_value(opts,"extrapolate",False)
 
-     field_type =  get_res_value(opts,"field_type","none")
+     field_type      = str_lower(get_res_value(opts,"field_type","none"))
 
      log_of_Pressure = get_res_value(opts,"logP",False)
-     
   end if
   
   if(log_of_Pressure) then
@@ -586,34 +584,27 @@ begin
      logP = 0
   end if
 
-  icase = 0
-  extrap = False
+  icase  = 0
+  extrap = 0   ; This is for passing into Fortran
   if(extrap_field) then
      extrap = 1
-     if((field_type .eq. "P") .or. (field_type .eq. "p")) then
+     if(any(field_type .eq. (/"p","pres","pressure"/))) then
         icase = 1
      end if
 
-    if((field_type .eq. "PRES") .or. (field_type .eq. "pres")) then
-        icase = 1
-     end if
-
-    if((field_type .eq. "pressure")) then
-        icase = 1
-     end if
-
-     if((field_type .eq. "Z") .or. (field_type .eq. "z")) then
+     if(field_type .eq. "z") then
         icase = 2
      end if
 
-     if((field_type .eq. "GHT") .or. (field_type .eq. "ght")) then
+     if(field_type .eq. "ght") then
         icase = 2
      end if
 ;
-;For temperature we may have just temperature, potential temperature
-;or equivalent potential temperature.  Check the field description attribute 
-;to see which one we have
-     if((field_type .eq. "T") .or. (field_type .eq. "t")) then
+; For temperature we may have just temperature, potential temperature
+; or equivalent potential temperature.  Check the field description attribute 
+; to see which one we have.
+;
+     if(field_type .eq. "t") then
         if(isatt(field,"description")) then
 
            if(field@description .eq. "Temperature") then
@@ -672,9 +663,6 @@ begin
       
 ;Initialize an array for the vertical coordinate
  ntimes  = Pdims(0)
- vcord_array = new((/ntimes,nz,ns,ew/),float)
- vcord_array = 0.0
-
 
 ;Get the vertical coordinate type
   vcor  = 0
@@ -691,13 +679,15 @@ begin
 
   if(vert_coordinate .eq. "ght_agl") then
     vcor = 3
-    rtemp = new( (/nz,ns,ew/),float)
+    rtemp       = new( (/nz,ns,ew/),float)
+    vcord_array = new((/ntimes,nz,ns,ew/),float)
     do it = 0, ntimes - 1
        do ilev = 0,nz-1
           rtemp(ilev,:,:) = ght(it,ilev,:,:) - terht(0,:,:)
        end do
        vcord_array(it,:,:,:) = exp(-rtemp/sclht)
     end do
+    delete(rtemp)
   end if
 
   if(vert_coordinate .eq. "theta")   then
@@ -714,8 +704,10 @@ begin
      end if        
      preshPa    = P * 0.01
      vcord_array = wrf_monotonic(theta,preshPa,coriolis,idir,delta,icorsw)      
+;
 ;  We only extrapolate temperature fields below ground if we are interpolating
 ;  to pressure or height vertical surfaces.
+;
      icase = 0       
   end if
 
@@ -732,16 +724,18 @@ begin
         eqpot    = wrf_eth ( qvp, tk, P )
      end if
      preshPa    = P * 0.01
+
      vcord_array = wrf_monotonic(eqpot,preshPa,coriolis,idir,delta,icorsw)
 ;  We only extrapolate temperature fields below ground if we are interpolating
 ;  to pressure or height vertical surfaces.
      icase = 0
   end if
 
-;;    print(icase+"  "+extrap+"  "+logP)
-    out = wrf_vintrp(field,P,tk,qvp,ght,terht(0,:,:),sfp,smsfp,vcord_array,interp_levels,      \
-                     icase,extrap,vcor,logP)
-    return(out)
+  field_out = wrf_vintrp(field,P,tk,qvp,ght,terht(0,:,:),sfp,smsfp,\
+                         vcord_array,interp_levels,icase,extrap,vcor,logP)
+
+  copy_VarMeta(field,field_out)
+  return(field_out)
 end
 
 ;--------------------------------------------------------------------------------
