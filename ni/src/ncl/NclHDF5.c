@@ -1585,7 +1585,9 @@ void HDF5SetVarDimName(HDF5VarInqRec *var_inq)
        */
 
         if((0 == strcmp(dim_str, "Dimensions")) ||
+           (0 == strcmp(dim_str, "DimensionNames")) ||
            (0 == strcmp(dim_str, "DIMSCALE")) ||
+           (0 == strcmp(dim_str, "DIMENSION_LIST")) ||
            (0 == strcmp(dim_str, "HDF4_DIMENSION_LIST")))
         {
             char *ori_str;
@@ -2346,7 +2348,11 @@ static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHD
 
         while(attr_list)
         {
-            if(0 == strcmp(attr_list->attr_node->name, "HDF4_DIMENSION_LIST"))
+            if((0 == strcmp(attr_list->attr_node->name, "DimensionNames")) ||
+               (0 == strcmp(attr_list->attr_node->name, "Dimensions")) ||
+               (0 == strcmp(attr_list->attr_node->name, "DIMSCALE")) ||
+               (0 == strcmp(attr_list->attr_node->name, "DIMENSION_LIST")) ||
+               (0 == strcmp(attr_list->attr_node->name, "HDF4_DIMENSION_LIST")))
             {
                 char *ori_str;
                 char *result;
