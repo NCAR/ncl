@@ -98,6 +98,7 @@ extern NhlErrorTypes wrf_wps_open_int_W(void);
 extern NhlErrorTypes wrf_wps_rdhead_int_W(void);
 extern NhlErrorTypes wrf_wps_rddata_int_W(void);
 extern NhlErrorTypes wrf_wps_read_int_W(void);
+extern NhlErrorTypes wrf_vinterp_W(void);
 extern NhlErrorTypes wrf_monotonic_W(void);
 
 extern NhlErrorTypes cape_thermo_W(void);
@@ -1853,6 +1854,33 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
 
         NclRegisterFunc(wrf_wps_read_nml_W,args,"wrf_wps_read_nml",nargs);
+
+/*
+ * Register "wrf_vinterp".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(14);
+
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        dimsizes[0] = 0;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+        NclRegisterFunc(wrf_vinterp_W,args,"wrf_vinterp",nargs);
 
 /*
  * Register "wrf_monotonic".
