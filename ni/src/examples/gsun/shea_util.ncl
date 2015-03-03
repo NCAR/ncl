@@ -4676,3 +4676,242 @@ end if
   return(res)
 end
 
+;----------
+; The following was posted as part od an ncl-talk question
+; http://mailman.ucar.edu/pipermail/ncl-talk/2014-August/000231.html
+; 
+undef("eta2isop_wrf")
+function eta2isop_wrf(fwrf, varName[1]:string, prs_iso[*]:numeric \
+                     ,itime:integer, linlog[1]:integer, opt[1]:logical)
+;
+; interpolate a WRF variable on eta levels onto user specified isobaric levels
+; Usage:
+;        f = addfile(...)    , or,   f = addfiles(...)
+;
+;        plev = (/ 1000,925,850,700,600,500,400,300,250 \   ; integer, float, double
+;                ,  200,150,100,70,50/)                               
+;        plev!0     = "plev"
+;        plev@units = "hPa"
+;
+;        linlog = 0
+;        itime  = -1
+;        z_iso = eta2isop_wrf(f, "geopotential", plev, itime, linlog, False)
+;        printVarSummary(z_iso)
+
+begin
+
+  prs_eta  = wrf_user_getvar(fwrf, "pressure", itime)
+  if (prs_eta@units.ne.p_iso@units) then
+      print("eta2isop_wrf: pressure unit mismatch")
+      print("eta2isop_wrf: prs_eta@units="+prs_eta@units)
+      print("eta2isop_wrf: prs_iso@units="+prs_iso@units)
+      exit
+  end if
+
+  var_eta  = wrf_user_getvar(fwrf,  varName  , itime)
+
+  var_rank = dimsizes(dimsizes(var_eta))
+  if (var_rank.eq.4) then         ;  (Time, bottom_top, south_north, west_east) => (0,1,2,3)
+      var_iso = int2p_n_Wrap (prs_eta,var_eta,prs_iso,linlog,1)
+  else if (var_rank.eq.3) then    ;  (bottom_top, south_north, west_east)       => (0,1,2)
+           var_iso = int2p_n_Wrap (prs_eta,var_eta,prs_iso,linlog,0)
+       else
+           print("eta2isop_wrf: unexpected rank; rank="+var_rank+"; code expects rank=3 or 4 only")
+           exit
+       end if 
+  end if
+
+  var_iso@tag = "NCL: Simple interpolation to isobaric levels via int2p_n_Wrap"
+
+  return(var_iso)
+end
+;--------------
+undef("wgt_vertical_int")
+function wgt_vertical_int (X:numeric, dp:numeric, lev_dim[1]:integer, iopt:integer)
+; 
+; Perform weighted vertical average (integral) or sum
+; 
+; Requirement: X must be in the following order: ([time,],lev,lat,lon)
+;
+; Nomenclature:
+; X         - array to be integrated. No missing data allowed
+; dp        - pressure thickness computed by "dpres_hybrid_ccm" or "dpres_plevel"
+;             Must be the same size/shape as X
+;             No missing data allowed.
+; iopt      - =0 weighted vertical average
+;             =1 weighted vertical sum
+;             =2 weighted vertical sum, vertical avg
+; lev_dim   - level dimension
+;             lev_dim = 0                            ; (lev), (0); (time,lev),  (0,1) 
+;                                                    ; (lev,lat,lon),  (0,1,2) 
+;             lev_dim = 1                            ; (time,lev,lat,lon), (0,1,2,3)
+;             lev_dim = 2                            ; (case,time,lev,lat,lon), (01,2,3,4)
+;+++++++++++++++++++++++
+; Usage for hybrid levels
+;        f = addfile("....", "r")
+;        hyai = f->hyai
+;        hybi = f->hybi
+;        p0   = f->P0                               ; p0=1000 or p0=100000
+;        ps   = f->PS
+;    
+;        dp   = dpres_hybrid_ccm (ps,p0,hyai,hybi)  ; Pa [kg/(m s2)]
+;--------------------
+; Usage for pressure levels
+;        f   = addfile("....", "r")
+;        lev = f->lev  ; (/  1,  2,  3,  5,   7, 10, 20, 30, \   ; hPa 
+;                           50, 70,100,150, 200,250,300,400, \
+;                          500,600,700,775, 850,925,1000 /)
+;                      ; uniys of lev and psfc must match
+;        psfc= f->PS   ; PA         (time,lat,lon)
+;        lev = lev*100 ; make PA to match psfc       
+;        lev@units = "PA"
+;
+;        ptop= 0       ; integrate 0==>psfc at each grid point
+;
+;                      ; dp(klev,nlat,mlon) or dp(ntim,klev,nlat,mlon)
+;        dp  = dpres_plevel(lev, psfc, ptop, 0)     ; Pa [kg/(m s2)]
+;--------------------
+; Use the 'dp' from above
+;        t    = f->T                                ; (time,lev,lat,lon)
+;        xvi  = wgt_vert_n(t, dp,  0, 1)
+
+local dimX, dimDP, rankX, Xdp, vsum, wsum, vavg
+begin
+
+  dimX  = dimsizes( X )
+  dimDP = dimsizes( dp )
+  rankX = dimsizes( dimX )
+
+  if (.not.all(dimDP.eq.dimX) ) then  ; error check
+      print("wgt_vertical_int: dimension sizes are not equal")
+      print("wgt_vertical_int:  dimX="+dimX)
+      print("wgt_vertical_int: dimDP="+dimsizes(dp) )
+      exit
+  end if
+
+  if (isatt(X,"_FillValue") .and. any(ismissing(X)) ) then  ; error check
+      print("wgt_vertical_int: No _FillValue allowed")
+      print("wgt_vertical_int: X: nFill="+num(ismissing(X)))
+      exit
+  end if
+
+  if (isatt(dp,"_FillValue") .and. any(ismissing(dp)) ) then  ; error check
+      print("wgt_vertical_int: No _FillValue allowed")
+      print("wgt_vertical_int: dp: nFill="+num(ismissing(dp)))
+      exit
+  end if
+
+  Xdp  = X*dp                                ; [? kg/(m s2)]   (temporary variable)
+  copy_VarCoords(X, Xdp)
+
+  vsum = dim_sum_n_Wrap( Xdp, lev_dim )      ; sum vertically [ie integrate]
+  if (iopt.eq.1) then
+      return(vsum)
+  end if
+
+  wsum = dim_sum_n_Wrap( dp , lev_dim )      ;  "      " 
+  if (any(wsum.eq.0)) then
+      if (.not.isatt(wsum,"_FillValue")) then
+          wsum@_FillValue = default_fillvalue(typeof(wsum))
+      end if
+      wsum = where(wsum.eq.0, wsum@_FillValue, wsum)   ; avoid division by 0
+  end if
+      
+  vavg = vsum/wsum                           ; one less dimension (no vertical dim)
+  copy_VarMeta(vsum, vavg) 
+  vavg@NCL_op = "Weighted Vertical Average"
+
+  vsum@NCL_op = "Weighted Vertical Sum"
+  wsum@NCL_op = "Summed Weights"
+
+  if (iopt.eq.0) then
+      return(vavg)
+  end if
+
+  return([/ vavg, vsum, wsum /] )    ; iopt=2
+end
+;--------------
+undef ("get_nearest_grid_pts")
+function get_nearest_grid_pts(obslat[*]:numeric, obslon[*]:numeric        \
+                             ,ygrid:numeric, xgrid:numeric, opt[1]:logical)
+; 
+; Based upon great circle distance; find nearest grid point
+; Input grid: ygrid and xgrid  could be [*] or [*][*]
+; Can handle rectilinear, curvilinear, unstructured grids
+;
+local Nx, Ny, Nxg, Nyg, N, rankx, ranky, ylat2d, xlon2d, nm, dist, dmin, imin
+begin
+
+; error checks 
+
+   Nx = dimsizes(obslon)           ; 'observation' locations (input)
+   Ny = dimsizes(obslat)
+   if (Nx.ne.Ny) then              ; observation locations must be same size
+       print("get_nearest_grid_pts: obslon/obslat not same size: Nx="+Nx+"  Ny="+Ny)
+       exit
+   end if
+ 
+   Nxg   = dimsizes(xgrid)
+   Nyg   = dimsizes(ygrid)
+   rankx = dimsizes(Nxg)           ; grid rank 
+   ranky = dimsizes(Nxg)   
+   
+   if (rankx.ne.ranky .or. all(Nxg.ne.Nyg)) then       ; grid locations must be same size and shape
+       print("get_nearest_grid_pts: xgrid/ygrid not same size and/or shape")
+       print("xgrid="+Nxg)
+       print("ygrid="+Nyg)
+       exit
+   end if
+
+; allocate space; perform computations
+; complexity due to handling rectilinear, curvilinear and unstructured grids
+ 
+   N  = Nx                         ; number of observations
+   dd = new( N, "double")          ; allocate space for distance     
+   dd@long_name = "distance to grid point"
+   dd@units     = "km"
+ 
+   if (rankg.eq.1) then
+       if (Nxg.ne.Nyg) then        ; rectilinear
+           ylat2d = conform_dims( (/Nyg,Nxg/), ygrid, 0)  ; replicate to 2D; trick
+           xlon2d = conform_dims( (/Nyg,Nxg/), xgrid, 1)
+           ylat1d = ndtooned( ylat2d )
+           xlat1d = ndtooned( xlon2d )
+
+       else                                    ; unstructured (eg: spectral element) 
+           nm = new( N, "integer")
+           do n=0,N-1
+              dist := gc_latlon(obslat(n),obslon(n), ygrid,xgrid, 2,4)  ; any units ok; choose km 
+              dmin  = min( dist )              ; scalar
+              nm(n) = ind( dist.eq.dmin(0) )   ; may be more than one; hence, dmin(0)
+              dd(n) = (/ dmin /)               ; avoid a warning message since dd has meta data
+           end do                              ; (/.../)  means transfer value only
+
+           nm@long_name = "index to nearest grid pt"
+           if (opt .and. isatt(opt,"distance")) then
+               return( [/nm, dd/] )            ; return as list variable: index values and distances
+            else
+               return(nm)                      ; return index values as regular variable
+           end if                              ; end opt
+       end if
+    else                                       ; curvilinear
+       ylat1d = ndtooned( ygrid )
+       xlat1d = ndtooned( xgrid )
+   end if
+                                               ; must be curvilinear or rectilinear
+   nm = new( (/N,2/), "integer")
+   do n=0,N-1
+      dist := gc_latlon(obslat(n),obslon(n), lat1d,lon1d, 2,4)  ; any units ok; choose km
+      dmin  = min( dist )
+      imin  = ind(dist.eq.dmin(0))             ; may be more than one; hence, dmin(0)
+      nm(n,:) = ind_resolve(imin, Nxg)
+      dd(n) = (/ dmin /)                       ; avoid a warning message since dd has meta data
+   end do                                      ; (/.../)  means transfer value only
+ 
+   nm@long_name = "indices to nearest grid pt"
+   if (opt .and. isatt(opt,"distance")) then
+       return( [/nm, dd/] )                    ; return as list variable: index values and distance
+   else
+       return(nm)                              ; return index values as regular variable
+   end if
+end
