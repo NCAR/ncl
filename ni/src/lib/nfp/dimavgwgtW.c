@@ -394,16 +394,20 @@ NhlErrorTypes dim_avg_wgt_n_W( void )
   }
 
   total_nl = total_nr = size_output  = 1;
-  for(i = 0; i < *narg;   i++) {
-    total_nl *= dsizes_x[i];
-    dsizes_xavg[i] = dsizes_x[i];
+  if(ndims_x==1) {    /* Handles case where x is 1D */
+    dsizes_xavg[0] = 1;
   }
-  for(i = *narg+1; i < ndims_x; i++) {
-    total_nr *= dsizes_x[i];
-    dsizes_xavg[i-1] = dsizes_x[i];
+  else {
+    for(i = 0; i < *narg;   i++) {
+      total_nl *= dsizes_x[i];
+      dsizes_xavg[i] = dsizes_x[i];
+    }
+    for(i = *narg+1; i < ndims_x; i++) {
+      total_nr *= dsizes_x[i];
+      dsizes_xavg[i-1] = dsizes_x[i];
+    }
   }
   size_output = total_nr * total_nl;
-
 /* 
  * Allocate space for coercing input arrays. We need to make a copy
  * here, because the x values are not necessary consecutive, and
@@ -448,7 +452,6 @@ NhlErrorTypes dim_avg_wgt_n_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_avg_wgt_n: Unable to allocate memory for coercing input array to double");
     return(NhlFATAL);
   }
-
 /*
  * Loop across all but the narg-th dimension and call the Fortran routine
  * for each one-dimensional subsection.
@@ -470,7 +473,6 @@ NhlErrorTypes dim_avg_wgt_n_W( void )
  */
       NGCALLF(dimavgwgt,DIMAVGWGT)(&inx, tmp_x, &missing_dbl_x.doubleval, 
                                    tmp_w, opt, &tmp_xavg[0]);
-
 /*
  * Coerce output back to float or double.
  */
@@ -892,13 +894,18 @@ NhlErrorTypes dim_sum_wgt_n_W( void )
   }
 
   total_nl = total_nr = size_output  = 1;
-  for(i = 0; i < *narg;   i++) {
-    total_nl *= dsizes_x[i];
-    dsizes_xavg[i] = dsizes_x[i];
+  if(ndims_x==1) {    /* Handles case where x is 1D */
+    dsizes_xavg[0] = 1;
   }
-  for(i = *narg+1; i < ndims_x; i++) {
-    total_nr *= dsizes_x[i];
-    dsizes_xavg[i-1] = dsizes_x[i];
+  else {
+    for(i = 0; i < *narg;   i++) {
+      total_nl *= dsizes_x[i];
+      dsizes_xavg[i] = dsizes_x[i];
+    }
+    for(i = *narg+1; i < ndims_x; i++) {
+      total_nr *= dsizes_x[i];
+      dsizes_xavg[i-1] = dsizes_x[i];
+    }
   }
   size_output = total_nr * total_nl;
 
