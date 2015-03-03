@@ -2036,10 +2036,9 @@ begin
 
             haveqci = 1
             if(isfilevar(nc_file,"QICE")) then
-               qci =  nc_file->QICE * 1000.  ; kg/kg -> g/kg
+               qci = nc_file->QICE * 1000.  ; kg/kg -> g/kg
             else
-               qci  =  new( (/Pdims(0),Pdims(1),Pdims(2),Pdims(3)/),float)
-               qci  = -999.0
+               qci = new( (/Pdims(0),Pdims(1),Pdims(2),Pdims(3)/),float)
                haveqci = 0
             end if
 
@@ -2072,10 +2071,9 @@ begin
  
             haveqci = 1
             if(isfilevar(nc_file,"QICE")) then
-               qci =  file_handle[:]->QICE * 1000.  ; kg/kg -> g/kg
+               qci = file_handle[:]->QICE * 1000.  ; kg/kg -> g/kg
             else
-               qci  =  new( (/Pdims(0),Pdims(1),Pdims(2),Pdims(3)/),float)
-               qci  = -999.0
+               qci = new( (/Pdims(0),Pdims(1),Pdims(2),Pdims(3)/),float)
                haveqci = 0
             end if
 
@@ -2111,10 +2109,9 @@ begin
 
             haveqci = 1
             if(isfilevar(nc_file,"QICE")) then
-               qci =  nc_file->QICE(time_in,:,:,:) * 1000.  ; kg/kg -> g/kg
+               qci = nc_file->QICE(time_in,:,:,:) * 1000.  ; kg/kg -> g/kg
             else
-               qci  =  new( (/Pdims(0),Pdims(1),Pdims(2),Pdims(3)/),float)
-               qci  = -999.0
+               qci = new( (/Pdims(0),Pdims(1),Pdims(2),Pdims(3)/),float)
                haveqci = 0
             end if
 
@@ -2655,7 +2652,7 @@ undef("wrf_user_vert_interp")
 function wrf_user_vert_interp(file_handle,field:numeric, \
                               vert_coordinate[1]:string, \
                               interp_levels[*]:numeric,opts[1]:logical)
-local valid_vert_coords, nc_file
+local valid_vert_coords, nc_file, valid_field_types
 begin
 
   valid_vert_coords = (/"pressure","pres","ght_msl","ght_agl","theta","theta-e"/)
@@ -2706,23 +2703,30 @@ begin
  end if
 
 ; Check to see if the field comes in unstaggered.
-   if(field_dims(num_field_dims-3) .ne. nz) then
-      print("wrf_user_vert_interp: Please unstagger the field in the vertical")
-      exit
-   end if
+  if(field_dims(num_field_dims-3) .ne. nz) then
+     print("wrf_user_vert_interp: Please unstagger the field in the vertical")
+     exit
+  end if
 
-   if(field_dims(num_field_dims-2) .ne. ns .or. \
-      field_dims(num_field_dims-1) .ne. ew) then
-      print("wrf_user_vert_interp: Please unstagger the field")
-      exit
-   end if
+  if(field_dims(num_field_dims-2) .ne. ns .or. \
+     field_dims(num_field_dims-1) .ne. ew) then
+     print("wrf_user_vert_interp: Please unstagger the field")
+     exit
+  end if
 
 ; See what options we have
-   extrap_field    = get_res_value_keep(opts,"extrapolate",False)
-   field_type      = str_lower(get_res_value_keep(opts,"field_type","none"))
-   log_of_Pressure = get_res_value_keep(opts,"logP",False)
-   debug           = get_res_value_keep(opts,"debug",False)
+  extrap_field    = get_res_value_keep(opts,"extrapolate",False)
+  field_type      = str_lower(get_res_value_keep(opts,"field_type","none"))
+  log_of_Pressure = get_res_value_keep(opts,"logP",False)
+  debug           = get_res_value_keep(opts,"debug",False)
   
+  valid_field_types = (/"none","pressure","pres","p","z","t","ght"/)
+  if(.not.any(field_type.eq.valid_field_types)) then
+    print("wrf_user_vert_interp: Unrecognized field type.")
+    print("Valid field types are: " + str_join(valid_field_types,", "))
+    exit
+  end if
+
   if(log_of_Pressure) then
      logP = 1      ; this is for passing into Fortran
   else
@@ -2879,10 +2883,19 @@ begin
   if(debug) then
     print("icase = " + icase + " extrap = " + extrap + " vcor = " + vcor + " logP = " + logP)
   end if
+
   field_out = wrf_vintrp(field,P,tk,qvp,ght,terht(0,:,:),sfp,smsfp,\
                          vcord_array,interp_levels,icase,extrap,vcor,logP)
 
+; Add metadata to return array
   copy_VarMeta(field,field_out)
+
+; Add new levels as a coordinate array
+  lev_field           = num_field_dims-3
+  field_out!lev_field = "interp_levels"
+  field_out&$field_out!lev_field$ = interp_levels(::-1)   
+  field_out@vert_interp_type = vert_coordinate
+
   return(field_out)
 end
 
