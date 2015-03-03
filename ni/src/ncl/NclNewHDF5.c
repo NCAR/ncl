@@ -3704,7 +3704,10 @@ static int _buildH5dimlist(NclFileGrpNode **rootgrp)
                     for(j = 0; j < attrec->n_atts; ++j)
                     {
                         attnode = &(attrec->att_node[j]);
-                        if(NrmStringToQuark("DimensionNames") == attnode->name)
+                        if((NrmStringToQuark("Dimensions") == attnode->name) ||
+                           (NrmStringToQuark("DimensionNames") == attnode->name) ||
+                           (NrmStringToQuark("DIMSCALE") == attnode->name) ||
+                           (NrmStringToQuark("DIMENSION_LIST") == attnode->name))
                         {
                             i = 0;
                             ori_str = NrmQuarkToString(*(NclQuark *)attnode->value);
@@ -3790,6 +3793,82 @@ static int _buildH5dimlist(NclFileGrpNode **rootgrp)
     return ndims;
 }
 
+static int _updateH5attributes(NclFileGrpNode **rootgrp)
+{
+    int ercode = 0;
+    NclFileVarRecord *varrec  = NULL;
+    NclFileAttRecord *attrec  = NULL;
+    NclFileGrpNode   *grpnode = *rootgrp;
+    NclFileVarNode   *varnode = NULL;
+    NclFileAttNode   *attnode = NULL;
+
+    char tmp_name[MAX_NCL_NAME_LENGTH];
+    int i, j, n;
+    short has_fillvalue = 0;
+
+    if(NULL != grpnode->grp_rec)
+    {
+        for(n = 0; n < grpnode->grp_rec->n_grps; ++n)
+        {
+            ercode += _updateH5attributes(&(grpnode->grp_rec->grp_node[n]));
+        }
+    }
+
+    varrec = grpnode->var_rec;
+
+    if(NULL == varrec)
+        return ercode;
+
+    for(n = 0; n < varrec->n_vars; ++n)
+    {
+        has_fillvalue = 0;
+        varnode = &(varrec->var_node[n]);
+
+        attrec = varnode->att_rec;
+        if(NULL == attrec)
+            continue;
+
+        for(j = 0; j < attrec->n_atts; ++j)
+        {
+            attnode = &(attrec->att_node[j]);
+            if(NrmStringToQuark("_FillValue") == attnode->name)
+            {
+                has_fillvalue = 1;
+                break;
+            }
+        }
+        if(has_fillvalue)
+            continue;
+
+        for(j = 0; j < attrec->n_atts; ++j)
+        {
+            attnode = &(attrec->att_node[j]);
+            if((NrmStringToQuark("CodeMissingValue") == attnode->name) ||
+               (NrmStringToQuark("missing_value") == attnode->name) ||
+               (NrmStringToQuark("missingvalue") == attnode->name) ||
+               (NrmStringToQuark("MissingValue") == attnode->name))
+            {
+                void *attvalue = NclCalloc(attnode->n_elem, _NclSizeOf(varnode->type));
+                if(varnode->type != attnode->type)
+                {
+                       _NclScalarForcedCoerce(attnode->value, attnode->type,
+                                              attvalue, varnode->type);
+                }
+                else
+                {
+                       memcpy(attvalue, attnode->value, _NclSizeOf(varnode->type));
+                }
+
+                _addNclAttNode(&attrec, NrmStringToQuark("_FillValue"),
+                               varnode->type, attnode->n_elem, attvalue);
+                break;
+            }
+        }
+    }
+
+    return ercode;
+}
+
 void *H5OpenFile(void *rec, NclQuark path, int status)
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *) rec;
@@ -3846,6 +3925,7 @@ void *H5OpenFile(void *rec, NclQuark path, int status)
     _readH5info(&grpnode);
 
     _buildH5dimlist(&grpnode);
+    _updateH5attributes(&grpnode);
 
   /*
    *fprintf(stderr,"Leave H5OpenFile, file: %s, line: %d\n\n", __FILE__, __LINE__);
