@@ -2719,11 +2719,11 @@ begin
 
 ; See what options we have
   if(opts) then
-     extrap_field    = get_res_value(opts,"extrapolate",False)
+     extrap_field    = get_res_value_keep(opts,"extrapolate",False)
 
-     field_type      = str_lower(get_res_value(opts,"field_type","none"))
+     field_type      = str_lower(get_res_value_keep(opts,"field_type","none"))
 
-     log_of_Pressure = get_res_value(opts,"logP",False)
+     log_of_Pressure = get_res_value_keep(opts,"logP",False)
   end if
   
   if(log_of_Pressure) then
