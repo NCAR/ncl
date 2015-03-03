@@ -2718,13 +2718,10 @@ begin
    end if
 
 ; See what options we have
-  if(opts) then
-     extrap_field    = get_res_value_keep(opts,"extrapolate",False)
-
-     field_type      = str_lower(get_res_value_keep(opts,"field_type","none"))
-
-     log_of_Pressure = get_res_value_keep(opts,"logP",False)
-  end if
+   extrap_field    = get_res_value_keep(opts,"extrapolate",False)
+   field_type      = str_lower(get_res_value_keep(opts,"field_type","none"))
+   log_of_Pressure = get_res_value_keep(opts,"logP",False)
+   debug           = get_res_value_keep(opts,"debug",False)
   
   if(log_of_Pressure) then
      logP = 1      ; this is for passing into Fortran
@@ -2879,6 +2876,9 @@ begin
      icase = 0
   end if
 
+  if(debug) then
+    print("icase = " + icase + " extrap = " + extrap + " vcor = " + vcor + " logP = " + logP)
+  end if
   field_out = wrf_vintrp(field,P,tk,qvp,ght,terht(0,:,:),sfp,smsfp,\
                          vcord_array,interp_levels,icase,extrap,vcor,logP)
 
