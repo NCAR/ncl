@@ -14710,6 +14710,7 @@ function static_stability (p:numeric, t:numeric, npr[1]:integer, sopt[1]:integer
 ;
 ; Nomenclature
 ;     p       - pressure levels (Pa is default)  
+;
 ;     t       - temperature (K)    
 ;               Also: equivalent temperature (teqv) could be input
 ;                     teqv = temperature of an air parcel from which all the water vapor 
@@ -14718,7 +14719,9 @@ function static_stability (p:numeric, t:numeric, npr[1]:integer, sopt[1]:integer
 ;                     cpd  = 1004. or 1005.7 ; specific heat dry air [J/kg/K]
 ;                     Lv   = 2.5104e6        ; [J/kg]=[m2/s2]  Latent Heat of Vaporization of Water
 ;                     r    = mixing ratio    ; (kg/kg) 
+;
 ;     npr     - dimension number for pressure
+;
 ;     sopt    - =0, Return static stability only
 ;             - =1, Return static stability, theta, dthdp as type list
 ;
@@ -14726,13 +14729,14 @@ function static_stability (p:numeric, t:numeric, npr[1]:integer, sopt[1]:integer
 ;
 local dimp, dimt, theta, rankt, rankp, dthdp, s
 begin
-  theta  = pot_temp(p, t, npr, False)      
 
   dimp   = dimsizes(p) 
   dimt   = dimsizes(t) 
 
   rankp  = dimsizes(dimp)
-  rankt  = dimsizes(dimt)   ; rankt = rank(theta)
+  rankt  = dimsizes(dimt)  
+
+  theta  = pot_temp(p, t, npr, False)   ; rankp=rankt then npr is ignored
 
 ; dthdp = -T*d[log(theta)]/dp = -(T/theta)*d(theta)/dp
 
@@ -14857,7 +14861,7 @@ begin
       nlt = 2                  
   end if
 
-  S           = static_stability(p,t,1,npr)   ; variable of type list
+  S           = static_stability(p,t,npr,1)   ; variable of type list
 
   s           = S[0]    ; [...] is list syntax    
   theta       = S[1]    ; theta = pot_tmp(p, t, npr, 0)
