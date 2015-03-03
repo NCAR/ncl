@@ -110,11 +110,11 @@ os=`uname -s`
 
 if [ -n "$COMPILER_VERSION" ] ; then
   if [ "$COMPILER_VERSION" = "4.7.2" ] ; then
-    export PATH=$PREFIX/bin:$NCARG_ROOT/bin:/usr/lib64/qt-3.3/bin:/glade/apps/opt/bin:/glade/apps/el6/usr/bin:/glade/apps/el6/bin:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/etc:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/openssh/5.7p1krb/bin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/ncar/opt/hpss
+    export PATH=$PREFIX/bin:$NCARG_ROOT/bin:/glade/apps/opt/gnu/4.7.2/bin:/usr/lib64/qt-3.3/bin:/ncar/opt/intel/12.1.0.233/composer_xe_2011_sp1.11.339/bin/intel64:/glade/apps/opt/usr/bin:/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/etc:/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/openssh/5.7p1krb/bin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/ncar/opt/hpss:/glade/apps/opt/ncl/6.2.0/gnu/4.7.2/bin
     export LD_LIBRARY_PATH=/glade/apps/opt/gnu/4.7.2/lib64:/glade/apps/opt/gnu/lib:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/lib
     un="yellowstone_gnu472"
   elif [ "$COMPILER_VERSION" = "4.4.7" ] ; then
-    export PATH=$PREFIX/bin:$NCARG_ROOT/bin:/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/etc:/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/bin:/usr/lib64/qt-3.3/bin:/glade/apps/opt/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/openssh/5.7p1krb/bin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/ncar/opt/hpss
+    export PATH=$PREFIX/bin:$NCARG_ROOT/bin:/usr/lib64/qt-3.3/bin:/glade/apps/opt/usr/bin:/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/etc:/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/openssh/5.7p1krb/bin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/ncar/opt/hpss
     export LD_LIBRARY_PATH=/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/lib
     un="yellowstone_gnu447"
   else
@@ -186,6 +186,14 @@ if [ "$os" = "Linux" ] ; then
     export LINUX_BRAND linux32
   fi
 fi  
+
+echo "=================================================="
+echo "un is '$un'"
+echo "os is '$os'"
+echo "um is '$um'"
+echo "CC is $CC"
+echo "FC is $FC"
+echo "=================================================="
 
 #--------------------------------------------------------------------
 # Software directories, sorted alphabetically
@@ -846,7 +854,7 @@ then
       elif [ "$un" = "logan.cgd.ucar.edu" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lz -lidn -lrt -ldl"
       elif [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
-        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lz -lrt -ldl -lssl -lidn"
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl -lcrypto -lz -lrt -ldl -lssl -lidn"
       elif [ "$un" = "yellowstone_intel1215" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lssl -lidn -lrt -ldl"
       else
