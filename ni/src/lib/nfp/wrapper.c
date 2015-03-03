@@ -54,10 +54,10 @@ extern NhlErrorTypes dgeevx_lapack_W(void);
 extern NhlErrorTypes svd_lapack_W(void);
 extern NhlErrorTypes svdpar_W(void);
 extern NhlErrorTypes sindex_yrmo_W(void);
-extern NhlErrorTypes dim_bfband_n_W(void);
-extern NhlErrorTypes dim_weibull_n_W(void);
-extern NhlErrorTypes trend_manken_n_W(void);
-extern NhlErrorTypes dim_thornthwaite_n_W(void);
+extern NhlErrorTypes bw_bandpass_filter_W(void);
+extern NhlErrorTypes weibull_W(void);
+extern NhlErrorTypes trend_manken_W(void);
+extern NhlErrorTypes thornthwaite_W(void);
 extern NhlErrorTypes kmeans_as136_W(void);
 extern NhlErrorTypes snindex_yrmo_W(void);
 extern NhlErrorTypes x_skewt_W(void);
@@ -2121,7 +2121,7 @@ void NclAddUserFuncs(void)
 
 
 /*
- * Register "dim_bfband_n".
+ * Register "bw_bandpass_filter".
  *
  * Create private argument array
  */
@@ -2135,10 +2135,10 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
-    NclRegisterFunc(dim_bfband_n_W,args,"dim_bfband_n",nargs);
+    NclRegisterFunc(bw_bandpass_filter_W,args,"bw_bandpass_filter",nargs);
 
 /*
- * Register "dim_weibull_n".
+ * Register "weibull".
  *
  * Create private argument array
  */
@@ -2150,9 +2150,9 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
-    NclRegisterFunc(dim_weibull_n_W,args,"dim_weibull_n",nargs);
+    NclRegisterFunc(weibull_W,args,"weibull",nargs);
 /*
- * Register "trend_manken_n".
+ * Register "trend_manken".
  *
  * Create private argument array
  */
@@ -2164,9 +2164,9 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
-    NclRegisterFunc(trend_manken_n_W,args,"trend_manken_n",nargs);
+    NclRegisterFunc(trend_manken_W,args,"trend_manken",nargs);
 /*
- * Register "dim_thornthwaite_n".
+ * Register "thornthwaite".
  *
  * Create private argument array
  */
@@ -2179,7 +2179,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
-    NclRegisterFunc(dim_thornthwaite_n_W,args,"dim_thornthwaite_n",nargs);
+    NclRegisterFunc(thornthwaite_W,args,"thornthwaite",nargs);
 
 /*
  * Register "kmeans_as136".

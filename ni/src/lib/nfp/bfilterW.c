@@ -6,7 +6,7 @@ extern void NGCALLF(buttfilt,BUTTFILT)(double *, double *,double *,
                                        double *, double *, double *, 
                                        int *, int *, int *, int *);
 
-NhlErrorTypes dim_bfband_n_W( void )
+NhlErrorTypes bw_bandpass_filter_W( void )
 {
 
 /*
@@ -138,16 +138,16 @@ NhlErrorTypes dim_bfband_n_W( void )
  * Some error checking. Make sure input dimension is valid.
  */
   if(ndims > ndims_xr) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_bfband_n: too many dimensions in dimension argument, can't continue");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"bw_bandpass_filter: too many dimensions in dimension argument, can't continue");
     return(NhlFATAL);
   }
   for(i = 0; i < ndims; i++ ) {
     if(dims[i] < 0 || dims[i] >= ndims_xr) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_bfband_n: Invalid dimension argument, can't continue");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"bw_bandpass_filter: Invalid dimension argument, can't continue");
       return(NhlFATAL);
     }
     if(i > 0 && dims[i] != (dims[i-1]+1)) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_bfband_n: Input dimension sizes must be monotonically increasing, can't continue");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"bw_bandpass_filter: Input dimension sizes must be monotonically increasing, can't continue");
       return(NhlFATAL);
     }
   }
@@ -227,7 +227,7 @@ NhlErrorTypes dim_bfband_n_W( void )
   }
 
   if(!ret_filt && !ret_env) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_bfband_n: both return_filtered and return_envelope are False. One of these must be True");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"bw_bandpass_filter: both return_filtered and return_envelope are False. One of these must be True");
     return(NhlFATAL);
   }
 
@@ -244,7 +244,7 @@ NhlErrorTypes dim_bfband_n_W( void )
 
   dsizes_bf = (ng_size_t*)calloc(ndims_bf,sizeof(ng_size_t));  
   if( dsizes_bf == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_bfband_n: Unable to allocate memory for holding dimension sizes");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"bw_bandpass_filter: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
   }
 
@@ -268,7 +268,7 @@ NhlErrorTypes dim_bfband_n_W( void )
   else                    size_output = size_xr;
 
   if(nx > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_bfband_n: nx = %ld is greater than INT_MAX", nx);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"bw_bandpass_filter: nx = %ld is greater than INT_MAX", nx);
     return(NhlFATAL);
   }
   inx = (int) nx;
@@ -279,7 +279,7 @@ NhlErrorTypes dim_bfband_n_W( void )
   tmp_fca = coerce_input_double(fca,type_fca,1,0,NULL,NULL);
   tmp_fcb = coerce_input_double(fcb,type_fcb,1,0,NULL,NULL);
   if(tmp_fca == NULL || tmp_fcb == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_bfband_n: Unable to allocate memory for coercing input scalars to double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"bw_bandpass_filter: Unable to allocate memory for coercing input scalars to double");
     return(NhlFATAL);
   }
 
@@ -289,7 +289,7 @@ NhlErrorTypes dim_bfband_n_W( void )
  */
   tmp_xr = (double *)calloc(nx,sizeof(double));
   if(tmp_xr == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_bfband_n: Unable to allocate memory for coercing input array to double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"bw_bandpass_filter: Unable to allocate memory for coercing input array to double");
     return(NhlFATAL);
   }
 /*
@@ -304,7 +304,7 @@ NhlErrorTypes dim_bfband_n_W( void )
   if(type_bf != NCL_double) bf = (void *)calloc(size_output, sizeof(float));
   else                      bf = (void *)calloc(size_output, sizeof(double));
   if(bf == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_bfband_n: Unable to allocate memory for output array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"bw_bandpass_filter: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 
@@ -314,7 +314,7 @@ NhlErrorTypes dim_bfband_n_W( void )
   tmp_yr = (double *)calloc(nx, sizeof(double));
   tmp_er = (double *)calloc(nx, sizeof(double));
   if(tmp_yr == NULL || tmp_er == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_bfband_n: Unable to allocate memory for temporary output arrays");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"bw_bandpass_filter: Unable to allocate memory for temporary output arrays");
     return(NhlFATAL);
   }
 

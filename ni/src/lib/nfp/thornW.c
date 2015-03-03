@@ -4,7 +4,7 @@
 extern void NGCALLF(thorn2,THORN2)(double *, int *, double *, 
                                    double *, double *, int *);
 
-NhlErrorTypes dim_thornthwaite_n_W( void )
+NhlErrorTypes thornthwaite_W( void )
 {
 
 /*
@@ -114,7 +114,7 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
  * Some error checking. Make sure input dimension is valid.
  */
   if(dim[0] < 0 || dim[0] >= ndims_temp) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: Invalid dimension argument, can't continue");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite: Invalid dimension argument, can't continue");
     return(NhlFATAL);
   }
 
@@ -123,7 +123,7 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
  */
   ntim = dsizes_temp[dim[0]];
   if(ntim > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: ntim = %ld is greater than INT_MAX", ntim);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite: ntim = %ld is greater than INT_MAX", ntim);
     return(NhlFATAL);
   }
   intim = (int) ntim;
@@ -152,7 +152,7 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
  */
   if(num_rgt_dims == 1) {
     if(!is_scalar(ndims_lat,dsizes_lat)) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: If temp has no lat/lon dimensions, then lat must be a scalar. Check your temp array and the 'dim' value.");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite: If temp has no lat/lon dimensions, then lat must be a scalar. Check your temp array and the 'dim' value.");
       return(NhlFATAL);
     }
     else {
@@ -165,7 +165,7 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
  */
   else if(num_rgt_dims == 2) {
     if(ndims_lat != 1 || (ndims_lat == 1 && dsizes_lat[0] != dsizes_temp[dim[0]+1])) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: If temp is on an unstructured grid, then lat must be 1D and the same size as rightmost dimension of temp. Check your temp array and the 'dim' value.");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite: If temp is on an unstructured grid, then lat must be 1D and the same size as rightmost dimension of temp. Check your temp array and the 'dim' value.");
       return(NhlFATAL);
     }
     else {
@@ -182,7 +182,7 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
        (ndims_lat == 2 && (dsizes_lat[0] != dsizes_temp[dim[0]+1]  || 
                            dsizes_lat[1] != dsizes_temp[dim[0]+2]))||
        ndims_lat > 2) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: If temp is on a rectilinear or curvilinear grid, then lat must either be a 1D array of size nlat or a 2D array of size nlat x mlon. Check your temp array and the 'dim' value.");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite: If temp is on a rectilinear or curvilinear grid, then lat must either be a 1D array of size nlat or a 2D array of size nlat x mlon. Check your temp array and the 'dim' value.");
       return(NhlFATAL);
     }
     else {
@@ -202,7 +202,7 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
  * There's a problem with the input temp, lat, and/or dim variables.
  */
   else {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: the temp and/or lat arrays don't appear to have the correct dimensionality, or else 'dim' has the wrong value.");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite: the temp and/or lat arrays don't appear to have the correct dimensionality, or else 'dim' has the wrong value.");
     return(NhlFATAL);
   }
 
@@ -225,7 +225,7 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
  */
   tmp_temp = (double *)calloc(ntim,sizeof(double));
   if(tmp_temp == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: Unable to allocate memory for coercing input array to double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite: Unable to allocate memory for coercing input array to double");
     return(NhlFATAL);
   }
   if(type_lat != NCL_double) tmp_lat = (double *)calloc(1,sizeof(double));
@@ -235,7 +235,7 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
  */
   tmp_pet = (double *)calloc(ntim,sizeof(double));
   if(tmp_pet == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: Unable to allocate memory for temporary output array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite: Unable to allocate memory for temporary output array");
     return(NhlFATAL);
   }
   if(type_temp != NCL_double) {
@@ -249,7 +249,7 @@ NhlErrorTypes dim_thornthwaite_n_W( void )
     missing_pet = missing_dbl_temp;
   }
   if(pet == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_thornthwaite_n: Unable to allocate memory for output array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 

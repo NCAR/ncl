@@ -6,7 +6,7 @@ extern void NGCALLF(kenstst,KENSTST)(double *, int *, int *, double *,
                                      double *, double *, int *, 
                                      double *, logical *, double *);
 
-NhlErrorTypes trend_manken_n_W( void )
+NhlErrorTypes trend_manken_W( void )
 {
 
 /*
@@ -90,11 +90,11 @@ NhlErrorTypes trend_manken_n_W( void )
  */
   for(i = 0; i < ndims; i++ ) {
     if(dims[i] < 0 || dims[i] >= ndims_x) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken_n: Invalid dimension sizes to do calculation on, can't continue");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken: Invalid dimension sizes to do calculation on, can't continue");
       return(NhlFATAL);
     }
     if(i > 0 && dims[i] != (dims[i-1]+1)) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken_n: Input dimension sizes must be monotonically increasing, can't continue");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken: Input dimension sizes must be monotonically increasing, can't continue");
       return(NhlFATAL);
     }
   }
@@ -105,7 +105,7 @@ NhlErrorTypes trend_manken_n_W( void )
   ndims_tm = ndims_x - ndims + 1;
   dsizes_tm = (ng_size_t*)calloc(ndims_tm,sizeof(ng_size_t));  
   if( dsizes_tm == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken_n: Unable to allocate memory for holding dimension sizes");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
   }
 
@@ -127,7 +127,7 @@ NhlErrorTypes trend_manken_n_W( void )
   }
 
   if(nx > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken_n: nx = %ld is greater than INT_MAX", nx);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken: nx = %ld is greater than INT_MAX", nx);
     return(NhlFATAL);
   }
   inx  = (int) nx;
@@ -137,7 +137,7 @@ NhlErrorTypes trend_manken_n_W( void )
  */
   tmp_x = (double *)calloc(nx,sizeof(double));
   if(tmp_x == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken_n: Unable to allocate memory for coercing input array to double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken: Unable to allocate memory for coercing input array to double");
     return(NhlFATAL);
   }
 
@@ -155,7 +155,7 @@ NhlErrorTypes trend_manken_n_W( void )
     tm = (void *)calloc(size_output, sizeof(double));
   }
   if(tm == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken_n: Unable to allocate memory for output array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 
@@ -165,7 +165,7 @@ NhlErrorTypes trend_manken_n_W( void )
   slope   = (double *)calloc(nslp, sizeof(double));
   tieflag = (logical *)calloc(nslp, sizeof(logical));
   if(slope == NULL || tieflag == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken_n: Unable to allocate memory for output arrays");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken: Unable to allocate memory for output arrays");
     return(NhlFATAL);
   }
   eps = 1.0e-5;

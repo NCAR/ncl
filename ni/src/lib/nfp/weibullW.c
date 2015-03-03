@@ -5,7 +5,7 @@
 extern void NGCALLF(weibfit,WEIBFIT)(int *, double *, double *, int *, 
                                      double *, double *, int *);
 
-NhlErrorTypes dim_weibull_n_W( void )
+NhlErrorTypes weibull_W( void )
 {
 
 /*
@@ -105,11 +105,11 @@ NhlErrorTypes dim_weibull_n_W( void )
  */
   for(i = 0; i < ndims; i++ ) {
     if(dims[i] < 0 || dims[i] >= ndims_x) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_weibull_n: Invalid dimension sizes to do calculation on, can't continue");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"weibull: Invalid dimension sizes to do calculation on, can't continue");
       return(NhlFATAL);
     }
     if(i > 0 && dims[i] != (dims[i-1]+1)) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_weibull_n: Input dimension sizes must be monotonically increasing, can't continue");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"weibull: Input dimension sizes must be monotonically increasing, can't continue");
       return(NhlFATAL);
     }
   }
@@ -173,7 +173,7 @@ NhlErrorTypes dim_weibull_n_W( void )
   ndims_wb = ndims_x - ndims + 1;
   dsizes_wb = (ng_size_t*)calloc(ndims_wb,sizeof(ng_size_t));  
   if( dsizes_wb == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_weibull_n: Unable to allocate memory for holding dimension sizes");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"weibull: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
   }
 
@@ -197,7 +197,7 @@ NhlErrorTypes dim_weibull_n_W( void )
     dsizes_wb[j+i-ndims] = dsizes_x[i];
   }
   if(nx > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_weibull_n: nx = %ld is greater than INT_MAX", nx);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"weibull: nx = %ld is greater than INT_MAX", nx);
     return(NhlFATAL);
   }
   inx = (int) nx;
@@ -221,7 +221,7 @@ NhlErrorTypes dim_weibull_n_W( void )
  */
   tmp_x = (double *)calloc(nx,sizeof(double));
   if(tmp_x == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_weibull_n: Unable to allocate memory for coercing input array to double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"weibull: Unable to allocate memory for coercing input array to double");
     return(NhlFATAL);
   }
 
@@ -241,7 +241,7 @@ NhlErrorTypes dim_weibull_n_W( void )
     wb = (void *)calloc(size_output, sizeof(double));
   }
   if(wb == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_weibull_n: Unable to allocate memory for output array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"weibull: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 
