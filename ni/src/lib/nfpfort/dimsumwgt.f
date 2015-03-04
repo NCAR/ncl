@@ -24,12 +24,12 @@ C NCL:  xWgtSum = dim_sum_wgt(x, wgt, opt)
       end do
 
       if (npts.gt.0) then
-          if (npts.eq.nx .or. iopt.eq.1) then
+          if ((iopt.eq.0 .and. npts.eq.nx) .or. iopt.eq.1) then
               sumx = xsum
               return
           end if
 
-          if (npts.ge.iopt) then
+          if (iopt.gt.1 .and. npts.ge.iopt) then
               sumx = xsum
               return
           end if
