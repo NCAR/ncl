@@ -2397,15 +2397,19 @@ begin
                 "gsn_csm_streamline_contour_map_polar", \
                 "gsn_csm_streamline_map", "gsn_csm_streamline_map_ce", \
                 "gsn_csm_streamline_map_other", \
-                "gsn_csm_streamline_map_polar", "gsn_csm_time_lat", \
-                "gsn_csm_vector", "gsn_csm_vector_map", \
+                "gsn_csm_streamline_map_polar",  \
+                "gsn_csm_streamline_scalar_map", \
+                "gsn_csm_streamline_scalar_map_ce", \
+                "gsn_csm_streamline_scalar_map_other", \
+                "gsn_csm_streamline_scalar_map_polar", \
+                "gsn_csm_time_lat", "gsn_csm_vector", "gsn_csm_vector_map", \
                 "gsn_csm_vector_map_ce", "gsn_csm_vector_map_other", \
                 "gsn_csm_vector_map_polar", "gsn_csm_vector_scalar", \
                 "gsn_csm_vector_scalar_map", \
                 "gsn_csm_vector_scalar_map_ce", \
                 "gsn_csm_vector_scalar_map_other", \
-                "gsn_csm_vector_scalar_map_polar", "gsn_csm_xy", \
-                "gsn_csm_y", "gsn_histogram", "gsn_map", \
+                "gsn_csm_vector_scalar_map_polar", \
+                "gsn_csm_xy", "gsn_csm_y", "gsn_histogram", "gsn_map", \
                 "gsn_streamline", "gsn_streamline_contour", \
                 "gsn_streamline_map", "gsn_vector", \
                 "gsn_vector_contour", "gsn_vector_contour_map", \
