@@ -1,6 +1,6 @@
-C NCLFORTSTART
-      SUBROUTINE BINDATAAVG(NZ,ZLON,ZLAT,Z,ZMSG,MLON,NLAT,GLON,GLAT,
-     +                      GBINKNT,IOPT,IER)
+C NCLFORTSTART 
+      SUBROUTINE BINDATAAVG(NZ,ZLON,ZLAT,Z,ZMSG,MLON,NLAT,GLON,GLAT 
+     +                     ,GBINKNT,IOPT,IER)
       IMPLICIT NONE
 c                                             ; INPUT
       INTEGER NLAT,MLON,NZ,IOPT,IER
@@ -13,7 +13,9 @@ C NCLEND
 c NCL:   function bin_avg(zlon[*],zlat[*],z[*], glon[*], glat[*], opt )
 
       INTEGER K,NL,ML,IFLAG
-      DOUBLE PRECISION DLAT,DLON,GLATBND,GLONBND
+      DOUBLE PRECISION DLAT,DLON
+      DOUBLE PRECISION GLATBND1,GLATBND2
+      DOUBLE PRECISION GLONBND1,GLONBND2
 
       IER = 0
 
@@ -21,7 +23,7 @@ c NCL:   function bin_avg(zlon[*],zlat[*],z[*], glon[*], glat[*], opt )
       DLON = ABS(GLON(2)-GLON(1))
 
 c error checking
-      IF (DLAT.LT.0.0D0 .OR. DLON.LT.0.0D0) THEN
+      IF (DLAT.EQ.0.0D0 .OR. DLON.EQ.0.0D0) THEN
           IER = 1
       END IF
 c                            check for equal lat spacing
@@ -63,13 +65,18 @@ c                            ; monotonically {in/de}creasing
       ELSE
           IFLAG = -1
       END IF
-      GLATBND = GLAT(1) - IFLAG*DLAT
-      GLONBND = GLON(1) - DLON/2
+
+      GLATBND1 = GLAT(1) - IFLAG*DLAT/2
+      GLONBND1 = GLON(1) - DLON/2
+      GLATBND2 = GLAT(NLAT) + IFLAG*DLAT/2
+      GLONBND2 = GLON(MLON) + DLON/2
 
       DO K = 1,NZ
-          IF (Z(K).NE.ZMSG) THEN
-              NL = ABS((ZLAT(K)-GLATBND)/DLAT) + 1
-              ML = (ZLON(K)-GLONBND)/DLON + 1
+          IF (Z(K).NE.ZMSG .AND.
+     +       (ZLAT(K).GE.GLATBND1 .AND. ZLAT(K).LE.GLATBND2)  .AND.
+     +       (ZLON(K).GE.GLONBND1 .AND. ZLON(K).LE.GLONBND2)) THEN
+              NL = ABS((ZLAT(K)-GLATBND1)/DLAT) + 1
+              ML = ABS((ZLON(K)-GLONBND1)/DLON) + 1
               IF (NL.GT.0 .AND. NL.LE.NLAT .AND. ML.GT.0 .AND.
      +            ML.LE.MLON) THEN
                   GBINKNT(ML,NL,1) = GBINKNT(ML,NL,1) + Z(K)
