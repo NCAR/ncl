@@ -2144,11 +2144,9 @@ begin
          ght        =  wrf_user_unstagger(stag_ght,PHB@stagger)
 
          fctt = wrf_ctt(pres,tk,qci,qcw,qvp,ght,ter,haveqci)
-
+; fctt will have description, units, and dimension names attached
        delete_VarAtts(T,(/"description","units"/))
        copy_VarAtts(T,fctt)
-       fctt@description = "Cloud Top Temperature"
-       fctt@units = "K"
        return(fctt)
   end if         ;variable is ctt
  
