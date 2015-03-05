@@ -16,7 +16,9 @@ C                  ,glon[*]:numeric,zlon[*]:numeric,zlat[*]:numeric
 C                  ,z[*]:numeric)
 
       INTEGER K,NL,ML,IFLAG
-      DOUBLE PRECISION DLAT,GLATBND,DLON,GLONBND
+      DOUBLE PRECISION DLAT,DLON
+      DOUBLE PRECISION GLATBND1,GLATBND2
+      DOUBLE PRECISION GLONBND1,GLONBND2
 
       DLAT = ABS(GLAT(2)-GLAT(1))
       DLON = ABS(GLON(2)-GLON(1))
@@ -27,14 +29,18 @@ C                  ,z[*]:numeric)
           IFLAG = -1
       END IF
 
-      GLATBND = GLAT(1) - IFLAG*DLAT/2
-      GLONBND = GLON(1) - DLON/2
+      GLATBND1 = GLAT(1) - IFLAG*DLAT/2
+      GLONBND1 = GLON(1) - DLON/2
+      GLATBND2 = GLAT(NLAT) + IFLAG*DLAT/2
+      GLONBND2 = GLON(MLON) + DLON/2
 
       DO K = 1,NZ
-          IF (Z(K).NE.ZMSG) THEN
-              NL = ABS((ZLAT(K)-GLATBND)/DLAT) + 1
-              ML = ABS((ZLON(K)-GLONBND)/DLON) + 1
-              IF (ML.GE.1 .AND. ML.LE.MLON .AND. NL.GE.1 .AND.
+          IF (Z(K).NE.ZMSG .AND.
+     +       (ZLAT(K).GE.GLATBND1 .AND. ZLAT(K).LE.GLATBND2)  .AND.
+     +       (ZLON(K).GE.GLONBND1 .AND. ZLON(K).LE.GLONBND2)) THEN
+              NL = ABS((ZLAT(K)-GLATBND1)/DLAT) + 1
+              ML = ABS((ZLON(K)-GLONBND1)/DLON) + 1
+              IF (ML.GE.1 .AND. ML.LE.MLON .AND. NL.GE.1 .AND.                
      +            NL.LE.NLAT) THEN
                   GBIN(ML,NL) = GBIN(ML,NL) + Z(K)
                   GKNT(ML,NL) = GKNT(ML,NL) + 1
