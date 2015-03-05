@@ -6,6 +6,9 @@ extern void NGCALLF(wrfcttcalc,WRFCTTCALC)(double *, double *, double *,
                                            double *, double *, int *, 
                                            int *, int *, int *);
 
+extern NclDimRec *get_wrf_dim_info(int,int,int,ng_size_t*);
+
+
 NhlErrorTypes wrf_ctt_W( void )
 {
 
@@ -81,13 +84,22 @@ NhlErrorTypes wrf_ctt_W( void )
   int *haveqci;
 
 /*
- * Return variable
+ * Variable for getting/setting dimension name info.
+ */
+  NclDimRec *dim_info      = NULL;
+  NclDimRec *dim_info_ght = NULL;
+
+/*
+ * Return variable and attributes
  */
   void *ctt;
+  NclQuark *description, *units;
+  char *cdescription, *cunits;
   double *tmp_ctt;
   int       ndims_ctt;
   ng_size_t *dsizes_ctt;
   NclBasicDataTypes type_ctt;
+  NclObjClass type_obj_ctt;
   
 /*
  * Various
@@ -95,7 +107,16 @@ NhlErrorTypes wrf_ctt_W( void )
   ng_size_t nlev, nlat, nlon, nlevlatlon, nlatlon;
   ng_size_t index_pres, index_ter, index_ctt;
   ng_size_t i, size_leftmost, size_output;
-  int inlev, inlat, inlon, ret;
+  int inlev, inlat, inlon;
+
+/*
+ * Variables for returning the output array with attributes attached.
+ */
+  int att_id;
+  ng_size_t dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
 
 /*
  * Retrieve parameters.
@@ -450,10 +471,12 @@ NhlErrorTypes wrf_ctt_W( void )
      type_qci  == NCL_double || type_qcw == NCL_double || 
      type_qvp  == NCL_double || type_ght == NCL_double || 
      type_ter  == NCL_double) {
-    type_ctt = NCL_double;
+    type_ctt     = NCL_double;
+    type_obj_ctt = nclTypedoubleClass;
   }
   else {
-    type_ctt = NCL_float;
+    type_ctt     = NCL_float;
+    type_obj_ctt = nclTypefloatClass;
   }
 
 /* 
@@ -488,6 +511,27 @@ NhlErrorTypes wrf_ctt_W( void )
   for(i = 0; i < ndims_ctt-2; i++) dsizes_ctt[i] = dsizes_pres[i];
   dsizes_ctt[ndims_ctt-2] = nlat;
   dsizes_ctt[ndims_ctt-1] = nlon;
+
+/*
+ * Get dimension info to see if we have named dimensions.
+ * Using "ght" here, because it is more likely than "pres"
+ * to have metadata attached to it. 
+ * 
+ * This will be used for return variable.
+ */
+  dim_info_ght = get_wrf_dim_info(5,8,ndims_ght,dsizes_ght);
+  if(dim_info_ght != NULL) {
+    dim_info = malloc(sizeof(NclDimRec)*ndims_ctt);
+    if(dim_info == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ctt: Unable to allocate memory for holding dimension information");
+      return(NhlFATAL);
+    }
+    for(i = 0; i < ndims_ght-3; i++) {
+      dim_info[i] = dim_info_ght[i];
+    }
+    dim_info[ndims_ctt-1] = dim_info_ght[ndims_ght-1];
+    dim_info[ndims_ctt-2] = dim_info_ght[ndims_ght-2];
+  }
 
 /*
  * Loop across leftmost dimensions and call the Fortran routine for each
@@ -616,10 +660,104 @@ NhlErrorTypes wrf_ctt_W( void )
   if(type_ctt  != NCL_double) NclFree(tmp_ctt);
 
 /*
- * Return value back to NCL script.
+ * Set up some attributes ("description" and "units") to return.
  */
-  ret = NclReturnValue(ctt,ndims_ctt,dsizes_ctt,NULL,type_ctt,0);
+  cdescription = (char *)calloc(22,sizeof(char));
+  cunits       = (char *)calloc(2,sizeof(char));
+  strcpy(cdescription,"Cloud Top Temperature");
+  strcpy(cunits,"K");
+  description = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *description = NrmStringToQuark(cdescription);
+  *units       = NrmStringToQuark(cunits);
+  free(cdescription);
+  free(cunits);
 
-  NclFree(dsizes_ctt);
-  return(ret);
+/*
+ * Set up return value.
+ */
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            (void*)ctt,
+                            NULL,
+                            ndims_ctt,
+                            dsizes_ctt,
+                            TEMPORARY,
+                            NULL,
+                            type_obj_ctt
+                            );
+/*
+ * Set up attributes to return.
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)description,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "description",
+             att_md,
+             NULL
+             );
+    
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)units,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "units",
+             att_md,
+             NULL
+             );
+    
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          dim_info,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+
+  if(dim_info != NULL) NclFree(dim_info);
+  NclFree(dim_info_ght);
+
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
 }
