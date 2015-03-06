@@ -78,8 +78,6 @@ extern int cmd_line;
 extern short NCLnoSysPager;
 extern char *nclf;
 
-long long local_strtoll(const char *nptr, char **endptr, int base);
-
 /* 
  * Function to coerce dimension sizes to int or long
  * Located in ../lib/nfp/wrapper.[ch].
@@ -6270,123 +6268,6 @@ NhlErrorTypes _NclIgetenv
 /* 
  * this version recognizes hexadecimal and decimal conventions, but not octal
  */
-
-extern long _Nclstrtol 
-#if     NhlNeedProto
-(
-	const char *str, 
-	char **endptr
-)
-#else
-(str,endptr)
-const char *str;
-char **endptr;
-#endif
-{
-
-	long tval;
-	int i = 0;
-
-	while (isspace(str[i]))
-			i++;
-	if (strlen(&(str[i])) >= 2 && str[i] == '0' && (str[i+1] == 'x' || str[i+1] == 'X'))
-		tval = strtol(str,endptr,16);
-	else
-		tval = strtol(str,endptr,10);
-	return tval;
-}
-
-extern unsigned long _Nclstrtoul
-#if     NhlNeedProto
-(
-        const char *str,
-        char **endptr
-)
-#else
-(str,endptr)
-const char *str;
-char **endptr;
-#endif
-{
-        unsigned long tval;
-        int i = 0;
-
-        while (isspace(str[i]))
-                        i++;
-        if (strlen(&(str[i])) >= 2 && str[i] == '0' && (str[i+1] == 'x' || str[i+1] == 'X'))
-        {
-                tval = strtoul(str,endptr,16);
-        }
-        else
-        {
-                tval = strtoul(str,endptr,10);
-        }
-
-        return tval;
-}
-
-
-extern long long _Nclstrtoll
-#if     NhlNeedProto
-(
-        const char *str,
-        char **endptr
-)
-#else
-(str,endptr)
-const char *str;
-char **endptr;
-#endif
-{
-        long long tval;
-        int i = 0;
-
-        errno = ERANGE;
-
-        while (isspace(str[i]))
-                        i++;
-        if (strlen(&(str[i])) >= 2 && str[i] == '0' && (str[i+1] == 'x' || str[i+1] == 'X'))
-        {
-                errno = 0;
-                tval = local_strtoll(str,endptr,16);
-        }
-        else
-        {
-                errno = 0;
-                tval = local_strtoll(str,endptr,10);
-        }
-
-        return tval;
-}
-
-extern unsigned long long _Nclstrtoull
-#if     NhlNeedProto
-(
-        const char *str,
-        char **endptr
-)
-#else
-(str,endptr)
-const char *str;
-char **endptr;
-#endif
-{
-        unsigned long long tval;
-        int i = 0;
-
-        while (isspace(str[i]))
-                        i++;
-        if (strlen(&(str[i])) >= 2 && str[i] == '0' && (str[i+1] == 'x' || str[i+1] == 'X'))
-        {
-                tval = strtoull(str,endptr,16);
-        }
-        else
-        {
-                tval = strtoull(str,endptr,10);
-        }
-
-        return tval;
-}
 
 NhlErrorTypes _NclIshorttoint
 #if	NhlNeedProto

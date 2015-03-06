@@ -312,5 +312,11 @@ int  type_size
 #endif
 );
 
+long long local_strtoll(const char *nptr, char **endptr, int base);
+extern long _Nclstrtol(const char *str, char **endptr);
+extern unsigned long _Nclstrtoul(const char *str, char **endptr);
+extern long long _Nclstrtoll(const char *str, char **endptr);
+extern unsigned long long _Nclstrtoull(const char *str, char **endptr);
+
 #endif /*_DataSupport_h */
 

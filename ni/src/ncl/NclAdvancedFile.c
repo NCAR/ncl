@@ -1042,6 +1042,8 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
         for(i = 0; i < dim_rec->n_dims; i++)
         {
             dimnode = &(dim_rec->dim_node[i]);
+            if(0 < dimnode->name)
+            {
             dimvarnode = _getVarNodeFromNclFileGrpNode(thefile->advancedfile.grpnode, dimnode->name);
 
             if(NULL != dimvarnode)
@@ -1096,6 +1098,7 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
                 _justPrintTypeVal(fp, NCL_char, "..", 0);
                 _justPrintTypeVal(fp, NCL_float, &eval, 0);
                 _justPrintTypeVal(fp, NCL_char, "]", 1);
+            }
             }
         }
     }

@@ -3026,3 +3026,79 @@ int  type_size;
 	}
 		
 }
+
+long _Nclstrtol(const char *str, char **endptr)
+{
+
+	long tval;
+	int i = 0;
+
+	while (isspace(str[i]))
+			i++;
+	if (strlen(&(str[i])) >= 2 && str[i] == '0' && (str[i+1] == 'x' || str[i+1] == 'X'))
+		tval = strtol(str,endptr,16);
+	else
+		tval = strtol(str,endptr,10);
+	return tval;
+}
+
+unsigned long _Nclstrtoul(const char *str, char **endptr)
+{
+        unsigned long tval;
+        int i = 0;
+
+        while (isspace(str[i]))
+                        i++;
+        if (strlen(&(str[i])) >= 2 && str[i] == '0' && (str[i+1] == 'x' || str[i+1] == 'X'))
+        {
+                tval = strtoul(str,endptr,16);
+        }
+        else
+        {
+                tval = strtoul(str,endptr,10);
+        }
+
+        return tval;
+}
+
+long long _Nclstrtoll(const char *str, char **endptr)
+{
+        long long tval;
+        int i = 0;
+
+        errno = ERANGE;
+
+        while (isspace(str[i]))
+                        i++;
+        if (strlen(&(str[i])) >= 2 && str[i] == '0' && (str[i+1] == 'x' || str[i+1] == 'X'))
+        {
+                errno = 0;
+                tval = local_strtoll(str,endptr,16);
+        }
+        else
+        {
+                errno = 0;
+                tval = local_strtoll(str,endptr,10);
+        }
+
+        return tval;
+}
+
+unsigned long long _Nclstrtoull(const char *str, char **endptr)
+{
+        unsigned long long tval;
+        int i = 0;
+
+        while (isspace(str[i]))
+                        i++;
+        if (strlen(&(str[i])) >= 2 && str[i] == '0' && (str[i+1] == 'x' || str[i+1] == 'X'))
+        {
+                tval = strtoull(str,endptr,16);
+        }
+        else
+        {
+                tval = strtoull(str,endptr,10);
+        }
+
+        return tval;
+}
