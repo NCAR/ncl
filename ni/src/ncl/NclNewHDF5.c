@@ -72,6 +72,10 @@ static NrmQuark Qfill_val;
 #define H5_CACHE_PREEMPTION_OPT  4
 #define H5_NUM_OPTIONS           5
 
+#define NUMPOSDIMNAMES	6
+
+NclQuark possibleDimNames[NUMPOSDIMNAMES];
+
 #ifndef FALSE
 #define FALSE           0
 #endif
@@ -135,7 +139,7 @@ typedef struct
 
 void *H5OpenFile(void *rootgrp, NclQuark path, int status);
 static NclBasicDataTypes string2NclType(char* name);
-static int _buildH5dimlist(NclFileGrpNode **rootgrp);
+static void _buildH5dimlist(NclFileGrpNode **rootgrp);
 static int _updateH5attributes(NclFileGrpNode **rootgrp);
 static NhlErrorTypes _addH5dim(NclFileDimRecord **grpdimrec, NclQuark dimname,
                                ng_size_t dimsize, int is_unlimited);
@@ -3422,6 +3426,13 @@ static int H5InitializeOptions(NclFileGrpNode *grpnode)
 
     grpnode->n_options = H5_NUM_OPTIONS;
 
+    possibleDimNames[0] = NrmStringToQuark("coordinates");
+    possibleDimNames[1] = NrmStringToQuark("DimensionNames");
+    possibleDimNames[2] = NrmStringToQuark("Dimensions");
+    possibleDimNames[3] = NrmStringToQuark("DIMSCALE");
+    possibleDimNames[4] = NrmStringToQuark("DIMENSION_LIST");
+    possibleDimNames[5] = NrmStringToQuark("HDF4_DIMENSION_LIST");
+
     options = NclMalloc(grpnode->n_options * sizeof(NCLOptions));
     if (! options)
     {
@@ -3640,9 +3651,106 @@ NhlErrorTypes _addH5dim(NclFileDimRecord **grpdimrec, NclQuark dimname,
     return ret;
 }
 
-static int _buildH5dimlist(NclFileGrpNode **rootgrp)
+static NclFileAttNode *_get_diminfo_attnode(NclFileVarNode *varnode, NclQuark qattname)
 {
-    int ndims = 0;
+    NclFileAttRecord *attrec  = NULL;
+    NclFileAttNode   *attnode = NULL;
+    int j;
+
+    attrec = varnode->att_rec;
+    if(NULL == attrec)
+        return NULL;
+
+    for(j = 0; j < attrec->n_atts; ++j)
+    {
+        attnode = &(attrec->att_node[j]);
+        if(qattname == attnode->name)
+           return attnode;
+    }
+
+    return NULL;
+}
+
+static int _buildH5VarDimlist(NclFileVarNode *varnode, NclFileDimRecord *grpdimrec)
+{
+    NclFileDimRecord *vardimrec = NULL;
+
+    NclFileDimNode   *vardimnode = NULL;
+    NclFileAttNode   *attnode = NULL;
+    char *ori_str;
+    char *tmp_str;
+    char *result;
+    char delimiter[3] = " ,";
+
+    int dimname_updated = 0;
+    int i, j, n;
+
+    vardimrec = varnode->dim_rec;
+
+    if(NULL == vardimrec)
+        return 0;
+
+  /*
+   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tvar name: <%s>, ndims = %d\n",
+   *                   NrmQuarkToString(varnode->name), vardimrec->n_dims);
+   */
+
+    for(j = 0; j < vardimrec->n_dims; ++j)
+    {
+        vardimnode = &(vardimrec->dim_node[j]);
+        if(0 > vardimnode->name)
+        {
+            if(NULL != grpdimrec)
+            {
+                for(i = 0; i < grpdimrec->n_dims; ++i)
+                {
+                    if(vardimnode->size == grpdimrec->dim_node[i].size)
+                    {
+                        vardimnode->name = grpdimrec->dim_node[i].name;
+                        ++dimname_updated;
+                    }
+                }
+            }
+        }
+    }
+
+    if(dimname_updated == vardimrec->n_dims)
+        return 0;
+
+    dimname_updated = 0;
+    for(n = 0; n < NUMPOSDIMNAMES; ++n)
+    {
+        if(dimname_updated)
+            break;
+
+        attnode = _get_diminfo_attnode(varnode, possibleDimNames[n]);
+        if(NULL == attnode)
+            continue;
+
+        i = 0;
+        ori_str = NrmQuarkToString(*(NclQuark *)attnode->value);
+        tmp_str = strdup(ori_str);
+        result = strtok(tmp_str, delimiter);
+        while(result != NULL)
+        {
+            vardimnode = &(vardimrec->dim_node[i]);
+            vardimnode->name = NrmStringToQuark(result);
+            result = strtok(NULL, delimiter);
+            ++i;
+            if(i >= vardimrec->n_dims)
+                break;
+        }
+        free(tmp_str);
+        dimname_updated = 1;
+        break;
+    }
+
+    return dimname_updated;
+}
+
+static void _buildH5dimlist(NclFileGrpNode **rootgrp)
+{
     NclFileGrpNode *grpnode = *rootgrp;
 
     NclFileVarRecord *varrec = NULL;
@@ -3653,7 +3761,8 @@ static int _buildH5dimlist(NclFileGrpNode **rootgrp)
     NclFileDimNode   *vardimnode = NULL;
 
     int i, j, n;
-    char tmp_name[MAX_NCL_NAME_LENGTH];
+    int find_new_dim = 0;
+    int dimname_updated = 0;
 
   /*
    *fprintf(stderr, "\nEnter _buildH5dimlist. file: %s, line: %d\n", __FILE__, __LINE__);
@@ -3663,134 +3772,60 @@ static int _buildH5dimlist(NclFileGrpNode **rootgrp)
     {
         for(n = 0; n < grpnode->grp_rec->n_grps; ++n)
         {
-            ndims = _buildH5dimlist(&(grpnode->grp_rec->grp_node[n]));
+            _buildH5dimlist(&(grpnode->grp_rec->grp_node[n]));
         }
     }
 
     varrec = grpnode->var_rec;
 
     if(NULL == varrec)
-        return 0;
+        return;
+
+    grpdimrec = grpnode->dim_rec;
 
     for(n = 0; n < varrec->n_vars; ++n)
     {
         varnode = &(varrec->var_node[n]);
 
+        dimname_updated = _buildH5VarDimlist(varnode, grpnode->dim_rec);
+
         vardimrec = varnode->dim_rec;
+        if(NULL == vardimrec)
+            continue;
 
-      /*
-       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\tvar name: <%s>, ndims = %d\n",
-       *                   NrmQuarkToString(varnode->name),
-       *                   vardimrec->n_dims);
-       */
-
-        if(NULL == grpnode->dim_rec)
+        if(dimname_updated)
         {
-            NclFileAttRecord *attrec = NULL;
-            NclFileAttNode   *attnode = NULL;
-            short need_update_dimname = 0;
-            char *ori_str;
-            char *tmp_str;
-            char *result;
-            char delimiter[3];
-
-            vardimnode = &(vardimrec->dim_node[0]);
-            if(0 > vardimnode->name)
+            if(NULL == grpdimrec)
             {
-                attrec = varnode->att_rec;
-                if(NULL != attrec)
+                for(j = 0; j < vardimrec->n_dims; ++j)
                 {
-                    for(j = 0; j < attrec->n_atts; ++j)
-                    {
-                        attnode = &(attrec->att_node[j]);
-                        if((NrmStringToQuark("Dimensions") == attnode->name) ||
-                           (NrmStringToQuark("DimensionNames") == attnode->name) ||
-                           (NrmStringToQuark("DIMSCALE") == attnode->name) ||
-                           (NrmStringToQuark("DIMENSION_LIST") == attnode->name))
-                        {
-                            i = 0;
-                            ori_str = NrmQuarkToString(*(NclQuark *)attnode->value);
-                            tmp_str = strdup(ori_str);
-                            strcpy(delimiter, " ,");
-                            result = strtok(tmp_str, delimiter);
-                            while(result != NULL)
-                            {
-                                vardimnode = &(vardimrec->dim_node[i]);
-                                vardimnode->name = NrmStringToQuark(result);
-                                _addH5dim(&grpdimrec, vardimnode->name, vardimnode->size, 0);
-                                result = strtok(NULL, delimiter);
-                                ++i;
-                                if(i >= vardimrec->n_dims)
-                                    break;
-                            }
-                            free(tmp_str);
-                            grpnode->dim_rec = grpdimrec;
-                            break;
-                        }
-                    }
+                    vardimnode = &(vardimrec->dim_node[i]);
+                    _addH5dim(&grpdimrec, vardimnode->name, vardimnode->size, 0);
                 }
-            }
-        }
-
-        for(i = 0; i < vardimrec->n_dims; ++i)
-        {
-            int new_dim = 1;
-            vardimnode = &(vardimrec->dim_node[i]);
-          /*
-           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-           *fprintf(stderr, "\tDim %d, name: <%s>, length: %d\n",
-           *                   n, NrmQuarkToString(vardimnode->name), vardimnode->size);
-           */
-
-            if(NULL == grpnode->dim_rec)
-            {
-                if(0 > vardimnode->name)
-                {
-                    sprintf(tmp_name, "phony_dim_%4.4d", i);
-                    vardimnode->name = NrmStringToQuark(tmp_name);
-                }
-                _addH5dim(&grpdimrec, vardimnode->name, vardimnode->size, 0);
                 grpnode->dim_rec = grpdimrec;
             }
             else
             {
-
-                for(j = 0; j < grpdimrec->n_dims; ++j)
+                for(j = 0; j < vardimrec->n_dims; ++j)
                 {
-                    if((0 > vardimnode->name) || (vardimnode->size == grpdimrec->dim_node[j].size))
+                    find_new_dim = 1;
+                    vardimnode = &(vardimrec->dim_node[j]);
+                    for(i = 0; i < grpdimrec->n_dims; ++i)
                     {
-                        vardimnode->name = grpdimrec->dim_node[j].name;
-                        new_dim = 0;
-                        break;
+                        if((vardimnode->name == grpdimrec->dim_node[i].name) ||
+                           (vardimnode->size == grpdimrec->dim_node[i].size))
+                        {
+                            find_new_dim = 0;
+                            break;
+                        }
                     }
 
-                    if(vardimnode->name == grpdimrec->dim_node[j].name)
-                    {
-                        new_dim = 0;
-                        break;
-                    }
-                }
-
-                if(new_dim)
-                {
-                    if(0 > vardimnode->name)
-                    {
-                        j = grpdimrec->n_dims;
-                        sprintf(tmp_name, "phony_dim_%4.4d", j);
-                        vardimnode->name = NrmStringToQuark(tmp_name);
-                    }
-                    _addH5dim(&grpdimrec, vardimnode->name, vardimnode->size, 0);
+                    if(find_new_dim)
+                        _addH5dim(&grpnode->dim_rec, vardimnode->name, vardimnode->size, 0);
                 }
             }
         }
     }
-
-  /*
-   *fprintf(stderr, "Leave _buildH5dimlist. file: %s, line: %d\n\n", __FILE__, __LINE__);
-   */
-
-    return ndims;
 }
 
 static int _updateH5attributes(NclFileGrpNode **rootgrp)
