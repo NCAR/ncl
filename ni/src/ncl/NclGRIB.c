@@ -572,6 +572,21 @@ GribParamList * vstep;
 				_GribFreeGribRec(vstep->thelist[i].rec_inq);
 			}
 		}
+		if(vstep->ensemble != NULL) {
+			_NclDestroyObj((NclObj)vstep->ensemble);
+		}
+		if(vstep->ens_indexes != NULL) {
+			_NclDestroyObj((NclObj)vstep->ens_indexes);
+		}
+		if(vstep->probability != NULL) {
+			_NclDestroyObj((NclObj)vstep->probability);
+		}
+		if(vstep->lower_probs != NULL) {
+			_NclDestroyObj((NclObj)vstep->lower_probs);
+		}
+		if(vstep->upper_probs != NULL) {
+			_NclDestroyObj((NclObj)vstep->upper_probs);
+		}
 		if(vstep->forecast_time != NULL) {
 			_NclDestroyObj((NclObj)vstep->forecast_time);
 		}

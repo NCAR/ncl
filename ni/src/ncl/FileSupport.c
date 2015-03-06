@@ -4038,6 +4038,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 			FILE *fd = fopen(filename, "r");
 
 			_g2_seekgb(fd, seek, (size_t)32 * GBUFSZ_T, &lskip, &lgrib);
+  			fclose(fd);
 			if (lgrib == 0)
 				break;
 
@@ -4057,6 +4058,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 				int version;
 				int fid = open(filename, O_RDONLY);
 				int ret = GetNextGribOffset(fid,&offset,&size,offset,&nextoff,&version);
+				close(fid);
                         	if((ret != GRIBEOF) && (ret != GRIBERROR))
                         	{
                                 	file_ext_q = cur_ext_q;
