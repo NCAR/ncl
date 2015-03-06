@@ -600,8 +600,10 @@ void _justPrintTypeValAtPoint(FILE *fp, NclBasicDataTypes type, void *val, size_
              break;
             }
         default:
+#if 0
             fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
             fprintf(stderr, "\tUNKNOWN type: 0%o, val (in char): <%s>", type, (char *)val);
+#endif
             break;
     }
 
@@ -659,7 +661,8 @@ void _printNclFileAttRecord(FILE *fp, NclAdvancedFile thefile, NclFileAttRecord 
                 {
                     _justPrintTypeVal(fp, NCL_char, "\", \"", 0);
                 }
-                _justPrintTypeVal(fp, NCL_string, compnode->value, 0);
+                if(NULL != compnode->value)
+                    _justPrintTypeVal(fp, NCL_string, compnode->value, 0);
               /*
                *_justPrintTypeVal(fp, compnode->type, compnode->value, 0);
                */
@@ -768,6 +771,7 @@ void _printNclFileAttRecord(FILE *fp, NclAdvancedFile thefile, NclFileAttRecord 
         if(NULL == attnode->value)
         {
             tmp_md = _NclFileReadAtt((NclFile)thefile,attnode->name,NULL);
+            attnode->value = NclCalloc(attnode->n_elem, _NclSizeOf(attnode->type));
             memcpy(attnode->value, tmp_md->multidval.val,
                    attnode->n_elem * _NclSizeOf(attnode->type));
         }
@@ -8269,9 +8273,15 @@ static struct _NclMultiDValDataRec *AdvancedFileReadAtt(NclFile infile, NclQuark
         }
     }
 
+#if 1
+    NHLPERROR((NhlINFO,NhlEUNKNOWN,
+        "AdvancedFileReadVarAtt: (%s) is not an attribute of (%s)",
+         NrmQuarkToString(attname),NrmQuarkToString(thefile->advancedfile.fname)));
+#else
     NHLPERROR((NhlWARNING,NhlEUNKNOWN,
         "AdvancedFileReadVarAtt: (%s) is not an attribute of (%s)",
          NrmQuarkToString(attname),NrmQuarkToString(thefile->advancedfile.fname)));
+#endif
 
     return(_NclCreateMissing());
 }
