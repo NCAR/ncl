@@ -20,31 +20,40 @@ C                  ,z[*]:numeric)
       DOUBLE PRECISION GLATBND1,GLATBND2
       DOUBLE PRECISION GLONBND1,GLONBND2
 
-      DLAT = ABS(GLAT(2)-GLAT(1))
-      DLON = ABS(GLON(2)-GLON(1))
-
-      IF ((GLAT(2)-GLAT(1)).GT.0.0D0) THEN
-          IFLAG = 1
-      ELSE
-          IFLAG = -1
+      DLON = GLON(2)-GLON(1)
+      IF (DLON.LE.0.0D0) THEN
+          PRINT *, "BINDATASUM3: longitudes must be monotonically"
+          PRINT *, " increasing: FATAL ERROR"
+          STOP
       END IF
 
-      GLATBND1 = GLAT(1) - IFLAG*DLAT/2
-      GLONBND1 = GLON(1) - DLON/2
-      GLATBND2 = GLAT(NLAT) + IFLAG*DLAT/2
+      DLAT = GLAT(2)-GLAT(1)
+      IF (DLAT.GT.0.0D0) THEN
+          IFLAG = 1
+      ELSEIF (DLAT.LT.0.0D0) THEN
+          IFLAG = -1
+      END IF
+      DLAT = ABS(DLAT)
+
+      GLATBND1 = MIN(GLAT(1),GLAT(NLAT)) - DLAT/2
+      GLATBND2 = MAX(GLAT(1),GLAT(NLAT)) + DLAT/2
+      GLONBND1 = GLON(1)    - DLON/2
       GLONBND2 = GLON(MLON) + DLON/2
 
       DO K = 1,NZ
           IF (Z(K).NE.ZMSG .AND.
      +       (ZLAT(K).GE.GLATBND1 .AND. ZLAT(K).LE.GLATBND2)  .AND.
      +       (ZLON(K).GE.GLONBND1 .AND. ZLON(K).LE.GLONBND2)) THEN
-              NL = ABS((ZLAT(K)-GLATBND1)/DLAT) + 1
               ML = ABS((ZLON(K)-GLONBND1)/DLON) + 1
-              IF (ML.GE.1 .AND. ML.LE.MLON .AND. NL.GE.1 .AND.                
-     +            NL.LE.NLAT) THEN
+              NL = ABS((ZLAT(K)-GLATBND1)/DLAT) + 1
+              IF (IFLAG.EQ.-1) NL = NLAT-NL+1
+
+c c c         IF (ML.GE.1 .AND. ML.LE.MLON .AND. NL.GE.1 .AND.
+c c c             NL.LE.NLAT) THEN
                   GBIN(ML,NL) = GBIN(ML,NL) + Z(K)
                   GKNT(ML,NL) = GKNT(ML,NL) + 1
-              END IF
+c c c         END IF
+
           END IF
       END DO
 
