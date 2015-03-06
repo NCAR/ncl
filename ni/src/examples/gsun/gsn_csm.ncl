@@ -3695,15 +3695,15 @@ begin
       delta      = second_val - first_val
       range      = last_val - first_val
 
-      if(range.ge.360.)
-        print("gsn_add_cyclic: Warning: The range of your longitude coordinate array is at least 360.")
-        print("You may want to set gsnAddCyclic to False to avoid a warning")
-        print("message from the spline function.")
+      if(range.ge.360.) then
+        print("gsn_add_cyclic: Warning: The range of your longitude coordinate")
+        print("array is at least 360. No cyclic point will be added.")
+        return(data)
       end if
-      if(any((range+delta).lt.359.))
+      if(any((range+delta).lt.359.)) then
         print("gsn_add_cyclic: Warning: The range of your longitude data is not 360.")
-        print("You may want to set gsnAddCyclic to False to avoid a warning")
-        print("message from the spline function.")
+        print("You may want to set the gsnAddCyclic resource to False to avoid a")
+        print("warning message from the spline function.")
       end if
     else
       if(.not.(isatt(newdata,"lon2d").and.isatt(newdata,"lat2d"))) then
