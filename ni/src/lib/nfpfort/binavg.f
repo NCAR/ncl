@@ -66,9 +66,9 @@ c                            ; monotonically {in/de}creasing
           IFLAG = -1
       END IF
 
-      GLATBND1 = GLAT(1) - IFLAG*DLAT/2
-      GLONBND1 = GLON(1) - DLON/2
-      GLATBND2 = GLAT(NLAT) + IFLAG*DLAT/2
+      GLATBND1 = MIN(GLAT(1),GLAT(NLAT)) - DLAT/2
+      GLATBND2 = MAX(GLAT(1),GLAT(NLAT)) + DLAT/2
+      GLONBND1 = GLON(1)    - DLON/2
       GLONBND2 = GLON(MLON) + DLON/2
 
       DO K = 1,NZ
@@ -77,11 +77,14 @@ c                            ; monotonically {in/de}creasing
      +       (ZLON(K).GE.GLONBND1 .AND. ZLON(K).LE.GLONBND2)) THEN
               NL = ABS((ZLAT(K)-GLATBND1)/DLAT) + 1
               ML = ABS((ZLON(K)-GLONBND1)/DLON) + 1
-              IF (NL.GT.0 .AND. NL.LE.NLAT .AND. ML.GT.0 .AND.
-     +            ML.LE.MLON) THEN
+              IF (IFLAG.EQ.-1) NL = NLAT-NL+1
+
+c c c         IF (NL.GT.0 .AND. NL.LE.NLAT .AND. ML.GT.0 .AND.
+c c c+            ML.LE.MLON) THEN
                   GBINKNT(ML,NL,1) = GBINKNT(ML,NL,1) + Z(K)
                   GBINKNT(ML,NL,2) = GBINKNT(ML,NL,2) + 1
-              END IF
+c c c         END IF
+
           END IF
       END DO
 c                                     compute bin average
