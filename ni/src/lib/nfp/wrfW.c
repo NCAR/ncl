@@ -10602,6 +10602,17 @@ NhlErrorTypes wrf_wps_open_int_W( void )
   return(ret);
 }
 
+/*
+ * This function simply closes a WRF/WPS intermediate file
+ * that was opened with wrf_wps_open/rddata/rhead_int.
+ */
+NhlErrorTypes wrf_wps_close_int_W( void )
+{
+  NGCALLF(plotfmt_close,PLOTFMT_CLOSE)();
+  return(NhlNOERROR);
+
+}
+
 
 /*
  * This function takes an open WRF/WPS intermediate file,

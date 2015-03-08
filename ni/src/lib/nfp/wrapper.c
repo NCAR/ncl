@@ -97,6 +97,7 @@ extern NhlErrorTypes wrf_wps_read_nml_W(void);
 extern NhlErrorTypes wrf_wps_open_int_W(void);
 extern NhlErrorTypes wrf_wps_rdhead_int_W(void);
 extern NhlErrorTypes wrf_wps_rddata_int_W(void);
+extern NhlErrorTypes wrf_wps_close_int_W(void);
 extern NhlErrorTypes wrf_wps_read_int_W(void);
 extern NhlErrorTypes wrf_wps_write_int_W(void);
 extern NhlErrorTypes wrf_vintrp_W(void);
@@ -1830,6 +1831,14 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
         NclRegisterFunc(wrf_wps_rddata_int_W,args,"wrf_wps_rddata_int",nargs);
+
+/*
+ * Register "wrf_wps_close_int".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        NclRegisterProc(wrf_wps_close_int_W,args,"wrf_wps_close_int",nargs);
 
 /*
  * Register "wrf_wps_read_int".
