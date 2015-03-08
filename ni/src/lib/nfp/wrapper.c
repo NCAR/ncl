@@ -98,6 +98,7 @@ extern NhlErrorTypes wrf_wps_open_int_W(void);
 extern NhlErrorTypes wrf_wps_rdhead_int_W(void);
 extern NhlErrorTypes wrf_wps_rddata_int_W(void);
 extern NhlErrorTypes wrf_wps_read_int_W(void);
+extern NhlErrorTypes wrf_wps_write_int_W(void);
 extern NhlErrorTypes wrf_vintrp_W(void);
 extern NhlErrorTypes wrf_ctt_W(void);
 extern NhlErrorTypes wrf_monotonic_W(void);
@@ -1843,6 +1844,40 @@ void NclAddUserFuncs(void)
 
         NclRegisterFunc(wrf_wps_read_int_W,args,"wrf_wps_read_int",nargs);
 
+/*
+ * Register "wrf_wps_write_int".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(23);
+
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+
+        NclRegisterProc(wrf_wps_write_int_W,args,"wrf_wps_write_int",nargs);
 /*
  * Register "wrf_wps_read_nml".
  *
