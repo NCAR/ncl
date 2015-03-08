@@ -22,21 +22,21 @@ NhlErrorTypes wrf_wps_write_int_W( void )
 /*
  * Argument # 1
  */
-  NrmQuark *field_lmask;
+  NrmQuark *field;
   int FIELD_LEN=9;
-  char c_field_lmask[FIELD_LEN+1];
+  char c_field[FIELD_LEN+1];
 /*
  * Argument # 2
  */
-  NrmQuark *units_lmask;
+  NrmQuark *units;
   int UNITS_LEN=25;
-  char c_units_lmask[UNITS_LEN+1];
+  char c_units[UNITS_LEN+1];
 /*
  * Argument # 3
  */
-  NrmQuark *descr_lmask;
+  NrmQuark *descr;
   int DESCR_LEN=46;
-  char c_descr_lmask[DESCR_LEN+1];
+  char c_descr[DESCR_LEN+1];
 /*
  * Argument # 4
  */
@@ -46,15 +46,15 @@ NhlErrorTypes wrf_wps_write_int_W( void )
 /*
  * Argument # 5
  */
-  NrmQuark *map_source;
+  NrmQuark *mapsc;
   int MAPSC_LEN=32;
-  char c_map_source[MAPSC_LEN+1];
+  char c_mapsc[MAPSC_LEN+1];
 /*
  * Argument # 6
  */
-  void *xlvl_lmask;
-  float *tmp_xlvl_lmask;
-  NclBasicDataTypes type_xlvl_lmask;
+  void *xlvl;
+  float *tmp_xlvl;
+  NclBasicDataTypes type_xlvl;
 
 /*
  * Argument # 7
@@ -158,7 +158,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
 /*
  * Various
  */
-  int nlat, nlon, nlatnlon;
+  int i,slen,nlat, nlon, nlatnlon;
 
 /*
  * Get argument # 0
@@ -179,7 +179,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
 /*
  * Get argument # 1
  */
-  field_lmask = (NrmQuark*)NclGetArgValue(
+  field = (NrmQuark*)NclGetArgValue(
            1,
            23,
            NULL,
@@ -190,13 +190,19 @@ NhlErrorTypes wrf_wps_write_int_W( void )
            DONT_CARE);
 
   /* Convert to character string. */
-  strncpy(c_field_lmask,NrmQuarkToString(*field_lmask),FIELD_LEN);
-  c_field_lmask[FIELD_LEN] = '\0';
+  slen = strlen(NrmQuarkToString(*field));
+  if(slen > FIELD_LEN) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: field string is greater than %d characters",FIELD_LEN);
+    return(NhlFATAL);
+  }
+  strncpy(c_field,NrmQuarkToString(*field),FIELD_LEN);
+  for(i = slen; i < FIELD_LEN; i++) strncpy(&c_field[i]," ",1);
+  c_field[FIELD_LEN] = '\0';
 
 /*
  * Get argument # 2
  */
-  units_lmask = (NrmQuark*)NclGetArgValue(
+  units = (NrmQuark*)NclGetArgValue(
            2,
            23,
            NULL,
@@ -207,13 +213,19 @@ NhlErrorTypes wrf_wps_write_int_W( void )
            DONT_CARE);
 
   /* Convert to character string */
-  strncpy(c_units_lmask,NrmQuarkToString(*units_lmask),UNITS_LEN);
-  c_units_lmask[UNITS_LEN] = '\0';
+  slen = strlen(NrmQuarkToString(*units));
+  if(slen > UNITS_LEN) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: units string is greater than %d characters",UNITS_LEN);
+    return(NhlFATAL);
+  }
+  strncpy(c_units,NrmQuarkToString(*units),UNITS_LEN);
+  for(i = slen; i < UNITS_LEN; i++) strncpy(&c_units[i]," ",1);
+  c_units[UNITS_LEN] = '\0';
 
 /*
  * Get argument # 3
  */
-  descr_lmask = (NrmQuark*)NclGetArgValue(
+  descr = (NrmQuark*)NclGetArgValue(
            3,
            23,
            NULL,
@@ -223,8 +235,14 @@ NhlErrorTypes wrf_wps_write_int_W( void )
            NULL,
            DONT_CARE);
   /* Convert to character string. */
-  strncpy(c_descr_lmask,NrmQuarkToString(*descr_lmask),DESCR_LEN);
-  c_descr_lmask[DESCR_LEN] = '\0';
+  slen = strlen(NrmQuarkToString(*descr));
+  if(slen > DESCR_LEN) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: description string is greater than %d characters",DESCR_LEN);
+    return(NhlFATAL);
+  }
+  strncpy(c_descr,NrmQuarkToString(*descr),DESCR_LEN);
+  for(i = slen; i < DESCR_LEN; i++) strncpy(&c_descr[i]," ",1);
+  c_descr[DESCR_LEN] = '\0';
 
 /*
  * Get argument # 4
@@ -239,12 +257,19 @@ NhlErrorTypes wrf_wps_write_int_W( void )
            NULL,
            DONT_CARE);
   /* Convert to character string. */
+  slen = strlen(NrmQuarkToString(*hdate));
+  if(slen > HDATE_LEN) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: hdate string is greater than %d characters",HDATE_LEN);
+    return(NhlFATAL);
+  }
   strncpy(c_hdate,NrmQuarkToString(*hdate),HDATE_LEN);
+  for(i = slen; i < HDATE_LEN; i++) strncpy(&c_hdate[i]," ",1);
   c_hdate[HDATE_LEN] = '\0';
+
 /*
  * Get argument # 5
  */
-  map_source = (NrmQuark*)NclGetArgValue(
+  mapsc = (NrmQuark*)NclGetArgValue(
            5,
            23,
            NULL,
@@ -255,20 +280,26 @@ NhlErrorTypes wrf_wps_write_int_W( void )
            DONT_CARE);
 
   /* Convert to character string */
-  strncpy(c_map_source,NrmQuarkToString(*map_source),MAPSC_LEN);
-  c_map_source[MAPSC_LEN] = '\0';
+  slen = strlen(NrmQuarkToString(*mapsc));
+  if(slen > MAPSC_LEN) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: map_source string is greater than %d characters",MAPSC_LEN);
+    return(NhlFATAL);
+  }
+  strncpy(c_mapsc,NrmQuarkToString(*mapsc),MAPSC_LEN);
+  for(i = slen; i < MAPSC_LEN; i++) strncpy(&c_mapsc[i]," ",1);
+  c_mapsc[MAPSC_LEN] = '\0';
 
 /*
  * Get argument # 6
  */
-  xlvl_lmask = (void*)NclGetArgValue(
+  xlvl = (void*)NclGetArgValue(
            6,
            23,
            NULL,
            NULL,
            NULL,
            NULL,
-           &type_xlvl_lmask,
+           &type_xlvl,
            DONT_CARE);
 /*
  * Get argument # 7
@@ -295,7 +326,13 @@ NhlErrorTypes wrf_wps_write_int_W( void )
            NULL,
            DONT_CARE);
   /* Convert to character string. */
+  slen = strlen(NrmQuarkToString(*startloc));
+  if(slen > STARTLOC_LEN) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: startloc string is greater than %d characters",STARTLOC_LEN);
+    return(NhlFATAL);
+  }
   strncpy(c_startloc,NrmQuarkToString(*startloc),STARTLOC_LEN);
+  for(i = slen; i < STARTLOC_LEN; i++) strncpy(&startloc[i]," ",1);
   c_startloc[STARTLOC_LEN] = '\0';
 
 /*
@@ -474,9 +511,9 @@ NhlErrorTypes wrf_wps_write_int_W( void )
 /* 
  * Coerce numeric values to float.
  */
-  tmp_xlvl_lmask = coerce_input_float(xlvl_lmask,type_xlvl_lmask,1,0,NULL,NULL);
-  if(tmp_xlvl_lmask == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: Unable to coerce 'xlvl_lmask' to float");
+  tmp_xlvl = coerce_input_float(xlvl,type_xlvl,1,0,NULL,NULL);
+  if(tmp_xlvl == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: Unable to coerce 'xlvl' to float");
     return(NhlFATAL);
   }
   tmp_startlat = coerce_input_float(startlat,type_startlat,1,0,NULL,NULL);
@@ -539,38 +576,38 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  * Call the Fortran routine.
  */
   NGCALLF(write_intermediate_wps,WRITE_INTERMEDIATE_WPS)(c_wps_im_root_name, 
-							 c_field_lmask, 
-							 c_units_lmask, 
-							 c_descr_lmask, 
-							 c_hdate, 
-							 c_map_source, 
-							 tmp_xlvl_lmask, 
-							 iproj, 
-							 c_startloc, 
-							 tmp_startlat, 
-							 tmp_startlon, 
-							 tmp_delta_lat, 
-							 tmp_delta_lon, 
-							 tmp_xlonc, 
-							 tmp_truelat1, 
-							 tmp_truelat2, 
-							 tmp_nlats, 
-							 tmp_dx, tmp_dy, 
-							 nx, ny, 
-							 is_wind_earth_rel, 
-							 tmp_lmask,
-							 strlen(c_wps_im_root_name),
-							 FIELD_LEN,
-							 UNITS_LEN,
-							 DESCR_LEN,
-							 HDATE_LEN,
-							 MAPSC_LEN,
-							 STARTLOC_LEN);
+                                                         c_field, 
+                                                         c_units, 
+                                                         c_descr, 
+                                                         c_hdate, 
+                                                         c_mapsc, 
+                                                         tmp_xlvl, 
+                                                         iproj, 
+                                                         c_startloc, 
+                                                         tmp_startlat, 
+                                                         tmp_startlon, 
+                                                         tmp_delta_lat, 
+                                                         tmp_delta_lon, 
+                                                         tmp_xlonc, 
+                                                         tmp_truelat1, 
+                                                         tmp_truelat2, 
+                                                         tmp_nlats, 
+                                                         tmp_dx, tmp_dy, 
+                                                         nx, ny, 
+                                                         is_wind_earth_rel, 
+                                                         tmp_lmask,
+                                                         strlen(c_wps_im_root_name),
+                                                         FIELD_LEN,
+                                                         UNITS_LEN,
+                                                         DESCR_LEN,
+                                                         HDATE_LEN,
+                                                         MAPSC_LEN,
+                                                         STARTLOC_LEN);
 
 /*
  * Free unneeded memory.
  */
-  if(type_xlvl_lmask!= NCL_float) NclFree(tmp_xlvl_lmask);
+  if(type_xlvl      != NCL_float) NclFree(tmp_xlvl);
   if(type_startlat  != NCL_float) NclFree(tmp_startlat);
   if(type_startlon  != NCL_float) NclFree(tmp_startlon);
   if(type_delta_lat != NCL_float) NclFree(tmp_delta_lat);
