@@ -135,21 +135,12 @@ NhlErrorTypes wrf_wps_write_int_W( void )
   void *dy;
   float *tmp_dy;
   NclBasicDataTypes type_dy;
-
-/*
- * Argument # 19
- */
-  int *nx;
 /*
  * Argument # 20
  */
-  int *ny;
-/*
- * Argument # 21
- */
   logical *is_wind_earth_rel;
 /*
- * Argument # 22
+ * Argument # 21
  */
   void *lmask;
   float *tmp_lmask;
@@ -158,14 +149,14 @@ NhlErrorTypes wrf_wps_write_int_W( void )
 /*
  * Various
  */
-  int i,slen,nlat, nlon, nlatnlon;
+  int i,slen,nlat,nlon,nlatnlon;
 
 /*
  * Get argument # 0
  */
   wps_im_root_name = (NrmQuark*)NclGetArgValue(
            0,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -181,7 +172,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
   field = (NrmQuark*)NclGetArgValue(
            1,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -204,7 +195,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
   units = (NrmQuark*)NclGetArgValue(
            2,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -227,7 +218,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
   descr = (NrmQuark*)NclGetArgValue(
            3,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -249,7 +240,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
   hdate = (NrmQuark*)NclGetArgValue(
            4,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -271,7 +262,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
   mapsc = (NrmQuark*)NclGetArgValue(
            5,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -294,7 +285,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
   xlvl = (void*)NclGetArgValue(
            6,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -306,7 +297,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
   iproj = (int*)NclGetArgValue(
            7,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -318,7 +309,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
   startloc = (NrmQuark*)NclGetArgValue(
            8,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -340,7 +331,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
   startlat = (void*)NclGetArgValue(
            9,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -352,7 +343,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
   startlon = (void*)NclGetArgValue(
            10,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -364,7 +355,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
   delta_lat = (void*)NclGetArgValue(
            11,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -376,7 +367,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
   delta_lon = (void*)NclGetArgValue(
            12,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -388,7 +379,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
   xlonc = (void*)NclGetArgValue(
            13,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -400,7 +391,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
   truelat1 = (void*)NclGetArgValue(
            14,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -412,7 +403,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
   truelat2 = (void*)NclGetArgValue(
            15,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -424,7 +415,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
   nlats = (void*)NclGetArgValue(
            16,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -436,7 +427,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
   dx = (void*)NclGetArgValue(
            17,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -448,7 +439,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
   dy = (void*)NclGetArgValue(
            18,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -458,9 +449,9 @@ NhlErrorTypes wrf_wps_write_int_W( void )
 /*
  * Get argument # 19
  */
-  nx = (int*)NclGetArgValue(
+  is_wind_earth_rel = (logical*)NclGetArgValue(
            19,
-           23,
+           21,
            NULL,
            NULL,
            NULL,
@@ -470,33 +461,9 @@ NhlErrorTypes wrf_wps_write_int_W( void )
 /*
  * Get argument # 20
  */
-  ny = (int*)NclGetArgValue(
-           20,
-           23,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           DONT_CARE);
-/*
- * Get argument # 21
- */
-  is_wind_earth_rel = (logical*)NclGetArgValue(
-           21,
-           23,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           DONT_CARE);
-/*
- * Get argument # 22
- */
   lmask = (void*)NclGetArgValue(
-           22,
-           23,
+           20,
+           21,
            NULL,
            dsizes_lmask,
            NULL,
@@ -504,8 +471,8 @@ NhlErrorTypes wrf_wps_write_int_W( void )
            &type_lmask,
            DONT_CARE);
 
-  nlat     = dsizes_lmask[0];
-  nlon     = dsizes_lmask[1];
+  nlat     = dsizes_lmask[0];    /* ny */
+  nlon     = dsizes_lmask[1];    /* nx */
   nlatnlon = nlat * nlon;
 
 /* 
@@ -593,7 +560,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
                                                          tmp_truelat2, 
                                                          tmp_nlats, 
                                                          tmp_dx, tmp_dy, 
-                                                         nx, ny, 
+                                                         &nlon, &nlat, 
                                                          is_wind_earth_rel, 
                                                          tmp_lmask,
                                                          strlen(c_wps_im_root_name),
