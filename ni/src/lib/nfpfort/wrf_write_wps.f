@@ -115,9 +115,9 @@ C This is the Polar Stereographic projection:
       WRITE (OUNIT) IS_WIND_EARTH_REL
 
       WRITE (OUNIT) slab
-C      WRITE(*, '("DONE WRITING ", A, " (level=", f7.0, ") for time ", 
-C     +       A, " to WPS IM Format")' ) 
-C     +      TRIM(FIELD), XLVL, TRIM(HDATE)
+      WRITE(*, '("DONE WRITING ", A, " (level=", f7.0, ") for time ", 
+     +       A, " to IM Format")' ) 
+     +      TRIM(FIELD), XLVL, TRIM(HDATE)
 
       close(ounit)
 
