@@ -1794,9 +1794,6 @@ NclQuark path;
     dim_hdf_names = (NclQuark *)NclMalloc(sizeof(NclQuark)*max_dim);
     dim_ncl_names = (NclQuark *)NclMalloc(sizeof(NclQuark)*max_dim);
 
-    dim_hdf_names = (NclQuark *)NclMalloc(sizeof(NclQuark)*max_dim);
-    dim_ncl_names = (NclQuark *)NclMalloc(sizeof(NclQuark)*max_dim);
-
     var_hdf_names = (NclQuark *)NclMalloc(sizeof(NclQuark)*max_var);
     var_ncl_names = (NclQuark *)NclMalloc(sizeof(NclQuark)*max_var);
 
@@ -2518,6 +2515,7 @@ NclQuark path;
     NclFree(dimsizes);
     NclFree(field_ranks);
     NclFree(buffer);
+    return;
 }
 
 static void getHDFEOS5PointData
