@@ -3799,7 +3799,7 @@ static void _buildH5dimlist(NclFileGrpNode **rootgrp)
             {
                 for(j = 0; j < vardimrec->n_dims; ++j)
                 {
-                    vardimnode = &(vardimrec->dim_node[i]);
+                    vardimnode = &(vardimrec->dim_node[j]);
                     _addH5dim(&grpdimrec, vardimnode->name, vardimnode->size, 0);
                 }
                 grpnode->dim_rec = grpdimrec;
