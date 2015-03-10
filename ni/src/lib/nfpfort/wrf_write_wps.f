@@ -2,7 +2,7 @@ C NCLFORTSTART
       SUBROUTINE write_intermediate_wps(OUTPUT_NAME,FIELDIN,UNITSIN,
      +  DESCIN,HDATEIN,DATA_SOURCE,XLVL,IPROJ,START_LOCATION,STARTLAT,
      +  STARTLON,DELTALAT,DELTALON,XLONC,TRUELAT1,TRUELAT2, NLATS,DX,DY,
-     +  NX,NY,IS_WIND_EARTH_REL,SLAB)
+     +  NX,NY,IS_WIND_EARTH_REL,IFV,XFCST,EARTH_RADIUS,SLAB)
 
       character*(*) OUTPUT_NAME
       character*(*) FIELDIN,UNITSIN,DESCIN,HDATEIN
@@ -22,6 +22,9 @@ C NCLFORTSTART
       real XLONC
       real XLVL
       logical IS_WIND_EARTH_REL
+      integer IFV
+      real XFCST
+      real EARTH_RADIUS 
       real SLAB(NX,NY)
 
 C NCLEND
@@ -37,19 +40,16 @@ C Declarations INTERNAL
       character(len=8)  STARTLOC
       character(len=80) OUT_FILE 
       
-      integer IFV
-      real XFCST
-      real EARTH_RADIUS 
-
       integer IUNIT 
       integer OUNIT 
       integer ierr
       logical exists
 
 
-      IFV=5
-      XFCST=0.0
-      EARTH_RADIUS = 6367470. * .001
+CCC Made these part of calling routine
+CCC      IFV=5
+CCC      XFCST=0.0
+CCC      EARTH_RADIUS = 6367470. * .001
       IUNIT = 10
       OUNIT = 11
 
