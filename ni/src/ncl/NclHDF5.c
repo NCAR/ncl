@@ -31,6 +31,7 @@
 #define HAVE_NETCDF
 #include <hdf5.h>
 #include "NclData.h"
+#include "DataSupport.h"
 #include "NclFileInterfaces.h"
 #include <math.h>
 #include <ctype.h>
@@ -2367,18 +2368,20 @@ static void _update_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHDF5d
     HDF5DimInqRecList *cur_list = NULL;
 
   /*
+   *fprintf(stderr, "\n\n\nhit _update_dim_list. file: %s, line: %d\n", __FILE__, __LINE__);
+   *fprintf(stderr, "\tn_dims: %d\n", *n_dims);
    */
-    fprintf(stderr, "\n\n\nhit _update_dim_list. file: %s, line: %d\n", __FILE__, __LINE__);
-    fprintf(stderr, "\tn_dims: %d\n", *n_dims);
 
     cur_list = *dim_list;
-    for(i = 0; i < *n_dims; i++)
+    i = 0;
+    while((NULL != cur_list) && (i < *n_dims))
     {
       /*
+       *fprintf(stderr, "\tOld Dim %d: name <%s>\n", i, NrmQuarkToString(cur_list->dim_inq->name));
        */
-        fprintf(stderr, "\tOld Dim %d: name <%s>\n", i, NrmQuarkToString(cur_list->dim_inq->name));
         old_dim_name[i] = cur_list->dim_inq->name;
         cur_list = cur_list->next;
+	++i;
     }
 
     for(n = 0; n < NUMPOSDIMNAMES; ++n)
@@ -2496,10 +2499,7 @@ static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHD
     NclHDF5attr_list_t *new_attr_list = NULL;
     short need_add_fillvalue_attribute = 0;
 
-    int i, k, n;
-    int num_new_dim;
-    int found_new;
-    char *tmp_str;
+    int n;
 
   /*
    *fprintf(stderr, "\n\n\nhit _HDF5Build_dim_list. file: %s, line: %d\n", __FILE__, __LINE__);
@@ -2576,6 +2576,7 @@ static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHD
 
                    new_attr_list->next = dataset_node->attr_list;
                    dataset_node->attr_list = new_attr_list;
+                   ++dataset_node->num_attrs;
 
                    break;
                }
@@ -2932,15 +2933,13 @@ int wr_status;
     NclHDF5group_node_t *h5_group = NULL;
     NclHDF5group_node_t *dim_group = NULL;
 
-    HDF5DimInqRecList *dim_list;
-    HDF5GrpInqRec *grp_inq;
+    HDF5DimInqRecList *dim_list = NULL;
+    HDF5GrpInqRec *grp_inq = NULL;
 
     HDF5DimInqRecList *pre_list = NULL;
     HDF5DimInqRecList *cur_list = NULL;
     int n = 0;
 
-
-    hid_t fid = -1;
     char *filename = NULL;
     int n_dims = 0;
 
@@ -2968,7 +2967,6 @@ int wr_status;
     {
         if(the_file->open)
         {
-            fid = the_file->id;
             return the_file;
         }
         NHLPERROR((NhlFATAL,NhlEUNKNOWN,"NclHDF5: Working on the write part\n"));
@@ -3540,10 +3538,12 @@ NclHDF5group_node_t *h5_group;
     HDF5GrpInqRecList *grplist;
     HDF5VarInqRecList *thelist;
     int i, j, n;
-    hssize_t starti[NCL_MAX_DIMENSIONS];
+  /*
+   *float tmpf;
+   *hssize_t starti[NCL_MAX_DIMENSIONS];
+   *hsize_t edgei[NCL_MAX_DIMENSIONS];
+   */
     hsize_t stridei[NCL_MAX_DIMENSIONS];
-    hsize_t edgei[NCL_MAX_DIMENSIONS];
-    float tmpf;
     int found = 0;
     int no_stride = 1;
     NclQuark chkvar = thevar;
@@ -3616,11 +3616,11 @@ NclHDF5group_node_t *h5_group;
 
             for(j = 0; j < thelist->var_inq->n_dims; j++)
             {
-                starti[j] = (hsize_t)start[j] ;
                 stridei[j] = (hsize_t)stride[j];
-                tmpf = stridei[j];
-                edgei[j] =(hsize_t)(fabs(((double)(finish[j] - start[j]))) /tmpf) + 1;
               /*
+               *tmpf = stridei[j];
+               *starti[j] = (hsize_t)start[j] ;
+               *edgei[j] =(hsize_t)(fabs(((double)(finish[j] - start[j]))) /tmpf) + 1;
                *fprintf(stderr, "\n\n\tin file: <%s>, at line: %d\n", __FILE__, __LINE__);
                *fprintf(stderr, "\tstarti[%d] = %ld, stridei[%d] = %ld, edgei[%d] = %ld\n",
                *        j, (long) starti[j], j, (long) stridei[j], j, (long) edgei[j]);
@@ -3646,7 +3646,6 @@ NclHDF5group_node_t *h5_group;
                 {
                     if(0 == strcmp("string", NclHDF5data->type))
                     {
-                        long nelms = 1;
                         NclQuark *qp;
                         char **tmp_char_array;
 
@@ -4885,7 +4884,11 @@ static NhlErrorTypes HDF5AddVarAtt
                     stepvl->var_inq->n_atts++ ;
                 }
                 NclFree(typename);
-                return(NhlNOERROR);
+
+                if(ret)
+                    return(NhlINFO);
+                else
+                    return(NhlNOERROR);
             } 
         } 
     }
@@ -4893,6 +4896,7 @@ static NhlErrorTypes HDF5AddVarAtt
     {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"File (%s) was opened as a read only file, can not write to it",NrmQuarkToString(rec->file_path_q));
     }
+
     return(NhlFATAL);
 }
 

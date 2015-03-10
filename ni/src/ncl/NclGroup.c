@@ -424,6 +424,10 @@ NclQuark group_name;
                                    group_out->file.fpath, group_out->file.wr_status);
 
     group_out->file.n_file_dims = file_in->file.n_file_dims;
+    group_out->file.n_file_atts = file_in->file.n_file_atts;
+
+    _NclReallocFilePart(&(group_out->file), -1, -1,
+                        group_out->file.n_file_dims, group_out->file.n_file_atts);
   /*
    *for(i = 0; i < group_out->file.n_file_dims; i++)
    *{
@@ -433,8 +437,6 @@ NclQuark group_name;
    */
 
     UpdateDims(group_out);
-
-    group_out->file.n_file_atts = file_in->file.n_file_atts;
 
     for(j = 0; j < file_in->file.n_file_atts; j++)
     {
@@ -523,6 +525,8 @@ NclQuark group_name;
 
         if(inqnumb != tmpqnumb)
         {
+	    if(n_grps >= group_out->file.max_grps)
+                _NclReallocFilePart(&(group_out->file), n_grps, -1, -1, -1);
             group_out->file.grp_info[n_grps] = getGrpRec(file_in->file.grp_info[i]);
             n_grps++;
         }
@@ -571,6 +575,9 @@ NclQuark group_name;
         if(!found)
             continue;
 
+	if(n_vars >= group_out->file.max_vars)
+            _NclReallocFilePart(&(group_out->file), -1, n_vars, -1, -1);
+
         group_out->file.var_info[n_vars] = getVarRec(file_in->file.var_info[i]);
         copyAttributes(&(group_out->file.var_att_info[n_vars]),
                        file_in->file.var_att_info[i]);
@@ -578,6 +585,8 @@ NclQuark group_name;
     }
 
     group_out->file.n_vars = n_vars;
+
+    _NclReallocFilePart(&(group_out->file), n_grps, n_vars, -1, -1);
 
     setVarAtts(group_out);
 
