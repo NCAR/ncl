@@ -70,34 +70,43 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
 
 /* String attributes */
-  NrmQuark *date, *map_source, *startloc;
+  NrmQuark *date=NULL, *map_source=NULL, *startloc=NULL;
   int DATE_LEN=24, MAP_SOURCE_LEN=32, STARTLOC_LEN=8;
   char c_date[DATE_LEN+1], c_map_source[MAP_SOURCE_LEN+1], c_startloc[STARTLOC_LEN+1];
 
 /* Float attributes */
-  void *xfcst, *level, *startlat, *startlon, *deltalat, *deltalon; 
-  void *xlonc, *truelat1, *truelat2, *nlats, *dx, *dy, *earth_radius; 
-  float *tmp_level, *tmp_startlat, *tmp_startlon, *tmp_deltalat; 
-  float *tmp_deltalon, *tmp_xlonc, *tmp_truelat1, *tmp_truelat2;
-  float *tmp_xfcst, *tmp_nlats, *tmp_dx, *tmp_dy, *tmp_earth_radius;
-  NclBasicDataTypes type_xfcst=NCL_float, type_level=NCL_float, type_startlat=NCL_float;
-  NclBasicDataTypes type_startlon=NCL_float, type_deltalat=NCL_float, type_deltalon=NCL_float;
-  NclBasicDataTypes type_xlonc=NCL_float ,type_truelat1=NCL_float, type_truelat2=NCL_float;
-  NclBasicDataTypes type_earth_radius=NCL_float, type_nlats=NCL_float, type_dx=NCL_float, type_dy=NCL_float;
+  void *forecast_hour=NULL, *level=NULL, *startlat=NULL, *startlon=NULL;
+  void *deltalat=NULL, *deltalon=NULL, *center_lon=NULL;
+  void *truelat1=NULL, *truelat2=NULL, *nlats=NULL, *dx=NULL, *dy=NULL;
+  void *earth_radius=NULL; 
+
+  float *tmp_forecast_hour, *tmp_level, *tmp_startlat, *tmp_startlon;
+  float *tmp_deltalat, *tmp_deltalon, *tmp_center_lon;
+  float *tmp_truelat1, *tmp_truelat2, *tmp_nlats, *tmp_dx, *tmp_dy;
+  float *tmp_earth_radius;
+
+  NclBasicDataTypes type_forecast_hour=NCL_float, type_level=NCL_float;
+  NclBasicDataTypes type_startlat=NCL_float,type_startlon=NCL_float;
+  NclBasicDataTypes type_deltalat=NCL_float, type_deltalon=NCL_float;
+  NclBasicDataTypes type_center_lon=NCL_float, type_truelat1=NCL_float;
+  NclBasicDataTypes type_truelat2=NCL_float, type_nlats=NCL_float;
+  NclBasicDataTypes type_dx=NCL_float, type_dy=NCL_float;
+  NclBasicDataTypes type_earth_radius=NCL_float; 
 
   /* Other attributes */
-  int version, proj;
+  int version, projection;
+  char *c_projection;
+  NclBasicDataTypes type_projection;
   logical is_wind_earth_relative;
-  char *c_proj;
-  NclBasicDataTypes type_proj;
 
   /* Logicals to keep track if an attribute has been set */
-  int set_version  = False, set_xfcst    = False, set_date    = False, set_map_source  = False; 
-  int set_startloc = False, set_level    = False, set_startlat= False, set_startlon    = False;
-  int set_deltalat = False, set_deltalon = False, set_xlonc   = False, set_earth_radius= False;
-  int set_truelat1 = False, set_truelat2 = False, set_dx      = False, set_dy          = False;
-  int set_proj     = False, set_nlats    = False, set_is_wind_earth_relative = False; 
-
+  int set_projection=False, set_is_wind_earth_relative=False;
+  int set_date=False, set_version=False, set_map_source=False;
+  int set_forecast_hour=False, set_level=False;
+  int set_startlat=False, set_startlon=False, set_startloc=False; 
+  int set_deltalat=False, set_deltalon=False, set_center_lon=False;
+  int set_truelat1=False, set_truelat2=False, set_nlats=False;
+  int set_dx=False, set_dy=False, set_earth_radius=False;
 /*
  * Various
  */
@@ -205,24 +214,24 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  * Check for attributes attached to "opt"
  *
  *    "version"           - integer, default to 5
- *    "date"              - string,  required, no default, must be of length 24
- *    "xfcst"             - float,   default to 0.0
+ *    "date"              - string,  required, must be of length 24
+ *    "forecast_hour"     - float,   default to 0.0
  *    "map_source"        - string,  default to "Unknown data source"
  *    "level"             - float,   required
- *    "proj"            " - integer, required, must be 0/1/3/4/5 (see extra note below)
+ *    "projection"        - integer or string, required, must be 0/1/3/4/5 (see extra note below)
  *    "startloc"          - string,  default to "SWCORNER"
  *    "startlat"          - float,   required, 
  *    "startlon"          - float,   required
- *    "deltalat"          - float,   required if proj=0, else default to missing/dummy value
- *    "deltalon"          - float,   required if proj=0/4, else default to missing/dummy value
+ *    "deltalat"          - float,   required if projection=0, else default to missing/dummy value
+ *    "deltalon"          - float,   required if projection=0/4, else default to missing/dummy value
  *                          (yes, this is different than deltalat)
  *    "earth_radius"      - float,   default to set to 6367470. * 0.001
- *    "dx"                - float,   required if proj=1/3/5, else default to missing/dummy
+ *    "dx"                - float,   required if projection=1/3/5, else default to missing/dummy
  *    "dy"                - same as "dx"
- *    "truelat1"          - float,   required if proj=1/3/5, else default to missing/dummy
- *    "truelat2"          - float,   required if proj=3, else default to missing/dummy
- *    "xlonc"             - float,   required if proj=3/5, else default to missing/dummy
- *    "nlats"             - float,   required if proj=4, else default to missing/dummy
+ *    "truelat1"          - float,   required if projection=1/3/5, else default to missing/dummy
+ *    "truelat2"          - float,   required if projection=3, else default to missing/dummy
+ *    "center_lon"        - float,   required if projection=3/5, else default to missing/dummy
+ *    "nlats"             - float,   required if projection=4, else default to missing/dummy
  *    "is_wind_earth_relative" - logical, required
  */
   if(*opt) {
@@ -261,10 +270,10 @@ NhlErrorTypes wrf_wps_write_int_W( void )
             date     = (NrmQuark *) attr_list->attvalue->multidval.val;
             set_date = True;
           }
-          else if(!strcasecmp(attr_list->attname, "xfcst")) {
-            xfcst      = attr_list->attvalue->multidval.val;
-            type_xfcst = attr_list->attvalue->multidval.data_type;
-            set_xfcst  = True;
+          else if(!strcasecmp(attr_list->attname, "forecast_hour")) {
+            forecast_hour      = attr_list->attvalue->multidval.val;
+            type_forecast_hour = attr_list->attvalue->multidval.data_type;
+            set_forecast_hour  = True;
           }
           else if(!strcasecmp(attr_list->attname, "map_source")) {
             map_source     = (NrmQuark *) attr_list->attvalue->multidval.val;
@@ -275,34 +284,34 @@ NhlErrorTypes wrf_wps_write_int_W( void )
             type_level = attr_list->attvalue->multidval.data_type;
             set_level  = True;
           }
-          else if(!strcasecmp(attr_list->attname, "proj")) {
-            type_proj = attr_list->attvalue->multidval.data_type;
-            if(type_proj == NCL_string) {
-	      c_proj = NrmQuarkToString(*(NrmQuark *) attr_list->attvalue->multidval.val);
-	      if(!strcasecmp(c_proj,"Equidistant_Lat_Lon")) {
-		proj = 0;
-	      }
-	      else if(!strcasecmp(c_proj,"Mercator")) {
-		proj = 1;
-	      }
-	      else if(!strcasecmp(c_proj,"Lambert")) {
-		proj = 3;
-	      }
-	      else if(!strcasecmp(c_proj,"Gaussian")) {
-		proj = 4;
-	      }
-	      else if(!strcasecmp(c_proj,"Polar_Stereographic")) {
-		proj = 5;
-	      }
-	    }
-	    else if(type_proj == NCL_int) {
-	      proj = *(int *)attr_list->attvalue->multidval.val;
-	    }
-	    else {
-	      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the proj attribute must be an integer or a string");
-	      return(NhlFATAL);
-	    }
-            set_proj  = True;
+          else if(!strcasecmp(attr_list->attname, "projection")) {
+            type_projection = attr_list->attvalue->multidval.data_type;
+            if(type_projection == NCL_string) {
+              c_projection = NrmQuarkToString(*(NrmQuark *) attr_list->attvalue->multidval.val);
+              if(!strcasecmp(c_projection,"Equidistant_Lat_Lon")) {
+                projection = 0;
+              }
+              else if(!strcasecmp(c_projection,"Mercator")) {
+                projection = 1;
+              }
+              else if(!strcasecmp(c_projection,"Lambert")) {
+                projection = 3;
+              }
+              else if(!strcasecmp(c_projection,"Gaussian")) {
+                projection = 4;
+              }
+              else if(!strcasecmp(c_projection,"Polar_Stereographic")) {
+                projection = 5;
+              }
+            }
+            else if(type_projection == NCL_int) {
+              projection = *(int *)attr_list->attvalue->multidval.val;
+            }
+            else {
+              NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the projection attribute must be an integer or a string");
+              return(NhlFATAL);
+            }
+            set_projection  = True;
           }
           else if(!strcasecmp(attr_list->attname, "startloc")) {
             startloc     = (NrmQuark *) attr_list->attvalue->multidval.val;
@@ -353,10 +362,10 @@ NhlErrorTypes wrf_wps_write_int_W( void )
             type_truelat2 = attr_list->attvalue->multidval.data_type;
             set_truelat2  = True;
           }
-          else if(!strcasecmp(attr_list->attname, "xlonc")) {
-            xlonc      = attr_list->attvalue->multidval.val;
-            type_xlonc = attr_list->attvalue->multidval.data_type;
-            set_xlonc  = True;
+          else if(!strcasecmp(attr_list->attname, "center_lon")) {
+            center_lon      = attr_list->attvalue->multidval.val;
+            type_center_lon = attr_list->attvalue->multidval.data_type;
+            set_center_lon  = True;
           }
           else if(!strcasecmp(attr_list->attname, "nlats")) {
             nlats      = attr_list->attvalue->multidval.val;
@@ -382,7 +391,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  * These attributes are not required:
  *
  *  version
- *  xfcst
+ *  forecast_hour
  *  map_source
  *  startloc
  *  earth_radius
@@ -391,7 +400,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  *
  *  date
  *  level
- *  proj
+ *  projection
  *  startlat
  *  startlon
  *  deltalat
@@ -400,7 +409,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  *  dy
  *  truelat1
  *  truelat2
- *  xlonc
+ *  center_lon
  *  nlats
  *  is_wind_earth_relative
  *
@@ -416,8 +425,10 @@ NhlErrorTypes wrf_wps_write_int_W( void )
                       "SWCORNER",STARTLOC_LEN) == NhlFATAL) {
     return(NhlFATAL);
   }
-  if(!set_proj || (set_proj && (proj != 0 && proj != 1 && proj != 3 && proj != 4 && proj != 5))) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the proj attribute must be set to 0, 1, 3, 4, or 5");
+  if(!set_projection || (set_projection && 
+                         (projection != 0 && projection != 1 && projection != 3 && 
+                          projection != 4 && projection != 5))) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the projection attribute must be set to 0, 1, 3, 4, or 5");
     return(NhlFATAL);
   }
   if(set_fixed_string("date", set_date, True, date, c_date, "", DATE_LEN) == NhlFATAL) {
@@ -429,23 +440,24 @@ NhlErrorTypes wrf_wps_write_int_W( void )
   }
 
   /* Coerce numeric attributes to float */
-  tmp_xfcst     = coerce_float("xfcst",    set_xfcst,    False,xfcst,    type_xfcst,    0.);
-  tmp_level     = coerce_float("level",    set_level,    True, level,    type_level,    0.);
-  tmp_startlat  = coerce_float("startlat", set_startlat, True, startlat, type_startlat, 0.);
-  tmp_startlon  = coerce_float("startlon", set_startlon, True, startlon, type_startlon, 0.);
-  tmp_truelat2  = coerce_float("truelat2", set_truelat2, True, truelat2, type_truelat2, 0.);
+  tmp_forecast_hour = coerce_float("forecast_hour", set_forecast_hour, False, forecast_hour, 
+                                   type_forecast_hour, 0.);
+  tmp_level         = coerce_float("level", set_level, True, level, type_level, 0.);
+  tmp_startlat      = coerce_float("startlat", set_startlat, True, startlat, type_startlat, 0.);
+  tmp_startlon      = coerce_float("startlon", set_startlon, True, startlon, type_startlon, 0.);
+  tmp_truelat2      = coerce_float("truelat2", set_truelat2, True, truelat2, type_truelat2, 0.);
 
-  /* These are attributes dependent on "proj" */
-  if(!set_deltalat && proj == 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the deltalat attribute must be set if proj is 0");
+  /* These are attributes dependent on "projection" */
+  if(!set_deltalat && projection == 0) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the deltalat attribute must be set if projection is 0");
     return(NhlFATAL);
   }
   else {
     tmp_deltalat = coerce_float("deltalat", set_deltalat, False, deltalat ,type_deltalat, msg);
   }
 
-  if(!set_deltalon && (proj == 0 || proj == 4)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the deltalon attribute must be set if proj is 0 or 4");
+  if(!set_deltalon && (projection == 0 || projection == 4)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the deltalon attribute must be set if projection is 0 or 4");
     return(NhlFATAL);
   }
   else {
@@ -454,8 +466,8 @@ NhlErrorTypes wrf_wps_write_int_W( void )
 
   tmp_earth_radius = coerce_float("earth_radius",set_earth_radius,False,earth_radius,
                                   type_earth_radius,6367.470);
-  if((!set_dx || !set_dy) && (proj == 1 || proj == 3 || proj == 5)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the dx,dy attributes must be set if proj is 1, 3 or 5");
+  if((!set_dx || !set_dy) && (projection == 1 || projection == 3 || projection == 5)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the dx,dy attributes must be set if projection is 1, 3 or 5");
     return(NhlFATAL);
   }
   else {
@@ -463,41 +475,42 @@ NhlErrorTypes wrf_wps_write_int_W( void )
     tmp_dy = coerce_float("dy", set_dy, False, dy, type_dy, msg);
   }
 
-  if(!set_truelat1 && (proj == 1 || proj == 3 || proj == 5)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the truelat1 attribute must be set if proj is 1, 3 or 5");
+  if(!set_truelat1 && (projection == 1 || projection == 3 || projection == 5)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the truelat1 attribute must be set if projection is 1, 3 or 5");
     return(NhlFATAL);
   }
   else {
     tmp_truelat1 = coerce_float("truelat1", set_truelat1, False, truelat1, type_truelat1, msg);
   }
 
-  if(!set_truelat2 && proj == 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the truelat2 attribute must be set if proj is 3");
+  if(!set_truelat2 && projection == 3) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the truelat2 attribute must be set if projection is 3");
     return(NhlFATAL);
   }
   else {
     tmp_truelat2 = coerce_float("truelat2", set_truelat2, False, truelat2, type_truelat2, msg);
   }
 
-  if(!set_xlonc && (proj == 3 || proj == 5)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the xlonc attribute must be set if proj is 3 or 5");
+  if(!set_center_lon && (projection == 3 || projection == 5)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the center_lon attribute must be set if projection is 3 or 5");
     return(NhlFATAL);
   }
   else {
-    tmp_xlonc = coerce_float("xlonc", set_xlonc, False, xlonc, type_xlonc, msg);
+    tmp_center_lon = coerce_float("center_lon", set_center_lon, False, center_lon, type_center_lon, msg);
   }
 
-  if(!set_nlats && proj == 4) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the nlats attribute must be set if proj is 4");
+  if(!set_nlats && projection == 4) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the nlats attribute must be set if projection is 4");
     return(NhlFATAL);
   }
   else {
     tmp_nlats = coerce_float("nlats", set_nlats, False, nlats, type_nlats, msg);
   }
 
-  if(tmp_level    == NULL || tmp_startlat == NULL || tmp_startlon == NULL || tmp_xfcst == NULL ||
-     tmp_deltalat == NULL || tmp_deltalon == NULL || tmp_dx       == NULL || tmp_dy    == NULL ||
-     tmp_truelat1 == NULL || tmp_truelat2 == NULL ||tmp_xlonc     == NULL || tmp_nlats == NULL ||
+  if(tmp_level    == NULL || tmp_startlat == NULL || tmp_startlon      == NULL || 
+     tmp_deltalat == NULL || tmp_deltalon == NULL || tmp_center_lon    == NULL || 
+     tmp_nlats    == NULL || tmp_dx       == NULL || tmp_dy            == NULL ||
+     tmp_truelat1 == NULL || tmp_truelat2 == NULL || tmp_forecast_hour == NULL || 
      tmp_earth_radius == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: Unable to coerce one or more numeric attributes to float");
     return(NhlFATAL);
@@ -520,13 +533,13 @@ NhlErrorTypes wrf_wps_write_int_W( void )
                                                          c_date, 
                                                          c_map_source, 
                                                          tmp_level, 
-                                                         &proj, 
+                                                         &projection, 
                                                          c_startloc, 
                                                          tmp_startlat, 
                                                          tmp_startlon, 
                                                          tmp_deltalat, 
                                                          tmp_deltalon, 
-                                                         tmp_xlonc, 
+                                                         tmp_center_lon, 
                                                          tmp_truelat1, 
                                                          tmp_truelat2, 
                                                          tmp_nlats, 
@@ -534,7 +547,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
                                                          &nlon, &nlat, 
                                                          &is_wind_earth_relative, 
                                                          &version,
-                                                         tmp_xfcst,
+                                                         tmp_forecast_hour,
                                                          tmp_earth_radius,
                                                          tmp_lmask,
                                                          strlen(c_wps_im_root_name),
@@ -548,21 +561,21 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  * Free unneeded memory.
  */
 
-  if(type_xfcst     != NCL_float) NclFree(tmp_xfcst);
-  if(type_level     != NCL_float) NclFree(tmp_level);
-  if(type_startlat  != NCL_float) NclFree(tmp_startlat);
-  if(type_startlon  != NCL_float) NclFree(tmp_startlon);
-  if(type_deltalat  != NCL_float) NclFree(tmp_deltalat);
-  if(type_deltalon  != NCL_float) NclFree(tmp_deltalon);
-  if(type_xlonc     != NCL_float) NclFree(tmp_xlonc);
-  if(type_truelat1  != NCL_float) NclFree(tmp_truelat1);
-  if(type_truelat2  != NCL_float) NclFree(tmp_truelat2);
-  if(type_nlats     != NCL_float) NclFree(tmp_nlats);
-  if(type_dx        != NCL_float) NclFree(tmp_dx);
-  if(type_dy        != NCL_float) NclFree(tmp_dy);
-  if(type_nlats     != NCL_float) NclFree(tmp_nlats);
-  if(type_lmask     != NCL_float) NclFree(tmp_lmask);
-  if(type_earth_radius != NCL_float) NclFree(tmp_earth_radius);
+  if(type_forecast_hour != NCL_float) NclFree(tmp_forecast_hour);
+  if(type_level         != NCL_float) NclFree(tmp_level);
+  if(type_startlat      != NCL_float) NclFree(tmp_startlat);
+  if(type_startlon      != NCL_float) NclFree(tmp_startlon);
+  if(type_deltalat      != NCL_float) NclFree(tmp_deltalat);
+  if(type_deltalon      != NCL_float) NclFree(tmp_deltalon);
+  if(type_center_lon    != NCL_float) NclFree(tmp_center_lon);
+  if(type_truelat1      != NCL_float) NclFree(tmp_truelat1);
+  if(type_truelat2      != NCL_float) NclFree(tmp_truelat2);
+  if(type_nlats         != NCL_float) NclFree(tmp_nlats);
+  if(type_dx            != NCL_float) NclFree(tmp_dx);
+  if(type_dy            != NCL_float) NclFree(tmp_dy);
+  if(type_nlats         != NCL_float) NclFree(tmp_nlats);
+  if(type_lmask         != NCL_float) NclFree(tmp_lmask);
+  if(type_earth_radius  != NCL_float) NclFree(tmp_earth_radius);
 
 /*
  * This is a procedure, so no values are returned.
