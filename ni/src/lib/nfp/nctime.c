@@ -5,8 +5,10 @@
  *********************************************************************/
 
 /* 
- * The "nctime.c" file was extracted from the NetCDF-4.1.1 source code
+ * The "nctime.c" file was originally extracted from the NetCDF-4.1.1 source code
  * and permission was granted for inclusion in NCL.
+ *
+ * It was updated in March 2015 to match the NetCDF-4.3.3.1 version of this routine.
  *
  * I changed CU_VERBOSE and CU_FATAL to 0 so error messages would get printed, and 
  * then the program will exit.
@@ -164,7 +166,7 @@ CdMonthDay(int *doy, CdTime *date)
 	date->month	= 0;
 	for (i = 0; i < 12; i++) {
 		(date->month)++;
-		date->day	= idoy;
+		date->day = (short)idoy;
 		if ((idoy -= ((date->timeType & Cd365) ? (mon_day_cnt[date->month-1]) : 30)) <= 0) {
 			return;
 		}
@@ -235,7 +237,7 @@ Cde2h(double etime, CdTimeType timeType, long baseYear, CdTime *htime)
 	int     daysInYear;		     /* days in non-leap year */
 	extern void CdMonthDay(int *doy, CdTime *date);
 
-	doy	= (long) floor(etime / 24.) + 1;
+	doy	= (int) floor(etime / 24.) + 1;
 	htime->hour	= etime - (double) (doy - 1) * 24.;
 
 					     /* Correct for goofy floor func on J90 */
@@ -325,7 +327,7 @@ CdAddDelTime(double begEtm, long nDel, CdDeltaTime delTime, CdTimeType timeType,
 		delMonths = delMonths * nDel * delTime.count + bhtime.month - 1;
 		delYears = (delMonths >= 0 ? (delMonths/12) : (delMonths+1)/12 - 1);
 		ehtime.year = bhtime.year + delYears;
-		ehtime.month = delMonths - (12 * delYears) + 1;
+		ehtime.month = (short)(delMonths - (12 * delYears) + 1);
 		ehtime.day = 1;
 		ehtime.hour = 0.0;
 		ehtime.timeType = timeType;
@@ -336,7 +338,7 @@ CdAddDelTime(double begEtm, long nDel, CdDeltaTime delTime, CdTimeType timeType,
 		Cdh2e(&ehtime,endEtm);
 		break;
 	  case CdWeek: case CdDay: case CdHour: case CdMinute: case CdSecond:
-		delHours *= (nDel * delTime.count);
+		delHours = delHours * (double)(nDel * delTime.count);
 		*endEtm = begEtm + delHours;
 		break;
 	  default:
@@ -355,7 +357,9 @@ cdParseRelunits(cdCalenType timetype, char* relunits, cdUnitTime* unit, cdCompTi
 	char basetime_1[CD_MAX_CHARTIME];
 	char basetime_2[CD_MAX_CHARTIME];
 	char basetime[CD_MAX_CHARTIME];
-	int nconv, nconv1, nconv2;
+	int nconv1, nconv2, nconv;
+
+					     /* Parse the relunits */
 	/* Allow ISO-8601 "T" date-time separator as well as blank separator */
 	nconv1 = sscanf(relunits,"%s %s %[^T]T%s",charunits,relword,basetime_1,basetime_2);
 	if(nconv1==EOF || nconv1==0){
@@ -370,7 +374,7 @@ cdParseRelunits(cdCalenType timetype, char* relunits, cdUnitTime* unit, cdCompTi
 	if(nconv1 < nconv2) {
 	    nconv = nconv2;
 	} else {
-	  nconv = sscanf(relunits,"%s %s %[^T]T%s",charunits,relword,basetime_1,basetime_2);
+	    nconv = sscanf(relunits,"%s %s %[^T]T%s",charunits,relword,basetime_1,basetime_2);
 	}
 /*
  * Mods for NCL: allow for upper or lower case (since/SINCE)
@@ -467,7 +471,8 @@ cdDiffGregorian(cdCompTime ca, cdCompTime cb){
 
 /* Return -1, 0, 1 as ca is less than, equal to, */
 /* or greater than cb, respectively. */
-int cdCompCompare(cdCompTime ca, cdCompTime cb){
+int 
+cdCompCompare(cdCompTime ca, cdCompTime cb){
 
 	int test;
 
@@ -577,7 +582,7 @@ CdDivDelTime(double begEtm, double endEtm, CdDeltaTime delTime, CdTimeType timeT
 			range = (ehtime.month - bhtime.month);
 			if(range < 0) range += 12;
 		}
-		*nDel = abs(range)/delMonths;
+		*nDel = abs((int)range)/delMonths;
 		break;
 	  case CdWeek: case CdDay: case CdHour: case CdMinute: case CdSecond:
 		delHours *= (double)delTime.count;
@@ -596,7 +601,7 @@ CdDivDelTime(double begEtm, double endEtm, CdDeltaTime delTime, CdTimeType timeT
 			if(frange < 0.0 || frange >= hoursInYear)
 				frange -= hoursInYear * floor(frange/hoursInYear);
 		}
-		*nDel = (frange + 1.e-10*delHours)/delHours;
+		*nDel = (long)((frange + 1.e-10*delHours)/delHours);
 		break;
 	  default:
 		cdError("Invalid delta time units: %d\n",delTime.units);
@@ -892,6 +897,7 @@ cdComp2Rel(cdCalenType timetype, cdCompTime comptime, char* relunits, double* re
 	Cdh2e(&humantime,&etm);
 					     /* Calculate relative time value for months or hours */
 	deltime.count = 1;
+	/* Coverity[MIXED_ENUMS] */
 	deltime.units = (CdTimeUnit)unit;
 	switch(unit){
 	  case cdWeek: case cdDay: case cdHour: case cdMinute: case cdSecond:
@@ -899,8 +905,12 @@ cdComp2Rel(cdCalenType timetype, cdCompTime comptime, char* relunits, double* re
 		if(!(timetype & cdStandardCal)){	/* Climatological time */
 			hoursInYear = (timetype & cd365Days) ? 8760. : (timetype & cdHasLeap) ? 8784. : 8640.;
 					     /* Normalize delta to interval [0,hoursInYear) */
-			if(delta < 0.0 || delta >= hoursInYear)
-				delta -= hoursInYear * floor(delta/hoursInYear);
+			if(delta < 0.0 || delta >= hoursInYear) {
+				double down = ((double)delta)/((double)hoursInYear);
+				down = floor(down);
+				down = down * (double)hoursInYear;
+				delta = delta - down;
+			}
 		}
 		break;
 	  case cdYear: case cdSeason: case cdMonth:
@@ -959,7 +969,7 @@ cdCompAdd(cdCompTime comptime, double value, cdCalenType calendar, cdCompTime *r
 
 /* Add value in hours to ct, in the mixed Julian/Gregorian
  * calendar. */
-static void
+void
 cdCompAddMixed(cdCompTime ct, double value, cdCompTime *result){
 
 	static cdCompTime ZA = {1582, 10, 5, 0.0};
@@ -988,7 +998,7 @@ cdCompAddMixed(cdCompTime ct, double value, cdCompTime *result){
 }
 
 /* Return value expressed in hours. */
-static double
+double
 cdToHours(double value, cdUnitTime unit){
 
 	double result = 0;
@@ -1101,6 +1111,7 @@ cdRel2Comp(cdCalenType timetype, char* relunits, double reltime, cdCompTime* com
 	}
 
 	deltime.count = 1;
+	/* Coverity[MIXED_ENUMS] */
 	deltime.units = (CdTimeUnit)baseunits;
 
 	humantime.year = base_comptime.year;
@@ -1127,7 +1138,7 @@ cdRel2Comp(cdCalenType timetype, char* relunits, double reltime, cdCompTime* com
 	}
 					     /* Calculate new epochal time. */
 					     /* Convert back to human, then comptime. */
-	else{
+	else if(baseunits == cdHour){
 		Cde2h(base_etm+delta, old_timetype, 1970, &humantime);
 		
 	}
