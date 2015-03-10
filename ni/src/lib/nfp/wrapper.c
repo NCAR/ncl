@@ -1859,30 +1859,15 @@ void NclAddUserFuncs(void)
  * Create private argument array
  */
         nargs = 0;
-        args = NewArgs(21);
+        args = NewArgs(6);
 
         dimsizes[0] = 1;
         SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
         NclRegisterProc(wrf_wps_write_int_W,args,"wrf_wps_write_int",nargs);
 /*
