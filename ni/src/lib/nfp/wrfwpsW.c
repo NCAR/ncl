@@ -291,7 +291,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
 	      else if(!strcasecmp(c_proj,"Gaussian")) {
 		proj = 4;
 	      }
-	      else if(!strcasecmp(c_proj,"Polar_Stereograhic")) {
+	      else if(!strcasecmp(c_proj,"Polar_Stereographic")) {
 		proj = 5;
 	      }
 	    }
