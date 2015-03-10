@@ -2364,10 +2364,22 @@ static void _update_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHDF5d
     char delimiter[3] = " ,";
     int is_dataset = 0;
 
+    HDF5DimInqRecList *cur_list = NULL;
+
   /*
-   *fprintf(stderr, "\n\n\nhit _update_dim_list. file: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tn_dims: %d\n", *n_dims);
    */
+    fprintf(stderr, "\n\n\nhit _update_dim_list. file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stderr, "\tn_dims: %d\n", *n_dims);
+
+    cur_list = *dim_list;
+    for(i = 0; i < *n_dims; i++)
+    {
+      /*
+       */
+        fprintf(stderr, "\tOld Dim %d: name <%s>\n", i, NrmQuarkToString(cur_list->dim_inq->name));
+        old_dim_name[i] = cur_list->dim_inq->name;
+        cur_list = cur_list->next;
+    }
 
     for(n = 0; n < NUMPOSDIMNAMES; ++n)
     {
@@ -2416,12 +2428,6 @@ static void _update_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHDF5d
             }
 
             found_new = 1;
-
-          /*
-           *fprintf(stderr, "\ttmp_name: %s\n", NrmQuarkToString(tmp_name));
-           *fprintf(stderr, "\tn_dims: %d\n", *n_dims);
-           */
-
             for(k = 0; k < *n_dims; k++)
             {
                 if(old_dim_name[k] == tmp_name)
@@ -2433,8 +2439,6 @@ static void _update_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHDF5d
 
             if(found_new)
             {
-                HDF5DimInqRecList *cur_list = NULL;
-
                 cur_list = NclCalloc(1, sizeof(HDF5DimInqRecList));
                 if(!cur_list)
                 {
@@ -2462,7 +2466,6 @@ static void _update_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHDF5d
 
                 cur_list->dim_inq->ncldim_id = *n_dims;
                 cur_list->dim_inq->size = (long) dataset_node->dims[i];
-                old_dim_name[*n_dims] = tmp_name;
 
               /*
                *fprintf(stderr, "\n\n\nhit _HDF5Build_dim_list. file: %s, line: %d\n", __FILE__, __LINE__);
@@ -2487,7 +2490,6 @@ static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHD
 {
     NclHDF5dataset_list_t *dataset_list = NULL;
     NclHDF5group_list_t   *group_list = NULL;
-    HDF5DimInqRecList *tmp_list = NULL;
 
     NclHDF5dataset_node_t *dataset_node = NULL;
     NclHDF5attr_list_t *attr_list = NULL;
@@ -2497,25 +2499,12 @@ static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHD
     int i, k, n;
     int num_new_dim;
     int found_new;
-    NclQuark old_dim_name[4*MAX_HDF5_DIMS];
-    NclQuark new_dim_name[4*MAX_HDF5_DIMS];
-    NclQuark tmp_name;
     char *tmp_str;
 
   /*
    *fprintf(stderr, "\n\n\nhit _HDF5Build_dim_list. file: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tn_dims: %d\n", *n_dims);
    */
-
-    tmp_list = *dim_list;
-    for(i = 0; i < *n_dims; i++)
-    {
-      /*
-       *fprintf(stderr, "\tOld Dim %d: name <%s>\n", i, NrmQuarkToString(tmp_list->dim_inq->name));
-       */
-        old_dim_name[i] = tmp_list->dim_inq->name;
-        tmp_list = tmp_list->next;
-    }
 
     dataset_list = HDF5group->dataset_list;
 
@@ -2657,11 +2646,6 @@ static void _HDF5Create_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclH
                 sprintf(new_name, "DIM_%.3d", *n_dims);
                 old_dim_size[*n_dims] = new_dim_size[i];
                 new_name[7] = '\0';
-              /*
-               *fprintf(stderr, "\t_HDF5Create_dim_list. file: %s, line: %d\n", __FILE__, __LINE__);
-               *fprintf(stderr, "\tnew_dim_name: %s\n", new_name);
-               *fprintf(stderr, "\tnew_dim_size: %d\n", new_dim_size[i]);
-               */
 
                 cur_list = NclCalloc(1, sizeof(HDF5DimInqRecList));
                 if(!cur_list)
@@ -2951,6 +2935,11 @@ int wr_status;
     HDF5DimInqRecList *dim_list;
     HDF5GrpInqRec *grp_inq;
 
+    HDF5DimInqRecList *pre_list = NULL;
+    HDF5DimInqRecList *cur_list = NULL;
+    int n = 0;
+
+
     hid_t fid = -1;
     char *filename = NULL;
     int n_dims = 0;
@@ -3031,10 +3020,6 @@ int wr_status;
 
     if(n_dims < 1)
     {
-        HDF5DimInqRecList *pre_list = NULL;
-        HDF5DimInqRecList *cur_list = NULL;
-        int n = 0;
-
         _HDF5Create_dim_list(&dim_list, &n_dims, h5_group);
 
       /*
@@ -3101,7 +3086,6 @@ int wr_status;
   /*
    *fprintf(stderr, "\n\tin file: %s, line: %d\n", __FILE__, __LINE__);
    *fprintf(stderr, "\tn_dims = %d\n", n_dims);
-
    *_printHDF5dim_list(the_file->dim_list, n_dims);
    */
 
