@@ -9,10 +9,10 @@ extern void NGCALLF(write_intermediate_wps,WRITE_INTERMEDIATE_WPS)
       int,int,int,int,int,int,int);
 
 extern float *coerce_float(const char*name, logical is_value_set, logical is_required, 
-			   void *value,NclBasicDataTypes type_value, float default_value);
+                           void *value,NclBasicDataTypes type_value, float default_value);
 extern NhlErrorTypes set_fixed_string(const char *name,logical is_set, logical is_required,
-				      NrmQuark *quark_value,char *char_value,char *default_value,
-				      int STR_LEN);
+                                      NrmQuark *quark_value,char *char_value,char *default_value,
+                                      int STR_LEN);
 extern void pad_with_spaces(char *char_value,int slen,int STR_LEN);
 
 NhlErrorTypes wrf_wps_write_int_W( void )
@@ -80,10 +80,10 @@ NhlErrorTypes wrf_wps_write_int_W( void )
   float *tmp_level, *tmp_startlat, *tmp_startlon, *tmp_deltalat; 
   float *tmp_deltalon, *tmp_xlonc, *tmp_truelat1, *tmp_truelat2;
   float *tmp_xfcst, *tmp_nlats, *tmp_dx, *tmp_dy, *tmp_earth_radius;
-  NclBasicDataTypes type_xfcst, type_level, type_startlat, type_startlon; 
-  NclBasicDataTypes type_deltalat, type_deltalon, type_xlonc; 
-  NclBasicDataTypes type_truelat1, type_truelat2, type_earth_radius; 
-  NclBasicDataTypes type_nlats, type_dx, type_dy;
+  NclBasicDataTypes type_xfcst=NCL_float, type_level=NCL_float, type_startlat=NCL_float;
+  NclBasicDataTypes type_startlon=NCL_float, type_deltalat=NCL_float, type_deltalon=NCL_float;
+  NclBasicDataTypes type_xlonc=NCL_float ,type_truelat1=NCL_float, type_truelat2=NCL_float;
+  NclBasicDataTypes type_earth_radius=NCL_float, type_nlats=NCL_float, type_dx=NCL_float, type_dy=NCL_float;
 
   /* Other attributes */
   int version, proj;
@@ -131,7 +131,10 @@ NhlErrorTypes wrf_wps_write_int_W( void )
            NULL,
            DONT_CARE);
 
-  set_fixed_string("field",True,True,field,&c_field[0],"",FIELD_LEN);
+  if(set_fixed_string("field",True,True,field,&c_field[0],"",FIELD_LEN) == NhlFATAL) {
+    return(NhlFATAL);
+  }
+
 
 /*
  * Get argument # 2
@@ -146,7 +149,9 @@ NhlErrorTypes wrf_wps_write_int_W( void )
            NULL,
            DONT_CARE);
 
-  set_fixed_string("units",True,True,units,&c_units[0],"",UNITS_LEN);
+  if(set_fixed_string("units",True,True,units,&c_units[0],"",UNITS_LEN) == NhlFATAL) {
+    return(NhlFATAL);
+  }
 
 /*
  * Get argument # 3
@@ -160,7 +165,9 @@ NhlErrorTypes wrf_wps_write_int_W( void )
            NULL,
            NULL,
            DONT_CARE);
-  set_fixed_string("description",True,True,description,&c_description[0],"",DESCRIPTION_LEN);
+  if(set_fixed_string("description",True,True,description,&c_description[0],"",DESCRIPTION_LEN) == NhlFATAL) {
+    return(NhlFATAL);
+  }
 
 /*
  * Get argument # 4
@@ -244,95 +251,95 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  * Loop through attributes and check them.
  */
         while (attr_list != NULL) {
-	  if(!strcasecmp(attr_list->attname, "version")) {
-	    version     = *(int *)attr_list->attvalue->multidval.val;
-	    set_version = True;
-	  }
-	  else if(!strcasecmp(attr_list->attname, "date")) {
-	    date     = (NrmQuark *) attr_list->attvalue->multidval.val;
-	    set_date = True;
-	  }
-	  else if(!strcasecmp(attr_list->attname, "xfcst")) {
-	    xfcst      = attr_list->attvalue->multidval.val;
-	    type_xfcst = attr_list->attvalue->multidval.data_type;
-	    set_xfcst  = True;
-	  }
-	  else if(!strcasecmp(attr_list->attname, "map_source")) {
-	    map_source     = (NrmQuark *) attr_list->attvalue->multidval.val;
-	    set_map_source = True;
-	  }
-	  else if(!strcasecmp(attr_list->attname, "level")) {
-	    level      = attr_list->attvalue->multidval.val;
-	    type_level = attr_list->attvalue->multidval.data_type;
-	    set_level  = True;
-	  }
-	  else if(!strcasecmp(attr_list->attname, "proj")) {
-	    proj     = *(int *) attr_list->attvalue->multidval.val;
-	    set_proj = True;
-	  }
-	  else if(!strcasecmp(attr_list->attname, "startloc")) {
-	    startloc     = (NrmQuark *) attr_list->attvalue->multidval.val;
-	    set_startloc = True;
-	  }
-	  else if(!strcasecmp(attr_list->attname, "startlat")) {
-	    startlat      = attr_list->attvalue->multidval.val;
-	    type_startlat = attr_list->attvalue->multidval.data_type;
-	    set_startlat  = True;
-	  }
-	  else if(!strcasecmp(attr_list->attname, "startlon")) {
-	    startlon      = attr_list->attvalue->multidval.val;
-	    type_startlon = attr_list->attvalue->multidval.data_type;
-	    set_startlon  = True;
-	  }
-	  else if(!strcasecmp(attr_list->attname, "deltalat")) {
-	    deltalat      = attr_list->attvalue->multidval.val;
-	    type_deltalat = attr_list->attvalue->multidval.data_type;
-	    set_deltalat  = True;
-	  }
-	  else if(!strcasecmp(attr_list->attname, "deltalon")) {
-	    deltalon      = attr_list->attvalue->multidval.val;
-	    type_deltalon = attr_list->attvalue->multidval.data_type;
-	    set_deltalon  = True;
-	  }
-	  else if(!strcasecmp(attr_list->attname, "earth_radius")) {
-	    earth_radius      = attr_list->attvalue->multidval.val;
-	    type_earth_radius = attr_list->attvalue->multidval.data_type;
-	    set_earth_radius  = True;
-	  }
-	  else if(!strcasecmp(attr_list->attname, "dx")) {
-	    dx      = attr_list->attvalue->multidval.val;
-	    type_dx = attr_list->attvalue->multidval.data_type;
-	    set_dx  = True;
-	  }
-	  else if(!strcasecmp(attr_list->attname, "dy")) {
-	    dy      = attr_list->attvalue->multidval.val;
-	    type_dy = attr_list->attvalue->multidval.data_type;
-	    set_dy  = True;
-	  }
-	  else if(!strcasecmp(attr_list->attname, "truelat1")) {
-	    truelat1      = attr_list->attvalue->multidval.val;
-	    type_truelat1 = attr_list->attvalue->multidval.data_type;
-	    set_truelat1  = True;
-	  }
-	  else if(!strcasecmp(attr_list->attname, "truelat2")) {
-	    truelat2      = attr_list->attvalue->multidval.val;
-	    type_truelat2 = attr_list->attvalue->multidval.data_type;
-	    set_truelat2  = True;
-	  }
-	  else if(!strcasecmp(attr_list->attname, "xlonc")) {
-	    xlonc      = attr_list->attvalue->multidval.val;
-	    type_xlonc = attr_list->attvalue->multidval.data_type;
-	    set_xlonc  = True;
-	  }
-	  else if(!strcasecmp(attr_list->attname, "nlats")) {
-	    nlats      = attr_list->attvalue->multidval.val;
-	    type_nlats = attr_list->attvalue->multidval.data_type;
-	    set_nlats  = True;
-	  }
-	  else if(!strcasecmp(attr_list->attname, "is_wind_earth_relative")) {
-	   is_wind_earth_relative     = *(logical *) attr_list->attvalue->multidval.val;
-	   set_is_wind_earth_relative = True;
-	  }
+          if(!strcasecmp(attr_list->attname, "version")) {
+            version     = *(int *)attr_list->attvalue->multidval.val;
+            set_version = True;
+          }
+          else if(!strcasecmp(attr_list->attname, "date")) {
+            date     = (NrmQuark *) attr_list->attvalue->multidval.val;
+            set_date = True;
+          }
+          else if(!strcasecmp(attr_list->attname, "xfcst")) {
+            xfcst      = attr_list->attvalue->multidval.val;
+            type_xfcst = attr_list->attvalue->multidval.data_type;
+            set_xfcst  = True;
+          }
+          else if(!strcasecmp(attr_list->attname, "map_source")) {
+            map_source     = (NrmQuark *) attr_list->attvalue->multidval.val;
+            set_map_source = True;
+          }
+          else if(!strcasecmp(attr_list->attname, "level")) {
+            level      = attr_list->attvalue->multidval.val;
+            type_level = attr_list->attvalue->multidval.data_type;
+            set_level  = True;
+          }
+          else if(!strcasecmp(attr_list->attname, "proj")) {
+            proj     = *(int *) attr_list->attvalue->multidval.val;
+            set_proj = True;
+          }
+          else if(!strcasecmp(attr_list->attname, "startloc")) {
+            startloc     = (NrmQuark *) attr_list->attvalue->multidval.val;
+            set_startloc = True;
+          }
+          else if(!strcasecmp(attr_list->attname, "startlat")) {
+            startlat      = attr_list->attvalue->multidval.val;
+            type_startlat = attr_list->attvalue->multidval.data_type;
+            set_startlat  = True;
+          }
+          else if(!strcasecmp(attr_list->attname, "startlon")) {
+            startlon      = attr_list->attvalue->multidval.val;
+            type_startlon = attr_list->attvalue->multidval.data_type;
+            set_startlon  = True;
+          }
+          else if(!strcasecmp(attr_list->attname, "deltalat")) {
+            deltalat      = attr_list->attvalue->multidval.val;
+            type_deltalat = attr_list->attvalue->multidval.data_type;
+            set_deltalat  = True;
+          }
+          else if(!strcasecmp(attr_list->attname, "deltalon")) {
+            deltalon      = attr_list->attvalue->multidval.val;
+            type_deltalon = attr_list->attvalue->multidval.data_type;
+            set_deltalon  = True;
+          }
+          else if(!strcasecmp(attr_list->attname, "earth_radius")) {
+            earth_radius      = attr_list->attvalue->multidval.val;
+            type_earth_radius = attr_list->attvalue->multidval.data_type;
+            set_earth_radius  = True;
+          }
+          else if(!strcasecmp(attr_list->attname, "dx")) {
+            dx      = attr_list->attvalue->multidval.val;
+            type_dx = attr_list->attvalue->multidval.data_type;
+            set_dx  = True;
+          }
+          else if(!strcasecmp(attr_list->attname, "dy")) {
+            dy      = attr_list->attvalue->multidval.val;
+            type_dy = attr_list->attvalue->multidval.data_type;
+            set_dy  = True;
+          }
+          else if(!strcasecmp(attr_list->attname, "truelat1")) {
+            truelat1      = attr_list->attvalue->multidval.val;
+            type_truelat1 = attr_list->attvalue->multidval.data_type;
+            set_truelat1  = True;
+          }
+          else if(!strcasecmp(attr_list->attname, "truelat2")) {
+            truelat2      = attr_list->attvalue->multidval.val;
+            type_truelat2 = attr_list->attvalue->multidval.data_type;
+            set_truelat2  = True;
+          }
+          else if(!strcasecmp(attr_list->attname, "xlonc")) {
+            xlonc      = attr_list->attvalue->multidval.val;
+            type_xlonc = attr_list->attvalue->multidval.data_type;
+            set_xlonc  = True;
+          }
+          else if(!strcasecmp(attr_list->attname, "nlats")) {
+            nlats      = attr_list->attvalue->multidval.val;
+            type_nlats = attr_list->attvalue->multidval.data_type;
+            set_nlats  = True;
+          }
+          else if(!strcasecmp(attr_list->attname, "is_wind_earth_relative")) {
+           is_wind_earth_relative     = *(logical *) attr_list->attvalue->multidval.val;
+           set_is_wind_earth_relative = True;
+          }
           attr_list = attr_list->next;
         }
       default:
@@ -374,18 +381,19 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  */
 
   if(!set_version) version = 5;
-  set_fixed_string("map_source",set_map_source, False, map_source, &c_map_source[0],
-		   "Unknown data source",MAP_SOURCE_LEN);
-  set_fixed_string("startloc",set_startloc, False, startloc, &c_startloc[0],
-		   "SWCORNER",STARTLOC_LEN);
-
+  if(set_fixed_string("map_source",set_map_source, False, map_source, &c_map_source[0],
+                      "Unknown data source",MAP_SOURCE_LEN) == NhlFATAL) {
+    return(NhlFATAL);
+  }
+  if(set_fixed_string("startloc",set_startloc, False, startloc, &c_startloc[0],
+                      "SWCORNER",STARTLOC_LEN) == NhlFATAL) {
+    return(NhlFATAL);
+  }
   if(!set_proj || (set_proj && (proj != 0 && proj != 1 && proj != 3 && proj != 4 && proj != 5))) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the proj attribute must be set to 0, 1, 3, 4, or 5");
     return(NhlFATAL);
   }
-  set_fixed_string("date", set_date, True, date, c_date, "", DATE_LEN);
-  if(c_date[0] == ' ') {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the date attribute must be set to a date string");
+  if(set_fixed_string("date", set_date, True, date, c_date, "", DATE_LEN) == NhlFATAL) {
     return(NhlFATAL);
   }
   if(!set_is_wind_earth_relative) {
@@ -418,7 +426,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
   }
 
   tmp_earth_radius = coerce_float("earth_radius",set_earth_radius,False,earth_radius,
-				  type_earth_radius,6367.470);
+                                  type_earth_radius,6367.470);
   if((!set_dx || !set_dy) && (proj == 1 || proj == 3 || proj == 5)) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the dx,dy attributes must be set if proj is 1, 3 or 5");
     return(NhlFATAL);
@@ -498,9 +506,9 @@ NhlErrorTypes wrf_wps_write_int_W( void )
                                                          tmp_dx, tmp_dy, 
                                                          &nlon, &nlat, 
                                                          &is_wind_earth_relative, 
-							 &version,
-							 tmp_xfcst,
-							 tmp_earth_radius,
+                                                         &version,
+                                                         tmp_xfcst,
+                                                         tmp_earth_radius,
                                                          tmp_lmask,
                                                          strlen(c_wps_im_root_name),
                                                          FIELD_LEN,
@@ -509,7 +517,6 @@ NhlErrorTypes wrf_wps_write_int_W( void )
                                                          DATE_LEN,
                                                          MAP_SOURCE_LEN,
                                                          STARTLOC_LEN);
-
 /*
  * Free unneeded memory.
  */
@@ -537,7 +544,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
 }
 
 float *coerce_float(const char *name,logical is_set, logical is_required,
-		    void *value,NclBasicDataTypes type_value, float default_value)
+                    void *value,NclBasicDataTypes type_value, float default_value)
 {
   float *ret;
   
@@ -560,11 +567,9 @@ float *coerce_float(const char *name,logical is_set, logical is_required,
 }
 
 NhlErrorTypes set_fixed_string(const char *name,logical is_set, logical is_required, NrmQuark *quark_value,
-			       char *char_value,char *default_value, int STR_LEN)
+                               char *char_value,char *default_value, int STR_LEN)
 {
   int slen;
-
-  char_value[0] = " ";   /* For testing against later */
 
   if(is_required && !is_set) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the %s string attribute must be set",name);
