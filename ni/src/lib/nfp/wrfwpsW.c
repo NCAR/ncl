@@ -88,6 +88,8 @@ NhlErrorTypes wrf_wps_write_int_W( void )
   /* Other attributes */
   int version, proj;
   logical is_wind_earth_relative;
+  char *c_proj;
+  NclBasicDataTypes type_proj;
 
   /* Logicals to keep track if an attribute has been set */
   int set_version  = False, set_xfcst    = False, set_date    = False, set_map_source  = False; 
@@ -202,25 +204,25 @@ NhlErrorTypes wrf_wps_write_int_W( void )
 /*
  * Check for attributes attached to "opt"
  *
- *    "version"        - integer, default to 5
- *    "date"           - string,  required, no default, must be of length 24
- *    "xfcst"          - float,   default to 0.0
- *    "map_source"     - string,  default to "Unknown data source"
- *    "level"          - float,   required
- *    "proj"           - integer, required, must be 0/1/3/4/5 (see extra note below)
- *    "startloc"       - string,  default to "SWCORNER"
- *    "startlat"       - float,   required, 
- *    "startlon"       - float,   required
- *    "deltalat"       - float,   required if proj=0, else default to missing/dummy value
- *    "deltalon"       - float,   required if proj=0/4, else default to missing/dummy value
- *                       (yes, this is different than deltalat)
- *    "earth_radius"   - float,   default to set to 6367470. * 0.001
- *    "dx"             - float,   required if proj=1/3/5, else default to missing/dummy
- *    "dy"             - same as "dx"
- *    "truelat1"       - float,   required if proj=1/3/5, else default to missing/dummy
- *    "truelat2"       - float,   required if proj=3, else default to missing/dummy
- *    "xlonc"          - float,   required if proj=3/5, else default to missing/dummy
- *    "nlats"          - float,   required if proj=4, else default to missing/dummy
+ *    "version"           - integer, default to 5
+ *    "date"              - string,  required, no default, must be of length 24
+ *    "xfcst"             - float,   default to 0.0
+ *    "map_source"        - string,  default to "Unknown data source"
+ *    "level"             - float,   required
+ *    "proj"            " - integer, required, must be 0/1/3/4/5 (see extra note below)
+ *    "startloc"          - string,  default to "SWCORNER"
+ *    "startlat"          - float,   required, 
+ *    "startlon"          - float,   required
+ *    "deltalat"          - float,   required if proj=0, else default to missing/dummy value
+ *    "deltalon"          - float,   required if proj=0/4, else default to missing/dummy value
+ *                          (yes, this is different than deltalat)
+ *    "earth_radius"      - float,   default to set to 6367470. * 0.001
+ *    "dx"                - float,   required if proj=1/3/5, else default to missing/dummy
+ *    "dy"                - same as "dx"
+ *    "truelat1"          - float,   required if proj=1/3/5, else default to missing/dummy
+ *    "truelat2"          - float,   required if proj=3, else default to missing/dummy
+ *    "xlonc"             - float,   required if proj=3/5, else default to missing/dummy
+ *    "nlats"             - float,   required if proj=4, else default to missing/dummy
  *    "is_wind_earth_relative" - logical, required
  */
   if(*opt) {
@@ -274,8 +276,33 @@ NhlErrorTypes wrf_wps_write_int_W( void )
             set_level  = True;
           }
           else if(!strcasecmp(attr_list->attname, "proj")) {
-            proj     = *(int *) attr_list->attvalue->multidval.val;
-            set_proj = True;
+            type_proj = attr_list->attvalue->multidval.data_type;
+            if(type_proj == NCL_string) {
+	      c_proj = NrmQuarkToString(*(NrmQuark *) attr_list->attvalue->multidval.val);
+	      if(!strcasecmp(c_proj,"Equidistant_Lat_Lon")) {
+		proj = 0;
+	      }
+	      else if(!strcasecmp(c_proj,"Mercator")) {
+		proj = 1;
+	      }
+	      else if(!strcasecmp(c_proj,"Lambert")) {
+		proj = 3;
+	      }
+	      else if(!strcasecmp(c_proj,"Gaussian")) {
+		proj = 4;
+	      }
+	      else if(!strcasecmp(c_proj,"Polar_Stereograhic")) {
+		proj = 5;
+	      }
+	    }
+	    else if(type_proj == NCL_int) {
+	      proj = *(int *)attr_list->attvalue->multidval.val;
+	    }
+	    else {
+	      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_wps_write_int: the proj attribute must be an integer or a string");
+	      return(NhlFATAL);
+	    }
+            set_proj  = True;
           }
           else if(!strcasecmp(attr_list->attname, "startloc")) {
             startloc     = (NrmQuark *) attr_list->attvalue->multidval.val;
