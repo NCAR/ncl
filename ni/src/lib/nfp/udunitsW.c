@@ -1111,6 +1111,8 @@ NhlErrorTypes ut_inv_calendar_W( void )
     NclFree(cspec_orig);
   }
 
+  if(type_second != NCL_double) NclFree(tmp_second);
+
 /*
  * Set up variable to return.
  */
