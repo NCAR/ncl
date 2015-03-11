@@ -422,6 +422,8 @@ extern NhlErrorTypes escovc_W(void);
 extern NhlErrorTypes escorc_n_W(void);
 extern NhlErrorTypes ezfftf_W(void);
 extern NhlErrorTypes ezfftb_W(void);
+extern NhlErrorTypes ezfftf_n_W(void);
+extern NhlErrorTypes ezfftb_n_W(void);
 extern NhlErrorTypes cfftf_W(void);
 extern NhlErrorTypes cfftb_W(void);
 extern NhlErrorTypes cfftf_frq_reorder_W(void);
@@ -6239,6 +6241,32 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterFunc(ezfftb_W,args,"ezfftb",nargs);
+
+/*
+ * Register "ezfftf_n".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(ezfftf_n_W,args,"ezfftf_n",nargs);
+
+/*
+ * Register "ezfftb_n".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(ezfftb_n_W,args,"ezfftb_n",nargs);
 
 /*
  * Register "cfftf".
