@@ -184,6 +184,11 @@ void
 #endif
 );
 
+extern NhlErrorTypes _Nclstr_match_regex(void);
+extern NhlErrorTypes _Nclstr_match_ic_regex(void);
+extern NhlErrorTypes _Nclstr_match_ind_regex(void);
+extern NhlErrorTypes _Nclstr_match_ind_ic_regex(void);
+
 extern NhlErrorTypes _NclgetNbitsFromUint64();
 
 extern NhlErrorTypes _Nclstr_get_comma();
@@ -370,6 +375,34 @@ void NclAddUserBuiltInFuncs
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
     NclRegisterFunc(_Nclstr_match_ind_ic, args, "str_match_ind_ic", nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
+    NclRegisterFunc(_Nclstr_match_regex, args, "str_match_regex", nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
+    NclRegisterFunc(_Nclstr_match_ic_regex, args, "str_match_ic_regex", nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
+    NclRegisterFunc(_Nclstr_match_ind_regex, args, "str_match_ind_regex", nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
+    NclRegisterFunc(_Nclstr_match_ind_ic_regex, args, "str_match_ind_ic_regex", nargs);
 
     nargs = 0;
     args = NewArgs(0);
