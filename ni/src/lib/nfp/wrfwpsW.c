@@ -220,7 +220,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  *    "level"             - float,   required
  *    "projection"        - integer or string, required, must be 0/1/3/4/5 (see extra note below)
  *    "startloc"          - string,  default to "SWCORNER"
- *    "startlat"          - float,   required, 
+ *    "startlat"          - float,   required 
  *    "startlon"          - float,   required
  *    "deltalat"          - float,   required if projection=0, else default to missing/dummy value
  *    "deltalon"          - float,   required if projection=0/4, else default to missing/dummy value
@@ -396,7 +396,7 @@ NhlErrorTypes wrf_wps_write_int_W( void )
  *  startloc
  *  earth_radius
  *
- * These attributes are required:
+ * These attributes are required, but some depend on the projection setting:
  *
  *  date
  *  level
@@ -445,7 +445,6 @@ NhlErrorTypes wrf_wps_write_int_W( void )
   tmp_level         = coerce_float("level", set_level, True, level, type_level, 0.);
   tmp_startlat      = coerce_float("startlat", set_startlat, True, startlat, type_startlat, 0.);
   tmp_startlon      = coerce_float("startlon", set_startlon, True, startlon, type_startlon, 0.);
-  tmp_truelat2      = coerce_float("truelat2", set_truelat2, True, truelat2, type_truelat2, 0.);
 
   /* These are attributes dependent on "projection" */
   if(!set_deltalat && projection == 0) {
