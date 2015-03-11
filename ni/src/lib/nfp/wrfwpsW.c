@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <strings.h>
 #include "wrapper.h"
 
 extern void NGCALLF(write_intermediate_wps,WRITE_INTERMEDIATE_WPS)
