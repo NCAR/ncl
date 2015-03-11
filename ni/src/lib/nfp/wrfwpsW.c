@@ -572,7 +572,6 @@ NhlErrorTypes wrf_wps_write_int_W( void )
   if(type_nlats         != NCL_float) NclFree(tmp_nlats);
   if(type_dx            != NCL_float) NclFree(tmp_dx);
   if(type_dy            != NCL_float) NclFree(tmp_dy);
-  if(type_nlats         != NCL_float) NclFree(tmp_nlats);
   if(type_lmask         != NCL_float) NclFree(tmp_lmask);
   if(type_earth_radius  != NCL_float) NclFree(tmp_earth_radius);
 
