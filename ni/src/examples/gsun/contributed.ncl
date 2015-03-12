@@ -7826,7 +7826,7 @@ end
 ; 
 undef("yyyymm2yyyyFrac")
 function yyyymm2yyyyFrac (yyyymm:integer)
-local year, mon
+local year, mon, yrFrac
 begin
   year = yyyymm/100 
   mon  = yyyymm-year*100  
@@ -7850,7 +7850,7 @@ end
 ;                                                                  
 undef("yyyymm_to_yyyyfrac")
 function yyyymm_to_yyyyfrac (yyyymm[*]:numeric, mmOffset[1]:numeric)
-local YYYYMM, year, mm, xmos, one      
+local YYYYMM, year, mm, xmos, one, yrFrac      
 begin                                                                                               
   if (typeof(yyyymm).eq."double" .or. typeof(mmOffset).eq."double") then 
       xmos = 12.d0                         
@@ -9102,7 +9102,15 @@ begin
         tmpdir = "./"
       end if
 
-      tmpfile = systemfunc("echo tmp$$")
+    ;;tmpfile = systemfunc("echo tmp$$")   ; See JIRA: NCL-2174
+      tmpnum = systemfunc("date +%N")      ; introduced 6.3.0
+      if(tmpnum.eq."N")then
+        delete(tmpnum)
+        srand(toint(systemfunc("date +%s")))
+        tmpnum = rand()
+      end if
+      tmpfile = "tmp"+tmpnum
+
       if (ismissing(tmpfile)) then
           tmpfile = "BoGuS_file"
       end if
