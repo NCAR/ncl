@@ -2856,6 +2856,8 @@ GribFileRecord *therec;
 	therec->total_dims = 0;
 	therec->n_scalar_dims = 0;
 	therec->scalar_dims = NULL;
+	therec->n_ensemble_dims = 0;
+	therec->ensemble_dims = NULL;
 	therec->n_it_dims = 0;
 	therec->it_dims = NULL;
 	therec->n_ft_dims = 0;
@@ -5681,7 +5683,26 @@ static GribParamList *_NewListNode
 	GribRecordInqRecList *list = NULL;
 
 	tmp = (GribParamList*)NclMalloc((unsigned)sizeof(GribParamList));
+	tmp->ensemble = NULL;
+	tmp->ens_indexes = NULL;
+	tmp->prob_param = NULL;
+	tmp->probability = NULL;
+	tmp->lower_probs = NULL;
+	tmp->upper_probs = NULL;
+	tmp->levels = NULL;
+	tmp->levels0 = NULL;
+	tmp->levels1 = NULL;
+	tmp->levels_has_two = 0;
+	tmp->yymmddhh = NULL;
+	tmp->forecast_time = NULL;
+	tmp->n_atts = 0;
+	tmp->it_vals = NULL;
+	tmp->forecast_time = NULL;
+	tmp->ref_rec = NULL;
+	tmp->thelist = NULL;
+	tmp->theatts = NULL;
 	tmp->next = NULL;
+
 	list = (GribRecordInqRecList*) NclMalloc((unsigned)sizeof(GribRecordInqRecList));
 	list->rec_inq = grib_rec;
 	list->next = NULL;
@@ -5723,17 +5744,7 @@ static GribParamList *_NewListNode
 	}
 	tmp->time_unit_indicator = (int)grib_rec->pds[17];
 	tmp->variable_time_unit = False;
-	
-	tmp->probability = NULL;
-	tmp->lower_probs = NULL;
-	tmp->upper_probs = NULL;
-	tmp->levels = NULL;
-	tmp->levels0 = NULL;
-	tmp->levels1 = NULL;
-	tmp->levels_has_two = 0;
-	tmp->yymmddhh = NULL;
-	tmp->forecast_time = NULL;
-	tmp->n_atts = 0;
+
 
 	/* special processing for DWD */
 	if (centers[grib_rec->center_ix].index == 78 &&
@@ -8036,6 +8047,17 @@ void *therec;
 		itmp = ivars;	
 		ivars = ivars->next;
 		NclFree(itmp);
+	}
+	dim = thefile->ensemble_dims;
+	if(dim != NULL) {
+		while(dim != NULL) {
+			dim1 = dim->next;
+			if(dim->dim_inq != NULL) {
+				NclFree(dim->dim_inq);
+			}
+			NclFree(dim);
+			dim = dim1;
+		}
 	}
 	dim = thefile->it_dims;
 	if(dim != NULL) {

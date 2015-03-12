@@ -3433,10 +3433,8 @@ int time_unit;
 unsigned char *offset;
 #endif
 {
-	int cix,tix;
-
+	int cix = 0,tix = 0;
 	double c_factor = 1.0;
-
 	if (common_time_unit != time_unit) {
 		for (cix = 0; cix < NhlNumber(Unit_Code_Order); cix++) {
 			if (common_time_unit == Unit_Code_Order[cix])
