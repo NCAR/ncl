@@ -46,6 +46,9 @@ subroutine plotfmt_rdhead(istatus,head_real,field,hdate, &
   else if(iproj == 4) then
     read(unit=funit,err=1001,end=1001) startloc, startlat, startlon, &
                                        nlats, deltalon, earth_radius
+  else if(iproj == 5) then
+    read(unit=funit,err=1001,end=1001) startloc, startlat, startlon, dx, dy, &
+                                       xlonc, truelat1, earth_radius
   end if
 
   read(unit=funit,err=1001,end=1001) is_wind_grid_rel
@@ -84,6 +87,14 @@ subroutine plotfmt_rdhead(istatus,head_real,field,hdate, &
     head_real(9) = nlats
     head_real(10) = deltalon
     head_real(11) = earth_radius
+  else if(iproj == 5) then
+    head_real(7) = startlat
+    head_real(8) = startlon
+    head_real(9) = dx
+    head_real(10) = dy
+    head_real(11) = xlonc
+    head_real(12) = truelat1
+    head_real(13) = earth_radius
   end if
 
   istatus = 0
