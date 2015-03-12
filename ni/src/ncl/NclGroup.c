@@ -403,7 +403,7 @@ NclQuark group_name;
     initializeGroup(group_out);
 
     group_out->file.fname = file_in->file.fname;
-    group_out->file.fpath = file_in->file.fpath;
+    group_out->file.fpath = NrmStringToQuark(_NGResolvePath(NrmQuarkToString(file_in->file.fpath)));
     group_out->file.file_ext_q = file_in->file.file_ext_q;
     group_out->file.wr_status = file_in->file.wr_status;
     group_out->file.file_format = file_in->file.file_format;
