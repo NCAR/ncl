@@ -1287,8 +1287,11 @@ int *num_dims;
 {
     HDF5FileRecord * thefile = (HDF5FileRecord *) therec;
     HDF5DimInqRecList * thelist;
-    NclQuark* names;
+    NclQuark* names = NULL;
     int i;
+
+    if(NULL == thefile)
+	return(names);
 
     thelist = thefile->dim_list;
     names = NclMalloc(sizeof(NclQuark)*thefile->n_dims);
@@ -3755,6 +3758,7 @@ NclHDF5group_node_t *h5_group;
            (chkvar == grplist->grp_inq->hdf5_name) ||
            (chkvar == grplist->grp_inq->name))
         {
+#if 0
             memcpy(storage, &chkvar, sizeof(NclQuark));
             return 1;
         }
@@ -3766,6 +3770,16 @@ NclHDF5group_node_t *h5_group;
         {
             return (found);
         }
+#else
+            found = HDF5ReadVar_inGroup(grplist->grp_inq, thevar, start, finish, stride,
+                                        storage, file_path_q, h5_group);
+
+            if(found)
+            {
+                return (found);
+            }
+        }
+#endif
 
         grplist = grplist->next;
     }

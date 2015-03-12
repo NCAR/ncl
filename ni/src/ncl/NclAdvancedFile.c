@@ -4912,23 +4912,21 @@ static struct _NclVarRec *AdvancedFileReadVar(NclFile infile, NclQuark var_name,
             {
                 for(i = 0 ; i < tmp_md->multidval.n_dims; i++)
                 {
-                    if(NULL == cptr)
-                        coordvarname = dim_info[i].dim_quark;
-                    else
+                    if((NULL != cptr) && (0 < dim_info[i].dim_quark))
                     {
                         strcpy(cvn, cvnhead);
                         strcat(cvn, NrmQuarkToString(dim_info[i].dim_quark));
                         coordvarname = NrmStringToQuark(cvn);
-                    }
 
-                    coordnode = _getCoordVarNodeFromNclFileGrpNode(thefile->advancedfile.grpnode, coordvarname);
-                    if(NULL != coordnode)
-                    {
-                        tmp_var = _NclFileReadCoord((NclFile)thefile,coordvarname,NULL);
-                        if(tmp_var != NULL)
-                            coords[i] = tmp_var->obj.id;
-                        else
-                            coords[i] = -1;
+                        coordnode = _getCoordVarNodeFromNclFileGrpNode(thefile->advancedfile.grpnode, coordvarname);
+                        if(NULL != coordnode)
+                        {
+                            tmp_var = _NclFileReadCoord((NclFile)thefile,coordvarname,NULL);
+                            if(tmp_var != NULL)
+                                coords[i] = tmp_var->obj.id;
+                            else
+                                coords[i] = -1;
+                        }
                     }
                     else
                     {

@@ -32,7 +32,8 @@ herr_t _NclHDF5check_obj(const char *filename, NclHDF5group_node_t **HDF5group)
 
     if(fid < 0)
     {
-        fprintf(stderr, "Unable to open file: <%s>, at line: %d\n", filename, __LINE__);
+        fprintf(stderr, "\nIn file: %s, at line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "Unable to open file: <%s>\n", filename);
         H5close();
         return (FAILED);
     }
@@ -992,9 +993,13 @@ void _NclHDF5free_data(NclHDF5data_t *NclHDF5data)
     if(NclHDF5data)
     {
         if(NclHDF5data->value)
+        {
             free(NclHDF5data->value);
+            NclHDF5data->value = NULL;
+	}
 
         free(NclHDF5data);
+	NclHDF5data = NULL;
     }
 }
 
