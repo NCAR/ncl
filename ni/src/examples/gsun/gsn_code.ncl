@@ -1972,8 +1972,8 @@ end
 ;                plot:graphic                                           ;
 ;                                                                       ;
 ; Determine what class type "plot" is. If it's a logLinPlotClass, then  ;
-; It should have an attribute "contour" or "vector" that is the         ;
-; corresponding contour or vector plot.                                 ;
+; It should have an attribute "contour", "vector", "xy", or             ;
+; "streamine" that is the corresponding contour or vector plot.         ;
 ;                                                                       ;
 ;***********************************************************************;
 undef("get_plot_not_loglin")
@@ -1986,61 +1986,71 @@ begin
   class = NhlClassName(plot)
 
   if(class(0).ne."contourPlotClass".and.class(0).ne."vectorPlotClass".and. \
-     class(0).ne."xyPlotClass") then
+     class(0).ne."xyPlotClass".and.class(0).ne."streamlinePlotClass") then
     if(isatt(plot,"contour")) then
       new_plot = plot@contour
       new_plot@plot_type = "contour"
+    else if(isatt(plot,"vector")) then
+      new_plot = plot@vector
+      new_plot@plot_type = "vector"
+    else if(isatt(plot,"streamline")) then
+      new_plot = plot@streamline
+      new_plot@plot_type = "streamline"
     else
-      if(isatt(plot,"vector")) then
-        new_plot = plot@vector
-        new_plot@plot_type = "vector"
-      else
-        found = False
-        getvalues plot
-          "pmOverlaySequenceIds" : base_ids
-        end getvalues
-        if(.not.any(ismissing(base_ids))) then
-	  nbase = dimsizes(base_ids)
-	  i = 0
-	  do while(.not.found.and.i.lt.nbase) 
-            bclass = NhlClassName(base_ids(i))
-            if(bclass.eq."contourPlotClass") then
-              new_plot = base_ids(i)
-              new_plot@plot_type = "contour"
-	      found = True
-            end if
-            if(bclass.eq."vectorPlotClass") then
-              new_plot = base_ids(i)
-              new_plot@plot_type = "vector"
-	      found = True
-            end if
-            if(bclass.eq."xyPlotClass") then
-              new_plot = base_ids(i)
-              new_plot@plot_type = "xy"
-	      found = True
-            end if
-	    i = i + 1
-	  end do
-	end if
-        if(.not.found) then
-          new_plot = plot(0)
-        end if
+      found = False
+      getvalues plot
+        "pmOverlaySequenceIds" : base_ids
+      end getvalues
+      if(.not.any(ismissing(base_ids))) then
+        nbase = dimsizes(base_ids)
+        i = 0
+        do while(.not.found.and.i.lt.nbase) 
+          bclass = NhlClassName(base_ids(i))
+          if(bclass.eq."contourPlotClass") then
+            new_plot = base_ids(i)
+            new_plot@plot_type = "contour"
+            found = True
+          else if(bclass.eq."vectorPlotClass") then
+            new_plot = base_ids(i)
+            new_plot@plot_type = "vector"
+            found = True
+          else if(bclass.eq."streamlinePlotClass") then
+            new_plot = base_ids(i)
+            new_plot@plot_type = "streamline"
+            found = True
+          else if(bclass.eq."xyPlotClass") then
+            new_plot = base_ids(i)
+            new_plot@plot_type = "xy"
+            found = True
+          end if
+          end if
+          end if
+          end if
+          i = i + 1
+        end do
       end if
+      if(.not.found) then
+        new_plot = plot(0)
+      end if
+    end if
+    end if
     end if
   else
     if(class(0).eq."contourPlotClass") then
       new_plot = plot(0)
       new_plot@plot_type = "contour"
-    else
-      if(class(0).eq."vectorPlotClass") then
-        new_plot = plot(0)
-        new_plot@plot_type = "vector"
-      else
-        if(class(0).eq."xyPlotClass") then
-          new_plot = plot(0)
-          new_plot@plot_type = "xy"
-        end if
-      end if
+    else if(class(0).eq."vectorPlotClass") then
+      new_plot = plot(0)
+      new_plot@plot_type = "vector"
+    else if(class(0).eq."streamlinePlotClass") then
+      new_plot = plot(0)
+      new_plot@plot_type = "streamline"
+    else if(class(0).eq."xyPlotClass") then
+      new_plot = plot(0)
+      new_plot@plot_type = "xy"
+    end if
+    end if
+    end if
     end if
   end if
   return(new_plot)
@@ -6932,28 +6942,33 @@ begin
       getvalues new_plot
         "cnInfoLabelFontHeightF" : font_height
       end getvalues
+    else if(new_plot@plot_type.eq."vector") then
+      getvalues new_plot
+        "vcRefAnnoFontHeightF"     : font_height
+      end getvalues
+    else if(new_plot@plot_type.eq."xy") then
+      getvalues new_plot
+        "tiXAxisFontHeightF" : font_height
+      end getvalues
+      font_height = 0.6*font_height
+    else if(new_plot@plot_type.eq."streamline") then
+;
+; There's no equivalent font height resource for streamline to 
+; retrieve, so just set it here.
+;
+      font_height = 0.01
     else
-      if(new_plot@plot_type.eq."vector") then
-        getvalues new_plot
-          "vcRefAnnoFontHeightF"     : font_height
-        end getvalues
-      else
-        if(new_plot@plot_type.eq."xy") then
-          getvalues new_plot
-            "tiXAxisFontHeightF" : font_height
-          end getvalues
-          font_height = 0.6*font_height
-        else
-          font_height = 0.01
-          if((is_figure_strings.and. \
-              .not.isatt(res,"gsnPanelFigureStringsFontHeightF"))) then
-            print("Warning: gsn_panel: unrecognized plot type.")
-            print("Unable to get information for various font heights.")
-            print("Make sure your font heights look okay.")
-            print("Set gsnPanelFigureStringsFontHeightF resource to control figure strings font height.")
-          end if
-        end if
+      font_height = 0.01
+      if((is_figure_strings.and. \
+          .not.isatt(res,"gsnPanelFigureStringsFontHeightF"))) then
+        print("Warning: gsn_panel: unrecognized plot type.")
+        print("Unable to get information for various font heights.")
+        print("Make sure your font heights look okay.")
+        print("Set gsnPanelFigureStringsFontHeightF resource to control figure strings font height.")
       end if
+    end if
+    end if
+    end if
     end if
 ;
 ; Use this font height for the panel strings, if any, unless the user
@@ -6991,41 +7006,55 @@ begin
       else
         panel_labelbar = False
       end if
-    else
-      if(new_plot_lab@plot_type.eq."vector") then
-        getvalues new_plot_lab
-          "vcGlyphStyle"             : gstyle
-          "vcFillArrowsOn"           : fill_arrows_on
-          "vcMonoLineArrowColor"     : mono_line_color
-          "vcMonoFillArrowFillColor" : mono_fill_arrow
-          "vcMonoWindBarbColor"      : mono_wind_barb
-        end getvalues
+    else if(new_plot_lab@plot_type.eq."vector") then
+      getvalues new_plot_lab
+        "vcGlyphStyle"             : gstyle
+        "vcFillArrowsOn"           : fill_arrows_on
+        "vcMonoLineArrowColor"     : mono_line_color
+        "vcMonoFillArrowFillColor" : mono_fill_arrow
+        "vcMonoWindBarbColor"      : mono_wind_barb
+      end getvalues
 ;
 ; 0 = linearrow, 1 = fillarrow, 2 = windbarb, 3 = curlyvector
 ;
-        if(    (fill_arrows_on .and. .not.mono_fill_arrow)     .or. \
-            (.not.fill_arrows_on .and. .not.mono_line_color)   .or. \
-            (gstyle.eq.1 .and. .not.mono_fill_arrow)  .or. \
-            (gstyle.eq.2 .and. .not.mono_wind_barb)  .or. \
-            (gstyle.eq.0 .or. gstyle.eq.3) .and. .not.mono_line_color) then
-;
-; There are no fill patterns in VectorPlot, only solids.
-;
-          mono_fill_pat = True
-          mono_fill_scl = True
-          mono_fill_col = False
-          getvalues new_plot_lab
-            "vcLevels"      : levels
-            "vcLevelColors" : colors
-          end getvalues
-        else
-          panel_labelbar = False
-        end if
+      if(    (fill_arrows_on .and. .not.mono_fill_arrow)     .or. \
+        (.not.fill_arrows_on .and. .not.mono_line_color)   .or. \
+        (gstyle.eq.1 .and. .not.mono_fill_arrow)  .or. \
+        (gstyle.eq.2 .and. .not.mono_wind_barb)  .or. \
+        (gstyle.eq.0 .or. gstyle.eq.3) .and. .not.mono_line_color) then
+;---There are no fill patterns in VectorPlot, only solids.
+        mono_fill_pat = True
+        mono_fill_scl = True
+        mono_fill_col = False
+        getvalues new_plot_lab
+          "vcLevels"      : levels
+          "vcLevelColors" : colors
+        end getvalues
       else
-        if(.not.isatt(res,"lbLabelFontHeightF")) then
-          print("Set lbLabelFontHeightF resource to control labelbar font heights.")
-        end if
+        panel_labelbar = False
       end if
+    else if(new_plot_lab@plot_type.eq."streamline") then
+      getvalues new_plot_lab
+        "stMonoLineColor" : mono_line_color
+      end getvalues
+      if(.not.mono_line_color) then
+;---There are no fill patterns in StreamlinePlot, only solids.
+        mono_fill_pat = True
+        mono_fill_scl = True
+        mono_fill_col = False
+        getvalues new_plot_lab
+          "stLevels"      : levels
+          "stLevelColors" : colors
+        end getvalues
+      else
+        panel_labelbar = False
+      end if
+    else
+      if(.not.isatt(res,"lbLabelFontHeightF")) then
+        print("Set lbLabelFontHeightF resource to control labelbar font heights.")
+      end if
+    end if
+    end if
     end if
   end if
 

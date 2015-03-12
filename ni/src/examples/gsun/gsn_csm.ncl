@@ -11693,7 +11693,7 @@ begin
 
     map_object@vfdata  = streamline_object@vfdata
     map_object@sfdata  = streamline_object@sfdata
-      map_object@streamline  = streamline_object
+    map_object@streamline  = streamline_object
     return(map_object)
 end
 
