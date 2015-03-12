@@ -2487,6 +2487,57 @@ static void _update_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHDF5d
 
         has_updated = 1;
     }
+
+    if(has_updated)
+	return;
+
+
+    for(k = 0; k < dataset_node->ndims; k++)
+    {
+        found_new = 1;
+	cur_list = *dim_list;
+        while(cur_list)
+        {
+            if(cur_list->dim_inq->name == NrmStringToQuark(dataset_node->dim_name[k]))
+            {
+                found_new = 0;
+                break;
+	    }
+	    cur_list = cur_list->next;
+        }
+	
+	if(found_new)
+	{
+            cur_list = NclCalloc(1, sizeof(HDF5DimInqRecList));
+            if(!cur_list)
+            {
+                NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list, in file: %s, line: %d\n",
+                        __FILE__, __LINE__);
+                return;
+            }
+
+            cur_list->dim_inq = NclCalloc(1, sizeof(HDF5DimInqRec));
+            if(!cur_list->dim_inq)
+            {
+                NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list->dim_inq, in file: %s, line: %d\n",
+                        __FILE__, __LINE__);
+                return;
+            }
+
+	    sprintf(dataset_node->dim_name[k], "DIM_%.3d", *n_dims);
+            cur_list->dim_inq->is_dataset = 0;
+            cur_list->dim_inq->is_unlimited = 0;
+            cur_list->dim_inq->name = NrmStringToQuark(dataset_node->dim_name[k]);
+
+            cur_list->dim_inq->ncldim_id = *n_dims;
+            cur_list->dim_inq->size = (long) dataset_node->dims[i];
+
+            cur_list->next = *dim_list;
+            *dim_list = cur_list;
+
+            (*n_dims)++;
+	}
+    }
 }
 
 static void _HDF5Build_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHDF5group_node_t *HDF5group)
