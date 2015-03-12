@@ -4895,12 +4895,14 @@ static struct _NclVarRec *AdvancedFileReadVar(NclFile infile, NclQuark var_name,
             char cvn[1024];
             char *varstr = NrmQuarkToString(var_name);
             char *cptr = strrchr(varstr, '/');
+	    int head_leng = 0;
 
             if(NULL != cptr)
             {
                 i = 1 + strlen(varstr) - strlen(cptr);
                 strncpy(cvnhead, varstr, i);
                 cvnhead[i] = '\0';
+                head_leng = i;
 
               /*
                *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -4912,11 +4914,16 @@ static struct _NclVarRec *AdvancedFileReadVar(NclFile infile, NclQuark var_name,
             {
                 for(i = 0 ; i < tmp_md->multidval.n_dims; i++)
                 {
-                    if((NULL != cptr) && (0 < dim_info[i].dim_quark))
+                    if(0 < dim_info[i].dim_quark)
                     {
-                        strcpy(cvn, cvnhead);
-                        strcat(cvn, NrmQuarkToString(dim_info[i].dim_quark));
-                        coordvarname = NrmStringToQuark(cvn);
+                        if(head_leng)
+			{
+                            strcpy(cvn, cvnhead);
+                            strcat(cvn, NrmQuarkToString(dim_info[i].dim_quark));
+                            coordvarname = NrmStringToQuark(cvn);
+			}
+			else
+                            coordvarname = dim_info[i].dim_quark;
 
                         coordnode = _getCoordVarNodeFromNclFileGrpNode(thefile->advancedfile.grpnode, coordvarname);
                         if(NULL != coordnode)
@@ -4947,14 +4954,14 @@ static struct _NclVarRec *AdvancedFileReadVar(NclFile infile, NclQuark var_name,
                 {
                     dimnode = &(varnode->dim_rec->dim_node[i]);
 
-                    if(NULL == cptr)
-                        coordvarname = dimnode->name;
-                    else
+                    if(head_leng)
                     {
                         strcpy(cvn, cvnhead);
                         strcat(cvn, NrmQuarkToString(dimnode->name));
                         coordvarname = NrmStringToQuark(cvn);
                     }
+                    else
+                        coordvarname = dimnode->name;
 
                     coordnode = _getCoordVarNodeFromNclFileGrpNode(thefile->advancedfile.grpnode,
                                                                    coordvarname);
