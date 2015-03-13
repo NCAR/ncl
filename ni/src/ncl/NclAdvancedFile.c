@@ -8974,6 +8974,7 @@ NclQuark *_NclGetGrpNames(void *therec, int *num_grps)
     NclFileGrpNode *tmpgrpnode = NULL;
     NclQuark *out_quarks = NULL;
     NclQuark *tmp_quarks = NULL;
+    char carr[2048];
     int n, ng;
     int i;
 
@@ -8990,7 +8991,22 @@ NclQuark *_NclGetGrpNames(void *therec, int *num_grps)
             for(i = 0; i < grpnode->grp_rec->n_grps; ++i)
             {
 #if 1
-                out_quarks[i] = grpnode->grp_rec->grp_node[i]->real_name;
+                strcpy(carr, NrmQuarkToString(grpnode->grp_rec->grp_node[i]->real_name));
+                n = strlen(carr) - 1;
+              /*
+               *fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
+               *fprintf(stderr, "\tori group No. %d: <%s>, strlen = %d\n", i, carr, n);
+               */
+                if(carr[n] == '/')
+                {
+                    carr[n] = '\0';
+                  /*
+                   *fprintf(stderr, "\tnew group No. %d: <%s>, strlen = %d\n", i, carr, n);
+                   */
+                    out_quarks[i] = NrmStringToQuark(carr);
+                }
+                else
+                    out_quarks[i] = grpnode->grp_rec->grp_node[i]->real_name;
 #else
                 out_quarks[i] = grpnode->grp_rec->grp_node[i]->name;
 #endif
