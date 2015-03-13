@@ -10605,9 +10605,25 @@ NhlErrorTypes wrf_wps_open_int_W( void )
 /*
  * This function simply closes a WRF/WPS intermediate file
  * that was opened with wrf_wps_open/rddata/rhead_int.
+ * Note that nothing is currently done with the istatus
+ * variable. This might change if we decide that 
+ * istatus can contain a "unit" attribute that indicates
+ * which Fortran unit was used to open the file.
  */
 NhlErrorTypes wrf_wps_close_int_W( void )
 {
+  int *istatus;
+
+  istatus = (int *)NclGetArgValue(
+           0,
+           1,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+
   NGCALLF(plotfmt_close,PLOTFMT_CLOSE)();
   return(NhlNOERROR);
 
@@ -11111,6 +11127,10 @@ NhlErrorTypes wrf_wps_read_int_W( void )
     index_rhead += NHEAD;
   }
 
+  /* Close the file. */
+  NGCALLF(plotfmt_close,PLOTFMT_CLOSE)();
+
+  /* Free memory */
   free(slab_s);
   free(cfield);
   free(chdate);

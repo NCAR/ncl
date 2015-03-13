@@ -1840,6 +1840,10 @@ void NclAddUserFuncs(void)
  * Create private argument array
  */
         nargs = 0;
+        args = NewArgs(1);
+
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
         NclRegisterProc(wrf_wps_close_int_W,args,"wrf_wps_close_int",nargs);
 
 /*
