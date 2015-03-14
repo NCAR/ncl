@@ -643,3 +643,115 @@ begin
   end if
   return
 end
+
+;----------------------------------------------------------------------
+; This function takes an array of anything and depending on "opt", 
+; it does one of two things:
+;
+;   - Returns the unique values as a 1D array (opt=0)
+;   - Returns the number of unique values     (opt=1)
+;
+; Some notes:
+;  - THIS FUNCTION IS NOT INTENDED TO BE MADE PUBLIC.
+;    See "get_unique_values" and "count_unique_values" below.
+;
+; - We did some timing tests and confirmed that sorting the values
+;   first made for a faster algorithm, including with string arrays.
+;
+; - We decided to create a separate "count_unique_values" function,
+;   instead of making the user do "dimsizes(get_unique_values(x))"
+;   because the count function is less memory intensive.
+;----------------------------------------------------------------------
+undef("unique_values_opt")
+function unique_values_opt(vals,opt)
+local vals1d, i, ii, vals_nomsg, nvals, nuniq_vals, count_only
+begin
+  if(opt.eq.0) then
+    count_only = False
+  else if(opt.eq.1) then
+    count_only = True
+  else
+    print("unique_values_opt: Error: Don't recognize opt=" + opt)
+    print("This is an internal function and may change")
+    exit
+  end if
+  end if
+
+  if(isatt(vals,"_FillValue")) then
+    vals1d = ndtooned(vals)
+    ii     = ind(.not.ismissing(vals1d))  
+    if(ismissing(ii(0))) then
+; Input array is all missing
+      if(count_only) then
+        return(0)
+      else
+        return(new(1,typeof(vals))) 
+      end if
+    end if
+    vals_nomsg = vals1d(ii)
+    delete(vals_nomsg@_FillValue) ; This is important, otherwise a _FillValue 
+                                  ; will get added to return value.
+    delete([/vals1d,ii/])       
+  else
+    vals_nomsg = ndtooned(vals)
+  end if
+
+;---Sort the array first
+  if(typeof(vals_nomsg).eq."string") then
+    sqsort(vals_nomsg)
+  else
+    qsort(vals_nomsg)
+  end if
+
+  nvals = dimsizes(vals_nomsg)
+
+;---This is the array to be returned, if returning unique values.
+  if(.not.count_only) then
+    vals_uniq    = new(nvals,typeof(vals_nomsg),"No_FillValue")
+    vals_uniq(0) = vals_nomsg(0)   ; The first unique value
+  end if
+;
+; Doing two different loops here, so we don't have an extra 
+; "if" test inside the do loop.
+;
+  nuniq_vals  = 1
+  if(count_only) then
+    do i=1,nvals-1
+      if(vals_nomsg(i).eq.vals_nomsg(i-1)) then
+        continue
+      end if
+      nuniq_vals = nuniq_vals+1
+    end do
+    return(nuniq_vals)
+  else
+    do i=1,nvals-1
+      if(vals_nomsg(i).eq.vals_nomsg(i-1)) then
+        continue
+      end if
+      vals_uniq(nuniq_vals) = vals_nomsg(i)
+      nuniq_vals            = nuniq_vals+1
+    end do
+    return(vals_uniq(0:nuniq_vals-1))
+  end if
+end
+
+;----------------------------------------------------------------------
+; This function takes an array of anything and returns the 
+; unique values as a 1D array.
+;----------------------------------------------------------------------
+undef("get_unique_values")
+function get_unique_values(vals)
+begin
+  return(unique_values_opt(vals,0))
+end
+
+
+;----------------------------------------------------------------------
+; This function takes an array of anything and returns the 
+; # of unique values. If the array 
+;----------------------------------------------------------------------
+undef("count_unique_values")
+function count_unique_values(vals)
+begin
+  return(unique_values_opt(vals,1))
+end
