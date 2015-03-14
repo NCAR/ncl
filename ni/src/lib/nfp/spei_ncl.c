@@ -2,28 +2,31 @@
 #include <math.h>
 #include <stdlib.h>
 
-// Max size of raw rainfall and events matrices
+/* Max size of raw rainfall and events matrices */
 #define NUMDATOSMAX 5000
 #define NUMRESULTMAX 5000
 #define NUMSEASONSMAX 12
 
-// Function prototypes:  'n' is length of 'dataSeries' 
-void spei(float dataSeries[], int n, int seasons, float speiSeries[]);
-}
+/* Function prototypes:  'n' is length of 'dataSeries'  */
+extern void spei(float dataSeries[], int n, int seasons, float speiSeries[]);
+extern void upward(float series[], int n);
+extern void pwm(float series[], int n, float beta[], float A, float B, int isBeta);
+extern void logLogisticFit(float beta[], float logLogisticParams[]);
 
-// spei()
-// Calculates the Standardized Precipitation-Evapotransporation Index
-// from a series of climatic balance (precipitation minus etp). The
-// SPEI is the standardized value of the climatic balance (P-ETP),
-// computed following a Log Logistic probability distribution.
+
+/* spei() */
+/* Calculates the Standardized Precipitation-Evapotransporation Index */
+/* from a series of climatic balance (precipitation minus etp). The */
+/* SPEI is the standardized value of the climatic balance (P-ETP), */
+/* computed following a Log Logistic probability distribution. */
 void spei(float dataSeries[], int n, int seasons, float speiSeries[]) {
 
 	int i, j, k, nSeason;
 	float seasonSeries[NUMDATOSMAX], beta[3], logLogisticParams[NUMSEASONSMAX][3];
 
-	// Loop through all seasons defined by seasons
+	/* Loop through all seasons defined by seasons */
 	for (j=1; j<=seasons; j++) {
-		// Extract and sort the seasonal series
+	  /* Extract and sort the seasonal series */
 		k = 0;
 		for (i=j-1; i<n; i+=seasons) {
 			seasonSeries[k] = dataSeries[i];
@@ -31,12 +34,12 @@ void spei(float dataSeries[], int n, int seasons, float speiSeries[]) {
 		}
 		nSeason = k;
 		upward(seasonSeries, nSeason);
-		// Compute probability weighted moments
-		//pwm(seasonSeries, nSeason, beta, -0.35, 0, 0);
+		/* Compute probability weighted moments */
+		/*pwm(seasonSeries, nSeason, beta, -0.35, 0, 0); */
 		pwm(seasonSeries, nSeason, beta, 0, 0, 0);
-		// Fit a Log Logistic probability function
+		/* Fit a Log Logistic probability function */
 		logLogisticFit(beta, logLogisticParams[j]);
-		// Calculate the standardized values
+		/* Calculate the standardized values */
 		for (i=j-1; i<n; i+=seasons) {
 			speiSeries[i] = logLogisticCDF(dataSeries[i], logLogisticParams[j]);
 			speiSeries[i] = -standardGaussianInvCDF(speiSeries[i]);
@@ -44,11 +47,11 @@ void spei(float dataSeries[], int n, int seasons, float speiSeries[]) {
 	}
 }
 
-// A bunch of auxiliary functions for computing L-moments,
-// probability distribution functions, etc.
+/* A bunch of auxiliary functions for computing L-moments, */
+/* probability distribution functions, etc. */
 
-// upward()
-// Sorts a given data series from the lowest to the highest value
+/* upward() */
+/* Sorts a given data series from the lowest to the highest value */
 void upward(float series[], int n) {
 
 	int i, j;
@@ -64,24 +67,24 @@ void upward(float series[], int n) {
 		}
 	}
 
-// logLogisticFit()
-// Estimates the parameters of a Gamma distribution functions
+	/* logLogisticFit() */
+	/* Estimates the parameters of a Gamma distribution functions */
 void logLogisticFit(float beta[], float logLogisticParams[]) {
 
         float g1, g2;
 
-        // estimate gamma parameter
+        /* estimate gamma parameter */
         logLogisticParams[2] = (2*beta[1]-beta[0]) / (6*beta[1]-beta[0]-6*beta[2]);
         g1 = exp(gammaLn(1+1/logLogisticParams[2]));
         g2 = exp(gammaLn(1-1/logLogisticParams[2]));
-        // estimate alpha parameter
+        /* estimate alpha parameter */
         logLogisticParams[1] = (beta[0]-2*beta[1])*logLogisticParams[2] / (g1*g2);
-        // estimate beta parameter
+        /* estimate beta parameter */
         logLogisticParams[0] = beta[0] - logLogisticParams[1]*g1*g2;
 }
 
-// factorial()
-// compute the factorial of an integer
+/* factorial() */
+/* compute the factorial of an integer */
 long int factorial(int anInteger) {
         if (anInteger<=1)
                 return(1);
@@ -90,8 +93,8 @@ long int factorial(int anInteger) {
         return(anInteger);
 }
 
-// gammaLn()
-// Returns the natural logarithm of the gamma function, ln[gamma(xx)] for xx > 0
+/* gammaLn() */
+/* Returns the natural logarithm of the gamma function, ln[gamma(xx)] for xx > 0 */
 float gammaLn(float xx) {
 
         double x, y, tmp, ser;
