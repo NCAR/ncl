@@ -2303,6 +2303,19 @@ NclFileVarNode *_getCoordVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
                 return varnode;
         }
     }
+    else if(NULL != grpnode->var_rec)
+    {
+        for(n = 0; n < grpnode->var_rec->n_vars; n++)
+        {
+            varnode = &grpnode->var_rec->var_node[n];
+
+            if(NULL == varnode)
+                continue;
+
+            if((vn == varnode->name) || (vn == varnode->real_name))
+                return varnode;
+        }
+    }
 
 #if 0
   /*Do we want to search all the groups below?*/
