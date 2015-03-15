@@ -340,6 +340,34 @@ NclQuark *_split_string2quark(NclQuark qn, int *ns)
     return sq;
 }
 
+/*
+ * Updates the dimension info
+ */
+
+NhlErrorTypes UpdateGroupDims(NclGroup *group_out, NclFile thefile)
+{
+	NclQuark *name_list;
+	int n_names;
+	int i;
+	int index = -1;
+
+	name_list = (*thefile->file.format_funcs->get_dim_names)(thefile->file.private_rec,&n_names);
+	group_out->file.n_file_dims = n_names;
+	for(i = 0; i < n_names; i++){
+		if (group_out->file.file_dim_info[i])
+			NclFree(group_out->file.file_dim_info[i]);
+		group_out->file.file_dim_info[i] = (thefile->file.format_funcs->get_dim_info)
+			(thefile->file.private_rec,name_list[i]);
+		if(thefile->file.n_vars)
+		    index = _NclFileIsVar(thefile,name_list[i]);
+		if(index > -1 && thefile->file.var_info[index]->num_dimensions == 1) {
+			group_out->file.coord_vars[i] = thefile->file.var_info[index];
+		}
+	}
+	NclFree((void*)name_list);
+	return NhlNOERROR;
+}
+
 NclGroup *_NclGroupCreate
 #if    NhlNeedProto
 (NclObj  inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, NclStatus status, NclFile file_in, NclQuark group_name)
@@ -428,6 +456,8 @@ NclQuark group_name;
 
     _NclReallocFilePart(&(group_out->file), -1, -1,
                         group_out->file.n_file_dims, group_out->file.n_file_atts);
+
+    UpdateGroupDims(group_out, file_in);
   /*
    *for(i = 0; i < group_out->file.n_file_dims; i++)
    *{
@@ -435,8 +465,6 @@ NclQuark group_name;
    *    group_out->file.coord_vars[i] = file_in->file.coord_vars[i];
    *}
    */
-
-    UpdateDims(group_out);
 
     for(j = 0; j < file_in->file.n_file_atts; j++)
     {
@@ -581,6 +609,10 @@ NclQuark group_name;
         group_out->file.var_info[n_vars] = getVarRec(file_in->file.var_info[i]);
         copyAttributes(&(group_out->file.var_att_info[n_vars]),
                        file_in->file.var_att_info[i]);
+
+      /*
+       *UpdateCoordInfo(group_out, group_out->file.var_info[n_vars]->var_name_quark);
+       */
         n_vars++;
     }
 
