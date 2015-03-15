@@ -14,6 +14,13 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Important modifications:
+;       14 March 2015:
+;           Decided to add a SrcSCRIP/DstSCRIP which a user can set to
+;           True to force an unstructured description file to be created
+;           as a SCRIP file instead of an ESMF file  This is currently
+;           unadvertised, and only affects unstructrued files.  See
+;           "unstructured_to_SCRIP" below.
+;
 ;       20 Feb 2015:
 ;         Created new "Src/DstGridArea" attribute to
 ;          allow user to enter the "grid_area" quantity 
@@ -30,7 +37,8 @@
 ;           Added an (as yet unadvertised) "unstructured_to_SCRIP" function
 ;           that writes the grid description file to a SCRIP file instead
 ;           of an ESMF file, if SrcESMF or DstESMF is set to False. This
-;           is currently being tested.
+;           is currently being tested.  (March 2015 followup: I decided
+;           to call this Src/DstSCRIP instead).
 ;
 ;       04 Feb 2015:                                                                                   
 ;           Fixed the "remap" attribute that gets attached to regridded variable                       
@@ -3793,7 +3801,7 @@ begin
 ; attribute, like "opt@SrcOverwrite".
 ;
   spc_atts = (/"GridMask","Mask2D","GridArea","TriangularMesh",\
-               "LargeFile","ESMF","NetCDFType","Title","LLCorner",\
+               "LargeFile","ESMF","SCRIP","NetCDFType","Title","LLCorner",\
                "URCorner","Rotation","GridCornerLat","GridCornerLon",\
                "InputFileName","Overwrite","ForceOverwrite"/)
   do i=0,dimsizes(spc_atts)-1
@@ -3848,10 +3856,11 @@ begin
 ; This extra code for writing a SCRIP unstructured file
 ; file was added Feb 10, 2015. I'm not sure it's robust
 ; yet.  It is currently unadvertised, but can be 
-; done by the user if they set opt@SrcESMF = False or
-; opt@DstESMF = False.
+; done by the user if they set opt@SrcSCRIP = True or
+; opt@DstSCRIP = True. The default is to write an
+; ESMF unstructured file.
 ;
-    if(.not.isatt_logical_false(opt_new,"ESMF")) then
+    if(.not.isatt_logical_true(opt_new,"SCRIP")) then
       unstructured_to_ESMF(grid_file,lat_vals,lon_vals,opt_new)
       tmp_att = grid_string + "ESMF"
       if(DEBUG) then
@@ -3860,7 +3869,7 @@ begin
       end if
     else
       unstructured_to_SCRIP(grid_file,lat_vals,lon_vals,opt_new)
-;---Make sure SrcESMF or DstESMF is set (the default is to assume SCRIP)
+;---Make sure SrcSCRIP or DstSCRIP is set (the default is to assume SCRIP)
       tmp_att = grid_string + "SCRIP"
       if(DEBUG) then
         print("write_grid_description_file: writing unstructured '" + grid_string + \
