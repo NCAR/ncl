@@ -375,7 +375,7 @@ NhlErrorTypes jul2greg_W( void )
     else {
       for( i = 0; i < total; i++ ) {
         if( ((int*)tmp_md->multidval.val)[i] == tmp_md->multidval.missing_value.value.intval) {
-          date[j] = date[j+1] = date[j+2] = date[j+3] = missing_date.intval;
+          date[j] = date[j+1] = date[j+2] = missing_date.intval;
         }
         else {
           NGCALLF(juli2greg,JULI2GREG)(&((int*)tmp_md->multidval.val)[i],
