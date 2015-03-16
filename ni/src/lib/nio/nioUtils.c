@@ -1,5 +1,9 @@
+#include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 #include <limits.h>
+
+#include <ncarg/hlu/hluP.h>
 
 int _MachineIsBigEndian()
 {
@@ -149,5 +153,4 @@ local_strtoll(const char *nptr, char **endptr, int base)
 		*endptr = (char *) (any ? s - 1 : nptr);
 	return (acc);
 }
-
 
