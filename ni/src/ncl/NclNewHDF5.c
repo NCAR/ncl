@@ -5489,28 +5489,39 @@ static NclFVarRec *H5GetCoordInfo(void* therec, NclQuark thevar)
 
 static void H5FreeFileRec(void* therec)
 {
-
+    int n;
     NclFileGrpNode *grpnode = (NclFileGrpNode *)therec;
 
     if(grpnode->open)
     {
-        if(0 > grpnode->pid)
+
+      /*Only need to close the root-group fid, so we set other group fid to -1.*/
+        if(NULL != grpnode->grp_rec)
         {
-            H5Fclose(grpnode->fid);
+            for(n = 0; n < grpnode->grp_rec->n_grps; ++n)
+            {
+                grpnode->grp_rec->grp_node[n]->fid = -1;
+	        H5FreeFileRec(grpnode->grp_rec->grp_node[n]);
+                FileDestroyGrpNode(grpnode->grp_rec->grp_node[n]);
+            }
+        }
+
+        if(0 < grpnode->fid)
+        {
+          /*We suppose should be able to close the file, but it cause "invalid file identifier" error.
+	   * Let us do further test later. 3/16/2015, Wei
+           *H5Fclose(grpnode->fid);
+           */
             H5close();
         }
-      /*
-       *else if(0 <= grpnode->gid)
-       *    H5Gclose(grpnode->gid);
-       */
+        else if(0 <= grpnode->gid)
+            H5Gclose(grpnode->gid);
 
         grpnode->open = 0;
         grpnode->fid = -1;
         grpnode->gid = -1;
         grpnode->pid = -1;
     }
-
-    FileDestroyGrpNode(grpnode);
 
   /*Free visited addresses table*/
   /*FIXME
