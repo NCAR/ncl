@@ -878,9 +878,12 @@ begin
 ; Use str_sub_str to remove all tabs and spaces around
 ; and inside the color name.
 ;
+  lnames       = str_lower(names)
+  lnames       = str_sub_str(lnames," ","")
+  lnames       = str_sub_str(lnames,"	","")
   named_colors = str_sub_str(named_colors," ","")
   named_colors = str_sub_str(named_colors,"	","")
-  lnames       = str_lower(names)
+
   ncolors      = dimsizes(names)
   rgb_array    = new((/ncolors,3/),float)
 
