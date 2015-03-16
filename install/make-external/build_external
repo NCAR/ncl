@@ -844,13 +844,10 @@ then
         make clean
       fi
       echo "Cleaning $NETCDF4_DIR to do OPeNDAP build"
-      if [ "$un" = "k5" ] ; then
-        export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
-      elif [ "$un" = "k6" ] || [ "$un" = "k7" ] || [ "$un" = "k8" ] || [ "$un" = "k9" ] ; then
+      if [ "$un" = "k5" ] || [ "$un" = "k6" ] || [ "$un" = "k7" ] || [ "$un" = "k8" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lldap -lrt -lssl"
-# Might need this for k9 instead of the above statement.
-#      elif [ "$un" = "k9" ] ; then
-#        export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lssl -lldap -lrt -lssh2 -lrtmp"
+      elif [ "$un" = "k9" ] ; then
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lssl -lldap -lrt -lssh2 -lrtmp"
       elif [ "$un" = "logan.cgd.ucar.edu" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lz -lidn -lrt -ldl"
       elif [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
@@ -1237,6 +1234,8 @@ if [ $INSTALL_CAIRO ] ; then
     echo "Building $CAIRO_DIR..."
 # Needed the quartz disabled on GNU 4.1.2 system, so make it default for all systems?
     ./configure --prefix\=$PREFIX --enable-quartz-font=no --enable-quartz=no --enable-shared=no --enable-static=yes
+# Needed for k5? disable-gobject??
+#    ./configure --prefix\=$PREFIX --enable-quartz-font=no --enable-quartz=no --enable-shared=no --enable-static=yes --disable-gobject 
 #    if [ "$os" = "Darwin" ] ; then
 #      ./configure --prefix\=$PREFIX --enable-quartz-font=no --enable-quartz=no --enable-shared=no --enable-static=yes
 #    else
@@ -1412,11 +1411,7 @@ if [ $INSTALL_ESMF ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lssl -lidn -lrt -ldl"
     elif [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ] || [ "$os_version" = "10.9.4" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
-    elif [ "$un" = "k5" ] ; then
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
-    elif [ "$un" = "k6" ] ; then
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lldap -lrt -lssl"
-    elif [ "$un" = "k7" ] ; then
+    elif [ "$un" = "k5" ] || [ "$un" = "k6" ] || [ "$un" = "k7" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lldap -lrt -lssl"
     elif [ "$un" = "k9" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lcrypto -lssl"
