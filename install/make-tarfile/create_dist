@@ -468,7 +468,7 @@ find $all_files -exec chmod gou+r,go-w,u+w {} \;
 #
 # Now tar up everything.
 #
-tar -cvhf $tardir/$tar_filename $all_files $all_dirs
+tar -chf $tardir/$tar_filename $all_files $all_dirs
 
 #
 # Set permissions back for group writes.

@@ -33,14 +33,18 @@ set TAR_FILES       # Whether to tar up files
 set SCP_FILES       # Whether to scp files to another machine. 
                     # NOTE: you can't scp files to yellowstone unattended. Grrr.
 
-#set ASK            # Whether to ask to continue at various locations
+#set ASK            # Whether to ask to continue at various locations. This can be annoying.
 set RUN_X11_TESTS   # Whether to run the X11 tests or PDF tests.
 
 if ("$os" == "Darwin") then
   set ldd = "otool -L"
   set macosv = `sw_vers -productVersion`
-  if( $macosv == "10.9.4") then
-    set un="riley.local"
+  if($macosv == "10.8.4") then
+    set un="cisl-denton"
+  else if($macosv == "10.9.4") then
+    set un="riley"
+  else if($macosv == "10.10.2") then
+    set un="cordy"
   endif
 else
   set ldd = "ldd"
@@ -60,7 +64,7 @@ if ($?COMPILER_VERSION) then
 endif
 
 if ($?RUN_X11_TESTS) then
-  set wtype="X11"
+  set wtype="x11"
 else
   set wtype="pdf"
 endif
@@ -70,8 +74,8 @@ if ("$un" == "logan.cgd.ucar.edu") then
   setenv NCARG_EXTERNAL /contrib/ncl-6.3.0/external
   setenv NCARG_ROOT /contrib/ncl-6.3.0
   setenv NCARG /contrib/ncl-6.3.0/src/ncarg
-  set dap_string   = "Linux_CentOS7.0_x86_64_gcc447"
-  set nodap_string = "Linux_CentOS7.0_x86_64_nodap_gcc447"
+  set dap_string   = "Linux_CentOS7.0_x86_64_gcc482"
+  set nodap_string = "Linux_CentOS7.0_x86_64_nodap_gcc482"
 else if ("$un" == "k5") then
   setenv NCARGTEST /d2/haley/ncargtest
   setenv NCARG_EXTERNAL /d2/haley/external
@@ -154,14 +158,21 @@ else if ("$un" == "yellowstone_intel1215") then
 
   set dap_string   = "Linux_RHEL6.4_x86_64_intel1215"
   set nodap_string = "Linux_RHEL6.4_x86_64_nodap_intel1215"
-else if ("$un" == "riley.local") then
+else if ("$un" == "riley") then
   setenv NCARGTEST /Users/haley/ncargtest
   setenv NCARG_EXTERNAL /Users/haley/dev/external
   setenv NCARG_ROOT /Users/haley/dev
   setenv NCARG /Users/haley/src/ncarg
   set dap_string   = "MacOS_10.9_64bit_gcc481"
   set nodap_string = "MacOS_10.9_64bit_nodap_gcc481"
-else if ("$un" == "cisl-denton.scd.ucar.edu" ||"$un" == "cisl-denton.local") then
+else if ("$un" == "cordy") then
+  setenv NCARGTEST /Users/haley/ncargtest
+  setenv NCARG_EXTERNAL /Users/haley/dev/external
+  setenv NCARG_ROOT /Users/haley/dev/ncl-6.3.0
+  setenv NCARG /Users/haley/src/ncarg
+  set dap_string   = "MacOS_10.10_64bit_gcc481"
+  set nodap_string = "MacOS_10.10_64bit_nodap_gcc481"
+else if ("$un" == "cisl-denton") then
   setenv NCARGTEST /Users/haley/ncargtest
   setenv NCARG_EXTERNAL /Users/haley/dev/external
   setenv NCARG_ROOT /Users/haley/dev
@@ -395,7 +406,7 @@ if( $?ASK ) then
 endif
   
 echo "----------------------------------------------------------------------" >>& $output_file
-echo "Running check_files..." >>& $output_file
+echo "Running check_files for non-opendap version..." >>& $output_file
 echo "----------------------------------------------------------------------" >>& $output_file
 $NCARG/install/make-tarfile/check_files >>& $output_file
 
@@ -490,7 +501,7 @@ if( $?ESMF ) then
 endif
 
 echo "----------------------------------------------------------------------" >>& $output_file
-echo "Running check_files..." >>& $output_file
+echo "Running check_files for opendap version..." >>& $output_file
 echo "----------------------------------------------------------------------" >>& $output_file
 $NCARG/install/make-tarfile/check_files >>& $output_file
 
@@ -531,12 +542,14 @@ echo "----------------------------------------------------------------------" >>
     echo "----------------------------------------------------------------------" >>& $output_file
     echo "Copying files to $sys_name..." >>& $output_file
     echo "----------------------------------------------------------------------" >>& $output_file
+    echo "----------------------------------------------------------------------"
+    echo "Copying files to $sys_name..."
+    echo "----------------------------------------------------------------------"
     cd $tar_dir
-#   if ("$un" == "yellowstone_gnu447" || "$un" == "yellowstone_gnu472" || "$un" == "yellowstone_intel1215") then
-    if ("$un" == "cisl-denton.scd.ucar.edu") then
+    if ("$un" == "cisl-denton") then
       /bin/mv $nodap_gzfile $dap_gzfile ${sys_dir}/. >>& $output_file
     else
-      scp $nodap_gzfile $dap_gzfile ${sys_name}:${sys_dir}/. >>& $output_file
+      scp $nodap_gzfile $dap_gzfile ${sys_name}:${sys_dir}/.
     endif
   endif
 endif
