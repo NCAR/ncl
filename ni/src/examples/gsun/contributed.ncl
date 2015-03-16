@@ -15307,4 +15307,50 @@ begin
   sig@N         =  N
   return(sig)
 end
-;=======================================
+;-----
+undef("getfilevaratts_hdf5")
+function getfilevaratts_hdf5( f, attName[1]:string )
+
+; Do this *ONCE* for each global attribute
+
+local header, cr, delim, strs, nstrs, n, info, hinfo
+begin
+ header= f@$attName$                      ; long string[1]
+
+ cr    = str_get_nl()                     ; carriage return (new line)
+ delim = cr + " ;"
+ strs  = str_split(header, delim)
+ nstrs = dimsizes(strs)
+ 
+ hinfo = new( (/nstrs,2/), "string")
+ do n=0,nstrs-1
+    info := str_split(strs(n), "=")
+    hinfo(n,0) = info(0)
+    if (dimsizes(info) .eq. 2 ) then	
+	hinfo(n,1) = info(1) 
+    else
+	hinfo(n,1) = ""
+    end if
+ end do 
+ hinfo@hdf5_global_attribute_name = attName
+
+ return(hinfo)
+end
+;---
+undef("extract_filevaratts_hdf5")
+function extract_filevaratts_hdf5( hinfo[*][2]:string, name_to_extract[1]:string)
+; extract the value associated with the attribute which created 'hinfo'
+; info is output from function getfilevaratts_hdf5
+begin
+  
+  if (.not.isatt(hinfo,"hdf5_global_attribute_name")) then
+      print("Warning:  hdf5_global_attribute_name is missing")
+  end if
+    
+  idx = ind(hinfo(:,0) .eq. name_to_extract)
+  if (ismissing(idx(0))) then
+      return("extract_filevaratts_hdf5: "+name_to_extract+" is missing")
+  end if
+  
+  return(hinfo(idx(0),1))  ; to the right of = sign
+end
