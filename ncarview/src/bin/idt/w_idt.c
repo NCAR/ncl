@@ -496,7 +496,7 @@ create_main_panel(parent, select_action)
 		ascent, descent; 	/* retrieve bounds of font	*/
 	XCharStruct	overall;
 
-	char *line1 = " Copyright (C) 1991-2014 - All Rights Reserved    \n";
+	char *line1 = " Copyright (C) 1991-2015 - All Rights Reserved    \n";
 	char *line2 = " University Corporation for Atmospheric Research   \n";
 #ifdef	__STDC__
 	char *line3 = " NCAR View - UNIX Version " NGVERSION "   \n";
