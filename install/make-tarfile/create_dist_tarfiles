@@ -50,6 +50,10 @@ else
   set ldd = "ldd"
 endif
 
+if ("$un" == "logan.cgd.ucar.edu") then
+  set un="logan"
+endif
+
 if ($?COMPILER_VERSION) then
   if ( "$COMPILER_VERSION" == "4.7.2" ) then
     set un="yellowstone_gnu472"
@@ -69,7 +73,7 @@ else
   set wtype="pdf"
 endif
 
-if ("$un" == "logan.cgd.ucar.edu") then
+if ("$un" == "logan") then
   setenv NCARGTEST /project/yampa02/haley/ncargtest
   setenv NCARG_EXTERNAL /contrib/ncl-6.3.0/external
   setenv NCARG_ROOT /contrib/ncl-6.3.0
@@ -185,7 +189,7 @@ else
 endif
 
 # logan doesn't have enough disk space in /contrib for tar files.
-if ("$un" == "logan.cgd.ucar.edu") then
+if ("$un" == "logan") then
   set tar_dir="/project/yampa02/haley"
 else
   set tar_dir="$NCARG_ROOT"
