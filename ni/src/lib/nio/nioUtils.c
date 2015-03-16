@@ -1,6 +1,8 @@
 #include <ctype.h>
 #include <limits.h>
 
+#include "niohlu.h"
+
 int _MachineIsBigEndian()
 {
     short int word = 0x0001;
