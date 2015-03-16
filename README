@@ -1,10 +1,20 @@
 ----------------------------------------------------------------------
-This is the top level directory for version 6.2.1 of the NCL and NCAR
-Graphics source code.
+This is the top level directory for version 6.3.0 of the NCL and NCAR
+Graphics source code. 
 
-This code can be used to build NCL, or just NCAR Graphics.  Note: NCL
-depends on NCAR Graphics, so you will get both if you elect to build
-NCL.
+This source can be used to build NCL or just NCAR Graphics.  Note:
+NCL depends on NCAR Graphics, so you will get both if you elect to
+build NCL.
+
+The documentation for NCL can be found at:
+
+    http://www.ncl.ucar.edu/
+
+While NCAR Graphics is part of the NCL source code tree, it has
+its own documentation:
+
+    http://www.ncarg.ucar.edu/
+----------------------------------------------------------------------
 
 Generally, we recommend that people install NCL and NCAR Graphics
 using a precompiled binary. We provide precompiled binaries for
@@ -39,10 +49,4 @@ from source code, or installing from precompiled binaries at:
 Detailed instructions for building from source code are also found
 in the "INSTALL.html" file in this directory.
 
-----------------------------------------------------------------------
-While NCAR Graphics is part of the NCL source code tree, it has
-its own documentation.
-
-  http://www.ncl.ucar.edu/
-  http://www.ncarg.ucar.edu/
 ----------------------------------------------------------------------
