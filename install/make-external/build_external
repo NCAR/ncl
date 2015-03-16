@@ -851,7 +851,7 @@ then
       elif [ "$un" = "logan.cgd.ucar.edu" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lz -lidn -lrt -ldl"
       elif [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
-        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl -lcrypto -lz -lrt -ldl -lssl -lidn"
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lcurl -lidn -lssl -lcrypto -lz -lrt"
       elif [ "$un" = "yellowstone_intel1215" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lssl -lidn -lrt -ldl"
       else
