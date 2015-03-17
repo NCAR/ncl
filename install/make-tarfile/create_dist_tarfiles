@@ -33,7 +33,7 @@ set TAR_FILES       # Whether to tar up files
 set SCP_FILES       # Whether to scp files to another machine. 
                     # NOTE: you can't scp files to yellowstone unattended. Grrr.
 
-set ASK            # Whether to ask to continue at various locations. This can be annoying.
+#set ASK            # Whether to ask to continue at various locations. This can be annoying.
 set RUN_X11_TESTS   # Whether to run the X11 tests or PDF tests.
 
 if ("$os" == "Darwin") then
