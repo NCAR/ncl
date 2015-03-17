@@ -33,7 +33,7 @@ set TAR_FILES       # Whether to tar up files
 set SCP_FILES       # Whether to scp files to another machine. 
                     # NOTE: you can't scp files to yellowstone unattended. Grrr.
 
-#set ASK            # Whether to ask to continue at various locations. This can be annoying.
+set ASK            # Whether to ask to continue at various locations. This can be annoying.
 set RUN_X11_TESTS   # Whether to run the X11 tests or PDF tests.
 
 if ("$os" == "Darwin") then
@@ -41,7 +41,7 @@ if ("$os" == "Darwin") then
   set macosv = `sw_vers -productVersion`
   if($macosv == "10.8.4") then
     set un="cisl-denton"
-  else if($macosv == "10.9.4") then
+  else if($macosv == "10.9.5") then
     set un="riley"
   else if($macosv == "10.10.2") then
     set un="cordy"
