@@ -15308,10 +15308,10 @@ begin
   return(sig)
 end
 ;-----
-undef("getfilevaratts_hdf5")
-function getfilevaratts_hdf5( f, attName[1]:string )
+undef("parse_globalatts_hdf5")
+function parse_globalatts_hdf5( f, attName[1]:string )
 
-; Do this *ONCE* for each global attribute
+; Do this *ONCE* for *EACH* global attribute
 
 local header, cr, delim, strs, nstrs, n, info, hinfo
 begin
@@ -15337,8 +15337,8 @@ begin
  return(hinfo)
 end
 ;---
-undef("extract_filevaratts_hdf5")
-function extract_filevaratts_hdf5( hinfo[*][2]:string, name_to_extract[1]:string)
+undef("extract_globalatts_hdf5")
+function extract_globalatts_hdf5( hinfo[*][2]:string, name_to_extract[1]:string)
 ; extract the value associated with the attribute which created 'hinfo'
 ; info is output from function getfilevaratts_hdf5
 begin
@@ -15349,7 +15349,7 @@ begin
     
   idx = ind(hinfo(:,0) .eq. name_to_extract)
   if (ismissing(idx(0))) then
-      return("extract_filevaratts_hdf5: "+name_to_extract+" is missing")
+      return("extract_globalatts_hdf5: "+name_to_extract+" is missing")
   end if
   
   return(hinfo(idx(0),1))  ; to the right of = sign
