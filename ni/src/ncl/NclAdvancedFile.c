@@ -2600,7 +2600,12 @@ void FileDestroyGrpNode(NclFileGrpNode *grpnode)
         }
 
         if(NULL != grpnode->options)
+	{
+            for(n = 0; n < grpnode->n_options; ++n)
+                if(NULL != grpnode->options[n].values)
+                    NclFree(grpnode->options[n].values);
             NclFree(grpnode->options);
+	}
 
         grpnode->options = NULL;
 
