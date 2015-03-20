@@ -429,6 +429,36 @@ NclFileAttNode *GetAttInfoFromVarNode(NclFileVarNode *varnode, NclQuark att_name
     return(tmp);
 }
 
+void _NclCopyGroupOptions(NclFileGrpNode *grpnode, NclFileGrpNode *rootgrpnode)
+{
+    int n = 0;
+    size_t typesize = 0;
+    if(NULL != grpnode->options)
+	return;
+
+    grpnode->n_options = rootgrpnode->n_options;
+
+    if(grpnode->n_options)
+    {
+        grpnode->options = (NCLOptions *)NclCalloc(grpnode->n_options, sizeof(NCLOptions));
+        assert(grpnode->options);
+
+        for(n = 0; n < grpnode->n_options; ++n)
+        {
+            grpnode->options[n].name = rootgrpnode->options[n].name;
+            grpnode->options[n].size = rootgrpnode->options[n].size;
+            grpnode->options[n].type = rootgrpnode->options[n].type;
+            if(rootgrpnode->options[n].size)
+
+                typesize = _NclSizeOf(rootgrpnode->options[n].type);
+                grpnode->options[n].values = (void*)NclCalloc(rootgrpnode->options[n].size, typesize);
+                memcpy(grpnode->options[n].values, rootgrpnode->options[n].values,
+                       grpnode->options[n].size * typesize);
+
+        }
+    }
+}
+
 NhlErrorTypes AddNewGrp(void *rec, NclQuark grpname, size_t id)
 {
     NclFileGrpNode *rootgrpnode = (NclFileGrpNode *) rec;
@@ -490,11 +520,6 @@ NhlErrorTypes AddNewGrp(void *rec, NclQuark grpname, size_t id)
     }
     grpnode->real_name = NrmStringToQuark(buffer);
 
-    grpnode->n_options = rootgrpnode->n_options;
-    grpnode->options = (NCLOptions *)NclCalloc(rootgrpnode->n_options, sizeof(NCLOptions));
-    assert(grpnode->options);
-    memcpy(grpnode->options, rootgrpnode->options, rootgrpnode->n_options * sizeof(NCLOptions));
-
     grpnode->chunk_dim_rec = NULL;
     grpnode->unlimit_dim_rec = NULL;
     grpnode->dim_rec = NULL;
@@ -504,6 +529,8 @@ NhlErrorTypes AddNewGrp(void *rec, NclQuark grpname, size_t id)
     grpnode->grp_rec = NULL;
     grpnode->udt_rec = NULL;
     grpnode->parent = rootgrpnode;
+
+    _NclCopyGroupOptions(grpnode, rootgrpnode);
 
     return ret;
 }

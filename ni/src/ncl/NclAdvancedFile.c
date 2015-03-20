@@ -1530,6 +1530,8 @@ NhlErrorTypes _addNclVarNodeToGrpNode(NclFileGrpNode *grpnode, NclQuark name,
         var_node->is_chunked = grpnode->is_chunked;
 
         dim_rec = grpnode->chunk_dim_rec;
+        if(NULL != dim_rec)
+        {
         for(n = 0; n < n_dims; n++)
         {
             var_dim_node = &(var_node->chunk_dim_rec->dim_node[n]);
@@ -1548,6 +1550,7 @@ NhlErrorTypes _addNclVarNodeToGrpNode(NclFileGrpNode *grpnode, NclQuark name,
                      break;
                 }
             }
+        }
         }
     }
 

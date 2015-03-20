@@ -74,6 +74,7 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
                                NclQuark *dim_names, long *dim_sizes);
 NhlErrorTypes NC4AddVarChunk(void* therec, NclQuark thevar,
                              int n_chunk_dims, ng_size_t *chunk_dims);
+void StartNC4DefineMode(NclFileGrpNode *rootgrp, int id);
 void EndNC4DefineMode(NclFileGrpNode *rootgrp, int id);
 void NC4GetAttrVal(int ncid, int si, NclFileAttNode *attnode);
 void NC4GetDimVals(int ncid, NclFileGrpNode *grpnode);
@@ -485,8 +486,7 @@ static void *NC4CreateFile(void *rootgrp,NclQuark path)
     {
         grpnode->fid = fid;
         grpnode->gid = fid;
-        grpnode->define_mode = *(int *)(grpnode->options[Ncl_DEFINE_MODE].values);
-        grpnode->file_format = format;
+        grpnode->file_format = _NclNETCDF4;
         grpnode->format = format;
         grpnode->open = 1;
         grpnode->define_mode = 1;
@@ -3046,6 +3046,8 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
         if(NULL == grpnode->var_rec)
             return;
 
+        StartNC4DefineMode(grpnode, id);
+
         for(j = 0; j < grpnode->var_rec->n_vars; j++)
         {
             varnode = &(grpnode->var_rec->var_node[j]);
@@ -3068,11 +3070,13 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
                 nc_ret = nc_def_var_chunking(id, varnode->id, storage, chunk_dims);
                 if(nc_ret != NC_NOERR)
                 {
-                    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                    NHLPERROR((NhlINFO,NhlEUNKNOWN,
                           "%s: Error in nc_def_var_chunking in file (%s) for writing, at line: %d\n",
                                   __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
+		    /*
                     check_err(nc_ret, __LINE__, __FILE__);
                     return;
+		    */
                 }
 
                 if((grpnode->compress_level > 0) || (varnode->compress_level > 0))
@@ -3083,10 +3087,10 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
                     deflate_level = varnode->compress_level;
 
                   /*
+                   *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
+                   *fprintf(stderr, "\t\tvarnode->shuffle = %d, compress_level = %d\n",
+                   *                     varnode->shuffle, varnode->compress_level);
                    */
-                    fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-                    fprintf(stderr, "\t\tvarnode->shuffle = %d, compress_level = %d\n",
-                                         varnode->shuffle, varnode->compress_level);
 
                     nc_ret = nc_def_var_deflate(id, varnode->id, varnode->shuffle,
                                 deflate, deflate_level);
@@ -3111,16 +3115,31 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
             }
         }
 
+        EndNC4DefineMode(grpnode, id);
+
         free(dims);
         free(chunk_dims);
     }
+}
+
+void StartNC4DefineMode(NclFileGrpNode *grpnode, int id)
+{
+    if(! grpnode->define_mode)
+    {
+       if(NC_NOERR != ncredef(id))
+       {
+           NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                  "%s: Could not redef the file id (%d) for writing, at line: %d\n",
+                  __FILE__, id, __LINE__));
+       }
+   }
+   grpnode->define_mode = 1;
 }
 
 void EndNC4DefineMode(NclFileGrpNode *rootgrp, int id)
 {
     if(rootgrp->define_mode)
     {
-        _checking_nc4_chunking(rootgrp,id);
         if((NULL != rootgrp->var_rec) && (rootgrp->header_reserve_space > 0))
         {
             nc__enddef(id,rootgrp->header_reserve_space,4,0,4);
@@ -3130,9 +3149,8 @@ void EndNC4DefineMode(NclFileGrpNode *rootgrp, int id)
         {
             nc_enddef(id);
         }
-        rootgrp->define_mode = 0;
     }
-    return;
+    rootgrp->define_mode = 0;
 }
 
 /*
@@ -3205,7 +3223,7 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
         if(grpnode->open)
         {
             fid = grpnode->gid;
-            EndNC4DefineMode(grpnode,fid);
+            _checking_nc4_chunking(grpnode,fid);
         }
         else
         {
@@ -3680,7 +3698,7 @@ static void *NC4ReadAtt(void *therec, NclQuark theatt, void *storage)
             {
                 if(grpnode->open)
                 {
-                    EndNC4DefineMode(grpnode, fid);
+                    _checking_nc4_chunking(grpnode,fid);
                 }
               /*
                *CloseOrSync(grpnode, fid, 0);
@@ -3874,7 +3892,7 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
             if(grpnode->open)
             {
                 fid = grpnode->gid;
-                EndNC4DefineMode(grpnode, fid);
+                _checking_nc4_chunking(grpnode,fid);
             }
             else
             {
@@ -4237,7 +4255,7 @@ static NhlErrorTypes NC4WriteAtt(void *therec, NclQuark theatt, void *data)
     
             if(0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
-                EndNC4DefineMode(grpnode, fid);
+                _checking_nc4_chunking(grpnode,fid);
               /*
                *CloseOrSync(grpnode,fid,0);
                */
@@ -4322,7 +4340,7 @@ static NhlErrorTypes NC4DelAtt(void *therec, NclQuark theatt)
                 ret = ncattdel(fid,NC_GLOBAL,(const char*)NrmQuarkToString(theatt));
                 if(0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
                 {
-                    EndNC4DefineMode(grpnode, fid);
+                    _checking_nc4_chunking(grpnode,fid);
                   /*
                    *CloseOrSync(grpnode, fid, 0);
                    */
@@ -4409,7 +4427,7 @@ static NhlErrorTypes NC4DelVarAtt(void *therec, NclQuark thevar, NclQuark theatt
             ret = ncattdel(fid,varnode->id,(const char*)NrmQuarkToString(theatt));
             if(0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
-                EndNC4DefineMode(grpnode, fid);
+                _checking_nc4_chunking(grpnode,fid);
               /*
                *CloseOrSync(grpnode, fid, 0);
                */
@@ -4555,7 +4573,7 @@ static NhlErrorTypes NC4WriteVarAtt(void *therec, NclQuark thevar,
 
         if(0 == *(int * )(grpnode->options[Ncl_DEFINE_MODE].values))
         {
-            EndNC4DefineMode(grpnode, fid);
+            _checking_nc4_chunking(grpnode,fid);
           /*
            *CloseOrSync(grpnode, fid, 0);
            */
@@ -4917,7 +4935,7 @@ static NhlErrorTypes NC4AddDim(void* therec, NclQuark thedim,
 
             if(0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
-                EndNC4DefineMode(grpnode, fid);
+                _checking_nc4_chunking(grpnode,fid);
               /*
                *CloseOrSync(grpnode, fid, 0);
                */
@@ -5233,7 +5251,7 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
 
             if(0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
-                EndNC4DefineMode(grpnode, fid);
+                _checking_nc4_chunking(grpnode,fid);
               /*
                *CloseOrSync(grpnode, fid, 0);
                */
@@ -5274,7 +5292,7 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
         {
             if(0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
-                EndNC4DefineMode(grpnode, fid);
+                _checking_nc4_chunking(grpnode,fid);
               /*
                *CloseOrSync(grpnode, fid, 0);
                */
@@ -5352,7 +5370,7 @@ static NhlErrorTypes NC4RenameDim(void* therec, NclQuark from, NclQuark to)
 
             if(0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
-                EndNC4DefineMode(grpnode, fid);
+                _checking_nc4_chunking(grpnode,fid);
               /*
                *CloseOrSync(grpnode, fid, 0);
                */
@@ -5460,7 +5478,7 @@ static NhlErrorTypes NC4AddAtt(void *therec, NclQuark theatt,
 
             if(0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
-                EndNC4DefineMode(grpnode, fid);
+                _checking_nc4_chunking(grpnode,fid);
               /*
                *CloseOrSync(grpnode,fid,0);
                */
@@ -5575,7 +5593,7 @@ static NhlErrorTypes NC4AddVarAtt(void *therec, NclQuark thevar, NclQuark theatt
 
                 if(0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
                 {
-                    EndNC4DefineMode(grpnode, fid);
+                    _checking_nc4_chunking(grpnode,fid);
                   /*
                    *CloseOrSync(grpnode, fid, 0);
                    */
@@ -5610,10 +5628,7 @@ static NhlErrorTypes NC4SetOption(void *rootgrp, NclQuark option,
         if((0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values)) && grpnode->open &&
            (1 == grpnode->define_mode))
         {
-            EndNC4DefineMode(grpnode, grpnode->fid);
-          /*
-           *EndNC4DefineMode(grpnode, grpnode->gid);
-           */
+            _checking_nc4_chunking(grpnode,grpnode->gid);
 
           /*
            *CloseOrSync(grpnode,grpnode->gid,0);
@@ -5851,7 +5866,7 @@ static NhlErrorTypes NC4AddVlenVar(void* therec, NclQuark thevar, NclBasicDataTy
 
             if(0== *(int *)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
-                EndNC4DefineMode(grpnode, fid);
+                _checking_nc4_chunking(grpnode,fid);
               /*
                *CloseOrSync(grpnode, fid, 0);
                */
@@ -6079,7 +6094,7 @@ static NhlErrorTypes NC4AddEnumVar(void* therec, NclQuark thevar,
 
             if(0 == *(int*)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
-                EndNC4DefineMode(grpnode, fid);
+                _checking_nc4_chunking(grpnode,fid);
               /*
                *CloseOrSync(grpnode, fid, 0);
                */
@@ -6301,7 +6316,7 @@ static NhlErrorTypes NC4AddOpaqueVar(void* therec, NclQuark thevar,
 
             if(0== *(int*)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
-                EndNC4DefineMode(grpnode, fid);
+                _checking_nc4_chunking(grpnode,fid);
               /*
                *CloseOrSync(grpnode, fid, 0);
                */
@@ -6506,7 +6521,7 @@ static NclFileVarNode *defNC4CompoundVar(void* therec, NclQuark thevar,
 
             if(0 == *(int*)(grpnode->options[Ncl_DEFINE_MODE].values))
             {
-                EndNC4DefineMode(grpnode, fid);
+                _checking_nc4_chunking(grpnode,fid);
               /*
                *CloseOrSync(grpnode, fid, 0);
                */

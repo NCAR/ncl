@@ -103,5 +103,6 @@ void _Ncl_add_udt(NclFileUDTRecord **rootudtrec,
 
 void *GetCachedValue(NclFileVarNode *varnode,
                      long start, long finish, long stride, void *storage);
+void _NclCopyGroupOptions(NclFileGrpNode *grpnode, NclFileGrpNode *rootgrpnode);
 #endif
 
