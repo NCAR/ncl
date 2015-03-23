@@ -675,3 +675,50 @@ void *GetCachedValue(NclFileVarNode *varnode,
     return storage;
 }
 
+void _NclCopyOption(NCLOptions *option, NclQuark name,
+                    NclBasicDataTypes data_type, int n_items, void *values)
+{
+    short need_realloc = 0;
+    size_t nsz = 1;
+
+    if(name != option->name)
+    {
+        fprintf(stderr, "\nWARINING: In copy_option, file: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tsource name <%s> is not same as target name <%s>\n",
+			   NrmQuarkToString(name), NrmQuarkToString(option->name));
+        return;
+    }
+
+    if(n_items != option->size)
+    {
+        need_realloc = 1;
+      /*
+       *fprintf(stderr, "\nWARINING: In copy_option, file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tsource size: %d is not equal to target size: %d\n", n_items, option->size);
+       */
+        option->size = n_items;
+        NclFree(option->values);
+    }
+
+    if(data_type != option->type)
+    {
+        need_realloc = 1;
+
+      /*
+       *fprintf(stderr, "\nWARINING: In copy_option, file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tsource type: <%s> is not equal to target type: <%s>\n",
+       *	           _NclBasicDataTypeToName(data_type), _NclBasicDataTypeToName(option->type));
+       */
+
+        option->type = data_type;
+    }
+
+    nsz = n_items * _NclSizeOf(data_type);
+    if(NULL == option->values)
+        option->values = (void*)NclMalloc(nsz);
+    else if(need_realloc)
+        option->values = (void*)NclRealloc(option->values, nsz);
+
+    memcpy(option->values, values, nsz);
+}
+

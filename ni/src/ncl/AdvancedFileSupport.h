@@ -69,6 +69,7 @@
 #include "ApiRecords.h"
 #include "NclAtt.h"
 #include "NclAdvancedFileStructure.h"
+#include "NclOptions.h"
 
 #include <sys/stat.h>
 
@@ -104,5 +105,7 @@ void _Ncl_add_udt(NclFileUDTRecord **rootudtrec,
 void *GetCachedValue(NclFileVarNode *varnode,
                      long start, long finish, long stride, void *storage);
 void _NclCopyGroupOptions(NclFileGrpNode *grpnode, NclFileGrpNode *rootgrpnode);
+void _NclCopyOption(NCLOptions *option, NclQuark name,
+                    NclBasicDataTypes data_type, int n_items, void *values);
 #endif
 

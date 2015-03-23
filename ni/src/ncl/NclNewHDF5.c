@@ -65,13 +65,6 @@
 static NrmQuark Qmissing_val;
 static NrmQuark Qfill_val;
 
-#define H5_USE_CACHE_OPT         0
-#define H5_COMPRESSION_LEVEL_OPT 1
-#define H5_CACHE_SIZE_OPT        2
-#define H5_CACHE_NELEMS_OPT      3
-#define H5_CACHE_PREEMPTION_OPT  4
-#define H5_NUM_OPTIONS           5
-
 #define NUMPOSDIMNAMES	6
 
 NclQuark possibleDimNames[NUMPOSDIMNAMES];
@@ -3423,8 +3416,10 @@ static herr_t _recursiveH5check(NclFileGrpNode **rootgrp,
 static int H5InitializeOptions(NclFileGrpNode *grpnode)
 {
     NCLOptions *options;
+    int iv = 0;
+    float fv = 0.0;
 
-    grpnode->n_options = H5_NUM_OPTIONS;
+    grpnode->n_options = Ncl_NUMBER_OF_FILE_OPTIONS;
 
     possibleDimNames[0] = NrmStringToQuark("coordinates");
     possibleDimNames[1] = NrmStringToQuark("DimensionNames");
@@ -3433,37 +3428,30 @@ static int H5InitializeOptions(NclFileGrpNode *grpnode)
     possibleDimNames[4] = NrmStringToQuark("DIMENSION_LIST");
     possibleDimNames[5] = NrmStringToQuark("HDF4_DIMENSION_LIST");
 
-    options = NclMalloc(grpnode->n_options * sizeof(NCLOptions));
+    options = NclCalloc(grpnode->n_options, sizeof(NCLOptions));
     if (! options)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
         return 0;
     }
 
-    options[H5_USE_CACHE_OPT].name = NrmStringToQuark("usecache");
-    options[H5_USE_CACHE_OPT].type = NCL_int;
-    options[H5_USE_CACHE_OPT].size = 1;
-    options[H5_USE_CACHE_OPT].values = (void *) 0;
+    options[Ncl_USE_CACHE].name = NrmStringToQuark("usecache");
+    _NclCopyOption(&options[Ncl_USE_CACHE], options[Ncl_USE_CACHE].name, NCL_int, 1, &iv);
 
-    options[H5_COMPRESSION_LEVEL_OPT].name = NrmStringToQuark("compressionlevel");
-    options[H5_COMPRESSION_LEVEL_OPT].type = NCL_int;
-    options[H5_COMPRESSION_LEVEL_OPT].size = 1;
-    options[H5_COMPRESSION_LEVEL_OPT].values = (void *) -1;
+    iv = -1;
+    options[Ncl_COMPRESSION_LEVEL].name = NrmStringToQuark("compressionlevel");
+    _NclCopyOption(&options[Ncl_COMPRESSION_LEVEL], options[Ncl_COMPRESSION_LEVEL].name, NCL_int, 1, &iv);
 
-    options[H5_CACHE_SIZE_OPT].name = NrmStringToQuark("cachesize");
-    options[H5_CACHE_SIZE_OPT].type = NCL_int;
-    options[H5_CACHE_SIZE_OPT].size = 1;
-    options[H5_CACHE_SIZE_OPT].values = (void *) 3200000;
+    iv = 3200000;
+    options[Ncl_CACHE_SIZE].name = NrmStringToQuark("cachesize");
+    _NclCopyOption(&options[Ncl_CACHE_SIZE], options[Ncl_CACHE_SIZE].name, NCL_int, 1, &iv);
 
-    options[H5_CACHE_NELEMS_OPT].name = NrmStringToQuark("cachenelems");
-    options[H5_CACHE_NELEMS_OPT].type = NCL_int;
-    options[H5_CACHE_NELEMS_OPT].size = 1;
-    options[H5_CACHE_NELEMS_OPT].values = (void *) 1009;
+    iv = 1009;
+    options[Ncl_CACHE_NELEMS].name = NrmStringToQuark("cachenelems");
+    _NclCopyOption(&options[Ncl_CACHE_NELEMS], options[Ncl_CACHE_NELEMS].name, NCL_int, 1, &iv);
 
-    options[H5_CACHE_PREEMPTION_OPT].name = NrmStringToQuark("cachepreemption");
-    options[H5_CACHE_PREEMPTION_OPT].type = NCL_float;
-    options[H5_CACHE_PREEMPTION_OPT].size = 1;
-    options[H5_CACHE_PREEMPTION_OPT].values = (void *) 0;
+    options[Ncl_CACHE_PREEMPTION].name = NrmStringToQuark("cachepreemption");
+    _NclCopyOption(&options[Ncl_CACHE_PREEMPTION], options[Ncl_CACHE_PREEMPTION].name, NCL_float, 1, &fv);
 
     grpnode->options = options;
     return 0;
@@ -3837,8 +3825,7 @@ static int _updateH5attributes(NclFileGrpNode **rootgrp)
     NclFileVarNode   *varnode = NULL;
     NclFileAttNode   *attnode = NULL;
 
-    char tmp_name[MAX_NCL_NAME_LENGTH];
-    int i, j, n;
+    int j, n;
     short has_fillvalue = 0;
 
     if(NULL != grpnode->grp_rec)
@@ -5578,7 +5565,7 @@ static NhlErrorTypes H5SetOption(void *rootgrp, NclQuark option,
 
     if (option == NrmStringToQuark("usecache"))
     {
-        grpnode->options[H5_USE_CACHE_OPT].values = values;
+        _NclCopyOption(&grpnode->options[Ncl_USE_CACHE], option, data_type, n_items, values);
     }
     else if (option == NrmStringToQuark("compressionlevel"))
     {
@@ -5589,7 +5576,7 @@ static NhlErrorTypes H5SetOption(void *rootgrp, NclQuark option,
                    NrmQuarkToString(option)));
             return(NhlWARNING);
         }
-        grpnode->options[H5_COMPRESSION_LEVEL_OPT].values = values;
+        _NclCopyOption(&grpnode->options[Ncl_COMPRESSION_LEVEL], option, data_type, n_items, values);
     }
     else if (option == NrmStringToQuark("cachesize"))
     {
@@ -5600,7 +5587,7 @@ static NhlErrorTypes H5SetOption(void *rootgrp, NclQuark option,
                    NrmQuarkToString(option)));
             return(NhlWARNING);
         }
-        grpnode->options[H5_CACHE_SIZE_OPT].values = values;
+        _NclCopyOption(&grpnode->options[Ncl_CACHE_SIZE], option, data_type, n_items, values);
     }
     else if (option == NrmStringToQuark("cachenelems"))
     {
@@ -5613,15 +5600,12 @@ static NhlErrorTypes H5SetOption(void *rootgrp, NclQuark option,
         }
         else
         {
-            unsigned int *iv = (unsigned int *)values;
-            *iv = _closest_prime(*iv);
-            grpnode->options[H5_CACHE_NELEMS_OPT].values = (void*) iv;
+            _NclCopyOption(&grpnode->options[Ncl_CACHE_NELEMS], option, data_type, n_items, values);
         }
     }
     else if (option == NrmStringToQuark("cachepreemption"))
     {
-        float *fv = (float *)values;
-        grpnode->options[H5_CACHE_PREEMPTION_OPT].values = (void*) fv;
+        _NclCopyOption(&grpnode->options[Ncl_CACHE_PREEMPTION], option, data_type, n_items, values);
     }
 
   /*
