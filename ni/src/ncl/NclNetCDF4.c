@@ -45,6 +45,7 @@
 #include "ListSupport.h"
 #include "NclData.h"
 #include "AdvancedFileSupport.h"
+#include "NclOptions.h"
 
 #include <math.h>
 #include <unistd.h>
@@ -66,8 +67,6 @@ static ng_usize_t ChunkSizeHint;
 
 static NrmQuark Qmissing_val;
 static NrmQuark Qfill_val;
-
-#define NC_NUM_OPTIONS  (1 + Ncl_RECORD_MARKER_SIZE)
 
 static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
                                NclBasicDataTypes data_type, int n_dims,
@@ -232,13 +231,12 @@ static void *NC4MapFromNcl(NclBasicDataTypes the_type)
 static int NC4InitializeOptions(NclFileGrpNode *grpnode)
 {
     NCLOptions *options;
+    int n = 0;
 
-    if(NC_NUM_OPTIONS == grpnode->n_options)
-    {
+    if(Ncl_NUMBER_OF_FILE_OPTIONS == grpnode->n_options)
         return 0;
-    }
 
-    grpnode->n_options = NC_NUM_OPTIONS;
+    grpnode->n_options = Ncl_NUMBER_OF_FILE_OPTIONS;
 
   /*
    *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -250,6 +248,14 @@ static int NC4InitializeOptions(NclFileGrpNode *grpnode)
     {
         NhlPError(NhlFATAL,ENOMEM,NULL);
         return 1;
+    }
+
+    for(n = 0; n < grpnode->n_options; ++n)
+    {
+        options[n].name = -1;
+        options[n].type = -1;
+        options[n].size = 0;
+        options[n].values = NULL;
     }
 
     options[Ncl_PREFILL].name = NrmStringToQuark("prefill");
@@ -434,9 +440,11 @@ static void *NC4CreateFile(void *rootgrp,NclQuark path)
     NclFileGrpNode *grpnode = (NclFileGrpNode *)rootgrp;
     int fid = 0;
     int nc_ret, mode;
-    int format;
+    int format = 4;
 
-    NC4InitializeOptions(grpnode);
+  /*
+   *NC4InitializeOptions(grpnode);
+   */
 
     if (*(NrmQuark *)(grpnode->options[Ncl_FORMAT].values) == 
               NrmStringToQuark("classic"))
@@ -3223,7 +3231,9 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
         if(grpnode->open)
         {
             fid = grpnode->gid;
-            _checking_nc4_chunking(grpnode,fid);
+          /*
+           *_checking_nc4_chunking(grpnode,fid);
+           */
         }
         else
         {
@@ -5608,6 +5618,51 @@ static NhlErrorTypes NC4AddVarAtt(void *therec, NclQuark thevar, NclQuark theatt
     return(NhlFATAL);
 }
 
+static void copy_option(NCLOptions *option, NclQuark name,
+                        NclBasicDataTypes data_type, int n_items, void *values)
+{
+    short need_realloc = 0;
+    size_t nsz = 1;
+
+    if(name != option->name)
+    {
+        fprintf(stderr, "\nWARINING: In copy_option, file: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tsource name <%s> is not same as target name <%s>\n",
+			   NrmQuarkToString(name), NrmQuarkToString(option->name));
+        return;
+    }
+
+    if(n_items != option->size)
+    {
+        need_realloc = 1;
+        fprintf(stderr, "\nWARINING: In copy_option, file: %s, line: %d\n", __FILE__, __LINE__);
+        fprintf(stderr, "\tsource size: %d is not equal to target size: %d\n", n_items, option->size);
+        option->size = n_items;
+        NclFree(option->values);
+    }
+
+    if(data_type != option->type)
+    {
+        need_realloc = 1;
+
+      /*
+       *fprintf(stderr, "\nWARINING: In copy_option, file: %s, line: %d\n", __FILE__, __LINE__);
+       *fprintf(stderr, "\tsource type: <%s> is not equal to target type: <%s>\n",
+       *	           _NclBasicDataTypeToName(data_type), _NclBasicDataTypeToName(option->type));
+       */
+
+        option->type = data_type;
+    }
+
+    nsz = n_items * _NclSizeOf(data_type);
+    if(need_realloc)
+    {
+        option->values = (void*)NclRealloc(option->values, nsz);
+    }
+
+    memcpy(option->values, values, nsz);
+}
+
 static NhlErrorTypes NC4SetOption(void *rootgrp, NclQuark option,
                                   NclBasicDataTypes data_type, int n_items, void *values)
 {
@@ -5620,78 +5675,41 @@ static NhlErrorTypes NC4SetOption(void *rootgrp, NclQuark option,
 
     if (option ==  NrmStringToQuark("prefill"))
     {
-        grpnode->options[Ncl_PREFILL].values = values;
+        copy_option(&grpnode->options[Ncl_PREFILL], option, data_type, n_items, values);
     }
     else if (option == NrmStringToQuark("definemode"))
     {
-        grpnode->options[Ncl_DEFINE_MODE].values = values;
+        copy_option(&grpnode->options[Ncl_DEFINE_MODE], option, data_type, n_items, values);
         if((0 == *(int *)(grpnode->options[Ncl_DEFINE_MODE].values)) && grpnode->open &&
            (1 == grpnode->define_mode))
         {
-            _checking_nc4_chunking(grpnode,grpnode->gid);
-
-          /*
-           *CloseOrSync(grpnode,grpnode->gid,0);
-           */
+             StartNC4DefineMode(grpnode, grpnode->gid);
         }
     }
     else if (option == NrmStringToQuark("headerreservespace"))
     {
-        grpnode->options[Ncl_HEADER_RESERVE_SPACE].values = values;
-        if(*(int *)(grpnode->options[Ncl_HEADER_RESERVE_SPACE].values) > 0)
-        {
-            grpnode->header_reserve_space = *(int *) grpnode->options[Ncl_HEADER_RESERVE_SPACE].values;
-        }
-        else if (*(int *)(grpnode->options[Ncl_HEADER_RESERVE_SPACE].values) < 0)
-        {
-            NhlPError(NhlWARNING,NhlEUNKNOWN,
-                  "NC4SetOption: option (%s) value cannot be negative",NrmQuarkToString(option));
-            return(NhlWARNING);
-        }
+        copy_option(&grpnode->options[Ncl_HEADER_RESERVE_SPACE], option, data_type, n_items, values);
+        grpnode->header_reserve_space = *(int *) grpnode->options[Ncl_HEADER_RESERVE_SPACE].values;
     }
     else if (option == NrmStringToQuark("suppressclose"))
     {
-        grpnode->options[Ncl_SUPPRESS_CLOSE].values = values;
+        copy_option(&grpnode->options[Ncl_SUPPRESS_CLOSE], option, data_type, n_items, values);
         if((0 == *(int *)(grpnode->options[Ncl_SUPPRESS_CLOSE].values)) && grpnode->open)
         {
             CloseOrSync(grpnode,grpnode->fid,1);
-          /*
-           *CloseOrSync(grpnode,grpnode->gid,1);
-           */
         }
     }
     else if (option == NrmStringToQuark("format"))
     {
-        grpnode->options[Ncl_FORMAT].values = values;
-
-      /*
-       *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\tgrpnode->options[Ncl_FORMAT].values: <%s>\n",
-       *                  NrmQuarkToString(*(NrmQuark *)values));
-       */
-
-        if((grpnode->path > -1) && (grpnode->path != NrmNULLQUARK))
-        {
-          /*
-           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-           *fprintf(stderr, "\tgrpnode->path: %d\n", (int)grpnode->path);
-           *fprintf(stderr, "\tNrmNULLQUARK = %d\n", (int)NrmNULLQUARK);
-           *fprintf(stderr, "\tgrpnode->path: <%s>\n", NrmQuarkToString(grpnode->path));
-           */
-
-            NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                   "NC4SetOption: option (%s) can only be set prior to creating file",
-                   NrmQuarkToString(option)));
-            return(NhlWARNING);
-        }
+        copy_option(&grpnode->options[Ncl_FORMAT], option, data_type, n_items, values);
     }
     else if (option == NrmStringToQuark("missingtofillvalue"))
     {
-        grpnode->options[Ncl_MISSING_TO_FILL_VALUE].values = values;
+        copy_option(&grpnode->options[Ncl_MISSING_TO_FILL_VALUE], option, data_type, n_items, values);
     }
     else if (option == NrmStringToQuark("shuffle"))
     {
-        grpnode->options[Ncl_SHUFFLE].values = values;
+        copy_option(&grpnode->options[Ncl_SHUFFLE], option, data_type, n_items, values);
 
       /*
        *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -5706,11 +5724,11 @@ static NhlErrorTypes NC4SetOption(void *rootgrp, NclQuark option,
                   "NC4SetOption: option (%s) value cannot be less than -1 or greater than 9",NrmQuarkToString(option));
             return(NhlWARNING);
         }
-        grpnode->options[Ncl_COMPRESSION_LEVEL].values = values;
+        copy_option(&grpnode->options[Ncl_COMPRESSION_LEVEL], option, data_type, n_items, values);
     }
     else if (option == NrmStringToQuark("usecache"))
     {
-        grpnode->options[Ncl_USE_CACHE].values = values;
+        copy_option(&grpnode->options[Ncl_USE_CACHE], option, data_type, n_items, values);
     }
     else if (option == NrmStringToQuark("cachesize"))
     {
@@ -5720,7 +5738,7 @@ static NhlErrorTypes NC4SetOption(void *rootgrp, NclQuark option,
                   "NC4SetOption: option (%s) value cannot be less than 1",NrmQuarkToString(option));
             return(NhlWARNING);
         }
-        grpnode->options[Ncl_CACHE_SIZE].values = values;
+        copy_option(&grpnode->options[Ncl_CACHE_SIZE], option, data_type, n_items, values);
     }
     else if (option == NrmStringToQuark("cachenelems"))
     {
@@ -5732,15 +5750,12 @@ static NhlErrorTypes NC4SetOption(void *rootgrp, NclQuark option,
         }
         else
         {
-            unsigned int *iv = (unsigned int *)values;
-            *iv = _closest_prime(*iv);
-            grpnode->options[Ncl_CACHE_NELEMS].values = (void*) iv;
+            copy_option(&grpnode->options[Ncl_CACHE_NELEMS], option, data_type, n_items, values);
         }
     }
     else if (option == NrmStringToQuark("cachepreemption"))
     {
-        float *fv = (float *)values;
-        grpnode->options[Ncl_CACHE_PREEMPTION].values = (void*) fv;
+        copy_option(&grpnode->options[Ncl_CACHE_PREEMPTION], option, data_type, n_items, values);
     }
 
   /*
