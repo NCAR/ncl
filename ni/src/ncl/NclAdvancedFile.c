@@ -2207,8 +2207,47 @@ NclFileVarNode *_getVarNodeFromThisGrpNode(NclFileGrpNode *grpnode,
     return NULL;
 }
 
-NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
-                        NclQuark varname)
+NclFileVarNode *_getVarNodeFromNclFileGrpNode_asVar(NclFileGrpNode *grpnode,
+                                                    NclQuark varname)
+{
+    int n;
+    NclFileVarNode *varnode = NULL;
+    NclFileGrpNode *tmpgrpnode = NULL;
+
+    if(NULL != grpnode->var_rec)
+    {
+        for(n = 0; n < grpnode->var_rec->n_vars; n++)
+        {
+            varnode = &(grpnode->var_rec->var_node[n]);
+
+            if(NULL == varnode)
+                continue;
+
+            if((varname == varnode->name) || (varname == varnode->real_name))
+                return varnode;
+        }
+    }
+
+    if(NULL != grpnode->grp_rec)
+    {
+        for(n = 0; n < grpnode->grp_rec->n_grps; n++)
+        {
+            tmpgrpnode = grpnode->grp_rec->grp_node[n];
+            varnode = _getVarNodeFromNclFileGrpNode_asVar(tmpgrpnode, varname);
+
+            if(NULL == varnode)
+                continue;
+
+            if((varname == varnode->name) || (varname == varnode->real_name))
+                return varnode;
+        }
+    }
+
+    return NULL;
+}
+
+NclFileVarNode *_getVarNodeFromNclFileGrpNode_asCompound(NclFileGrpNode *grpnode,
+                                                         NclQuark varname)
 {
     int n;
     NclFileGrpNode *tmpgrpnode;
@@ -2217,21 +2256,9 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
     char *struct_name = NULL;
     char *component_name = NULL;
 
-  /*
-   *fprintf(stderr, "\nHit _getVarNodeFromNclFileGrpNode, file: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tgrpname: <%s>\n", NrmQuarkToString(grpnode->name));
-   *fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varname));
-   */
-
     component_name = _getComponentName(NrmQuarkToString(varname), &struct_name);
     if(NULL != component_name)
     {
-      /*
-       *fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
-       *fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varname));
-       *fprintf(stderr, "\tcomponent_name: <%s>, struct_name: <%s>\n",
-       *                   component_name, struct_name);
-       */
         vn = NrmStringToQuark(struct_name);
         free(component_name);
         free(struct_name);
@@ -2242,11 +2269,6 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
         for(n = 0; n < grpnode->var_rec->n_vars; n++)
         {
             varnode = &(grpnode->var_rec->var_node[n]);
-          /*
-           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-           *fprintf(stderr, "\tvar no %d, name: <%s>, real_name: <%s>\n", n, 
-           *        NrmQuarkToString(varnode->name), NrmQuarkToString(varnode->real_name));
-           */
 
             if(NULL == varnode)
                 continue;
@@ -2261,16 +2283,10 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
         for(n = 0; n < grpnode->grp_rec->n_grps; n++)
         {
             tmpgrpnode = grpnode->grp_rec->grp_node[n];
-            varnode = _getVarNodeFromNclFileGrpNode(tmpgrpnode, vn);
+            varnode = _getVarNodeFromNclFileGrpNode_asVar(tmpgrpnode, vn);
 
             if(NULL == varnode)
                 continue;
-
-          /*
-           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-           *fprintf(stderr, "\tgrp no %d, name: <%s>\n", n, 
-           *        NrmQuarkToString(tmpgrpnode->name));
-           */
 
             if((vn == varnode->name) || (vn == varnode->real_name))
                 return varnode;
@@ -2278,6 +2294,18 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
     }
 
     return NULL;
+}
+
+NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
+                                              NclQuark varname)
+{
+    NclFileVarNode *varnode = _getVarNodeFromNclFileGrpNode_asVar(grpnode, varname);
+
+    if(NULL != varnode)
+        return varnode;
+
+    varnode = _getVarNodeFromNclFileGrpNode_asCompound(grpnode, varname);
+    return varnode;
 }
 
 NclFileVarNode *_getCoordVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
