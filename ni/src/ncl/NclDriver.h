@@ -58,6 +58,7 @@ extern int  cur_line_number;
 extern char *cur_line_text;
 extern int  cur_line_maxsize;
 extern char *cur_line_text_pos;
+extern char *cur_load_file;
 
 extern FILE *yyin;
 extern int yyparse(int);

@@ -1491,7 +1491,7 @@ NhlErrorTypes _addNclVarNodeToGrpNode(NclFileGrpNode *grpnode, NclQuark name,
     var_node = &(var_rec->var_node[n]);
 
     strcpy(buffer, NrmQuarkToString(grpnode->real_name));
-    strcat(buffer, "/");
+  /*strcat(buffer, "/");*/
     strcat(buffer, NrmQuarkToString(name));
     var_node->name = name;
     var_node->real_name = NrmStringToQuark(buffer);
@@ -2499,7 +2499,12 @@ void FileDestroyAttRecord(NclFileAttRecord *att_rec)
 	}
         if(NULL != att_rec->att_node)
         {
-            for(n = 0; n < att_rec->n_atts; n++)
+          /*
+           *fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "n_atts: %d, max_atts: %d\n", att_rec->n_atts, att_rec->max_atts);
+           */
+          /*for(n = 0; n < att_rec->n_atts; n++)*/
+            for(n = 0; n < att_rec->max_atts; n++)
             {
                 attnode = &(att_rec->att_node[n]);
                 if((! has_att_obj) && NULL != attnode->value)
@@ -2590,7 +2595,12 @@ void FileDestroyVarRecord(NclFileVarRecord *var_rec)
     {
         if(NULL != var_rec->var_node)
         {
-            for(n = 0; n < var_rec->n_vars; n++)
+          /*
+           *fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "n_vars: %d, max_vars: %d\n", var_rec->n_vars, var_rec->max_vars);
+           */
+          /*for(n = 0; n < var_rec->n_vars; n++)*/
+            for(n = 0; n < var_rec->max_vars; n++)
             {
                 varnode = &(var_rec->var_node[n]);
 
@@ -2621,12 +2631,16 @@ void FileDestroyGrpNode(NclFileGrpNode *grpnode)
     {
         if(NULL != grpnode->grp_rec)
         {
-            for(n = 0; n < grpnode->grp_rec->n_grps; n++)
+          /*
+           *fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
+           *fprintf(stderr, "n_grps: %d, max_grps: %d\n", grpnode->grp_rec->n_grps, grpnode->grp_rec->max_grps);
+           */
+          /*for(n = 0; n < grpnode->grp_rec->n_grps; n++)*/
+            for(n = 0; n < grpnode->grp_rec->max_grps; n++)
                 FileDestroyGrpNode(grpnode->grp_rec->grp_node[n]);
     
             NclFree(grpnode->grp_rec->grp_node);
             NclFree(grpnode->grp_rec);
-            /*grpnode->grp_rec->grp_node = NULL;     --- can't set this because previous statement made the whole structure go away */
             grpnode->grp_rec = NULL;
         }
 
@@ -2653,11 +2667,12 @@ void FileDestroyGrpNode(NclFileGrpNode *grpnode)
         FileDestroyVarRecord(grpnode->var_rec);
         grpnode->var_rec = NULL;
 
-      /*
-       *NclFree(grpnode);
-       */
+        if(NULL != grpnode->parent)
+            grpnode->parent = NULL;
+
+        NclFree(grpnode);
+        grpnode = NULL;
     }
-    grpnode = NULL;
 }
 
 void AdvancedFileDestroy(NclObj self)
@@ -2670,9 +2685,8 @@ void AdvancedFileDestroy(NclObj self)
 	    if(thefile->advancedfile.grpnode != NULL)
 		    (*thefile->advancedfile.format_funcs->free_file_rec)(thefile->advancedfile.grpnode);
     }
-    FileDestroyGrpNode(thefile->advancedfile.grpnode);
-
-    thefile->advancedfile.grpnode = NULL;
+    else
+        FileDestroyGrpNode(thefile->advancedfile.grpnode);
 
     if(thefile->obj.cblist != NULL)
     {
@@ -2729,15 +2743,6 @@ static int _NclFileFillHLFS(NclAdvancedFile file_out, int is_http,
 
         file_out->advancedfile.grpnode = (NclFileGrpNode *)(*file_out->advancedfile.format_funcs->open_file)
                       (file_out->advancedfile.grpnode, the_real_path, rw_status);
-        if(NULL == file_out->advancedfile.grpnode)
-        {
-            NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                "_NclFileFillHLFS: Could not open (%s)",
-                NrmQuarkToString(the_real_path)));
-            if(need_free_file) 
-                NclFree((void*)file_out);
-            return (1);
-        }
     }
     else
     {
@@ -2753,14 +2758,6 @@ static int _NclFileFillHLFS(NclAdvancedFile file_out, int is_http,
                 file_out->advancedfile.grpnode = (*file_out->advancedfile.format_funcs->create_file)
                               (file_out->advancedfile.grpnode,
                                NrmStringToQuark(_NGResolvePath(NrmQuarkToString(the_real_path))));
-                if(! file_out->advancedfile.grpnode)
-                {
-                    NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not create (%s)",
-                        NrmQuarkToString(the_real_path));
-                    if(need_free_file) 
-                        NclFree((void*)file_out);
-                    return (1);
-                }
             }
             else
             {
@@ -2798,15 +2795,6 @@ static int _NclFileFillHLFS(NclAdvancedFile file_out, int is_http,
                                (file_out->advancedfile.grpnode,
                                 NrmStringToQuark(_NGResolvePath(NrmQuarkToString(the_real_path))),
                                 rw_status);
-                if(! file_out->advancedfile.grpnode)
-                {
-                    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                        "_NclFileFillHLFS: Could not open (%s)",
-                        NrmQuarkToString(the_real_path)));
-                    if(need_free_file) 
-                        NclFree((void*)file_out);
-                    return (1);
-                }
             }
         }
         else
@@ -4600,7 +4588,6 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                     }
                 }
                 n_dims_output = n_dims_input;
-                fprintf(stdout,"Temporary comment 9\n");
                 if(sel_ptr != NULL)
                 {
                     i = 0;
@@ -8747,7 +8734,6 @@ static NhlErrorTypes AdvancedFileWriteGrp(NclFile infile, NclQuark grpname)
         NHLPERROR((NhlFATAL,NhlEUNKNOWN,
             "AdvancedFileWriteGrp: file (%s) was opened for reading only, can not write",
              NrmQuarkToString(thefile->advancedfile.fname)));
-        fprintf(stderr, "Leave AdvancedFileWriteGrp, file: %s, line: %d\n\n", __FILE__, __LINE__);
         return (NhlFATAL);
     }
 
@@ -8785,7 +8771,6 @@ NhlErrorTypes AdvancedFileCreateVlenType(NclFile infile, NclQuark vlen_name, Ncl
         NHLPERROR((NhlFATAL,NhlEUNKNOWN,
             "AdvancedFileCreateVlenType: file (%s) was opened for reading only, can not write",
              NrmQuarkToString(thefile->advancedfile.fname)));
-        fprintf(stderr, "Leave AdvancedFileCreateVlenType, file: %s, line: %d\n\n", __FILE__, __LINE__);
         return (NhlFATAL);
     }
 
@@ -8923,7 +8908,6 @@ NhlErrorTypes AdvancedFileCreateOpaqueType(NclFile infile, NclQuark opaque_name,
         NHLPERROR((NhlFATAL,NhlEUNKNOWN,
             "AdvancedFileCreateOpaqueType: file (%s) was opened for reading only, can not write",
              NrmQuarkToString(thefile->advancedfile.fname)));
-        fprintf(stderr, "Leave AdvancedFileCreateOpaqueType, file: %s, line: %d\n\n", __FILE__, __LINE__);
         return (NhlFATAL);
     }
 

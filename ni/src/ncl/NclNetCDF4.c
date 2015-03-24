@@ -78,8 +78,8 @@ void NC4GetAttrVal(int ncid, int si, NclFileAttNode *attnode);
 void NC4GetDimVals(int ncid, NclFileGrpNode *grpnode);
 void CloseOrSync(NclFileGrpNode *rootgrp, int id, int sync);
 void *NC4OpenFile(void *rootgrp, NclQuark path, int status);
+void _NC4_get_grpnode(int pid, int gid, NclQuark pn, NclFileGrpNode *parentgrpnode, NclFileGrpNode *grpnode);
 
-NclFileGrpNode   *_NC4_get_grpnode(int pid, int gid, NclQuark pn, NclFileGrpNode *parentgrpnode);
 NclFileGrpRecord *_NC4_get_grprec(int gid, int unlimited_dim_idx, NclFileGrpNode *parentgrpnode);
 NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
                                 int unlimited_dim_idx, char *grpnamestr);
@@ -1258,12 +1258,7 @@ NclMultiDValData get_nc4_compoundlist(int ncid, int varid, size_t n_elem,
 
     obj *listids = NULL;
 
-    size_t offset;
-    nc_type field_typeid;
-    int field_sizes[64];
-    int field_ndims = 0;
-
-    NclMultiDValData compound_md;
+    NclMultiDValData compound_md = NULL;
 
     nc_inq_var(ncid, varid, buffer, &xtype, &ndims, dimids, &natts);
     nc_inq_user_type(ncid, xtype, buffer, &size, 
@@ -1347,20 +1342,19 @@ NclMultiDValData get_nc4_compoundlist(int ncid, int varid, size_t n_elem,
             compoundvar = _NclCreateVlenVar(buffer, compoundvalues,
                                         ncompounddims, dimnames,
                                         compounddimsizes, NCL_char);
-            compoundlist = _NclGetObj(listids[i]);
+            compoundlist = (NclList)_NclGetObj(listids[i]);
             _NclListAppend((NclObj)compoundlist, (NclObj)compoundvar);
         }
     }
     else
     {
-	size_t n, spnt, length;
+	size_t length;
 	long j, j1, j2;
         position = (int *)NclCalloc(n_elem, sizeof(int));
         assert(position);
 
 	if(1 == ndims)
         {
-            spnt = 0;
             nvals = 0;
             for(j = start[0]; j <= finish[0]; j += stride[0])
 	    {
@@ -1370,7 +1364,6 @@ NclMultiDValData get_nc4_compoundlist(int ncid, int varid, size_t n_elem,
 	}
 	else if(2 == ndims)
         {
-            spnt = 0;
             nvals = 0;
             for(j1 = start[1]; j1 <= finish[1]; j1 += stride[1])
 	    {
@@ -1383,7 +1376,6 @@ NclMultiDValData get_nc4_compoundlist(int ncid, int varid, size_t n_elem,
 	}
 	else if(3 == ndims)
         {
-            spnt = 0;
             nvals = 0;
             for(j2 = start[2]; j2 <= finish[2]; j1 += stride[2])
 	    {
@@ -1420,7 +1412,7 @@ NclMultiDValData get_nc4_compoundlist(int ncid, int varid, size_t n_elem,
             compoundvar = _NclCreateVlenVar(buffer, compoundvalues,
                                         ncompounddims, dimnames,
                                         compounddimsizes, NCL_char);
-            compoundlist = _NclGetObj(listids[k]);
+            compoundlist = (NclList)_NclGetObj(listids[k]);
             _NclListAppend((NclObj)compoundlist, (NclObj)compoundvar);
         }
         free(position);
@@ -1544,7 +1536,7 @@ NclMultiDValData get_nc4_vlenlist(int ncid, int varid, nc_type xtype, NclBasicDa
         vlenvar = _NclCreateVlenVar(buffer, vlenvalues,
                                     nvlendims, dimnames,
                                     vlendimsizes, *vlentype);
-        vlenlist = _NclGetObj(listids[i]);
+        vlenlist = (NclList)_NclGetObj(listids[i]);
         _NclListAppend((NclObj)vlenlist, (NclObj)vlenvar);
     }
 
@@ -2080,19 +2072,16 @@ NclFileGrpRecord *_NC4_get_grprec(int gid, int unlimited_dim_idx, NclFileGrpNode
     nc_inq_grps(gid, NULL, ncids);
 
     /* Call this function for each group. */
-    for (n = 0; n < numgrps; n++)
-    {
-        grprec->grp_node[n] = _NC4_get_grpnode(gid, ncids[n], gname, parentgrpnode);
-    }
+    for(n = 0; n < numgrps; n++)
+        _NC4_get_grpnode(gid, ncids[n], gname, parentgrpnode, grprec->grp_node[n]);
 
     free(ncids);
 
     return grprec;
 }
 
-NclFileGrpNode *_NC4_get_grpnode(int pid, int gid, NclQuark pn, NclFileGrpNode *parentgrpnode)
+void _NC4_get_grpnode(int pid, int gid, NclQuark pn, NclFileGrpNode *parentgrpnode, NclFileGrpNode *grpnode)
 {
-    NclFileGrpNode *grpnode;
     int nc_ret;
     int n_dims = 0;
     int n_vars = 0;
@@ -2120,7 +2109,6 @@ NclFileGrpNode *_NC4_get_grpnode(int pid, int gid, NclQuark pn, NclFileGrpNode *
    *                 gid, group_name, pgn);
    */
 
-    grpnode = (NclFileGrpNode *)NclCalloc(1, sizeof(NclFileGrpNode));
     grpnode->pid = pid;
     grpnode->gid = gid;
     grpnode->pname = pn;
@@ -2201,13 +2189,12 @@ NclFileGrpNode *_NC4_get_grpnode(int pid, int gid, NclQuark pn, NclFileGrpNode *
   /*
    *fprintf(stderr, "Leave _NC4_get_grpnode, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
-    return grpnode;
 }
 
 NclFileDimRecord *_NC4_get_dims(int gid, int n_dims, int unlimited_dim_idx)
 {
     char buffer[MAX_NC_NAME];
-    long tmp_size = 0;
+    size_t tmp_size = 0;
     int ndims_grp;
     int *dimids_grp;
     int nunlim;
@@ -2800,10 +2787,7 @@ static void NC4FreeFileRec(void* therec)
         grpnode->open = 0;
     }
 
-    if(NULL != grpnode)
-        FileDestroyGrpNode(grpnode);
-
-    grpnode = NULL;
+    FileDestroyGrpNode(grpnode);
 }
 
 void NC4GetAttrVal(int ncid, int aid, NclFileAttNode *attnode)
@@ -3919,7 +3903,6 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 return(NhlFATAL);
             }
 
-            grpnode->define_mode = 0;
             grpnode->open = 1;
             if(0 == *(int *)(grpnode->options[Ncl_PREFILL].values))
             {
@@ -3930,6 +3913,8 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                *fprintf(stderr, "\tfill_mode = %d\n", fill_mode);
                */
             }
+
+            EndNC4DefineMode(grpnode, fid);
 
             if(NCL_list == varnode->type)
             {
@@ -3970,7 +3955,7 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
 
                 for(n = 0; n < n_elem; ++n)
                 {
-                    NclList vlist = (NclList)_NclGetObj(dlist[n]);
+                    vlist = (NclList)_NclGetObj(dlist[n]);
                     list_list = vlist->list.first;
                     listobj = (NclObj)_NclGetObj(list_list->obj_id);
                     listvar = (NclVar)_NclGetObj(listobj->obj.id);
@@ -4142,10 +4127,6 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 }
             }
     
-          /*
-           *CloseOrSync(grpnode,fid,0);
-           */
-
             if(ret == -1)
             {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,
