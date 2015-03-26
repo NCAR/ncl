@@ -15354,3 +15354,134 @@ begin
   
   return(hinfo(idx(0),1))  ; to the right of = sign
 end
+;-------------------------------
+undef("rigrad_bruntv_atm")
+function rigrad_bruntv_atm(thv:numeric, u:numeric, v:numeric, z:numeric, opt[1]:integer,  ndim[1]:integer)
+;
+; Gradient Richardson Number: RI  = buoyancy/shear_flow
+;
+;      A dimensionless ratio, Ri, related to the buoyant production or 
+;      consumption of turbulence divided by the shear production of turbulence.
+;      It is used to indicate dynamic stability and the formation of turbulence.
+;      The critical Richardson number, Ric, is about 0.25 (although reported values have 
+;      ranged from roughly 0.2 to 1.0), and flow is dynamically unstable and turbulent 
+;      when Ri < Ric. Such turbulence happens either when the wind shear is great enough 
+;      to overpower any stabilizing buoyant forces (numerator is positive), or when there 
+;      is static instability (numerator is negative). 
+;
+;      If the Richardson number is much less than unity, buoyancy is unimportant in the flow. 
+;      If it is much greater than unity, buoyancy is dominant (in the sense that there is 
+;      insufficient kinetic energy to homogenize the fluids).
+;
+;      Large values of Ri indicate very stable conditions while low values *may*
+;      indicate dynamic stability (subcritical region).
+;
+;      Note: Above indicates 0.25 as critical number but others indicate 1.0:q
+;
+; Brunt-Vaisala: 
+;   The frequency at which a displaced air parcel will oscillate when displaced 
+;   vertically within a statically stable environment.
+;
+; AMS Glossary:  
+; BruntV: http://glossary.ametsoc.org/wiki/Brunt-v%C3%A4is%C3%A4l%C3%A4_frequency
+; Ri_Num: http://glossary.ametsoc.org/wiki/Gradient_richardson_number
+;         The latter uses Tv and not THETAv in denominator. ?Error?  Think so.
+;         http://en.wikipedia.org/wiki/Richardson_number
+;         Actually, in the boundary layer (near 100hpa) Tv ~ thv
+;
+; Nomenclature
+; thv  - *virtual* potential temperature (K): virtual_pot_temp = pot_temp*(1+0.61w)
+;        http://glossary.ametsoc.org/wiki/Virtual_potential_temperature
+;        NOte: 'regular' potential temperature is likely 'good enough'
+;
+; u,v  - wind components (m/s) ; same dimensionality as 'th' and 't'
+; z    - height (m)
+; opt  - option
+;        opt=0   return gradient Richardson number only
+;        opt=1   return Brunt-Vaisala frequency only    
+;        opt=2   return gradient Richardson number & Brunt-Vaisala frequency    
+;        opt=3   return gradient Richardson number , Brunt-Vaisala frequency    
+;                       buoyancy, wind shear2
+; ndim - dimension of 'th' for which vertical gradient is to be calculated
+;        th(:), wspd(:), z(:) ..... ndim=0
+;        th(:,:,:)  , z(:) or z(:,:,:)   and the left is the vertical dim, ndim=0
+;        th(:,:,:,:), z(:) or z(:,:,:,:) and the left is the time dimension 
+;                                        and the next is height,  ndim=1 
+local dimthv, dimu, dimv, dimz, rankthv, ranku, rankv, rankz \
+    , g, dthvdz, buoy, dudz, dvdz, shear2, Ri
+begin
+                                ; dimension checking
+  dimu    = dimsizes(u)
+  dimv    = dimsizes(v)
+  dimz    = dimsizes(z)
+  dimthv  = dimsizes(thv)
+
+  rankthv = dimsizes(dimthv)
+  ranku   = dimsizes(dimu)   
+  rankv   = dimsizes(dimv)   
+  rankz   = dimsizes(dimz)   
+                                
+  if (.not.(rankthv.eq.ranku .and. all(dimthv.eq.dimz) .and. all(dimthv.eq.dimu))) then
+      print("rigrad_bruntv_atm: thv, u, v must have the same rank & dimensionality")
+      print(dimthv)
+      print(dimu) 
+      print(dimz) 
+      exit
+  end if
+
+  dthvdz  = center_finite_diff_n(thv, z, False, 0, ndim) 
+ ;copy_VarCoords(thv, dthvdz)
+ ;dthvdz@long_name = "Vertical Gradient of potential temperature"
+ ;dthvdz@units     = "degK/m"
+ ;print("brunt_vaisala_atm: dthvdz: min="+min(dthvdz)+"   max="+max(dthvdz))
+
+  g      = 9.8                    ; m/s2
+  buoy   = (g/thv)*dthvdz         ; 'buoyancy' term: [m/s2][1/K][K/m]=[1/s2]     
+  copy_VarCoords(thv, buoy)
+  buoy@long_name = "buoyancy"
+  buoy@units     = "1/s^2"
+ ;print("buoyancy: min="+min(buoy)+"   max="+max(buoy))
+
+  dthvdz = where(dthvdz.lt.0, 0, dthvdz)
+  brunt  = sqrt((g/thv)*dthvdz)     
+  copy_VarCoords(thv, brunt)
+  brunt@long_name = "Brunt–Vaisala (buoyancy) frequency: atm"
+  brunt@units     = "1/s"
+  brunt@info      = "http://glossary.ametsoc.org/wiki/Brunt-v%C3%A4is%C3%A4l%C3%A4_frequency"
+  if (opt.eq.1) then
+      return(brunt)
+  end if
+  delete(dthvdz)
+  
+  dudz   = center_finite_diff_n(u , z, False, 0, ndim) 
+  copy_VarCoords(u, dudz)
+  dudz@long_name  = "vertical gradient of the zonal wind: du/dz"
+  dudz@units      = "1/s"
+ ;print("rigrad_bruntv_atm: dudz: min="+min(dudz)+"   max="+max(dudz))
+
+  dvdz   = center_finite_diff_n(v , z, False, 0, ndim) 
+  copy_VarCoords(v, dvdz)
+  dvdz@long_name  = "vertical gradient of the meridional wind: dv/dz"
+  dvdz@units      = "1/s"
+ ;print("rigrad_bruntv_atm: dvdz: min="+min(dvdz)+"   max="+max(dvdz))
+
+  shear2 = (dudz^2 + dvdz^2) 
+  copy_VarCoords(u, shear2)
+  shear2@long_name  = "wind shear squared"
+  shear2@units      = "1/s^2"
+ ;print("rigrad_bruntv_atm: shear2: min="+min(shear)+"   max="+max(shear))
+  delete([/dudz,dvdz/])
+
+  Ri     = buoy/shear2               ; [1/s2] / [1/s2] => dimensionless
+  copy_VarCoords(u, Ri)
+  Ri@long_name   = "Gradient Richardson Number"
+  Ri@info = "http://glossary.ametsoc.org/wiki/Gradient_richardson_number"
+  if (opt.eq.0) then
+      return(Ri)
+  end if
+  if (opt.eq.2) then
+      return([/Ri, brunt/])
+  end if
+  
+  return([/ Ri, brunt, buoy, shear2 /])
+end
