@@ -2598,6 +2598,20 @@ void FileDestroyCoordVarRecord(NclFileCoordVarRecord *coord_rec)
     }
 }
 
+void FileDestroyUDTRecord(NclFileUDTRecord *udt_rec)
+{
+    if(NULL != udt_rec)
+    {
+        if(NULL != udt_rec->udt_node)
+        {
+            NclFree(udt_rec->udt_node);
+            udt_rec->udt_node = NULL;
+        }
+        NclFree(udt_rec);
+        udt_rec = NULL;
+    }
+}
+
 void FileDestroyVarRecord(NclFileVarRecord *var_rec)
 {
     int n;
@@ -2667,17 +2681,12 @@ void FileDestroyGrpNode(NclFileGrpNode *grpnode)
         grpnode->options = NULL;
 
         FileDestroyAttRecord(grpnode->att_rec);
-        grpnode->att_rec = NULL;
         FileDestroyDimRecord(grpnode->dim_rec);
-        grpnode->dim_rec = NULL;
         FileDestroyDimRecord(grpnode->chunk_dim_rec);
-        grpnode->chunk_dim_rec = NULL;
         FileDestroyDimRecord(grpnode->unlimit_dim_rec);
-        grpnode->unlimit_dim_rec = NULL;
         FileDestroyCoordVarRecord(grpnode->coord_var_rec);
-        grpnode->coord_var_rec = NULL;
         FileDestroyVarRecord(grpnode->var_rec);
-        grpnode->var_rec = NULL;
+        FileDestroyUDTRecord(grpnode->udt_rec);
 
         if(NULL != grpnode->parent)
             grpnode->parent = NULL;
