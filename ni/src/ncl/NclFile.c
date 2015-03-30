@@ -806,6 +806,7 @@ NhlErrorTypes _NclFilePrintSummary(NclObj self, FILE *fp)
 	NclFile thefile = (NclFile)self;
 	int ret = 0;
 
+	ret = nclfprintf(fp,"Type: file\n");
 	ret = nclfprintf(fp,"File path:\t%s\n",NrmQuarkToString(thefile->file.fpath));
 	if(ret < 0) {	
 		return(NhlWARNING);
@@ -845,7 +846,7 @@ FILE    *fp;
 	NhlErrorTypes ret1 = NhlNOERROR;
 	char *tmp_str;
 	
-
+	ret = nclfprintf(fp,"Type: file\n");
 	ret = nclfprintf(fp,"filename:\t%s\n",NrmQuarkToString(thefile->file.fname));
 	if(ret < 0) {	
 		return(NhlWARNING);

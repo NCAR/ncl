@@ -320,6 +320,7 @@ NhlErrorTypes _NclAdvancedFilePrintSummary(NclObj self, FILE *fp)
     NclAdvancedFile thefile = (NclAdvancedFile)self;
     int ret = 0;
 
+    ret = nclfprintf(fp,"Type: file\n");
     ret = nclfprintf(fp,"File path\t:\t%s\n\n",NrmQuarkToString(thefile->advancedfile.fpath));
     if(ret < 0)
         return(NhlWARNING);
@@ -1185,6 +1186,15 @@ NhlErrorTypes AdvancedFilePrint(NclObj self, FILE *fp)
     NclAdvancedFile thefile = (NclAdvancedFile)self;
     NhlErrorTypes ret = NhlNOERROR;
 
+    if(Ncl_FileVar == thefile->advancedfile.type)
+        ret = nclfprintf(fp,"Type: file\n");
+    else if(Ncl_FileGroup == thefile->advancedfile.type)
+    {
+        ret = nclfprintf(fp,"Type: group\n");
+        nclfprintf(fp, "groupname:\t%s\n",NrmQuarkToString(thefile->advancedfile.gname));
+    }
+    else
+        ret = nclfprintf(fp,"Type: should be file or group, but not clear at this time.\n");
     nclfprintf(fp, "filename:\t%s\n",NrmQuarkToString(thefile->advancedfile.fname));
     nclfprintf(fp, "path:\t%s\n",NrmQuarkToString(thefile->advancedfile.fpath));
 
@@ -2987,6 +2997,8 @@ NclFile _NclAdvancedFileCreate(NclObj inst, NclObjClass theclass, NclObjTypes ob
    */
     file_out->advancedfile.grpnode->path = path;
     file_out->advancedfile.grpnode->extension = file_ext_q;
+    file_out->advancedfile.gname = -1;
+    file_out->advancedfile.type = Ncl_FileVar;
 
     (void)_NclObjCreate((NclObj)file_out,class_ptr,obj_type,(obj_type_mask | Ncl_File),status);
 

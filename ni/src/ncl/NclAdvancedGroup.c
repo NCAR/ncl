@@ -345,6 +345,9 @@ NclAdvancedFile _NclAdvancedGroupCreate(NclObj inst, NclObjClass theclass, NclOb
     group_out->advancedfile.wr_status = thefile->advancedfile.wr_status;
     group_out->advancedfile.file_format = thefile->advancedfile.file_format;
 
+    group_out->advancedfile.gname = grpnode->real_name;
+    group_out->advancedfile.type  = Ncl_FileGroup;
+
     group_out->advancedfile.format_funcs = _NclGetFormatFuncsWithAdvancedFileStructure(thefile->advancedfile.file_ext_q);
     group_out->file.advanced_file_structure = 1;
 

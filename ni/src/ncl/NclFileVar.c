@@ -149,7 +149,9 @@ FILE *fp;
                 v_name = "unnamed";
         }
 	nclfprintf(fp,"\nVariable: %s\n",v_name);
-	nclfprintf(fp,"Type: file\n");
+      /*
+       *nclfprintf(fp,"Type: file\n");
+       */
 
 	return(NhlNOERROR);;
 }

@@ -87,6 +87,9 @@ typedef struct _NclAdvancedFilePart
     NclFileGrpNode *grpnode;
 
     struct _NclFormatFunctionRecord *format_funcs;
+
+    NclObjTypes     type;
+    NclQuark        gname;
 } NclAdvancedFilePart;
  
 struct _NclAdvancedFileClassRec
