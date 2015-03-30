@@ -2270,9 +2270,11 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode_asCompound(NclFileGrpNode *grpnode
     if(NULL != component_name)
     {
         vn = NrmStringToQuark(struct_name);
-        free(component_name);
-        free(struct_name);
+        NclFree(component_name);
     }
+
+    if(NULL != struct_name)
+        NclFree(struct_name);
 
     if(NULL != grpnode->var_rec)
     {
