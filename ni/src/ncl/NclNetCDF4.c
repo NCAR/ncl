@@ -2338,6 +2338,9 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
         varnode->real_name = NrmStringToQuark(buffer2);
         varnode->type = NC4MapToNcl(&(varnode->the_nc_type));
 
+        varnode->att_rec = _NC4_get_atts(gid, i, n_atts);
+        attrec = varnode->att_rec;
+
         if(NCL_none == varnode->type)
         {
             size_t size;
@@ -2440,10 +2443,6 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
            */
         }
 
-        varnode->att_rec = _NC4_get_atts(gid, i, n_atts);
-
-        attrec = varnode->att_rec;
-
       /*
        *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
        *fprintf(stderr, "\tn_atts %d\n", n_atts);
@@ -2470,7 +2469,7 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
                     "forcing type conversion; it may result in overflow and/or loss of precision"));
 
                 _addNclAttNode(&varnode->att_rec, Qori_fill_val, attnode->type, attnode->n_elem, attnode->value);
-                newattnode = &attrec->att_node[n_atts];
+                newattnode = &attrec->att_node[varnode->att_rec->n_atts];
 
 		NclFree(attnode->value);
 		varnode->att_rec->att_node[j].type = varnode->type;

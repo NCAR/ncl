@@ -2509,17 +2509,16 @@ void FileDestroyAttRecord(NclFileAttRecord *att_rec)
 		_NclDestroyObj(att);
 	    }
 	}
-        if(NULL != att_rec->att_node)
+        if((! has_att_obj) && (NULL != att_rec->att_node))
         {
           /*
            *fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
            *fprintf(stderr, "n_atts: %d, max_atts: %d\n", att_rec->n_atts, att_rec->max_atts);
            */
-          /*for(n = 0; n < att_rec->n_atts; n++)*/
             for(n = 0; n < att_rec->max_atts; n++)
             {
                 attnode = &(att_rec->att_node[n]);
-                if((! has_att_obj) && NULL != attnode->value)
+                if(NULL != attnode->value)
                 {
                     NclFree(attnode->value);
                     attnode->value = NULL;
@@ -2572,10 +2571,22 @@ void FileDestroyDimRecord(NclFileDimRecord *dim_rec)
 
 void FileDestroyCompoundRecord(NclFileCompoundRecord *comprec)
 {
+    int n;
+    NclFileCompoundNode   *compnode;
+
     if(NULL != comprec)
     {
         if(NULL != comprec->compnode)
         {
+            for(n = 0; n < comprec->max_comps; ++n)
+            {
+                compnode = &(comprec->compnode[n]);
+                if(NULL != compnode->sides)
+                {
+                    NclFree(compnode->sides);
+                    compnode->sides = NULL;
+                }
+            }
             NclFree(comprec->compnode);
             comprec->compnode = NULL;
         }
@@ -2600,10 +2611,21 @@ void FileDestroyCoordVarRecord(NclFileCoordVarRecord *coord_rec)
 
 void FileDestroyUDTRecord(NclFileUDTRecord *udt_rec)
 {
+    int n;
+    NclFileUDTNode *udt_node;
+
     if(NULL != udt_rec)
     {
         if(NULL != udt_rec->udt_node)
         {
+            for(n = 0; n < udt_rec->max_udts; ++n)
+            {
+                udt_node = &(udt_rec->udt_node[n]);
+                if(NULL != udt_node->mem_name)
+                    NclFree(udt_node->mem_name);
+                if(NULL != udt_node->mem_type)
+                    NclFree(udt_node->mem_type);
+            }
             NclFree(udt_rec->udt_node);
             udt_rec->udt_node = NULL;
         }
@@ -2625,7 +2647,6 @@ void FileDestroyVarRecord(NclFileVarRecord *var_rec)
            *fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
            *fprintf(stderr, "n_vars: %d, max_vars: %d\n", var_rec->n_vars, var_rec->max_vars);
            */
-          /*for(n = 0; n < var_rec->n_vars; n++)*/
             for(n = 0; n < var_rec->max_vars; n++)
             {
                 varnode = &(var_rec->var_node[n]);
