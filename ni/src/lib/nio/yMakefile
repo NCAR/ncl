@@ -37,8 +37,12 @@ EXTRA_CCOPTIONS = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 
 #ifdef BuildNetCDF4
 NETCDF4_DEFS = -DUSE_NETCDF4
+NETCDF4_SRCS = NclNetCDF4.c
+NETCDF4_OBJS = NclNetCDF4.o
 #else
 #define NETCDF4LIB
+#define NETCDF4_SRCS
+#define NETCDF4_OBJS
 #endif
 
 #ifdef BuildHDF4
@@ -63,8 +67,8 @@ HDFEOS_OBJS = NclHDFEOS.o
 
 #ifdef BuildHDF5
 HDF5_DEFS = -DBuildHDF5
-HDF5_SRCS = NclHDF5.c h5reader.c h5writer.c
-HDF5_OBJS = NclHDF5.o h5reader.o h5writer.o
+HDF5_SRCS = NclHDF5.c NclNewHDF5.c h5reader.c h5writer.c
+HDF5_OBJS = NclHDF5.o NclNewHDF5.o h5reader.o h5writer.o
 #else
 #define HDF5_SRCS
 #define HDF5_OBJS
@@ -73,8 +77,8 @@ HDF5_OBJS = NclHDF5.o h5reader.o h5writer.o
 
 #ifdef BuildHDFEOS5
 HDFEOS5_DEFS = -DBuildHDFEOS5 $(HDF4_NETCDF)
-HDFEOS5_SRCS = NclHDFEOS5.c
-HDFEOS5_OBJS = NclHDFEOS5.o
+HDFEOS5_SRCS = NclHDFEOS5.c NclNewHDFEOS5.c
+HDFEOS5_OBJS = NclHDFEOS5.o NclNewHDFEOS5.o
 #else
 #define HDFEOS5_SRCS
 #define HDFEOS5_OBJS
@@ -188,7 +192,7 @@ STATIC_SRCS	=	AddFileFormats.c AttSupport.c DataSupport.c \
 			NclNetCdf.c NclOneDValCoordData.c NclType.c \
 			NclTypelist.c NclGroup.c NclVar.c VarSupport.c \
 			AdvancedFileSupport.c ListSupport.c NclList.c \
-			NclMultiDVallistData.c NclNetCDF4.c NclNewHDF5.c NclNewHDFEOS5.c \
+			NclMultiDVallistData.c  \
 			ctoiee.c date.c cmpf.c
 
 NIO_ONLY_CSRCS	=	cmpf.c nioBase.c nio.c nioCallbacks.c nioConvert.c nioError.c niohlu.c nio_io.c \
@@ -199,9 +203,10 @@ NIO_ONLY_FSRCS	=	llmap.f llmisc.f
 
 GEN_SRCS	=	$(GEN_TYPE_SRCS)
 
-CSRCS		=	$(STATIC_SRCS) $(HDFEOS_SRCS) $(HDF4_SRCS) $(HDFEOS5_SRCS) $(HDF5_SRCS) $(GRIB2_SRCS) $(GDAL_SRCS)
+CSRCS		=	$(STATIC_SRCS) $(NETCDF4_SRCS) $(HDFEOS_SRCS) $(HDF4_SRCS) $(HDFEOS5_SRCS) $(HDF5_SRCS) $(GRIB2_SRCS) $(GDAL_SRCS)
 
-OPT_CSRCS	=	NclHDF.c NclHDFEOS.c NclHDFEOS5.c NclHDF5.c NclGRIB2.c NclOGR.c h5reader.c h5writer.c NclAdvancedOGR.c
+OPT_CSRCS	=	NclHDF.c NclHDFEOS.c NclHDFEOS5.c NclHDF5.c NclGRIB2.c NclOGR.c h5reader.c h5writer.c NclAdvancedOGR.c \
+			NclNewHDF5.c NclNewHDFEOS5.c NclNetCDF4.c
 
 FSRCS		=	qu2reg3.f rowina3.f scm0.f ncepcode.f
 
@@ -224,11 +229,11 @@ STATIC_OBJS	=	AddFileFormats.o AttSupport.o DataSupport.o \
 			InitData.o Memory.o NclAtt.o NclCCM.o \
 			NclCoordVar.o NclData.o NclFile.o NclFileVar.o \
 			NclAdvancedFile.o NclAdvancedGroup.o \
-			NclGRIB.o NclHDF.o NclMultiDValnclfileData.o \
+			NclGRIB.o NclMultiDValnclfileData.o \
 			NclNetCdf.o NclOneDValCoordData.o NclType.o \
 			NclTypelist.o NclGroup.o NclVar.o VarSupport.o \
 			AdvancedFileSupport.o ListSupport.o NclList.o \
-			NclMultiDVallistData.o NclNetCDF4.o NclNewHDF5.o NclNewHDFEOS5.o \
+			NclMultiDVallistData.o  \
 			ctoiee.o date.o
 
 NIO_ONLY_COBJS	=	nio.o nio_io.o nioError.o nioNresDB.o nioCallbacks.o \
@@ -240,7 +245,7 @@ NIO_ONLY_FOBJS	=	llmap.o llmisc.o
 
 FOBJS		=	qu2reg3.o rowina3.o scm0.o ncepcode.o
 
-COMMON_OBJS	=	$(GEN_TYPE_OBJS) $(STATIC_OBJS) $(FOBJS) $(HDFEOS_OBJS) $(HDF4_OBJS) $(HDFEOS5_OBJS) $(HDF5_OBJS) $(GRIB2_OBJS) $(GDAL_OBJS) 
+COMMON_OBJS	=	$(GEN_TYPE_OBJS) $(STATIC_OBJS) $(FOBJS) $(HDFEOS_OBJS) $(HDF4_OBJS) $(HDFEOS5_OBJS) $(HDF5_OBJS) $(GRIB2_OBJS) $(GDAL_OBJS) $(NETCDF4_OBJS)
 OBJS		=	$(COMMON_OBJS) $(NIO_ONLY_COBJS) $(NIO_ONLY_FOBJS) 
 
 
