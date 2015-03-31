@@ -405,7 +405,7 @@ STATIC_IO_SRCS  =       AddFileFormats.c AttSupport.c DataSupport.c \
 
 STATIC_SRCS	=	AddBuiltIns.c AddHLUObjs.c \
 			AddIntrinsics.c Execute.c \
-			Machine.c OpsFuncs.c Printtoken.c SrcTree.c \
+			Machine.c OpsFuncs.c SrcTree.c \
 			Symbol.c Translate.c  \
 			NclHLUVar.c HLUSupport.c \
 			NclMultiDValHLUObjData.c \
