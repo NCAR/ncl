@@ -489,11 +489,6 @@ int NclDriver(int argc, char **argv)
     }
 
 #if 0
-    if(NULL != cur_load_file)
-        NclFree(cur_load_file);
-
-    _NclFinalizeMachine();
-
 #ifdef NCLDEBUG
         if(NCLdebug_on)
                 _finalizeNclMemoryRecord();

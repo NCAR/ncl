@@ -84,6 +84,10 @@ _NclMachineStack *mstk;
 NclStackEntry  **level_1_vars;
 int	current_level_1_size;
 
+NclStackEntry  **rec_stack_entry;
+int		 max_stack_entry = NCL_STACK_SIZE;
+int		 num_stack_entry = 0;
+
 unsigned int framepntr;
 int sb_off;
 unsigned int current_scope_level = 1;
@@ -491,20 +495,20 @@ NhlErrorTypes _NclInitMachine
 	for (i = 0; i < current_level_1_size; i++) {
 		level_1_vars[i] = &(stack_entry[i]);
 	}
+
+	rec_stack_entry = (NclStackEntry**)NclCalloc(max_stack_entry, sizeof(NclStackEntry*));
+	rec_stack_entry[num_stack_entry] = stack_entry;
+	++num_stack_entry;
+
 	return(NhlNOERROR);
 }
 
 NhlErrorTypes _NclFinalizeMachine()
 {
-#if 0
-	int i;
+	int n;
 
-	for (i = 0; i < current_level_1_size; i++)
-	{
-		if(NULL != level_1_vars[i])
-			NclFree(level_1_vars[i]);
-	}
-#endif
+	for(n = 0; n < num_stack_entry; ++n)
+		NclFree(rec_stack_entry[n]);
 
 	NclFree(level_1_vars);
 
@@ -552,6 +556,14 @@ NhlErrorTypes _NclPutLevel1Var
 			level_1_vars[i + current_level_1_size] = &(stack_entry[i]);
 		}
 		current_level_1_size *= 2;
+
+		if(num_stack_entry >= max_stack_entry)
+		{
+			max_stack_entry *= 2;
+			rec_stack_entry = (NclStackEntry**)NclRealloc(rec_stack_entry, max_stack_entry*sizeof(NclStackEntry*));
+		}
+		rec_stack_entry[num_stack_entry] = stack_entry;
+		++num_stack_entry;
 	}
 	*(level_1_vars[offset]) = *therec;
 	return(NhlNOERROR);
@@ -588,6 +600,14 @@ NclStackEntry *_NclGetLevel1Var
 			level_1_vars[i + current_level_1_size] = &(stack_entry[i]);
 		}
 		current_level_1_size *= 2;
+
+		if(num_stack_entry >= max_stack_entry)
+		{
+			max_stack_entry *= 2;
+			rec_stack_entry = (NclStackEntry**)NclRealloc(rec_stack_entry, max_stack_entry*sizeof(NclStackEntry*));
+		}
+		rec_stack_entry[num_stack_entry] = stack_entry;
+		++num_stack_entry;
 	}
 	return(level_1_vars[offset]);
 }
