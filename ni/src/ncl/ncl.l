@@ -194,6 +194,13 @@ void _NclResetScanner
             }
         }
     }
+
+        if(NULL != cur_load_file)
+        {
+            NclFree(cur_load_file);
+            cur_load_file = NULL;
+        }
+
 	cur_load_file = file_names[loading];
 	if(yyin != NULL) {
 		if(loading) {
