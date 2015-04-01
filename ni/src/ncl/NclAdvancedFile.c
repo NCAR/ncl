@@ -7040,6 +7040,10 @@ static NhlErrorTypes MyAdvancedFileWriteVar(NclFile infile, NclQuark var,
             {
                 tmp_md = value;
             }
+            else if((NCL_enum == varnode->type) && (Ncl_Typelist == lhs_type))
+            {
+                tmp_md = value;
+            }
             else if(lhs_type != rhs_type)
             {
               /*

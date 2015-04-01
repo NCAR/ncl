@@ -137,12 +137,14 @@ static NclBasicDataTypes NC4MapToNcl(void* the_type)
             return(NCL_double);
         case NC_STRING:
             return(NCL_string);
-        case NC_COMPOUND:
-            return(NCL_compound);
         case NC_VLEN:
             return(NCL_list);
         case NC_OPAQUE:
             return(NCL_opaque);
+        case NC_ENUM:
+            return(NCL_enum);
+        case NC_COMPOUND:
+            return(NCL_compound);
         default:
           /*
            *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -208,14 +210,17 @@ static void *NC4MapFromNcl(NclBasicDataTypes the_type)
         case NCL_double:
              *(nc_type*)out_type = NC_DOUBLE;
              break;
-        case NCL_compound:
-             *(nc_type*)out_type = NC_COMPOUND;
-             break;
         case NCL_list:
              *(nc_type*)out_type = NC_VLEN;
              break;
         case NCL_opaque:
              *(nc_type*)out_type = NC_OPAQUE;
+             break;
+        case NCL_enum:
+             *(nc_type*)out_type = NC_ENUM;
+             break;
+        case NCL_compound:
+             *(nc_type*)out_type = NC_COMPOUND;
              break;
         default:
              NclFree(out_type);
@@ -1038,12 +1043,13 @@ int set_enum_attnode(int ncid, int aid, NclFileAttNode **thenode)
     attnode->is_opaque = 0;
     attnode->is_vlen = 0;
     attnode->is_compound = 0;
-    attnode->type = NC4MapToNcl(&base_nc_type);
+    attnode->type = NCL_enum;
     attnode->n_elem = 1;
 
     attnode->value = (void *)enumrec;
 
   /*
+   *attnode->type = NC4MapToNcl(&base_nc_type);
    *fprintf(stderr, "Leave set_enum_attnode, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
 
@@ -2458,10 +2464,14 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
            *                _NclBasicDataTypeToName(attnode->type),
            *                _NclBasicDataTypeToName(varnode->type));
            */
+
             if((Qfill_val == attnode->name) && (attnode->type != varnode->type))
             {
                 NclFileAttNode *newattnode;
                 NclQuark Qori_fill_val = NrmStringToQuark("Ori_FillValue");
+
+                if(NCL_enum == varnode->type)
+                    break;
 
                 NHLPERROR((NhlWARNING,NhlEUNKNOWN,
                     "_FillValue attribute type (%s) differs from variable (%s) type.\n\t%s\n",
@@ -3892,14 +3902,14 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                                  &ChunkSizeHint,&fid);
                 grpnode->fid = fid;
                 grpnode->gid = fid;
-            }
 
-            if(nc_ret != NC_NOERR)
-            {
-                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                          "%s: Could not reopen the file (%s) for writing, at line: %d\n",
-                          __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
-                return(NhlFATAL);
+                if(nc_ret != NC_NOERR)
+                {
+                    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                              "%s: Could not reopen the file (%s) for writing, at line: %d\n",
+                              __FILE__, NrmQuarkToString(grpnode->path), __LINE__));
+                    return(NhlFATAL);
+                }
             }
 
             grpnode->open = 1;
@@ -4102,6 +4112,10 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                     NclFree(data_value);
                 }
             }
+            else if(NCL_enum == varnode->type)
+            {
+                ret = nc_put_var(fid, varnode->id, (unsigned char*)data);
+            }
             else
             {
                 if(no_stride)
@@ -4126,7 +4140,7 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 }
             }
     
-            if(ret == -1)
+            if(NC_NOERR != ret)
             {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,
                     "NclNetCDF4: Error to write variable (%s) to file (%s)",
@@ -6049,12 +6063,13 @@ static NhlErrorTypes NC4AddEnumVar(void* therec, NclQuark thevar,
                */
             }
     
-            _addNclVarNodeToGrpNode(grpnode, thevar, var_id, ncl_type,
+            _addNclVarNodeToGrpNode(grpnode, thevar, var_id, NCL_enum,
                                     n_dims, dim_names, dim_sizes);
 
             i = grpnode->var_rec->n_vars - 1;
             varnode = &(grpnode->var_rec->var_node[i]);
             varnode->gid = grpnode->gid;
+            varnode->base_type = ncl_type;
             for(i = 0 ; i < n_dims; i++)
             {
                 varnode->dim_rec->dim_node[i].id = dim_ids[i];
