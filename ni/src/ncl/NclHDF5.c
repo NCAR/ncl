@@ -2356,8 +2356,10 @@ static void _update_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHDF5d
 
     int i, k, n;
     int num_new_dim;
+    int num_old_dim;
     int found_new;
     int has_updated = 0;
+    nclH5size_t old_dim_size[4*MAX_HDF5_DIMS];
     NclQuark old_dim_name[4*MAX_HDF5_DIMS];
     NclQuark new_dim_name[4*MAX_HDF5_DIMS];
     NclQuark tmp_name;
@@ -2376,15 +2378,16 @@ static void _update_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHDF5d
    */
 
     cur_list = *dim_list;
-    i = 0;
-    while((NULL != cur_list) && (i < *n_dims))
+    num_old_dim = 0;
+    while((NULL != cur_list) && (num_old_dim < *n_dims))
     {
       /*
-       *fprintf(stderr, "\tOld Dim %d: name <%s>\n", i, NrmQuarkToString(cur_list->dim_inq->name));
+       *fprintf(stderr, "\tOld Dim %d: name <%s>, size: %ld\n", i, NrmQuarkToString(cur_list->dim_inq->name), cur_list->dim_inq->size);
        */
-        old_dim_name[i] = cur_list->dim_inq->name;
+        old_dim_name[num_old_dim] = cur_list->dim_inq->name;
+        old_dim_size[num_old_dim] = cur_list->dim_inq->size;
         cur_list = cur_list->next;
-	++i;
+	++num_old_dim;
     }
 
     for(n = 0; n < NUMPOSDIMNAMES; ++n)
@@ -2405,7 +2408,7 @@ static void _update_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHDF5d
             new_dim_name[num_new_dim] = NrmStringToQuark(result);
           /*
            *fprintf(stderr, "\tresult: %s\n", result);
-           *fprintf(stderr, "\tnew_dim_name[%d]: %s\n", n, NrmQuarkToString(new_dim_name[n]));
+           *fprintf(stderr, "\tnew_dim_name[%d]: %s\n", num_new_dim, NrmQuarkToString(new_dim_name[num_new_dim]));
            */
 
             result = strtok(NULL, delimiter);
@@ -2418,6 +2421,9 @@ static void _update_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHDF5d
        *fprintf(stderr, "\tn_dims: %d\n", *n_dims);
        *fprintf(stderr, "\tattr_list->attr_node->ndims: %d\n", attr_list->attr_node->ndims);
        */
+
+	if(num_new_dim != dataset_node->ndims)
+            break;
 
         for(i = 0; i < num_new_dim; i++)
         {
@@ -2434,7 +2440,7 @@ static void _update_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHDF5d
             }
 
             found_new = 1;
-            for(k = 0; k < *n_dims; k++)
+            for(k = 0; k < num_old_dim; k++)
             {
                 if(old_dim_name[k] == tmp_name)
                 {
@@ -2472,6 +2478,7 @@ static void _update_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHDF5d
 
                 cur_list->dim_inq->ncldim_id = *n_dims;
                 cur_list->dim_inq->size = (long) dataset_node->dims[i];
+                strcpy(dataset_node->dim_name[i], NrmQuarkToString(tmp_name));
 
               /*
                *fprintf(stderr, "\n\n\nhit _HDF5Build_dim_list. file: %s, line: %d\n", __FILE__, __LINE__);
@@ -2494,52 +2501,67 @@ static void _update_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHDF5d
     if(has_updated)
 	return;
 
-
-    for(k = 0; k < dataset_node->ndims; k++)
+    for(i = 0; i < dataset_node->ndims; ++i)
     {
         found_new = 1;
-	cur_list = *dim_list;
-        while(cur_list)
+
+        if(dataset_node->dim_name[i][0])
         {
-            if(cur_list->dim_inq->name == NrmStringToQuark(dataset_node->dim_name[k]))
+            for(n = 0; n < num_old_dim; ++n)
             {
-                found_new = 0;
-                break;
+                if((old_dim_size[n] == dataset_node->dims[i]) &&
+                   (NrmStringToQuark(dataset_node->dim_name[i]) == old_dim_name[n]))
+                {
+                    found_new = 0;
+		    break;
+	        }
 	    }
-	    cur_list = cur_list->next;
-        }
-	
-	if(found_new)
-	{
-            cur_list = NclCalloc(1, sizeof(HDF5DimInqRecList));
-            if(!cur_list)
-            {
-                NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list, in file: %s, line: %d\n",
-                        __FILE__, __LINE__);
-                return;
-            }
-
-            cur_list->dim_inq = NclCalloc(1, sizeof(HDF5DimInqRec));
-            if(!cur_list->dim_inq)
-            {
-                NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list->dim_inq, in file: %s, line: %d\n",
-                        __FILE__, __LINE__);
-                return;
-            }
-
-	    sprintf(dataset_node->dim_name[k], "DIM_%.3d", *n_dims);
-            cur_list->dim_inq->is_dataset = 0;
-            cur_list->dim_inq->is_unlimited = 0;
-            cur_list->dim_inq->name = NrmStringToQuark(dataset_node->dim_name[k]);
-
-            cur_list->dim_inq->ncldim_id = *n_dims;
-            cur_list->dim_inq->size = (long) dataset_node->dims[i];
-
-            cur_list->next = *dim_list;
-            *dim_list = cur_list;
-
-            (*n_dims)++;
+            continue;
 	}
+	else
+        {
+            for(n = 0; n < num_old_dim; ++n)
+            {
+                if(old_dim_size[n] == dataset_node->dims[i])
+                {
+		    strcpy(dataset_node->dim_name[i], NrmQuarkToString(old_dim_name[n]));
+                    found_new = 0;
+		    break;
+	        }
+	    }
+
+            if(! found_new)
+                continue;
+	}
+
+        cur_list = NclCalloc(1, sizeof(HDF5DimInqRecList));
+        if(!cur_list)
+        {
+            NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list, in file: %s, line: %d\n",
+                    __FILE__, __LINE__);
+            return;
+        }
+
+        cur_list->dim_inq = NclCalloc(1, sizeof(HDF5DimInqRec));
+        if(!cur_list->dim_inq)
+        {
+            NhlPError(NhlFATAL,NhlEUNKNOWN, "UNABLE TO ALLOCATE MEMORY for cur_list->dim_inq, in file: %s, line: %d\n",
+                    __FILE__, __LINE__);
+            return;
+        }
+
+        sprintf(dataset_node->dim_name[i], "DIM_%.3d", *n_dims);
+        cur_list->dim_inq->is_dataset = 0;
+        cur_list->dim_inq->is_unlimited = 0;
+        cur_list->dim_inq->name = NrmStringToQuark(dataset_node->dim_name[i]);
+
+        cur_list->dim_inq->ncldim_id = *n_dims;
+        cur_list->dim_inq->size = (long) dataset_node->dims[i];
+
+        cur_list->next = *dim_list;
+        *dim_list = cur_list;
+
+        (*n_dims)++;
     }
 }
 
