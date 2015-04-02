@@ -2498,10 +2498,11 @@ void FileDestroyAttRecord(NclFileAttRecord *att_rec)
 {
     int n;
     NclFileAttNode *attnode;
-    int has_att_obj = 0;
 
     if(NULL != att_rec)
     {
+#if 0
+        int has_att_obj = 0;
         if (att_rec->id > -1) {
 	    NclObj att = _NclGetObj(att_rec->id);
 	    if (att) {
@@ -2510,6 +2511,9 @@ void FileDestroyAttRecord(NclFileAttRecord *att_rec)
 	    }
 	}
         if((! has_att_obj) && (NULL != att_rec->att_node))
+#else
+        if(NULL != att_rec->att_node)
+#endif
         {
           /*
            *fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
@@ -2527,9 +2531,13 @@ void FileDestroyAttRecord(NclFileAttRecord *att_rec)
             NclFree(att_rec->att_node);
             att_rec->att_node = NULL;
         }
+#if 0
         if((! has_att_obj) && NULL != att_rec->cb)
+#else
+        if(NULL != att_rec->cb)
+#endif
         {
-            /*
+           /*
             *_NhlCB tmpcb = att_rec->cb;
             *while(NULL != tmpcb)
             *{
@@ -2742,7 +2750,12 @@ void AdvancedFileDestroy(NclObj self)
     NclRefList *p, *pt;
 
     _NclUnRegisterObj((NclObj)self);
-    if(thefile->advancedfile.format_funcs->free_file_rec != NULL && thefile->advancedfile.grpnode->parent == NULL) {
+#if 0
+    if(thefile->advancedfile.format_funcs->free_file_rec != NULL && thefile->advancedfile.grpnode->parent == NULL)
+#else
+    if((NULL != thefile->advancedfile.format_funcs->free_file_rec) && (Ncl_FileVar == thefile->advancedfile.type))
+#endif
+    {
 	    if(thefile->advancedfile.grpnode != NULL)
 		    (*thefile->advancedfile.format_funcs->free_file_rec)(thefile->advancedfile.grpnode);
     }
