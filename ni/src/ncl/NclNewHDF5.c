@@ -3737,6 +3737,14 @@ static int _buildH5VarDimlist(NclFileVarNode *varnode, NclFileDimRecord *grpdimr
     return dimname_updated;
 }
 
+static NclQuark _getAdimName(int n)
+{
+    char buffer[24];
+    memset(buffer, '\0', 24);
+    sprintf(buffer, "DIM_%3.3d", n);
+    return NrmStringToQuark(buffer);
+}
+
 static void _buildH5dimlist(NclFileGrpNode **rootgrp)
 {
     NclFileGrpNode *grpnode = *rootgrp;
@@ -3781,13 +3789,15 @@ static void _buildH5dimlist(NclFileGrpNode **rootgrp)
         if(NULL == vardimrec)
             continue;
 
-        if(dimname_updated)
+        if(! dimname_updated)
         {
             if(NULL == grpdimrec)
             {
                 for(j = 0; j < vardimrec->n_dims; ++j)
                 {
                     vardimnode = &(vardimrec->dim_node[j]);
+		    if(0 > vardimnode->name)
+		        vardimnode->name = _getAdimName(j);
                     _addH5dim(&grpdimrec, vardimnode->name, vardimnode->size, 0);
                 }
                 grpnode->dim_rec = grpdimrec;
@@ -3809,7 +3819,11 @@ static void _buildH5dimlist(NclFileGrpNode **rootgrp)
                     }
 
                     if(find_new_dim)
+		    {
+		        if(0 > vardimnode->name)
+		            vardimnode->name = _getAdimName(grpnode->dim_rec->n_dims);
                         _addH5dim(&grpnode->dim_rec, vardimnode->name, vardimnode->size, 0);
+                    }
                 }
             }
         }
