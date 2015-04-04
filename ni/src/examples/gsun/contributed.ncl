@@ -1982,11 +1982,13 @@ end
 ; D. Shea
 ; converts shorts to floats using the "scale" and "offset" attributes (if present) 
 
-; Note: Conventional HDF usage require that 
+; Note: Sometimes HDF usage require that 
 ; if both scale_factor and add_offset attributes are present, 
 ; the following implementation should be used:
 ;      result = scale_factor*(stored_integer-add_offset)
 ; This is different than the COARDS and CF Conventions.
+; There is no automatic way to determine which form is to be used.
+; Trial and error? 
 ;
 ; Usage: 
 ;      x = short2flt_hdf(xS)  where xS is a short
@@ -2011,10 +2013,12 @@ begin
 
           ; names to check
  oNames = (/"add_offset", "offset", "OFFSET", "Offset", "_offset" \
-           ,"Intercept", "intercept", "scalingIntercept" /)
- sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor" \
+           ,"Intercept", "intercept", "scalingIntercept", "INTERCEPT" \
+           ,"add_off"                                             /)
+ sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor"   \
            ,"Scale_factor", "Slope" , "slope", "ScaleFactor"      \
-           ,"Scale_Factor", "scalingSlope", "SCALING_FACTOR" /)
+           ,"Scale_Factor", "scalingSlope", "SCALING_FACTOR"      \
+           ,"SCALE_FACTOR", "SLOPE"                             /)
 
 
  offset = 0.0   ; establish as type float
