@@ -162,10 +162,14 @@ NhlErrorTypes trend_manken_W( void )
 /* 
  * Allocate space for various other arrays.
  */
-  slope   = (double *)calloc(nslp, sizeof(double));
-  tieflag = (logical *)calloc(nslp, sizeof(logical));
-  if(slope == NULL || tieflag == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken: Unable to allocate memory for output arrays");
+  slope = (double *)calloc(nslp, sizeof(double));
+  if(slope == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken: Unable to allocate memory for slope array");
+    return(NhlFATAL);
+  }
+  tieflag = (logical *)calloc(nx, sizeof(logical));
+  if(tieflag == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken: Unable to allocate memory for internal logical array");
     return(NhlFATAL);
   }
   eps = 1.0e-5;
