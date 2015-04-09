@@ -3646,9 +3646,9 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 			    ".shp",
 #endif
 #ifdef BuildGRIB2
-			    ".grib2", ".grb2",
+			    ".grib2", ".grb2", ".gr2",
 #endif
-			    ".grib1", ".grb1", ".grb", ".gr",
+			    ".grib1", ".grb1", ".grib", ".grb", ".gr1", ".gr",
 	                    ".netcdf"};
 
 	int n = -1;
@@ -3790,7 +3790,10 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
  		fext[n] = tolower(fext[n]);
 
 	if((0 == strncmp(fext, "gr", 2)) || (0 == strncmp(fext, "grb", 3)) ||
-           (0 == strncmp(fext, "grb1", 4)) || (0 == strncmp(fext, "grb2", 4)))
+           (0 == strncmp(fext, "gr1", 3)) || (0 == strncmp(fext, "gr2", 3)) ||
+           (0 == strncmp(fext, "grb1", 4)) || (0 == strncmp(fext, "grb2", 4)) ||
+           (0 == strncmp(fext, "grib", 4)) ||
+	   (0 == strncmp(fext, "grib1", 5)) || (0 == strncmp(fext, "grib2", 5)))
 		ori_file_ext_q = NrmStringToQuark("gr");
 #ifdef BuildGDAL
 	else if(0 == strncmp(fext, "shp", 3))
