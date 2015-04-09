@@ -449,12 +449,12 @@ void _NclCopyGroupOptions(NclFileGrpNode *grpnode, NclFileGrpNode *rootgrpnode)
             grpnode->options[n].size = rootgrpnode->options[n].size;
             grpnode->options[n].type = rootgrpnode->options[n].type;
             if(rootgrpnode->options[n].size)
-
+            {
                 typesize = _NclSizeOf(rootgrpnode->options[n].type);
                 grpnode->options[n].values = (void*)NclCalloc(rootgrpnode->options[n].size, typesize);
                 memcpy(grpnode->options[n].values, rootgrpnode->options[n].values,
                        grpnode->options[n].size * typesize);
-
+            }
         }
     }
 }
