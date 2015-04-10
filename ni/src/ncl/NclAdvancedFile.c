@@ -2869,6 +2869,16 @@ static int _NclFileFillHLFS(NclAdvancedFile file_out, int is_http,
                                (file_out->advancedfile.grpnode,
                                 NrmStringToQuark(_NGResolvePath(NrmQuarkToString(the_real_path))),
                                 rw_status);
+
+		if(NULL == file_out->advancedfile.grpnode)
+                {
+                    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                              "_NclFileFillHLFS: Problem write to file <%s>", NrmQuarkToString(path)));
+
+                    if(need_free_file) 
+                        NclFree((void*)file_out);
+                    return (-1);
+                }
             }
         }
         else
@@ -2879,7 +2889,7 @@ static int _NclFileFillHLFS(NclAdvancedFile file_out, int is_http,
 
             if(need_free_file) 
                 NclFree((void*)file_out);
-            return (1);
+            return (-1);
         }
 
     }
