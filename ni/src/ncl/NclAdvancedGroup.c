@@ -282,7 +282,7 @@ NclAdvancedFile _NclAdvancedGroupCreate(NclObj inst, NclObjClass theclass, NclOb
     NclAdvancedFile thefile = (NclAdvancedFile) file_in;
     NclAdvancedFile group_out = NULL;
     NclObjClass class_ptr;
-    NclFileGrpNode *grpnode = NULL, *outgrpnode;
+    NclFileGrpNode *grpnode = NULL;
 
   /*
    *fprintf(stderr, "\nEnter _NclAdvancedGroupCreate, file: %s, line:%d\n", __FILE__, __LINE__);
@@ -317,13 +317,6 @@ NclAdvancedFile _NclAdvancedGroupCreate(NclObj inst, NclObjClass theclass, NclOb
         return NULL;
     }
 
-    outgrpnode = (NclFileGrpNode *)NclCalloc(1,sizeof(NclFileGrpNode));
-#if 1
-    _CopyGrp(outgrpnode, grpnode);
-#else
-    memcpy(outgrpnode,grpnode,sizeof(NclFileGrpNode));
-#endif
-
     if(theclass == NULL)
     {
         class_ptr = nclAdvancedFileClass;
@@ -355,24 +348,7 @@ NclAdvancedFile _NclAdvancedGroupCreate(NclObj inst, NclObjClass theclass, NclOb
     group_out->advancedfile.format_funcs = _NclGetFormatFuncsWithAdvancedFileStructure(thefile->advancedfile.file_ext_q);
     group_out->file.advanced_file_structure = 1;
 
-    group_out->advancedfile.grpnode = outgrpnode;
-
-    group_out->advancedfile.grpnode->fid = thefile->advancedfile.grpnode->fid;
-    group_out->advancedfile.grpnode->open = thefile->advancedfile.grpnode->open;
-    group_out->advancedfile.grpnode->path = thefile->advancedfile.fpath;
-    group_out->advancedfile.grpnode->extension = thefile->advancedfile.file_ext_q;
-
-  /*
-   *fprintf(stderr, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tgrpnode->path: <%s>\n", NrmQuarkToString(group_out->advancedfile.grpnode->path));
-   *fprintf(stderr, "\tgrpnode->extension: <%s>\n", NrmQuarkToString(group_out->advancedfile.grpnode->extension));
-   */
-
-    _NclCopyGroupOptions(group_out->advancedfile.grpnode, thefile->advancedfile.grpnode);
-
-#if 0
-    UpdateAdvancedGroupDims(group_out, grpnode);
-#endif
+    group_out->advancedfile.grpnode = grpnode;
 
     (void)_NclObjCreate((NclObj)group_out,class_ptr,obj_type,
                         (obj_type_mask | Ncl_File),status);
