@@ -316,9 +316,13 @@ NclAdvancedFile _NclAdvancedGroupCreate(NclObj inst, NclObjClass theclass, NclOb
 
         return NULL;
     }
+
     outgrpnode = (NclFileGrpNode *)NclCalloc(1,sizeof(NclFileGrpNode));
+#if 1
+    _CopyGrp(outgrpnode, grpnode);
+#else
     memcpy(outgrpnode,grpnode,sizeof(NclFileGrpNode));
-    
+#endif
 
     if(theclass == NULL)
     {
