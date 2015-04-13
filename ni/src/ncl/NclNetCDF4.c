@@ -2156,6 +2156,32 @@ void _NC4_get_grpnode(int pid, int gid, NclQuark pn, NclFileGrpNode *parentgrpno
         grpnode->real_name = NrmStringToQuark(buffer);
     }
 
+    grpnode->extension = parentgrpnode->extension;
+    grpnode->file_format = parentgrpnode->file_format;
+    grpnode->status = parentgrpnode->status;
+    grpnode->open = parentgrpnode->open;
+    grpnode->format = parentgrpnode->format;
+    grpnode->define_mode = parentgrpnode->define_mode;
+    grpnode->compress_level = parentgrpnode->compress_level;
+    grpnode->is_chunked = parentgrpnode->is_chunked;
+    grpnode->use_cache = parentgrpnode->use_cache;
+    grpnode->cache_size = parentgrpnode->cache_size;
+    grpnode->cache_nelems = parentgrpnode->cache_nelems;
+    grpnode->cache_preemption = parentgrpnode->cache_preemption;
+
+    NC4InitializeOptions(grpnode);
+
+#if 0
+    grpnode->chunk_dim_rec = parentgrpnode->chunk_dim_rec;
+    grpnode->unlimit_dim_rec = parentgrpnode->unlimit_dim_rec;
+    grpnode->dim_rec = parentgrpnode->dim_rec;
+    grpnode->att_rec = parentgrpnode->att_rec;
+    grpnode->var_rec = parentgrpnode->var_rec;
+    grpnode->coord_var_rec = parentgrpnode->coord_var_rec;
+    grpnode->udt_rec = parentgrpnode->udt_rec;
+    grpnode->parent = NULL;
+#endif
+
     nc_ret = ncinquire(gid, &n_dims, &n_vars, &n_atts, &unlimited_dim_idx);
 
   /*
@@ -3593,7 +3619,9 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
             }
         }
 
+#if 0
         CloseOrSync(grpnode, fid, 0);
+#endif
 
         if(ret == -1)
         {
