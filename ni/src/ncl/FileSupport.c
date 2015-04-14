@@ -4099,6 +4099,9 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
         struct stat file_stat;
 	short use_advanced_file_structure = 0;
+	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
+	NrmQuark afs = NrmStringToQuark("advanced");
+	NrmQuark sfs = _NclGetLower(*(NrmQuark *)(fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value->multidval.val));
 
 	NCLadvancedFileStructure[0] = NCLuseAFS;
 
@@ -4107,12 +4110,9 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	if(! is_http)
 	{
 #if 1
-		NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 		/* Check if want advanced file-strucuture */
 		if(NULL != fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value)
 		{
-			NrmQuark afs = NrmStringToQuark("advanced");
-			NrmQuark sfs = _NclGetLower(*(NrmQuark *)(fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value->multidval.val));
 			/*
 			NCLadvancedFileStructure[_NclNETCDF] = 0;
 			NCLadvancedFileStructure[_NclNETCDF4] = 0;
@@ -4223,7 +4223,8 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	*   and file extension are NetCDF.
 	*Wei 01/17/2013
 	*/
-	if(use_advanced_file_structure ||
+	if(afs == sfs ||
+	   use_advanced_file_structure ||
 		((NCLadvancedFileStructure[0] ||
 		  NCLadvancedFileStructure[_NclNETCDF] ||
 		  NCLadvancedFileStructure[_NclOGR] ||
