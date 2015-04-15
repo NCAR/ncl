@@ -3022,6 +3022,7 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
 
     ng_size_t *dims;
     size_t *chunk_dims;
+    size_t *var_chunk_dims;
 
     int deflate = 1;
     int deflate_level = 1;
@@ -3036,6 +3037,8 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
         assert(dims);
         chunk_dims = (size_t *) NclCalloc(grpnode->dim_rec->n_dims, sizeof(size_t));
         assert(chunk_dims);
+        var_chunk_dims = (size_t *) NclCalloc(grpnode->dim_rec->n_dims, sizeof(size_t));
+        assert(var_chunk_dims);
 
         for(i = 0; i < grpnode->dim_rec->n_dims; i++)
         {
@@ -3088,12 +3091,22 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
                                    varnode->dim_rec->dim_node[i].name,
                                    chunkdimnode->size, chunkdimnode->id,
                                    varnode->dim_rec->dim_node[i].is_unlimited);
+                    var_chunk_dims[i] = (size_t)chunkdimnode->size;
+                }
+	    }
+	    else
+            {
+                for(i = 0; i < varnode->dim_rec->n_dims; i++)
+                {
+                    chunkdimnode = _getChunkDimNodeFromNclFileGrpNode(grpnode,
+                                       varnode->dim_rec->dim_node[i].name);
+                    var_chunk_dims[i] = (size_t)chunkdimnode->size;
                 }
 	    }
 
             if(varnode->is_chunked)
             {
-                nc_ret = nc_def_var_chunking(id, varnode->id, storage, chunk_dims);
+                nc_ret = nc_def_var_chunking(id, varnode->id, storage, var_chunk_dims);
                 if(nc_ret != NC_NOERR)
                 {
                     NHLPERROR((NhlINFO,NhlEUNKNOWN,
@@ -3145,6 +3158,7 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
 
         free(dims);
         free(chunk_dims);
+        free(var_chunk_dims);
     }
 }
 
