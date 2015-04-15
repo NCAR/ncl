@@ -5539,7 +5539,7 @@ static void H5FreeFileRec(void* therec)
             for(n = 0; n < grpnode->grp_rec->n_grps; ++n)
             {
                 grpnode->grp_rec->grp_node[n]->fid = -1;
-	        H5FreeFileRec(grpnode->grp_rec->grp_node[n]);
+	        /*H5FreeFileRec(grpnode->grp_rec->grp_node[n]);*/
                 FileDestroyGrpNode(grpnode->grp_rec->grp_node[n]);
             }
         }
