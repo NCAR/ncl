@@ -89,6 +89,7 @@ void *_Ncl2HDF5type(NclBasicDataTypes type);
 
 herr_t _searchH5obj(char *name, H5O_info_t *oinfo, void *_H5obj, char *already_seen);
 herr_t _searchH5link(char *name, H5O_info_t *oinfo, void *_H5link);
+static int H5InitializeOptions(NclFileGrpNode *grpnode);
 
 /* Typedefs for serach functions */
 typedef herr_t (*_searchH5obj_func_t) (char *path_name, H5O_info_t *oinfo, void *udata, char *already_seen);
@@ -478,6 +479,9 @@ NclQuark _string2quark(char *nm)
 
 static void _setpid(NclFileGrpNode *grpnode)
 {
+    if(NULL == grpnode)
+        return;
+
     if(grpnode->pid < 0)
         _setpid(grpnode->parent);
     grpnode->gid = H5Gopen(grpnode->pid, NrmQuarkToString(grpnode->name), H5P_DEFAULT);
@@ -498,9 +502,14 @@ static int _getH5grpID(NclFileGrpNode *grpnode)
     else
         id = grpnode->fid;
 
+    if(0 > grpnode->pid)
+    {
+        if(NULL != grpnode->parent)
+	    grpnode->pid = grpnode->parent->fid;
+    }
+
     if(id <= 0)
     {
-
         if(strcmp(NrmQuarkToString(grpnode->real_name), "/"))
         {
           /*
@@ -513,7 +522,7 @@ static int _getH5grpID(NclFileGrpNode *grpnode)
             if(grpnode->pid > 0)
             {
                 id = H5Gopen(grpnode->pid, NrmQuarkToString(grpnode->name), H5P_DEFAULT);
-                grpnode->pid = id;
+                grpnode->fid = id;
                 grpnode->gid = id;
             }
             else
@@ -2136,12 +2145,40 @@ NclFileGrpNode *_addGroup(NclFileGrpNode **rootgrp, char *name)
         {
             _NclFileGrpRealloc(grpnode->grp_rec);
         }
+
         curgrpnode = grpnode->grp_rec->grp_node[ngrp];
-        curgrpnode->name = qsn;
-        curgrpnode->pname = qpn;
         strcpy(longname, name);
         strcat(longname, "/");
         curgrpnode->real_name = NrmStringToQuark(longname);
+        curgrpnode->path = grpnode->path;
+        curgrpnode->name = qsn;
+        curgrpnode->pname = qpn;
+        curgrpnode->extension = grpnode->extension;
+        curgrpnode->file_format = grpnode->file_format;
+        curgrpnode->status = grpnode->status;
+        curgrpnode->open = grpnode->open;
+        curgrpnode->format = grpnode->format;
+        curgrpnode->define_mode = grpnode->define_mode;
+        curgrpnode->compress_level = grpnode->compress_level;
+        curgrpnode->is_chunked = grpnode->is_chunked;
+        curgrpnode->use_cache = grpnode->use_cache;
+        curgrpnode->cache_size = grpnode->cache_size;
+        curgrpnode->cache_nelems = grpnode->cache_nelems;
+        curgrpnode->cache_preemption = grpnode->cache_preemption;
+        curgrpnode->parent = grpnode;
+
+        H5InitializeOptions(curgrpnode);
+
+#if 0
+        curgrpnode->chunk_dim_rec = grpnode->chunk_dim_rec;
+        curgrpnode->unlimit_dim_rec = grpnode->unlimit_dim_rec;
+        curgrpnode->dim_rec = grpnode->dim_rec;
+        curgrpnode->att_rec = grpnode->att_rec;
+        curgrpnode->var_rec = grpnode->var_rec;
+        curgrpnode->coord_var_rec = grpnode->coord_var_rec;
+        curgrpnode->udt_rec = grpnode->udt_rec;
+#endif
+
         ++grpnode->grp_rec->n_grps;
         return curgrpnode;
     }
@@ -3413,7 +3450,7 @@ static herr_t _recursiveH5check(NclFileGrpNode **rootgrp,
     return SUCCEED;
 }
 
-static int H5InitializeOptions(NclFileGrpNode *grpnode)
+int H5InitializeOptions(NclFileGrpNode *grpnode)
 {
     NCLOptions *options;
     int iv = 0;
