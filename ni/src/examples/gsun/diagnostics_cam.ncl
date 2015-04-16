@@ -126,13 +126,21 @@ begin
   ntim = dimz(0)
 
   dNam = getvardims( z )                        ; input dimension names
-  zt   = z($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:) ; reorder: time fastest varying
+;; original code start ====================
+;;zt   = z($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:) ; reorder: time fastest varying
+;;cf   = ezfftf( zt )                           
+;;cf!0 = "cmplx"                                ; dimension clarity
+;;cf!1 = "lat"
+;;cf!2 = "lon"
+;;cf!3 = "freq"
+;;cf(:,:,:,{:fCrit}) = 0.0
+;; original code end    ====================
 
-  cf   = ezfftf( zt )                           
+  cf   = ezfftf_n(z, 0)                           
   cf!0 = "cmplx"                                ; dimension clarity
-  cf!1 = "lat"
-  cf!2 = "lon"
-  cf!3 = "freq"
+  cf!1 = "freq"
+  cf!2 = "lat"
+  cf!3 = "lon"
  
   cf&cmplx = (/ 0,1 /)
   cf&lat   = z&$dNam(1)$
@@ -143,7 +151,7 @@ begin
   freq@units = "cycles/day"
   cf&freq  = freq                               ; assign values, needed for {..}
 
-  cf(:,:,:,{:fCrit}) = 0.0                      ; cf at all freq < fcrit   = 0.0
+  cf(:,{:fCrit},:,:) = 0.0                      ; cf at all freq < fcrit   = 0.0
                                                 ; eg       < 3/365 [6/730]
   if (rmvMeans) then                            ; remove means for each lat,lon
                                                 ; cf@xbar = 0.0
@@ -152,12 +160,13 @@ begin
       cf@xbar = xbar                            ; reassign new values
   end if
                                                 ; reconstruct 
-  zt = (/ ezfftb(cf,cf@xbar) /)                 ; (/ ... /) avoid meta warning msg
+  z = (/ ezfftb_n(cf,cf@xbar,1) /)             ; (/ ... /) avoid meta warning msg
 
   if (iret.eq.0) then                           ; return in original order
-      return( zt($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) ) ; (time,lat,lon)
+     ;return( zt($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) ) ; (time,lat,lon)
+      return( z )                               ; (time,lat,lon)
   else                                          ; return in permuted order
-      return( zt )                                      ; (lat,lon,time)
+      return( z($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) ) ; (lat,lon,time)
   end if
 end
 
@@ -641,6 +650,9 @@ local latN, latS, lonL, lonR, spd, fCrit, tim_taper        \
 ;;x    = (/ work($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) /) ; values (time,lat,lon)
 ;;delete(work)
   x    = dtrend_msg_n(ispan(0,ntim-1,1)*1.0, x, False, False, 0)  ; remove just trend
+  if (isatt(x,"_FillValue")) then
+      delete(x@_FillValue)                     ; dtrend_msg adds this att
+  end if
 
   if (nDayTot.ge.365) then                     ; rmv dominant signals
       rmvMeans = False                         ; original code did not remove
@@ -750,8 +762,7 @@ local latN, latS, lonL, lonR, spd, fCrit, tim_taper        \
       printMinMax( peeAS , True)
   end if
 
-  delete(  q  )                              ; no longer needed
-  delete( pee )
+  delete( [/ q, pee /] )          ; no longer needed
 
 ;-------------------------------------------------------------------
 ; now that we have the power array for sym and asym: use to
@@ -2445,11 +2456,11 @@ begin
 
   r@trXMaxF  = frqmxPlt                         ; X Axis [rightmost freq]
 
-  if (pltType.eq."png") then
-      pltTypeLocal = "eps"
-  else
-      pltTypeLocal = pltType
-  end if
+;;if (pltType.eq."png") then
+;;    pltTypeLocal = "eps"
+;;else
+      pltTypeLocal = pltType                    ; historical reasons
+;;end if
 
   ciLow  = 0.05                                 ; default
   ciHigh = 0.95
@@ -2508,26 +2519,21 @@ begin
            delete(r@tiXAxisString)
        end if
 
-       delete(sMJO)
-       delete(splt)
-       delete(work)
-       delete(ifrqmxPlt)
+       delete([/sMJO, splt, work, ifrqmxPlt /])
     end do    
      resP@txString = nameRegion(nr)+": "+x@long_name
      gsn_panel(wks,plot,(/3,1/),resP)   
 
-     if (pltType.eq."png") then
+     if (pltTypeLocal.eq."png")
          if (isatt(opt,"pltConvert")) then 
              pltConvert = opt@pltConvert    ; convert options
          else
-             pltConvert = " "               ; default
+             pltConvert = "-trim +repage -border 8 -bordercolor white"  ; trim, nice border
          end if
-         system("convert "+pltConvert+" "+pltPath+".eps "+pltPath+".png")
-         system("/bin/rm -f "+pltPath+".eps")
+         system("convert "+pltConvert+" "+pltPath+"."+pltTypeLocal+" "+pltPath+"."+pltTypeLocal)
      end if
 
-     delete(x)
-     delete(wgty)
+     delete([/ x, wgty /])
   end do    
 
 end
@@ -2586,11 +2592,11 @@ begin
 
   pltPath = pltDir+"/"+pltName
 
-  if (pltType.eq."png") then
-      pltTypeLocal = "eps"
-  else
+;;if (pltType.eq."png") then
+;;    pltTypeLocal = "eps"
+;;else
       pltTypeLocal = pltType
-  end if
+;;end if
 
   wks  = gsn_open_wks(pltTypeLocal,pltPath)  
   if (opt .and. isatt(opt,"colorTable") .or. isatt(opt,"pltColorTable")) then
@@ -2678,15 +2684,15 @@ begin
   draw(plot_a)     
   frame(wks)
 
-  if (pltType.eq."png") then
+  if (pltTypeLocal.eq."png") then
       if (isatt(opt,"pltConvert")) then 
           pltConvert = opt@pltConvert    ; convert options
       else
-          pltConvert = " "               ; default
+          pltConvert = "-trim +repage -border 8 -bordercolor white"  ; trim, nice border
       end if
-      system("convert "+pltConvert+" "+pltPath+".eps "+pltPath+".png")
-      system("/bin/rm -f "+pltPath+".eps")
+      system("convert "+pltConvert+" "+pltPath+"."+pltTypeLocal+" "+pltPath+"."+pltTypeLocal)
   end if
+
 end
 ;**********************************************************************
 undef("mjo_xcor_lag_ovly_panel")
@@ -2701,11 +2707,11 @@ begin
 
   pltPath = pltDir+"/"+pltName
 
-  if (pltType.eq."png") then
-      pltTypeLocal = "eps"
-  else
+;;if (pltType.eq."png") then
+;;    pltTypeLocal = "eps"
+;;else
       pltTypeLocal = pltType
-  end if
+;;end if
 
   wks  = gsn_open_wks(pltTypeLocal,pltPath)  
   if (opt .and. isatt(opt,"colorTable") .or. isatt(opt,"pltColorTable")) then
@@ -2811,14 +2817,13 @@ begin
   end if
   gsn_panel(wks,plot,(/2,1/),resP)                ; now draw as one plot
 
-  if (pltType.eq."png") then
+  if (pltTypeLocal.eq."png") then
       if (isatt(opt,"pltConvert")) then 
           pltConvert = opt@pltConvert    ; convert options
       else
-          pltConvert = " "               ; default
+          pltConvert = "-trim +repage -border 8 -bordercolor white"  ; trim, nice border
       end if
-      system("convert "+pltConvert+" "+pltPath+".eps "+pltPath+".png")
-      system("/bin/rm -f "+pltPath+".eps")
+      system("convert "+pltConvert+" "+pltPath+"."+pltTypeLocal+" "+pltPath+"."+pltTypeLocal)
   end if
 end
 ;***********************************************************
@@ -3048,11 +3053,11 @@ procedure mjo_wavenum_freq_season_plot (wf[*][*],seaName[1]:string\
 begin 
   pltPath= pltDir+"/"+pltName+"."+seaName
   
-  if (pltType.eq."png") then
-      pltTypeLocal = "eps"
-  else
+;;if (pltType.eq."png") then
+;;    pltTypeLocal = "eps"
+;;else
       pltTypeLocal = pltType
-  end if
+;;end if
 
   wks  = gsn_open_wks(pltTypeLocal, pltPath)  
   if (opt .and. isatt(opt,"colorTable") .or. isatt(opt,"pltColorTable")) then
@@ -3192,16 +3197,14 @@ begin
   gsn_text(wks,plot, (day+"d"),fline+0.005,0.93*NW,tres)
 
   frame(wks)
-  
-  if (pltType.eq."png") then
+
+  if (pltTypeLocal.eq."png") then
       if (isatt(opt,"pltConvert")) then 
           pltConvert = opt@pltConvert    ; convert options
       else
-          pltConvert = " "               ; default
+          pltConvert = "-trim +repage -border 8 -bordercolor white"  ; trim, nice border
       end if
-      
-      system("convert "+pltConvert+" "+pltPath+".eps "+pltPath+".png")
-      system("/bin/rm -f "+pltPath+".eps")
+      system("convert "+pltConvert+" "+pltPath+"."+pltTypeLocal+" "+pltPath+"."+pltTypeLocal)
   end if
   
   if (pltType.eq."x11" .and. isatt(opt,"debug") .and. opt@debug) then 
@@ -3433,11 +3436,12 @@ local pltPath, pltTypeLocal,wks, res
 begin
   pltPath= pltDir+"/"+pltName
   
-  if (pltType.eq."png") then
-      pltTypeLocal = "eps"
-  else
+;;if (pltType.eq."png") then
+;;    pltTypeLocal = "eps"
+;;else
       pltTypeLocal = pltType
-  end if
+;;end if
+
   wks  = gsn_open_wks(pltTypeLocal, pltPath)  
   if (opt .and. isatt(opt,"colorTable") .or. isatt(opt,"pltColorTable")) then
       if (isatt(opt,"colorTable")) then
@@ -3709,14 +3713,13 @@ begin
       gsn_panel(wks,plot,(/1,2/),resP)
   end if
 
-  if (pltType.eq."png") then
-      if (isatt(opt,"pltConvert")) then
+  if (pltTypeLocal.eq."png") then
+      if (isatt(opt,"pltConvert")) then 
           pltConvert = opt@pltConvert    ; convert options
       else
-          pltConvert = "-rotate -90"               ; default
+          pltConvert = "-trim +repage -border 8 -bordercolor white"  ; trim, nice border
       end if
-      system("convert "+pltConvert+" "+pltPath+".eps "+pltPath+".png")
-      system("/bin/rm -f "+pltPath+".eps")
+      system("convert "+pltConvert+" "+pltPath+"."+pltTypeLocal+" "+pltPath+"."+pltTypeLocal)
   end if
 end
 ; ---------------------
