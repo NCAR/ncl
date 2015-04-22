@@ -1110,7 +1110,31 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
         if(NULL == varnode->att_rec->att_node[0].value)
             AdvancedLoadVarAtts(thefile,varnode->name);
     }
-    _printNclFileAttRecord(fp, thefile, varnode->att_rec);
+    if((NCL_enum == varnode->type) && (NULL != varnode->att_rec))
+    {
+        short *typechanged = (short *)NclCalloc(varnode->att_rec->n_atts, sizeof(short));
+	for(i = 0; i < varnode->att_rec->n_atts; ++i)
+	{
+	    if(NCL_enum == varnode->att_rec->att_node[i].type)
+	    {
+		typechanged[i] = 1;
+		varnode->att_rec->att_node[i].type = varnode->base_type;
+	    }
+	}
+	
+        _printNclFileAttRecord(fp, thefile, varnode->att_rec);
+
+	for(i = 0; i < varnode->att_rec->n_atts; ++i)
+	{
+	    if(typechanged[i])
+	    {
+		varnode->att_rec->att_node[i].type = varnode->type;
+	    }
+	}
+	NclFree(typechanged);
+    }
+    else
+        _printNclFileAttRecord(fp, thefile, varnode->att_rec);
     _decreaseNclPrintIndentation();
 
     nclfprintf(fp, "\n");
@@ -2501,19 +2525,7 @@ void FileDestroyAttRecord(NclFileAttRecord *att_rec)
 
     if(NULL != att_rec)
     {
-#if 0
-        int has_att_obj = 0;
-        if (att_rec->id > -1) {
-	    NclObj att = _NclGetObj(att_rec->id);
-	    if (att) {
-		has_att_obj = 1;
-		_NclDestroyObj(att);
-	    }
-	}
-        if((! has_att_obj) && (NULL != att_rec->att_node))
-#else
         if(NULL != att_rec->att_node)
-#endif
         {
           /*
            *fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
@@ -2531,11 +2543,7 @@ void FileDestroyAttRecord(NclFileAttRecord *att_rec)
             NclFree(att_rec->att_node);
             att_rec->att_node = NULL;
         }
-#if 0
-        if((! has_att_obj) && NULL != att_rec->cb)
-#else
         if(NULL != att_rec->cb)
-#endif
         {
            /*
             *_NhlCB tmpcb = att_rec->cb;

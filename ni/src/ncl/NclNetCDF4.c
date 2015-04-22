@@ -2383,6 +2383,8 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
             nc_inq_user_type(gid, varnode->the_nc_type, buffer, &size, 
                             &base_nc_type, &nfields, &ncl_class);
 
+            varnode->base_type = NC4MapToNcl(&base_nc_type);
+
             switch(ncl_class)
             {
                 case NC_OPAQUE: 
