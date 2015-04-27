@@ -14,6 +14,12 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Important modifications:
+;       27 Apr 2015:
+;           Added unadvertised ElementVertices, so that user can input own 
+;           element vertices mesh when regridding unstructured data.
+;           Currently, the code wants a triangular mesh or a quadrilateral
+;           mesh, and "csstri" will be used if neither is provided. "csstri"
+;           is notoriously slow.
 ;       14 March 2015:
 ;           Decided to add a SrcSCRIP/DstSCRIP which a user can set to
 ;           True to force an unstructured description file to be created
@@ -1377,36 +1383,48 @@ begin
       inputFName = "none provided"
     end if
 
+;---Were ElementVertices provided?
+    if(Opt.and.isatt(Opt,"ElementVertices")) then
+      if(DEBUG) then
+        print("unstructured_to_ESMF: using element vertices mesh provided by the user")
+      end if
+      if(dimsizes(dimsizes(Opt@ElementVertices)).ne.2) then
+        print("unstructured_to_ESMF: ElementVertices must be an ncells x nedges array")
+        exit
+      end if
+      ElementVertices = Opt@ElementVertices
 ;---Was a triangular mesh provided?
-    if(Opt.and.isatt(Opt,"TriangularMesh")) then
+    else if(Opt.and.isatt(Opt,"TriangularMesh")) then
       dims = dimsizes(Opt@TriangularMesh)
       if(dims(1).ne.3) then
-        print("unstructured_to_ESMF: TriangularMesh must be an n x 3 array")
+        print("unstructured_to_ESMF: TriangularMesh must be an ncells x 3 array")
         exit
-      else
-        if(DEBUG) then
-          print("unstructured_to_ESMF: using triangular mesh provided by the user")
-        end if
-        ElementVertices = Opt@TriangularMesh
       end if
+      if(DEBUG) then
+        print("unstructured_to_ESMF: using triangular mesh provided by the user")
+      end if
+      ElementVertices = Opt@TriangularMesh
 ;---Was a quadrilateral mesh provided?
     else if(Opt.and.isatt(Opt,"QuadrilateralMesh")) then
       dims = dimsizes(Opt@QuadrilateralMesh)
       if(dims(1).ne.4) then
-        print("unstructured_to_ESMF: QuadrilateralMesh must be an n x 4 array")
+        print("unstructured_to_ESMF: QuadrilateralMesh must be an ncells x 4 array")
         exit
-      else
-        if(DEBUG) then
-          print("unstructured_to_ESMF: using quadrilateral mesh provided by the user")
-        end if
-        ElementVertices = Opt@QuadrilateralMesh
       end if
+      if(DEBUG) then
+        print("unstructured_to_ESMF: using quadrilateral mesh provided by the user")
+      end if
+      ElementVertices = Opt@QuadrilateralMesh
     else
 ;---Create a triangular mesh if no mesh provided
       if(DEBUG) then
-        print("unstructured_to_ESMF: triangulating the data ... this can be slow")
+        print("unstructured_to_ESMF: triangulating the data to create the edges for your unstructured data.")
+        print("                      This can be VERY slow if you have a large array.")
+        print("                      To speed up code, provide your own edge vertices via the") 
+        print("                      'ElementVertices' option.")
       end if
       ElementVertices = csstri(lat,lon)       ; Triangulate
+    end if
     end if
     end if
     if(DEBUG) then
@@ -3800,7 +3818,7 @@ begin
 ; set, like "opt@Overwrite", then ignore the specific
 ; attribute, like "opt@SrcOverwrite".
 ;
-  spc_atts = (/"GridMask","Mask2D","GridArea","TriangularMesh",\
+  spc_atts = (/"GridMask","Mask2D","GridArea","TriangularMesh","ElementVertices",\
                "LargeFile","ESMF","SCRIP","NetCDFType","Title","LLCorner",\
                "URCorner","Rotation","GridCornerLat","GridCornerLon",\
                "InputFileName","Overwrite","ForceOverwrite"/)
