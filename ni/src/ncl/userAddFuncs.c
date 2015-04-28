@@ -5620,6 +5620,121 @@ NhlErrorTypes _Nclstr_match_ind_ic_regex(void)
     return NclReturnValue(output_inds, 1, &output_ind_size, ( has_missing ? &ret_missing : NULL ), NCL_int, 0);
 }
 
+NhlErrorTypes _Nclstr_remove_leading_str(void)
+{
+    NclQuark *input_strs;
+    NclQuark *input_lead;
+
+    int ndim_input_strs;
+    ng_size_t dimsz_input_strs[NCL_MAX_DIMENSIONS];
+    int has_missing_input_strs;
+    int has_missing_input_lead;
+    int has_missing = 0;
+    NclScalar missing_input_strs;
+    NclScalar missing_input_lead;
+    NclScalar ret_missing;
+
+    NclBasicDataTypes type;
+
+    char *lead_str;
+    char *tmp_str;
+    NclQuark *output_strs;
+    ng_size_t i;
+    ng_size_t str_size;
+    int lead_len = 0;
+    int new_len = 0;
+
+  /*
+   */
+    fprintf(stderr, "in file: %s, line: %d\n", __FILE__, __LINE__);
+
+    input_strs = (NclQuark *) NclGetArgValue(
+                        0,
+                        2,
+                        &ndim_input_strs,
+                        dimsz_input_strs,
+                        &missing_input_strs,
+                        &has_missing_input_strs,
+                        &type,
+                        0);
+
+    if (input_strs == NULL)
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_match_ind_ic_regex: input string is null.");
+        return NhlFATAL;
+    }
+
+    if(has_missing_input_strs)
+    {
+        has_missing = 1;
+    }
+    ret_missing.intval =  (int) ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval;
+
+    input_lead = (NclQuark *) NclGetArgValue(
+                        1,
+                        2,
+                        NULL,
+                        NULL,
+                        &missing_input_lead,
+                        &has_missing_input_lead,
+                        &type,
+                        0);
+
+    if (input_lead == NULL)
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_remove_leading_str: input leading string is null.");
+        return NhlFATAL;
+    }
+
+    lead_str = NrmQuarkToString(input_lead[0]);
+    lead_len = strlen(lead_str);
+
+    str_size = 1;
+    for(i = 0; i < ndim_input_strs; ++i)
+        str_size *= dimsz_input_strs[i];
+
+    output_strs = (NclQuark *) NclMalloc(str_size*sizeof(NclQuark));
+    if (! output_strs)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
+
+    for(i=0; i<str_size; i++)
+    {
+        if(has_missing_input_strs && input_strs[i] == missing_input_strs.stringval)
+        {
+            has_missing = 1;
+            continue;
+        }
+
+        if(has_missing_input_lead && (input_lead[i] == missing_input_lead.stringval))
+        {
+            continue;
+        }
+
+        tmp_str = (char *) NrmQuarkToString(input_strs[i]);
+
+        new_len = strlen(tmp_str);
+      
+        if(new_len <= lead_len)
+            output_strs[i] = NrmStringToQuark("");
+        else
+        {
+            if(strncmp(tmp_str, lead_str, lead_len-1))
+                output_strs[i] = input_strs[i];
+            else
+                output_strs[i] = NrmStringToQuark(tmp_str+lead_len);
+        }
+      /*
+       */
+        fprintf(stderr, "\tinput_strs[%ld]: <%s>, lead-str: <%s>\n", i, tmp_str, lead_str);
+        fprintf(stderr, "\toutput_strs[%ld]: <%s>\n", i, NrmQuarkToString(output_strs[i]));
+    }
+
+    return NclReturnValue(output_strs, ndim_input_strs, dimsz_input_strs, ( has_missing ? &ret_missing : NULL ), NCL_string, 0);
+}
+
 #ifdef __cplusplus
 }
 #endif

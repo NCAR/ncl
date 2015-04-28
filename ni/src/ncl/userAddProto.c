@@ -201,6 +201,8 @@ extern NhlErrorTypes _Nclstr_get_cr();
 extern NhlErrorTypes _Nclstr_from_int(void);
 extern NhlErrorTypes _Nclshow_ascii();
 
+extern NhlErrorTypes _Nclstr_remove_leading_str(void);
+
 void NclAddUserBuiltInFuncs
 #if     NhlNeedProto
 (void)
@@ -465,6 +467,13 @@ void NclAddUserBuiltInFuncs
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "integer", 1, dimsizes); nargs++;
     NclRegisterFunc(_NclgetNbitsFromUint64, args, "getNbitsFromUint64", nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
+    NclRegisterFunc(_Nclstr_remove_leading_str, args, "str_remove_leading_str", nargs);
 
     return;
 }
