@@ -138,7 +138,7 @@ char* ytxt;
 #define MAX_INCLUDE_DEPTH 20
 YY_BUFFER_STATE include_stack[MAX_INCLUDE_DEPTH];
 int line_numbers[MAX_INCLUDE_DEPTH];
-char *file_names[MAX_INCLUDE_DEPTH];
+char *file_names[1+MAX_INCLUDE_DEPTH];
 
 void _NclResetScanner
 #if NhlNeedProto
@@ -193,14 +193,12 @@ void _NclResetScanner
                 load_stmt = 0;
             }
         }
-    }
-
-        if(NULL != cur_load_file)
-        {
-            NclFree(cur_load_file);
-            cur_load_file = NULL;
         }
-
+	if(NULL != file_names[loading+1])
+	{
+		NclFree(file_names[loading+1]);
+		file_names[loading+1] = NULL;
+	}
 	cur_load_file = file_names[loading];
 	if(yyin != NULL) {
 		if(loading) {
@@ -248,6 +246,7 @@ int status;
 	line_numbers[loading] = cur_line_number;
 	SetLine(0);
 	file_names[loading] = cur_load_file;
+	file_names[loading+1] = NULL;
 	include_stack[loading++] = YY_CURRENT_BUFFER;
 	tmpfile = fopen( _NGResolvePath(tmp), "r" );
 	if(tmpfile != NULL) {
