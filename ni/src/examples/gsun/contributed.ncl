@@ -10529,21 +10529,46 @@ end
 ; D Shea
 
 undef("isMonotonic")
-function isMonotonic(x[*]:numeric)          
-; check for monoticity                     
-local nx                                  
-begin                                    
-  nx   = dimsizes(x)                    
-                                       
-  if (all(x(1:nx-1).gt.x(0:nx-2))) then
-      return(1)                       
-  end if                             
-  if (all(x(1:nx-1).lt.x(0:nx-2))) then 
-      return(-1)                       
-  end if                              
-  return(0)                          
-end                                 
+function isMonotonic(x[*]:numeric)
+; check for monoticity; bit of overkill her but that is ok
+local nx, i, xx
+begin
+  if (.not.isatt(x,"_FillValue")) then
+      nx   = dimsizes(x)
+      if (nx.eq.1) then
+          return(0)
+      end if
 
+      if (all(x(1:nx-1).gt.x(0:nx-2))) then
+          return(1)
+      end if
+      if (all(x(1:nx-1).lt.x(0:nx-2))) then
+          return(-1)
+      end if
+      return(0)
+  end if
+                         ; _FillValue attribute is present
+  if (all(ismissing(x))) then
+      return(-999)
+  end if
+                         ; at least one value must be present
+  i  = ind(.not.ismissing(x))
+  xx = x(i)
+
+  nx = dimsizes(xx)
+  if (nx.eq.1) then
+      return(0)
+  end if
+
+  if (all(xx(1:nx-1).gt.xx(0:nx-2))) then
+      return(1)
+  end if
+  if (all(xx(1:nx-1).lt.xx(0:nx-2))) then
+      return(-1)
+  end if
+  return(0)
+
+end
 ;**************************************************************************
 ; Contributed by Christine Shields, March 2006.
 ; Slight mods were made to allow input to be numeric.
@@ -14593,7 +14618,7 @@ function generate_sample_indices(N[1], method[1]:integer)
 local k
 begin
     if (method.lt.0 .or. method.gt.1) then
-        print("generate_resample_indices: method="+method+": only 0 or 1 allowed")
+        print("generate_sample_indices: method="+method+": only 0 or 1 allowed")
         exit
     end if
 
