@@ -5645,8 +5645,8 @@ NhlErrorTypes _Nclstr_remove_leading_str(void)
     int new_len = 0;
 
   /*
+   *fprintf(stderr, "in file: %s, line: %d\n", __FILE__, __LINE__);
    */
-    fprintf(stderr, "in file: %s, line: %d\n", __FILE__, __LINE__);
 
     input_strs = (NclQuark *) NclGetArgValue(
                         0,
@@ -5727,9 +5727,9 @@ NhlErrorTypes _Nclstr_remove_leading_str(void)
                 output_strs[i] = NrmStringToQuark(tmp_str+lead_len);
         }
       /*
+       *fprintf(stderr, "\tinput_strs[%ld]: <%s>, lead-str: <%s>\n", i, tmp_str, lead_str);
+       *fprintf(stderr, "\toutput_strs[%ld]: <%s>\n", i, NrmQuarkToString(output_strs[i]));
        */
-        fprintf(stderr, "\tinput_strs[%ld]: <%s>, lead-str: <%s>\n", i, tmp_str, lead_str);
-        fprintf(stderr, "\toutput_strs[%ld]: <%s>\n", i, NrmQuarkToString(output_strs[i]));
     }
 
     return NclReturnValue(output_strs, ndim_input_strs, dimsz_input_strs, ( has_missing ? &ret_missing : NULL ), NCL_string, 0);
