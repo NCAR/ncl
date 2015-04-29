@@ -15514,3 +15514,21 @@ begin
   
   return([/ Ri, brunt, buoy, shear2 /])
 end
+;=============
+undef("dz_pop")
+; compute layer thicknesses for POP: z_t ot z_w  (ALL layers)
+function dz_pop(z[*])
+local kz, dz
+begin
+  kz           = dimsizes(z)
+  dz           = new( kz, typeof(z), "No_FillValue")
+  dz(0)        = 0.5*(z(0)+z(1))                       ; top layer has sfc
+  dz(1:kz-2)   = 0.5*(z(2:kz-1)-z(0:kz-3))
+  dz(  kz-1)   = z(kz-1) - 0.5*(z(kz-1)+z(kz-2))       ; bottom layer
+  copy_VarCoords(z, dz)
+  dz@long_name = "depth layer thickness"
+  dz@units     = z@units
+  dz@sum_dz    = sum(dz)   ; should match the bottom layer [ eg: z_t(kz-1) ]
+
+  return(dz)
+end
