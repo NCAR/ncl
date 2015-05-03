@@ -4,7 +4,7 @@
 #include "wrapper.h"
 
 extern void NGCALLF(dpsortdriver,DPSORTDRIVER)(double*, int*, int*, 
-                                               int*,int);
+                                               int*,int*);
 
 NhlErrorTypes dim_pqsort_W( void )
 {
