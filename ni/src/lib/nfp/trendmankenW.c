@@ -1,10 +1,11 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <strings.h>
 #include "wrapper.h"
 
 extern void NGCALLF(kenstst,KENSTST)(double *, int *, int *, double *, 
                                      double *, double *, int *, 
-                                     double *, logical *, double *);
+                                     double *, logical *, double *,int *);
 
 NhlErrorTypes trend_manken_W( void )
 {
@@ -42,7 +43,7 @@ NhlErrorTypes trend_manken_W( void )
 /*
  * Various
  */
-  int nslp, s;
+  int nslp, s, nc;
   logical *tieflag;
   double z, prob, trend, eps, *slope;
   ng_size_t i, j, nrnx, total_nl, total_nr, total_elements, size_output;
@@ -196,7 +197,15 @@ NhlErrorTypes trend_manken_W( void )
  * Call the Fortran routine.
  */
       NGCALLF(kenstst,KENSTST)(tmp_x, &inx, &s, &z, &prob, &trend,
-                               &nslp, slope, tieflag, &eps);
+                               &nslp, slope, tieflag, &eps, &nc);
+      qsort((void*)slope,nslp,sizeof(double),cmpdouble);
+/* Note: nc is returned in range [1 to n], not [0,n-1] */
+      if((nc % 2) == 0) {
+	trend = 0.5*(slope[(nc-1)/2]+slope[(nc-1)/2+1]);
+      }
+      else {
+	trend = slope[(nc-1)/2+1];
+      }
 
 /*
  * Coerce output array to appropriate type

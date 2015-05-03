@@ -24,13 +24,13 @@ C NCLEND
 
 c-----------
       SUBROUTINE kenstst(xdata,n,s,z,prob,trend   ! standard
-     +                  ,nslp,slope,tieflg,eps)   ! for NCL interface
+     +                  ,nslp,slope,tieflg,eps,nc)! for NCL interface
       IMPLICIT none
 C                                     ! INPUT
       INTEGER n
       DOUBLE PRECISION    xdata(n)
 C                                     ! OUTPUT
-      INTEGER s
+      INTEGER s, nc
       DOUBLE PRECISION    z, prob, trend
 
       INTEGER nslp                    ! FROM INTERFACE
@@ -38,7 +38,7 @@ C                                     ! OUTPUT
       DOUBLE PRECISION    eps
       LOGICAL tieflg(n)
 C                                     ! LOCAL
-      INTEGER j, k, nc, nt, ntie, ncrit
+      INTEGER j, k, nt, ntie, ncrit
       DOUBLE PRECISION  diff, dave, var, vartie, zero
 
       zero = 0.0d0
@@ -112,13 +112,15 @@ c c c       write(*,'("ntie=",i4,"  vartie=",f8.1)') ntie, vartie
       prob = erf(abs(z)/sqrt(2d0))
 
 c Theil-Sen Trend Estimate: sort and take median 
-
-      call dsortu(slope,nc)
-      IF (mod(nc,2).eq.0) THEN
-          trend = 0.5d0*(slope(nc/2)+slope(nc/2+1))
-      ELSE
-          trend = slope(nc/2+1)
-      END IF
+c This is commented out so we can use qsort in
+c the C routine instead, for faster sorting.
+c c c
+c c c      call dsortu(slope,nc)
+c c c      IF (mod(nc,2).eq.0) THEN
+c c c          trend = 0.5d0*(slope(nc/2)+slope(nc/2+1))
+c c c      ELSE
+c c c          trend = slope(nc/2+1)
+c c c      END IF
 
 c c c      write(*,'(" n=",i3," s=",i5, " nc=",i6, "  nt=",i3
 c c c     *         ," var=",f8.1," vartie=",f8.1," trend=",f10.5)') 

@@ -62,7 +62,6 @@ NhlErrorTypes kolsm2_n_W( void )
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
-  extern int cmpdouble (const void * a, const void * b);
 
 /*
  * Retrieve parameters.
