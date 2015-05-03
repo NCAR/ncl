@@ -92,3 +92,5 @@ extern ng_size_t *get_dimensions(void *tmp_dimensions,int n_dimensions,
 
 extern int *get_dims_for_n_funcs(int arg_num,  int num_args, NclStackEntry tmpdata,
 				  const char *name, int *ndims);
+
+extern int cmpdouble (const void * a, const void * b);

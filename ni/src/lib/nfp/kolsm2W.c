@@ -5,14 +5,6 @@
 extern void NGCALLF(kolm2,KOLM2)(double *, double *, int *, int *,
                                  int *, double *, double *, double *);
 
-/* For the qsort procedure */
-int cmpdouble (const void * a, const void * b)
-{
-  if (*(double*)a > *(double*)b) return 1;
-  else if (*(double*)a < *(double*)b) return -1;
-  else return 0;  
-}
-
 NhlErrorTypes kolsm2_n_W( void )
 {
 

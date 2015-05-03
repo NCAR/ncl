@@ -9680,3 +9680,12 @@ int *get_dims_for_n_funcs(int arg_num,  int num_args, NclStackEntry tmpdata,
   *ndims = num_dims[0];
   return(dims);
 }
+
+/* For the qsort procedure */
+int cmpdouble (const void * a, const void * b)
+{
+  if (*(double*)a > *(double*)b) return 1;
+  else if (*(double*)a < *(double*)b) return -1;
+  else return 0;  
+}
+
