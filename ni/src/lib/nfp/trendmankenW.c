@@ -7,6 +7,8 @@ extern void NGCALLF(kenstst,KENSTST)(double *, int *, int *, double *,
                                      double *, double *, int *, 
                                      double *, logical *, double *,int *);
 
+extern void printmnmx(double*,int,const char*);
+
 NhlErrorTypes trend_manken_W( void )
 {
 
@@ -39,7 +41,6 @@ NhlErrorTypes trend_manken_W( void )
   int       ndims_tm;
   ng_size_t *dsizes_tm;
   NclBasicDataTypes type_tm;
-
 /*
  * Various
  */
@@ -198,7 +199,12 @@ NhlErrorTypes trend_manken_W( void )
  */
       NGCALLF(kenstst,KENSTST)(tmp_x, &inx, &s, &z, &prob, &trend,
                                &nslp, slope, tieflag, &eps, &nc);
+      /*   printmnmx(slope,nc,"SLOPE (NC, before qsort)"); */
+
       qsort((void*)slope,nslp,sizeof(double),cmpdouble);
+
+      /* printmnmx(slope,nc,"SLOPE (NC, after)"); */
+
 /* Note: nc is returned in range [1 to n], not [0,n-1] */
       if((nc % 2) == 0) {
 	trend = 0.5*(slope[(nc-1)/2]+slope[(nc-1)/2+1]);
@@ -230,3 +236,26 @@ NhlErrorTypes trend_manken_W( void )
   NclFree(dsizes_tm);
   return(ret);
 }
+
+void printmnmx(double *data,int nx, const char *name)
+{
+  double dmin, dmax;
+  int i, idmin,idmax;
+  dmin = dmax = data[0];
+  idmin = idmax = 1;
+  for(i = 1; i < nx; i++) {
+    if(data[i] > dmax) {
+      idmax = i;
+      dmax = data[i];
+    }
+    if(data[i] < dmin) {
+      idmin = i;
+      dmin = data[i];
+    }
+  }
+  printf("=======================================================\n");
+  printf("name = %s\n",name);
+  printf("min,max %g %g\n", dmin,dmax);
+  printf("index %d %d\n",idmin,idmax);
+}
+
