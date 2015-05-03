@@ -17,7 +17,7 @@ C NCLEND
       nslp   = n*(n-1)/2
 
       call kenstst(xdata,n,s,z,prob,trend
-     +            ,nslp,slope,tieflg,eps)
+     +            ,nslp,slope,tieflg,eps,nslp)
 
       return
       end
@@ -114,6 +114,8 @@ c c c       write(*,'("ntie=",i4,"  vartie=",f8.1)') ntie, vartie
 c Theil-Sen Trend Estimate: sort and take median 
 c This is commented out so we can use qsort in
 c the C routine instead, for faster sorting.
+c c c      CALL PRINTMNMX(SLOPE,NSLP,"SLOPE (NSLP,BEFORE)")
+c c c      CALL PRINTMNMX(SLOPE,NC,"SLOPE (NC, BEFORE)")
 c c c
 c c c      call dsortu(slope,nc)
 c c c      IF (mod(nc,2).eq.0) THEN
@@ -128,3 +130,30 @@ c c c     *         n, s, nc, nt, var, vartie, trend
     
       RETURN
       END 
+
+c c c      SUBROUTINE PRINTMNMX(DATA,NX,NAME)
+c c c      DOUBLE PRECISION DMIN,DMAX
+c c c      INTEGER IDMIN,IDMAX
+c c c      DOUBLE PRECISION DATA(NX)
+c c c      CHARACTER *(*) NAME
+c c c      DMIN  = DATA(1)
+c c c      DMAX  = DATA(1)
+c c c      IDMIN = 1
+c c c      IDMAX = 1
+c c c      DO I=2,NX
+c c c        IF(DATA(I).GT.DMAX) THEN
+c c c           IDMAX = I
+c c c           DMAX = DATA(I)
+c c c        END IF
+c c c        IF(DATA(I).LT.DMIN) THEN
+c c c           DMIN = DATA(I)
+c c c           IDMIN = I
+c c c        END IF
+c c c      END DO
+c c c      print *,'======================================================='
+c c c      print *,NAME
+c c c      PRINT *,'MIN,MAX',DMIN,DMAX
+c c c      PRINT *,'INDEX  ',IDMIN,IDMAX
+c c c      RETURN
+c c c      END
+
