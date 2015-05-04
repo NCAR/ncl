@@ -4018,7 +4018,6 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                     vlendata[n].len = 1;
                     for(i = 0; i < val_md->multidval.n_dims; i++)
                         vlendata[n].len *= val_md->multidval.dim_sizes[i];
-                    list_list = list_list->next;
                 }
 #endif
                 ret = nc_put_var(fid, varnode->id, vlendata);
