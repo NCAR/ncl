@@ -4262,7 +4262,8 @@ void *_getH5compoundAsList(hid_t fid, NclFileVarNode *varnode)
     void *compvalues = NULL;
     char buffer[MAX_NCL_NAME_LENGTH];
 
-    hid_t  datatype, dataspace;
+  /*hid_t  dataspace;*/
+    hid_t  datatype;
     size_t datasize;
 
   /*
@@ -4275,7 +4276,7 @@ void *_getH5compoundAsList(hid_t fid, NclFileVarNode *varnode)
 
     did = H5Dopen(fid, NrmQuarkToString(varnode->real_name), H5P_DEFAULT);
 
-    dataspace = H5Dget_space(did);
+  /*dataspace = H5Dget_space(did);*/
     datatype  = H5Dget_type(did); 
     datasize  = H5Tget_size(datatype);
 
@@ -5012,9 +5013,7 @@ void *_getH5vlen(hid_t fid, NclFileVarNode *varnode)
     NclVar vlenvar;
     NclBasicDataTypes vlentype;
 
-    ng_size_t one = 1;
-
-    ng_size_t vlen_ndims;
+  /*ng_size_t vlen_ndims;*/
     ng_size_t vlen_dimsizes;
     ng_size_t vlen_dimnames;
     ng_size_t dimsizes[H5S_MAX_RANK];
@@ -5087,7 +5086,7 @@ void *_getH5vlen(hid_t fid, NclFileVarNode *varnode)
 
     _NclBuildArrayOfList(listids, ndims, dimsizes);
 
-    vlen_ndims = 1;
+ /*vlen_ndims = 1;*/
     size = H5Tget_size(super);
 
   /*
@@ -6489,14 +6488,15 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
 
     if((NCL_list == varnode->type) || (NCL_vlen == varnode->type))
     {
+        hid_t            filetype;
+        hid_t            memtype;
+        NclMultiDValData tmp_md;
+
+#if 0
         NclListObjList  *tmp = NULL;
         NclObj           tmpobj;
         NclVar           tmpvar;
-        NclMultiDValData tmp_md;
         NclList          vlist    = (NclList)_NclGetObj(*(int *)data);
-
-        hid_t            filetype;
-        hid_t            memtype;
 
         hvl_t            *vlendata = (hvl_t *) NclCalloc(vlist->list.nelem,
                                                           sizeof(hvl_t));
@@ -6518,7 +6518,32 @@ static NhlErrorTypes H5WriteVar(void *therec, NclQuark thevar, void *data,
             memcpy(vlendata[n].p, tmp_md->multidval.val, i);
             tmp = tmp->next;
         }
+#else
+        NclListObjList  *list_list = NULL;
+        NclObj           listobj;
+        NclVar           listvar;
+        NclList          vlist    = NULL;
+        int*             dlist    = (int *)data;
 
+        hvl_t *vlendata = (hvl_t *) NclCalloc(n_elem, sizeof(hvl_t));
+        assert(vlendata);
+
+        for(n = 0; n < n_elem; ++n)
+        {
+            vlist = (NclList)_NclGetObj(dlist[n]);
+            list_list = vlist->list.first;
+            listobj = (NclObj)_NclGetObj(list_list->obj_id);
+            listvar = (NclVar)_NclGetObj(listobj->obj.id);
+            tmp_md = (NclMultiDValData)_NclGetObj(listvar->var.thevalue_id);
+
+            vlendata[n].len = 1;
+            for(i = 0; i < tmp_md->multidval.n_dims; i++)
+                vlendata[n].len *= tmp_md->multidval.dim_sizes[i];
+            i = vlendata[n].len * _NclSizeOf(tmp_md->multidval.data_type);
+            vlendata[n].p = (void *)NclMalloc(i);
+            memcpy(vlendata[n].p, tmp_md->multidval.val, i);
+        }
+#endif
       /*
        *Create variable-length datatype for file and memory.
        */
