@@ -4,8 +4,8 @@
 #include "wrapper.h"
 
 extern void NGCALLF(kenstst,KENSTST)(double *, int *, int *, double *, 
-                                     double *, double *, int *, 
-                                     double *, logical *, double *,int *);
+                                     double *, int *, double *, 
+                                     logical *, double *,int *);
 
 extern void printmnmx(double*,int,const char*);
 
@@ -20,7 +20,7 @@ NhlErrorTypes trend_manken_W( void )
  */
   void *x;
   double *tmp_x;
-  int       ndims_x;
+  int ndims_x;
   ng_size_t nx, dsizes_x[NCL_MAX_DIMENSIONS];
   int inx;
   NclBasicDataTypes type_x;
@@ -38,18 +38,18 @@ NhlErrorTypes trend_manken_W( void )
  * Return variable
  */
   void *tm;
-  int       ndims_tm;
+  int ndims_tm;
   ng_size_t *dsizes_tm;
   NclBasicDataTypes type_tm;
 /*
  * Various
  */
-  int nslp, s, nc;
-  logical *tieflag;
+  int s, ncomp;
+  logical *tieflag, calculate_trend;
   double z, prob, trend, eps, *slope;
-  ng_size_t i, j, nrnx, total_nl, total_nr, total_elements, size_output;
+  ng_size_t nslp, i, j, nrnx, total_nl, total_nr, total_elements, size_output;
   ng_size_t index_nrx, index_nr, index_x, index_tm;
-  int ret;
+  int inslp, ret;
 
 /*
  * Retrieve parameters.
@@ -83,6 +83,9 @@ NhlErrorTypes trend_manken_W( void )
            NULL,
            DONT_CARE);
 
+  if(*opt) calculate_trend = False;
+  else     calculate_trend = True;
+
 /*
  * Get argument # 2
  */
@@ -102,19 +105,34 @@ NhlErrorTypes trend_manken_W( void )
   }
 
 /* 
- * Allocate space for output dimension sizes and set them.
+ * Allocate space for output dimension sizes and set them.  We either
+ * calculate both the prob and the trend (opt=False), or just prob
+ * (opt=True).  If both, then the return array will either be 2 x M, or
+ * just 2 (if the input array is 1D).  Otherwise, hen the return array is
+ * just M or a scalar ((if input array is 1D).
  */
-  ndims_tm = ndims_x - ndims + 1;
+  if(calculate_trend) {
+    ndims_tm = ndims_x - ndims + 1;
+  }
+  else {
+    ndims_tm = max(ndims_x - ndims,1);
+  }
+
   dsizes_tm = (ng_size_t*)calloc(ndims_tm,sizeof(ng_size_t));  
   if( dsizes_tm == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
   }
 
-  if(ndims_tm == 1) j = 0;
-  else              j = 1;
-  dsizes_tm[0] = 2;
-
+  if(calculate_trend) {
+    if(ndims_tm == 1) j = 0;
+    else              j = 1;
+    dsizes_tm[0] = 2;
+  }
+  else {
+    j = 0;
+    dsizes_tm[0] = 1;  /* just in case there's just one value. */
+  }
   nx = total_nl = total_nr = 1;
   for(i = 0; i < dims[0]; i++) {
     total_nl *= dsizes_x[i];
@@ -132,8 +150,15 @@ NhlErrorTypes trend_manken_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken: nx = %ld is greater than INT_MAX", nx);
     return(NhlFATAL);
   }
-  inx  = (int) nx;
-  nslp = inx*(inx-1)/2;
+
+  nslp = nx*(nx-1)/2;
+  if(nslp > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"trend_manken: nslp = %ld is greater than INT_MAX", nslp);
+    return(NhlFATAL);
+  }
+  inslp = (int) nslp;
+  inx   = (int) nx;
+
 /*
  * Allocate space for tmp_x.
  */
@@ -147,7 +172,8 @@ NhlErrorTypes trend_manken_W( void )
  * Allocate space for output array.
  */
   total_elements = total_nr * total_nl;
-  size_output    = 2 * total_elements;
+  if(calculate_trend) size_output    = 2 * total_elements;
+  else                size_output    = total_elements;
   if(type_x != NCL_double) {
     type_tm = NCL_float;
     tm = (void *)calloc(size_output, sizeof(float));
@@ -193,31 +219,34 @@ NhlErrorTypes trend_manken_W( void )
  */
       coerce_subset_input_double_step(x,tmp_x,index_x,total_nr,type_x,
                                       nx,0,NULL,NULL);
-
 /*
  * Call the Fortran routine.
  */
-      NGCALLF(kenstst,KENSTST)(tmp_x, &inx, &s, &z, &prob, &trend,
-                               &nslp, slope, tieflag, &eps, &nc);
-      /*   printmnmx(slope,nc,"SLOPE (NC, before qsort)"); */
-
-      qsort((void*)slope,nslp,sizeof(double),cmpdouble);
-
-      /* printmnmx(slope,nc,"SLOPE (NC, after)"); */
-
-/* Note: nc is returned in range [1 to n], not [0,n-1] */
-      if((nc % 2) == 0) {
-	trend = 0.5*(slope[(nc-1)/2]+slope[(nc-1)/2+1]);
-      }
-      else {
-	trend = slope[(nc-1)/2+1];
-      }
-
+      NGCALLF(kenstst,KENSTST)(tmp_x, &inx, &s, &z, &prob, &inslp,
+                               slope, tieflag, &eps, &ncomp);
 /*
- * Coerce output array to appropriate type
+ * Coerce prob as necessary.
  */
       coerce_output_float_or_double(tm,&prob,type_tm,1,index_tm);
-      coerce_output_float_or_double(tm,&trend,type_tm,1,index_tm+total_elements);
+
+ /*
+  * To calculate trend, we must sort first. Note: ncomp is 
+  * returned in range [1 to n], not [0,n-1],so we have to 
+  * subtract 1.
+  */
+      if(calculate_trend) {
+        qsort((void*)slope,ncomp,sizeof(double),cmpdouble);
+        if((ncomp % 2) == 0) {
+          trend = 0.5*(slope[(ncomp-1)/2]+slope[(ncomp-1)/2+1]);
+        }
+        else {
+          trend = slope[(ncomp-1)/2+1];
+        }
+/*
+ * Coerce trend as necessary.
+ */
+        coerce_output_float_or_double(tm,&trend,type_tm,1,index_tm+total_elements);
+      }
     }
   }
 

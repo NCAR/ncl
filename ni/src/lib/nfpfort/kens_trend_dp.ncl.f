@@ -1,5 +1,7 @@
 C NCLFORTSTART
-      SUBROUTINE kenststncl(xdata,n,s,z,prob,trend)
+c c c trend being calculated in C wrapper.
+c c c SUBROUTINE kenststncl(xdata,n,s,z,prob,trend)
+      SUBROUTINE kenststncl(xdata,n,s,z,prob)
       IMPLICIT none
 C                                     ! INPUT
       INTEGER n
@@ -7,7 +9,8 @@ C                                     ! INPUT
       DOUBLE PRECISION    eps
 C                                     ! OUTPUT
       INTEGER s
-      DOUBLE PRECISION    z, prob, trend
+c c c DOUBLE PRECISION    z, prob, trend
+      DOUBLE PRECISION    z, prob
 C NCLEND
       INTEGER nslp                                ! LOCAL ==> INTERFACE
       DOUBLE PRECISION    slope(n*(n-1)/2)        ! MALLOC: Thiel-Sens
@@ -16,22 +19,31 @@ C NCLEND
       eps    = 1.0d-5                             ! make optional
       nslp   = n*(n-1)/2
 
-      call kenstst(xdata,n,s,z,prob,trend
-     +            ,nslp,slope,tieflg,eps,nslp)
+c c c      call kenstst(xdata,n,s,z,prob,trend
+c c c     +            ,nslp,slope,tieflg,eps,nslp)
+
+      call kenstst(xdata,n,s,z,prob,nslp
+     +             ,slope,tieflg,eps,nslp)
 
       return
       end
 
 c-----------
-      SUBROUTINE kenstst(xdata,n,s,z,prob,trend   ! standard
-     +                  ,nslp,slope,tieflg,eps,nc)! for NCL interface
+c c c "trend" was removed from this routine because it is
+c c c  being calculated in the NCL C wrapper.
+c c c
+c c c      SUBROUTINE kenstst(xdata,n,s,z,prob,trend   ! standard
+c c c     +                  ,nslp,slope,tieflg,eps,nc)! for NCL interface
+c-----------
+      SUBROUTINE kenstst(xdata,n,s,z,prob,nslp,slope,tieflg,eps,nc)
       IMPLICIT none
 C                                     ! INPUT
       INTEGER n
       DOUBLE PRECISION    xdata(n)
 C                                     ! OUTPUT
       INTEGER s, nc
-      DOUBLE PRECISION    z, prob, trend
+cc    DOUBLE PRECISION    z, prob, trend
+      DOUBLE PRECISION    z, prob
 
       INTEGER nslp                    ! FROM INTERFACE
       DOUBLE PRECISION    slope(nslp) ! MALLOC: Thiel-Sens
@@ -110,12 +122,10 @@ c c c       write(*,'("ntie=",i4,"  vartie=",f8.1)') ntie, vartie
       END IF
 
       prob = erf(abs(z)/sqrt(2d0))
-
-c Theil-Sen Trend Estimate: sort and take median 
+c
+c Theil-Sen Trend Estimate: sort and take median.
 c This is commented out so we can use qsort in
-c the C routine instead, for faster sorting.
-c c c      CALL PRINTMNMX(SLOPE,NSLP,"SLOPE (NSLP,BEFORE)")
-c c c      CALL PRINTMNMX(SLOPE,NC,"SLOPE (NC, BEFORE)")
+c the C wrapper routine instead, for faster sorting.
 c c c
 c c c      call dsortu(slope,nc)
 c c c      IF (mod(nc,2).eq.0) THEN
@@ -130,30 +140,4 @@ c c c     *         n, s, nc, nt, var, vartie, trend
     
       RETURN
       END 
-
-c c c      SUBROUTINE PRINTMNMX(DATA,NX,NAME)
-c c c      DOUBLE PRECISION DMIN,DMAX
-c c c      INTEGER IDMIN,IDMAX
-c c c      DOUBLE PRECISION DATA(NX)
-c c c      CHARACTER *(*) NAME
-c c c      DMIN  = DATA(1)
-c c c      DMAX  = DATA(1)
-c c c      IDMIN = 1
-c c c      IDMAX = 1
-c c c      DO I=2,NX
-c c c        IF(DATA(I).GT.DMAX) THEN
-c c c           IDMAX = I
-c c c           DMAX = DATA(I)
-c c c        END IF
-c c c        IF(DATA(I).LT.DMIN) THEN
-c c c           DMIN = DATA(I)
-c c c           IDMIN = I
-c c c        END IF
-c c c      END DO
-c c c      print *,'======================================================='
-c c c      print *,NAME
-c c c      PRINT *,'MIN,MAX',DMIN,DMAX
-c c c      PRINT *,'INDEX  ',IDMIN,IDMAX
-c c c      RETURN
-c c c      END
 
