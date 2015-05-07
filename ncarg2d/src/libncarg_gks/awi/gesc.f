@@ -321,7 +321,7 @@ C
         GFNAME = ' '
         DO 250 I=1,LIDR
           JLIM = 80
-          IF (I .EQ. 4) JLIM = 16
+          IF (I .EQ. 13) JLIM = 64
           DO 260 J=1,JLIM
             INDX = 80*(I-1)+J
             GFNAME(INDX:INDX) = IDR(I)(J:J)

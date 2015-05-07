@@ -28,7 +28,7 @@ C
 C
 C  Input and output data records for ESCAPE function calls.
 C
-      CHARACTER*80 IDR(4),CDUM
+      CHARACTER*80 IDR(13),CDUM
 C
 C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C

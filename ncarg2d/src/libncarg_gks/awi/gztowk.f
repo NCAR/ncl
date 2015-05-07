@@ -14,7 +14,7 @@ C  on the current GKS operating state.
 C
       include 'gkscom.h'
 C
-      PARAMETER (IADIM=256)
+      PARAMETER (IADIM=1024)
       INTEGER FCODEO,CONTO,XID,ADESTR(IADIM),ICNTX(31)
       REAL    RCNTX(19)
       SAVE

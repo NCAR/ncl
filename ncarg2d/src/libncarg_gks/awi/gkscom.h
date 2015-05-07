@@ -57,7 +57,7 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
      +               GPSMIN , GPSMAX, GPDFP , GPDFL , GPIX  , GCPS  ,
      +               GCROMIN, GCROMAX
       COMMON/GKSNAM/ GNAM(109)     , SEGNAM(NSEG)  , GFNAME, GSEGRT
-      CHARACTER      GNAM*6, SEGNAM*137    , GFNAME*256    ,
+      CHARACTER      GNAM*6, SEGNAM*137    , GFNAME*1024    ,
      +               GSEGRT*80
       COMMON/GKSIN1/ FCODE , CONT  ,
      +               IL1   , IL2   , ID(128)       ,

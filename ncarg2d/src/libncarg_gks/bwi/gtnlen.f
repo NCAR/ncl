@@ -11,14 +11,14 @@ C
 C
 C  Determine the length of the name in FNAME.  The length is the
 C  longest initial character sequence without a blank or null.
-C  Maximum length is 255.  IER is returned as 0 if the length is
-C  less than 256; IER is returned as 1 otherwise.
+C  Maximum length is 1023.  IER is returned as 0 if the length is
+C  less than 1024; IER is returned as 1 otherwise.
 C
         CHARACTER*(*) FNAME
 C
         IER  = 0
         ILEN = 0
-        DO 10 I=1,256
+        DO 10 I=1,1024
         IF (FNAME(I:I).EQ.' ' .OR. FNAME(I:I).EQ.CHAR(0)) THEN
           ILEN = I-1
           RETURN

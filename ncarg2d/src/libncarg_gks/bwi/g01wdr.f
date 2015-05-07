@@ -40,7 +40,7 @@ C
       include 'gksenu.h'
 C
       INTEGER   G01PBL
-      CHARACTER FNAME*256,DNAME*1
+      CHARACTER FNAME*1024,DNAME*1
 C
       DATA BEGSTR
      - /'                                                            '/
