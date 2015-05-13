@@ -3595,7 +3595,7 @@ static NhlErrorTypes SetUpCrvTransObj
 
 	if (init)
 		tfp->trans_obj = NULL;
-	if (tfp->trans_obj && 
+	if (! stnew->base.being_destroyed && tfp->trans_obj && 
             tfp->trans_obj->base.layer_class->base_class.class_name !=
 	    trans_class->base_class.class_name) {
 		subret = NhlDestroy(tfp->trans_obj->base.id);
