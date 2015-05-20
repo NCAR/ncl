@@ -14415,8 +14415,10 @@ function regline_stats(x[*]:numeric, y[*]:numeric)
 ;                     Academic Press (2nd Edition)  ; pgs 180-204
 ; Davis, J.C. (2002): Statistics and Data Analysis in Geology
 ;                     Wiley (3rd Edition)   ; pgs 215-218 
+; Example:
+; http://www.stat.ucla.edu/~hqxu/stat105/pdf/ch11.pdf
 
-local nx, ny, ii, nii, RC, rc
+local nx, ny, ii, nii, RC, rc, Sxx, Sxy, qslp, qint, zz, t025, t975, tnull
 begin
 
 ; Get the lengths of the x and y arrays.
@@ -14455,6 +14457,34 @@ begin
    rc@rstd  = rc@RSE
    rc@yintercept = RC(0)
    rc@b     = RC
+
+;  -------- added 6.3.1 ----------> alpha=0.05; (1-alpha)=95%
+   Sxy          = (rc@SST - rc@SSE)/rc       ; = sum((x-rc@Xavg)*(y-rc@Yavg))
+                                             ; = sum(x*y)-((sum(x)*sum(y))/rc@N)
+   Sxx          =  Sxy/rc                    ; = sum((x-rc@Xavg)^2)
+                                             ; = sum(x^2)-((sum(x)^2)/rc@N)
+   t025         = cdft_t(0.025, rc@MSE_dof)  ; -
+   t975         = cdft_t(0.975, rc@MSE_dof)  ; +
+   rc@tnull     = rc/sqrt(rc@MSE/Sxx)        ; test statistic for null hypothesis 
+
+  ;print("Sxy="+Sxy+"  Sxx="+Sxx+"  t025="+t025+"  t975="+t975+"  tnull="+rc@tnull)  ; debug
+
+                                             ; 95% slope & intercept confidence limits
+   qslp         = sqrt(rc@MSE/Sxx)
+   rc@b95       = (/ rc+t025*qslp, rc+t975*qslp /) ; slope 
+
+   qint         = sqrt( rc@MSE*(1.0/rc@N + (rc@Xavg)^2/Sxx) )
+   rc@y95       = (/ rc@yintercept +t025*qint  , rc@yintercept +t975*qint   /) ; y-int
+
+                                             ; 95% mean response confidence intervals
+   zz           = sqrt(rc@MSE*(1.0/rc@N + (x-rc@Xavg)^2/Sxx))          ; z[*] 
+   rc@YMR025    = rc@Yest + t025*zz           
+   rc@YMR975    = rc@Yest + t975*zz           
+                                             ; 95% prediction interval
+   zz           = sqrt(rc@MSE*(1.0 + 1.0/rc@N + (x-rc@Xavg)^2/Sxx))    ; z[*]
+   rc@YPI025    = rc@Yest + t025*zz           
+   rc@YPI975    = rc@Yest + t975*zz           
+;  -------------------------------
 
    return(rc)
 end
