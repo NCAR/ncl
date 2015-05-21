@@ -14095,7 +14095,7 @@ begin
 end
 ;============================================
 undef ("reg_multlin_stats")
-function reg_multlin_stats(Y[*]:numeric, XP:numeric, opt)
+function reg_multlin_stats(Y[*]:numeric, XP:numeric, opt) ; should be float or double
 ;
 ; Nomenclature:
 ; Y     - dependent variable (size NY)
@@ -14127,7 +14127,8 @@ local dimXP, N, NP, NY, M, T, Y, X, b, B, rankXP         \ ; local is
     , Yavg, Yvar, Ystd, Xavg, Xvar, Xstd, Yest, n, m     \ ; not necessary
     , Yres, SST, SSE, SSR, MST, MSE, MSR, SE, Frat       \
     , r2, ra, r, fuv, XXt, XXTi, varcovx, df, stderr, tval, pval \
-    , opt_wm, fmt_XXt, fmt_XXti, fmt_covx, opt_pd, fmt_data
+    , opt_wm, fmt_XXt, fmt_XXti, fmt_covx, opt_pd, fmt_data      \
+    , typeY, typeXP, typeYXP
 begin
 
        dimXP   = dimsizes(XP)
@@ -14167,11 +14168,21 @@ begin
            NP  = 1                     ; one predictor
        end if
 
+       typeY   = typeof(Y) 
+       typeXP  = typeof(XP) 
+       if (typeY.eq."double" .or. typeXP.eq."double") then
+           typeYXP = "double"
+       else
+           typeYXP = "float"           ; default 
+       end if
+
        if (opt .and. isatt(opt,"print_data") .and. opt@print_data) then
            print(" ")
            opt_pd = True
            opt_pd@title  = "----- reg_multlin_stats: Y, XP -----"
-           data       = new( (/N,NP+1/), typeof(Y))
+
+           data   = new( (/N,NP+1/), typeYXP)
+
            data(:,0)  = (/ Y /)
 
            if (NP.eq.1) then
@@ -14198,7 +14209,9 @@ begin
 
        M       = NP+1                     ; extra column for design matrix
                                           ; required ordering for reg_multlin 
-       X       = new ( (/M,N/) , typeof(XP), getFillValue(XP))
+
+       X   = new ( (/M,N/) , typeYXP, getFillValue(XP))
+
        X(0,:)  = 1.0
 
        if (NP.eq.1) then
@@ -14240,7 +14253,7 @@ begin
 
 ; Calculate model estimates: Yest = b(0) + b(1)*   + b(2)* + .....
 
-       Yest = new(N,typeof(Y),getFillValue(Y))
+       Yest = new(N,typeYXP)
        do n=0,N-1
           Yest(n) = b(0) + sum(b(1:)*X(1:,n))   ; array syntax 
        end do
@@ -14324,9 +14337,9 @@ begin
            print(" ")
        end if
            
-       stderr = new( M, typeof(Y))
-       tval   = new( M, typeof(Y))
-       pval   = new( M, typeof(Y))
+       stderr = new( M, typeYXP)
+       tval   = new( M, typeYXP)
+       pval   = new( M, typeYXP)
 
        df  = N-NP
        
