@@ -11237,7 +11237,7 @@ begin
 
     contour_object@vfdata = vfdata_object
     contour_object@sfdata = sfdata_object
-    contour_object@contour = contour_object
+    contour_object@vector = vector_object
     return(contour_object)
 end
 

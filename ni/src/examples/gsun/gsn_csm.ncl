@@ -9460,19 +9460,19 @@ begin
     vcres@gsnScale = tm_scale  ; Force labels and ticks to be same, if True.
 
     if(scalar_contour)
-      vector_object = gsn_vector_contour(wks,unew,vnew,datanew,vcres)
+      base_object = gsn_vector_contour(wks,unew,vnew,datanew,vcres)
     else
-      vector_object = gsn_vector_scalar(wks,unew,vnew,datanew,vcres)
+      base_object = gsn_vector_scalar(wks,unew,vnew,datanew,vcres)
     end if
 
 ; Add lat/lon labels to X/Y axes if appropriate coordinate arrays exist.
 
-    add_latlon_labels(vector_object,unew,res2)
+    add_latlon_labels(base_object,unew,res2)
 
 ; Retrieve some font heights and make the X/Y axis labels the same
 ; size, and the info label size the same as the tick mark label size.
 
-    getvalues vector_object
+    getvalues base_object
       "vpHeightF"            : height
       "vpWidthF"             : width
 
@@ -9503,11 +9503,11 @@ begin
 ; If gsnScale is True, then make sure we have a valid tickmark
 ; object before we do anything else.
 ;
-    if(tm_scale.and.is_tm_obj_valid(vector_object)) then
+    if(tm_scale.and.is_tm_obj_valid(base_object)) then
 ;
 ; Make tick marks same length and point outward.
 ;
-      getvalues vector_object
+      getvalues base_object
         "tmYLMajorLengthF"     : ylength
         "tmXBMajorLengthF"     : xlength
         "tmYLMinorLengthF"     : ymlength
@@ -9521,29 +9521,35 @@ begin
       minor_length = scale * minor_length
 
       tmres = get_res_eq(res2,"tm")
-      gsnp_point_tickmarks_outward(vector_object,tmres,xlength,ylength,\
+      gsnp_point_tickmarks_outward(base_object,tmres,xlength,ylength,\
                                    xmlength,ymlength,\
                                    major_length,minor_length,point_outward)
     end if
 
 ; Make sure info labels, line labels, and vector labels are same size.
     if(scalar_contour)
-      if(.not.isatt(res2,"cnLineLabelFontHeightF"))
-        setvalues vector_object@contour
+      if(.not.isatt(res2,"cnInfoLabelFontHeightF"))
+        setvalues base_object
           "cnInfoLabelFontHeightF" : xbfontf
        end setvalues
       end if
       if(.not.isatt(res2,"cnLineLabelFontHeightF"))
-        setvalues vector_object@contour
+        setvalues base_object
           "cnLineLabelFontHeightF"    : xbfontf
         end setvalues
       end if
     end if
 
     if(.not.isatt(res2,"vcRefAnnoFontHeightF"))
-      setvalues vector_object
-        "vcRefAnnoFontHeightF" : xbfontf
-     end setvalues
+      if(scalar_contour) then
+        setvalues base_object@vector
+          "vcRefAnnoFontHeightF" : xbfontf
+        end setvalues
+      else
+        setvalues base_object
+          "vcRefAnnoFontHeightF" : xbfontf
+        end setvalues
+      end if
     end if
 
 ;---Create a labelbar.
@@ -9556,18 +9562,18 @@ begin
     end if
     if(scalar_contour)
       if(old_lbar_on)
-        add_labelbar(wks,vector_object@contour,lbar_zone,xbfontf, \
+        add_labelbar(wks,base_object,lbar_zone,xbfontf, \
                      "vector",lbres)
       end if
       if(new_lbar_on)
-        fix_labelbar(vector_object@contour,xbfontf,vcres)
+        fix_labelbar(base_object,xbfontf,vcres)
       end if
     else
       if(old_lbar_on)
-        add_labelbar(wks,vector_object,lbar_zone,xbfontf,"vector",lbres)
+        add_labelbar(wks,base_object,lbar_zone,xbfontf,"vector",lbres)
       end if
       if(new_lbar_on)
-        fix_labelbar(vector_object,xbfontf,vcres)
+        fix_labelbar(base_object,xbfontf,vcres)
       end if
     end if
   
@@ -9575,21 +9581,21 @@ begin
     subres = get_res_eq(res2,(/"tx","am"/))  ; Get textitem resources
     subres                  = True
     set_attr(subres,"txFontHeightF",font_height)
-    add_subtitles(wks,vector_object,left_string,center_string,\
+    add_subtitles(wks,base_object,left_string,center_string,\
                   right_string,subres)
 
 ; Draw all this stuff: vector/contour plot, subtitles, and tick marks.
-    draw_and_frame(wks,vector_object,calldraw,callframe,0,maxbb)
+    draw_and_frame(wks,base_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
-    vector_object@vfdata  = vector_object@vfdata
-    vector_object@sfdata  = vector_object@sfdata
+    base_object@vfdata  = base_object@vfdata
+    base_object@sfdata  = base_object@sfdata
     if(lbar_type.eq."contour") then
-      vector_object@labelbar      = vector_object@contour
-      vector_object@labelbar_type = lbar_type
+      base_object@labelbar      = base_object
+      base_object@labelbar_type = lbar_type
     end if
-    return(vector_object)
+    return(base_object)
 end
 
 ;***********************************************************************;
@@ -9838,13 +9844,13 @@ begin
     end if
 
     if(scalar_contour)
-      vector_object = gsn_vector_contour(wks,unew,vnew,datanew,vcres)
+      base_object = gsn_vector_contour(wks,unew,vnew,datanew,vcres)
     else
-      vector_object = gsn_vector_scalar(wks,unew,vnew,datanew,vcres)
+      base_object = gsn_vector_scalar(wks,unew,vnew,datanew,vcres)
     end if
 
     map_object = gsn_csm_map_ce(wks,mpres)          ; Create map.
-    overlay(map_object,vector_object)               ; Overlay vectors on map.
+    overlay(map_object,base_object)               ; Overlay vectors on map.
 
 ; Retrieve some font heights and make the X/Y axis labels the same
 ; size, and the info label size the same as the tick mark label size.
@@ -9873,22 +9879,28 @@ begin
 
 ; Make sure info labels, line labels, and vector labels are same size.
     if(scalar_contour)
-      if(.not.isatt(vcres,"cnLineLabelFontHeightF"))
-        setvalues vector_object@contour
+      if(.not.isatt(vcres,"cnInfoLabelFontHeightF"))
+        setvalues base_object
           "cnInfoLabelFontHeightF" : xbfontf
        end setvalues
       end if
       if(.not.isatt(vcres,"cnLineLabelFontHeightF"))
-        setvalues vector_object@contour
+        setvalues base_object
           "cnLineLabelFontHeightF"    : xbfontf
         end setvalues
       end if
     end if
 
     if(.not.isatt(vcres,"vcRefAnnoFontHeightF"))
-      setvalues vector_object
-        "vcRefAnnoFontHeightF" : xbfontf
-     end setvalues
+      if(scalar_contour) then
+        setvalues base_object@vector
+          "vcRefAnnoFontHeightF" : xbfontf
+        end setvalues
+      else
+        setvalues base_object
+          "vcRefAnnoFontHeightF" : xbfontf
+        end setvalues
+      end if
     end if
 
 ; Create a labelbar.
@@ -9913,18 +9925,18 @@ begin
     end if
     if(scalar_contour)
       if(old_lbar_on)
-        add_labelbar(wks,vector_object@contour,lbar_zone,xbfontf, \
+        add_labelbar(wks,base_object,lbar_zone,xbfontf, \
                      "vector",lbres)
       end if
       if(new_lbar_on)
-        fix_labelbar(vector_object@contour,xbfontf,vcres)
+        fix_labelbar(base_object,xbfontf,vcres)
       end if
     else
       if(old_lbar_on)
-        add_labelbar(wks,vector_object,lbar_zone,xbfontf,"vector",lbres)
+        add_labelbar(wks,base_object,lbar_zone,xbfontf,"vector",lbres)
       end if
       if(new_lbar_on)
-        fix_labelbar(vector_object,xbfontf,vcres)
+        fix_labelbar(base_object,xbfontf,vcres)
       end if
     end if
 
@@ -9934,17 +9946,17 @@ begin
 ; Return plot object and data object (as attribute of plot object).
 
     if(lbar_type.eq."contour") then
-      map_object@labelbar      = vector_object@contour
+      map_object@labelbar = base_object
       map_object@labelbar_type = lbar_type
     end if
 
-    map_object@vfdata  = vector_object@vfdata
-    map_object@sfdata  = vector_object@sfdata
+    map_object@vfdata  = base_object@vfdata
+    map_object@sfdata  = base_object@sfdata
     if(scalar_contour)
-      map_object@vector  = vector_object
-      map_object@contour = vector_object@contour
+      map_object@contour = base_object
+      map_object@vector  = base_object@vector
     else
-      map_object@vector  = vector_object
+      map_object@vector  = base_object
     end if
 
     return(map_object)
@@ -10177,12 +10189,13 @@ begin
     mpres@gsnFrame = False
 
     if(scalar_contour)
-      vector_object = gsn_vector_contour(wks,unew,vnew,datanew,vcres)
+      base_object = gsn_vector_contour(wks,unew,vnew,datanew,vcres)
     else
-      vector_object = gsn_vector_scalar(wks,unew,vnew,datanew,vcres)
+      base_object = gsn_vector_scalar(wks,unew,vnew,datanew,vcres)
     end if
+
     map_object    = gsn_csm_map_polar(wks,mpres)    ; Create map.
-    overlay(map_object,vector_object)               ; Overlay vectors on map.
+    overlay(map_object,base_object)               ; Overlay vectors on map.
 
 ; Retrieve plot height so we can compute font height.
 
@@ -10220,18 +10233,18 @@ begin
 
     if(scalar_contour)
       if(old_lbar_on)
-        add_labelbar(wks,vector_object@contour,lbar_zone,font_height, \
+        add_labelbar(wks,base_object,lbar_zone,font_height, \
                      "vector",lbres)
       end if
       if(new_lbar_on)
-        fix_labelbar(vector_object@contour,font_height,vcres)
+        fix_labelbar(base_object,font_height,vcres)
       end if
     else
       if(old_lbar_on)
-        add_labelbar(wks,vector_object,lbar_zone,font_height,"vector",lbres)
+        add_labelbar(wks,base_object,lbar_zone,font_height,"vector",lbres)
       end if
       if(new_lbar_on)
-        fix_labelbar(vector_object,font_height,vcres)
+        fix_labelbar(base_object,font_height,vcres)
       end if
     end if
   
@@ -10241,17 +10254,17 @@ begin
 ; Return plot object and data object (as attribute of plot object).
 
     if(lbar_type.eq."contour") then
-      map_object@labelbar      = vector_object@contour
+      map_object@labelbar      = base_object
       map_object@labelbar_type = lbar_type
     end if
 
-    map_object@vfdata  = vector_object@vfdata
-    map_object@sfdata  = vector_object@sfdata
+    map_object@vfdata  = base_object@vfdata
+    map_object@sfdata  = base_object@sfdata
     if(scalar_contour)
-      map_object@vector  = vector_object
-      map_object@contour = vector_object@contour
+      map_object@contour = base_object
+      map_object@vector  = base_object@vector
     else
-      map_object@vector  = vector_object
+      map_object@vector  = base_object
     end if
     return(map_object)
 end
@@ -10477,13 +10490,13 @@ begin
     mpres@gsnFrame  = False
 
     if(scalar_contour)
-      vector_object = gsn_vector_contour(wks,unew,vnew,datanew,vcres)
+      base_object = gsn_vector_contour(wks,unew,vnew,datanew,vcres)
     else
-      vector_object = gsn_vector_scalar(wks,unew,vnew,datanew,vcres)
+      base_object = gsn_vector_scalar(wks,unew,vnew,datanew,vcres)
     end if
 
     map_object = gsn_csm_map_other(wks,mpres)   ; Create map.
-    overlay(map_object,vector_object)           ; Overlay vectors on map.
+    overlay(map_object,base_object)           ; Overlay vectors on map.
 
 ; Retrieve plot height so we can compute font height.
 
@@ -10507,9 +10520,15 @@ begin
 ; Set font heights only if they haven't been set explicitly by user.
 
     if(.not.isatt(vcres,"vcRefAnnoFontHeightF"))
-      setvalues vector_object
-        "vcRefAnnoFontHeightF"  : font_height
-      end setvalues
+      if(scalar_contour) then
+        setvalues base_object@vector
+          "vcRefAnnoFontHeightF" : font_height
+        end setvalues
+      else
+        setvalues base_object
+          "vcRefAnnoFontHeightF" : font_height
+        end setvalues
+      end if
     end if
 
 ; Create a labelbar.
@@ -10525,19 +10544,19 @@ begin
     end if
     if(scalar_contour)
       if(old_lbar_on)
-        add_labelbar(wks,vector_object@contour,lbar_zone,font_height, \
+        add_labelbar(wks,base_object,lbar_zone,font_height, \
                      "vector",lbres)
       end if
       if(new_lbar_on)
-        fix_labelbar(vector_object@contour,font_height,vcres)
+        fix_labelbar(base_object,font_height,vcres)
       end if
     else
       if(old_lbar_on)
-        add_labelbar(wks,vector_object,lbar_zone,font_height, \
+        add_labelbar(wks,base_object,lbar_zone,font_height, \
                      "vector",lbres)
       end if
       if(new_lbar_on)
-        fix_labelbar(vector_object,font_height,vcres)
+        fix_labelbar(base_object,font_height,vcres)
       end if
     end if
   
@@ -10548,17 +10567,17 @@ begin
 ; Return plot object and data object (as attribute of plot object).
 
     if(lbar_type.eq."contour") then
-      map_object@labelbar      = vector_object@contour
+      map_object@labelbar      = base_object
       map_object@labelbar_type = lbar_type
     end if
 
-    map_object@vfdata  = vector_object@vfdata
-    map_object@sfdata  = vector_object@sfdata
+    map_object@vfdata  = base_object@vfdata
+    map_object@sfdata  = base_object@sfdata
     if(scalar_contour)
-      map_object@vector  = vector_object
-      map_object@contour = vector_object@contour
+      map_object@contour = base_object
+      map_object@vector  = base_object@vector
     else
-      map_object@vector  = vector_object
+      map_object@vector  = base_object
     end if
     return(map_object)
 end
