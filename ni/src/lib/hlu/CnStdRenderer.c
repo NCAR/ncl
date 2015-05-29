@@ -1606,10 +1606,6 @@ static NhlErrorTypes CnStdRender
 			MAX((double)fabs((double)tfp->data_ystart),(double)fabs((double)tfp->data_yend)) > 91;
 		if (out_of_bounds) {
 			if (cnp->fill_on && (cnp->fill_mode == NhlAREAFILL || cnp->fill_mode == NhlRASTERFILL)) {
-				char *mode = "AreaFill";
-				if (cnp->fill_mode == NhlRASTERFILL) {
-					mode = "RasterFill";
-				}
 				e_text =  "%s: out of range coordinates encountered; standard %s rendering method may be unreliable;\n consider setting the resource trGridType to \"TriangularMesh\" if coordinates contain missing values";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,cnp->fill_mode == NhlAREAFILL ? "AreaFill" : "RasterFill");
 			}
@@ -2332,6 +2328,7 @@ int (_NHLCALLF(hlucpfill,HLUCPFILL))
 	float fscale;
 	int *colp, *patp;
 	float *sclp;
+	float fill_opacity;
 
 	if (Cnp == NULL) return 0;
 
@@ -2384,8 +2381,7 @@ int (_NHLCALLF(hlucpfill,HLUCPFILL))
 				fscale = reg_attrs->fill_scale;
 			}
                         
-                        float fill_opacity;
-                        int ret  = NhlVAGetValues(Cnl->base.wkptr->base.id,
+                        NhlVAGetValues(Cnl->base.wkptr->base.id,
                                         _NhlNwkFillOpacityF, &fill_opacity, 
                                         NULL);
                         
@@ -2477,7 +2473,7 @@ void  (_NHLCALLF(hlucpscae,HLUCPSCAE))
 	   
 
 	if (*iaid > 99 && *iaid < 100 + Cnp->fill_count) {
-		col_ix = Cnp->gks_fill_colors[*iaid - 100];
+		col_ix = Cnp->mono_fill_color ? Cnp->fill_color : Cnp->gks_fill_colors[*iaid - 100];
 		if (col_ix < 0) col_ix = NhlTRANSPARENT_CI;
 	}
 	else if (*iaid == 99) {
@@ -3666,26 +3662,21 @@ NhlErrorTypes _NhlMeshFill
 
 	float		orv,spv;
 	float		xc1,xcm,yc1,ycn;
-	float		xmn,xmx,ymn,ymx;
 	int		i,j,k,izd1,izdm,izdn,icaf,map,iaid;
         float		*levels;
-	float		cxstep,cystep;
-	float           xsoff,xeoff,ysoff,yeoff;
-	NhlBoolean      x_isbound,y_isbound;
-	float           tol1,tol2;
+	float		cxstep;
 	int             grid_fill_ix;
 
 	float *xarr, *yarr;
 	NhlBoolean ezmap = False;
 	float xcount,ycount;
-        int lxsize,xc_count,yc_count,mode;
+        int lxsize,mode;
 	int jc,jcm1,jcp1;
 	float avg_cells_per_grid_box;
 	int status;
 	float mflx,mfby,mfrx,mfuy;
 	float min_minx, max_maxx, min_miny, max_maxy;
 	float max_coverage = 0;
-	int twice;
 
         if (Cnp == NULL) {
 		e_text = "%s: invalid call to _NhlRasterFill";
@@ -3713,10 +3704,6 @@ NhlErrorTypes _NhlMeshFill
 	c_cpgeti("ZD1",&izd1);
 	c_cpgeti("CAF",&icaf);
 	c_cpgeti("MAP",&map);
-	xmn = MIN(xc1,xcm);
-	xmx = MAX(xc1,xcm);
-	ymn = MIN(yc1,ycn);
-	ymx = MAX(yc1,ycn);
 	if (!Cnp->sfp->x_arr || Cnp->sfp->x_arr->num_dimensions == 1) {
 		return (_NhlRasterFill(zdat,cell,ica1,icam,ican,
 				       xcpf,ycpf,xcqf,ycqf,entry_name));
@@ -3727,17 +3714,7 @@ NhlErrorTypes _NhlMeshFill
 
 
 	cxstep = (xcqf-xcpf)/(float)icam;
-	cystep = (ycqf-ycpf)/(float)ican;
- 	x_isbound = Cnp->sfp->xc_is_bounds;
- 	y_isbound = Cnp->sfp->yc_is_bounds;
 
-	xsoff = Xsoff + .5 * (1.0 - Xsoff);
-	xeoff = Xeoff + .5 * (1.0 - Xeoff);
-	ysoff = Ysoff + .5 * (1.0 - Ysoff);
-	yeoff = Yeoff + .5 * (1.0 - Yeoff);
-
-	tol1 = 0.00001 * MIN(Cnl->view.width,Cnl->view.height);
-	tol2 = 0.5 * MIN(Cnl->view.width,Cnl->view.height);
 	
 /*
  *      initialize cell array with the missing value.
@@ -3782,8 +3759,6 @@ NhlErrorTypes _NhlMeshFill
 	xcount = xcm - xc1;
 	ycount = ycn - yc1;
 	lxsize = Cnp->sfp->xc_is_bounds ? izd1 + 1 : izd1;
-	xc_count = Cnp->sfp->xc_is_bounds ? xcount + 1 : xcount;
-	yc_count = Cnp->sfp->yc_is_bounds ? ycount + 1 : ycount;
 	mode = 0;
 	mode |= Cnp->sfp->xc_is_bounds ? X_BOUNDS : 0;
 	mode |= Cnp->sfp->yc_is_bounds ? Y_BOUNDS : 0;
@@ -3799,7 +3774,6 @@ NhlErrorTypes _NhlMeshFill
 	mfuy = ycqf + (ycqf - ycpf) * .1;
 	min_minx = min_miny = 1e30;
 	max_maxx = max_maxy = 0;
-	twice = 0;
 	for (j = yc1; j < ycn; j++) {
 		if (j == 0) {
 			jc = jcm1 =  0;
@@ -3817,7 +3791,6 @@ NhlErrorTypes _NhlMeshFill
 		}
 				
 		for (i = xc1; i <xcm; i++) {
-			float ival,jval;
 			int ix = i + j * izd1;
 			int iplus,jplus;
 			float fvali;
@@ -3828,7 +3801,6 @@ NhlErrorTypes _NhlMeshFill
 			int p,p1,p2,p0;
 			int jcv,icv;
 
-			twice = 1;
 
 			if (! GetXYIn2D(xarr,yarr,jc,jcm1,jcp1,i,
 					xcount,mode,ezmap,xi,yi))
@@ -3836,8 +3808,6 @@ NhlErrorTypes _NhlMeshFill
 
 			pps = &ps[0];
 			
-			ival = i;
-			jval = j;
 
 #if 0
 			if (ezmap) {
@@ -3909,7 +3879,6 @@ NhlErrorTypes _NhlMeshFill
 #if 1
 			if (maxx - minx > icam / 2.0) {
 				float new_maxx = -1e30,new_minx = 1e30;
-				twice = 2;
 				for (p = 0; p < 4; p++) {
 					if (xp[p] < icam / 2) {
 						xp[p] += (float) icam;

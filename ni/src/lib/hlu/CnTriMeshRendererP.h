@@ -37,15 +37,17 @@ extern void _NhlSetCnl(
 
 
 typedef struct _triblock {
-	float *rpnt;
+ 	float *rpnt;
 	int *iedg;
 	int *itri;
 	int npnt;
 	int nedg;
 	int ntri;
-	float xs,xe,ys,ye;
+	float xs,xe,ys,ye;    /* these values overlap */
+	float xsr,ysr,xer,yer;  /* these represent the actual boundaries */
 	double *points;
 	float *dat;
+	int ixmn,ixmx,iymn,iymx;
 	int npnt_alloc;
 } TriBlock;
 

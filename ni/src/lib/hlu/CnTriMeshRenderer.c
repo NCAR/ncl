@@ -331,8 +331,7 @@ static cnCt_Params Ct_Params[] = {
 {"HCL", cnFloat},
 {"HCS", cnFloat}, 
 {"HCF", cnInt}, 
-{"HLX", cnInt}, 
-{"HLY", cnInt}, 
+{"HLR", cnFloat}, 
 {"IWM", cnInt}, 
 {"PC1", cnFloat},
 {"PC2", cnFloat}, 
@@ -365,6 +364,389 @@ static int Lopn = 4;
 static int Loen = 5;
 static int Lotn = 4;
 static TriBlock *Tbp;
+
+
+static NhlErrorTypes CreateTilePartitions
+#if	NhlNeedProto
+(
+	NhlCnTriMeshRendererLayerPart *tmp,
+	NhlContourPlotLayer     cnl,
+	NhlString entry_name
+)
+#else
+(tmp,cnl,entry_name)
+        NhlCnTriMeshRendererLayerPart *tmp;
+	NhlContourPlotLayer     cnl;
+	NhlString entry_name;
+#endif
+{
+	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
+	int mnop;
+	float *rlat,*rlon;
+	float *rdat;
+	int i,j;
+	int block_count = 1;
+	int block_size;
+	int threshold_size;
+	double xs, xe, ys, ye, xstep,ystep,xspace,yspace;
+	int nx_div, ny_div;
+	TriBlock *tbp;
+	int npnt_alloc;
+	int block_ix;
+	float yadd;
+	float xadd;
+	double xt,yt;
+	int nthreads;
+	double xtmp,ytmp;
+	float *tlon = NULL, *tlat = NULL;
+	float flx,frx,fby,fuy,wlx,wrx,wby,wuy; 
+	int ll;
+
+	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
+
+	threshold_size = 40000000;
+	FreeTriBlockContents(tmp->tri_block,&(tmp->nblocks));
+
+	rdat = (float*)cnp->sfp->d_arr->data;
+	rlat = (float*)cnp->sfp->y_arr->data;
+	rlon = (float*)cnp->sfp->x_arr->data;
+	if (cnp->sfp->d_arr->num_dimensions == 1) {
+		mnop = cnp->sfp->fast_len;
+	}
+	else {
+		mnop = cnp->sfp->fast_len * cnp->sfp->slow_len;
+		if (cnp->sfp->x_arr->num_dimensions == 2) {  
+			rlat = (float*)cnp->sfp->y_arr->data;
+			rlon = (float*)cnp->sfp->x_arr->data;
+		}
+		else {
+			int isize = cnp->sfp->fast_len;
+			int jsize = cnp->sfp->slow_len;
+			/* need to create 2D coordinate arrays */
+			tlon = NhlMalloc(mnop * sizeof(float));
+			tlat = NhlMalloc(mnop * sizeof(float));
+			if (cnp->sfp->y_arr) {
+				float y;
+				for (j = 0; j < jsize; j++) {
+					y = rlat[j];
+					for (i = 0; i < isize; i++) {
+						*(tlat + j*isize+i) = y;
+					}
+				}
+			}
+			else {
+				/* need to do something here */
+				float y;
+				float step = (cnp->sfp->y_end - cnp->sfp->y_start) /    
+					(jsize - 1);
+				for (j = 0; j < jsize; j++) {
+					y = cnp->sfp->y_start + j * step;
+					for (i = 0; i < isize; i++) {
+						*(tlat + j*isize+i) = y;
+					}
+				}
+			}
+			if (cnp->sfp->x_arr) {
+				float *x = rlon; 
+				for (j = 0; j < jsize; j++) {
+					memcpy(tlon + j*isize,x,isize * sizeof(float));
+				}
+			}
+			else {
+				/* need to do something here */
+				float x;
+				float step = (cnp->sfp->x_end - cnp->sfp->x_start) /
+					(isize - 1);
+				for (i = 0; i < isize; i++) {
+					x = cnp->sfp->x_start + i * step;
+					for (j = 0; j < jsize; j++) {
+						*(tlon + j*isize + i) = x;
+					}
+				}
+			}
+			rlat = tlat;
+			rlon = tlon;
+		}
+	}
+
+
+	block_size = mnop;
+        while (block_size > threshold_size) {
+		block_size = block_size / 2 + block_size % 2;
+		block_count *= 2;
+	}
+	nx_div = MAX(1,block_count / 2);
+	ny_div = MAX(1,block_count / 2 + block_count % 2);
+
+#ifdef _OPENMP
+	nthreads = omp_get_num_threads();
+#else
+	nthreads = 1;
+#endif
+	/* printf("%d threads\n",nthreads);*/
+	if (nthreads > block_count) {
+		/* block_count = nthreads - nthreads % 2;  accept even numbers only */
+		block_count = nthreads;
+	}
+	if (block_count >= tmp->nblocks_alloced) {
+		NhlFree(tmp->tri_block);
+		tmp->tri_block = (TriBlock *) NhlCalloc(block_count, sizeof(TriBlock));
+		tmp->nblocks_alloced = block_count;
+	}
+
+	nx_div = MAX(1,(int) sqrt(block_count));
+	ny_div = MAX(1,(int) block_count / nx_div);
+	block_count = nx_div * ny_div;
+	block_size = mnop / block_count + block_size % block_count;
+	xspace = wrx - wlx;
+	yspace = wuy - wby;
+
+	yadd = yspace * 0.01;
+	xadd = xspace * 0.01;
+	ys = wby;
+	ye = ys + (wuy - ys) / ny_div;
+	ystep = ye - ys;
+
+	block_ix = 0;
+	npnt_alloc = (int) 1.25 * block_size;
+	for (j = 0; j < ny_div; j++) {
+		xs = wlx;
+		xe = xs + (wrx - xs) / nx_div;
+		xstep = xe - xs;
+		for (i = 0; i < nx_div; i++) {
+			tbp = &(tmp->tri_block[block_ix]);
+			tbp->xs = MAX(wlx,xs - xadd);
+			tbp->xe = MIN(wrx,xe + xadd);
+			tbp->ys = MAX(wby,ys - yadd);
+			tbp->ye = MIN(wuy,ye + yadd);
+			tbp->xer = xe;
+			tbp->yer = ye;
+			tbp->xsr = xs;
+			tbp->ysr = ys;
+			xs = xe;
+			xe = xs + xstep;
+			tbp->points = (double *)NhlMalloc(2 * npnt_alloc * sizeof(double));
+			tbp->dat = (float *) NhlMalloc(npnt_alloc * sizeof(float));
+			tbp->npnt = 0;
+			tbp->npnt_alloc = npnt_alloc;
+			block_ix++;
+		}
+		ys = ye;
+		ye = ys + ystep;
+	}
+		
+	for (i = 0; i < mnop; i++) {
+		xtmp = (double) rlon[i];
+		ytmp = (double) rlat[i];
+		if (tmp->ezmap) {
+			NGCALLF(mdptra,MDPTRA)(&ytmp,&xtmp,&xt,&yt);
+			if (xt > 1e10 || yt > 1e10)
+				continue;
+		}
+		else {
+			xt = xtmp;
+			yt = ytmp;
+		}
+		for (block_ix = 0; block_ix < block_count; block_ix++) {
+			tbp = &(tmp->tri_block[block_ix]);
+			xs = tbp->xs;
+			xe = tbp->xe;
+			ys = tbp->ys;
+			ye = tbp->ye;
+			if (xt < xs || xt > xe || yt < ys || yt > ye) {
+				continue;
+			}
+				
+			if (tbp->npnt == tbp->npnt_alloc) {
+				tbp->npnt_alloc *= 1.5;
+				tbp->dat = (float *) NhlRealloc(tbp->dat,tbp->npnt_alloc * sizeof(float));
+				tbp->points = (double *)NhlRealloc(tbp->points,2 * tbp->npnt_alloc * sizeof(double));
+			}
+			tbp->points[tbp->npnt * 2] = xt;
+			tbp->points[tbp->npnt * 2 + 1] = yt;
+			tbp->dat[tbp->npnt] = rdat[i];
+			tbp->npnt++;
+		}
+	}
+	tmp->nblocks = block_count;
+	if (tlat) NhlFree(tlat);
+	if (tlon) NhlFree(tlon);
+
+	return NhlNOERROR;
+}
+
+#if 0
+static NhlErrorTypes LatLon2IJ
+(
+	float lat,
+	float lon,
+	float *latc,
+	float *lonc,
+	int latsize,
+	int lonsize,
+	int *ix,   /* return i */
+	int *jx   /* return j */
+	)
+{
+	int i , j;
+
+	if ()
+		;
+}
+#endif
+			
+	
+
+static NhlErrorTypes CreateTilePartitions2D
+#if	NhlNeedProto
+(
+	NhlCnTriMeshRendererLayerPart *tmp,
+	NhlContourPlotLayer     cnl,
+	NhlString entry_name
+)
+#else
+(tmp,cnl,entry_name)
+        NhlCnTriMeshRendererLayerPart *tmp;
+	NhlContourPlotLayer     cnl;
+	NhlString entry_name;
+#endif
+{
+	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
+	int mnop;
+	float *rlat,*rlon;
+	int i,j;
+	int block_count = 1;
+	int block_size;
+	int threshold_size;
+	double xs, xe, ys, ye, xstep,ystep,xspace,yspace;
+	int nx_div, ny_div;
+	TriBlock *tbp;
+	int block_ix;
+	float yadd;
+	float xadd;
+	double xt,yt;
+	int nthreads;
+	double xtmp,ytmp;
+	float flx,frx,fby,fuy,wlx,wrx,wby,wuy; 
+	int ll;
+	int xsize, ysize;
+
+	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
+
+	threshold_size = 40000000;
+	FreeTriBlockContents(tmp->tri_block,&(tmp->nblocks));
+
+	rlat = (float*)cnp->sfp->y_arr->data;
+	rlon = (float*)cnp->sfp->x_arr->data;
+	mnop = cnp->sfp->slow_len * cnp->sfp->fast_len;
+
+	block_size = mnop;
+        while (block_size > threshold_size) {
+		block_size = block_size / 2 + block_size % 2;
+		block_count *= 2;
+	}
+	nx_div = MAX(1,block_count / 2);
+	ny_div = MAX(1,block_count / 2 + block_count % 2);
+
+#ifdef _OPENMP
+	nthreads = omp_get_num_threads();
+#else
+	nthreads = 1;
+#endif
+
+	/* printf("%d threads\n",nthreads);*/
+	if (nthreads > block_count) {
+		/* block_count = nthreads - nthreads % 2;  accept even numbers only */
+		block_count = nthreads;
+	}
+	if (block_count >= tmp->nblocks_alloced) {
+		NhlFree(tmp->tri_block);
+		tmp->tri_block = (TriBlock *) NhlCalloc(block_count, sizeof(TriBlock));
+		tmp->nblocks_alloced = block_count;
+	}
+	else {
+		memset(tmp->tri_block,0,sizeof(TriBlock) * block_count);
+	}
+
+	nx_div = MAX(1,(int) sqrt(block_count));
+	nx_div = 1;
+	ny_div = MAX(1,(int) block_count / nx_div);
+	block_count = nx_div * ny_div;
+	block_size = mnop / block_count + block_size % block_count;
+	xspace = wrx - wlx;
+	yspace = wuy - wby;
+
+	yadd = yspace * 0.01;
+	xadd = xspace * 0.01;
+	ys = wby;
+	ye = ys + (wuy - ys) / ny_div;
+	ystep = ye - ys;
+
+	block_ix = 0;
+	xsize = cnp->sfp->fast_len;
+	ysize = cnp->sfp->slow_len;
+	for (j = 0; j < ny_div; j++) {
+		xs = wlx;
+		xe = xs + (wrx - xs) / nx_div;
+		xstep = xe - xs;
+		for (i = 0; i < nx_div; i++) {
+			tbp = &(tmp->tri_block[block_ix]);
+			tbp->xs = MAX(wlx,xs - xadd);
+			tbp->xe = MIN(wrx,xe + xadd);
+			tbp->ys = MAX(wby,ys - yadd);
+			tbp->ye = MIN(wuy,ye + yadd);
+			tbp->xer = xe;
+			tbp->yer = ye;
+			tbp->xsr = xs;
+			tbp->ysr = ys;
+			tbp->ixmn = xsize;
+			tbp->iymn = ysize;
+			tbp->ixmx = tbp->iymx = 0;
+			
+			xs = xe;
+			xe = xs + xstep;
+			block_ix++;
+		}
+		ys = ye;
+		ye = ys + ystep;
+		/*printf("xs %f xe %f ys %f ye %f \n",tbp->xs,tbp->xe,tbp->ys,tbp->ye);*/
+	}
+
+	for (j = 0; j < ysize; j++) {
+		for (i = 0; i < xsize; i++) {
+			int ix = j * xsize + i;
+			xtmp = (double) rlon[ix];
+			ytmp = (double) rlat[ix];
+			if (tmp->ezmap) {
+				NGCALLF(mdptra,MDPTRA)(&ytmp,&xtmp,&xt,&yt);
+				if (xt > 1e10 || yt > 1e10)
+					continue;
+			}
+			else {
+				xt = xtmp;
+				yt = ytmp;
+			}
+			for (block_ix = 0; block_ix < block_count; block_ix++) {
+				tbp = &(tmp->tri_block[block_ix]);
+				xs = tbp->xs;
+				xe = tbp->xe;
+				ys = tbp->ys;
+				ye = tbp->ye;
+				if (xt < xs || xt > xe || yt < ys || yt > ye) {
+					continue;
+				}
+				if (i < tbp->ixmn) tbp->ixmn = i;
+				if (i > tbp->ixmx) tbp->ixmx = i;
+				if (j < tbp->iymn) tbp->iymn = j;
+				if (j > tbp->iymx) tbp->iymx = j;
+			}
+		}
+	}
+
+	tmp->nblocks = block_count;
+
+	return NhlNOERROR;
+}
 
 
 /*
@@ -446,7 +828,7 @@ static NhlErrorTypes BuildTriangularMesh
 	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
 	int *iscr;
 	float missing_val;
-	int coords_alloced = 0;
+	int coords_alloced;
 	int idim = cnp->sfp->fast_len;
 	int jdim = cnp->sfp->slow_len;
 	int idm1 = cnp->sfp->fast_len - 1;
@@ -462,179 +844,335 @@ static NhlErrorTypes BuildTriangularMesh
 	int *iedg, *itri;
 	int npnt,nedg,ntri;
 	float *rlat,*rlon,*rdat;
+	float *tlat, *tlon, *tdat;
 	int i,j;
 	TriBlock *tbp;
+	float flx,frx,fby,fuy,wlx,wrx,wby,wuy; 
+	int ll;
+	int block_ix;
+	int blk_idim, blk_jdim,blk_j_off, blk_i_off;
+	int tid,nthreads;
+	int tsize;
 
-	FreeTriBlockContents(tmp->tri_block,&(tmp->nblocks));
-
-	iscr = NhlMalloc(4 * idim * jdim * sizeof(int));
-	rpnt = NhlMalloc(mpnt * sizeof(float));
-	iedg = NhlMalloc(medg * sizeof(int));
-	itri = NhlMalloc(mtri * sizeof(int));
-
-	if (! iscr || ! rpnt || ! iedg || ! itri) {
-		NHLPERROR((NhlFATAL,ENOMEM,NULL));
-		return NhlFATAL;
-	}
-	
-	missing_val = cnp->sfp->missing_value_set ?
-		cnp->sfp->missing_value : -FLT_MAX;
-
-	if (cnp->sfp->x_arr && cnp->sfp->x_arr->num_dimensions == 2) {
-		
-		/* 
-		 * since the triangular mesh algorithm does not handle
-		 * coordinates not defined at the grid points we 
-		 * must interpolate bounding coordinates to the 
-		 * cell centers as best we can.
-		 */
-		if (! (cnp->sfp->xc_is_bounds || cnp->sfp->yc_is_bounds)) {
-			rlat = (float*)cnp->sfp->y_arr->data;
-			rlon = (float*)cnp->sfp->x_arr->data;
-		}
-		else if (cnp->sfp->xc_is_bounds && cnp->sfp->yc_is_bounds) {
-			int jd, jbd, jbdp;
-			float *tlat, *tlon;
-			int cidim = idim + 1; 
-			tlat = (float*)cnp->sfp->y_arr->data;
-			tlon = (float*)cnp->sfp->x_arr->data;
-			coords_alloced = 1;
-			rlat = NhlMalloc(idim * jdim * sizeof(float));
-			rlon = NhlMalloc(idim * jdim * sizeof(float));
-			for (j = 0; j < jdim; j++) {
-				jd = j * idim;
-				jbd = j * cidim;
-				jbdp = (j+1) * cidim;
-				for (i = 0; i < idim; i++) {
-				     *(rlon+jd+i) = 
-				       (*(tlon+jbd+i) + *(tlon+jbd+i+1) +
-				        *(tlon+jbdp+i) + *(tlon+jbdp+i+1)) 
-					     / 4.0;
-				     *(rlat+jd+i) = 
-				       (*(tlat+jbd+i) + *(tlat+jbd+i+1) +
-				        *(tlat+jbdp+i) + *(tlat+jbdp+i+1)) 
-					     / 4.0;
-				}
-			}
-		}
-		else if (cnp->sfp->xc_is_bounds) {
-			int jd, jbd;
-			float *tlat, *tlon;
-			int cidim = idim + 1; 
-			tlat = (float*)cnp->sfp->y_arr->data;
-			tlon = (float*)cnp->sfp->x_arr->data;
-			coords_alloced = 1;
-			rlat = NhlMalloc(idim * jdim * sizeof(float));
-			rlon = NhlMalloc(idim * jdim * sizeof(float));
-			for (j = 0; j < jdim; j++) {
-				jd = j * idim;
-				jbd = j * cidim;
-				for (i = 0; i < idim; i++) {
-				     *(rlon+jd+i) = 
-				       (*(tlon+jbd+i) + *(tlon+jbd+i+1)) / 2.0;
-				     *(rlat+jd+i) = 
-				       (*(tlat+jbd+i) + *(tlat+jbd+i+1)) / 2.0;
-				}
-			}
-		}
-		else if (cnp->sfp->yc_is_bounds) {
-			int jd, jdp;
-			float *tlat, *tlon;
-			tlat = (float*)cnp->sfp->y_arr->data;
-			tlon = (float*)cnp->sfp->x_arr->data;
-			coords_alloced = 1;
-			rlat = NhlMalloc(idim * jdim * sizeof(float));
-			rlon = NhlMalloc(idim * jdim * sizeof(float));
-			for (j = 0; j < jdim; j++) {
-				jd = j * idim;
-				jdp = (j + 1) * idim;
-				for (i = 0; i < idim; i++) {
-				     *(rlon+jd+i) = 
-				       (*(tlon+jd+i) + *(tlon+jdp+i)) / 2.0;
-				     *(rlat+jd+i) = 
-				       (*(tlat+jd+i) + *(tlat+jdp+i)) / 2.0;
-				}
-			}
-		}
-	}
-	else {
-		rlat = NhlMalloc(idim * jdim * sizeof(float));
-		rlon = NhlMalloc(idim * jdim * sizeof(float));
-		coords_alloced = 1;
-		if (cnp->sfp->y_arr) {
-			float y;
-			for (j = 0; j < jdim; j++) {
-				y = ((float*)cnp->sfp->y_arr->data)[j];
-				for (i = 0; i < idim; i++) {
-					*(rlat + j*idim+i) = y;
-				}
-			}
-		}
-		else {
-			float y;
-			float step = (cnp->sfp->y_end - cnp->sfp->y_start) /
-				(jdim - 1);
-			for (j = 0; j < jdim; j++) {
-				y = cnp->sfp->y_start + j * step;
-				for (i = 0; i < idim; i++) {
-					*(rlat + j*idim+i) = y;
-				}
-			}
-		}
-		if (cnp->sfp->x_arr) {
-			float *x = ((float*)cnp->sfp->x_arr->data);
-			for (j = 0; j < jdim; j++) {
-				memcpy(rlon + j*idim,x,idim * sizeof(float));
-			}
-		}
-		else {
-			float x;
-			float step = (cnp->sfp->x_end - cnp->sfp->x_start) /
-				(idim - 1);
-			for (i = 0; i < idim; i++) {
-				x = cnp->sfp->x_start + i * step;
-				for (j = 0; j < jdim; j++) {
-					*(rlon + j*idim + i) = x;
-				}
-			}
-		}
-	}
-	
+	rlat = (float*)cnp->sfp->y_arr->data;
+	rlon = (float*)cnp->sfp->x_arr->data;
 	rdat = (float*)cnp->sfp->d_arr->data;
 
-	if (tmp->ezmap) {
-		c_cttmrg(idim,jdim,rlat,rlon,rdat,
-			 iscr,missing_val,
-			 _NHLCALLF(rtmi,RTMI),
-			 rpnt,mpnt,&npnt,Lopn,
-			 iedg,medg,&nedg,Loen,
-			 itri,mtri,&ntri,Lotn);
-	}
-	else {
-		_NHLCALLF(trmrgr,TRMRGR)
-			(&idim,&jdim,rlon,rlat,rdat,
-			 iscr,&missing_val,
-			 rpnt,&mpnt,&npnt,&Lopn,
-			 iedg,&medg,&nedg,&Loen,
-			 itri,&mtri,&ntri,&Lotn);
-	}
+	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
 
-	NhlFree(iscr);
-	if (coords_alloced) {
-		NhlFree(rlon);
-		NhlFree(rlat);
-	}
+#if 0
+#pragma omp parallel shared(cnp, tmp,missing_val,flx,frx,fby,fuy,wlx,wrx,wby,wuy,ll,nthreads,rdat,rlat,rlon) \
+	private(tid,tbp,block_ix,npnt,ntri,nedg,i,j, blk_idim, blk_jdim, idm1, jdm1, mnop,mnoe,mnot,mpnt,medg,mtri,iscr, \
+		rpnt,iedg,itri,tlat,tlon,tdat,coords_alloced,tsize,blk_j_off,blk_i_off)
+	{
+#ifdef _OPENMP
 
-	tbp = &(tmp->tri_block[0]);
-	tbp->npnt = npnt;
-	tbp->nedg = nedg;
-	tbp->ntri = ntri;
-	tbp->rpnt = rpnt;
-	tbp->iedg = iedg;
-	tbp->itri = itri;
+	    tid = omp_get_thread_num();
+	    nthreads = omp_get_num_threads();
+#endif
+#endif
+	    tid = 0;
+	    nthreads = 1;
+
+	    if (nthreads > 1) {
+		    if (tid == 0) 
+			    CreateTilePartitions2D(tmp,cnl,entry_name);
+	    }
+	    else {
+		    tbp = &(tmp->tri_block[0]);
+		    tbp->xs = tbp->xsr = wlx;
+		    tbp->xe = tbp->xer = wrx;
+		    tbp->ys = tbp->ysr = wby;
+		    tbp->ye = tbp->yer = wuy;
+		    tbp->ixmn = tbp->iymn = 0;
+		    tbp->ixmx = cnp->sfp->fast_len - 1;
+		    tbp->iymx = cnp->sfp->slow_len - 1;
+		    tbp->dat = (float*)cnp->sfp->d_arr->data;
+		    tbp->npnt = cnp->sfp->slow_len * cnp->sfp->fast_len;
+		    tmp->nblocks = 1;
+	    }
+
+		    
+#if 0
+#pragma omp barrier
+
+#pragma omp for schedule(static,1)
+#endif
+	    for (block_ix = 0; block_ix < tmp->nblocks; block_ix++) {
+		    
+		    tbp = &(tmp->tri_block[block_ix]);
+		    blk_idim = tbp->ixmx - tbp->ixmn + 1;
+		    blk_jdim = tbp->iymx - tbp->iymn + 1;
+		    idm1 = blk_idim - 1;
+		    jdm1 = blk_jdim - 1;
+		    blk_j_off = tbp->iymn * cnp->sfp->fast_len;
+		    blk_i_off = tbp->ixmn;
+
+		    mnop = blk_idim * blk_jdim;
+		    mnoe = 3 *idm1 * jdm1 + idm1 + jdm1;
+		    mnot = 2 * idm1 * jdm1;
+		    mpnt = mnop * Lopn;
+		    medg = mnoe * Loen;
+		    mtri = mnot * Lotn;
+
+		    iscr = NhlMalloc(4 * blk_idim * blk_jdim * sizeof(int));
+		    rpnt = NhlMalloc(mpnt * sizeof(float));
+		    iedg = NhlMalloc(medg * sizeof(int));
+		    itri = NhlMalloc(mtri * sizeof(int));
+#if 0
+		    if (! iscr || ! rpnt || ! iedg || ! itri) {
+			    NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			    return NhlFATAL;
+		    }
+#endif
+	
+		    missing_val = cnp->sfp->missing_value_set ?
+			    cnp->sfp->missing_value : -FLT_MAX;
+
+		    tsize = blk_jdim * blk_idim * sizeof(float);
+		    coords_alloced = 0;
+		    if (tmp->nblocks == 1 &&  cnp->sfp->x_arr->num_dimensions == 2
+			&& ! (cnp->sfp->xc_is_bounds || cnp->sfp->yc_is_bounds)) {
+			    /* in this case only there is no need to copy the arrays */
+			    tlat = rlat;
+			    tlon = rlon;
+			    tdat = rdat;
+		    }
+		    else {
+			    coords_alloced = 1;
+			    tlat = NhlMalloc( tsize * sizeof(float));
+			    tlon = NhlMalloc( tsize * sizeof(float));
+			    tdat = NhlMalloc( tsize * sizeof(float));
+			    if (cnp->sfp->x_arr && cnp->sfp->x_arr->num_dimensions == 2) {
+				    float *rlon_off = rlon + blk_j_off;
+				    float *rlat_off = rlat + blk_j_off;
+		
+				    /* 
+				     * since the triangular mesh algorithm does not handle
+				     * coordinates not defined at the grid points we 
+				     * must interpolate bounding coordinates to the 
+				     * cell centers as best we can.
+				     */
+				    if (cnp->sfp->xc_is_bounds && cnp->sfp->yc_is_bounds) {
+					    int jd, jbd, jbdp;
+					    int ix;
+					    int xcoord_len = idim + 1;
+				    
+					    for (j = 0; j < blk_jdim; j++) {
+						    jd = j * idim;
+						    jbd = j * xcoord_len;
+						    jbdp = (j+1) * xcoord_len;
+						    for (i = 0; i < blk_idim; i++) {
+							    ix = i + blk_i_off;
+							    *(tlon+jd+i) = 
+								    (*(rlon_off + jbd+ix) + *(rlon_off+jbd+ix+1) +
+								     *(rlon_off+jbdp + ix) + *(rlon_off+jbdp+ix+1)) 
+								    / 4.0;
+							    *(tlat+jd+i) =
+								    (*(rlat_off+jbd+ix) + *(rlat_off+jbd+ix+1) +
+								     *(rlat_off+jbdp+ix) + *(rlat_off+jbdp+ix+1)) 
+								    / 4.0;
+						    }
+					    }
+					    if (tbp->ixmn == 0) {
+						    memcpy(tdat,rdat + tbp->iymn * cnp->sfp->fast_len,tsize);
+					    }
+					    else {
+						    int tysize = tbp->iymx - tbp->iymn + 1;
+						    int txsize = tbp->ixmx -tbp->ixmn + 1;
+						    int rstart = tbp->iymn * cnp->sfp->fast_len;
+						    for (i = 0; i < tysize; i++) {
+							    memcpy(tdat + i * txsize, rdat + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
+						    }
+					    }
+				    }
+				    else if (cnp->sfp->xc_is_bounds) {
+					    int jd, jbd;
+					    int ix;
+					    int xcoord_len = idim + 1;
+					    for (j = 0; j < blk_jdim; j++) {
+						    jd = j * idim;
+						    jbd = j * xcoord_len;
+						    for (i = 0; i < blk_idim; i++) {
+							    ix = i + blk_i_off;
+							    *(tlon+jd+i) = 
+								    (*(rlon_off+jbd+ix) + *(rlon_off+jbd+ix+1)) / 2.0;
+							    *(tlat+jd+i) = 
+								    (*(rlat_off+jbd+ix) + *(rlat_off+jbd+ix+1)) / 2.0;
+						    }
+					    }
+					    if (tbp->ixmn == 0) {
+						    memcpy(tdat,rdat + tbp->iymn * cnp->sfp->fast_len,tsize);
+					    }
+					    else {
+						    int tysize = tbp->iymx - tbp->iymn + 1;
+						    int txsize = tbp->ixmx -tbp->ixmn + 1;
+						    int rstart = tbp->iymn * cnp->sfp->fast_len;
+						    for (i = 0; i < tysize; i++) {
+							    memcpy(tdat + i * txsize, rdat + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
+						    }
+					    }
+				    }
+				    else if (cnp->sfp->yc_is_bounds) {
+					    int jd, jdp;
+					    int ix;
+					    for (j = 0; j < blk_jdim; j++) {
+						    jd = j * idim;
+						    jdp = (j + 1) * idim;
+						    for (i = 0; i < blk_idim; i++) {
+							    ix = i + blk_i_off;
+							    *(tlon+jd+i) = 
+								    (*(rlon_off+jd+ix) + *(rlon_off+jdp+ix)) / 2.0;
+							    *(tlat+jd+i) = 
+								    (*(rlat_off+jd+ix) + *(rlat_off+jdp+ix)) / 2.0;
+						    }
+					    }
+					    if (tbp->ixmn == 0) {
+						    memcpy(tdat,rdat + tbp->iymn * cnp->sfp->fast_len,tsize);
+					    }
+					    else {
+						    int tysize = tbp->iymx - tbp->iymn + 1;
+						    int txsize = tbp->ixmx -tbp->ixmn + 1;
+						    int rstart = tbp->iymn * cnp->sfp->fast_len;
+						    for (i = 0; i < tysize; i++) {
+							    memcpy(tdat + i * txsize, rdat + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
+						    }
+					    }
+				    }
+				    else {
+					    if (tbp->ixmn == 0) {
+						    memcpy(tlat,rlat + tbp->iymn * cnp->sfp->fast_len,tsize);
+						    memcpy(tlon,rlon + tbp->iymn * cnp->sfp->fast_len,tsize);
+						    memcpy(tdat,rdat + tbp->iymn * cnp->sfp->fast_len,tsize);
+					    }
+					    else {
+						    int tysize = tbp->iymx - tbp->iymn + 1;
+						    int txsize = tbp->ixmx -tbp->ixmn + 1;
+						    int rstart = tbp->iymn * cnp->sfp->fast_len;
+						    for (i = 0; i < tysize; i++) {
+							    memcpy(tlat + i * txsize, rlat + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
+							    memcpy(tlon + i * txsize, rlon + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
+							    memcpy(tdat + i * txsize, rdat + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
+						    }
+					    }
+				    }
+			    }
+			    else {
+				    if (cnp->sfp->y_arr) {
+					    float y;
+					    int jix;
+					    if (! cnp->sfp->yc_is_bounds) {
+						    for (j = 0; j < blk_jdim; j++) {
+							    jix = tbp->iymn + j;
+							    y = rlat[jix];
+							    for (i = 0; i < blk_idim; i++) {
+								    *(tlat + j*blk_idim+i) = y;
+							    }
+						    }
+					    }
+					    else {
+						    for (j = 0; j < blk_jdim; j++) {
+							    jix = tbp->iymn + j;
+							    y = (rlat[jix] + rlat[jix + 1]) * 0.5;
+							    for (i = 0; i < blk_idim; i++) {
+								    *(tlat + j*blk_idim+i) = y;
+							    }
+						    }
+					    }
+				    }
+				    else {
+					    /* need to do something here */
+					    float y;
+					    float step = (cnp->sfp->y_end - cnp->sfp->y_start) /    
+						    (blk_jdim - 1);
+					    for (j = 0; j < blk_jdim; j++) {
+						    y = cnp->sfp->y_start + (j + tbp->iymn) * step;
+						    for (i = 0; i < blk_idim; i++) {
+							    *(tlat + j*blk_idim+i) = y;
+						    }
+					    }
+				    }
+				    if (cnp->sfp->x_arr) {
+					    if (! cnp->sfp->xc_is_bounds) {
+						    float *x = rlon + tbp->ixmn; 
+						    for (j = 0; j < blk_jdim; j++) {
+							    memcpy(tlon + j*blk_idim,x,blk_idim * sizeof(float));
+						    }
+					    }
+					    else {
+						    int ix;
+						    float x;
+						    for (i = 0; i < blk_idim; i++) {
+							    ix = i + tbp->ixmn;
+							    x = (rlon[ix] + rlon[ix + 1]) * 0.5;
+							    for (j = 0; j < blk_jdim; j++) {
+								    tlon[j * blk_idim + i] = x;
+							    }
+						    }
+					    }
+				    }
+				    else {
+					    /* need to do something here */
+					    float x;
+					    float step = (cnp->sfp->x_end - cnp->sfp->x_start) /
+						    (blk_idim - 1);
+					    for (i = 0; i < blk_idim; i++) {
+						    x = cnp->sfp->x_start + (i + tbp->iymn) * step;
+						    for (j = 0; j < blk_jdim; j++) {
+							    *(tlon + j*blk_idim + i) = x;
+						    }
+					    }
+				    }
+				    if (tbp->ixmn == 0) {
+					    memcpy(tdat,rdat + tbp->iymn * cnp->sfp->fast_len,tsize);
+				    }
+				    else {
+					    int tysize = tbp->iymx - tbp->iymn + 1;
+					    int txsize = tbp->ixmx -tbp->ixmn + 1;
+					    int rstart = tbp->iymn * cnp->sfp->fast_len;
+					    for (i = 0; i < tysize; i++) {
+						    memcpy(tdat + i * txsize, rdat + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
+					    }
+				    }
+
+			    }
+		    }
+
+		    if (tmp->ezmap) {
+			    c_cttmrg(blk_idim,blk_jdim,tlat,tlon,tdat,
+				     iscr,missing_val,
+				     _NHLCALLF(rtmi,RTMI),
+				     rpnt,mpnt,&npnt,Lopn,
+				     iedg,medg,&nedg,Loen,
+				     itri,mtri,&ntri,Lotn);
+		    }
+		    else {
+			    _NHLCALLF(trmrgr,TRMRGR)
+				    (&blk_idim,&blk_jdim,rlon,rlat,rdat,
+				     iscr,&missing_val,
+				     rpnt,&mpnt,&npnt,&Lopn,
+				     iedg,&medg,&nedg,&Loen,
+				     itri,&mtri,&ntri,&Lotn);
+		    }
+
+		    NhlFree(iscr);
+		    if (coords_alloced) {
+			    NhlFree(tdat);
+			    NhlFree(tlon);
+			    NhlFree(tlat);
+		    }
+	
+		    tbp->npnt = npnt;
+		    tbp->nedg = nedg;
+		    tbp->ntri = ntri;
+		    tbp->rpnt = rpnt;
+		    tbp->iedg = iedg;
+		    tbp->itri = itri;
+	    }
+#if 0
+	}
+#endif
 	tmp->update_mode = TRIMESH_NOUPDATE;
-	tmp->nblocks = 1;
-
 	return NhlNOERROR;
 
 }
@@ -681,6 +1219,9 @@ static NhlErrorTypes BuildNativeMesh
 	char *e_msg;
 	char *e_text;
 	TriBlock *tbp;
+	float flx,frx,fby,fuy,wlx,wrx,wby,wuy; 
+	int ll;
+	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
 
 	FreeTriBlockContents(tmp->tri_block,&(tmp->nblocks));
 
@@ -790,7 +1331,18 @@ static NhlErrorTypes BuildNativeMesh
 	tbp->rpnt = rpnt;
 	tbp->iedg = iedg;
 	tbp->itri = itri;
-
+	tbp->xs = tbp->xsr = wlx;
+	tbp->xe = tbp->xer = wrx;
+	tbp->ys = tbp->ysr = wby;
+	tbp->ye = tbp->yer = wuy;
+	tbp->ixmn = tbp->iymn = 0;
+	if (cnp->sfp->slow_len == 0) {
+		tbp->ixmx = tbp->iymx = cnp->sfp->fast_len - 1;
+	}
+	else {
+		tbp->iymx = cnp->sfp->slow_len - 1;
+		tbp->ixmx = cnp->sfp->fast_len - 1;
+	}
 	tmp->nblocks = 1;
 	tmp->update_mode = TRIMESH_NOUPDATE;
 	NhlFree(ippp);
@@ -1042,6 +1594,9 @@ static NhlErrorTypes BuildNativeMeshFromBounds
 	char *e_msg;
 	char *e_text;
 	TriBlock *tbp;
+	float flx,frx,fby,fuy,wlx,wrx,wby,wuy; 
+	int ll;
+	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
 
 	FreeTriBlockContents(tmp->tri_block,&(tmp->nblocks));
 
@@ -1158,7 +1713,18 @@ static NhlErrorTypes BuildNativeMeshFromBounds
 	tbp->rpnt = rpnt;
 	tbp->iedg = iedg;
 	tbp->itri = itri;
-
+	tbp->xs = tbp->xsr = wlx;
+	tbp->xe = tbp->xer = wrx;
+	tbp->ys = tbp->ysr = wby;
+	tbp->ye = tbp->yer = wuy;
+	tbp->ixmn = tbp->iymn = 0;
+	if (cnp->sfp->slow_len == 0) {
+		tbp->ixmx = tbp->iymx = cnp->sfp->fast_len - 1;
+	}
+	else {
+		tbp->iymx = cnp->sfp->slow_len - 1;
+		tbp->ixmx = cnp->sfp->fast_len - 1;
+	}
 	tmp->nblocks = 1;
 	tmp->update_mode = TRIMESH_NOUPDATE;
 	NhlFree(ippp);
@@ -1475,337 +2041,160 @@ static NhlErrorTypes BuildDelaunayMesh
 #endif
 {
 	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
-	int mnop = cnp->sfp->fast_len;
 	int npnt,nedg;
-	float *rlat,*rlon;
-	float *rdat;
 	int ntri = 0;
 
 	int i,j;
 	struct triangulateio in,out,vout;
 	char *flags;
-	int block_count = 1;
-	int block_size;
-	int threshold_size = 20000000;
-	double xs, xe, ys, ye, xstep,ystep,xspace,yspace;
 	Stri *stris = NULL;
         Snode *snodes;
 	Sedge *sedges, *vedges;
         Cpoint *cpoints;
         Cedge *cedges;
         Ctri *ctris;
-	int nx_div, ny_div;
 	TriBlock *tbp;
-	int npnt_alloc;
 	int block_ix;
-	float ye_adj,yadd;
-	float xe_adj,xadd;
-	double xt,yt;
-	int tid, nthreads;
-	double xmx,xmn,ymx,ymn;
-	double xtmp,ytmp,deps;
-	float flx,frx,fby,fuy,wlx,wrx,wby,wuy; 
-	int ll;
+	int tid;
 
-	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
-#if 0
-	printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
-	       flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
-#endif
-
-	threshold_size = 40000000;
-	FreeTriBlockContents(tmp->tri_block,&(tmp->nblocks));
-
-	rlat = (float*)cnp->sfp->y_arr->data;
-	rlon = (float*)cnp->sfp->x_arr->data;
-	rdat = (float*)cnp->sfp->d_arr->data;
-
-	block_size = mnop;
-        while (block_size > threshold_size) {
-		block_size = block_size / 2 + block_size % 2;
-		block_count *= 2;
-	}
-	nx_div = MAX(1,block_count / 2);
-	ny_div = MAX(1,block_count / 2 + block_count % 2);
-
-	deps = 0.001;
-	
-#pragma omp parallel shared(cnp, tmp, nx_div, ny_div, block_size, mnop, rlat, rlon, rdat,xstep,ystep,block_count,nthreads,deps,yadd,xadd) \
-	private(tbp,block_ix,ys,ye,ye_adj,xs,xe,xe_adj,npnt,ntri,nedg,npnt_alloc,xt,yt,i,j,in,out,vout, \
-		snodes,stris,sedges,vedges,cpoints,cedges,ctris,tid,xmx,xmn,ymx,ymn,ytmp,xtmp)
+#pragma omp parallel shared(cnp, tmp) \
+	private(tbp,block_ix,npnt,ntri,nedg,i,j,in,out,vout, \
+		snodes,stris,sedges,vedges,cpoints,cedges,ctris,tid)
 	{
 #ifdef _OPENMP
-	  tid = omp_get_thread_num();
-	  nthreads = omp_get_num_threads();
+	    tid = omp_get_thread_num();
 #else
-    tid = 0;
-    nthreads = 1;
+	    tid = 0;
 #endif
-	  if (tid == 0) {
-		  /* printf("%d threads\n",nthreads);*/
-		  if (nthreads > block_count) {
-			  /* block_count = nthreads - nthreads % 2;  accept even numbers only */
-			  block_count = nthreads;
-		  }
-		  if (block_count >= tmp->nblocks_alloced) {
-			  NhlFree(tmp->tri_block);
-			  tmp->tri_block = (TriBlock *) NhlCalloc(block_count, sizeof(TriBlock));
-			  tmp->nblocks_alloced = block_count;
-		  }
-
-		  nx_div = MAX(1,(int) sqrt(block_count));
-		  ny_div = MAX(1,(int) block_count / nx_div);
-		  block_count = nx_div * ny_div;
-		  block_size = mnop / block_count + block_size % block_count;
-		  xspace = wrx - wlx;
-		  yspace = wuy - wby;
-		  /*
-		  point_dist = sqrt(mnop / (xspace * yspace));
-		   try for five point overlap apporximately */
-		  yadd = yspace * 0.01;
-		  xadd = xspace * 0.01;
-		  ys = wby;
-		  ye = ys + (wuy - ys) / ny_div;
-		  ystep = ye - ys;
-		  ye_adj = MIN(ye + yadd,wuy);
-
-		  block_ix = 0;
-		  npnt_alloc = (int) 1.25 * block_size;
-		  for (j = 0; j < ny_div; j++) {
-			  xs = wlx;
-			  xe = xs + (wrx - xs) / nx_div;
-			  xstep = xe - xs;
-			  xe_adj = MIN(xe + xadd, wrx);
-			  for (i = 0; i < nx_div; i++) {
-				  tbp = &(tmp->tri_block[block_ix]);
-				  tbp->xs = xs;
-				  tbp->xe = xe_adj;
-				  tbp->ys = ys;
-				  tbp->ye = ye_adj;
-				  xs = xe;
-				  xe = xs + xstep;
-				  xe_adj = MIN(xe + xadd,wrx);
-				  tbp->points = (double *)NhlMalloc(2 * npnt_alloc * sizeof(double));
-				  tbp->dat = (float *) NhlMalloc(npnt_alloc * sizeof(float));
-				  tbp->npnt = 0;
-				  tbp->npnt_alloc = npnt_alloc;
-				  block_ix++;
-			  }
-			  ys = ye;
-			  ye = ys + ystep;
-			  ye_adj = MIN(ye + yadd, wuy);
-		  }
-		  for (i = 0; i < mnop; i++) {
-			xtmp = (double) rlon[i];
-			ytmp = (double) rlat[i];
-			if (tmp->ezmap) {
-				NGCALLF(mdptra,MDPTRA)(&ytmp,&xtmp,&xt,&yt);
-				if (xt > 1e10 || yt > 1e10)
-					continue;
-			}
-			else {
-				xt = xtmp;
-				yt = ytmp;
-			}
-			for (block_ix = 0; block_ix < block_count; block_ix++) {
-				tbp = &(tmp->tri_block[block_ix]);
-				xs = tbp->xs;
-				xe = tbp->xe;
-				ys = tbp->ys;
-				ye = tbp->ye;
-				if (xt < xs || xt > xe || yt < ys || yt > ye) {
-					continue;
-				}
-				if (tbp->npnt == tbp->npnt_alloc) {
-					tbp->npnt_alloc *= 1.5;
-					tbp->points = (double *)NhlRealloc(tbp->points,2 * tbp->npnt_alloc * sizeof(double));
-					tbp->dat = (float *) NhlRealloc(tbp->dat,tbp->npnt_alloc * sizeof(float));
-				}
-				tbp->points[tbp->npnt * 2] = (double)xt;
-				tbp->points[tbp->npnt * 2 + 1] = (double)yt;
-				tbp->dat[tbp->npnt] = rdat[i];
-				tbp->npnt++;
-			}
-		  }
-	  }
-/*
-	  else {
-		  printf("thread num is %d\n",tid);
-	  }
-*/
+	    if (tid == 0) {
+		    CreateTilePartitions(tmp,cnl,entry_name);
+	    }
 
 #pragma omp barrier
 
 
 #pragma omp for schedule(static,1)
-	  for (block_ix = 0; block_ix < block_count; block_ix++) {
-		  npnt = 0;
-		  ntri = 0;
-		  nedg = 0;
-		  tbp = &(tmp->tri_block[block_ix]);
-		  xs = tbp->xs;
-		  xe = tbp->xe;
-		  ys = tbp->ys;
-		  ye = tbp->ye;
+	    for (block_ix = 0; block_ix < tmp->nblocks; block_ix++) {
+		    npnt = 0;
+		    ntri = 0;
+		    nedg = 0;
+		    tbp = &(tmp->tri_block[block_ix]);
 
-		  if (tbp->npnt == 0) {
-			  tbp->npnt = 0;
-			  tbp->nedg = 0;
-			  tbp->ntri = 0;
-			  tbp->rpnt = NULL;
-			  tbp->iedg = NULL;
-			  tbp->itri = NULL;
-			  NhlFree(tbp->points);
-			  NhlFree(tbp->dat);
-			  continue;
-		  }
+		    if (tbp->npnt == 0) {
+			    tbp->npnt = 0;
+			    tbp->nedg = 0;
+			    tbp->ntri = 0;
+			    tbp->rpnt = NULL;
+			    tbp->iedg = NULL;
+			    tbp->itri = NULL;
+			    NhlFree(tbp->points);
+			    NhlFree(tbp->dat);
+			    continue;
+		    }
+		    memset(&in,0,sizeof(struct triangulateio));
+		    memset(&out,0,sizeof(struct triangulateio));
+		    memset(&vout,0,sizeof(struct triangulateio));
+		    in.numberofpointattributes = 0;
+		    in.numberoftriangles = 0;
 
-#if 0
-		  printf("thread %d chunk x %f %f y %f %f\n",tid,xs,xe,ys,ye);
+		    if (cnp->verbose_triangle_info) {
+			    flags = "IBzveVV";
+		    }
+		    else {
+			    flags = "IBzveQ";
+		    }
 
-		  seglist = NhlMalloc(sizeof(int) * npnt_added);
-		  segmarkerlist = NhlMalloc(sizeof(int) * npnt_added / 2);
-		  for (i = 0; i < npnt_added / 2; i++) {
-			  seglist[2 * i] = npnt + i;
-			  seglist[2 * i + 1] = npnt + i + 1;
-			  segmarkerlist[i] = 1;
-		  }
-#endif
-		  memset(&in,0,sizeof(struct triangulateio));
-		  memset(&out,0,sizeof(struct triangulateio));
-		  memset(&vout,0,sizeof(struct triangulateio));
-		  in.numberofpointattributes = 0;
-		  in.numberoftriangles = 0;
+		    in.pointlist = tbp->points;
+		    out.pointlist = in.pointlist;
+		    in.numberofpoints = tbp->npnt;
 
-		  if (cnp->verbose_triangle_info) {
-			  flags = "IBzveVV";
-		  }
-		  else {
-			  flags = "IBzveQ";
-		  }
-
-		  in.pointlist = tbp->points;
-/*
-  in.segmentlist = seglist;
-  in.segmentmarkerlist = segmarkerlist;
-*/
-	    
-		  /*in.pointmarkerlist = blist;*/
-		  out.pointlist = in.pointlist;
-/*
-  in.numberofpoints = npnt + npnt_added;
-*/
-		  in.numberofpoints = tbp->npnt;
-
-		  triangulate(flags,&in,&out,&vout);
+		    triangulate(flags,&in,&out,&vout);
 /*
   printf("triangulation completed\n");
 */
 
-		  stris = (Stri *) out.trianglelist;
-		  sedges = (Sedge *) out.edgelist;
-		  vedges = (Sedge *) vout.edgelist;
+		    stris = (Stri *) out.trianglelist;
+		    sedges = (Sedge *) out.edgelist;
+		    vedges = (Sedge *) vout.edgelist;
 
-		  npnt = out.numberofpoints;
-		  ntri = out.numberoftriangles;
-		  nedg = out.numberofedges;
-		  snodes = (Snode *)tbp->points;
-		  cpoints = NhlMalloc(npnt * sizeof(Cpoint));
-		  cedges = NhlMalloc(nedg * sizeof(Cedge));
-		  ctris = NhlMalloc(ntri * sizeof(Ctri));
-		  memset(ctris,(char) 0,ntri *sizeof(Ctri));
+		    npnt = out.numberofpoints;
+		    ntri = out.numberoftriangles;
+		    nedg = out.numberofedges;
+		    snodes = (Snode *)tbp->points;
+		    cpoints = NhlMalloc(npnt * sizeof(Cpoint));
+		    cedges = NhlMalloc(nedg * sizeof(Cedge));
+		    ctris = NhlMalloc(ntri * sizeof(Ctri));
+		    memset(ctris,(char) 0,ntri *sizeof(Ctri));
 
-		  xmx = ymx = -999;
-		  xmn = ymn = 9999;
 
-		  for (i = 0; i < npnt; i++) {
-			  cpoints[i].x = (float) snodes[i].x;
-			  cpoints[i].y = (float) snodes[i].y;
-			  cpoints[i].z = 0.0;
-			  cpoints[i].dat = tbp->dat[i];
-#if 0
-			  if (cpoints[i].x > xmx) {
-				  xmx = cpoints[i].x;
-				  ixmx = i;
-			  }
-			  if (cpoints[i].y > ymx) {
-				  ymx = cpoints[i].y;
-				  iymx = i;
-			  }
-			  if (cpoints[i].x < xmn) {
-				  xmn = cpoints[i].x;
-				  ixmn = i;
-			  }
-			  if (cpoints[i].y < ymn) {
-				  ymn = cpoints[i].y;
-				  iymn = i;
-			  }
-#endif
-		  }
-		  NhlFree(tbp->points);
-		  tbp->points = NULL;
-		  NhlFree(tbp->dat);
-		  tbp->dat = NULL;
+		    for (i = 0; i < npnt; i++) {
+			    cpoints[i].x = (float) snodes[i].x;
+			    cpoints[i].y = (float) snodes[i].y;
+			    cpoints[i].z = 0.0;
+			    cpoints[i].dat = tbp->dat[i];
+		    }
+		    NhlFree(tbp->points);
+		    tbp->points = NULL;
+		    NhlFree(tbp->dat);
+		    tbp->dat = NULL;
 
-		  for (i = 0; i < nedg; i++) {
-			  cedges[i].pix_1 = sedges[i].nodes[0] * Lopn;
-			  cedges[i].pix_2 = sedges[i].nodes[1] * Lopn;
-			  /* the Voronoi edges have the same indexes as the Delaunay triangles (they are duals) */
-			  cedges[i].trix_l =  vedges[i].nodes[0] > -1 ? vedges[i].nodes[0] * Lotn : -1; /* plus edge number within triangle */
-			  cedges[i].trix_r =  vedges[i].nodes[1] > -1 ? vedges[i].nodes[1] * Lotn : -1; /* plus edge number within triangle */
-			  cedges[i].flag = 0;
-			  for (j = 0; j < 3; j++) {
-				  if (vedges[i].nodes[0] > -1 && stris[vedges[i].nodes[0]].nodes[j] == sedges[i].nodes[0]) {
-					  ctris[vedges[i].nodes[0]].edge[j] = i * Loen;
-					  cedges[i].trix_l += (j + 1);
-				  }
-				  if (vedges[i].nodes[1] > -1 && stris[vedges[i].nodes[1]].nodes[j] == sedges[i].nodes[1]) {
-					  ctris[vedges[i].nodes[1]].edge[j] = i * Loen;
-					  cedges[i].trix_r += (j+1);
-				  }
-			  }
-		  }
-		  if (cnp->sfp->missing_value_set) {
-			  /* since there are only 3 values, stored in 6 possible locations, looking at 5 of them should be sufficient */
-			  for (i = 0; i < ntri; i++) {
-				  if (cpoints[cedges[ctris[i].edge[0]/Loen].pix_1/Lopn].dat == cnp->sfp->missing_value ||
-				      cpoints[cedges[ctris[i].edge[1]/Loen].pix_1/Lopn].dat == cnp->sfp->missing_value ||
-				      cpoints[cedges[ctris[i].edge[2]/Loen].pix_1/Lopn].dat == cnp->sfp->missing_value ||
-				      cpoints[cedges[ctris[i].edge[0]/Loen].pix_2/Lopn].dat == cnp->sfp->missing_value ||
-				      cpoints[cedges[ctris[i].edge[1]/Loen].pix_2/Lopn].dat == cnp->sfp->missing_value) { 
-					  ctris[i].flag = 1;
-				  }
-			  }
-		  }
-		  else {
-			  for (i = 0; i < ntri; i++) {
-				  if (cpoints[cedges[ctris[i].edge[0]/Loen].pix_1/Lopn].dat >= 1e32 || 
-				      cpoints[cedges[ctris[i].edge[1]/Loen].pix_1/Lopn].dat >= 1e32 || 
-				      cpoints[cedges[ctris[i].edge[2]/Loen].pix_1/Lopn].dat >= 1e32 ||
-				      cpoints[cedges[ctris[i].edge[0]/Loen].pix_2/Lopn].dat >= 1e32 ||
-				      cpoints[cedges[ctris[i].edge[1]/Loen].pix_2/Lopn].dat >= 1e32) {
-					  ctris[i].flag = 1;
-				  }
-			  }
-		  }
+		    for (i = 0; i < nedg; i++) {
+			    cedges[i].pix_1 = sedges[i].nodes[0] * Lopn;
+			    cedges[i].pix_2 = sedges[i].nodes[1] * Lopn;
+			    /* the Voronoi edges have the same indexes as the Delaunay triangles (they are duals) */
+			    cedges[i].trix_l =  vedges[i].nodes[0] > -1 ? vedges[i].nodes[0] * Lotn : -1; /* plus edge number within triangle */
+			    cedges[i].trix_r =  vedges[i].nodes[1] > -1 ? vedges[i].nodes[1] * Lotn : -1; /* plus edge number within triangle */
+			    cedges[i].flag = 0;
+			    for (j = 0; j < 3; j++) {
+				    if (vedges[i].nodes[0] > -1 && stris[vedges[i].nodes[0]].nodes[j] == sedges[i].nodes[0]) {
+					    ctris[vedges[i].nodes[0]].edge[j] = i * Loen;
+					    cedges[i].trix_l += (j + 1);
+				    }
+				    if (vedges[i].nodes[1] > -1 && stris[vedges[i].nodes[1]].nodes[j] == sedges[i].nodes[1]) {
+					    ctris[vedges[i].nodes[1]].edge[j] = i * Loen;
+					    cedges[i].trix_r += (j+1);
+				    }
+			    }
+		    }
+		    if (cnp->sfp->missing_value_set) {
+			    /* since there are only 3 values, stored in 6 possible locations, looking at 5 of them should be sufficient */
+			    for (i = 0; i < ntri; i++) {
+				    if (cpoints[cedges[ctris[i].edge[0]/Loen].pix_1/Lopn].dat == cnp->sfp->missing_value ||
+					cpoints[cedges[ctris[i].edge[1]/Loen].pix_1/Lopn].dat == cnp->sfp->missing_value ||
+					cpoints[cedges[ctris[i].edge[2]/Loen].pix_1/Lopn].dat == cnp->sfp->missing_value ||
+					cpoints[cedges[ctris[i].edge[0]/Loen].pix_2/Lopn].dat == cnp->sfp->missing_value ||
+					cpoints[cedges[ctris[i].edge[1]/Loen].pix_2/Lopn].dat == cnp->sfp->missing_value) { 
+					    ctris[i].flag = 1;
+				    }
+			    }
+		    }
+		    else {
+			    for (i = 0; i < ntri; i++) {
+				    if (cpoints[cedges[ctris[i].edge[0]/Loen].pix_1/Lopn].dat >= 1e32 || 
+					cpoints[cedges[ctris[i].edge[1]/Loen].pix_1/Lopn].dat >= 1e32 || 
+					cpoints[cedges[ctris[i].edge[2]/Loen].pix_1/Lopn].dat >= 1e32 ||
+					cpoints[cedges[ctris[i].edge[0]/Loen].pix_2/Lopn].dat >= 1e32 ||
+					cpoints[cedges[ctris[i].edge[1]/Loen].pix_2/Lopn].dat >= 1e32) {
+					    ctris[i].flag = 1;
+				    }
+			    }
+		    }
 
-		  free(stris);
-		  free(sedges);
-		  free(vedges);
+		    free(stris);
+		    free(sedges);
+		    free(vedges);
 
-		  tbp->npnt = npnt * Lopn;
-		  tbp->nedg = nedg * Loen;
-		  tbp->ntri = ntri * Lotn;
-		  tbp->rpnt = (float *) cpoints;
-		  tbp->iedg = (int *) cedges;
-		  tbp->itri = (int *) ctris;
-		  SortEdges(tbp);
-	  }
+		    tbp->npnt = npnt * Lopn;
+		    tbp->nedg = nedg * Loen;
+		    tbp->ntri = ntri * Lotn;
+		    tbp->rpnt = (float *) cpoints;
+		    tbp->iedg = (int *) cedges;
+		    tbp->itri = (int *) ctris;
+		    SortEdges(tbp);
+	    }
 
 	}
 
-
-	tmp->nblocks = block_count;
         tmp->update_mode = TRIMESH_NOUPDATE;
 
 	return NhlNOERROR;
@@ -1874,15 +2263,10 @@ CnTriMeshRendererInitialize
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlCnTriMeshRendererLayer tml = (NhlCnTriMeshRendererLayer) new;
 	NhlCnTriMeshRendererLayerPart *tmp =  &tml->cntrimeshrenderer;
-	NhlContourPlotLayer     cnl;
-	NhlContourPlotLayerPart	*cnp;
 	static int initial_block_count = 16;
 
 	load_hluct_routines(False);
 	
-	cnl = (NhlContourPlotLayer) tml->base.parent;
-	cnp =  &cnl->contourplot;
-
 	/* allowing for multiple blocks -- initialize the block pointers to allow an initial supply */
 
 	tmp->tri_block = (TriBlock *) NhlCalloc(initial_block_count, sizeof (TriBlock));
@@ -2275,7 +2659,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	}
 	else if (cnp->llabel_placement == NhlRANDOMIZED) {
 		*do_labels = True;
-		c_ctseti("LLP",2);
+		c_ctseti("LLP",-2);
 		if (cnp->line_lbls.angle < 0.0) 
 			c_ctseti("LLO",1); /* angle to contour direction */
 		else {
@@ -2283,7 +2667,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
 			c_ctsetr("LLA",(float)cnp->line_lbls.angle);
 		}
 		if (cnp->llabel_density > 0.0) {
-			float rc1 = 0.25 / cnp->llabel_density;
+			float rc1 = 0.10 / cnp->llabel_density;
 			float rc2 = 0.25 / cnp->llabel_density;
 			float rc3 = 0.05 / cnp->llabel_density;	
 			c_ctsetr("RC1",rc1);
@@ -2293,7 +2677,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	}
 	else {
 		*do_labels = True;
-		c_ctseti("LLP",3);
+		c_ctseti("LLP",-3);
 		if (cnp->line_lbls.angle < 0.0) 
 			c_ctseti("LLO",1); /* angle to contour direction */
 		else {
@@ -2314,6 +2698,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
 
 			pc6 /= cnp->llabel_density;
 			pc3 = pc3 + 30 * (cnp->llabel_density - 1);
+			pc3 = 360.0;
 			pc1 *= cnp->llabel_density;
 			pc5 *= cnp->llabel_density;
 
@@ -2327,6 +2712,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
 			c_ctsetr("PW2",pw2);
 			c_ctsetr("PW3",pw3);
 			c_ctsetr("PW4",pw4);
+			/*printf("pc 1-6: %f %f %f %f %f %f pw1-4 %f %f %f %f\n",pc1,pc2,pc3,pc4,pc5,pc6,pw1,pw2,pw3,pw4);*/
 		}
 	}
 
@@ -3226,6 +3612,10 @@ static NhlErrorTypes UpdateMeshData
 			if (xt < xs || xt > xe || yt < ys || yt > ye) {
 				continue;
 			}
+			if (tmp->ezmap != 2) {
+				xt = xtmp;
+				yt = ytmp;
+			}
 			if (_NhlCmpFAny2((float)xt,cpp[pcount[block_ix]].x,6,_NhlMIN_NONZERO) == 0 &&
 			    _NhlCmpFAny2((float)yt,cpp[pcount[block_ix]].y,6,_NhlMIN_NONZERO)) {
 				cpp[pcount[block_ix]].dat = rdat[i];
@@ -3264,6 +3654,7 @@ static NhlErrorTypes InitMesh
         NhlErrorTypes ret = NhlNOERROR;
 	TriBlock *tbp;
 
+
 	if (tmp->update_mode == TRIMESH_DATAUPDATE && tmp->nblocks > 0 && ! do_ctmesh) {
 		ret = UpdateMeshData(tmp,cnl,entry_name);
 		return ret;
@@ -3282,11 +3673,12 @@ static NhlErrorTypes InitMesh
 #ifdef BuildTRIANGLE
 				/* this routine sorts the edges for left/right so the ctmesh routine does not have to */
 				ret = BuildDelaunayMesh(tmp,cnl,entry_name);
+				/* we need to call ctmesh at least once */
 				tbp = &(tmp->tri_block[0]);
-				ret = MIN(ret,_NhlHLUCtmesh(tbp->rpnt,tbp->npnt,Lopn,
-							    tbp->iedg,tbp->nedg,Loen,
-							    tbp->itri,tbp->ntri,Lotn,
-							    cnp->fws,cnp->iws,entry_name));
+				_NhlHLUCtmesh(tbp->rpnt,tbp->npnt,Lopn,
+					      tbp->iedg,tbp->nedg,Loen,
+					      tbp->itri,tbp->ntri,Lotn,
+					      cnp->fws,cnp->iws,entry_name);
 				return ret;
 #else
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -3295,6 +3687,22 @@ static NhlErrorTypes InitMesh
 #endif
 			}
 		}
+
+#ifdef _OPENMP
+#ifdef BuildTRIANGLE
+		else if (tmp->ezmap == 2) {
+				ret = BuildDelaunayMesh(tmp,cnl,entry_name);
+				/* we need to call ctmesh at least once */
+				tbp = &(tmp->tri_block[0]);
+				_NhlHLUCtmesh(tbp->rpnt,tbp->npnt,Lopn,
+					      tbp->iedg,tbp->nedg,Loen,
+					      tbp->itri,tbp->ntri,Lotn,
+					      cnp->fws,cnp->iws,entry_name);
+				return ret;
+			
+		}
+#endif
+#endif
 		else {
 			ret = BuildTriangularMesh(tmp,cnl,entry_name);
 		}
@@ -3320,8 +3728,10 @@ static NhlErrorTypes ContourLineRender (
 	NhlContourPlotLayerPart   *cnp = &cnl->contourplot;
 	TriBlock *tbp;
 	int i;
-	NhlString e_text;
 	int do_ctmesh = 0;
+	float flx,frx,fby,fuy,wlx,wrx,wby,wuy; 
+	int ll;
+	float pflx,pfrx,pfby,pfuy;
 
 	if (! *mesh_inited) {
 		ret = InitMesh(cnl,tmp,1,entry_name);
@@ -3333,43 +3743,134 @@ static NhlErrorTypes ContourLineRender (
 
 	}
 
-	/*  does not work yet
-	  
-	if (tmp->nblocks > 1) {
-		do_ctmesh = 1;
-	}
-	*/
-	if (tmp->nblocks > 1) {
-		e_text = "%s: Threading not implemented for contour lines -- set env var OMP_NUM_THREADS to 1";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			  e_text,entry_name);
-		ContourAbortDraw(cnl);
-		return NhlFATAL;
-	}
+/*
+ * line rendering of the plot in segments now works allowing lines to be drawn when using OpenMP with raster fill.
+ * Line rendering is still a sequential operation because the LLU code is not thread safe.
+ */ 
 #if 0
-#pragma omp parallel shared(cnp, tmp,entry_name,Lopn,Loen,Lotn)  \
-  private(tbp,Tbp)							 
+#pragma omp parallel shared(cnp, tmp,entry_name,Lopn,Loen,Lotn,flx,frx,fby,fuy,wlx,wrx,wby,wuy, ll) \
+	private(tbp,Tbp,pflx,prrx,pfby,pfuy,ret,subret)							 
         {
 #pragma omp for schedule(static,1)
 #endif
+	ret = subret = NhlNOERROR;
+	do_ctmesh = 1;
+	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
 	for (i = 0; i < tmp->nblocks; i++) {
 		tbp = &(tmp->tri_block[i]);
 		Tbp = tbp;
+
+		pflx = c_cufx(tbp->xsr);
+		pfrx = c_cufx(tbp->xer);
+		pfby = c_cufy(tbp->ysr);
+		pfuy = c_cufy(tbp->yer);
+		c_set(pflx,pfrx,pfby,pfuy,tbp->xsr,tbp->xer,tbp->ysr,tbp->yer,ll);
 		if (do_ctmesh)  {
 			_NhlHLUCtmesh(tbp->rpnt,tbp->npnt,Lopn,
 				      tbp->iedg,tbp->nedg,Loen,
 				      tbp->itri,tbp->ntri,Lotn,
 				      cnp->fws,cnp->iws,entry_name);
 		}
-
 		subret = _NhlCtcldr(tbp->rpnt,tbp->iedg,tbp->itri,
 				    cnp->fws,cnp->iws,entry_name);
 
+		c_set(flx,frx,fby,fuy,wlx,wrx,wby,wuy,ll);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		  ContourAbortDraw(cnl);
 		  break;
 		}
 	}
+
+#if 0
+	}
+#endif
+
+	return ret;
+}	
+
+static NhlErrorTypes ContourLabelRender (
+        NhlContourPlotLayer 	          cnl,
+	NhlCnTriMeshRendererLayerPart	  *tmp,
+	int *                   mesh_inited,
+	NhlString		entry_name
+	)
+{
+	NhlErrorTypes  ret, subret;
+	NhlContourPlotLayerPart   *cnp = &cnl->contourplot;
+	TriBlock *tbp;
+	int i;
+	int do_ctmesh = 0;
+	float flx,frx,fby,fuy,wlx,wrx,wby,wuy; 
+	int ll;
+	float pflx,pfrx,pfby,pfuy;
+	float fheight, hlr, hlr_adj;
+
+	if (! *mesh_inited) {
+		ret = InitMesh(cnl,tmp,1,entry_name);
+		if (ret < NhlWARNING) {
+			ContourAbortDraw(cnl);
+			return ret;
+		}
+		*mesh_inited = 1;
+
+	}
+
+	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
+	tbp = &(tmp->tri_block[0]);
+	cnp->line_lbls.count = 0;
+	cnp->high_lbls.count = 0;
+	cnp->low_lbls.count = 0;
+	gset_fill_int_style(GSTYLE_SOLID);
+
+	fheight = cnp->line_lbls.real_height / cnl->view.width; 
+	fheight *= (wrx-wlx) / (tbp->xer - tbp->xsr);
+	c_ctsetr("LLS",fheight);
+	c_ctsetr("LLW", (float) (fheight * cnp->line_lbls.perim_space));
+	c_pcsetr("PH",(float)cnp->line_lbls.pheight);
+	c_pcsetr("PW",(float)cnp->line_lbls.pwidth);
+	c_pcsetr("CS",(float)cnp->line_lbls.cspacing);
+	c_pcseti("FN",cnp->line_lbls.font);
+	c_pcseti("QU",cnp->line_lbls.quality);
+	c_pcsetc("FC",cnp->line_lbls.fcode);
+	fheight = cnp->high_lbls.real_height / cnl->view.width;
+	fheight *= (wrx-wlx) / (tbp->xer - tbp->xsr);
+	c_ctsetr("HLS",(float)fheight);
+	c_ctsetr("HLW",(float)(cnp->high_lbls.perim_space  * fheight));
+	c_ctgetr("HLR",&hlr);
+	hlr_adj = hlr * (wrx - wlx) / (tbp->xer - tbp->xsr);
+	c_ctsetr("HLR",hlr_adj);
+
+
+#if 0
+#pragma omp parallel shared(cnp, tmp,entry_name,Lopn,Loen,Lotn,flx,frx,fby,fuy,wlx,wrx,wby,wuy, ll) \
+	private(tbp,Tbp,pflx,prrx,pfby,pfuy,ret,subret)							 
+        {
+#pragma omp for schedule(static,1)
+#endif
+	ret = subret = NhlNOERROR;
+	do_ctmesh = 1;
+
+	for (i = 0; i < tmp->nblocks; i++) {
+		tbp = &(tmp->tri_block[i]);
+		Tbp = tbp;
+
+		pflx = c_cufx(tbp->xsr);
+		pfrx = c_cufx(tbp->xer);
+		pfby = c_cufy(tbp->ysr);
+		pfuy = c_cufy(tbp->yer);
+		c_set(pflx,pfrx,pfby,pfuy,tbp->xsr,tbp->xer,tbp->ysr,tbp->yer,ll);
+		if (do_ctmesh)  {
+			_NhlHLUCtmesh(tbp->rpnt,tbp->npnt,Lopn,
+				      tbp->iedg,tbp->nedg,Loen,
+				      tbp->itri,tbp->ntri,Lotn,
+				      cnp->fws,cnp->iws,entry_name);
+		}
+		_NhlCtlbdr(tbp->rpnt,tbp->iedg,tbp->itri,
+			 cnp->fws,cnp->iws,entry_name);
+
+	}
+	c_set(flx,frx,fby,fuy,wlx,wrx,wby,wuy,ll);
+	c_ctsetr("HLR",hlr);
 
 #if 0
 	}
@@ -3409,23 +3910,7 @@ static NhlErrorTypes RasterFillRender (
 		}
 		*mesh_inited = 1;
 	}
-#if 0      /* now the C routine handles both smoothed and unsmoothed */
-	
-	if (tmp->nblocks  > 1 && cnp->raster_smoothing_on) {
-		subret = MIN(NhlFATAL,subret);
-		e_text = "%s: Threading not implemented for smoothed raster contouring -- set env var OMP_NUM_THREADS to 1";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			  e_text,entry_name);
-		ContourAbortDraw(cnl);
-		return (ret = MIN(subret,ret));
-	}
-#endif 
-	/* we need to call ctmesh at least once */
-	tbp = &(tmp->tri_block[0]);
-	_NhlHLUCtmesh(tbp->rpnt,tbp->npnt,Lopn,
-		   tbp->iedg,tbp->nedg,Loen,
-		   tbp->itri,tbp->ntri,Lotn,
-		   cnp->fws,cnp->iws,entry_name);
+
 
 
 #pragma omp parallel shared(cnp, tmp,entry_name,Lopn,Loen,Lotn,nthreads,bbox,msize,nsize,min_cell_size,fill_op) \
@@ -3440,8 +3925,8 @@ static NhlErrorTypes RasterFillRender (
 
 #pragma omp for schedule(static,1)
 
-		for (i = tmp->nblocks -1 ; i >= 0; i--) {
-/*	        for (i = 0; i < tmp->nblocks ; i++) { */
+/*		for (i = tmp->nblocks -1 ; i >= 0; i--) { */
+	        for (i = 0; i < tmp->nblocks ; i++) { 
 			tbp = &(tmp->tri_block[i]);
 			Tbp = tbp;
 			if (tbp->npnt == 0) 
@@ -3460,29 +3945,6 @@ static NhlErrorTypes RasterFillRender (
 #pragma omp barrier
 	}
 
-#if 0
-			else {
-#pragma omp critical
-
-				_NhlCtmesh(tbp->rpnt,tbp->npnt,Lopn,
-					   tbp->iedg,tbp->nedg,Loen,
-					   tbp->itri,tbp->ntri,Lotn,
-					   cnp->fws,cnp->iws,entry_name);
-
-				subret = _NhlCtcica(tbp->rpnt,tbp->iedg,tbp->itri,
-						    cnp->fws,cnp->iws,cnp->cws,
-						    msize,msize,nsize,
-						    bbox.l,bbox.b,bbox.r,bbox.t,
-						    min_cell_size,
-						    cnp->raster_smoothing_on,
-						    fill_op,
-						    (void *) tbp,
-						    entry_name);
-
-			}
-		}
-	}
-#endif
 
 #if 0   /* for debugging */
 
@@ -3507,18 +3969,18 @@ static NhlErrorTypes RasterFillRender (
 		printf("%d cells of %d x %d array not initialized\n",cell_count,msize,nsize);
 	}
 #endif
-        
 
-	subret = _NhlCtcica(NULL,NULL,NULL,
-			    cnp->fws,cnp->iws,cnp->cws,
-			    msize,msize,nsize,
-			    bbox.l,bbox.b,bbox.r,bbox.t,
-			    min_cell_size,
-			    cnp->raster_smoothing_on,
-			    3,
-			    NULL,
-			    entry_name);
-
+	if (fill_op == 2) {
+		subret = _NhlCtcica(NULL,NULL,NULL,
+				    cnp->fws,cnp->iws,cnp->cws,
+				    msize,msize,nsize,
+				    bbox.l,bbox.b,bbox.r,bbox.t,
+				    min_cell_size,
+				    cnp->raster_smoothing_on,
+				    3,
+				    NULL,
+				    entry_name);
+	}
 
 	if (cnp->cws != NULL) {
 		subret = _NhlIdleWorkspace(cnp->cws);
@@ -3555,7 +4017,7 @@ static NhlErrorTypes DoConstFillHack(
 	}
 
 	if (! cnp->data) {
-		printf("no data\n");
+		/*printf("no data\n");*/
 		return NhlWARNING;
 	}
 	save_test_val = test_val = cnp->data[0];
@@ -3629,19 +4091,15 @@ static NhlErrorTypes CnTriMeshRender
 	NhlBoolean     almost_const;
 	int do_fill;
 	int do_const_fill_hack = 0;
+	int nthreads;
 
 	tbp = &(tmp->tri_block[0]);
 
 	Cnl = cnl;
 	Cnp = cnp;
 	Tmp = tmp;
-
-	ginq_clip(&err_ind,&clip_ind_rect);
-        gset_clip_ind(GIND_CLIP);
-	
 	c_ctrset();
 
-	SetCtParams(cnl,entry_name);
 
 	subret = NhlVAGetValues(cnl->trans.overlay_trans_obj->base.id,
                                 NhlNtrChangeCount,&trans_change_count,
@@ -3650,6 +4108,7 @@ static NhlErrorTypes CnTriMeshRender
 		tmp->update_mode = TRIMESH_NEWMESH;
 		tmp->trans_change_count = trans_change_count;
 	}
+
 
 /*
  * Only set the ORV parameter if overlaying on EZMAP. It can cause
@@ -3661,26 +4120,53 @@ static NhlErrorTypes CnTriMeshRender
 		NhlVAGetValues(cnp->trans_obj->base.id, 
 			       NhlNtrOutOfRangeF, &cnp->out_of_range_val,
 			       NULL);
-		tmp->ezmap = 1;
 		c_ctsetr("ORV",cnp->out_of_range_val);
-		if (cnp->sfp->d_arr->num_dimensions == 1 &&
-		    ! (cnp->sfp->element_nodes ||
-		       (cnp->sfp->x_cell_bounds && cnp->sfp->y_cell_bounds))) {
+#pragma omp parallel shared(nthreads) 
+		{
+#ifdef _OPENMP
+			nthreads = omp_get_num_threads();
+#else
+			nthreads = 1;
+#endif
+			if (! (cnp->sfp->element_nodes ||
+			       (cnp->sfp->x_cell_bounds && cnp->sfp->y_cell_bounds))) {
+				if (cnp->sfp->d_arr->num_dimensions == 1) {
+					tmp->ezmap = 2;
+				}
+#ifdef BuildTRIANGLE
+				else if (nthreads > 1) {
+					tmp->ezmap = 2;
+				}
+#endif
+				else {
+					tmp->ezmap = 1;
+				}
+			}
+			else {
+				tmp->ezmap = 1;
+			}
+		}
+		if (tmp->ezmap == 2) 
 			c_ctseti("MAP",Nhlcn1DMESHMAPVAL);
-
-		}
-		else {
+		else 
 			c_ctseti("MAP",NhlcnMAPVAL);
-		}
 	}
 	else {
 		tmp->ezmap = 0;
 		c_ctseti("MAP",NhlcnTRIMESHMAPVAL);
 	}
 
+
+	ginq_clip(&err_ind,&clip_ind_rect);
+        gset_clip_ind(GIND_CLIP);
+	
+
+	SetCtParams(cnl,entry_name);
+
 	c_ctseti("WSO", 3);		/* error recovery on */
 	c_ctseti("NVS",0);		/* no vertical strips */
-	c_ctseti("HLE",1);              /* search for equal high/lows */
+	/*c_ctseti("HLE",1);*/              /* search for equal high/lows */
+	c_ctseti("HLE",0);              /* search for equal high/lows */
         c_ctseti("SET",0);
         c_ctseti("RWC",500);
         c_ctseti("RWG",1500);
@@ -4004,7 +4490,15 @@ static NhlErrorTypes CnTriMeshRender
 	}
 	
 	if (! cnp->output_gridded_data &&
+	    cnp->llabel_placement != NhlCONSTANT &&
 	    cnp->do_labels && cnp->label_order == order) {
+		ret = ContourLabelRender(cnl,tmp,&mesh_inited,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			gset_clip_ind(clip_ind_rect.clip_ind);
+			ContourAbortDraw(cnl);
+			return ret;
+		}
+#if 0
 		if (! mesh_inited) {
 			subret = InitMesh(cnl,tmp,1,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -4040,6 +4534,7 @@ static NhlErrorTypes CnTriMeshRender
 			ContourAbortDraw(cnl);
 			return ret;
 		}
+#endif
 	}
 
 	if (cnp->fws != NULL) {
@@ -4395,13 +4890,10 @@ NhlErrorTypes _NhlUnstructuredMeshFill
 	NhlContourPlotLayerPart *cnp = Cnp;
 	NhlErrorTypes	ret = NhlNOERROR;
 	char		*e_text;
-	NhlBoolean ezmap = False;
 	float *xv, *yv,*zdat;
 	float *levels;
 	int nv;
-	float cxstep,cystep;
-	float           tol1,tol2;
-	float           xsoff,xeoff,ysoff,yeoff;
+	float cxstep;
 	int i,j;
 	int             grid_fill_ix;
 	int cell_count;
@@ -4409,7 +4901,6 @@ NhlErrorTypes _NhlUnstructuredMeshFill
 	float mflx,mfby,mfrx,mfuy;
 	float min_minx, max_maxx, min_miny, max_maxy;
 	float max_coverage = 0;
-	int twice;
 	int icaf, map;
 	float orv,spv;
 
@@ -4418,10 +4909,6 @@ NhlErrorTypes _NhlUnstructuredMeshFill
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(NhlFATAL);
         }
-	if (cnp->trans_obj->base.layer_class->base_class.class_name ==
-	    NhlmapTransObjClass->base_class.class_name) {
-		ezmap = True;
-	}
         levels = (float*) cnp->levels->data;
 
 	c_ctgetr("ORV",&orv);
@@ -4436,15 +4923,6 @@ NhlErrorTypes _NhlUnstructuredMeshFill
 	zdat = (float*)cnp->sfp->d_arr->data;
 	
 	cxstep = (xcqf-xcpf)/(float)icam;
-	cystep = (ycqf-ycpf)/(float)ican;
-
-	xsoff = Xsoff + .5 * (1.0 - Xsoff);
-	xeoff = Xeoff + .5 * (1.0 - Xeoff);
-	ysoff = Ysoff + .5 * (1.0 - Ysoff);
-	yeoff = Yeoff + .5 * (1.0 - Yeoff);
-
-	tol1 = 0.00001 * MIN(Cnl->view.width,Cnl->view.height);
-	tol2 = 0.5 * MIN(Cnl->view.width,Cnl->view.height);
 	
 /*
  *      initialize cell array with the missing value.
@@ -4470,7 +4948,6 @@ NhlErrorTypes _NhlUnstructuredMeshFill
 	mfuy = ycqf + (ycqf - ycpf) * .1;
 	min_minx = min_miny = 1e30;
 	max_maxx = max_maxy = 0;
-	twice = 0;
 	for (i = 0; i < cell_count; i++) {
 		float xi[10], yi[10],xo[10],yo[10],xp[10],yp[10];
 		float minx,miny,maxx,maxy;
@@ -4520,7 +4997,6 @@ NhlErrorTypes _NhlUnstructuredMeshFill
 #if 1
 		if (maxx - minx > icam / 2.0) {
 			float new_maxx = -1e30,new_minx = 1e30;
-			twice = 2;
 			for (p = 0; p < nv; p++) {
 				if (xp[p] < icam / 2) {
 					xp[p] += (float) icam;
@@ -4661,8 +5137,6 @@ NhlErrorTypes _NhlTriMeshRasterFill
         float		*levels;
 	float		cxstep,cystep;
 	float           xsoff,xeoff,ysoff,yeoff;
-	NhlBoolean      x_isbound,y_isbound;
-
 	float           tol1,tol2;
 	int             ipp1,ipp2,ipp3;
 	float           xcu1,xcu2,xcu3,ycu1,ycu2,ycu3;
@@ -4674,6 +5148,10 @@ NhlErrorTypes _NhlTriMeshRasterFill
 	int             ibeg,iend,jbeg,jend;
 	int             grid_fill_ix;
 	TriBlock *tbp;
+	int tid;
+	int mni,mxi,mnj,mxj;
+	float wid, hgt;
+	float flx,frx,fby,fuy,wlx,wrx,wby,wuy; int ll;
 
 	if (! info) {
 	  tbp = Tbp;
@@ -4681,19 +5159,32 @@ NhlErrorTypes _NhlTriMeshRasterFill
 	else {
 	  tbp = (TriBlock *) info;
 	}
-/*
+
+	tid = 0;
 #ifdef _OPENMP
 	{
-	int tid = omp_get_thread_num();
-	printf("%d x s&e %f %f y s&e %f %f\n", tid, tbp->xs,tbp->xe,tbp->ys,tbp->ye);
+	tid = omp_get_thread_num();
+	/*printf("%d x s&e %f %f y s&e %f %f\n", tid, tbp->xs,tbp->xe,tbp->ys,tbp->ye);*/
 	}
 #endif
-*/
+
         if (Cnp == NULL) {
 		e_text = "%s: invalid call to _NhlRasterFill";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(NhlFATAL);
         }
+	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
+	/*
+	  printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
+	  flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
+	*/
+	wid = wrx - wlx;
+	hgt = wuy - wby;
+	mni = tbp->xsr == wlx ? 0 : icam * (tbp->xsr - wlx) / wid;
+	mxi = tbp->xer == wrx ? icam : icam * (tbp->xer - wlx) / wid -1;
+	mnj = tbp->ysr == wby ? 0 : ican * (tbp->ysr - wby) / hgt;
+	mxj = tbp->yer == wuy ? ican : ican * (tbp->yer - wby) / hgt -1;
+
         levels = (float*) Cnp->levels->data;
         
 /* 
@@ -4706,8 +5197,6 @@ NhlErrorTypes _NhlTriMeshRasterFill
 
 	cxstep = (xcqf-xcpf)/(float)icam;
 	cystep = (ycqf-ycpf)/(float)ican;
- 	x_isbound = Cnp->sfp->xc_is_bounds;
- 	y_isbound = Cnp->sfp->yc_is_bounds;
 
 	xsoff = Xsoff + .5 * (1.0 - Xsoff);
 	xeoff = Xeoff + .5 * (1.0 - Xeoff);
@@ -4720,7 +5209,8 @@ NhlErrorTypes _NhlTriMeshRasterFill
 /*
  * Now overwrite out-of-range areas with the out-of-range color
  */
-	    grid_fill_ix = Cnp->out_of_range.gks_fcolor < 0 ? NhlTRANSPARENT_CI : Cnp->out_of_range.gks_fcolor;
+	grid_fill_ix = Cnp->out_of_range.gks_fcolor < 0 ? NhlTRANSPARENT_CI : Cnp->out_of_range.gks_fcolor;
+	if (tid ==0) {
 	    if (Tmp->ezmap) {
 	      imap = -map;
 	      zval = 0;
@@ -4748,11 +5238,11 @@ NhlErrorTypes _NhlTriMeshRasterFill
 		}
 	      }
 	    }
+	}
 
 /*
  * examine each triangle in turn
  */
-
 
 	for (n = 0; n <= tbp->ntri - Lotn; n += Lotn) {
 	     if (itri[n+3] != 0)
@@ -4809,6 +5299,7 @@ NhlErrorTypes _NhlTriMeshRasterFill
 		      &xcu3,&ycu3);
 	     if (orv != 0.0 && (xcu3 == orv || ycu3 == orv))
 		     continue;	     
+	     
 
 	     xcf1 = c_cufx(xcu1);
 	     ycf1 = c_cufy(ycu1);
@@ -4824,6 +5315,7 @@ NhlErrorTypes _NhlTriMeshRasterFill
 	     yd23 = ycf3 - ycf2;
 	     xd31 = xcf1 - xcf3;
 	     yd31 = ycf1 - ycf3;
+
 
 /*
  * skip triangle if too small or too large
@@ -4951,31 +5443,26 @@ NhlErrorTypes _NhlTriMeshRasterFill
 				     if (iaid == -1)
 					     iaid = NhlcnAREAID_OFFSET +
 						     Cnp->level_count;     
-				     (_NHLCALLF(hluctscae,HLUCTSCAE))
-					     (cell,&ica1,&icam,&ican,
-					      &xcpf,&ycpf,&xcqf,&ycqf,
-					      &iplus,&jplus,&icaf,&iaid);
+				     if (Tmp->nblocks == 1 || (i >= mni && i <= mxi && j >= mnj && j <= mxj)) {
+					     (_NHLCALLF(hluctscae,HLUCTSCAE))
+						     (cell,&ica1,&icam,&ican,
+						      &xcpf,&ycpf,&xcqf,&ycqf,
+						      &iplus,&jplus,&icaf,&iaid);
+				     }
 			     }
 		     }
 	     }
 	}
+	/*printf("tid %d mnx %d mxx %d mny %d mxy %d \n", tid, tbp->mnx, tbp->mxx, tbp->mny, tbp->mxy);*/
+
 #if 0
-	{
-		for (j = 0; j < ican; j++) {
-			int found = 0;
-			for (i = 2 ; i < icam; i++) {
-				if (!found && cell[j * icam + i] == 1073741824) {
-					continue;
-				}
-				found = 1;
-				if (cell[j * icam + i] == 1073741824) {
-					printf("row %d last col %d last 2 val %d %d\n", j, i,cell[j * icam + i -1],cell[j * icam + i -2]);
-					break;
-				}
-			}
+	if (tid == 0) { /* check corners and fill them if necessary */
+		if (cell[0] == grid_fill_ix) {
+			printf("filling lower left\n");
 		}
 	}
 #endif
+
 	return ret;
 }
 
@@ -5028,11 +5515,6 @@ NhlErrorTypes CnTriMeshWriteCellData
 
 	int		i,j,n,icaf,map;
 	float		orv;
-        float		*levels;
-	double		cxstep,cystep;
-	double          xsoff,xeoff,ysoff,yeoff;
-	NhlBoolean      x_isbound,y_isbound;
-
 	double           tol1,tol2;
 	int             ipp1,ipp2,ipp3;
 	float           xcu1,xcu2,xcu3,ycu1,ycu2,ycu3;
@@ -5067,7 +5549,6 @@ NhlErrorTypes CnTriMeshWriteCellData
 		init_val = 1E32;
 	}
 
-        levels = (float*) Cnp->levels->data;
 	wlx = c_cfux(xcpf);
 	wrx = c_cfux(xcqf);
 	wby = c_cfuy(ycpf);
@@ -5084,14 +5565,6 @@ NhlErrorTypes CnTriMeshWriteCellData
 	c_ctgeti("MAP",&map);
 
 
-	cxstep = (xcqf-xcpf)/(double)icam;
-	cystep = (ycqf-ycpf)/(double)ican;
- 	x_isbound = Cnp->sfp->xc_is_bounds;
- 	y_isbound = Cnp->sfp->yc_is_bounds;
-	xsoff = Xsoff + .5 * (1.0 - Xsoff);
-	xeoff = Xeoff + .5 * (1.0 - Xeoff);
-	ysoff = Ysoff + .5 * (1.0 - Ysoff);
-	yeoff = Yeoff + .5 * (1.0 - Yeoff);
 
 	tol1 = 0.00001 * MIN(Cnl->view.width,Cnl->view.height);
 	tol2 = 0.5 * MIN(Cnl->view.width,Cnl->view.height);
@@ -5823,6 +6296,8 @@ void   (_NHLCALLF(hluctchhl,HLUCTCHHL))
 		c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
 		printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
 		       flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
+		
+		
   	}
 #endif
 	switch (*iflg) {
@@ -6054,7 +6529,7 @@ void   (_NHLCALLF(hluctchhl,HLUCTCHHL))
  *
  * Out Args:
  *
- * Return Values:
+ * Return Values
  *
  * Side Effects: 
  */
