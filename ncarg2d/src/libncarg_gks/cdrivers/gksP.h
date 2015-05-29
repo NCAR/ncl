@@ -41,7 +41,7 @@
 #define	NGESC_CNATIVE	-1450
 
 #define	NGC_XGETXPIX	1
-#define	NGC_XFREECI	    2
+#define	NGC_XFREECI	2
 #define NGC_XALLOCCOLOR	3
 #define NGC_XSIZECHG	4
 #define NGC_XWINCONFIG	5
@@ -50,6 +50,7 @@
 #define NGC_GETALPHA    8
 #define NGC_ANTIALIAS   9
 #define NGC_CAIROFILLHACK 10   /* see Jira ticket ncl-1913 */
+#define NGC_GEOREFERENCE  11
 
 /* opcodes for setting opacity attributes */
 #define NGC_LINEALPHA   0
@@ -123,23 +124,36 @@ typedef struct {
 } _NGCPixConfig;
 
 typedef struct {
-	int		type;
-	int		work_id;
-	int     graphicAttrib;
-	float   alpha;
+    int     type;
+    int     work_id;
+    int     graphicAttrib;
+    float   alpha;
 } _NGCAlpha;
 
 typedef struct {
-    int                 type;
-    int                 work_id;
-    int                 antialias_boolean;
+    int     type;
+    int     work_id;
+    int     antialias_boolean;
 } _NGCAntiAlias;
 
 typedef struct {        /* Jira ncl-1913 */
-    int                 type;
-    int                 work_id;
-    int                 fill_mode_boolean;
+    int     type;
+    int     work_id;
+    int     fill_mode_boolean;
 } _NGCCairoFillHack;
+
+typedef struct {
+    int     type;
+    int     work_id;
+    int     projCode;
+    float   worldX[4];
+    float   worldY[4];
+    float   ndcX[4];
+    float   ndcY[4];
+    float   parOrAngle1;
+    float   parOrAngle2;
+    float   meridianOrDist;    
+} _NGCGeoReference;
 
 typedef struct {
 	int		type;
@@ -147,17 +161,18 @@ typedef struct {
 } _NGCAny;
 
 typedef union _NGCescapeRec_ {
-	int		type;
-	_NGCAny		any;
-	_NGCXGetXPix	xgetxpix;
-	_NGCXFreeCi	xfreeci;
-	_NGCXAllocColor	xalloccolor;
-	_NGCXGetSizeChg	xgetsizechg;
-	_NGCXWinConfig	xwinconfig;
-	_NGCPixConfig   pixconfig;
-	_NGCAlpha       alphaconfig;
-        _NGCAntiAlias   antialias;
+	int		  type;
+	_NGCAny		  any;
+	_NGCXGetXPix	  xgetxpix;
+	_NGCXFreeCi	  xfreeci;
+	_NGCXAllocColor	  xalloccolor;
+	_NGCXGetSizeChg	  xgetsizechg;
+	_NGCXWinConfig	  xwinconfig;
+	_NGCPixConfig     pixconfig;
+	_NGCAlpha         alphaconfig;
+        _NGCAntiAlias     antialias;
         _NGCCairoFillHack fillhack;
+        _NGCGeoReference  georeference;
 } _NGCesc;
 
 /*

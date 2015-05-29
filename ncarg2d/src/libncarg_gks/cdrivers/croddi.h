@@ -18,6 +18,7 @@
 #define _croddi_
 
 #include "cro.h"
+#include "crotiff.h"
 #include "gks.h"
 #include "common.h"
 #include "transform.h"
@@ -63,6 +64,9 @@ typedef struct  CROddi_ {
   CROattribute  attributes;
   CoordSpace    gks_clip;
   CROClipRect   cro_clip;
+  int           useTiffCompression;
+  TiffHandle*   tiffClosure;
+  TiffGeoReference* georefData;
 } CROddp;
 
 #endif  /*      _croddi_        */

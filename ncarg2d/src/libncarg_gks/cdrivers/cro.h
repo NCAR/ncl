@@ -259,7 +259,7 @@ extern int qt_screen_width;
 extern int qt_screen_height;
 #endif
 
-cairo_t* getContext(int wksId);
+static cairo_t* getContext(int wksId);
 
 void reverse_chars(char *);
 

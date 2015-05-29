@@ -31,9 +31,10 @@
 #include "gksc.h"
 #include "gks.h"
 #include "common.h"
-#include "cro_device.h"
-#include "croddi.h"
 #include "cro.h"
+#include "cro_device.h"
+#include "crotiff.h"
+#include "croddi.h"
 #include "argb.h"
 
 #define JIRA_494 1   /* temporary, until issued resolved */
@@ -57,7 +58,6 @@ static float *csort_array;
 static void reverse_chrs(char*);
 static int cro_CEsc(CROddp *psa, _NGCesc *cesc);
 
-extern int crotiff_writeImage(const char* filename, cairo_surface_t* surface);
 #ifdef BuildQtEnabled
 extern void croActivateQt(CROddp *psa);
 #endif
@@ -103,7 +103,7 @@ static int getCairoEnvIndex(int wksId) {
     return -1;
 }
 
-cairo_t* getContext(int wksId) {
+static cairo_t* getContext(int wksId) {
     return cairoContexts[getCairoEnvIndex(wksId)];
 }
 
@@ -573,11 +573,17 @@ int cro_ClearWorkstation(GKSC *gksc) {
 #endif
 
     else if (psa->wks_type == CTIFF) {
-        outputFile = getIndexedOutputFilename(psa->wks_id, psa->output_file, psa->frame_count,
-            "NCARG_GKS_CTIFFOUTPUT", ".tif");
-        ret = crotiff_writeImage(outputFile, getSurface(psa->wks_id));
-        psa->frame_count++;
-        free(outputFile);
+        cairo_surface_flush(getSurface(psa->wks_id));
+        if (psa->useTiffCompression)
+            ret = crotiff_writeImageCompressed(psa->tiffClosure, psa->georefData, getSurface(psa->wks_id));
+        else
+            ret = crotiff_writeImage(psa->tiffClosure, psa->georefData, getSurface(psa->wks_id));
+
+        /* our policy is to clear any georef information now so as to not have stale or 
+         * invalid info for any subsequent plots.
+         */
+        if (psa->georefData)
+            free(psa->georefData);
     }
 
     else if (psa->wks_type == CSVG) {
@@ -652,7 +658,10 @@ int cro_CloseWorkstation(GKSC *gksc) {
 
     if (psa->wks_type == CX11) {
         croFreeNativeSurface(getSurface(psa->wks_id));
+    } else if (psa->wks_type == CTIFF) {
+        crotiff_closeFile(psa->tiffClosure);
     }
+    
 #ifdef BuildQtEnabled
     else if (psa->wks_type == CQT) {
       /*
@@ -766,6 +775,7 @@ static int cro_CEsc(CROddp *psa, _NGCesc *cesc) {
     _NGCAlpha     *alphaConfig;
     _NGCAntiAlias *aliasConfig;
     _NGCCairoFillHack *fillMode;
+    _NGCGeoReference *georef;
     
     switch (cesc->type) {
         case NGC_PIXCONFIG: /* get resolution of image-based output formats */
@@ -822,6 +832,30 @@ static int cro_CEsc(CROddp *psa, _NGCesc *cesc) {
         case NGC_CAIROFILLHACK: /* cairo fill-hack: see Jira ncl-1913  */
             fillMode = (_NGCCairoFillHack*) cesc;
             psa->cairo_fill_hack = fillMode->fill_mode_boolean;
+            break;
+            
+        case NGC_GEOREFERENCE:  /* receive georeferencing info... */
+            georef = (_NGCGeoReference*) cesc;
+            if (!psa->georefData) {
+                psa->georefData = (TiffGeoReference*) calloc(sizeof(TiffGeoReference), 1);
+                if (psa->georefData == NULL) {
+                    ESprintf(ERR_CRO_MEMORY, "CRO: TiffGeoReference malloc(%d)", sizeof(TiffGeoReference));
+                    return (ERR_CRO_MEMORY);
+                }
+            }
+            
+            psa->georefData->projCode = georef->projCode;
+            psa->georefData->meridian = georef->meridianOrDist;
+            psa->georefData->stdPar1 = georef->parOrAngle1;
+            psa->georefData->stdPar2 = georef->parOrAngle2;                                   
+            int i;
+            for (i=0; i<4; i++) {
+                psa->georefData->worldX[i] = georef->worldX[i];
+                psa->georefData->worldY[i] = georef->worldY[i];
+                psa->georefData->ndcX[i] = georef->ndcX[i];
+                psa->georefData->ndcY[i] = georef->ndcY[i];
+            }
+            
             break;
     }
  
@@ -1050,7 +1084,7 @@ void setCairoQtWinSize(int width, int height)
 
 int cro_OpenWorkstation(GKSC *gksc) {
 
-    char *sptr = (char *) gksc->s.list;
+    char *filenameBasis = (char *) gksc->s.list;
     CROddp *psa;
     int *pint;
     extern int orig_wks_id;
@@ -1089,7 +1123,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
         /*
          *  Create a Postscript workstation.
          */
-        psa->output_file = getRegularOutputFilename(psa->wks_id, sptr, "NCARG_GKS_CPSOUTPUT", 
+        psa->output_file = getRegularOutputFilename(psa->wks_id, filenameBasis, "NCARG_GKS_CPSOUTPUT", 
                 (psa->wks_type == CPS) ? ".ps" : ".eps");
         surface = cairo_ps_surface_create(psa->output_file,psa->paper_width, psa->paper_height);
         if (psa->wks_type == CEPS)
@@ -1105,7 +1139,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
         /*
          *  Create a PDF workstation.
          */
-        psa->output_file = getRegularOutputFilename(psa->wks_id, sptr, "NCARG_GKS_CPDFOUTPUT", ".pdf");
+        psa->output_file = getRegularOutputFilename(psa->wks_id, filenameBasis, "NCARG_GKS_CPDFOUTPUT", ".pdf");
         surface = cairo_pdf_surface_create(psa->output_file, psa->paper_width, psa->paper_height);
         context = cairo_create(surface);
         saveCairoEnv(orig_wks_id, context, surface);
@@ -1120,8 +1154,8 @@ int cro_OpenWorkstation(GKSC *gksc) {
         surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, psa->image_width, psa->image_height);
         context = cairo_create(surface);
         saveCairoEnv(orig_wks_id, context, surface);
-        psa->output_file = (char*) malloc(strlen(sptr) + 1);
-        strcpy(psa->output_file, sptr);
+        psa->output_file = (char*) malloc(strlen(filenameBasis) + 1);
+        strcpy(psa->output_file, filenameBasis);
         psa->is_vector_type = FALSE;
     }
 
@@ -1131,9 +1165,10 @@ int cro_OpenWorkstation(GKSC *gksc) {
          */
         surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, psa->image_width, psa->image_height);
         context = cairo_create(surface);
-        saveCairoEnv(orig_wks_id, context, surface);
-        psa->output_file = (char*) malloc(strlen(sptr) + 1);
-        strcpy(psa->output_file, sptr);
+        saveCairoEnv(orig_wks_id, context, surface);        
+        char* outputFile = getRegularOutputFilename(psa->wks_id, filenameBasis, "NCARG_GKS_CTIFFOUTPUT", ".tif");
+        psa->tiffClosure = crotiff_openFile(outputFile);
+        free(outputFile);
         psa->is_vector_type = FALSE;
     }
 
@@ -1163,7 +1198,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
          * Since this is memory-based, the last one will simply get dropped on the floor. This admittedly incurs 
          * overhead, but it seems to be acceptable.
          */
-        psa->output_file = getIndexedOutputFilename(psa->wks_id, sptr, psa->frame_count, "", ".svg");
+        psa->output_file = getIndexedOutputFilename(psa->wks_id, filenameBasis, psa->frame_count, "", ".svg");
         surface = cairo_recording_surface_create(CAIRO_CONTENT_COLOR_ALPHA, NULL);
         if (surface == NULL)
             return (ERR_NO_DISPLAY);
@@ -2580,7 +2615,10 @@ static void CROinit(CROddp *psa, int *coords) {
     psa->cro_clip.urx = psa->dspace.urx;
     psa->cro_clip.ury = psa->dspace.ury;
     psa->cro_clip.null = FALSE;
-
+    
+    psa->useTiffCompression = TRUE;
+    psa->tiffClosure = NULL;
+    psa->georefData  = NULL;
 }
 
 

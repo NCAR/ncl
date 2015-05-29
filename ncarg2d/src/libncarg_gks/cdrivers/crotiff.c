@@ -9,11 +9,13 @@
  *
  */
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <cairo/cairo.h>
+#include "crotiff.h"
 #include "gksc.h"
 
 /* constants from the tiff spec. */
@@ -42,11 +44,29 @@ typedef struct IFDEntry {
 
 /* tiff Image File Directory */
 typedef struct IFDirectory {
-    uint16_t   numEntries;
+    /* this field is used to manage space available in "entries", but is not written to file as part of the IFD */
     uint16_t   maxEntries;
+    
+    /* these fields make up the file IFD */
+    uint16_t   numEntries;
     IFDEntry*   entries;
     uint32_t   nextIFD;
 } IFDirectory;
+
+/* entries in the GeoKey's tag */
+typedef struct GeoKey {
+    uint16_t  keyID;
+    uint16_t  tagLocation;
+    uint16_t  count;
+    uint16_t  offset;
+} GeoKey;
+
+/* a struct to manage construction of GeoKeys */
+typedef struct GeoKeys {
+    uint16_t  maxKeys;
+    uint16_t  numKeys;
+    GeoKey*   keys;
+} GeoKeys;
 
 /* a utility struct to swizzle the RGBa components; cairo and tiff have differing conventions. */
 typedef union {
@@ -64,6 +84,7 @@ const int RowsPerStrip = 8;    /* our strip size; 8 is pretty common, esp. for J
  */
 const uint16_t SHORT_TYPE    = 3;
 const uint16_t LONG_TYPE     = 4;
+const uint16_t DOUBLE_TYPE   = 12;
 
 /* Tiff-Tags of interest here... */
 const uint16_t TAG_ImageWidth      = 256;
@@ -81,32 +102,121 @@ const uint16_t TAG_PlanarConfig    = 284;
 const uint16_t TAG_ResolutionUnit  = 296;
 const uint16_t TAG_ExtraSamples    = 338;
 
-/* forward ref. */
+/* various tiff symbolic constants... */
+const uint16_t RGB                   = 2;
+const uint16_t PACKBITS              = 32773;
+const uint16_t PLANARCONFIG_CONTIG   = 1;
+const uint16_t PLANARCONFIG_SEPARATE = 2; 
+
+/* geotiff tags */
+const uint16_t TAG_ModelPixelScale  = 33550;
+const uint16_t TAG_ModelTiePoint    = 33922;
+const uint16_t TAG_GeoKeyDirectory  = 34735;
+const uint16_t TAG_GeoDoubleParams  = 34736;
+const uint16_t TAG_GeoAsciiParams   = 34737;
+
+/* geotiff GeoKeys */
+const uint16_t GTModelTypeGeoKey            = 1024;
+const uint16_t GTRasterTypeGeoKey           = 1025;
+const uint16_t GTCitationGeoKey             = 1026;
+const uint16_t GeographicTypeGeoKey         = 2048;
+const uint16_t GeogGeodeticDatumGeoKey      = 2050;
+const uint16_t GeogPrimeMeridianGeoKey      = 2051;
+const uint16_t GeogAngularUnitsGeoKey       = 2054;
+const uint16_t GeogEllipsoidGeoKey          = 2056;
+const uint16_t ProjectedCSTypeGeoKey        = 3072;
+const uint16_t ProjCoordTransGeoKey         = 3075;
+const uint16_t ProjLinearUnitsGeoKey        = 3076;
+const uint16_t ProjStdParallel1GeoKey       = 3078;
+const uint16_t ProjStdParallel2GeoKey       = 3079;
+const uint16_t ProjNatOriginLongGeoKey      = 3080;
+const uint16_t ProjNatOriginLatGeoKey       = 3081;
+const uint16_t ProjCenterLongGeoKey         = 3088;  /* same thing as central-meridian? */
+
+
+/* geotiff-specific constants */
+const uint16_t ModelTypeProjected  = 1;
+const uint16_t ModelTypeGeographic = 2;
+const uint16_t RasterPixelIsArea   = 1;
+const uint16_t CT_LambertConfConic_2SP = 8;
+const uint16_t GCSESphere          = 4035;
+const uint16_t DatumESphere        = 6035;
+const uint16_t EllipseSpheroid     = 7035;
+const uint16_t PMGreenwich         = 8901;
+const uint16_t Meters              = 9001;
+const uint16_t AngularDegree       = 9102;
+const uint16_t UserDefined         = 32767;
+
+/* forward references */
+
+/* functions for managing a IFDirectory */
 static void addIFDEntry(IFDirectory* ifd, int16_t tag, uint16_t type,
         uint32_t count, uint32_t value);
-static void writeIFD(IFDirectory* ifd, FILE* out);
+static long writeIFD(IFDirectory* ifd, FILE* out);
+
+/* analogous functions for managing GeoKeys */
+static void addGeoReferenceTags(FILE* file, IFDirectory* ifd, TiffGeoReference* georef, uint16_t width, uint16_t height);
+static long writeGeoKeys(GeoKeys* keys, FILE* out);
+static void addGeoKey(GeoKeys* keys, int16_t key, uint16_t tag, uint16_t count, uint16_t value);
+
+
+TiffHandle*
+crotiff_openFile(const char* filename) {
+    if (!filename) {
+        ESprintf(ERR_CRO_BADARG, "crotiff_openFile");
+        return NULL;
+    }
+
+    TiffHandle* closure = (TiffHandle*) malloc(sizeof(TiffHandle));
+    if (!closure) {
+        ESprintf(ERR_CRO_MEMORY, "crotiff_openFile");
+        return NULL;
+    }
+    
+    closure->filePtr = fopen(filename, "wb");
+    if (!closure->filePtr) {
+        ESprintf(ERR_CRO_OPN, "crotiff: could not open output file: %s", filename);
+        return NULL;
+    }
+
+    /* write the IFHeader */
+    IFHeader hdr;
+    hdr.byteOrder = endianness;
+    hdr.magicNum = MagicNum;
+    hdr.ifdOffset = 0;
+
+    /* write these piecemeal, in case of padding in the struct */
+    fwrite(&hdr.byteOrder, sizeof(uint16_t), 1, closure->filePtr);
+    fwrite(&hdr.magicNum, sizeof(uint16_t), 1, closure->filePtr);
+    fwrite(&hdr.ifdOffset, sizeof(uint32_t), 1, closure->filePtr);
+    
+    /*  note the file location that we need to update when we know the location of the next IFD */
+    closure->nextIFDPointer = 2 * sizeof(uint16_t);
+    
+    return closure;
+}
+
+void
+crotiff_closeFile(TiffHandle* closure) {
+    fclose(closure->filePtr);
+    free(closure);
+}
 
 int
-crotiff_writeImage(const char* filename, cairo_surface_t* surface)
+crotiff_writeImage(TiffHandle* closure, TiffGeoReference* georef, cairo_surface_t* surface)
 {
     int i, j, k;
 
-    if (!filename || !surface) {
+    if (!surface) {
         ESprintf(ERR_CRO_BADARG, "crotiff_writeImage");
         return ERR_CRO_BADARG;
-    }
-
-    FILE* out = fopen(filename, "wb");
-    if (!out) {
-        ESprintf(ERR_CRO_OPN, "crotiff: could not open output file: %s", filename);
-        return ERR_CRO_OPN;
     }
 
     /* determine how many strips we need... */
     int width = cairo_image_surface_get_width(surface);
     int height = cairo_image_surface_get_height(surface);
     int stride = cairo_image_surface_get_stride(surface);
-    int numStrips = height / RowsPerStrip;
+    int numStrips = (height + (RowsPerStrip - 1)) / RowsPerStrip;
     int samplesPerPixel = 4;
 
     uint32_t* stripOffsets = (uint32_t*) malloc(numStrips * sizeof(uint32_t));
@@ -116,20 +226,8 @@ crotiff_writeImage(const char* filename, cairo_surface_t* surface)
         return ERR_CRO_MEMORY;
     }
 
-    int fileOffset = 0;
-
-    IFHeader hdr;
-    hdr.byteOrder = endianness;
-    hdr.magicNum = MagicNum;
-    hdr.ifdOffset = sizeof(IFHeader) + (samplesPerPixel*width*height) + (2*sizeof(uint32_t)*numStrips);
-
-    /* write these piecemeal, in case of padding in the struct */
-    fwrite(&hdr.byteOrder, sizeof(uint16_t), 1, out);
-    fwrite(&hdr.magicNum, sizeof(uint16_t), 1, out);
-    fwrite(&hdr.ifdOffset, sizeof(uint32_t), 1, out);
-    fileOffset += 8;
-
     /* for uncompressed output, we can compute the strip offsets/counts outright... */
+    long fileOffset = ftell(closure->filePtr);
     uint32_t numImageBytes = width * height * samplesPerPixel;
     for (i=0; i<numStrips; i++) {
         stripOffsets[i] = fileOffset + i*samplesPerPixel*width*RowsPerStrip;
@@ -171,15 +269,15 @@ crotiff_writeImage(const char* filename, cairo_surface_t* surface)
             }
         }
 
-        fwrite(stripBuff, 1, stripCounts[k], out);
+        fwrite(stripBuff, 1, stripCounts[k], closure->filePtr);
     }
     free(stripBuff);
 
     /* Write the strip offsets, followed by the strip counts... */
-    long stripOffsetsPos = ftell(out);
-    fwrite(stripOffsets, sizeof(uint32_t), numStrips, out);
-    long stripCountsPos = ftell(out);
-    fwrite(stripCounts, sizeof(uint32_t), numStrips, out);
+    long stripOffsetsPos = ftell(closure->filePtr);
+    fwrite(stripOffsets, sizeof(uint32_t), numStrips, closure->filePtr);
+    long stripCountsPos = ftell(closure->filePtr);
+    fwrite(stripCounts, sizeof(uint32_t), numStrips, closure->filePtr);
     free(stripOffsets);
     free(stripCounts);
 
@@ -193,18 +291,149 @@ crotiff_writeImage(const char* filename, cairo_surface_t* surface)
     addIFDEntry(&ifd, TAG_ImageLength, SHORT_TYPE, 1, height);
     addIFDEntry(&ifd, TAG_BitsPerSample, SHORT_TYPE, 1, 8);
     addIFDEntry(&ifd, TAG_Compression, SHORT_TYPE, 1, 1);    /* 1 denotes "uncompressed" */
-    addIFDEntry(&ifd, TAG_PhotoInterp, SHORT_TYPE, 1, 2);    /* 2 denotes "RGB" */
+    addIFDEntry(&ifd, TAG_PhotoInterp, SHORT_TYPE, 1, RGB);
     addIFDEntry(&ifd, TAG_StripOffsets, LONG_TYPE, numStrips, stripOffsetsPos);
     addIFDEntry(&ifd, TAG_SamplesPerPixel, SHORT_TYPE, 1, 4);
     addIFDEntry(&ifd, TAG_RowsPerStrip, SHORT_TYPE, 1, RowsPerStrip);
     addIFDEntry(&ifd, TAG_StripByteCount, LONG_TYPE, numStrips, stripCountsPos);
-    addIFDEntry(&ifd, TAG_PlanarConfig, SHORT_TYPE, 1, 1);  /* 1 denotes "chunky" */
+    addIFDEntry(&ifd, TAG_PlanarConfig, SHORT_TYPE, 1, PLANARCONFIG_CONTIG);  /* 1 denotes "chunky" */
     addIFDEntry(&ifd, TAG_ExtraSamples, SHORT_TYPE, 1, 1);  /* alpha component */
 
-    writeIFD(&ifd, out);
-    fclose(out);
-
+    if (georef != NULL) 
+        addGeoReferenceTags(closure->filePtr, &ifd, georef, width, height);
+    
+    long IFDFileOffset = ftell(closure->filePtr);
+    long nextIFDOffset = writeIFD(&ifd, closure->filePtr);
     free(ifd.entries);
+    
+    /* update the location for this IFD*/
+    fseek(closure->filePtr, closure->nextIFDPointer, SEEK_SET);
+    fwrite(&IFDFileOffset, sizeof(uint32_t), 1, closure->filePtr);
+    fseek(closure->filePtr, 0, SEEK_END);
+    closure->nextIFDPointer = nextIFDOffset;
+    
+    return 0;
+}
+
+
+static int decodePackBitsRow(const char* buff, int len, int expectedLen, int row);
+
+int
+crotiff_writeImageCompressed(TiffHandle* closure, TiffGeoReference* georef, cairo_surface_t* surface)
+{
+    if (!surface) {
+        ESprintf(ERR_CRO_BADARG, "crotiff_writeImageCompressed");
+        return ERR_CRO_BADARG;
+    }
+
+    /* we write the image as channel interleaved, one row per strip... */
+    int width = cairo_image_surface_get_width(surface);
+    int height = cairo_image_surface_get_height(surface);
+    int samplesPerPixel = 4;
+    int numStrips = height;
+
+    uint32_t* stripOffsets = (uint32_t*) malloc(numStrips * sizeof(uint32_t) * samplesPerPixel);
+    uint32_t* stripCounts = (uint32_t*) malloc(numStrips * sizeof(uint32_t) * samplesPerPixel);
+    if (!stripOffsets || !stripCounts) {
+        ESprintf(ERR_CRO_MEMORY, "crotiff: malloc of strip offsets/count");
+        return ERR_CRO_MEMORY;
+    }
+
+    /* fetch our image data... */
+    unsigned char* imageData = cairo_image_surface_get_data(surface);
+
+    /* Need a buffer for the compressed byte stream. PackBits worst case behavior is 1 byte overhead
+     * for every 128 bytes; hence the (width/128 + 1) term in the malloc call below...
+     */
+    char* compressedBuff = (char*) malloc(sizeof(char) * width + (width/128 + 1));
+    if (!compressedBuff) {
+        ESprintf(ERR_CRO_MEMORY, "crotiff: malloc of compressed-data buffer");
+        return ERR_CRO_MEMORY;
+    }
+
+    int imageOffset = 0;
+    int rowNum;
+    for (rowNum=0; rowNum<height; rowNum++) {
+        
+        int channelNum;
+        unsigned int channelMask[] = {0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000 }; /* mask to pick out rgba from argb */
+        unsigned int channelShift[] = {16, 8, 0, 24};  
+        int i;
+        for (i=0; i<samplesPerPixel; i++) {
+            /* compress the ith channel for the current row... */
+            int compBuffLen = encodePackBits((const unsigned int*)(imageData+imageOffset), width, 
+                    channelMask[i], channelShift[i], compressedBuff);
+            
+            /* Sanity check, for debugging purposes -- remove from production code */
+            if (decodePackBitsRow(compressedBuff, compBuffLen, width, rowNum)) {
+                printf("ROW: %d\n", rowNum);
+                int k = 0;
+                for (k = 0; k < width; k++)
+                    printf("%02d ", ((((unsigned int*) (imageData + imageOffset))[k]) & channelMask[i]) >> channelShift[i]);
+                printf("\n\n");
+                for (k = 0; k < compBuffLen; k++) {
+                    printf("%02d ", (int) compressedBuff[k]);
+
+                }
+                printf("\n\n");
+            }
+
+            /* Update strip offset/count. By the tiff spec, all the offsets/counts for a channel proceed those of
+             * subsequent channels.
+             */
+            long fileOffset = ftell(closure->filePtr);
+            stripOffsets[i*height + rowNum] = fileOffset;
+            stripCounts[i*height + rowNum] = compBuffLen;
+            
+            /* write the compressed channel-row... */
+            fwrite(compressedBuff, 1, compBuffLen, closure->filePtr);
+        }
+
+        /* advance to the next row of the image... */
+        imageOffset += width * sizeof(int);
+    }
+    
+    free(compressedBuff);
+
+    /* Write the strip offsets, followed by the strip counts... */
+    long stripOffsetsPos = ftell(closure->filePtr);
+    fwrite(stripOffsets, sizeof(uint32_t), numStrips*samplesPerPixel, closure->filePtr);
+    long stripCountsPos = ftell(closure->filePtr);
+    fwrite(stripCounts, sizeof(uint32_t), numStrips*samplesPerPixel, closure->filePtr);
+    free(stripOffsets);
+    free(stripCounts);
+
+    /* Create and write the Image File Directory. Recall that entries are supposed to
+     * be sorted by tag value -- we'll manually manage that here for the time being.
+     */
+    IFDirectory ifd;
+    memset(&ifd, 0, sizeof(ifd));
+
+    addIFDEntry(&ifd, TAG_ImageWidth, SHORT_TYPE, 1, width);
+    addIFDEntry(&ifd, TAG_ImageLength, SHORT_TYPE, 1, height);
+    addIFDEntry(&ifd, TAG_BitsPerSample, SHORT_TYPE, 1, 8);
+    addIFDEntry(&ifd, TAG_Compression, SHORT_TYPE, 1, PACKBITS);
+    addIFDEntry(&ifd, TAG_PhotoInterp, SHORT_TYPE, 1, RGB);
+    addIFDEntry(&ifd, TAG_StripOffsets, LONG_TYPE, numStrips*samplesPerPixel, stripOffsetsPos);
+    addIFDEntry(&ifd, TAG_SamplesPerPixel, SHORT_TYPE, 1, 4);
+    addIFDEntry(&ifd, TAG_RowsPerStrip, SHORT_TYPE, 1, 1);
+    addIFDEntry(&ifd, TAG_StripByteCount, LONG_TYPE, numStrips*samplesPerPixel, stripCountsPos);
+    addIFDEntry(&ifd, TAG_PlanarConfig, SHORT_TYPE, 1, PLANARCONFIG_SEPARATE);  
+    addIFDEntry(&ifd, TAG_ExtraSamples, SHORT_TYPE, 1, 1);  /* alpha component */
+
+    if (georef != NULL) 
+        addGeoReferenceTags(closure->filePtr, &ifd, georef, width, height);
+
+    long IFDFileOffset = ftell(closure->filePtr);
+    long nextIFDOffset = writeIFD(&ifd, closure->filePtr);
+    free(ifd.entries);
+    
+    /* update the location for this IFD*/
+    fseek(closure->filePtr, closure->nextIFDPointer, SEEK_SET);
+    fwrite(&IFDFileOffset, sizeof(uint32_t), 1, closure->filePtr);
+    fseek(closure->filePtr, 0, SEEK_END);
+    closure->nextIFDPointer = nextIFDOffset;
+    
     return 0;
 }
 
@@ -236,10 +465,11 @@ addIFDEntry(IFDirectory* ifd, int16_t tag, uint16_t type, uint32_t count, uint32
 /*
  * writeIFD()
  *
- * Writes the Image File Directory to the given file.
+ * Writes the Image File Directory to the given file. Returns the file location of the "nextIFD" field of the IFD
+ * just written.
  *
  */
-void
+static long
 writeIFD(IFDirectory* ifd, FILE* out)
 {
     int i;
@@ -252,7 +482,7 @@ writeIFD(IFDirectory* ifd, FILE* out)
         fwrite(&ifd->entries[i].tag, sizeof(uint16_t), 1, out);
         fwrite(&ifd->entries[i].type, sizeof(uint16_t), 1, out);
         fwrite(&ifd->entries[i].count, sizeof(uint32_t), 1, out);
-        if (ifd->entries[i].type == SHORT_TYPE) {
+        if (ifd->entries[i].type == SHORT_TYPE && ifd->entries[i].count == 1) {
             /* Recall that valOffset types < 4 bytes are packed into upper-half of the valOffset field. */
             uint16_t* tmp = (uint16_t*) &ifd->entries[i].valOffset;
 #ifdef ByteSwapped
@@ -266,5 +496,300 @@ writeIFD(IFDirectory* ifd, FILE* out)
         else
             fwrite(&ifd->entries[i].valOffset, sizeof(uint32_t), 1, out);
     }
-    fwrite(&ifd->nextIFD, sizeof(uint32_t), 1, out);
+    
+    fwrite(&ifd->nextIFD, sizeof(uint32_t), 1, out); /* note that this was initialized as zero */
+    return (ftell(out) - sizeof(uint32_t));
+}
+
+
+/*********** NOTE ************************************************************************************************
+ * The georereferencing work is incomplete, and in its current state effectively represents a hard-wired test
+ * case that has been observed to work.  The actual georeferencing needs to be refactored elsewhere, and we need to figure out
+ * how/where to integrate Proj4 and TransformCoordinate into the code base.   "addGeoReferenceTags" below should ultimately
+ * be responsible only for inserting the geotags -- it should be handed all pertinent georeferencing info.
+ * 
+ */
+/**** TEMPORARY REFERENCE ******/
+extern int TransformCoordinate(char * SrcProjStr, char * DstProjStr,
+        double * x, double * y, double * z,
+        unsigned int nPoint);
+
+
+static void addGeoReferenceTags(FILE* file, IFDirectory* ifd, TiffGeoReference* georef, uint16_t imageWidth, uint16_t imageHeight)
+{
+#if 0  /***** MAKE THIS DO EFFECTIVELY NOTHING UNTIL THE REFACTORING DESCRIBED ABOVE IS IMPLEMENTED  *****/    
+    const int NUM_TIE_POINTS = 4;
+    const int DOUBLES_PER_TIE = 6;
+    double doubleBuff[NUM_TIE_POINTS*DOUBLES_PER_TIE];
+    int i = 0;
+
+    /* populate the tiepoints tag */
+    for (i=0; i<NUM_TIE_POINTS; i++) {
+        doubleBuff[i*6] = georef->ndcX[i] * imageWidth;
+        doubleBuff[i*6+1] = imageHeight - georef->ndcY[i] * imageHeight;
+        doubleBuff[i*6+2] = 0.;
+        doubleBuff[i*6+3] = georef->worldX[i];
+        doubleBuff[i*6+4] = georef->worldY[i];
+        doubleBuff[i*6+5] = 0.;        
+        TransformCoordinate("+proj=latlon +ellps=sphere", "+proj=lcc +lat_1=30 +lat_2=55 +lon_0=45", (doubleBuff+i*6+3), (doubleBuff+i*6+4), (doubleBuff+i*6+5), (unsigned int)1);
+    }
+    
+    /* compute pixel scale */
+    double scale[3];
+    scale[0] = sqrt(pow(doubleBuff[1*6+3] - doubleBuff[0*6+3], 2.0) + pow(doubleBuff[1*6+4] - doubleBuff[0*6+4], 2.0)) /
+            ((georef->ndcX[1] - georef->ndcX[0]) * imageWidth);
+    scale[1] = sqrt(pow(doubleBuff[3*6+3] - doubleBuff[0*6+3], 2.0) + pow(doubleBuff[3*6+4] - doubleBuff[0*6+4], 2.0)) /
+            ((georef->ndcY[3] - georef->ndcY[0]) * imageHeight);
+    scale[2] = 0.;
+    int pixelScaleLoc = ftell(file);
+    fwrite(scale, sizeof(double), 3, file);        
+    addIFDEntry(ifd, TAG_ModelPixelScale, DOUBLE_TYPE, 3, pixelScaleLoc); 
+
+    /* write the first tie point */
+    int tiePointsLoc = ftell(file);
+    fwrite(doubleBuff, sizeof(double), DOUBLES_PER_TIE, file);        
+    addIFDEntry(ifd, TAG_ModelTiePoint, DOUBLE_TYPE, DOUBLES_PER_TIE, tiePointsLoc); 
+
+    /* build up and write the GeoKeys... */
+    GeoKeys geokeys;
+    memset(&geokeys, 0, sizeof(geokeys));
+    
+    addGeoKey(&geokeys, 1, 1, 0, 0);  /* this is the header; writeGeoKeys will fill in numKeys */
+    addGeoKey(&geokeys, GTModelTypeGeoKey, 0, 1, ModelTypeProjected);
+    addGeoKey(&geokeys, GTRasterTypeGeoKey, 0, 1, RasterPixelIsArea);
+    addGeoKey(&geokeys, GeographicTypeGeoKey, 0, 1, UserDefined);
+    addGeoKey(&geokeys, GeogGeodeticDatumGeoKey, 0, 1, UserDefined);
+    addGeoKey(&geokeys, GeogAngularUnitsGeoKey, 0, 1, AngularDegree);
+    addGeoKey(&geokeys, GeogEllipsoidGeoKey, 0, 1, EllipseSpheroid);
+    
+    addGeoKey(&geokeys, ProjectedCSTypeGeoKey, 0, 1, UserDefined); 
+    addGeoKey(&geokeys, ProjCoordTransGeoKey, 0, 1, georef->projCode);
+    addGeoKey(&geokeys, ProjLinearUnitsGeoKey, 0, 1, Meters);
+    
+    int numDoubleParams = 0;    
+
+    /* if Lambert conformal, we need to fill in some optional parameters... */
+    if (georef->projCode == CT_LambertConfConic_2SP) {
+        addGeoKey(&geokeys, ProjStdParallel1GeoKey, TAG_GeoDoubleParams, 1, (uint16_t)numDoubleParams);
+        doubleBuff[numDoubleParams++] = georef->stdPar1;
+        addGeoKey(&geokeys, ProjStdParallel2GeoKey, TAG_GeoDoubleParams, 1, (uint16_t)numDoubleParams);
+        doubleBuff[numDoubleParams++] = georef->stdPar2;
+        addGeoKey(&geokeys, ProjCenterLongGeoKey, TAG_GeoDoubleParams, 1, (uint16_t)numDoubleParams);
+        doubleBuff[numDoubleParams++] = georef->meridian;
+    }        
+    
+    long geokeysLoc = writeGeoKeys(&geokeys, file);
+    
+    int doubleParamsLoc = -1;
+    if (numDoubleParams > 0) {
+        doubleParamsLoc = ftell(file);
+        fwrite(doubleBuff, sizeof(double), numDoubleParams, file);        
+    }
+    
+    addIFDEntry(ifd, TAG_GeoKeyDirectory, SHORT_TYPE, geokeys.numKeys*4, (uint32_t)geokeysLoc); 
+    
+    if (numDoubleParams > 0) 
+        addIFDEntry(ifd, TAG_GeoDoubleParams, DOUBLE_TYPE, numDoubleParams, doubleParamsLoc); 
+#endif
+}
+
+/*
+ * addIFDEntry()
+ *
+ * Adds an entry to the given IFD. Grows the IFD entries table as necessary.
+ *
+ */
+static void
+addGeoKey(GeoKeys* keys, int16_t key, uint16_t tag, uint16_t count, uint16_t value)
+{
+    if (keys->numKeys >= keys->maxKeys) {
+        /* need space for more keys... */
+        keys->keys = (GeoKey*) realloc(keys->keys,
+                (keys->maxKeys+IFD_GROW_SIZE)*sizeof(GeoKey));
+        keys->maxKeys += IFD_GROW_SIZE;
+    }
+
+    int indx = keys->numKeys;
+    keys->keys[indx].keyID = key;
+    keys->keys[indx].tagLocation = tag;
+    keys->keys[indx].count = count;
+    keys->keys[indx].offset = value;
+    keys->numKeys++;
+}
+
+/*
+ * writeGeoKeys()
+ *
+ * Writes the GeoKeys to the given file. Returns the file location where these are written.
+ *
+ */
+static long
+writeGeoKeys(GeoKeys* keys, FILE* out)
+{
+    int i;
+    long currLoc;
+
+    currLoc = ftell(out);
+    
+    /* update the number-of-geokeys filed of the GeoKey header */
+    keys->keys[0].offset = keys->numKeys;
+    
+    for (i=0; i<keys->numKeys; i++) {
+        /* write each field individually, rather than by GeoKey, in case there's padding
+         * in the struct...
+         */
+        fwrite(&keys->keys[i].keyID, sizeof(uint16_t), 1, out);
+        fwrite(&keys->keys[i].tagLocation, sizeof(uint16_t), 1, out);
+        fwrite(&keys->keys[i].count, sizeof(uint16_t), 1, out);
+        fwrite(&keys->keys[i].offset, sizeof(uint16_t), 1, out);
+    }
+    
+    return currLoc;
+}
+
+/*
+ * encodePackBits()
+ * 
+ * Handed a buffer of unsigned-ints, presumed to be ARGB values, this routine "PackBits"-compresses the indicated byte channel.
+ * 
+ * Implementation notes:
+ * - We employ a stack allocated ring-buffer to build up runs
+ * - "tail" points to next available slot
+ * - dist(curr,tail) should always be 1
+ * - ring buffer is full when head == tail
+ * - We only recognize repeat-runs of length 3 or greater. The tiff-spec's advise to encode 2-repeats unless surrounded
+ *   by literal-runs is somewhat dubious, IMHO. For example, this repeat-run would be embedded as part of the surrounding
+ *   literals:
+ *          ...a b c d d e f ...
+ * 
+ *   it requires back-back repeats before a 2-repeat run is not the above case:
+ *          ...a b c d d e e f g ...
+ * 
+ *   But there is zero savings is space following this advise, and it complicates the logic considerably.
+ *   
+ */
+int 
+encodePackBits(const unsigned int* data, const int dataLen, 
+        unsigned int byteMask, unsigned int byteShift, char* compressedBuff)
+{
+    /* a convenience macro, for calculating "distance" between two entities in a ring buffer */
+    #define dist(a, b) ( ((b - a) < 0) ? b - a + MAX_RUN : b - a)
+
+    /* this expression appears repeatedly */
+    #define unpackByte(c) ( ( c & byteMask) >> byteShift )
+
+    /* ring-buffer nuances */
+    #define isFull() ( head == tail ? 1 : 0 )
+    
+    const int LITERAL_RUN = 0;
+    const int REPEAT_RUN = 1;
+    const int MAX_RUN = 128;           /* 128 runlength is fundamental to PackBits */
+    unsigned char ringBuffer[MAX_RUN];
+    
+    int i = 0; int compBuffLen = 0;
+    int head = 0; int tail = 0;     /* keeping track of head/tail of ring buffer */
+    int prev = 0;  int curr = 0;    /* keeping track of two most recently added bytes */
+    int runHead = -1;               /* start of the most recently recognized repeat-run */
+    int runCase = LITERAL_RUN;
+    
+    /* prime the process... */
+    ringBuffer[tail++] = unpackByte(data[i++]);
+    while (i < dataLen) {
+        
+        if (isFull()) {
+            /* ringBuffer is full -- write out current run... */
+            if (runCase == LITERAL_RUN) {
+                compressedBuff[compBuffLen++] = dist(head, curr);
+                do {
+                    compressedBuff[compBuffLen++] = ringBuffer[head];                    
+                    head = (++head >= MAX_RUN) ? 0 : head;
+                } while (head != tail);
+            }
+            else {
+                compressedBuff[compBuffLen++] = -dist(head, curr);
+                compressedBuff[compBuffLen++] = ringBuffer[head];
+                runCase = LITERAL_RUN;
+            }
+             
+            head = tail = curr = prev = 0;  /* can reset the ring buffer completely */
+            runHead = -1;
+            if (i < dataLen)
+                /* re-prime... */
+                ringBuffer[tail] = unpackByte(data[i++]);
+                tail = (++tail >= MAX_RUN) ? 0 : tail; 
+            continue;
+        }
+        
+        prev = curr;
+        curr = tail;
+        ringBuffer[tail] = unpackByte(data[i++]);
+        tail = (++tail >= MAX_RUN) ? 0 : tail; 
+
+        if (ringBuffer[curr] == ringBuffer[prev]) {
+            if (runHead < 0)
+                runHead = prev;
+            else if (dist(runHead, curr) == 2) {
+                runCase = REPEAT_RUN;
+                if (dist(head, runHead) > 0) {
+                    compressedBuff[compBuffLen++] = dist(head, runHead) - 1;
+                    while (dist(head, runHead) > 0) {
+                        /* clear any previous LITERAL_RUN */
+                        compressedBuff[compBuffLen++] = ringBuffer[head];
+                        head = (++head >= MAX_RUN) ? 0 : head;
+                    }
+                    /* notice that by construct, at this point head == runHead */                
+                }
+            }
+        }
+
+        else if (runCase == REPEAT_RUN) {
+            /* by virtue of this else clause, we know we had a REPEAT_RUN, and it has now ended... */
+            compressedBuff[compBuffLen++] = -dist(runHead, prev);
+            compressedBuff[compBuffLen++] = ringBuffer[runHead];
+            runCase = LITERAL_RUN;
+            head = prev = curr;
+            runHead = -1;
+        }
+        
+        else
+            runHead = -1;
+        
+    }
+    
+    /* clean up any pending run... */
+    if ( !(head == 0 && tail == 0 && curr == 0 && prev == 0) ) {  /* no cleanup if ended on a full-buffer write */
+        if (runCase == LITERAL_RUN) {
+            compressedBuff[compBuffLen++] = dist(head, curr);
+            do {
+                compressedBuff[compBuffLen++] = ringBuffer[head];
+                head = (++head >= MAX_RUN) ? 0 : head;
+            } while (head != tail);
+        } else {
+            compressedBuff[compBuffLen++] = -dist(runHead, curr);
+            compressedBuff[compBuffLen++] = ringBuffer[runHead];        
+        }
+    }
+    
+    return compBuffLen;
+}
+
+/* 
+ * At present, used only for testing purposes. Verifies that a PackBits buffer adds up to the expected number of bytes.
+ */
+static int decodePackBitsRow(const char* buff, int len, int expectedLen, int row) {
+    int i = 0;
+    int actualLen = 0;
+    while (i < len) {
+        char hdr = buff[i++];
+        actualLen += ((hdr >= 0) ? hdr : -hdr) + 1;
+        i += (hdr > 0) ? hdr + 1 : 1;
+    }
+    
+    int ret = 0;
+    if (actualLen != expectedLen) {
+        printf("PACKBITS: expected: %d, got %d on row %d\n", expectedLen, actualLen, row);
+        ret = 1;
+    }
+    
+    return ret;
 }
