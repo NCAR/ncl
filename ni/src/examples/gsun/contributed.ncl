@@ -15268,6 +15268,14 @@ begin
   end if
 
 end
+;====================
+undef("advect_variable")
+function advect_variable (u:numeric, v:numeric, x:numeric,gridType[1]:integer 
+                          ,long_name:string, units:string, iopt[1]:integer)
+; advect_variable was the original function
+begin
+  return( advect_var(u, v, x, gridType, long_name, units, iopt) )
+end
 ;---
 undef("log1px")
 function log1px(x:numeric)
@@ -15574,4 +15582,28 @@ begin
   dz@sum_dz    = sum(dz)   ; should match the bottom layer [ eg: z_t(kz-1) ]
 
   return(dz)
+end
+;=============
+undef("cla_sqdp")
+function cla_sqdq(s1[1]:string, s2[1]:string)
+; Utility used for Command Line Assignment (CLA)
+; Return a string with a single quote (sq) at the
+; beginning and end which enclose a pair of double quote (dq)
+;
+; [1]  s  = cla_sqdq("PATH","./FIM.G5test.nc")  => 'PATH="./FIM.G5test.nc"'
+;
+; [2]  left = "PATH" 
+;      rght = "./FIM.G5test.nc"
+;      sa   = cla_sqdq(left,rght)      => 'PATH="./FIM.G5test.nc"'
+;
+;      var  = "slp"
+;      sb   = cla_sqdq("vname",var)    => 'vname="slp"'
+;
+;      NCL  = "ncl "+cla_sqdq(left,rght)+" "+cla_sqdq("vname",var)+" foo.ncl"
+;      NCL  = "ncl "+sa+" "+sb+" foo.ncl"
+;           => "ncl 'PATH="./FIM.G5test.nc"' 'vname="slp"'./FIM_CL.ncl
+local dq
+begin
+   dq    = str_get_dq()      ; double quote character
+   return("'"+ s1 +"="+ dq+s2+dq +"'")
 end
