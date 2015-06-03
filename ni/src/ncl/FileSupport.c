@@ -3509,16 +3509,19 @@ NclQuark option;
 #endif
 {
 	NclFileClass fc = NULL;
+	static NrmQuark qall = NrmNULLQUARK;
 	int i;
 
+	if (qall == NrmNULLQUARK) qall = NrmStringToQuark("all");
 	fc = &nclFileClassRec;
 	if(fc) {
 		for (i = 0; i < fc->file_class.num_options; i++) {
 			NclFileOption *opt = &(fc->file_class.options[i]);
 			if (opt->name != _NclGetLower(option))
 				continue;
-			/* if format not specified then just report that the option is defined */
-			if (format == NrmNULLQUARK)
+			/* if format not specified or the option format is "all",
+			   then just report that the option is defined */
+			if (format == NrmNULLQUARK || opt->format == qall)
 				return 1;
 			if (! (_NclGetFormatFuncs(format) &&
 			       _NclGetFormatFuncs(format) == _NclGetFormatFuncs(opt->format)) )
