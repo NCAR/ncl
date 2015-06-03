@@ -15584,7 +15584,7 @@ begin
   return(dz)
 end
 ;=============
-undef("cla_sqdp")
+undef("cla_sqdq")
 function cla_sqdq(s1[1]:string, s2[1]:string)
 ; Utility used for Command Line Assignment (CLA)
 ; Return a string with a single quote (sq) at the
