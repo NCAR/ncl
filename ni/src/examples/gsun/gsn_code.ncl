@@ -558,27 +558,40 @@ end
 ;***********************************************************************;
 ; Function : get_res_value                                              ;
 ;                res                                                    ;
-;            resname:string                                             ;
+;            resname[*]:string                                          ;
 ;        default_val                                                    ;
 ;                                                                       ;
-; This function checks to see if the given resource has been set, and if;
-; so, it returns its value and removes it from the resource list.       ;
+; This function checks to see if any of the given resources have been   ;
+; set, and if so, it returns its value and removes it from the resource ;
+; list.                                                                 ;
+;                                                                       ;
+; Note: this function was updated in V6.3.1 to handle "resname" being   ;
+; an array of strings.  This function will use whatever value is the    ;
+; first one found in the list, but it will remove *all* resnames from   ;
+; the resource list.
+;                                                                       ;
 ; Otherwise, it returns the default value which is the last argument    ;
 ; passed in.                                                            ;
 ;***********************************************************************;
 undef("get_res_value")
-function get_res_value(res,resname:string,default_val)
-local return_val
+function get_res_value(res,resname[*]:string,default_val)
+local return_val,nres,n,is_set
 begin
+  nres   = dimsizes(resname)
+  is_set = False
   if(((typeof(res).eq."logical".and.res).or.(typeof(res).ne."logical")).and.\
      .not.any(ismissing(getvaratts(res)))) then
-    if(isatt(res,resname)) then
-      return_val = res@$resname$
-      delete(res@$resname$)
-    else
-      return_val = default_val
-    end if
-  else
+    do n=0,nres-1
+      if(isatt(res,resname(n))) then
+        if(.not.is_set) then 
+          is_set     = True 
+          return_val = res@$resname(n)$
+        end if
+        delete(res@$resname(n)$)
+      end if
+    end do
+  end if
+  if(.not.is_set) then
     return_val = default_val
   end if
   return(return_val)
@@ -587,27 +600,40 @@ end
 ;***********************************************************************;
 ; Function : get_res_value_keep                                         ;
 ;                res:logical                                            ;
-;            resname:string                                             ;
+;            resname[*]:string                                          ;
 ;        default_val                                                    ;
 ;                                                                       ;
-; This function checks to see if the given resource has been set, and if;
-; so, it returns its value and keeps it from the resource list.         ;
+; This function checks to see if any of the given resources have been   ;
+; set, and if so, it returns its value and keeps it in the resource     ;
+; list.                                                                 ;
+;                                                                       ;
+; Note: this function was updated in V6.3.1 to handle "resname" being   ;
+; an array of strings.  This function will use whatever value is the    ;
+; first one found in the list.                                          ;
+;                                                                       ;
 ; Otherwise, it returns the default value which is the last argument    ;
 ; passed in.                                                            ;
 ;                                                                       ;
 ;***********************************************************************;
 undef("get_res_value_keep")
-function get_res_value_keep(res,resname:string,default_val)
-local return_val
+function get_res_value_keep(res,resname[*]:string,default_val)
+local return_val, nres, is_set
 begin
+  nres   = dimsizes(resname)
+  is_set = False
   if(((typeof(res).eq."logical".and.res).or.(typeof(res).ne."logical")).and.\
      .not.any(ismissing(getvaratts(res)))) then
-    if(isatt(res,resname)) then
-      return_val = res@$resname$
-    else
-      return_val = default_val
-    end if
-  else
+    do n=0,nres-1
+      if(isatt(res,resname(n))) then
+        if(.not.is_set) then 
+          is_set     = True 
+          return_val = res@$resname(n)$
+          break
+        end if 
+      end if 
+    end do
+  end if
+  if(.not.is_set) then
     return_val = default_val
   end if
   return(return_val)
@@ -6762,7 +6788,7 @@ begin
   x_rgt          = get_res_value_keep(res,"gsnPanelRight",1.)
   y_bot          = get_res_value_keep(res,"gsnPanelBottom",0.)
   y_top          = get_res_value_keep(res,"gsnPanelTop",1.)
-  main_string    = get_res_value_keep(res,"txString","")
+  main_string    = get_res_value_keep(res,(/"gsnPanelMainString","txString"/),"")
   maxbb          = get_bb_res(res)
 
   lft_pnl        = isatt(res,"gsnPanelLeft")
@@ -6777,17 +6803,20 @@ begin
 ; 
   if(main_string.ne."") then
     main_string_on = True
-    main_font_hgt  = get_res_value_keep(res,"txFontHeightF",0.02)
+    main_font_hgt  = get_res_value_keep(res,(/"gsnPanelMainFontHeightF","txFontHeightF"/),0.02)
 ;
 ; By default, we want a distance of 0.01 between top of title and the
 ; frame, and a distance of 0.03  between the bottom of the title (txPosYF)
 ; and the top of the panel box (gsnPanelTop).
 ;
     if(y_top.eq.1.) then
-      if(isatt(res,"txPosYF"))
+      if(isatt(res,"gsnPanelMainPosYF"))
+        y_top = min((/1.,res@gsnPanelMainPosYF - 0.03/))
+      else if(isatt(res,"txPosYF"))
         y_top = min((/1.,res@txPosYF - 0.03/))
       else
         y_top = min((/1.,0.96-main_font_hgt/))
+      end if
       end if
     end if
   else
@@ -6834,7 +6863,7 @@ begin
     orths = (/     1.0,          -1.0,      -1.0,        1.0/)
 
     amres = get_res_eq(res,"am")
-    just  = lower_case(get_res_value(amres,"amJust","bottomright"))
+    just = lower_case(get_res_value(res,(/"gsnPanelFigureStringsJust","amJust"/),"bottomright"))
 ;
 ; Look for all resources that start with gsnPanelFigureStrings, and replace
 ; this with just "tx". This is what allows us to sneak in text resources
