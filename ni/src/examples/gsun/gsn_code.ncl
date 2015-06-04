@@ -7497,8 +7497,8 @@ begin
 ;
   if(main_string_on) then
     y_top     = min((/y_top,max_top/))
-    main_ypos = get_res_value_keep(res,"txPosYF",y_top + 0.03)
-    main_xpos = get_res_value_keep(res,"txPosXF",0.5)
+    main_ypos = get_res_value_keep(res,(/"gsnPanelMainPosYF","txPosYF"/),y_top + 0.03)
+    main_xpos = get_res_value_keep(res,(/"gsnPanelMainPosXF","txPosXF"/),0.5)
 
     if(panel_debug) 
       print("-------Panel title values-------")
@@ -7511,13 +7511,20 @@ begin
        print("Warning: gsn_panel: font height (" + main_font_hgt + ") of main string is too large to fit in space provided. Either decrease font size or set gsnPanelTop.")
     end if
 
-    mntxres               = get_res_eq(res,"tx")
+;
+; Look for all resources that start with gsnPanelMain, and replace
+; this with just "tx". This is is for backwards compatibility in
+; V6.3.0 and earlier, where "gsnPanelMain" resources weren't
+; recognized, but "tx" resources were.
+;
+    mntxres               = get_res_eq_replace(res,"gsnPanelMain","tx")
     mntxres               = True
     mntxres@gsnDraw       = False
     mntxres@gsnFrame      = False
     mntxres@txFontHeightF = main_font_hgt
     newplots(nplot) = gsn_create_text_ndc(wks, main_string, main_xpos, \
                       main_ypos, mntxres)
+    mntxres = get_res_eq(res,"tx")   ; This is a kludge to remove any tx*** resources from "res"
   end if
 ;
 ; If some of the paneled plots are missing, we need to take these into
