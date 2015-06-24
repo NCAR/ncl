@@ -1485,6 +1485,13 @@ static NhlErrorTypes DoConstFillHack(
 		save_mono_fill_scale;
 	float test_val;
 	static float save_test_val;
+	static int save_ix;
+#if 0
+	float flx,frx,fby,fuy,wlx,wrx,wby,wuy; int ll;
+	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
+	printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
+	       flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
+#endif
 
 	if (! on) {
 		cnp->mono_fill_color = save_mono_fill_color;
@@ -1493,7 +1500,7 @@ static NhlErrorTypes DoConstFillHack(
 		cnp->fill_color = save_fill_color;
 		cnp->fill_pattern = save_fill_pattern;
 		cnp->fill_scale = save_fill_scale;
-		cnp->data[0] = save_test_val;
+		cnp->data[save_ix] = save_test_val;
 		return NhlNOERROR;
 	}
 
@@ -1501,7 +1508,9 @@ static NhlErrorTypes DoConstFillHack(
 		printf("no data\n");
 		return NhlWARNING;
 	}
-	save_test_val = test_val = cnp->data[0];
+	
+	save_ix = (cnp->sfp->slow_len / 2) * cnp->sfp->fast_len + cnp->sfp->fast_len / 2;
+	save_test_val = test_val = cnp->data[save_ix];
 
 	ix = -1;
 	for (i = 0; i< cnp->level_count; i++) {
@@ -1515,10 +1524,10 @@ static NhlErrorTypes DoConstFillHack(
 		ix = cnp->level_count;
 	}
 	if (ix > 1) {
-		cnp->data[0] = levels[0];
+		cnp->data[save_ix] = levels[0];
 	}
 	else {
-		cnp->data[0] = levels[cnp->level_count - 1];
+		cnp->data[save_ix] = levels[cnp->level_count - 1];
 	}
 	
 	save_mono_fill_color = cnp->mono_fill_color;
