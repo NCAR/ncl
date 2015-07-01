@@ -15607,3 +15607,155 @@ begin
    dq    = str_get_dq()      ; double quote character
    return("'"+ s1 +"="+ dq+s2+dq +"'")
 end
+;=============
+undef("haines_index_rawin")
+function haines_index_rawin(p[*]:numeric,t[*]:numeric, td[*]:numeric, opt[1]:logical)
+;
+; nomenclature:
+;   p  - pressure levels (hPa)    ; must be a coordinate variable
+;   t  - temperature (C)          ; must have a pressure coordinate variable
+;   td - dew point temperature (C); must have a pressure coordinate variable
+;   opt- currently not used       ; set to False
+;  
+; http://www.nwas.org/digest/papers/1988/Vol13-Issue2-May1988/Pg23-Haines.pdf
+; The Haines_Index is technically the "Low Atmosphere Stability Index" ==> LASI
+;
+; It consists of two parts: 
+;    (i) Stability Term: (Tpl - Tp2) 
+;   (ii) Moisture Term : (Tp1 - TDp1)
+
+; The Haines Index can range between 2 and 6. 
+; The drier and more unstable the lower atmosphere the higher the index.
+; ROS means 'Risk Of Spread'
+; A Haines Index of 2-3= a very low ROS, 4= low ROS, 5=moderate ROS, and 6= high ROS.
+; 
+; The function calculates a "low" (0), "mid" (1) and "high" (2) elevation index
+; -----------------------------------------
+; The following classifications are based upon: 
+;    http://www.erh.noaa.gov/cae/haines.htm
+;
+; The HI boundaries are those used for the above web site.
+; The low-level Haines boundary values for the Coastal and Midlands zones, and 
+; the mid-level Haines bounadries for the Upstate zones.
+
+local HI, st, mt, klvl
+begin
+
+  if (.not.(isdimnamed(p,0))) then
+      print("haines_index_rawin: p argument must  have a named dimension")
+      exit
+  else
+      pName = getvardims(p)
+      if (.not.(iscoord(t,pName) .and. iscoord(td,pName))) then 
+          print("haines_index_rawin: t, td arguments must ciirdinate variables")
+          exit
+      end if
+  end if
+
+  klvl = 3                                ; 3 level HI
+
+; calculate individual stability and moisture terms
+; There is no need for the 'st' and 'mt' arrays.
+; The computations could be done without them. 
+; However, I think they make things a bit clearer. Further, it makes it
+;          possible to return these as separte variabls 
+
+  st      = new ( klvl, "float", "No_FillValue")
+  st(0)   = t({950}) - t({850})     ; low elevaltion
+  st(1)   = t({850}) - t({700})     ; mid
+  st(2)   = t({700}) - t({500})     ; high
+  st!0    = "elevation"
+  st@long_name = "HI: Stability Term"
+  st@units     = "degC"
+  printVarSummary(st)
+
+  mt      = new ( klvl, "float", "No_FillValue")
+  mt(0)   = t({850}) - td({850})    ; low elevaltion
+  mt(1)   = t({850}) - td({850})    ; mid
+  mt(2)   = t({700}) - td({700})    ; high
+  mt!0    = "elevation"
+  mt@long_name = "HI: Moisture Term"
+  mt@units     = "degC"
+  printVarSummary(mt)
+
+; Classification
+
+  HI      = new ( klvl, "float", "No_FillValue")
+  HI      = 0               ; initialize (not necessary here)
+                            ; just doing it to be explicit
+; Low (index 0)
+
+  if (st(0).le.3.5) then    ; stability
+      HI(0) = 1 
+  else if (st(0).gt.3.5 .and. st(0).le.7.5) then
+      HI(0) = 2 
+  else if (st(0).gt.7.5) then
+      HI(0) = 3 
+     end if
+   end if
+  end if
+
+  if (mt(0).le.5.5) then   ; moisture (combine with stability)
+      HI(0) = HI(0)+ 1 
+  else if (mt(0).gt.5.5 .and. mt(0).le.9.5) then
+      HI(0) = HI(0)+ 2  
+  else if (mt(0).gt.9.5) then
+      HI(0) = HI(0)+ 3
+     end if
+   end if
+  end if
+
+; Mid (index 1)
+
+  if (st(1).le.5.5) then    ; stability
+      HI(1) = 1 
+  else if (st(1).gt.5.5 .and. st(1).le.9.5) then
+      HI(1) = 2 
+  else if (st(1).gt.9.5) then
+      HI(1) = 3 
+     end if
+   end if
+  end if
+
+  if (mt(1).le.5.5) then   ; moisture (combine with stability)
+      HI(1) = HI(1)+ 1 
+  else if (mt(1).gt.5.5 .and. mt(1).le.11.5) then
+      HI(1) = HI(1)+ 2  
+  else if (mt(1).gt.11.5) then
+      HI(1) = HI(1)+ 3 
+     end if
+   end if
+  end if
+
+; High (index 2)
+
+  if (st(2).le.17) then    ; stability
+      HI(2) = 1 
+  else if (st(2).gt.17 .and. st(2).le.20.5) then
+      HI(2) = 2 
+  else if (st(2).gt.20.5) then
+      HI(2) = 3 
+     end if
+   end if
+  end if
+
+  if (mt(2).le.14) then   ; moisture (combine with stability)
+      HI(2) = HI(2)+ 1 
+  else if (mt(2).gt.14 .and. mt(2).le.20) then
+      HI(2) = HI(2)+ 2 
+  else if (mt(2).gt.20) then
+      HI(2) = HI(2)+ 3 
+     end if
+   end if
+  end if
+
+  HI@long_name = "Haines Index"
+  HI@reference = "http://www.nwas.org/digest/papers/1988/Vol13-Issue2-May1988/Pg23-Haines.pdf" 
+  HI!0         = "elevation"
+  HI@info      = "Low Atmosphere Stability Index" 
+  HI@elevation = (/"Low", "Medium", "High"/)
+  HI@details   = "http://www.erh.noaa.gov/cae/haines.htm"
+
+  return (HI)
+;;return( (/HI, st, mt/) )  ; return 3 variables
+end
