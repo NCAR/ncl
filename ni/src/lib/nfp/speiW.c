@@ -52,6 +52,16 @@ NhlErrorTypes spei_W( void )
  */
   int *seasonality;
 /*
+ * Argument # 7
+ */
+  logical *opt;
+
+/*
+ * Argument # 8
+ */
+  int *dim;
+
+/*
  * Return variable
  */
   void *spei;
@@ -64,10 +74,12 @@ NhlErrorTypes spei_W( void )
 /*
  * Various
  */
-  ng_size_t npts, acum_npts, index_precip, index_lat, index_spei;
-  ng_size_t i, j, size_leftmost, size_output;
-  int inpts, acum_inpts, nlat, ret;
   double *etpSeries, *balanceSeries, *acumSeries, *seasonSeries;
+  ng_size_t i, size_output;
+  ng_size_t ilt, iln, iltln, ntim, acum_ntim, nlat, nlon, nrnt, nlatlon;
+  int intim, num_rgt_dims, ret;
+  ng_size_t index_input, index_lat, index_nrt, size_temp, total_nr, total_nl;
+  char grid_type[13];
 
 /*
  * Retrieve parameters.
@@ -80,7 +92,7 @@ NhlErrorTypes spei_W( void )
  */
   precip = (void*)NclGetArgValue(
            0,
-           7,
+           9,
            &ndims_precip,
            dsizes_precip,
            &missing_precip,
@@ -89,32 +101,17 @@ NhlErrorTypes spei_W( void )
            DONT_CARE);
 
 /*
- * Check dimension sizes.
- */
-  if(ndims_precip < 1) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: The precip array must have at least one dimension");
-    return(NhlFATAL);
-  }
-
-/*
  * Coerce missing value to double if necessary.
  */
   coerce_missing(type_precip,has_missing_precip,&missing_precip,
                  &missing_dbl_precip,&missing_flt_precip);
-
-  npts = dsizes_precip[ndims_precip-1];
-  if(npts > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: npts = %ld is greater than INT_MAX", npts);
-    return(NhlFATAL);
-  }
-  inpts = (int) npts;
 
 /*
  * Get argument # 1
  */
   temp = (void*)NclGetArgValue(
            1,
-           7,
+           9,
            &ndims_temp,
            dsizes_temp,
            &missing_temp,
@@ -129,7 +126,9 @@ NhlErrorTypes spei_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: The temp and precip arrays must be the same dimensionality");
     return(NhlFATAL);
   }
+  size_temp = 1;    /* calculate size of temp while we check dimension sizes */
   for(i = 0; i < ndims_temp; i++) {
+    size_temp *= dsizes_temp[i];
     if(dsizes_precip[i] != dsizes_temp[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: The temp and precip arrays must be the same dimensionality");
       return(NhlFATAL);
@@ -146,7 +145,7 @@ NhlErrorTypes spei_W( void )
  */
   lat = (void*)NclGetArgValue(
            2,
-           7,
+           9,
            &ndims_lat,
            dsizes_lat,
            NULL,
@@ -154,17 +153,12 @@ NhlErrorTypes spei_W( void )
            &type_lat,
            DONT_CARE);
 
-  nlat = dsizes_lat[ndims_lat-1];
-  if(nlat != 1) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Can only handle one latitude value right now\n");
-    return(NhlFATAL);
-  }
 /*
  * Get argument # 3
  */
   acumulated = (int*)NclGetArgValue(
            3,
-           7,
+           9,
            NULL,
            NULL,
            NULL,
@@ -176,7 +170,7 @@ NhlErrorTypes spei_W( void )
  */
   month = (int*)NclGetArgValue(
            4,
-           7,
+           9,
            NULL,
            NULL,
            NULL,
@@ -188,7 +182,7 @@ NhlErrorTypes spei_W( void )
  */
   year = (int*)NclGetArgValue(
            5,
-           7,
+           9,
            NULL,
            NULL,
            NULL,
@@ -200,7 +194,7 @@ NhlErrorTypes spei_W( void )
  */
   seasonality = (int*)NclGetArgValue(
            6,
-           7,
+           9,
            NULL,
            NULL,
            NULL,
@@ -209,54 +203,158 @@ NhlErrorTypes spei_W( void )
            DONT_CARE);
 
 /*
- * Calculate size of output array.
+ * Get argument # 7
  */
-  acum_npts = npts-(*acumulated)+1;
-  if(acum_npts > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: acumulated npts = %ld is greater than INT_MAX", acum_npts);
-    return(NhlFATAL);
-  }
-  acum_inpts = (int) acum_npts;
+  opt = (logical*)NclGetArgValue(
+           7,
+           9,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
 
 /*
- * Calculate size of leftmost dimensions.
+ * Get argument # 8
  */
-  size_leftmost  = 1;
-  for(i = 0; i < ndims_precip-1; i++) size_leftmost *= dsizes_precip[i];
+  dim = (int *)NclGetArgValue(8,9,NULL,NULL,NULL,NULL,NULL,0);
 
-/* 
- * Allocate space for coercing input arrays.  If any of the input
- * is already double, then we don't need to allocate space for
- * temporary arrays, because we'll just change the pointer into
- * the void array appropriately.
+/*
+ * Some error checking. Make sure input dimension is valid.
  */
-  if(type_precip != NCL_double) {
-    tmp_precip = (double *)calloc(npts,sizeof(double));
-    if(tmp_precip == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Unable to allocate memory for coercing precip array to double");
+  if(dim[0] < 0 || dim[0] >= ndims_precip) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Invalid dimension argument, can't continue");
+    return(NhlFATAL);
+  }
+
+/*
+ * Check size of time dimension.
+ */
+  ntim = dsizes_precip[dim[0]];
+  if(ntim > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: ntim = %ld is greater than INT_MAX", ntim);
+    return(NhlFATAL);
+  }
+  intim = (int) ntim;
+
+
+/*
+ * Check dimension sizes. This code is a bit complicated given the possible
+ * structure of the input temp and lat arrays.
+ *
+ * Note: anything to the left of the "ntim" dimension is
+ * considered to be a leftmost dimension that we have to loop across. 
+ *
+ * What we care about for error checking are the dimensions to the *right* of
+ * ntim, which will tell us what kind of lat/lon grid we have.
+ *
+ * t(...,ntim)           - lat is a scalar
+ *
+ * t(...,ntim,ncol)      - the grid is unstructured (eg: spectral element), then lat(ncol)
+ *
+ * t(...,ntim,nlat,mlon) - the grid is rectilinear, then lat(nlat)
+ *
+ * t(...,ntim,nlat,mlon) - the grid is curvilinear, then lat(nlat,mlon) 
+ */
+  num_rgt_dims = ndims_temp-dim[0];
+/*
+ * scalar case
+ */
+  if(num_rgt_dims == 1) {
+    if(!is_scalar(ndims_lat,dsizes_lat)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: If temp has no lat/lon dimensions, then lat must be a scalar. Check your temp array and the 'dim' value.");
       return(NhlFATAL);
     }
+    else {
+      strcpy(grid_type,"scalar");
+      nlat = nlon = 1;
+    }
+  }
+/*
+ * unstructured grid case
+ */
+  else if(num_rgt_dims == 2) {
+    if(ndims_lat != 1 || (ndims_lat == 1 && dsizes_lat[0] != dsizes_temp[dim[0]+1])) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: If temp is on an unstructured grid, then lat must be 1D and the same size as rightmost dimension of temp. Check your temp array and the 'dim' value.");
+      return(NhlFATAL);
+    }
+    else {
+      strcpy(grid_type,"unstructured");
+      nlat = dsizes_lat[0];
+      nlon = 1;
+    }
+  }
+/*
+ * rectilinear or curvilinear grid case
+ */
+  else if(num_rgt_dims == 3) {
+    if((ndims_lat == 1 && (dsizes_lat[0] != dsizes_temp[dim[0]+1]))|| 
+       (ndims_lat == 2 && (dsizes_lat[0] != dsizes_temp[dim[0]+1]  || 
+                           dsizes_lat[1] != dsizes_temp[dim[0]+2]))||
+       ndims_lat > 2) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: If temp is on a rectilinear or curvilinear grid, then lat must either be a 1D array of size nlat or a 2D array of size nlat x mlon. Check your temp array and the 'dim' value.");
+      return(NhlFATAL);
+    }
+    else {
+      if(ndims_lat == 1) {
+        strcpy(grid_type,"rectilinear");
+        nlat = dsizes_lat[0];
+        nlon = dsizes_temp[ndims_temp-1];
+      }
+      else {
+        strcpy(grid_type,"curvilinear");
+        nlat = dsizes_lat[0];
+        nlon = dsizes_lat[1];
+      }
+    }
+  }
+/*
+ * There's a problem with the input temp, lat, and/or dim variables.
+ */
+  else {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: the temp and/or lat arrays don't appear to have the correct dimensionality, or else 'dim' has the wrong value.");
+    return(NhlFATAL);
+  }
+
+/*
+ * Calculate size of output array.
+ */
+  acum_ntim = ntim-(*acumulated)+1;
+  if(acum_ntim > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: acumulated # of time steps = %ld is greater than INT_MAX", acum_ntim);
+    return(NhlFATAL);
+  }
+
+/*
+ * Calculate size of rightmost and leftmost dimensions.
+ */
+  total_nr = nlat * nlon;
+  total_nl = size_temp / ntim / total_nr;
+
+/*
+ * Allocate space for coercing temp, precip, and lat to double. We have to allocate space 
+ * for tmp_precip and tmp_temp no matter what, because the output values may not be 
+ * contiguous in memory.
+ */
+  tmp_precip = (double *)calloc(ntim,sizeof(double));
+  if(tmp_precip == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Unable to allocate memory for coercing precip array to double");
+    return(NhlFATAL);
   }
 /*
  * Allocate space for tmp_temp.
  */
-  if(type_temp != NCL_double) {
-    tmp_temp = (double *)calloc(npts,sizeof(double));
-    if(tmp_temp == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Unable to allocate memory for coercing temp array to double");
-      return(NhlFATAL);
-    }
+  tmp_temp = (double *)calloc(ntim,sizeof(double));
+  if(tmp_temp == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Unable to allocate memory for coercing temp array to double");
+    return(NhlFATAL);
   }
 /*
  * Allocate space for tmp_lat.
  */
-  if(type_lat != NCL_double) {
-    tmp_lat = (double *)calloc(nlat,sizeof(double));
-    if(tmp_lat == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Unable to allocate memory for coercing latitude array to double");
-      return(NhlFATAL);
-    }
-  }
+  if(type_lat != NCL_double) tmp_lat = (double *)calloc(1,sizeof(double));
+
 /*
  * Allocate space for work arrays.
  */
@@ -273,33 +371,27 @@ NhlErrorTypes spei_W( void )
 /* 
  * Allocate space for output array.
  */
-  dsizes_spei  = (ng_size_t*)calloc(ndims_temp,sizeof(ng_size_t)); 
-  if(dsizes_spei == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Unable to allocate memory for output array dimension sizes");
+  size_output = (size_temp / ntim) * acum_ntim;
+  tmp_spei = (double *)calloc(acum_ntim,sizeof(double));
+  if(tmp_spei == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Unable to allocate memory for temporary output array");
     return(NhlFATAL);
   }
-  for( i = 0; i < (ndims_temp-1); i++ ) dsizes_spei[i] = dsizes_temp[i];
-  dsizes_spei[ndims_temp-1] = acum_npts;
-  size_output = size_leftmost * acum_npts;
   if(type_precip == NCL_double || type_temp == NCL_double) {
-    spei = (void *)calloc(size_output, sizeof(double));
-    if(spei == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
-    type_spei = NCL_double;
+    spei                   = (void *)calloc(size_output, sizeof(double));
+    type_spei              = NCL_double;
     missing_spei.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
   }
   else {
-    spei     = (void *)calloc(size_output, sizeof(float));
-    tmp_spei = (double *)calloc(acum_npts,sizeof(double));
-    if(spei == NULL || tmp_spei == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
-    type_spei = NCL_float;
+    spei                  = (void *)calloc(size_output, sizeof(float));
+    type_spei             = NCL_float;
     missing_spei.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
   }
+  if(spei == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+
 /*
  * Initialize to all missing, because not every value will necessarily
  * have a calculation.
@@ -312,60 +404,79 @@ NhlErrorTypes spei_W( void )
   }
 
 /*
- * Loop across leftmost dimensions and call the Fortran routine for each
- * subsection of the input arrays.
+ * The output array is the same size as temp/precip, except with the time 
+ * dimension replaced with acumulated time. 
  */
-  index_precip = index_lat = index_spei = 0;
-
-  for(i = 0; i < size_leftmost; i++) {
-/*
- * Coerce subsection of precip (tmp_precip) to double if necessary.
- */
-    if(type_precip != NCL_double) {
-      coerce_subset_input_double(precip,tmp_precip,index_precip,type_precip,npts,0,NULL,NULL); 
-    }
-    else {
-      tmp_precip = &((double*)precip)[index_precip];
-    }
-/*
- * Coerce subsection of temp (tmp_temp) to double if necessary.
- */
-    if(type_temp != NCL_double) {
-      coerce_subset_input_double(temp,tmp_temp,index_precip,type_temp,npts,0,NULL,NULL);
-    }
-    else {
-      tmp_temp = &((double*)temp)[index_precip];
-    }
+  dsizes_spei = (ng_size_t*)calloc(ndims_temp,sizeof(ng_size_t)); 
+  if(dsizes_spei == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Unable to allocate memory for output array dimension sizes");
+    return(NhlFATAL);
+  }
+  for(i = 0; i < ndims_temp; i++) dsizes_spei[i] = dsizes_temp[i];
+  dsizes_spei[dim[0]] = acum_ntim;    /* replacing the time dimension. */
 
 /*
- * Coerce subsection of lat (tmp_lat) to double if necessary.
+ * Loop across nlat and nlon and pass in ntim subsections of temp
+ * and single latitude values to Fortran routine.
  */
-    if(type_lat != NCL_double) {
-      coerce_subset_input_double(lat,tmp_lat,index_lat,type_lat,nlat,0,NULL,NULL);
-    }
-    else {
-      tmp_lat = &((double*)lat)[index_lat];
-    }
+  nlatlon    = nlat * nlon;
+  nrnt       = total_nr * ntim;
 
-    /* Output array */
-    if(type_spei == NCL_double) tmp_spei = &((double*)spei)[index_spei];
-/*
- * Call the Fortran routine.
+  for(i = 0; i < total_nl; i++) {
+    index_nrt = i*nrnt;
+    for(ilt = 0; ilt < nlat; ilt++) {
+/* 
+ * A rectilinear grid is a special case as it has
+ * lat values for the lat dimension.  Scalar
+ * and unstructured grids have nlon=1, and 
+ * curvilinear grids have nlat x nlon latitude values
  */
-    spei_func(tmp_precip, tmp_temp, inpts, 
-              *tmp_lat, *acumulated, *month, 
+      if(!strcmp(grid_type,"rectilinear")) {
+        if(type_lat != NCL_double) {
+          coerce_subset_input_double(lat,tmp_lat,ilt,type_lat,1,0,NULL,NULL);
+        }
+        else {
+          tmp_lat = &((double*)lat)[ilt];
+        }
+      }
+      for(iln = 0; iln < nlon; iln++) {
+        iltln       = (ilt*nlon)+iln;
+        index_input = index_nrt + iltln;
+/*
+ * Coerce subsection of precip (tmp_precip) to double.
+ */
+        coerce_subset_input_double_step(precip,tmp_precip,index_input,nlatlon,type_precip,
+                                        ntim,0,NULL,NULL);
+/*
+ * Coerce subsection of temp (tmp_temp) to double.
+ */
+        coerce_subset_input_double_step(temp,tmp_temp,index_input,nlatlon,type_temp,
+                                        ntim,0,NULL,NULL);
+/*
+ * For anything but a rectilinear grid (which we handled above), 
+ * coerce subsection of lat (tmp_lat) to double if necessary.
+ */
+        if(strcmp(grid_type,"rectilinear")) {
+          index_lat = ilt*nlon+iln;
+          if(type_lat != NCL_double) {
+            coerce_subset_input_double(lat,tmp_lat,index_lat,type_lat,1,0,NULL,NULL);
+          }
+          else {
+            tmp_lat = &((double*)lat)[index_lat];
+          }
+        }
+/*
+ * Call the C routine.
+ */
+    spei_func(tmp_precip, tmp_temp, intim, *tmp_lat, *acumulated, *month, 
               *year, *seasonality,&etpSeries[0], &balanceSeries[0],
               &acumSeries[0],&seasonSeries[0],&tmp_spei[0]);
 /*
- * Coerce output back to float if necessary.
+ * Coerce output back to appropriate location.
  */
-    if(type_spei != NCL_double) {
-      coerce_output_float_only(spei,tmp_spei,acum_npts,index_spei);
+        coerce_output_float_or_double_step(spei,tmp_spei,type_spei,acum_ntim,index_input,total_nr);
+      }
     }
-    index_spei   += acum_npts;
-    index_precip += npts;
-    /* Only handle one latitude value right now */
-    /*    index_lat    += nlat;*/
   }
 
 /*
@@ -375,10 +486,10 @@ NhlErrorTypes spei_W( void )
   NclFree(balanceSeries);
   NclFree(acumSeries);
   NclFree(seasonSeries);
-  if(type_precip != NCL_double) NclFree(tmp_precip);
-  if(type_temp   != NCL_double) NclFree(tmp_temp);
-  if(type_lat    != NCL_double) NclFree(tmp_lat);
-  if(type_spei   != NCL_double) NclFree(tmp_spei);
+  NclFree(tmp_precip);
+  NclFree(tmp_temp);
+  NclFree(tmp_spei);
+  if(type_lat!= NCL_double) NclFree(tmp_lat);
 /*
  * Return value back to NCL script.
  */

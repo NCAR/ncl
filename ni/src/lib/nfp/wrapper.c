@@ -2221,7 +2221,7 @@ void NclAddUserFuncs(void)
  * Create private argument array
  */
     nargs = 0;
-    args = NewArgs(7);
+    args = NewArgs(9);
 
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
@@ -2230,6 +2230,8 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(spei_W,args,"spei",nargs);
