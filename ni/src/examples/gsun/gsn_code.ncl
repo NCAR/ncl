@@ -6991,13 +6991,14 @@ begin
       font_height = 0.01
     else
       font_height = 0.01
-      if((is_figure_strings.and. \
-          .not.isatt(res,"gsnPanelFigureStringsFontHeightF"))) then
-        print("Warning: gsn_panel: unrecognized plot type.")
-        print("Unable to get information for various font heights.")
-        print("Make sure your font heights look okay.")
-        print("Set gsnPanelFigureStringsFontHeightF resource to control figure strings font height.")
-      end if
+;; Commented this out because it is annoying.
+;;      if((is_figure_strings.and. \
+;;          .not.isatt(res,"gsnPanelFigureStringsFontHeightF"))) then
+;;        print("Warning: gsn_panel: unrecognized plot type.")
+;;        print("Unable to get information for various font heights.")
+;;        print("Make sure your font heights look okay.")
+;;        print("Set gsnPanelFigureStringsFontHeightF resource to control figure strings font height.")
+;;      end if
     end if
     end if
     end if
