@@ -42,14 +42,10 @@ NhlErrorTypes speidx_W( void )
 /*
  * Argument # 4
  */
-  int *seasonality;
-/*
- * Argument # 5
- */
   logical *opt;
 
 /*
- * Argument # 6
+ * Argument # 5
  */
   int *dim;
 
@@ -69,6 +65,7 @@ NhlErrorTypes speidx_W( void )
   double *etpSeries, *balanceSeries, *acumSeries, *seasonSeries;
   ng_size_t i, size_output;
   ng_size_t ilt, iln, iltln, ntim, acum_ntim, nlat, nlon, nrnt, nlatlon;
+  int seasonality=12;  /* hard-coded for now. */
   int intim, num_rgt_dims, ret;
   ng_size_t index_input, index_lat, index_nrt, size_temp, total_nr, total_nl;
   char grid_type[13];
@@ -84,7 +81,7 @@ NhlErrorTypes speidx_W( void )
  */
   precip = (void*)NclGetArgValue(
            0,
-           7,
+           6,
            &ndims_precip,
            dsizes_precip,
            &missing_precip,
@@ -103,7 +100,7 @@ NhlErrorTypes speidx_W( void )
  */
   temp = (void*)NclGetArgValue(
            1,
-           7,
+           6,
            &ndims_temp,
            dsizes_temp,
            &missing_temp,
@@ -137,7 +134,7 @@ NhlErrorTypes speidx_W( void )
  */
   lat = (void*)NclGetArgValue(
            2,
-           7,
+           6,
            &ndims_lat,
            dsizes_lat,
            NULL,
@@ -150,7 +147,7 @@ NhlErrorTypes speidx_W( void )
  */
   acumulated = (int*)NclGetArgValue(
            3,
-           7,
+           6,
            NULL,
            NULL,
            NULL,
@@ -158,24 +155,11 @@ NhlErrorTypes speidx_W( void )
            NULL,
            DONT_CARE);
 /*
- * Get argument # 6
- */
-  seasonality = (int*)NclGetArgValue(
-           4,
-           7,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           DONT_CARE);
-
-/*
- * Get argument # 7
+ * Get argument # 4
  */
   opt = (logical*)NclGetArgValue(
-           5,
-           7,
+           4,
+           6,
            NULL,
            NULL,
            NULL,
@@ -184,9 +168,9 @@ NhlErrorTypes speidx_W( void )
            DONT_CARE);
 
 /*
- * Get argument # 8
+ * Get argument # 5
  */
-  dim = (int *)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,0);
+  dim = (int *)NclGetArgValue(5,6,NULL,NULL,NULL,NULL,NULL,0);
 
 /*
  * Some error checking. Make sure input dimension is valid.
@@ -437,8 +421,8 @@ NhlErrorTypes speidx_W( void )
  * Call the C routine.
  */
     spei_func(tmp_precip, tmp_temp, intim, *tmp_lat, *acumulated,
-              *seasonality,&etpSeries[0], &balanceSeries[0],
-              &acumSeries[0],&seasonSeries[0],&tmp_spei[0]);
+              seasonality,&etpSeries[0],&balanceSeries[0],
+	      &acumSeries[0],&seasonSeries[0],&tmp_spei[0]);
 /*
  * Coerce output back to appropriate location.
  */
