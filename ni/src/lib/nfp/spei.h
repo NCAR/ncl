@@ -7,9 +7,6 @@
      thornthwaite.c
 */
 
-/* Is 5000 large enough? This was value used by original C code */
-#define NUMDATOSMAX 5000
-
 #include <stdio.h>
 #include <math.h>
 

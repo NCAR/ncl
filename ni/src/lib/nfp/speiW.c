@@ -310,10 +310,10 @@ NhlErrorTypes speidx_W( void )
 /*
  * Allocate space for work arrays.
  */
-  etpSeries     = (double *)calloc(NUMDATOSMAX,sizeof(double));
-  balanceSeries = (double *)calloc(NUMDATOSMAX,sizeof(double));
-  acumSeries    = (double *)calloc(NUMDATOSMAX,sizeof(double));
-  seasonSeries  = (double *)calloc(NUMDATOSMAX,sizeof(double));
+  etpSeries     = (double *)calloc(ntim,sizeof(double));
+  balanceSeries = (double *)calloc(ntim,sizeof(double));
+  acumSeries    = (double *)calloc(ntim,sizeof(double));
+  seasonSeries  = (double *)calloc(ntim,sizeof(double));
   if(etpSeries == NULL || balanceSeries == NULL || 
      acumSeries == NULL || seasonSeries == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"speidx: Unable to allocate memory for work arrays");
@@ -321,10 +321,12 @@ NhlErrorTypes speidx_W( void )
   }
 
 /* 
- * Allocate space for output array.
+ * Allocate space for output array. Note: the temporary "tmp_spei"
+ * array will be ntim in size, but the output array will be 
+ * acum_ntim.
  */
   size_output = (size_temp / ntim) * acum_ntim;
-  tmp_spei = (double *)calloc(acum_ntim,sizeof(double));
+  tmp_spei    = (double *)calloc(ntim,sizeof(double));
   if(tmp_spei == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"speidx: Unable to allocate memory for temporary output array");
     return(NhlFATAL);
@@ -346,15 +348,17 @@ NhlErrorTypes speidx_W( void )
 
 /*
  * Initialize to all missing, because not every value will necessarily
- * have a calculation.
+ * have a calculation. COMMENTED OUT BECAUSE THE SPEI ROUTINE IS
+ * SETTING THIS ARRAY TO 0.0
  */
+/*
   if(type_spei == NCL_double) {
     for( i = 0; i < size_output; i++ )  ((double*)spei)[i] = missing_spei.doubleval;
   }
   else {
     for( i = 0; i < size_output; i++ ) ((float*)spei)[i]   = missing_spei.floatval;
   }
-
+*/
 /*
  * The output array is the same size as temp/precip, except with the time 
  * dimension replaced with acumulated time. 
@@ -424,9 +428,12 @@ NhlErrorTypes speidx_W( void )
               seasonality,&etpSeries[0],&balanceSeries[0],
 	      &acumSeries[0],&seasonSeries[0],&tmp_spei[0]);
 /*
- * Coerce output back to appropriate location.
+ * Coerce output back to appropriate location. Note that only acum_ntim
+ * points are being copied.  The assumption is that the last 
+ * (ntime-acum_ntim) points are all set to 0.0
  */
-        coerce_output_float_or_double_step(spei,tmp_spei,type_spei,acum_ntim,index_input,total_nr);
+        coerce_output_float_or_double_step(spei,tmp_spei,type_spei,
+					   acum_ntim,index_input,total_nr);
       }
     }
   }
