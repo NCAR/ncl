@@ -14,7 +14,7 @@
 #include <math.h>
 
 extern void spei_func(double *rainSeries,double *tempSeries,int npts,double lat,
-		      int acumulated,int mes,int anio,int seasonality,
+		      int acumulated,int seasonality,
 		      double *etpSeries, double *balanceSeries, 
 		      double *acumSeries,double *seasonSeries,double *speiSeries);
 

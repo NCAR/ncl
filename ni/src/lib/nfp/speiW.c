@@ -2,7 +2,7 @@
 #include "wrapper.h"
 #include "spei.h"
 
-NhlErrorTypes spei_W( void )
+NhlErrorTypes speidx_W( void )
 {
 /*
  * Input variables
@@ -42,22 +42,14 @@ NhlErrorTypes spei_W( void )
 /*
  * Argument # 4
  */
-  int *month;
-/*
- * Argument # 5
- */
-  int *year;
-/*
- * Argument # 6
- */
   int *seasonality;
 /*
- * Argument # 7
+ * Argument # 5
  */
   logical *opt;
 
 /*
- * Argument # 8
+ * Argument # 6
  */
   int *dim;
 
@@ -92,7 +84,7 @@ NhlErrorTypes spei_W( void )
  */
   precip = (void*)NclGetArgValue(
            0,
-           9,
+           7,
            &ndims_precip,
            dsizes_precip,
            &missing_precip,
@@ -111,7 +103,7 @@ NhlErrorTypes spei_W( void )
  */
   temp = (void*)NclGetArgValue(
            1,
-           9,
+           7,
            &ndims_temp,
            dsizes_temp,
            &missing_temp,
@@ -123,14 +115,14 @@ NhlErrorTypes spei_W( void )
  * Check dimension sizes.
  */
   if(ndims_temp != ndims_precip) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: The temp and precip arrays must be the same dimensionality");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"speidx: The temp and precip arrays must be the same dimensionality");
     return(NhlFATAL);
   }
   size_temp = 1;    /* calculate size of temp while we check dimension sizes */
   for(i = 0; i < ndims_temp; i++) {
     size_temp *= dsizes_temp[i];
     if(dsizes_precip[i] != dsizes_temp[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: The temp and precip arrays must be the same dimensionality");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"speidx: The temp and precip arrays must be the same dimensionality");
       return(NhlFATAL);
     }
   }
@@ -145,7 +137,7 @@ NhlErrorTypes spei_W( void )
  */
   lat = (void*)NclGetArgValue(
            2,
-           9,
+           7,
            &ndims_lat,
            dsizes_lat,
            NULL,
@@ -158,31 +150,7 @@ NhlErrorTypes spei_W( void )
  */
   acumulated = (int*)NclGetArgValue(
            3,
-           9,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           DONT_CARE);
-/*
- * Get argument # 4
- */
-  month = (int*)NclGetArgValue(
-           4,
-           9,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           DONT_CARE);
-/*
- * Get argument # 5
- */
-  year = (int*)NclGetArgValue(
-           5,
-           9,
+           7,
            NULL,
            NULL,
            NULL,
@@ -193,8 +161,8 @@ NhlErrorTypes spei_W( void )
  * Get argument # 6
  */
   seasonality = (int*)NclGetArgValue(
-           6,
-           9,
+           4,
+           7,
            NULL,
            NULL,
            NULL,
@@ -206,8 +174,8 @@ NhlErrorTypes spei_W( void )
  * Get argument # 7
  */
   opt = (logical*)NclGetArgValue(
+           5,
            7,
-           9,
            NULL,
            NULL,
            NULL,
@@ -218,13 +186,13 @@ NhlErrorTypes spei_W( void )
 /*
  * Get argument # 8
  */
-  dim = (int *)NclGetArgValue(8,9,NULL,NULL,NULL,NULL,NULL,0);
+  dim = (int *)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,0);
 
 /*
  * Some error checking. Make sure input dimension is valid.
  */
   if(dim[0] < 0 || dim[0] >= ndims_precip) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Invalid dimension argument, can't continue");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"speidx: Invalid dimension argument, can't continue");
     return(NhlFATAL);
   }
 
@@ -233,7 +201,7 @@ NhlErrorTypes spei_W( void )
  */
   ntim = dsizes_precip[dim[0]];
   if(ntim > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: ntim = %ld is greater than INT_MAX", ntim);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"speidx: ntim = %ld is greater than INT_MAX", ntim);
     return(NhlFATAL);
   }
   intim = (int) ntim;
@@ -263,7 +231,7 @@ NhlErrorTypes spei_W( void )
  */
   if(num_rgt_dims == 1) {
     if(!is_scalar(ndims_lat,dsizes_lat)) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: If temp has no lat/lon dimensions, then lat must be a scalar. Check your temp array and the 'dim' value.");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"speidx: If temp has no lat/lon dimensions, then lat must be a scalar. Check your temp array and the 'dim' value.");
       return(NhlFATAL);
     }
     else {
@@ -276,7 +244,7 @@ NhlErrorTypes spei_W( void )
  */
   else if(num_rgt_dims == 2) {
     if(ndims_lat != 1 || (ndims_lat == 1 && dsizes_lat[0] != dsizes_temp[dim[0]+1])) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: If temp is on an unstructured grid, then lat must be 1D and the same size as rightmost dimension of temp. Check your temp array and the 'dim' value.");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"speidx: If temp is on an unstructured grid, then lat must be 1D and the same size as rightmost dimension of temp. Check your temp array and the 'dim' value.");
       return(NhlFATAL);
     }
     else {
@@ -293,7 +261,7 @@ NhlErrorTypes spei_W( void )
        (ndims_lat == 2 && (dsizes_lat[0] != dsizes_temp[dim[0]+1]  || 
                            dsizes_lat[1] != dsizes_temp[dim[0]+2]))||
        ndims_lat > 2) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: If temp is on a rectilinear or curvilinear grid, then lat must either be a 1D array of size nlat or a 2D array of size nlat x mlon. Check your temp array and the 'dim' value.");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"speidx: If temp is on a rectilinear or curvilinear grid, then lat must either be a 1D array of size nlat or a 2D array of size nlat x mlon. Check your temp array and the 'dim' value.");
       return(NhlFATAL);
     }
     else {
@@ -313,7 +281,7 @@ NhlErrorTypes spei_W( void )
  * There's a problem with the input temp, lat, and/or dim variables.
  */
   else {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: the temp and/or lat arrays don't appear to have the correct dimensionality, or else 'dim' has the wrong value.");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"speidx: the temp and/or lat arrays don't appear to have the correct dimensionality, or else 'dim' has the wrong value.");
     return(NhlFATAL);
   }
 
@@ -322,7 +290,7 @@ NhlErrorTypes spei_W( void )
  */
   acum_ntim = ntim-(*acumulated)+1;
   if(acum_ntim > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: acumulated # of time steps = %ld is greater than INT_MAX", acum_ntim);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"speidx: acumulated # of time steps = %ld is greater than INT_MAX", acum_ntim);
     return(NhlFATAL);
   }
 
@@ -339,7 +307,7 @@ NhlErrorTypes spei_W( void )
  */
   tmp_precip = (double *)calloc(ntim,sizeof(double));
   if(tmp_precip == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Unable to allocate memory for coercing precip array to double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"speidx: Unable to allocate memory for coercing precip array to double");
     return(NhlFATAL);
   }
 /*
@@ -347,7 +315,7 @@ NhlErrorTypes spei_W( void )
  */
   tmp_temp = (double *)calloc(ntim,sizeof(double));
   if(tmp_temp == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Unable to allocate memory for coercing temp array to double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"speidx: Unable to allocate memory for coercing temp array to double");
     return(NhlFATAL);
   }
 /*
@@ -364,7 +332,7 @@ NhlErrorTypes spei_W( void )
   seasonSeries  = (double *)calloc(NUMDATOSMAX,sizeof(double));
   if(etpSeries == NULL || balanceSeries == NULL || 
      acumSeries == NULL || seasonSeries == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Unable to allocate memory for work arrays");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"speidx: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
 
@@ -374,7 +342,7 @@ NhlErrorTypes spei_W( void )
   size_output = (size_temp / ntim) * acum_ntim;
   tmp_spei = (double *)calloc(acum_ntim,sizeof(double));
   if(tmp_spei == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Unable to allocate memory for temporary output array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"speidx: Unable to allocate memory for temporary output array");
     return(NhlFATAL);
   }
   if(type_precip == NCL_double || type_temp == NCL_double) {
@@ -388,7 +356,7 @@ NhlErrorTypes spei_W( void )
     missing_spei.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
   }
   if(spei == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Unable to allocate memory for output array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"speidx: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 
@@ -409,7 +377,7 @@ NhlErrorTypes spei_W( void )
  */
   dsizes_spei = (ng_size_t*)calloc(ndims_temp,sizeof(ng_size_t)); 
   if(dsizes_spei == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"spei: Unable to allocate memory for output array dimension sizes");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"speidx: Unable to allocate memory for output array dimension sizes");
     return(NhlFATAL);
   }
   for(i = 0; i < ndims_temp; i++) dsizes_spei[i] = dsizes_temp[i];
@@ -468,8 +436,8 @@ NhlErrorTypes spei_W( void )
 /*
  * Call the C routine.
  */
-    spei_func(tmp_precip, tmp_temp, intim, *tmp_lat, *acumulated, *month, 
-              *year, *seasonality,&etpSeries[0], &balanceSeries[0],
+    spei_func(tmp_precip, tmp_temp, intim, *tmp_lat, *acumulated,
+              *seasonality,&etpSeries[0], &balanceSeries[0],
               &acumSeries[0],&seasonSeries[0],&tmp_spei[0]);
 /*
  * Coerce output back to appropriate location.

@@ -58,7 +58,7 @@ extern NhlErrorTypes bw_bandpass_filter_W(void);
 extern NhlErrorTypes weibull_W(void);
 extern NhlErrorTypes trend_manken_W(void);
 extern NhlErrorTypes thornthwaite_W(void);
-extern NhlErrorTypes spei_W(void);
+extern NhlErrorTypes speidx_W(void);
 extern NhlErrorTypes kmeans_as136_W(void);
 extern NhlErrorTypes snindex_yrmo_W(void);
 extern NhlErrorTypes x_skewt_W(void);
@@ -2216,12 +2216,12 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(thornthwaite_W,args,"thornthwaite",nargs);
 
 /*
- * Register "spei".
+ * Register "speidx".
  *
  * Create private argument array
  */
     nargs = 0;
-    args = NewArgs(9);
+    args = NewArgs(7);
 
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
@@ -2229,12 +2229,10 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
-    NclRegisterFunc(spei_W,args,"spei",nargs);
+    NclRegisterFunc(speidx_W,args,"speidx",nargs);
 
 /*
  * Register "kmeans_as136".

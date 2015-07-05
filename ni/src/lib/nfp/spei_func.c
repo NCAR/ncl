@@ -33,9 +33,9 @@
 
 /* Calculate the Standardized Precipitation Index */
 void spei_func(double *rainSeries,double *tempSeries,int npts,double lat,
-	       int acumulated,int mes,int anio,int seasonality,
-	       double *etpSeries, double *balanceSeries, 
-	       double *acumSeries,double *seasonSeries,double *speiSeries)
+	       int acumulated,int seasonality,double *etpSeries,
+	       double *balanceSeries, double *acumSeries,
+	       double *seasonSeries,double *speiSeries)
 {
   int   numRegistros,acumRegistros,indice,jndice;
 
@@ -74,9 +74,13 @@ void spei_func(double *rainSeries,double *tempSeries,int npts,double lat,
   }
 
   /* Compute the cumulative series */
+/* 
+  Commented the anio/mes (year/month) code, b/c it is not used
+  in the calculation. We may decide to add it later.
   anio += (acumulated-1)/12;
   mes += acumulated-1;
   while (mes>12) mes-=12;
+*/
   acumRegistros = numRegistros-acumulated+1;
   for (indice=acumulated-1; indice<numRegistros; indice++) {
     for (jndice=0; jndice<acumulated; jndice++) {
