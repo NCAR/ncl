@@ -12,6 +12,10 @@ extern void NGCALLF(dphybrid,DPHYBRID)(double*,double*,double*,double*,
 
 extern void NGCALLF(ddphybrid,DDPHYBRID)(double*,double*,double*,double*,
                                          int*,int*,int*,double*,double*);
+					
+extern void NGCALLF(dphybridjra55,DPHYBRIDJRA55)(double *,double *,double *,int *,
+						 int *,int *,double *,double *,int *,
+						 double *);
 
 extern void NGCALLF(dh2sdrv,DH2SDRV)(double*,double*,double*,double*,
                                      double*,double*,double*,int*,double*,
@@ -682,6 +686,246 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
   return(ret);
 }
 
+
+
+NhlErrorTypes pres_hybrid_jra55_W( void )
+{
+/*
+ * Input variables
+ */
+  void *psfc, *hya, *hyb;
+  double *tmp_psfc = NULL;
+  double *tmp_hya, *tmp_hyb;
+  int ndims_psfc;
+  ng_size_t dsizes_psfc[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_hya[1], dsizes_hyb[1];
+  int has_missing_psfc;
+  NclBasicDataTypes type_psfc, type_hya, type_hyb;
+  NclScalar missing_psfc, missing_dpsfc, missing_rpsfc;
+/*
+ * Output variables
+ */
+  void *phy;
+  double *tmp_phy = NULL;
+  int ndims_phy;
+  ng_size_t *dsizes_phy;
+  NclBasicDataTypes type_phy;
+  NclScalar missing_phy;
+/*
+ * Various.
+ */
+  double *tmp_pi;
+  ng_size_t i, j, nlat, nlon, nlatnlon, iklvlnlatnlon, oklvlnlatnlon;
+  ng_size_t size_leftmost, size_phy, index_psfc, index_phy;
+  int ret, inlon, inlat, iklvl, oklvl;
+/*
+ * Retrieve parameters
+ *
+ * Note that any of the pointer parameters can be set to NULL,
+ * which implies you don't care about its value.
+ */
+  psfc = (void*)NclGetArgValue(
+          0,
+          3,
+          &ndims_psfc, 
+          dsizes_psfc,
+          &missing_psfc,
+          &has_missing_psfc,
+          &type_psfc,
+          DONT_CARE);
+
+  hya = (void*)NclGetArgValue(
+          1,
+          3,
+          NULL,
+          dsizes_hya,
+          NULL,
+          NULL,
+          &type_hya,
+          DONT_CARE);
+
+  hyb = (void*)NclGetArgValue(
+          2,
+          3,
+          NULL,
+          dsizes_hyb,
+          NULL,
+          NULL,
+          &type_hyb,
+          DONT_CARE);
+/*
+ * Check dimensions.
+ */
+  if( dsizes_hya[0] != dsizes_hyb[0]) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid_jra55: The 'hya/hyb' arrays must be the same length");
+    return(NhlFATAL);
+  }
+  iklvl = dsizes_hya[0];
+  oklvl = iklvl-1;
+
+  if(ndims_psfc < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid_jra55: The 'psfc' array must be at least two-dimensional");
+    return(NhlFATAL);
+  }
+  nlat = dsizes_psfc[ndims_psfc-2];
+  nlon = dsizes_psfc[ndims_psfc-1];
+  nlatnlon      = nlat * nlon;
+  iklvlnlatnlon = iklvl * nlatnlon;
+  oklvlnlatnlon = oklvl * nlatnlon;
+
+/*
+ * Test input dimension sizes.
+ */
+  if((nlon > INT_MAX) || (nlat > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid_jra55: one or more input dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inlon = (int) nlon;
+  inlat = (int) nlat;
+
+/*
+ * Get double precision missing value, if any.
+ */
+  coerce_missing(type_psfc,has_missing_psfc,&missing_psfc,
+                 &missing_dpsfc,&missing_rpsfc);
+/*
+ * Determine type of output.
+ */
+  if(type_psfc == NCL_double) type_phy = NCL_double;
+  else                        type_phy = NCL_float;
+
+/*
+ * Calculate total size of output array.
+ */
+  ndims_phy = ndims_psfc + 1;
+
+  dsizes_phy = (ng_size_t*)calloc(ndims_phy,sizeof(ng_size_t));  
+  if( dsizes_phy == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid_jra55: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
+
+/*
+ * Calculate dimension sizes of phy.
+ */
+  size_leftmost = 1;
+  for( i = 0; i < ndims_psfc-2; i++ ) {
+    size_leftmost *= dsizes_psfc[i];
+    dsizes_phy[i] = dsizes_psfc[i];
+  }
+  size_phy = size_leftmost * oklvlnlatnlon;
+  dsizes_phy[ndims_psfc-2] = oklvl;
+  dsizes_phy[ndims_psfc-1] = nlat;
+  dsizes_phy[ndims_psfc]   = nlon;
+/*
+ * Coerce data to double if necessary.
+ */
+  tmp_hya = coerce_input_double(hya,type_hya,iklvl,0,NULL,NULL);
+  tmp_hyb = coerce_input_double(hyb,type_hyb,iklvl,0,NULL,NULL);
+  if( tmp_hya == NULL || tmp_hyb == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid_jra55: Unable to coerce hya/hyb to double precision");
+    return(NhlFATAL);
+  }
+
+/*
+ * Coerce psfc.
+ */
+  if(type_psfc != NCL_double) {
+    tmp_psfc = (double*)calloc(nlatnlon,sizeof(double));
+    if( tmp_psfc == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid_jra55: Unable to allocate memory for coercing psfc array to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Allocate space for output array.
+ */
+  if(type_phy == NCL_float) {
+    phy     = (void*)calloc(size_phy,sizeof(float));
+    tmp_phy = (double*)calloc(oklvlnlatnlon,sizeof(double));
+    if(tmp_phy == NULL || phy == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid_jra55: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+    missing_phy = missing_rpsfc;
+  }
+  else {
+    phy = (void*)calloc(size_phy,sizeof(double));
+    if(phy == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid_jra55: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+    missing_phy = missing_dpsfc;
+  }
+
+/*
+ * Allocate space for work array.
+ */
+  tmp_pi = (double*)calloc(iklvlnlatnlon,sizeof(double));
+  if(tmp_pi == NULL) {
+  NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid_jra55: Unable to allocate memory for work array");
+  return(NhlFATAL);
+  }
+
+/*
+ * Call function.
+ */
+  index_psfc = index_phy = 0;
+  for( i = 0; i < size_leftmost; i++ ) {
+    if(type_psfc != NCL_double) {
+/*
+ * Coerce subsection of psfc (tmp_psfc) to double.
+ */
+      coerce_subset_input_double(psfc,tmp_psfc,index_psfc,type_psfc,
+                                 nlatnlon,0,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_psfc to appropriate location in psfc.
+ */
+      tmp_psfc = &((double*)psfc)[index_psfc];
+    }
+
+    if(type_phy == NCL_double) tmp_phy = &((double*)phy)[index_phy];
+
+    if(i==0) {
+      printf("nlat / nlon = %d / %d\n", inlat, inlon);
+      for(j = 0; j < iklvl; j++ ) printf("hya / hyb = %g / %g\n", tmp_hya[j], tmp_hyb[j]);
+    }
+    NGCALLF(dphybridjra55,DPHYBRIDJRA55)(tmp_hya,tmp_hyb,tmp_psfc,&inlon,&inlat,
+					 &oklvl,tmp_phy,&missing_dpsfc.doubleval,
+					 &iklvl,tmp_pi);
+/*
+ * Copy output values from temporary tmp_phy to phy.
+ */
+    for(j = 0; j < oklvl; j++ ) printf("phy = %g\n", tmp_phy[j]);
+    if(type_phy != NCL_double) {
+      coerce_output_float_only(phy,tmp_phy,oklvlnlatnlon,index_phy);
+    }
+    index_psfc += nlatnlon;
+    index_phy  += oklvlnlatnlon;
+  }
+/*
+ * Free memory.
+ */
+  NclFree(tmp_pi);
+  if(type_psfc != NCL_double) NclFree(tmp_psfc);
+  if(type_hya  != NCL_double) NclFree(tmp_hya);
+  if(type_hyb  != NCL_double) NclFree(tmp_hyb);
+  if(type_phy  != NCL_double) NclFree(tmp_phy);
+/*
+ * Return.
+ */
+  if(has_missing_psfc) {
+    ret = NclReturnValue(phy,ndims_phy,dsizes_phy,&missing_phy,type_phy,0);
+  }
+  else {
+    ret = NclReturnValue(phy,ndims_phy,dsizes_phy,NULL,type_phy,0);
+  }
+  NclFree(dsizes_phy);
+  return(ret);
+}
 
 
 NhlErrorTypes dpres_hybrid_ccm_W( void )

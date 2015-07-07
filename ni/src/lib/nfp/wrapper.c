@@ -466,6 +466,7 @@ extern NhlErrorTypes rgrid2rcm_W(void);
 extern NhlErrorTypes rcm2points_W(void);
 extern NhlErrorTypes pres_hybrid_W(void);
 extern NhlErrorTypes pres_hybrid_ccm_W(void);
+extern NhlErrorTypes pres_hybrid_jra55_W(void);
 extern NhlErrorTypes dpres_hybrid_W(void);
 extern NhlErrorTypes dpres_hybrid_ccm_W(void);
 extern NhlErrorTypes dpres_plevel_W(void);
@@ -6821,6 +6822,18 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterFunc(pres_hybrid_ccm_W,args,"pres_hybrid_ccm",nargs);
+
+/*
+ * Register "pres_hybrid_jra55".
+ */
+    nargs = 0;
+    args = NewArgs(3);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+
+    NclRegisterFunc(pres_hybrid_jra55_W,args,"pres_hybrid_jra55",nargs);
 
 /*
  * Register "dpres_hybrid".
