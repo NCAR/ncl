@@ -39,7 +39,7 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	slatec_DPOLFT.o wrf_rip_phys_routines.o accumrun.o \
 	thornthwaite_v2.o bfilter1.o distribfit.o kens_trend_dp.ncl.o \
 	det_code42.o kmeans_kmns_as136.o spi3.o wrf_vinterp.o wrf_fctt.o \
-	wrf_write_wps.o
+	wrf_write_wps.o pres_hybrid_jra55_dp.o
 
 COBJS =
 
