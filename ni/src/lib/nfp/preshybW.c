@@ -715,7 +715,7 @@ NhlErrorTypes pres_hybrid_jra55_W( void )
  * Various.
  */
   double *tmp_pi;
-  ng_size_t i, j, nlat, nlon, nlatnlon, iklvlnlatnlon, oklvlnlatnlon;
+  ng_size_t i, nlat, nlon, nlatnlon, iklvlnlatnlon, oklvlnlatnlon;
   ng_size_t size_leftmost, size_phy, index_psfc, index_phy;
   int ret, inlon, inlat, iklvl, oklvl;
 /*
@@ -889,17 +889,12 @@ NhlErrorTypes pres_hybrid_jra55_W( void )
 
     if(type_phy == NCL_double) tmp_phy = &((double*)phy)[index_phy];
 
-    if(i==0) {
-      printf("nlat / nlon = %d / %d\n", inlat, inlon);
-      for(j = 0; j < iklvl; j++ ) printf("hya / hyb = %g / %g\n", tmp_hya[j], tmp_hyb[j]);
-    }
     NGCALLF(dphybridjra55,DPHYBRIDJRA55)(tmp_hya,tmp_hyb,tmp_psfc,&inlon,&inlat,
 					 &oklvl,tmp_phy,&missing_dpsfc.doubleval,
 					 &iklvl,tmp_pi);
 /*
  * Copy output values from temporary tmp_phy to phy.
  */
-    for(j = 0; j < oklvl; j++ ) printf("phy = %g\n", tmp_phy[j]);
     if(type_phy != NCL_double) {
       coerce_output_float_only(phy,tmp_phy,oklvlnlatnlon,index_phy);
     }
