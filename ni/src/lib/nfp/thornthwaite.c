@@ -8,7 +8,7 @@
 // Calculates the potential evapotranspiration from a series of monthly
 // temperature data, following the method of Thornthwaite.
 */
-void thornthwaite(double *tempSeries, int n, double lat, double *etpSeries){
+void thornthwaite(double *tempSeries, int n, double tmsg, double lat, double *etpSeries){
 
 	double T, J, J2, J3, c, N, omega, K[13], tanLatMonth;
 	int month, i, k;
@@ -22,19 +22,32 @@ void thornthwaite(double *tempSeries, int n, double lat, double *etpSeries){
 	double days[13] = {31,28,31,30,31,30,31,31,30,31,30,31};
 	/*double julian[13] = {16,45.5,75,105.5,136,166.5,197,228,258.5,289,319.5,350}; */
 
+        /* Initialize to missing */
+	for (i=0; i<n; i++) etpSeries[i] = tmsg;
+
 	/* Compute J: annual temperature efficiency index */
 	J = 0;
 	for (month=1; month<13; month++) {
 		T = k = 0;
 		for (i=month-1; i<n; i+=12) {
-			T = T + tempSeries[i];
-			k++;
+		  if (tempSeries[i] != tmsg) {
+		    T = T + tempSeries[i];
+		    k++;
+		  }
 		}
 		/* T: monthly average temperature */
 		T = T/k;
 		if (T>0) J = J + pow(T/5,1.514);
 		/*printf("\nTemp. efficiency index (J) = %.4f", J); */
 	}
+	/* if J=0 ... nothing else matters */
+	if (J == 0.0)  {
+	  for (i=0; i<n; i++) {
+	    if(tempSeries[i] != tmsg) etpSeries[i] = 0.0;
+	  }
+	  return;
+	}
+
 	/*printf("\nAnnual temp. efficiency index (J) = %.4f", J); */
 	/* Compute c exponent */
 	J2 = J*J;
@@ -56,9 +69,11 @@ void thornthwaite(double *tempSeries, int n, double lat, double *etpSeries){
 	/* Compute potential evapotranspiration series */
 	month = 1;
 	for (i=0; i<n; i++) {
+	  if(tempSeries[i] != tmsg) {
 		if (tempSeries[i]>0 && J>0) etpSeries[i] = K[month] * 16 * pow((10*tempSeries[i]/J),c);
 		else etpSeries[i] = 0;
-		if (month<12) month++;
-		else month = 1;
+	  }
+	  if (month<12) month++;
+	  else month = 1;
 	}
 }
