@@ -32,10 +32,11 @@
 #endif
 
 /* Calculate the Standardized Precipitation Index */
-void spei_func(double *rainSeries,double *tempSeries,int npts,double lat,
-	       int acumulated,int seasonality,double *etpSeries,
-	       double *balanceSeries, double *acumSeries,
-	       double *seasonSeries,double *speiSeries)
+void spei_driver(double *rainSeries,double *tempSeries,double tmsg,
+		 int npts,double lat,
+		 int acumulated,int seasonality,double *etpSeries,
+		 double *balanceSeries, double *acumSeries,
+		 double *seasonSeries,double *speiSeries)
 {
   int   numRegistros,acumRegistros,indice,jndice;
 
@@ -62,17 +63,26 @@ void spei_func(double *rainSeries,double *tempSeries,int npts,double lat,
  * potential evapotranspiration 
  */
   if (tempSeries[1]!=0 && tempSeries[2]!=0) {
-    thornthwaite(tempSeries, numRegistros, lat, etpSeries);
+    thornthwaite(tempSeries, numRegistros, tmsg, lat, etpSeries);
     for (indice=0; indice<numRegistros; indice++) {
-      balanceSeries[indice] = rainSeries[indice]-etpSeries[indice];
+      if(etpSeries[indice] != tmsg) {
+	balanceSeries[indice] = rainSeries[indice]-etpSeries[indice];
+      }
+      else {
+	balanceSeries[indice] = tmsg;
+      }
     }
   }
   else {
     for (indice=0; indice<numRegistros; indice++) {
-      balanceSeries[indice] = rainSeries[indice];
+      if(etpSeries[indice] != tmsg) {
+	balanceSeries[indice] = rainSeries[indice];
+      }
+      else {
+	balanceSeries[indice] = tmsg;
+      }
     }
   }
-
   /* Compute the cumulative series */
 /* 
   Commented the anio/mes (year/month) code, b/c it is not used
@@ -84,26 +94,36 @@ void spei_func(double *rainSeries,double *tempSeries,int npts,double lat,
   acumRegistros = numRegistros-acumulated+1;
   for (indice=acumulated-1; indice<numRegistros; indice++) {
     for (jndice=0; jndice<acumulated; jndice++) {
-      acumSeries[indice-acumulated+1] += balanceSeries[indice-jndice];
+      if(balanceSeries[indice-jndice] != tmsg) {
+	acumSeries[indice-acumulated+1] += balanceSeries[indice-jndice];
+      }
+      else {
+	acumSeries[indice-acumulated+1] = tmsg;
+      }
     }
   }
   /* Compute the SPEI series*/
-  spei(acumSeries, acumRegistros, seasonality, speiSeries, seasonSeries);
+  spei_func(acumSeries, acumRegistros, tmsg, seasonality, speiSeries, seasonSeries);
 }
 
 /*
-// spei()
+// spei_func()
 // Calculates the Standardized Precipitation-Evapotransporation Index
 // from a series of climatic balance (precipitation minus etp). The
 // SPEI is the standardized value of the climatic balance (P-ETP),
 // computed following a Log Logistic probability distribution.
 */
-void spei(double *dataSeries, int n, int seasons, double *speiSeries, 
-	  double *seasonSeries) {
+void spei_func(double *dataSeries, int n, double tmsg, int seasons,
+	       double *speiSeries,  double *seasonSeries) {
 
 	int i, j, k, nSeason;
 	double beta[3], logLogisticParams[NUMSEASONSMAX][3];
 
+	/*
+	for (i=0; i<n; i++) {
+	  printf("spei acum[%d] = %g\n", i,dataSeries[i]);
+	}
+	*/
 	/* Loop through all seasons defined by seasons */
 	for (j=1; j<=seasons; j++) {
 	  /* Extract and sort the seasonal series */

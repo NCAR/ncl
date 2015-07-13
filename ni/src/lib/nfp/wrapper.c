@@ -59,6 +59,7 @@ extern NhlErrorTypes weibull_W(void);
 extern NhlErrorTypes trend_manken_W(void);
 extern NhlErrorTypes thornthwaite_W(void);
 extern NhlErrorTypes speidx_W(void);
+extern NhlErrorTypes spei_driver_W(void);
 extern NhlErrorTypes kmeans_as136_W(void);
 extern NhlErrorTypes snindex_yrmo_W(void);
 extern NhlErrorTypes x_skewt_W(void);
@@ -2222,6 +2223,23 @@ void NclAddUserFuncs(void)
  * Create private argument array
  */
     nargs = 0;
+    args = NewArgs(5);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(speidx_W,args,"speidx",nargs);
+
+/*
+ * Register "spei_driver".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
     args = NewArgs(6);
 
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
@@ -2232,7 +2250,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
-    NclRegisterFunc(speidx_W,args,"speidx",nargs);
+    NclRegisterFunc(spei_driver_W,args,"spei_driver",nargs);
 
 /*
  * Register "kmeans_as136".
