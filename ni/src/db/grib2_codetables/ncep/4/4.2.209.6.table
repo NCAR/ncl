@@ -1,0 +1,31 @@
+# GRIBv2 - Table 4.2-209-6 MRMS locally-defined discipline and category
+0:0:Surface Precipitation Type (Convective, Stratiform, Tropical, Hail, Snow):flag:PrecipFlag
+1:1:Radar Precipitation Rate:mm/hr:PrecipRate
+2:2:Radar Precipitation Accumulation 1-hour:mm:RadarOnlyQPE01H
+3:3:Radar Precipitation Accumulation 3-hour:mm:RadarOnlyQPE03H
+4:4:Radar Precipitation Accumulation 6-hour:mm:RadarOnlyQPE06H
+5:5:Radar Precipitation Accumulation 12-hour:mm:RadarOnlyQPE12H
+6:6:Radar Precipitation Accumulation 24-hour:mm:RadarOnlyQPE24H
+7:7:Radar Precipitation Accumulation 48-hour:mm:RadarOnlyQPE48H
+8:8:Radar Precipitation Accumulation 72-hour:mm:RadarOnlyQPE72H
+9:9:Local Gauge Bias Corrected Radar Precipitation Accumulation 1-hour:mm:GaugeCorrQPE01H
+10:10:Local Gauge Bias Corrected Radar Precipitation Accumulation 3-hour:mm:GaugeCorrQPE03H
+11:11:Local Gauge Bias Corrected Radar Precipitation Accumulation 6-hour:mm:GaugeCorrQPE06H
+12:12:Local Gauge Bias Corrected Radar Precipitation Accumulation 12-hour:mm:GaugeCorrQPE12H
+13:13:Local Gauge Bias Corrected Radar Precipitation Accumulation 24-hour:mm:GaugeCorrQPE24H
+14:14:Local Gauge Bias Corrected Radar Precipitation Accumulation 48-hour:mm:GaugeCorrQPE48H
+15:15:Local Gauge Bias Corrected Radar Precipitation Accumulation 72-hour:mm:GaugeCorrQPE72H
+16:16:Gauge Only Precipitation Accumulation 1-hour:mm:GaugeOnlyQPE01H
+17:17:Gauge Only Precipitation Accumulation 3-hour:mm:GaugeOnlyQPE03H
+18:18:Gauge Only Precipitation Accumulation 6-hour:mm:GaugeOnlyQPE06H
+19:19:Gauge Only Precipitation Accumulation 12-hour:mm:GaugeOnlyQPE12H
+20:20:Gauge Only Precipitation Accumulation 24-hour:mm:GaugeOnlyQPE24H
+21:21:Gauge Only Precipitation Accumulation 48-hour:mm:GaugeOnlyQPE48H
+22:22:Gauge Only Precipitation Accumulation 72-hour:mm:GaugeOnlyQPE72H
+23:23:Mountain Mapper Precipitation Accumulation 1-hour:mm:MountainMapperQPE01H
+24:24:Mountain Mapper Precipitation Accumulation 3-hour:mm:MountainMapperQPE03H
+25:25:Mountain Mapper Precipitation Accumulation 6-hour:mm:MountainMapperQPE06H
+26:26:Mountain Mapper Precipitation Accumulation 12-hour:mm:MountainMapperQPE12H
+27:27:Mountain Mapper Precipitation Accumulation 24-hour:mm:MountainMapperQPE24H
+28:28:Mountain Mapper Precipitation Accumulation 48-hour:mm:MountainMapperQPE48H
+29:29:Mountain Mapper Precipitation Accumulation 72-hour:mm:MountainMapperQPE72H

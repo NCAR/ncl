@@ -1,0 +1,7 @@
+# GRIBv2 - Table 4.2-209-7 MRMS locally-defined discipline and category
+0:0:Model Surface Temperature [RAP 13km]:C:ModelSurfaceTemp
+1:1:Model Surface Wet Bulb Temperature [RAP 13km]:C:ModelWetBulbTemp
+2:2:Probability of Warm Rain [RAP 13km derived]:%:WarmRainProbability
+3:3:Model Freezing Level Height [RAP 13km]:m:ModelHeight0C
+4:4:Brightband Top Radar [RAP 13km derived]:m:BrightBandTopHeight
+5:5:Brightband Bottom Radar [RAP 13km derived]:m:BrightBandBottomHeight

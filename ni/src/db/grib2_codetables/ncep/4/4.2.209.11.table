@@ -1,0 +1,4 @@
+# GRIBv2 - Table 4.2-209-11 MRMS locally-defined discipline and category
+0:0:Mosaic Base Reflectivity (optimal method):dBZ:MergedBaseReflectivityQC
+1:1:UnQC'd Composite Reflectivity Mosaic (max ref):dBZ:MergedReflectivityComposite
+2:2:Composite Reflectivity Mosaic (max ref):dBZ:MergedReflectivityQCComposite

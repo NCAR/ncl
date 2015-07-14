@@ -1,0 +1,5 @@
+# GRIBv2 - Table 4.2-209-4 MRMS locally-defined discipline and category
+0:0:Infrared (E/W blend):K:IRband4
+1:1:Visible (E/W blend):non-dim:Visible
+2:2:Water Vapor (E/W blend):K:WaterVapor
+3:3:Cloud Cover:K:CloudCover

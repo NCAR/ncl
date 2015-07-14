@@ -1,0 +1,42 @@
+# GRIBv2 - Table 4.2-209-3 MRMS locally-defined discipline and category
+0:0:Azimuth Shear 0-2km AGL:.001/s:MergedAzShear0to2kmAGL
+1:1:Azimuth Shear 3-6km AGL:.001/s:MergedAzShear3to6kmAGL
+2:2:Rotation Track 0-2km AGL 30-min:.001/s:RotationTrack30min
+3:3:Rotation Track 0-2km AGL 60-min:.001/s:RotationTrack60min
+4:4:Rotation Track 0-2km AGL 120-min:.001/s:RotationTrack120min
+5:5:Rotation Track 0-2km AGL 240-min:.001/s:RotationTrack240min
+6:6:Rotation Track 0-2km AGL 360-min:.001/s:RotationTrack360min
+7:7:Rotation Track 0-2km AGL 1440-min:.001/s:RotationTrack1440min
+14:14:Rotation Track 0-2km AGL 30-min:.001/s:RotationTrackML30min
+15:15:Rotation Track 0-2km AGL 60-min:.001/s:RotationTrackML60min
+16:16:Rotation Track 0-2km AGL 120-min:.001/s:RotationTrackML120min
+17:17:Rotation Track 0-2km AGL 240-min:.001/s:RotationTrackML240min
+18:18:Rotation Track 0-2km AGL 360-min:.001/s:RotationTrackML360min
+19:19:Rotation Track 0-2km AGL 1440-min:.001/s:RotationTrackML1440min
+26:26:Severe Hail Index:index:SHI
+27:27:Prob of Severe Hail:%:POSH
+28:28:Maximum Estimated Size of Hail (MESH):mm:MESH
+29:29:MESH Hail Swath 30-min:mm:MESHMax30min
+30:30:MESH Hail Swath 60-min:mm:MESHMax60min
+31:31:MESH Hail Swath 120-min:mm:MESHMax120min
+32:32:MESH Hail Swath 240-min:mm:MESHMax240min
+33:33:MESH Hail Swath 360-min:mm:MESHMax360min
+34:34:MESH Hail Swath 1440-min:mm:MESHMax1440min
+41:41:Vertically Integrated Liquid:kg/m^2:VIL
+42:42:Vertically Integrated Liquid Density:g/m^3:VILDensity
+43:43:Vertically Integrated Ice:kg/m^2:VII
+44:44:Echo Top - 18 dBZ:km:EchoTop18
+45:45:Echo Top - 30 dBZ:km:EchoTop30
+46:46:Echo Top - 50 dBZ:km:EchoTop50
+47:47:Echo Top - 60 dBZ:km:EchoTop60
+48:48:Thickness [50 dBZ top - (-20C)]:km:H50AboveM20C
+49:49:Thickness [50 dBZ top - 0C]:km:H50Above0C
+50:50:Thickness [60 dBZ top - (-20C)]:km:H60AboveM20C
+51:51:Thickness [60 dBZ top - 0C]:km:H60Above0C
+52:52:Isothermal Reflectivity at 0C:dBZ:Reflectivity0C
+53:53:Isothermal Reflectivity at -5C:dBZ:ReflectivityM5C
+54:54:Isothermal Reflectivity at -10C:dBZ:ReflectivityM10C
+55:55:Isothermal Reflectivity at -15C:dBZ:ReflectivityM15C
+56:56:Isothermal Reflectivity at -20C:dBZ:ReflectivityM20C
+57:57:ReflectivityAtLowestAltitude:dBZ:ReflectivityAtLowestAltitude
+58:58:Non Quality Controlled Reflectivity At Lowest Altitude:dBZ:MergedReflectivityAtLowestAltitude

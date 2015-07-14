@@ -1,0 +1,6 @@
+# GRIBv2 - Table 4.2-209-2 MRMS locally-defined discipline and category
+0:0:CG Lightning Density 1-min - NLDN:flashes/km^2/min:LightningDensityNLDN1min
+1:1:CG Lightning Density 5-min - NLDN:flashes/km^2/min:LightningDensityNLDN5min
+2:2:CG Lightning Density 15-min - NLDN:flashes/km^2/min:LightningDensityNLDN15min
+3:3:CG Lightning Density 30-min - NLDN:flashes/km^2/min:LightningDensityNLDN30min
+4:4:Lightning Probability 0-30 minutes - NLDN:%:LightningProbabilityNext30min

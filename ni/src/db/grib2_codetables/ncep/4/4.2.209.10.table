@@ -1,0 +1,10 @@
+# GRIBv2 - Table 4.2-209-10 MRMS locally-defined discipline and category
+0:0:Composite Reflectivity Mosaic (optimal method):dBZ:MergedReflectivityQCComposite
+1:1:Height of Composite Reflectivity Mosaic (optimal method):m:HeightCompositeReflectivity
+2:2:Low-Level Composite Reflectivity Mosaic (0-4 km):dBZ:LowLevelCompositeReflectivity
+3:3:Height of Low-Level Composite Reflectivity Mosaic (0-4 km):m:HeightLowLevelCompositeReflectivity
+4:4:Layer Composite Reflectivity Mosaic 0-24kft (low altitude):dBZ:LayerCompositeReflectivity_Low
+5:5:Layer Composite Reflectivity Mosaic 24-60kft (highest altitude):dBZ:LayerCompositeReflectivity_High
+6:6:Layer Composite Reflectivity Mosaic 33-60kft (super high altitude):dBZ:LayerCompositeReflectivity_Super
+7:7:Composite Reflectivity Hourly Maximum:dBZ:ReflectivityCompositeHourlyMax
+8:8:Maximum Reflectivity at -10 deg C height and above:dBZ:ReflectivityMaxAboveM10C

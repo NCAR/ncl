@@ -1,0 +1,11 @@
+# GRIBv2 - Table 4.2-209-8 MRMS locally-defined discipline and category
+0:0:Radar Quality Index:non-dim:RadarQualityIndex
+1:1:Gauge Influence Index for 1-hour QPE:non-dim:GaugeInflIndex01H
+2:2:Gauge Influence Index for 3-hour QPE:non-dim:GaugeInflIndex03H
+3:3:Gauge Influence Index for 6-hour QPE:non-dim:GaugeInflIndex06H
+4:4:Gauge Influence Index for 12-hour QPE:non-dim:GaugeInflIndex12H
+5:5:Gauge Influence Index for 24-hour QPE:non-dim:GaugeInflIndex24H
+6:6:Gauge Influence Index for 48-hour QPE:non-dim:GaugeInflIndex48H
+7:7:Gauge Influence Index for 72-hour QPE:non-dim:GaugeInflIndex72H
+8:8:Seamless Hybrid Scan Reflectivity with VPR Correction:dBZ:SeamlessHSR
+9:9:Height of Seamless Hybrid Scan Reflectivity:km:SeamlessHSRHeight
