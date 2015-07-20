@@ -9411,9 +9411,9 @@ begin
    albedo@long_name = "albedo"
    albedo@units     = "fraction"
    if (formula.eq.0) then
-       albedo@formula   = "albedo_ccm: formula="+formula+": a=(flux1-flux2)/flux1"
+       albedo@formula   = "formula="+formula+": albedo = (flux1-flux2)/flux1"
    else
-       albedo@formula   = "albedo_ccm: formula="+formula+": a=flux2/flux1"
+       albedo@formula   = "formula="+formula+": albedo =  flux2/flux1"
    end if
    copy_VarCoords(FLUX1, albedo)
    return(albedo)
