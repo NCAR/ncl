@@ -9367,11 +9367,18 @@ function albedo_ccm(FLUX1:numeric, FLUX2:numeric, formula[1]:integer)
 
 local albedo
 begin
+   if (formula.lt.0 .or. formula.gt.1) then
+       print("albedo_ccm: FATAL:  formula argument must be 0 or 1: formula="+formula)
+     ;;albedo = new (dimsizes(flux1), typeof(flux1))
+     ;;return(albedo)
+       exit
+   end if
+
    if (any(FLUX2.gt.FLUX1)) then
        print("albedo_ccm: WARNING:  FLUX2 > FLUX1 should not occur")
    end if
 
-; AVoid division by 0.0  [ use _FillValue
+; Avoid division by 0.0  [ use _FillValue
 
    if (formula.eq.0) then
        if (any(FLUX1.eq.0)) then
@@ -9403,7 +9410,11 @@ begin
    
    albedo@long_name = "albedo"
    albedo@units     = "fraction"
-   albedo@formula   = "albedo_ccm: formula="+formula
+   if (formula.eq.0) then
+       albedo@formula   = "albedo_ccm: formula="+formula+": a=(flux1-flux2)/flux1"
+   else
+       albedo@formula   = "albedo_ccm: formula="+formula+": a=flux2/flux1"
+   end if
    copy_VarCoords(FLUX1, albedo)
    return(albedo)
 end
