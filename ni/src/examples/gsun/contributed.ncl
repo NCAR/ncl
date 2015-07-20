@@ -9321,6 +9321,94 @@ begin
 end
 ;
 ;**************************************************************
+;
+undef("albedo_ccm")
+function albedo_ccm(FLUX1:numeric, FLUX2:numeric, formula[1]:integer)
+;
+; Calculate albedo from CLM/CAM-CESM model variables
+; This is a ratio (ie, non-linear). The correct way is to compute each 
+; time step and average. However, commonly the monthly means are used directly. 
+;
+; examples
+; formula=0  albedo_broad_band  = albedo_ccm(FSDS, FSNS, 0)
+;            albedo_broad_band <= (FLUX1-FLUX2/FLUX1 = (FSDS-FSNS)/FSDS   
+;
+; formula=1; aldedo_nir_band    = albedo_ccm(FSRND, FSDSND, 1)
+;            aldedo_nir_band   <=  FLUX2/FLUX1       = FSRND/FSDSND 
+;
+; ptaylor (2/18/09; edited)
+; The (FSDS-FSNS)/FSDS formula will give the broadband flux albedo. 
+; However, in the radiation code of the CAM and CCSM4 different albedos are used: 
+;     (a) Visible direct beam; (b) Visible diffuse bean; 
+;     (c) Near-IR direct beam; (d) Near-IR diffuse beam. 
+; The CLM output data includes the necessary spectral fluxes at the 
+;    FSRND  (direct nir reflected solar radiation). 
+;    The Near-IR albedo would be
+;        ALBDIR= FLUX2/FLUX1= FSRND/FSDSND                ; formula 1
+;        ALBDIR@long_name="Near-IR Direct Beam Albedo"
+;
+;    The surface broad band albedo would be
+;        ALBSFC= (FLUX1-FLUX2/FLUX1= (FSDS-FSNS)/FSDS     ; formula 0
+;        ALBSFC@long_name="Surface Albedo: Broad Band"
+; 
+; Any appropriate pair of variables:
+; Surface: FLUX1: FSDS   - Downwelling solar flux at surface
+;          FLUX2: FSNS   - Net solar flux at surface
+;          ALBEDO_SFC    = albedo_ccm(FSDS, FSNS, 0)
+; TOA      FLUX1: ?????? - ??? solar flux at top of atmosphere
+;          FLUX2: FSNTOA - Net solar flux at top of atmosphere
+;          ALBEDO_TOA    = albedo_ccm(???, FSNTOA, 0)
+; TOM      FLUX1: ?????? - ??? solar flux at top of model
+;          FLUX2: FSNT   - Net solar flux at top of model
+;          ALBEDO_TOM    = albedo_ccm(???, FSNT  , 0)
+; nir      FLUX1: FSRND  - direct nir reflected solar radiation"
+;          FLUX2: FSDSND - direct nir incident solar radiation
+;          ALBEDO_NIR    = albedo_ccm(FSRND, FSDSND, 1)
+
+local albedo
+begin
+   if (any(FLUX2.gt.FLUX1)) then
+       print("albedo_ccm: WARNING:  FLUX2 > FLUX1 should not occur")
+   end if
+
+; AVoid division by 0.0  [ use _FillValue
+
+   if (formula.eq.0) then
+       if (any(FLUX1.eq.0)) then
+          if (isatt(FLUX1,"_FillValue")) then
+              albedo = (FLUX1-FLUX2)/where(FLUX1.eq.0, FLUX1@_FillValue, FLUX1) 
+          else
+              albedo = (/ FLUX1 /) 
+              albedo@_FillValue = 1e10
+              albedo = (FLUX1-FLUX2)/where(FLUX1.eq.0, albedo@_FillValue, FLUX1) 
+          end if
+       else
+           albedo = (FLUX1-FLUX2)/FLUX1              ; no FLUX1=0.0 
+       end if
+   end if
+
+   if (formula.eq.1) then
+       if (any(FLUX1.eq.0)) then
+          if (isatt(FLUX1,"_FillValue")) then
+              albedo = FLUX2/where(FLUX1.eq.0, FLUX1@_FillValue, FLUX1) 
+          else
+              albedo = (/ FLUX1 /) 
+              albedo@_FillValue = 1e10
+              albedo = FLUX2/where(FLUX1.eq.0, albedo@_FillValue, FLUX1) 
+          end if
+       else
+          albedo = FLUX2/FLUX1                       ; no FLUX1=0.0
+       end if
+   end if
+   
+   albedo@long_name = "albedo"
+   albedo@units     = "fraction"
+   albedo@formula   = "albedo_ccm: formula="+formula
+   copy_VarCoords(FLUX1, albedo)
+   return(albedo)
+end
+;
+;**************************************************************
 ; D. Shea
 ; Driver for NCL function "omega_ccm"  
 ; It calculates intermediate quantities needed for input.
@@ -15607,9 +15695,9 @@ begin
    dq    = str_get_dq()      ; double quote character
    return("'"+ s1 +"="+ dq+s2+dq +"'")
 end
-;=============
-undef("haines_index_rawin")
-function haines_index_rawin(p[*]:numeric,t[*]:numeric, td[*]:numeric, opt[1]:logical)
+;========================
+undef("haines_fire_index")
+function haines_fire_index(p[*]:numeric,t[*]:numeric, td[*]:numeric, opt[1]:logical)
 ;
 ; nomenclature:
 ;   p  - pressure levels (hPa)    ; must be a coordinate variable
@@ -15638,16 +15726,16 @@ function haines_index_rawin(p[*]:numeric,t[*]:numeric, td[*]:numeric, opt[1]:log
 ; The low-level Haines boundary values for the Coastal and Midlands zones, and 
 ; the mid-level Haines bounadries for the Upstate zones.
 
-local HI, st, mt, klvl
+local HI, st, mt, klvl, stLow, mtLow, stMid, mtMid, stHigh, mtHigh
 begin
 
   if (.not.(isdimnamed(p,0))) then
-      print("haines_index_rawin: p argument must  have a named dimension")
+      print("haines_fire_index: p argument must  have a named dimension")
       exit
   else
       pName = getvardims(p)
       if (.not.(iscoord(t,pName) .and. iscoord(td,pName))) then 
-          print("haines_index_rawin: t, td arguments must ciirdinate variables")
+          print("haines_fire_index: t, td arguments must ciirdinate variables")
           exit
       end if
   end if
@@ -15658,7 +15746,7 @@ begin
 ; There is no need for the 'st' and 'mt' arrays.
 ; The computations could be done without them. 
 ; However, I think they make things a bit clearer. Further, it makes it
-;          possible to return these as separte variabls 
+;          possible to return them as separate variables via a 'list' variable 
 
   st      = new ( klvl, "float", "No_FillValue")
   st(0)   = t({950}) - t({850})     ; low elevaltion
@@ -15678,28 +15766,31 @@ begin
   mt@units     = "degC"
   printVarSummary(mt)
 
-; Classification
+; Classification (HI -> Haines Index)
 
   HI      = new ( klvl, "float", "No_FillValue")
-  HI      = 0               ; initialize (not necessary here)
-                            ; just doing it to be explicit
+  HI      = 0                   ; initialize (not necessary here)
+                                ; just doing it to be explicit
 ; Low (index 0)
 
-  if (st(0).le.3.5) then    ; stability
+  stLow   = (/ 3.5, 7.5 /)      
+  mtLow   = (/ 5.5, 9.5 /)
+
+  if (st(0).le.stLow(0)) then   ; stability
       HI(0) = 1 
-  else if (st(0).gt.3.5 .and. st(0).le.7.5) then
+  else if (st(0).gt.stLow(0) .and. st(0).le.stLow(1)) then
       HI(0) = 2 
-  else if (st(0).gt.7.5) then
+  else if (st(0).gt.stLow(1)) then
       HI(0) = 3 
      end if
    end if
   end if
 
-  if (mt(0).le.5.5) then   ; moisture (combine with stability)
+  if (mt(0).le.mtLow(0)) then   ; moisture (combine with stability)
       HI(0) = HI(0)+ 1 
-  else if (mt(0).gt.5.5 .and. mt(0).le.9.5) then
+  else if (mt(0).gt.mtLow(0) .and. mt(0).le.mtLow(1)) then
       HI(0) = HI(0)+ 2  
-  else if (mt(0).gt.9.5) then
+  else if (mt(0).gt.mtLow(1)) then
       HI(0) = HI(0)+ 3
      end if
    end if
@@ -15707,21 +15798,24 @@ begin
 
 ; Mid (index 1)
 
-  if (st(1).le.5.5) then    ; stability
+  stMid   = (/ 5.5, 9.5 /)      
+  mtMid   = (/ 5.5,11.5 /)
+
+  if (st(1).le.stMid(0)) then    ; stability
       HI(1) = 1 
-  else if (st(1).gt.5.5 .and. st(1).le.9.5) then
+  else if (st(1).gt.stMid(0) .and. st(1).le.stMid(1)) then
       HI(1) = 2 
-  else if (st(1).gt.9.5) then
+  else if (st(1).gt.stMid(1)) then
       HI(1) = 3 
      end if
    end if
   end if
 
-  if (mt(1).le.5.5) then   ; moisture (combine with stability)
+  if (mt(1).le.mtMid(0)) then   ; moisture (combine with stability)
       HI(1) = HI(1)+ 1 
-  else if (mt(1).gt.5.5 .and. mt(1).le.11.5) then
+  else if (mt(1).gt.mtMid(0) .and. mt(1).le.mtMid(1)) then
       HI(1) = HI(1)+ 2  
-  else if (mt(1).gt.11.5) then
+  else if (mt(1).gt.mtMid(1)) then
       HI(1) = HI(1)+ 3 
      end if
    end if
@@ -15729,21 +15823,24 @@ begin
 
 ; High (index 2)
 
-  if (st(2).le.17) then    ; stability
+  stHigh  = (/ 17.0, 20.5 /)      
+  mtHigh  = (/ 14.0, 20.0 /)
+
+  if (st(2).le.stHigh(0)) then    ; stability
       HI(2) = 1 
-  else if (st(2).gt.17 .and. st(2).le.20.5) then
+  else if (st(2).gt.stHigh(0) .and. st(2).le.stHigh(1)) then
       HI(2) = 2 
-  else if (st(2).gt.20.5) then
+  else if (st(2).gt.stHigh(1)) then
       HI(2) = 3 
      end if
    end if
   end if
 
-  if (mt(2).le.14) then   ; moisture (combine with stability)
+  if (mt(2).le.mtHigh(0)) then   ; moisture (combine with stability)
       HI(2) = HI(2)+ 1 
-  else if (mt(2).gt.14 .and. mt(2).le.20) then
+  else if (mt(2).gt.mtHigh(0) .and. mt(2).le.mtHigh(1)) then
       HI(2) = HI(2)+ 2 
-  else if (mt(2).gt.20) then
+  else if (mt(2).gt.mtHigh(1)) then
       HI(2) = HI(2)+ 3 
      end if
    end if
@@ -15752,7 +15849,7 @@ begin
   HI@long_name = "Haines Index"
   HI@reference = "http://www.nwas.org/digest/papers/1988/Vol13-Issue2-May1988/Pg23-Haines.pdf" 
   HI!0         = "elevation"
-  HI@info      = "Low Atmosphere Stability Index" 
+  HI@info      = "Low Atmosphere Stability Index (LASI)" 
   HI@elevation = (/"Low", "Medium", "High"/)
   HI@details   = "http://www.erh.noaa.gov/cae/haines.htm"
 
