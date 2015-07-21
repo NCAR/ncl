@@ -15707,14 +15707,14 @@ begin
    return("'"+ s1 +"="+ dq+s2+dq +"'")
 end
 ;========================
-undef("haines_fire_index")
-function haines_fire_index(p[*]:numeric,t[*]:numeric, td[*]:numeric, opt[1]:logical)
+undef("fire_index_haines")
+function fire_index_haines(p[*]:numeric,t[*]:numeric, td[*]:numeric, opt[1]:logical)
 ;
 ; nomenclature:
 ;   p  - pressure levels (hPa)    ; must be a coordinate variable
 ;   t  - temperature (C)          ; must have a pressure coordinate variable
 ;   td - dew point temperature (C); must have a pressure coordinate variable
-;   opt- currently not used       ; set to False
+;  opt - not used; set to False
 ;  
 ; http://www.nwas.org/digest/papers/1988/Vol13-Issue2-May1988/Pg23-Haines.pdf
 ; The Haines_Index is technically the "Low Atmosphere Stability Index" ==> LASI
@@ -15741,12 +15741,12 @@ local HI, st, mt, klvl, stLow, mtLow, stMid, mtMid, stHigh, mtHigh
 begin
 
   if (.not.(isdimnamed(p,0))) then
-      print("haines_fire_index: p argument must  have a named dimension")
+      print("fire_index_haines: p argument must  have a named dimension")
       exit
   else
       pName = getvardims(p)
       if (.not.(iscoord(t,pName) .and. iscoord(td,pName))) then 
-          print("haines_fire_index: t, td arguments must ciirdinate variables")
+          print("fire_index_haines: t, td arguments must ciirdinate variables")
           exit
       end if
   end if
@@ -15766,7 +15766,7 @@ begin
   st!0    = "elevation"
   st@long_name = "HI: Stability Term"
   st@units     = "degC"
-  printVarSummary(st)
+ ;printVarSummary(st)
 
   mt      = new ( klvl, "float", "No_FillValue")
   mt(0)   = t({850}) - td({850})    ; low elevaltion
@@ -15775,7 +15775,7 @@ begin
   mt!0    = "elevation"
   mt@long_name = "HI: Moisture Term"
   mt@units     = "degC"
-  printVarSummary(mt)
+ ;printVarSummary(mt)
 
 ; Classification (HI -> Haines Index)
 
