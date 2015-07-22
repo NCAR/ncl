@@ -10195,6 +10195,7 @@ static void *Grib2OpenFile
             }
 
             switch (g2rec[nrecs]->sec4[i]->pds_num) {
+		    int offset;
 	    case 20:
 	    case 30:
 	    case 31:
@@ -10209,21 +10210,33 @@ static void *Grib2OpenFile
 		    NhlPError(NhlWARNING, NhlEUNKNOWN, "NclGRIB2: Unsupported Product Definition Template.");
 		    break;
 	    default:
-		    if (g2fld->ipdtmpl != NULL) {
-			    g2rec[nrecs]->sec4[i]->prod_params->hrs_after_reftime_cutoff = g2fld->ipdtmpl[5];
-			    g2rec[nrecs]->sec4[i]->prod_params->min_after_reftime_cutoff = g2fld->ipdtmpl[6];
-		    } else {
-			    NhlPError(NhlFATAL, NhlEUNKNOWN,
-				      "NclGRIB2: Invalid Product Definition Template.");
-			    NhlFree(g2rec);
-			    return NULL;
+		    switch (g2rec[nrecs]->sec4[i]->pds_num) {
+		    case 40:
+		    case 41:
+		    case 42:
+		    case 43:
+			    offset = 6;
+			    break;
+		    case 44:
+		    case 45:
+		    case 46:
+		    case 47:
+			    offset = 11;
+			    break;
+		    case 48:
+			    offset = 16;
+			    break;
+		    default:
+			    offset = 5;
 		    }
-
-
-		    /* table 4.4: Indicator of Unit of Time Range */
-		    if (g2fld->ipdtmpl != NULL)
-			    g2rec[nrecs]->sec4[i]->prod_params->time_range_unit_id = g2fld->ipdtmpl[7];
-		    else {
+			    
+		    if (g2fld->ipdtmpl != NULL) {
+			    g2rec[nrecs]->sec4[i]->prod_params->hrs_after_reftime_cutoff = g2fld->ipdtmpl[offset];
+			    g2rec[nrecs]->sec4[i]->prod_params->min_after_reftime_cutoff = g2fld->ipdtmpl[offset+1];
+			    /* table 4.4: Indicator of Unit of Time Range */
+			    g2rec[nrecs]->sec4[i]->prod_params->time_range_unit_id = g2fld->ipdtmpl[offset+2];
+			    g2rec[nrecs]->sec4[i]->prod_params->forecast_time = g2fld->ipdtmpl[offset+3];
+		    } else {
 			    NhlPError(NhlFATAL, NhlEUNKNOWN,
 				      "NclGRIB2: Invalid Product Definition Template.");
 			    NhlFree(g2rec);
@@ -10231,14 +10244,6 @@ static void *Grib2OpenFile
 		    }
 		    g2rec[nrecs]->sec4[i]->prod_params->time_range_unit = NULL;
 
-		    if (g2fld->ipdtmpl != NULL)
-			    g2rec[nrecs]->sec4[i]->prod_params->forecast_time = g2fld->ipdtmpl[8];
-		    else {
-			    NhlPError(NhlFATAL, NhlEUNKNOWN,
-				      "NclGRIB2: Invalid Product Definition Template.");
-			    NhlFree(g2rec);
-			    return NULL;
-		    }
 	    }
 	    
             switch (g2rec[nrecs]->sec4[i]->pds_num) {
