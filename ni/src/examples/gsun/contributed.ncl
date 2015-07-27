@@ -1443,7 +1443,7 @@ end
 ; the indices which do *not* match up with the values of the cvExclude
 
 undef("get1Dindex_Exclude")
-function get1Dindex_Exclude (cv[*]:numeric,cvExclude[*]:numeric)
+function get1Dindex_Exclude (cv[*],cvExclude[*])
 local nCv, nExclude, cvLocal,n, indTemp
 begin
 
@@ -1470,7 +1470,7 @@ end
 ; invoke get1Dindex_Exclude
 
 undef("get1Dindex_Collapse")
-function get1Dindex_Collapse (cv[*]:numeric,cvWant[*]:numeric)
+function get1Dindex_Collapse (cv[*],cvWant[*])
 begin
   return( get1Dindex_Exclude(cv, cvWant) )
 end
@@ -15866,4 +15866,94 @@ begin
 
   return (HI)
 ;;return( (/HI, st, mt/) )  ; return 3 variables
+end
+;=================================================
+undef("time_reassign")
+function time_reassign(f, timeName[1]:string)
+;
+; utility to center the time using the 'time_bounds' argument
+;
+; double time(time) ;
+;        time:units = "days since 2011-01-01 00:00:00" ;
+;        time:calendar = "noleap" ;
+;        time:bounds = "time_bounds"   ; attribute which points to bounds variable
+;
+;     f1   = addfile ("foo.nc", "r")   ; f1 is type file
+;     time = time_reassign(f, "time")
+; or
+;     fils = systemfunc("ls foo*nc")
+;     f2   = addfiles(fils, "r")       ; f2 is type list
+; create a 'correct' (center of mass) time
+;     time = time_reassign(f2, "time")
+; 
+; ----------------------------------------------------
+; Oddity: some files have 'time' as type float & 'time_bnd' as double
+;         I speculate the reverse is also true.                       
+; ----------------------------------------------------
+local time, tbnd
+begin
+  if (.not.(typeof(f).eq."file" .or. typeof(f).eq."list")) then
+      print("time_reassign: FATAL: input argument f must be of type list or file: type is "+typeof(f)) 
+      exit
+  end if
+
+  if (typeof(f).eq."file") then
+      time = f->$timeName$
+      if (isatt(time,"bounds") .and. isfilevar(f,time@bounds) ) then
+          tbnd = f->$time@bounds$      ; (ntim,2)
+      else
+          print("time_reassign: WARNING: No time bounds attribute available; return original time")
+          return(time)
+      end if
+  else                              ; must be type list
+      time = f[:]->$timeName$       ; (ntim)
+      if (isatt(time,"bounds") .and. isfilevar(f[0],time@bounds) ) then
+          tbnd = f[:]->$time@bounds$    ; (ntim,2)
+      else
+          print("time_reassign: WARNING: No time bounds attribute  available; return original time") 
+          return(time)
+      end if
+  end if
+           ; the following was needed cuz some files had 'time' as float & 'time_bnds' as double
+  time     = (/ totype( (tbnd(:,0)+tbnd(:,1))*0.5 , typeof(time)) /)  ; center of 'time' bnds
+  time&$timeName$ = time
+  time@NCL = "function time_reassign used to reassign time to mid-value of bounds"
+  return(time)
+end
+;----
+undef("time_reassign_cv2var")
+function time_reassign_cv2var(f, timeName[1]:string, varName[1]:string)
+;
+;   f1   = addfile ("foo.nc","r")
+;   temp = time_reassign_cv2var(f1, "time", "T")
+; or
+;   f2   = addfiles(  fils   ,"r")
+;   temp = time_reassign_cv2var(f2, "time", "T")
+begin
+  if (.not.(typeof(f).eq."file" .or. typeof(f).eq."list")) then
+      print("getVar_time_reassign: FATAL: input argument f must be of type list or file: type is "+typeof(f)) 
+      exit
+  end if
+
+  time = time_reassign(f, timeName)   ; new time coordinate
+
+  if (typeof(f).eq."file") then
+      if (isfilevar(f,varName)) then
+          var = f->$varName$
+      else
+          print("time_reassign_cv2var: FATAL: variable "+varName+" on file") 
+          exit
+      end if
+  else                                ; must be type list
+      if (isfilevar(f[0],varName)) then
+          var = f->$varName$
+      else
+          print("time_reassign_cv2var: FATAL: variable "+varName+" on file") 
+          exit
+      end if
+  end if
+
+  var&$timeName$ = time               ; rassign time coordinate variable (cv)
+  var@NCL = "function time_reassign_cv2var used to reassign time coordinate variable to mid-value of bounds"
+  return(var)
 end
