@@ -603,9 +603,6 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
     hid_t att_type;
     hsize_t att_size;
 
-    NclScalar missing;
-    NclScalar *tmp_missing;
-
     char *buffer;
     int cur_buf_size = HE5_BUF_SIZE;
 
@@ -1583,8 +1580,8 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
 
     buffer = NclMalloc(cur_buf_size);
     ngd = HE5_GDinqgrid(NrmQuarkToString(path),buffer,&str_buf_size);
-    HE5ParseName(buffer,gd_hdf_names,gd_ncl_names,ngd);
     buffer[str_buf_size] = '\0';
+    HE5ParseName(buffer,gd_hdf_names,gd_ncl_names,ngd);
 
     HE5_GDfid = HE5_GDopen(NrmQuarkToString(path),H5F_ACC_RDONLY);
 
