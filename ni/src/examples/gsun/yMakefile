@@ -15,7 +15,7 @@ RESFILES = gsun08n.res gsun09n.res
 GSN_SCRIPTS = gsn_code.ncl gsn_csm.ncl
 
 OTHER_SCRIPTS = ccm_func.ncl contributed.ncl popRemap.ncl shea_util.ncl \
-	skewt_func.ncl wind_rose.ncl diagnostics_cam.ncl 
+	skewt_func.ncl wind_rose.ncl diagnostics_cam.ncl crop.ncl
 
 ESMF_SCRIPTS = ESMF_regridding.ncl 
 
