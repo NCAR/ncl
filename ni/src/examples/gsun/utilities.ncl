@@ -100,6 +100,22 @@
      return(varout)
  end
 
+;***********************************************************************
+; is 'x' a scalar quantity: here 'scalar' means rank=1 & size=1
+;***********************************************************************
+undef("isscalar")
+function isscalar(x)
+local dimx, rankx
+begin
+  dimx  = dimsizes(x)
+  rankx = dimsizes(dimx)
+  if (rankx.eq.1 .and. dimx.eq.1) then
+      return(True)
+  else
+      return(False)
+  end if 
+end
+
 ;***********************************************************************;
 ; Function : read_colormap_file                                         ;
 ;               colorMapName : either the name of an NCL-standard       ;
