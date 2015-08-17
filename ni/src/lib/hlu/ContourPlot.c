@@ -2415,6 +2415,7 @@ static NhlBoolean NewDrawArgs
 		NhlNlbLabelStrings,
 		NhlNlbLabelFuncCode,
 		NhlNlbLabelAlignment,
+                NhlNlbBoxEndCapStyle,
 		NhlNpmLegendDisplayMode,
 		NhlNlgLabelStrings,
 		NhlNlgLabelFuncCode,
@@ -6280,6 +6281,8 @@ static NhlErrorTypes ManageLabelBar
 			   NhlNlbFillScales,cnp->lbar_fill_scales ? cnp->lbar_fill_scales : cnp->fill_scales);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbFillDotSizeF,cnp->fill_dot_size);
+                if (cnp->lbar_end_style == NhlEXCLUDEOUTERBOXES)
+                    NhlSetSArg(&sargs[(*nargs)++], NhlNlbBoxEndCapStyle, NhlRECTANGLE);
 		return ret;
 	}
 
@@ -6331,6 +6334,8 @@ static NhlErrorTypes ManageLabelBar
 	if (cnp->fill_dot_size != ocnp->fill_dot_size)
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbFillDotSizeF,cnp->fill_dot_size);
+        if (/*cnp->lbar_end_style != ocnp->lbar_end_style &&*/ cnp->lbar_end_style == NhlEXCLUDEOUTERBOXES)
+                NhlSetSArg(&sargs[(*nargs)++], NhlNlbBoxEndCapStyle, NhlRECTANGLE);
 
 	return ret;
 }

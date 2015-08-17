@@ -40,6 +40,12 @@ typedef enum _NhllbBoxSizingMode {
 
 #define NhlTlbBoxSizingMode "lbBoxSizingMode"
 
+typedef enum _NhllbBoxEndCapStyle {
+    NhlRECTANGLE = 0, NhlTRIANGLELOWVAL, NhlTRIANGLEHIGHVAL, NhlTRIANGLEBOTH
+} NhllbBoxEndCapStyle;
+
+#define NhlTlbBoxEndCapStyle "lbBoxEndCapStyle"
+
 /* Instance resources */
 
 #define NhlNlbLabelBarOn		"lbLabelBarOn"
@@ -116,6 +122,7 @@ typedef enum _NhllbBoxSizingMode {
 #define NhlNlbBoxLineDashPattern	"lbBoxLineDashPattern"
 #define NhlNlbBoxLineDashSegLenF	"lbBoxLineDashSegLenF"
 #define NhlNlbBoxSeparatorLinesOn	"lbBoxSeparatorLinesOn"
+#define NhlNlbBoxEndCapStyle            "lbBoxEndCapStyle"
 
 #define NhlNlbPerimOn			"lbPerimOn"
 #define NhlNlbPerimColor		"lbPerimColor"
@@ -176,6 +183,7 @@ typedef enum _NhllbBoxSizingMode {
 #define NhlClbBoxLinesOn		"LbBoxLinesOn"
 #define NhlClbRasterFillOn		"LbRasterFillOn"
 #define NhlClbBoxSeparatorLinesOn	"LbBoxSeparatorLinesOn"
+#define NhlClbBoxEndCapStyle            "LbBoxEndCapStyle"
 
 
 

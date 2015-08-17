@@ -291,6 +291,10 @@ static NhlResource resources[] = {
 	 sizeof(float), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.box_line_dash_seglen),
 	 NhlTString,_NhlUSET("0.15"),0,NULL},
+	{NhlNlbBoxEndCapStyle, NhlClbBoxEndCapStyle, NhlTlbBoxEndCapStyle, 
+	 sizeof(NhllbBoxEndCapStyle), 
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.box_end_cap_style),
+         NhlTImmediate,_NhlUSET((NhlPointer)NhlRECTANGLE),0,NULL},                
 
 	{NhlNlbPerimOn, NhlCEdgesOn, NhlTBoolean,
 	 sizeof(NhlBoolean), NhlOffset(NhlLabelBarLayerRec,labelbar.perim_on),
@@ -4214,6 +4218,7 @@ NhlBoolean edges_only;
 	int fill_color, fill_pattern;
 	float fill_scale, *fill_scales;
 	float frac, dist;
+        NhllbBoxEndCapStyle endcapStyle = lb_p->box_end_cap_style;
 		
 	frac = (1.0 - lb_p->box_major_ext) / 2.0;
 	colors = (int *)lb_p->fill_colors->data;
@@ -4222,91 +4227,123 @@ NhlBoolean edges_only;
 
 	if (lb_p->orient == NhlHORIZONTAL) {
 
-		ypoints[0] = lb_p->adj_bar.b;
-		ypoints[1] = lb_p->adj_bar.b;
-		ypoints[2] = lb_p->adj_bar.t;
-		ypoints[3] = lb_p->adj_bar.t;
-		ypoints[4] = lb_p->adj_bar.b;
 		for (i=0; i<lb_p->box_count; i++) {
-			dist = lb_p->box_locs[i+1] - lb_p->box_locs[i];
-			xpoints[0] = lb_p->box_locs[i] + dist * frac;
-			xpoints[1] = lb_p->box_locs[i+1] - dist * frac;
-			xpoints[2] = xpoints[1];
-			xpoints[3] = xpoints[0];
-			xpoints[4] = xpoints[0];
-			
-			if (edges_only) 
-				fill_color = NhlTRANSPARENT;
-			else if (lb_p->mono_fill_color)
-				fill_color = lb_p->fill_color;
-			else
-				fill_color = colors[i];
+                    if (i == 0 && (endcapStyle == NhlTRIANGLEBOTH || endcapStyle == NhlTRIANGLELOWVAL)) {
+                        ypoints[0] = (lb_p->adj_bar.t + lb_p->adj_bar.b) / 2.0; 
+                        ypoints[1] = lb_p->adj_bar.b;
+                        ypoints[2] = lb_p->adj_bar.t;
+                        ypoints[3] = ypoints[0];
+                        ypoints[4] = ypoints[0];                        
+                    }
+                    else if (i == (lb_p->box_count-1) && (endcapStyle == NhlTRIANGLEBOTH || endcapStyle == NhlTRIANGLEHIGHVAL)) {
+                        ypoints[0] = lb_p->adj_bar.b;
+                        ypoints[1] = (lb_p->adj_bar.b + lb_p->adj_bar.t) / 2.0;
+                        ypoints[2] = ypoints[1];
+                        ypoints[3] = lb_p->adj_bar.t;
+                        ypoints[4] = lb_p->adj_bar.b;
+                    }
+                    else {
+                        ypoints[0] = lb_p->adj_bar.b;
+                        ypoints[1] = lb_p->adj_bar.b;
+                        ypoints[2] = lb_p->adj_bar.t;
+                        ypoints[3] = lb_p->adj_bar.t;
+                        ypoints[4] = lb_p->adj_bar.b;
+                    }
 
-			if (lb_p->mono_fill_pattern)
-				fill_pattern = lb_p->fill_pattern;
-			else
-				fill_pattern = patterns[i];
+                    dist = lb_p->box_locs[i+1] - lb_p->box_locs[i];
+                    xpoints[0] = lb_p->box_locs[i] + dist * frac;
+                    xpoints[1] = lb_p->box_locs[i+1] - dist * frac;
+                    xpoints[2] = xpoints[1];
+                    xpoints[3] = xpoints[0];
+                    xpoints[4] = xpoints[0];
 			
-			if (lb_p->mono_fill_scale)
-				fill_scale = lb_p->fill_scale;
-			else
-				fill_scale = fill_scales[i];
+                    if (edges_only) 
+                        fill_color = NhlTRANSPARENT;
+                    else if (lb_p->mono_fill_color)
+                        fill_color = lb_p->fill_color;
+                    else
+                        fill_color = colors[i];
 
-			NhlVASetValues(lbl->base.wkptr->base.id,
-				     _NhlNwkFillIndex, fill_pattern,
-				     _NhlNwkFillColor, fill_color,
-				     _NhlNwkFillScaleFactorF, fill_scale,
-				     _NhlNwkFillDotSizeF, lb_p->fill_dot_size,
-				     NULL);
+                    if (lb_p->mono_fill_pattern)
+			fill_pattern = lb_p->fill_pattern;
+                    else
+                        fill_pattern = patterns[i];
 			
-			_NhlSetFillInfo(lbl->base.wkptr, (NhlLayer) lbl);
-			_NhlWorkstationFill(lbl->base.wkptr,
-					    xpoints,ypoints,5);
+                    if (lb_p->mono_fill_scale)
+			fill_scale = lb_p->fill_scale;
+                    else
+                        fill_scale = fill_scales[i];
+
+                    NhlVASetValues(lbl->base.wkptr->base.id,
+				  _NhlNwkFillIndex, fill_pattern,
+				  _NhlNwkFillColor, fill_color,
+				  _NhlNwkFillScaleFactorF, fill_scale,
+				  _NhlNwkFillDotSizeF, lb_p->fill_dot_size,
+				   NULL);
+			
+                    _NhlSetFillInfo(lbl->base.wkptr, (NhlLayer) lbl);
+                    _NhlWorkstationFill(lbl->base.wkptr, xpoints, ypoints, 5);
 			
 		}
 	}
 	else {
-		xpoints[0] = lb_p->adj_bar.l;
-		xpoints[1] = lb_p->adj_bar.r;
-		xpoints[2] = lb_p->adj_bar.r;
-		xpoints[3] = lb_p->adj_bar.l;
-		xpoints[4] = lb_p->adj_bar.l;
 		for (i=0; i< lb_p->box_count; i++) {
-			dist = lb_p->box_locs[i+1] - lb_p->box_locs[i];
-			ypoints[0] = lb_p->box_locs[i] + dist * frac;
-			ypoints[1] = ypoints[0];
-			ypoints[2] = lb_p->box_locs[i+1] - dist * frac;
-			ypoints[3] = ypoints[2];
-			ypoints[4] = ypoints[0];
 
+                    if (i == 0 && (endcapStyle == NhlTRIANGLEBOTH || endcapStyle == NhlTRIANGLELOWVAL)) {
+                        xpoints[0] = (lb_p->adj_bar.l + lb_p->adj_bar.r) / 2.0; 
+                        xpoints[1] = xpoints[0];
+                        xpoints[2] = lb_p->adj_bar.r;
+                        xpoints[3] = lb_p->adj_bar.l;
+                        xpoints[4] = xpoints[0];                        
+                    }
+                    else if (i == (lb_p->box_count-1) && (endcapStyle == NhlTRIANGLEBOTH || endcapStyle == NhlTRIANGLEHIGHVAL)) {
+                        xpoints[0] = lb_p->adj_bar.l;
+                        xpoints[1] = lb_p->adj_bar.r;
+                        xpoints[2] = (lb_p->adj_bar.l + lb_p->adj_bar.r) / 2.0;
+                        xpoints[3] = xpoints[2];
+                        xpoints[4] = lb_p->adj_bar.l;
+                    }
+                    else {
+                        xpoints[0] = lb_p->adj_bar.l;
+                        xpoints[1] = lb_p->adj_bar.r;
+                        xpoints[2] = lb_p->adj_bar.r;
+                        xpoints[3] = lb_p->adj_bar.l;
+                        xpoints[4] = lb_p->adj_bar.l;
+                    }
+                                        
+                    dist = lb_p->box_locs[i+1] - lb_p->box_locs[i];
+                    ypoints[0] = lb_p->box_locs[i] + dist * frac;
+                    ypoints[1] = ypoints[0];
+                    ypoints[2] = lb_p->box_locs[i+1] - dist * frac;
+                    ypoints[3] = ypoints[2];
+                    ypoints[4] = ypoints[0];
 			
-			if (edges_only) 
-				fill_color = NhlTRANSPARENT;
-			else if (lb_p->mono_fill_color)
-				fill_color = lb_p->fill_color;
-			else
-				fill_color = colors[i];
+                    if (edges_only) 
+			fill_color = NhlTRANSPARENT;
+                    else if (lb_p->mono_fill_color)
+			fill_color = lb_p->fill_color;
+                    else
+			fill_color = colors[i];
 
-			if (lb_p->mono_fill_pattern)
-				fill_pattern = lb_p->fill_pattern;
-			else
-				fill_pattern = patterns[i];
+                    if (lb_p->mono_fill_pattern)
+			fill_pattern = lb_p->fill_pattern;
+                    else
+			fill_pattern = patterns[i];
 			
-			if (lb_p->mono_fill_scale)
-				fill_scale = lb_p->fill_scale;
-			else
-				fill_scale = fill_scales[i];
+                    if (lb_p->mono_fill_scale)
+			fill_scale = lb_p->fill_scale;
+                    else
+			fill_scale = fill_scales[i];
 
-			NhlVASetValues(lbl->base.wkptr->base.id,
-				     _NhlNwkFillIndex, fill_pattern,
-				     _NhlNwkFillColor, fill_color,
-				     _NhlNwkFillScaleFactorF, fill_scale,
-				     _NhlNwkFillDotSizeF, lb_p->fill_dot_size,
-				     NULL);
+                    NhlVASetValues(lbl->base.wkptr->base.id,
+				  _NhlNwkFillIndex, fill_pattern,
+				  _NhlNwkFillColor, fill_color,
+				  _NhlNwkFillScaleFactorF, fill_scale,
+				  _NhlNwkFillDotSizeF, lb_p->fill_dot_size,
+				  NULL);
 			
-			_NhlSetFillInfo(lbl->base.wkptr, (NhlLayer) lbl);
-			_NhlWorkstationFill(lbl->base.wkptr,
-					    xpoints,ypoints,5);
+                    _NhlSetFillInfo(lbl->base.wkptr, (NhlLayer) lbl);
+                    _NhlWorkstationFill(lbl->base.wkptr, xpoints, ypoints, 5);
 			
 		}
 	}
@@ -4578,11 +4615,20 @@ static NhlErrorTypes    LabelBarClassInitialize
         {NhlUNIFORMSIZING,	"UniformSizing"},
         {NhlEXPLICITSIZING,	"ExplicitSizing"},
         };
+        
+        _NhlEnumVals   boxendcapstylelist[] = {
+            {NhlRECTANGLE,         "RectangleEnds"},
+            {NhlTRIANGLELOWVAL,    "TriangleLowEnd"},
+            {NhlTRIANGLEHIGHVAL,   "TriangleHighEnd"},
+            {NhlTRIANGLEBOTH,      "TriangleBothEnds"},
+        };
 
 	_NhlRegisterEnumType(NhlviewClass,NhlTlbLabelAlignmentMode,
 		labelalignmentlist,NhlNumber(labelalignmentlist));
 	_NhlRegisterEnumType(NhllabelBarClass,NhlTlbBoxSizingMode,boxsizinglist,
 			     NhlNumber(boxsizinglist));
+	_NhlRegisterEnumType(NhllabelBarClass,NhlTlbBoxEndCapStyle,boxendcapstylelist,
+			     NhlNumber(boxendcapstylelist));
 
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);

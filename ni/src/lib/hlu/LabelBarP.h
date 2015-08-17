@@ -122,6 +122,7 @@ typedef struct _NhlLabelBarLayerPart {
 	float	box_line_thickness;
 	int	box_line_dash_pattern;
 	float	box_line_dash_seglen;
+        NhllbBoxEndCapStyle box_end_cap_style;
 	
 	int	perim_on;
 	int	perim_color;
