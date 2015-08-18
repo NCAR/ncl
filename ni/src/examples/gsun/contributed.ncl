@@ -1191,12 +1191,37 @@ begin
   return (x)
 end
 ; *****************************************************************
+; Calculate wind speed
+; *****************************************************************
+undef ("wind_speed")
+function wind_speed(u:numeric, v:numeric)
+local wspd
+begin
+ if (.not.all(dimsizes(u).eq.dimsizes(v))) then
+     print("wind_speed: dimension size mismatch")
+     print("         u: "+dimsizes(u))
+     print("         v: "+dimsizes(v))
+     exit
+ end if
+  
+  wspd = sqrt(u^2 + v^2)
+  wspd@long_name = "wind speed"
+  if (isatt(u,"units")) then
+      wspd@units = u@units
+  end if
+  copy_VarCoords(u, wspd)
+  return(wspd)
+end
+; *****************************************************************
 ; Calculate meteorological wind direction
 ; *****************************************************************
 undef ("wind_direction")
 function wind_direction(u:numeric, v:numeric, opt:integer)
 ; meteorological wind direction. 
-; This is over-kill. Only need: wdir=atan2(u,v)*radi + 180
+
+; This is *** over-kill ***. 
+; Only need: wdir=atan2(u,v)*radi + 180
+
 local wdir, radi, con, wcrit, wmsg, zero, dimu
 begin
   if (.not.(typeof(u).eq."double" .or. \
@@ -1246,6 +1271,9 @@ begin
   if (isatt(wdir,"units")) then
       delete(wdir@units)
   end if
+
+  copy_VarCoords(u, wdir)
+
   return(wdir)
 end
 ; *****************************************************************
