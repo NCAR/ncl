@@ -1281,8 +1281,26 @@ end
 ; *****************************************************************
 undef ("wind_component")
 function wind_component(wspd:numeric, wdir:numeric, opt:integer)
-local wdir, rad , ivmsg, uveps, uvzero, dimw, rankw, dimuv, uv
+local rad, uvmsg, uveps, uvzero, dimw, rankw, dimd, rankd, dimuv, uv
 begin
+
+  dimw = dimsizes(wspd)
+  rankw= dimsizes(dimw)
+  dimd = dimsizes(wdir)
+  rankd= dimsizes(dimd)
+
+  if (rankw.ne.rankd) then
+      print("wind_component: FATAL: rank mismatch: rankw="+rankw+" rankd="+rankd)
+      exit
+  end if
+
+  if (.not.all(dimw.eq.dimd))
+      print("wind_component: FATAL: array size mismatch")
+      print("          dimw="+dimw)                        
+      print("          dimd="+dimd)                        
+      exit
+  end if
+
   if (typeof(wspd).eq."double" .or. typeof(wspd).eq."double") then
       rad   = 0.0174532925199433d0
       uvmsg = 1d20
@@ -1295,17 +1313,14 @@ begin
       uvzero= 0.0
   end if
 
-  dimw = dimsizes(wspd)
-  rankw= dimsizes(dimw)
-
   dimuv= new ( rankw+1, "integer", "No_FillValue")
   dimuv(0)  = 2
   dimuv(1:) = dimw
   uv        = new (dimuv, typeof(wspd), uvmsg) 
 
   if (rankw.eq.1 .and. dimw(0).eq.1) then
-      uv(0) = -wspd*sin(wdir*rad)
-      uv(1) = -wspd*cos(wdir*rad)
+      uv(0,0) = -wspd*sin(wdir*rad)
+      uv(1,0) = -wspd*cos(wdir*rad)
       copy_VarMeta(wspd, uv)
   else if (rankw.eq.1) then
       uv(0,:) = -wspd*sin(wdir*rad)
@@ -1337,10 +1352,13 @@ begin
   uv   = where(abs(uv).le.uveps, uvzero, uv) ; make near zero => 0
 
   uv!0 = "uv"
-  uv@long_name = "zonal and meridional wind components"
+  uv@long_name = "zonal [0] and meridional [1] wind components"
 
-  return(uv)
+ ;if (opt.eq.0) then
+      return(uv)
+ ;end if
 end
+
 
 ; **************************************************************
 ; D. Shea
@@ -15709,30 +15727,6 @@ begin
   dz@sum_dz    = sum(dz)   ; should match the bottom layer [ eg: z_t(kz-1) ]
 
   return(dz)
-end
-;=============
-undef("cla_sqdq")
-function cla_sqdq(s1[1]:string, s2[1]:string)
-; Utility used for Command Line Assignment (CLA)
-; Return a string with a single quote (sq) at the
-; beginning and end which enclose a pair of double quote (dq)
-;
-; [1]  s  = cla_sqdq("PATH","./FIM.G5test.nc")  => 'PATH="./FIM.G5test.nc"'
-;
-; [2]  left = "PATH" 
-;      rght = "./FIM.G5test.nc"
-;      sa   = cla_sqdq(left,rght)      => 'PATH="./FIM.G5test.nc"'
-;
-;      var  = "slp"
-;      sb   = cla_sqdq("vname",var)    => 'vname="slp"'
-;
-;      NCL  = "ncl "+cla_sqdq(left,rght)+" "+cla_sqdq("vname",var)+" foo.ncl"
-;      NCL  = "ncl "+sa+" "+sb+" foo.ncl"
-;           => "ncl 'PATH="./FIM.G5test.nc"' 'vname="slp"'./FIM_CL.ncl
-local dq
-begin
-   dq    = str_get_dq()      ; double quote character
-   return("'"+ s1 +"="+ dq+s2+dq +"'")
 end
 ;========================
 undef("fire_index_haines")
