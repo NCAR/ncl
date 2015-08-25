@@ -251,7 +251,8 @@ MPL_FILES = \
 		MPL_sstanom.rgb \
 		MPL_summer.rgb \
 		MPL_terrain.rgb \
-		MPL_winter.rgb
+		MPL_winter.rgb \
+		MPL_viridis.rgb
 
 NCVIEW_FILES = \
 		ncview_default.ncmap \
