@@ -2684,6 +2684,9 @@ end
 ; ---------------------------------
 undef("SPECX_ANAL")
 function SPECX_ANAL(X[*]:numeric, iopt[1]:integer, jave[1]:integer, pct[1]:numeric)
+;
+; created to illustrate the various steps used by the builtin function: specx_anal
+;
 local x, N, xVari, xVaro, cf, cr, ci, px, spcx, total_area, df, frq
     , wgts, sclVar, sdof, acr, tapcf
 begin
@@ -2748,6 +2751,9 @@ end
 undef("SPECXY_ANAL")
 function SPECXY_ANAL(X[*]:numeric, Y[*]:numeric   \
                     ,iopt[1]:integer, jave[1]:integer, pct[1]:numeric)
+;
+; created to illustrate the various steps used by the builtin function: specxy_anal
+;
 local  x, y, N, xVari, xVaro, yVari, yVaro, wgts, sclVarx, sclVary \
     ,  cf, cr, ci, px, spcx, py, spcy, total_area, df, frq, tapcf  \
     ,  xr, xi, yr, yi, cospc, quspc, coher, phase, sclCQ, acr, sdof
@@ -3082,10 +3088,11 @@ begin
  end do    ; sigma loop
 end
 ; -------------------------------
-; produce a nice plot for the output from 'pdfxy'
-;
 undef("plt_pdfxy")
 function plt_pdfxy(wks[1]:graphic, p[*][*], res[1])
+;
+; produce a nice plot for the output from 'pdfxy'
+;
 local plt, dimp, ny,mx, ny2,mx2, PDFXY, yAxis, xAxis
 begin
   if (all(ismissing(p))) then
@@ -3175,6 +3182,8 @@ end
 ;----------------------- Unsupported: DJS -----------------------------------
 ;----------------------------------------------------------------------------
 undef("advect_gradient")
+;+++ advect gradient was 'promoted' tp contributed.ncl under 'advect_variable'
+;+++ http://www.ncl.ucar.edu/Document/Functions/Contributed/advect_variable.shtml
 function advect_gradient (u:numeric, v:numeric, x:numeric \
                          ,gridType[1]:integer, con[1]:numeric \
                          ,long_name:string, units:string, iopt[1]:integer)
@@ -3475,6 +3484,8 @@ end
 ;----------------------- Unsupported: DJS -----------------------------------
 ;----------------------------------------------------------------------------
 undef("PotTemp")
+; +++ PotTemp was promoted to contributed.ncl
+; +++ http://www.ncl.ucar.edu/Document/Functions/Contributed/pot_temp.shtml
 function PotTemp (p:numeric, t:numeric, opt:integer)
 ;
 ; Compute potential temperature on constant pressure levels
@@ -3530,6 +3541,8 @@ end
 ;----------------------- Unsupported: DJS -----------------------------------
 ;----------------------------------------------------------------------------
 undef("StaticStability") 
+; +++ StaticStability was promoted to contributed.ncl
+; +++ http://www.ncl.ucar.edu/Document/Functions/Contributed/static_stability.shtml
 function StaticStability (p:numeric, t:numeric, sopt)
 ;
 ; Compute Static Stability on constant pressure levels
@@ -3624,6 +3637,8 @@ end
 ;----------------------- Unsupported: DJS -----------------------------------
 ;----------------------------------------------------------------------------
 undef("PotVortHybrid")
+; +++ PotVortHybrid was promoted to contributed.ncl
+; +++ http://www.ncl.ucar.edu/Document/Functions/Contributed/pot_vort_hybrid.shtml
 function PotVortHybrid\
             (p:numeric, u:numeric, v:numeric, t:numeric
             ,lat[*]:numeric, gridType[1]:integer, opt:integer)
@@ -3767,6 +3782,8 @@ end
 ;----------------------- Unsupported: DJS -----------------------------------
 ;----------------------------------------------------------------------------
 undef("PotVortIsobaric")
+; +++ PotVortHybrid was promoted to contributed.ncl
+; +++ http://www.ncl.ucar.edu/Document/Functions/Contributed/pot_vort_isobaric.shtml
 function PotVortIsobaric\
             (p[*]:numeric, u:numeric, v:numeric, t:numeric
             ,lat[*]:numeric, gridType[1]:integer, opt:integer)
@@ -4257,76 +4274,11 @@ end
 ;-------------------------------
 undef("grad_rich_num_atm")
 function grad_rich_num_atm(th:numeric, u:numeric, v:numeric ,z:numeric, ndim[1]:integer)
-;
-; Calculate atmospheric Gradient Richardson Number
-;      A dimensionless ratio, Ri, related to the buoyant production or 
-;      consumption of turbulence divided by the shear production of turbulence.
-;      It is used to indicate dynamic stability and the formation of turbulence.
-;
-; AMS Glossary:  
-;    http://amsglossary.allenpress.com/glossary/search?id=gradient-richardson-number1
-;           Uses Tv and not THETAv in denominator. ?Erro?
-;
-; th   - virtual potential temperature (K)
-; u,v  - wind components (m/s) ; same dimensionality as 'th' and 't'
-; z    - height (m)
-; ndim - dimension of 'th' for which vertical gradient is to be calculated
-;        th(:), wspd(:), z(:) ..... ndim=0
-;        th(:,:,:)  , z(:) or z(:,:,:)   and the left is the vertical dim, ndim=0
-;        th(:,:,:,:), z(:) or z(:,:,:,:) and the left is the time dimension 
-;                                        and the next is height,  ndim=1 
-local dimth, dimu, dimv, dimz, rankth, ranku, rankv, rankz \
-    , g, dthdz, brunt, dudz, dvdz, Ri
 begin
-                                ; dimension checking
-  dimu    = dimsizes(u)
-  dimv    = dimsizes(v)
-  dimz    = dimsizes(z)
-  dimth   = dimsizes(th)
-
-  rankth  = dimsizes(dimth)
-  ranku   = dimsizes(dimu)   
-  rankv   = dimsizes(dimv)   
-  rankz   = dimsizes(dimz)   
-                                ; no need to check all of them!
-  if (rankth.ne.ranku .or. .not.all(dimth.eq.dimu)) then
-      print("rich_num_atm: th, u, v must have the same rank & dimensionality")
-      print(dimth)
-      print(dimu) 
-      exit
-  end if
-
-  dthdz  = center_finite_diff_n(th, z, False, 0, ndim) 
-  copy_VarCoords(t, dthdz)
-  dthdz@long_name = "Vertical Gradient of theta"
-  dthdz@units     = "degK/m"
- ;print("rich_num_atm: dthdz: min="+min(dthdz)+"   max="+max(dthdz))
-
-  g      = 9.8
-  brunt  = dthdz*(g/th)     
-  copy_VarCoords(u, brunt)
-  brunt@long_name = "Brunt–Vaisala (bouyancy) frequency"
-  brunt@units     = "1/s"
- ;print("rich_num_atm: brunt: min="+min(brunt)+"   max="+max(brunt))
-  
-  dudz   = center_finite_diff_n(u , z, False, 0, ndim) 
-  copy_VarCoords(u, dudz)
-  dudz@long_name  = "vertical gradient of the zonal wind"
-  dudz@units      = "1/s"
- ;print("rich_num_atm: dudz: min="+min(dudz)+"   max="+max(dudz))
-
-  dvdz   = center_finite_diff_n(v , z, False, 0, ndim) 
-  copy_VarCoords(v, dvdz)
-  dvdz@long_name  = "vertical gradient of the meridional wind"
-  dvdz@units      = "1/s"
- ;print("rich_num_atm: dvdz: min="+min(dvdz)+"   max="+max(dvdz))
-
-  Ri     = brunt/(dudz^2 + dvdz^2)
-  copy_VarCoords(u, Ri)
-  Ri@long_name   = "Gradient Richardson Number"
-  Ri@description = Ri@long_name
-  
-  return(Ri)
+ print("shea_util: function grad_rich_num_atm has been replaced")
+ print("Use rigrad_bruntv_atm located in contributed.ncl: 6.3.1")
+ exit 
+ return("error")
 end
 ;-------------------------------
 undef("area_global_rectilinear_grid")
@@ -4915,3 +4867,24 @@ begin
        return(nm)                              ; return index values as regular variable
    end if
 end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;; Description: Take an array of data, sort it, remove duplicates, and return 
+;: Carl Schreck
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+undef ( "remove_duplicates" ) 
+function remove_duplicates( i_data:numeric ) 
+local data, duplicate, uniqueInd, retVal       ; djs added
+begin 
+  data = ndtooned( i_data ) 
+  qsort(data) 
+  duplicate = new( dimsizes(data), logical ) 
+  duplicate(0) = False 
+  do i = 1, dimsizes(data)-1 
+    duplicate(i) = ( data(i).eq.data(i-1) ) 
+  end do 
+  uniqueInd = ind(.not.duplicate) 
+  retVal = data(uniqueInd) 
+  return(retVal) 
+end ; remove_duplicates 
+
