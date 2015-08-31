@@ -4870,7 +4870,7 @@ end
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 ;; Description: Take an array of data, sort it, remove duplicates, and return 
-;: Carl Schreck
+;; Carl Schreck
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 undef ( "remove_duplicates" ) 
 function remove_duplicates( i_data:numeric ) 
@@ -4885,6 +4885,28 @@ begin
   end do 
   uniqueInd = ind(.not.duplicate) 
   retVal = data(uniqueInd) 
+  return(retVal) 
+end ; remove_duplicates 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;; Description: Take an array of data, sort it, remove duplicates, and return 
+;; slight variation of Carl Schreck's "remove_duplicates"
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+undef ( "rm_duplicates" ) 
+function rm_duplicates( i_data[*]:numeric ) 
+local data, dim_data, duplicate, uniqueInd, retVal       ; djs added
+begin 
+  data     = dim_pqsort(i_data,2)
+  dim_data = dimsizes(data) 
+
+  duplicate = new( dim_data, logical ) 
+  duplicate(0) = False 
+  do i = 1, dim_data-1 
+    duplicate(i) = ( data(i).eq.data(i-1) ) 
+  end do 
+
+  uniqueInd = ind(.not.duplicate) 
+  retVal    = data(uniqueInd) 
   return(retVal) 
 end ; remove_duplicates 
 
