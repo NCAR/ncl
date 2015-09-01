@@ -4872,8 +4872,8 @@ end
 ;; Description: Take an array of data, sort it, remove duplicates, and return 
 ;; Carl Schreck
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-undef ( "remove_duplicates" ) 
-function remove_duplicates( i_data:numeric ) 
+undef ( "remove_duplicates_nd" ) 
+function remove_duplicates_nd( i_data:numeric ) 
 local data, duplicate, uniqueInd, retVal       ; djs added
 begin 
   data = ndtooned( i_data ) 
@@ -4892,9 +4892,9 @@ end ; remove_duplicates
 ;; Description: Take an array of data, sort it, remove duplicates, and return 
 ;; slight variation of Carl Schreck's "remove_duplicates"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-undef ( "rm_duplicates" ) 
-function rm_duplicates( i_data[*]:numeric ) 
-local data, dim_data, duplicate, uniqueInd, retVal       ; djs added
+undef ( "remove_duplicates_1d" ) 
+function remove_duplicates_1d( i_data[*]:numeric ) 
+local data, dim_data, duplicate, uniqueInd, retVal  
 begin 
   data     = dim_pqsort(i_data,2)
   dim_data = dimsizes(data) 
@@ -4910,3 +4910,37 @@ begin
   return(retVal) 
 end ; remove_duplicates 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;; Description: extract approximately periodic components from a time series. 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+undef("demod")
+function demod(y[*]:numeric, frq[1]:numeric)
+;
+; simple complex demodulation
+; extract approximately periodic components from a time series
+;
+local ny, pi, arg, amp, pha
+begin
+
+  ny = dimsizes(y)
+  if (typeof(y).eq."double" .or. typeof(frq)) then
+      pi = 4d0*atan(1d0)
+  else
+      pi = 4.0*atan(1.0)
+  end if
+
+  arg = ispan(0,ny-1,1)*frq*2*pi
+  amp =  y*cos(arg)*2             ; real
+  pha = -y*sin(arg)*2             ; imaginary (primary phase)
+
+  amp@long_name = "amplitude"
+  pha@long_name = "phase"         
+  if (isatt(y,"units")) then
+      amp@units = y@units
+  end if
+
+  copy_VarCoords(y, amp)
+  copy_VarCoords(y, pha)
+
+  return([/ amp, pha /])           ; return as a list
+end
