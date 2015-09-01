@@ -4911,13 +4911,19 @@ begin
 end ; remove_duplicates 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-;; Description: extract approximately periodic components from a time series. 
+;; Description: Extract approximately periodic components from a time series. 
+;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 undef("demod")
 function demod(y[*]:numeric, frq[1]:numeric)
 ;
-; simple complex demodulation
-; extract approximately periodic components from a time series
+; simple complex demodulation; Extract approximately periodic components from a time series
+;
+; Complex demodulation is a technique for analyzing nonstationary time series by estimating 
+; the instantaneous amplitude and phase of a given harmonic component. To better understand 
+; the results of complex demodulation several lowpass filters should be tried: the smaller 
+; the pass band, the less instantaneous in time but more specific in frequency is the result.
+; source: http://www.uni-muenster.de/ZIV.BennoSueselbeck/s-html/helpfiles/demod.html
 ;
 local ny, pi, arg, amp, pha
 begin
