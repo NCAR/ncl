@@ -4162,13 +4162,67 @@ begin
    clmDay&year_day    =  year_day
    
    copy_VarCoords(x(0,:,:), clmDay(0,:,:))   ; trick
-   delete(clmDay@year_day)                   ; clean up
+   if (isatt(clmDay,"year_day")) then
+       delete(clmDay@year_day)               ; clean up
+   end if
 
    if (isatt(yyyyddd,"calendar")) then
        clmDay@calendar = yyyyddd@calendar 
    end if
  
    return (clmDay)
+end
+; =====================================
+undef("clmDayT")
+; Too lazy to write an explicit function
+function clmDayT (x[*]:numeric, yyyyddd:integer)   
+local ntim, x3d, x3dClm, xClm
+begin
+    ntim   = dimsizes(x)
+    x3d    = conform_dims( (/ntim,1,1/), x, 0)
+    x3dClm = clmDayTLL(x3d, yyyyddd)
+    xClm   = x3dClm(:,0,0)
+    return(xClm)
+end
+; =====================================
+undef("calcDayAnomT")
+; Too lazy to write an explicit function
+function calcDayAnomT (x[*]:numeric, yyyyddd[*]:integer, clmDay[*]:numeric)   
+local ntim, days, xAnom
+begin
+   if (isatt(yyyyddd,"calendar") .and. isatt(clmDay,"calendar")) then
+       if (yyyyddd@calendar .ne. clmDay@calendar) then
+           print("calcDayAnomT: calendar mismatch")
+           print("              yyyyddd@calendar = "+yyyyddd@calendar)
+           print("               clmday@calendar = "+ clmDay@calendar)
+           exit
+       end if
+   end if
+
+   ntim  = dimsizes (x)
+   ddd   = yyyyddd - (yyyyddd/1000)*1000      ; strip year info [yyyy]
+
+; loop on every day and compute difference. 
+
+   xAnom = (/ x  /)                           ; create xAnom
+   do nt=0,ntim-1
+      xAnom(nt) = x(nt) - clmDay(ddd(nt)-1)   ; -1 for 0-based subscript
+   end do
+
+   if (isatt(x,"long_name")) then
+        xAnom@long_name = "Anomalies: "+x@long_name
+    else
+        xAnom@long_name = "Anomalies from Daily Climatology"
+    end if
+    if (isatt(x,"units")) then
+        xAnom@units = x@units
+    end if
+    if (isatt(yyyyddd,"calendar")) then
+        xAnom@calendar = yyyyddd@calendar
+    end if
+
+    copy_VarCoords(x, xAnom)
+    return(xAnom)
 end
 
 ; =====================================
@@ -4288,6 +4342,36 @@ begin
    end if
  
    return (clmDay)
+end
+; =====================================
+undef("smthClmDayT")
+function smthClmDayT (clmDay[*]:numeric, nHarm:integer)
+;
+local cf, clmDaySmth 
+begin
+  
+; The following was commented out (post 6.2.0) when people started using 
+; this on daily SSTs which, of course, have _FillValue over land.
+ 
+ ;if (isatt(clmDay, "_FillValue")) then
+ ;    nFill = num(ismissing(clmDay))
+ ;    if (nFill.gt.0) then
+ ;        print("smthClmDayTLL: No missing values allowed: ezfftf does not allow")
+ ;        print("smthClmDayTLL: nFill="+nFill)
+ ;        exit  
+ ;    end if
+ ;end if
+
+  cf = ezfftf( clmDay )                     ; [2] x [nday/2+1]
+                                            ; remember NCL is 0-based 
+                                            ; cf(:,0:nHarm-1) are retained unaltered
+  cf(:,nHarm   ) = 0.5*cf(:,nHarm)          ; mini-taper
+  cf(:,nHarm+1:) = 0.0                      ; set all higher coef to 0.0
+
+  clmDaySmth  = ezfftb( cf, cf@xbar)                 ; reconstructed series
+  clmDaySmth@information = "smthClmDayT: Smoothed daily climatological averages"
+  clmDaySmth@smoothing   = "FFT: "+nHarm+" harmonics were retained."
+  return(clmDaySmth)
 end
 
 ; =====================================
@@ -4823,6 +4907,42 @@ begin
    end if
 
    return(yyyymmdd) 
+end
+;==============================
+undef("yyyyddd_to_yyyyfrac")
+function yyyyddd_to_yyyyfrac( yyyyddd[*]:numeric, ddOffset[1]:numeric)
+begin
+   yyyy = yyyyddd/1000
+   ddd  = yyyyddd - yyyy*1000 
+
+   if (isatt(yyyyddd,"calendar")) then
+       if (yyyyddd@calendar.eq."360_day" .or. yyyyddd@calendar.eq."360") then
+           yyyyfrac = yyyy + ((ddd-1)/360d) 
+       end if
+       if (yyyyddd@calendar.eq."365_day" .or. yyyyddd@calendar.eq."365"      .or. \
+           yyyyddd@calendar.eq."noleap"  .or. yyyyddd@calendar.eq."no_leap") then
+           yyyyfrac = yyyy + ((ddd-1)/365d) 
+       end if
+       if (yyyyddd@calendar.eq."366_day" .or. yyyyddd@calendar.eq."366"      .or. \
+           yyyyddd@calendar.eq."allleap" .or. yyyyddd@calendar.eq."all_leap") then
+           yyyyfrac = yyyy + ((ddd-1)/366d) 
+       end if
+       if (yyyyddd@calendar.eq."standard" .or. yyyyddd@calendar.eq."gregorian" ) then
+           yyyyfrac = yyyy + where(isleapyear(yyyy), ((ddd-1)/366d), ((ddd-1)/365d))
+       end if
+       yyyyfrac@calendar = yyyyddd@calendar
+   else
+       yyyyfrac = yyyy + where(isleapyear(yyyy), ((ddd-1)/366d), ((ddd-1)/365d))
+       yyyyfrac@calendar = "standard"
+   end if
+
+   copy_VarCoords(yyyyddd, yyyyfrac)
+
+   yyyyfrac@long_name = "current date"
+   yyyyfrac@units     = "YYYY.fraction_of_current_year" 
+   yyyyfrac@info      = "converted from YYYYDDD" 
+
+   return(yyyyfrac)
 end
 
 ; **********************************************************************
@@ -15978,4 +16098,100 @@ begin
   var&$timeName$ = time               ; rassign time coordinate variable (cv)
   var@NCL = "function time_reassign_cv2var used to reassign time coordinate variable to mid-value of bounds"
   return(var)
+end
+;----
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+undef("demod_cmplx")
+function demod_cmplx(y:numeric, frqdem[1]:numeric, frqcut[1]:numeric, nwt[1]:integer,  ndim[1]:integer,  opt[1]:logical)
+;
+; Simple complex demodulation 
+; Extract approximately periodic components (ie, slowly varying) from a time series
+;
+; Source: http://www.uni-muenster.de/ZIV.BennoSueselbeck/s-html/helpfiles/demod.html
+;   Complex demodulation is a technique for analyzing nonstationary time series by estimating 
+;   the instantaneous amplitude and phase of a given harmonic component. To better understand 
+;   the results of complex demodulation several lowpass filters should be tried: the smaller 
+;   the pass band, the less instantaneous in time but more specific in frequency is the result.
+;
+; Nice summaries:
+; http://faculty.washington.edu/kessler/generals/complex-demodulation.pdf
+; http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2007/pdfHMANlJLqCE.pdf
+;
+local dimy, ranky, pi, zero, one, frqdem25, frqdem50, ny, arg, ARG, yr, ys \
+    , delf, ihp, nsigma, fcb, wgt, amp, pha
+begin
+   if (typeof(y).eq."double" .or. typeof(frqdem).eq."double" \
+                             .or. typeof(frqcut).eq."double" ) then
+       pi       = 4d0*atan(1d0)
+       zero     = 0.0d
+       one      = 1.0d
+       frqdem25 = 0.25d
+       frqdem50 = 0.50d
+   else
+       pi       = 4.0*atan(1.0)
+       zero     = 0.0 
+       one      = 1.0 
+       frqdem25 = 0.25 
+       frqdem50 = 0.50 
+   end if
+   pi2 = 2*pi
+
+   dimy  = dimsizes(y)
+   ranky = dimsizes(dimy) 
+   ny    = dimy(ndim) 
+   delf  = one/ny
+
+; error check
+
+   if (frqcut.le.delf .or. frqcut.gt.frqdem50 .or. \
+       frqdem.le.delf .or. frqdem.gt.frqdem50      ) then
+       print("demod_cmplx: illegal valu(s): frqcut="+frqcut+" : frqdem="+frqdem)
+       exit
+   end if
+
+   if (frqcut.gt.frqdem) then 
+       print("demod_cmplx: frqcut > frqdem: frqcut="+frqcut+" : frqdem="+frqdem)
+       exit
+   end if
+
+; demodulate (primary): Bloomfield, 1976: page 147
+
+   arg = ispan(0,ny-1,1)*frqdem*2*pi
+
+   ARG = conform(y, arg, ndim)     ; all dimensions
+                                   ; complex demodulate 
+   yr  =  y*cos(ARG)*2             ; 'real' series
+   yi  = -y*sin(ARG)*2             ; 'imaginary'       
+
+;---Create weights for Lanczos low pass filter
+
+   ihp    = 0                      ; low pass 
+   nsigma = one                       
+   if (opt .and. isatt(opt, "nsigma")) then
+       nsigma := totype(opt@nsigma, typeof(pi))
+   end if 
+
+   fcb    = totype(-999, typeof(pi))
+   wgt    = filwgts_lanczos (nwt, ihp, frqcut, fcb, nsigma)  
+
+;---Apply filter weights to raw demodulated series (nwt/2 point 'lost; at start/end)
+
+   yr = wgt_runave_n_Wrap ( yr, wgt, 0, 0) 
+   yi = wgt_runave_n_Wrap ( yi, wgt, 0, 0) 
+  
+;---Use the low pass filtered values
+   
+   amp = sqrt(yr^2 + yi^2)
+   pha = where(amp.eq.zero, zero, atan2(yi, yr)) 
+
+   amp@long_name = "amplitude"
+   pha@long_name = "phase"         
+   if (isatt(y,"units")) then
+       amp@units = y@units
+   end if
+
+   copy_VarCoords(y, amp)
+   copy_VarCoords(y, pha)
+
+   return([/ amp, pha /])           ; return as a list
 end
