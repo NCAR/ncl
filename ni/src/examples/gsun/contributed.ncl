@@ -13130,8 +13130,6 @@ begin
    end if
 end
 ;---------------------------------
-; undocumented and unsupported
-;---------------------------------
 undef ("calculate_monthly_values")
 function calculate_monthly_values (x:numeric, arith:string, nDim[1]:integer, opt[1]:logical)
 
@@ -13154,9 +13152,9 @@ function calculate_monthly_values (x:numeric, arith:string, nDim[1]:integer, opt
 ; It is assumed that there will be multiple elements for the dim_avg_n
 ; calculation. 
 ;
-local dimx, rankx, utc_date, year, month, day, hour, ntim \
+local dimx, rankx, dnamx, utc_date, year, month, day, hour, ntim \
     , yrStrt, yrLast, nyrs, NTIM, dAvg, xReturn, xMonth \
-    , NT, nmo, ii, NMOS, MON1, MON2 
+    , NT, nmo, ii, NMOS, MON1, MON2, TNAME, TIME 
 begin
     dimx   = dimsizes( x )
     rankx  = dimsizes( dimx )
@@ -13166,7 +13164,12 @@ begin
         exit
     end if
 
-    utc_date = cd_calendar(x&time, 0)
+    dnamx    = getvardims(x)  
+    TNAME    = dnamx(nDim)                         ; typically TNAME="time"
+    TIME     = x&$TNAME$                           ; explicit local 'time' array
+   ;printVarSummary(TIME)
+
+    utc_date = cd_calendar(TIME, 0)                ; (x&$TNAME$, 0) ; typically   x&time
 
     year     = toint(utc_date(:,0))   
     month    = toint(utc_date(:,1))  
@@ -13208,7 +13211,7 @@ begin
         xReturn= new ( dAvg , "float", tofloat(getFillValue(x)))
     end if
 
-    xMonth = new ( NTIM , typeof(x&time), "No_FillValue")
+    xMonth = new ( NTIM , typeof(TIME), "No_FillValue")
   ;;printVarSummary(xMonth)
 
     NT   = -1
@@ -13242,7 +13245,7 @@ begin
              iStrt = ii(0)            
              iLast = ii(dimii-1)
 
-             xMonth(NT) = (/ x&time(ii(0)) /)
+             xMonth(NT) =  (/ x&$TNAME$(iStrt) /)    ; (/ x&time(ii(0)) /)
 
              if (rankx.eq.1) then
                  if (arith.eq."avg" .or. arith.eq."ave") then
@@ -13330,7 +13333,7 @@ begin
         xReturn!1= "time"
     end if
 
-    xMonth@units = x&time@units
+    xMonth@units = TIME@units            ; x&time@units
     xReturn&time = xMonth 
 
     if (isatt(x,"long_name")) then
@@ -16194,4 +16197,249 @@ begin
    copy_VarCoords(y, pha)
 
    return([/ amp, pha /])           ; return as a list
+end
+;=================================================
+undef("epflux4")
+function epflux4(U[*][*][*][*]:numeric, V[*][*][*][*]:numeric \
+                ,T[*][*][*][*]:numeric, plvl[*]:numeric, lat[*]:numeric \
+                ,opt[1]:logical)
+
+;*******************************************************
+; Purpose:
+; NCL Script to calculate near-realtime Eliassen-Palm flux from NCEP Reanalysis Data
+; This version produces Quasi-geostrophic Eliassen-Palm Fluxes in spherical coordinates
+; Plots the EP Flux vectors in a latitude-log(pressure) coordinate
+; Optionally plot the divergence of EP-Flux
+;*******************************************************
+; History
+; Original code written (2009) by J. Barsugli [NOAA/ESRL PSD]
+; Adapted by C. Smith [NOAA/ESRL PSD]a.gov
+; Modified by Joe Barsugli to add contours of EP-Flux divergence June 2010
+; Modified by Joe Barsugli to redo scaling of arrows in the vertical June 2010
+;********************************************************
+; Modified by Dennis Shea to NCL 6.0.0 release June 2012 
+; Made into a function by Dennis Shea Sept. 2015 for 6.3.1 inclusion
+;********************************************************
+; Reference:
+; Edmon, H.J., B.J. Hoskins,and M.E. McIntyre,1980:
+; Eliassen-Palm cross sections for the troposphere.
+; J. Atmos. Sci., 37:2600–2616
+;********************************************************
+; local not required
+local PLVL, P0, LAT, a, PI, phi, cphi, acphi, asphi, omega, latfac   \
+    , THETA, THEATp, THETAptm, THETAza, Uza, Vza, UV, UVzm, UVzmtm   \
+    , Fphi, Fp, dudt, EPdiv, EPdiv1, EPdiv2, EPdiv \
+    , rhofac, strat1, stratmask
+begin
+
+;---Dimension sizes
+
+;;dimUVT = dimsizes(U)
+;;ntim   = dimUVT(0)
+;;klvl   = dimUVT(1)
+;;nlat   = dimUVT(2)
+;;mlon   = dimUVT(3)
+
+;---PLVL is a local version of 'plvl' in Pa
+  
+  PLVL = plvl
+  if (max(plvl).lt.2000) then                 ; must be hPa
+      PLVL = plvl*100
+  end if
+  logPLVL = log(PLVL)                         ; used below
+  P0      = 100000                            ; "Pa"
+
+;---LAT is a local version of 'lat'. 
+;   Get around any pole singularity: ie., avoid dividing by cos(90)=0.0 
+;   Set abs(LAT)=90 to _FillValue
+
+  LAT = lat
+  LAT@_FillValue = 1e20                       ; any out-of-range value will do
+  LAT = where(abs(LAT).eq.90, LAT@_FillValue, LAT) 
+  
+;---Constants & quantities needed
+ 
+  a     = 6.37122e06       ; radius of the earth (m)
+  PI    = 3.14159          ; 3.14159265358979
+  omega = 7.2921e-5   
+
+  phi   = LAT*PI/180.0     ; latitude in radians
+  cphi  = cos(phi)
+  acphi = a*cphi             
+  asphi = a*sin(phi)       ; a* sin latitude for use in calculating the divergence.
+  f     = 2*omega*sin(phi) ; coriolis parameter
+  
+  latfac= acphi*cphi       ; scale factor includes extra cos(phi) for graphical display of arrows 
+                           ; see Edmon et al, 1980
+
+;---Compute theta (degK)
+
+ ;THETA   = T*(conform(T,PLVL,1)/P0)^(-0.286) ; (time,lev,lat,lon)
+  THETA   = T*(P0/conform(T,PLVL,1))^( 0.286) ; (time,lev,lat,lon)
+  THETA@long_name = "potential temperature"
+  THETA@units     = "degK"
+
+;---Zonal mean (zm) THEATA
+
+  THETAzm = dim_avg_n_Wrap(THETA, 3)          ; (time,lev,lat) => (0,1,2)
+  THETAzm@long_name = "zonal mean potential temperature"
+  
+;---d(THETAzm)/d(log(p))                      ; p<==>plvl
+
+  THETAp   = center_finite_diff_n (THETAzm,logPLVL,False,0,1) ; (time,lev,lat)
+  THETAp@long_name = "d(THETAzm)/d[log(p)]"
+  THETAp@units     = "degK/hPa"
+  copy_VarCoords(THETAzm, THETAp)
+                                             
+;---Compute (1/p)*[d(THETA)/d(log(p)]
+
+  THETAp   = THETAp/conform(THETAp,PLVL,1)    ; broadcast PLVL to all other dimensions
+
+;---Compute time average of THETAp
+
+  THETAptm = dim_avg_n_Wrap(THETAp,0)         ; (lev,lat,lon)
+
+;---Zonal mean wind component anomalies (za)
+  
+  Uza     = dim_rmvmean_n_Wrap(U,3)           ; (time,lev,lat,lon)
+  Vza     = dim_rmvmean_n_Wrap(V,3)
+  THETAza = dim_rmvmean_n_Wrap(THETA,3)
+  THETAza@long_name = "THETA zonal anomaly"
+  Vza@long_name     = "V meridional anomaly"                    
+  Uza@long_name     = "U zonal anomaly U"                    
+
+;---Anomaly products
+  
+  UV       = Uza*Vza                          ; (time,lev,lat,lon)
+  UV@long_name = "Uza*Vza: U'V'"
+  UV@units = "m2/s2"
+
+  VTHETA  = Vza*THETAza                       ; (time,lev,lat,lon)
+  VTHETA@long_name = "Vza*THETAza"
+  VTHETA@units     = "degK-m/s"
+
+;---Zonal (zm) & time (tm) means of UV & VTHETA 
+
+  UVzm    = dim_avg_n_Wrap(UV  ,3)            ; (time,lev,lat)
+  UVzm@long_name   = "zonal mean UV"
+
+  UVzmtm  = dim_avg_n_Wrap(UVzm,0)            ; (lev,lat) 
+  UVzmtm@long_name = "time mean of zonal mean UV"
+  
+  VTHETAzm   = dim_avg_n_Wrap(VTHETA  ,3)     ; (time,lev,lat)
+  VTHETAzm@long_name   = "zonal mean UV"
+
+  VTHETAzmtm = dim_avg_n_Wrap(VTHETAzm,0)     ; (lev,lat)
+  VTHETAzmtm@long_name = "time mean of zonal mean UV"
+
+;---EP flux meridional and vertical compoments
+  
+  Fphi  = -UVzmtm*conform(UVzmtm,latfac,1)                     ; (lev,lat)
+  Fp    = (VTHETAzmtm/THETAptm)*conform(VTHETAzmtm,f*acphi,1)  ; (lev,lat)
+  Fphi@long_name = "UVzmtm: meridional component of EP flux"
+  Fp@long_name   = "(VTHETAzmtm/THETAptm): vertical component of EP flux"
+  copy_VarCoords(UVzmtm    ,Fphi)
+  copy_VarCoords(VTHETAzmtm,Fp)
+
+;---EP Flux Divergence
+;   Derivative w.r.t latitude  using  1/[a cos(phi)]  d/dphi [cos(phi)*X] =  d/d [asin(phi)] Fphi
+;   Note: Fphi already has the extra factor of cos(phi)
+
+  EPdiv1  = center_finite_diff_n(Fphi,asphi,False,0,1)  ; Meridional divergence
+  EPdiv2  = center_finite_diff_n(Fp,PLVL,False,0,0)     ; Vertical divergence
+  EPdiv  = EPdiv1 + EPdiv2                              ; Add components
+  EPdiv@long_name   = "EP flux divergence"
+  copy_VarCoords(Fp, EPdiv)
+  delete( [/EPdiv1, EPdiv2 /])
+  
+;---Compute acceleration from div(F):   
+;   Rate of change in angular momentum per unit mass and divide by a*cos(phi).
+  
+  dudt = 86400*EPdiv/conform(EPdiv,acphi,1) ; 
+  dudt@long_name = "acceleration from EP flux divergence"
+  dudt@units     = "m/s2"
+  copy_VarCoords(EPdiv,dudt)
+
+;---Optional return (opt@raw=True)
+
+  if (opt .and. isatt(opt, "raw") .and. opt@raw) then
+      return ([/ Fphi, Fp, EPdiv, dudt /] )   ; 'raw' 
+  end if
+
+;---Scale the vectors for plot 
+;   First scale according to Edmon et al. for pressure coordinates
+;   (even though I am using log-p display -- not entirely consistent as the arrows 
+;    may "look" divergent when they are not, but better visibility in practice)
+
+  Fp   = Fp*conform(Fp,cphi,1)   
+  Fphi = Fphi/a
+  
+;---Next scale by the relative ranges of the two axes of the plot(3.14 radians by 10^5 Pa)
+
+  Fp   = Fp/P0                      ; Fp/1.0e5
+  Fphi = Fphi/PI
+
+;---Option: scale by sqrt(presure)
+
+  if (opt .and. isatt(opt, "scale_sqrt_p") .and. .not.opt@scale_sqrt_p) then
+      scale_by_sqrt_p = 0               ; not used
+  else   
+      scale_by_sqrt_p = 1               ; default
+      rhofac   = sqrt(P0/PLVL)
+
+      Fp   = Fp*conform(Fp,rhofac,0)
+      Fphi = Fphi*conform(Fphi,rhofac,0)
+
+      Fp@long_name   = "Vertical EP Flux: scaled by (P0/plvl)" 
+      Fphi@long_name = "Meridional EP Flux: scaled by (P0/plvl)" 
+  end if
+  
+;--Scale by a magnification factor above 100 hPa (10000 Pa). 
+
+  if (opt .and. isatt(opt,"magf")) then
+      strat1    = where(PLVL.lt.10000, opt@magf, 1)
+      stratmask = conform(Fp,strat1,0)
+      Fp        = Fp*stratmask
+      Fphi      = Fphi*stratmask
+      Fp@tag    = "magnification factor at <= 100 hPa: magf="+opt@magf
+      Fphi@tag  = "magnification factor at <= 100 hPa: magf="+opt@magf
+  end if
+
+  return ([/ Fphi, Fp, EPdiv, dudt /] )  ; standard 'scaled' values
+end
+;---------------------------------------------------------------------------------
+; generic function interface ... promote 3D to 4D ... if applicable
+;---------------------------------------------------------------------------------
+undef("epflux")
+function epflux(U:numeric, V:numeric, T:numeric, plvl[*]:numeric, lat[*]:numeric, opt[1]:logical)
+local dimUVT, rankUVT, klvl, nlat, mlon, ntim, epflx, U4, V4, T4
+begin
+  dimUVT  = dimsizes(U)
+  rankUVT = dimsizes(dimUVT)
+
+  if (rankUVT.lt.3 .or.rankUVT.gt.4) then
+      print("epflux: U/V/T rank must be 3 or 4; rank="+rankUVT)
+      print("epflux: dimsizes(U)="+dimUVT)
+      exit
+  end if
+
+  if (rankUVT.eq.4) then
+      epflx  = epflux4(U,V,T,plvl,lat,opt)
+
+  else                    ; create a temporary 4D array; the 'time' timension is bogus
+      klvl = dimUVT(0)
+      nlat = dimUVT(1)
+      mlon = dimUVT(2)
+      ntim = 1            ; place holder
+
+      U4   = new( (/ntim,klvl,nlat,mlon/), typeof(U), getFillValue(U)) 
+      V4   = new( (/ntim,klvl,nlat,mlon/), typeof(V), getFillValue(V)) 
+      T4   = new( (/ntim,klvl,nlat,mlon/), typeof(T), getFillValue(T)) 
+      U4(0,:,:,:) = U 
+      V4(0,:,:,:) = V 
+      T4(0,:,:,:) = T 
+      epflx = epflux4(U4,V4,T4,plvl,lat,opt)
+  end if
+
+  return(epflx)
 end
