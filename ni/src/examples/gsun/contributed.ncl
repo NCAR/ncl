@@ -14936,7 +14936,8 @@ begin
     if (method.eq.0) then                  
         k = generate_unique_indices( N )  
     else
-        k = round(random_uniform(-0.499999,N-0.500001,N), 3)
+       ;k = round(random_uniform(-0.499999,N-0.500001,N), 3)       ; original
+        k = round(random_uniform(-0.499999d0, N-0.500001d0, N), 3) 
     end if
 
     return(k)
