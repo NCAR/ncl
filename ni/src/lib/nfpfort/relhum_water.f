@@ -25,7 +25,8 @@ c    rh  - is the relative humidity (given as a percent)
 c    rh =  100*  q / ( (ep*es)/(p-es) )
 
 c input-
-c    p      - pressure (hPa or mb)
+c    p      - pressure (Pa) (was hPa/mb, so we have to do
+c                            conversion in this routine)
 c    tk     - temperature (k)
 c    qw     - mixing ratio (kg/kg)
 
@@ -38,7 +39,7 @@ c local
      +     17.269D0,35.86D0/
 
       EST = ES0*EXP((A* (TK-T0))/ (TK-B))
-      QST = (EP*EST)/ (P-ONEMEP*EST)
+      QST = (EP*EST)/ ((P*0.01D0)-ONEMEP*EST)
 c                                    mix ratio
       RH =  100* (QW / QST)
 
