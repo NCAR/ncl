@@ -514,6 +514,8 @@ extern NhlErrorTypes    v5d_missing_W(void);
 
 extern NhlErrorTypes angmom_atm_W(void);
 extern NhlErrorTypes relhum_W(void);
+extern NhlErrorTypes relhum_water_W(void);
+extern NhlErrorTypes relhum_ice_W(void);
 extern NhlErrorTypes runave_W(void);
 extern NhlErrorTypes runave_n_W(void);
 extern NhlErrorTypes wgt_runave_W(void);
@@ -7195,6 +7197,30 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     NclRegisterFunc(relhum_W,args,"relhum",nargs);
+
+/*
+ * Register "relhum_water".
+ */
+    nargs = 0;
+    args = NewArgs(3);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    
+    NclRegisterFunc(relhum_water_W,args,"relhum_water",nargs);
+
+/*
+ * Register "relhum_ice".
+ */
+    nargs = 0;
+    args = NewArgs(3);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    
+    NclRegisterFunc(relhum_ice_W,args,"relhum_ice",nargs);
 
 /*
  * Register "runave".

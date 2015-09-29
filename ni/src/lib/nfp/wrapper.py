@@ -798,7 +798,7 @@ for i in range(len(args)):
 
   w1file.write("  " + args[i].ctype + " *" + args[i].name + ";\n")
   if args[i].ntype == "numeric":
-    w1file.write("  double *" + args[i].tmp_name + ";\n")
+    w1file.write("  double *" + args[i].tmp_name + " = NULL;\n")
 
 #---------------------------------------------------------------------
 #
@@ -861,7 +861,7 @@ if isfunc:
 
   w1file.write("  " + ret_arg.ctype + " *" + ret_arg.name + ";\n")
   if ret_arg.ntype == "numeric":
-    w1file.write("  double *" + ret_arg.tmp_name + ";\n")
+    w1file.write("  double *" + ret_arg.tmp_name + " = NULL;\n")
 #---------------------------------------------------------------------
 #
 # Write out dimension information.
