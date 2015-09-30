@@ -25,8 +25,8 @@ c    rh  - is the relative humidity (given as a percent)
 c    rh =  100*  q / ( (ep*es)/(p-es) )
 
 c input-
-c    p      - pressure (Pa) (was hPa/mb, so we have to do
-c                            conversion in this routine)
+c    p      - pressure (Pa) (this function was originally written for 
+c             hPa/mb, so we have to do conversion below)
 c    tk     - temperature (k)
 c    qw     - mixing ratio (kg/kg)
 
