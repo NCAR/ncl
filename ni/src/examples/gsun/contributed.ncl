@@ -1748,7 +1748,7 @@ begin
    xF = new (dimx, float, doubletofloat(xD@_FillValue ) )
  else
    if (isatt(xD,"missing_value")) then
-      xF = new (dimx(xD), float, doubletofloat(xD@missing_value) )
+      xF = new (dimx, float, doubletofloat(xD@missing_value) )
    end if
  end if
 
