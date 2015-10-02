@@ -6632,7 +6632,7 @@ begin
 ; draw the markers at non-missing locations.
 ;
     if(.not.ismissing(msgclr).or..not.ismissing(nonmsgclr)) then
-      if(.not.is_nonmsgclr_trans) then
+      if(.not.ismissing(is_nonmsgclr_trans)) then
         if(isatt(pres,"gsMarkerColor")) then
           delete(pres@gsMarkerColor)
         end if
@@ -6649,20 +6649,20 @@ begin
           draw_non_msg       = True
         end if
       end if
-      if(draw_non_msg) then
-        ii = ind(.not.ismissing(ndtooned(data)))
-        if(.not.all(ismissing(ii))) then
-          if(attach_coords) then
-            tmpstr = unique_string("markers_nonmsg")
-            plot@$tmpstr$ = gsn_add_polymarker(wks,plot,xcoord_1d(ii),\
-                                               ycoord_1d(ii),pres)
-          else
-            gsn_polymarker(wks,plot,xcoord_1d(ii),ycoord_1d(ii),pres)
-         end if
+    end if
+    if(draw_non_msg) then
+      ii = ind(.not.ismissing(ndtooned(data)))
+      if(.not.all(ismissing(ii))) then
+        if(attach_coords) then
+          tmpstr = unique_string("markers_nonmsg")
+          plot@$tmpstr$ = gsn_add_polymarker(wks,plot,xcoord_1d(ii),\
+                                             ycoord_1d(ii),pres)
+        else
+          gsn_polymarker(wks,plot,xcoord_1d(ii),ycoord_1d(ii),pres)
        end if
-        delete(ii)
-      end if
      end if
+      delete(ii)
+    end if
 
     if(ismissing(msgclr).and.ismissing(nonmsgclr).and. \
        .not.is_defclr_trans) then

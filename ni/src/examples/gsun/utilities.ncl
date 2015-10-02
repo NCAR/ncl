@@ -771,3 +771,145 @@ function count_unique_values(vals)
 begin
   return(unique_values_opt(vals,1))
 end
+
+;---------------------------------------------------------------------
+; The UNION of two sets is the set of elements which are in either set.
+; For example: let A = (1,2,3) and let B = (3,4,5). 
+; Now the UNION of A and B, written A union B = (1,2,3,4,5). 
+; There is no need to list the 3 twice.
+;---------------------------------------------------------------------
+undef("get_unique_union")
+function get_unique_union( a[*], b[*] )
+local AB, ab
+begin
+   if (typeof(a).ne.typeof(b)) then
+       print("get_unique_union: arguments a and b must be the same type")
+       print("                  typeof(a)="+typeof(a))
+       print("                  typeof(b)="+typeof(b))
+       exit
+   end if
+
+   AB = array_append_record(a,b, 0)
+   ab = get_unique_values(AB)    ; 'get_unique_values' sorts the values
+   ab@tag = "NCL: get_unique_union has created the result"
+   return(ab)
+end
+
+;---------------------------------------------------------------------
+; The INTERSECTION of two sets is the set of elements which are in
+; both sets.
+; For example: let A = (1,2,3) and B = (3,4,5). 
+; The INTERSECTION of A and B, written A intersection B = (3).
+;---------------------------------------------------------------------
+undef("get_unique_intersection")   
+function get_unique_intersection( a[*], b[*] )
+local atype, btype, au, bu, nau, nbu, abi, k, n, m
+begin
+   atype = typeof(a)
+   btype = typeof(b)
+   if (atype.ne.btype) then
+       print("get_unique_intersection: arguments a and b must be the same type")
+       print("                         typeof(a)="+atype)
+       print("                         typeof(b)="+btype)
+       exit
+   end if
+                                ; 'get_unique_values' sorts the elements
+   au  = get_unique_values(a)   ; avoid duplicate 'a' entries
+   bu  = get_unique_values(b)   ; avoid duplicate 'b' entries
+
+   nau = dimsizes(au)
+   nbu = dimsizes(bu)
+                                ; reserve space
+   abi = new (min((/nau,nbu/)), typeof(a), default_fillvalue(atype))
+   k   = -1
+
+   na  = 0                                 ; MH suggested loop
+   nb  = 0
+   do while(na.lt.nau.and.nb.lt.nbu)
+     if (bu(nb).gt.au(na)) then
+         na = na + 1
+     else 
+         if (au(na).gt.bu(nb)) then
+             nb = nb + 1
+         else                              ; they are equal         
+             k = k+1
+             abi(k) = au(na)
+             nb = nb + 1
+             na = na + 1
+         end if
+     end if
+   end do
+
+   if (k.eq.-1) then           
+       abi    := new (1, typeof(a), default_fillvalue(atype))
+       abi@tag = "get_unique_intersection; NULL set; no intersection pairs"
+       return(abi)
+   end if
+
+   abi@tag = "NCL: get_unique_intersection has created the result"
+   return(abi(0:k))                   
+end
+;
+;---------------------------------------------------------------------
+; The DIFFERENCE of two sets is the set of elements which are unique
+; to each set.
+; For example: let A = (1,2,3) and B = (3,4,5). 
+; The DIFFERENCE of A and B, written A difference B = (1,2,4,5).
+;---------------------------------------------------------------------
+undef("get_unique_difference")   
+function get_unique_difference( a[*], b[*] )
+local atype, btype, abi, nabi, au, bu, abd, AB, nAB, n
+begin
+   atype = typeof(a)
+   btype = typeof(b)
+   if (atype.ne.btype) then
+       print("get_unique_difference: arguments a and b must be the same type")
+       print("                       typeof(a)="+atype)
+       print("                       typeof(b)="+btype)
+       exit
+   end if
+
+   abi  = get_unique_intersection(a, b)   ; intersect (common) values
+   if (ismissing(abi(0))) then            ; NO intersect
+                                          ; 'get_unique_values' sorts the elements
+       au  = get_unique_values(a)         ; unique 'a' [au]
+       bu  = get_unique_values(b)         ; unique 'b' [bu]
+       abd = array_append_record(au,bu, 0); all unique valuesl [d] difference
+       delete( [/au, bu /] )
+       if (atype.eq."string") then        ; must sort again cuz 'ab' may not be in order
+           sqsort(abd)
+       else
+           qsort(abd)
+       end if
+       abd@tag = "NCL: get_unique_difference; arrays are DISJOINT; no intersection"
+       return(abd)
+   end if
+   nabi = dimsizes(abi)
+
+   au   = get_unique_values(a)   ; 'a' [u]nique entries
+   bu   = get_unique_values(b)   ; 'b' [u]nique entries
+   nau  = dimsizes(au)
+   nbu  = dimsizes(bu)
+                                 ; reserve space
+   abd  = new ( nau+nbu,  typeof(a), default_fillvalue(atype))
+   ABu  = array_append_record(au,bu,0)    ; unique AB
+   delete( [/au, bu /] )
+   nABu = dimsizes(ABu)
+
+   abd  = new ( nABu, typeof(a), default_fillvalue(atype))
+   k    = -1
+   do n=0,nABu-1
+      if (.not.any(abi.eq.ABu(n))) then
+          k = k+1
+          abd(k) = ABu(n)
+      end if
+   end do
+
+   if (atype.eq."string") then        ; must sort again cuz 'ab' may not be in order
+       sqsort(abd(0:k))
+   else
+       qsort(abd(0:k))
+   end if
+   abd@tag = "NCL: get_unique_difference has created the result"
+   return(abd(0:k))
+end
