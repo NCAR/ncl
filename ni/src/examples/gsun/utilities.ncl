@@ -865,3 +865,27 @@ begin
    abi@tag = "NCL: get_unique_intersection has created the result"
    return(abi(0:k))                   
 end
+;=============
+undef("cla_sqdq")
+function cla_sqdq(sleft[1]:string, sright[1]:string)
+; Utility used for creating Command Line Assignments (CLAs) within a script
+; Return a string with a single quote (sq) at the
+; beginning and end which enclose a pair of double quote (dq)
+;
+; [1]  s  = cla_sqdq("PATH","./FIM.G5test.nc")  => 'PATH="./FIM.G5test.nc"'
+;
+; [2]  left = "PATH" 
+;      rght = "./FIM.G5test.nc"
+;      sa   = cla_sqdq(left,rght)      => 'PATH="./FIM.G5test.nc"'
+;
+;      var  = "slp"
+;      sb   = cla_sqdq("vname",var)    => 'vname="slp"'
+;
+;      NCL  = "ncl "+cla_sqdq(left,rght)+" "+cla_sqdq("vname",var)+" foo.ncl"
+;      NCL  = "ncl "+sa+" "+sb+" foo.ncl"
+;           => "ncl 'PATH="./FIM.G5test.nc"' 'vname="slp"'./FIM_CL.ncl
+local dq
+begin
+   dq    = str_get_dq()      ; double quote character
+   return("'"+ sleft +"="+ dq+sright+dq +"'")
+end
