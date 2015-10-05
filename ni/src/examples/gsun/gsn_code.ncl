@@ -940,6 +940,21 @@ begin
 end
 
 ;***********************************************************************;
+; This function returns True if the given color is a transparent
+; color, and False otherwise
+;***********************************************************************;
+undef("is_color_transparent")
+function is_color_transparent(the_color[*])
+begin
+  is_trans   = (isscalar(the_color).and.\
+               (isstring(the_color).and.str_lower(the_color).eq."transparent").or.\
+               (isint(the_color).and.the_color.eq.-1)).or.\
+               (dimsizes(the_color).eq.4.and.the_color(3).eq.0.0)
+
+  return(is_trans)
+end
+
+;***********************************************************************;
 ; This function returns the RGBA triplets associated with a 
 ; given list of named colors.  The "A" value is always returned 
 ; as the value of 1.0. This function basically calls namedcolor2rgb and
@@ -6399,27 +6414,19 @@ local type_xcoord, type_ycoord, pres, res2, pres, dims, rank, \
   is_nonmsgclr_trans, is_defclr_trans, tmpstr, i, imsg
 begin
   res2 = res                     ; Make copy so we can modify it
-  imsg = new(1,integer)
 
 ;---Check for special resources
   maxbb         = get_bb_res(res2)
   defclr        = get_res_value(res2,"gsMarkerColor",1)
   defmrk        = get_res_value(res2,"gsMarkerIndex",16)
-  msgclr        = get_res_value(res2,"gsnCoordsMissingColor",imsg)
-  nonmsgclr     = get_res_value(res2,"gsnCoordsNonMissingColor",imsg)
+  msgclr        = get_res_value(res2,"gsnCoordsMissingColor",defclr)
+  msgidx        = get_res_value(res2,"gsnCoordsMissingIndex",defmrk)
+  nonmsgclr     = get_res_value(res2,"gsnCoordsNonMissingColor",defclr)
+  nonmsgidx     = get_res_value(res2,"gsnCoordsNonMissingIndex",defmrk)
   attach_coords = get_res_value(res2,"gsnCoordsAttach",False)
   draw_lines    = get_res_value(res2,"gsnCoordsAsLines",False)
-
-;---Check if color is transparent.
-  is_defclr_trans    = ((typeof(defclr).eq."string".and. \
-                         str_lower(defclr).eq."transparent").or. \
-                        (typeof(defclr).eq."integer".and.defclr.eq.-1))
-  is_msgclr_trans    = ((typeof(msgclr).eq."string".and. \
-                         str_lower(msgclr).eq."transparent").or. \
-                        (typeof(msgclr).eq."integer".and.msgclr.eq.-1))
-  is_nonmsgclr_trans = ((typeof(nonmsgclr).eq."string".and. \
-                         str_lower(nonmsgclr).eq."transparent").or. \
-                        (typeof(nonmsgclr).eq."integer".and.nonmsgclr.eq.-1))
+  draw_msg      = .not.is_color_transparent(msgclr)        ; this is for markers only
+  draw_nonmsg   = .not.is_color_transparent(nonmsgclr)     ; ditto
 
   if(attach_coords) then
     calldraw  = get_res_value(res2,"gsnDraw", False)
@@ -6431,6 +6438,7 @@ begin
 ;
 ; Figure out what kind of X and Y coordinates we have.
 ; Valid kinds include:
+;    gsnCoordsLon or gsnCoordsLat attributes attached to res ("res_coord").
 ;    gsnCoordsX or gsnCoordsY attributes attached to res ("res_coord").
 ;    1D coord array attached to data ("data_coord").
 ;    2D lat2d/lon2d attributes attached to data ("data_att")
@@ -6577,17 +6585,7 @@ begin
     draw_and_frame(wks,plot,calldraw,False,False,maxbb)
   end if
 
-;----------------------------------------------------------------------
-; There are three ways the markers can get drawn:
-;    - the markers in missing data locations
-;    - the markers in non-missing data locations
-;    - the markers at all locations.
-;
-; If a color is specified as -1 or "transparent", then don't
-; waste time drawing the markers.
-;
-; If drawing lines, then you get all of them.
-;----------------------------------------------------------------------
+;---Draw coordinates using lines.
   if(draw_lines) then
     if(attach_coords) then
       do i=0,ny-1
@@ -6611,10 +6609,25 @@ begin
       end do
     end if
   else
-    if(.not.ismissing(msgclr).and..not.is_msgclr_trans) then
-      pres@gsMarkerColor = msgclr
-      pres@gsMarkerIndex = defmrk
-      ii = ind(ismissing(ndtooned(data)))
+;---Draw coordinates using markers.
+    if(draw_nonmsg) then
+      pres@gsMarkerColor := nonmsgclr
+      pres@gsMarkerIndex := nonmsgidx
+      ii = ind(.not.ismissing(ndtooned(data)))
+      if(.not.all(ismissing(ii))) then
+        if(attach_coords) then
+          tmpstr = unique_string("markers_nonmsg")
+          plot@$tmpstr$ = gsn_add_polymarker(wks,plot,xcoord_1d(ii),\
+                                             ycoord_1d(ii),pres)
+        else
+          gsn_polymarker(wks,plot,xcoord_1d(ii),ycoord_1d(ii),pres)
+        end if
+      end if
+    end if ; draw_nonmsg
+    if(draw_msg) then
+      pres@gsMarkerColor := msgclr
+      pres@gsMarkerIndex := msgidx
+      ii := ind(ismissing(ndtooned(data)))
       if(.not.all(ismissing(ii))) then
         if(attach_coords) then
           tmpstr = unique_string("markers_msg")
@@ -6624,60 +6637,9 @@ begin
           gsn_polymarker(wks,plot,xcoord_1d(ii),ycoord_1d(ii),pres)
         end if
       end if
-      delete(ii)
-    end if
-    draw_non_msg = False
-;
-; Somewhat complicated logic to determine whether we want to
-; draw the markers at non-missing locations.
-;
-    if(.not.ismissing(msgclr).or..not.ismissing(nonmsgclr)) then
-      if(.not.is_nonmsgclr_trans) then
-        if(isatt(pres,"gsMarkerColor")) then
-          delete(pres@gsMarkerColor)
-        end if
-        pres@gsMarkerColor = nonmsgclr
-        pres@gsMarkerIndex = defmrk
-        draw_non_msg       = True
-      else
-        if(ismissing(nonmsgclr).and..not.is_defclr_trans) then
-          if(isatt(pres,"gsMarkerColor")) then
-            delete(pres@gsMarkerColor)
-          end if
-          pres@gsMarkerColor = defclr
-          pres@gsMarkerIndex = defmrk
-          draw_non_msg       = True
-        end if
-      end if
-      if(draw_non_msg) then
-        ii = ind(.not.ismissing(ndtooned(data)))
-        if(.not.all(ismissing(ii))) then
-          if(attach_coords) then
-            tmpstr = unique_string("markers_nonmsg")
-            plot@$tmpstr$ = gsn_add_polymarker(wks,plot,xcoord_1d(ii),\
-                                               ycoord_1d(ii),pres)
-          else
-            gsn_polymarker(wks,plot,xcoord_1d(ii),ycoord_1d(ii),pres)
-         end if
-       end if
-        delete(ii)
-      end if
-     end if
+    end if ; draw_msg
+  end if   ; draw_lines
 
-    if(ismissing(msgclr).and.ismissing(nonmsgclr).and. \
-       .not.is_defclr_trans) then
-      pres@gsMarkerColor = defclr
-      pres@gsMarkerIndex = defmrk
-      if(attach_coords) then
-        tmpstr = unique_string("markers_all")
-        plot@$tmpstr$ = gsn_add_polymarker(wks,plot,xcoord_1d,\
-                                           ycoord_1d,pres)
-      else
-        gsn_polymarker(wks,plot,xcoord_1d,ycoord_1d,pres)
-      end if
-    end if
-
-  end if  ; draw_lines
   if(attach_coords) then
     draw_and_frame(wks,plot,calldraw,callframe,False,maxbb)
   else
