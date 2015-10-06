@@ -407,28 +407,26 @@ begin
 end
 
 ;=============
-undef("cla_sqdq")
-function cla_sqdq(sleft[1]:string, sright[1]:string)
-; Utility used for creating Command Line Assignments (CLAs) within a script
+undef("cla_sq")
+function cla_sq(sleft[1]:string, sright[1]:string)
+; Simple utility used for creating Command Line Assignments (CLAs) within a script
+; 
 ; Return a string with a single quote (sq) at the
-; beginning and end which enclose a pair of double quote (dq)
+; beginning and end which enclose *nix sensitive characters.
 ;
-; [1]  s  = cla_sqdq("PATH","./FIM.G5test.nc")  => 'PATH="./FIM.G5test.nc"'
+; [1]  s  = cla_sq("PATH","./FIM.G5test.nc")  => 'PATH="./FIM.G5test.nc"'
 ;
-; [2]  left = "PATH" 
-;      rght = "./FIM.G5test.nc"
-;      sa   = cla_sqdq(left,rght)      => 'PATH="./FIM.G5test.nc"'
-;
-;      var  = "slp"
-;      sb   = cla_sqdq("vname",var)    => 'vname="slp"'
-;
-;      NCL  = "ncl "+cla_sqdq(left,rght)+" "+cla_sqdq("vname",var)+" foo.ncl"
-;      NCL  = "ncl "+sa+" "+sb+" foo.ncl"
-;           => "ncl 'PATH="./FIM.G5test.nc"' 'vname="slp"'./FIM_CL.ncl
-local dq
+; [2]
+; asgn1 = cla_sq(  "f", "test.nc")             ; asgn1= 'f="test.nc"'
+; asgn2 = cla_sq(  "p", "(/850,500,200/)")     ; asgn2= 'p=(/850,500,200/)'
+; asgn3 = cla_sq("var", "(/"T","Q"/)"          ; asgn3= 'var=(/"T","Q"/)'
+; cmd   = "ncl year=2015 "+asgn1+" "+asgn2+" "+asgn3+" foo.ncl"
+; system(cmd)
+;---
+local sq
 begin
-   dq    = str_get_dq()      ; double quote character
-   return("'"+ sleft +"="+ dq+sright+dq +"'")
+   sq    = str_get_sq()      ; single quote character
+   return(sq+ sleft +"="+sright +sq)
 end
 
 ;--------------------------------------------------------------------------------
