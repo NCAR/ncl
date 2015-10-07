@@ -12319,6 +12319,88 @@ begin
 end
 
 ; ------------
+undef ("relhum_water_ice")
+function relhum_water_ice(tk:numeric,qw:numeric,p:numeric)
+; ---
+; computes rh (relative humidity) from p, t and qw (mixing ratio)
+; ---
+;  Calculate rel hum with respect to water (T>0C) or ice (T<=0)
+;  Same constants as mixhum_ptrh  reversible calculation
+; ---
+; "Improved Magnus' Form Approx. of Saturation Vapor pressure"
+;  Oleg A. Alduchov and Robert E. Eskridge
+;  http://www.osti.gov/scitech/servlets/purl/548871/
+;  One of Three best approx for +50 to -80 C max relative errors of (0.337/0.823) ?
+; ---
+; NCL version of f77 subroutines donated by: Alan Brammer, U. ALbany
+; ---
+; definition of mixing ratio
+;    es  - is the saturation mixing ratio
+;    ep  - is the ratio of the molecular weights of water vapor to dry air
+;    p   - is the atmospheric pressure
+;    rh  - is the relative humidity (given as a percent)
+
+;    rh =  100*  q / ( (ep*es)/(p-es) )
+
+; input-
+;    P      - pressure (Pa)  ... this will be converted in the code to hPa (mb)
+;             p      - pressure (hPa or mb)
+;    tk     - temperature (k)
+;    qw     - mixing ratio (kg/kg)
+
+; output-
+;    rh     - relative humidity as %
+
+local t0,ep,onemep,es0w,aw,bw,es0i,ai,bi,est,qst,pa2mb
+begin
+; local: constants for water and ice
+
+      t0     = 273.15d
+      ep     = 0.622d
+      onemep = 1-ep
+      pa2mb  = 0.01d
+          
+; local: constants for water (W)
+
+      es0w   = 6.11d
+      aw     = 17.269d
+      bw     = 35.86d
+      
+; local: constants for ice   (I)
+
+      es0i   = 6.1128d
+      ai     = 22.571d
+      bi     = 273.71d
+
+      est    = where(tk.gt.t0, es0w*exp((aw*(tk-t0)) / (tk-bw)) \
+                             , es0i*exp((ai*(tk-t0)) / ((tk-t0)+bi)) )
+
+      qst = (ep*est)/ ((p*pa2mb)-onemep*est)
+
+      if (all(qst.gt.0)) then
+          rh  =  100* (qw / qst)
+      else                                           ; ? numerical issues ?
+          if (isatt(tk,"_FillValue")) then
+              qst@_FillValue = tk@_FillValue 
+          else
+              qst@_FillValue = default_fillvalue(typeof(qst))
+          end if
+          rh  =  100* (qw / where(qst.le.0, qst@_FillValue, qst) )
+      end if
+
+      if (typeof(tk).eq."float" .or. typeof(qw).eq."float" \
+                                .or. typeof(p) .eq."float") then
+          rh := tofloat(rh)
+      end if
+
+      rh@long_name = "relative humidity"
+      rh@units     = "%"
+      rh@tag       = "function: relhum_water_ice"
+      copy_VarCoords(tk, rh)
+
+      return (rh)
+end
+; ------------
 
 undef("crossp3")
 function crossp3(a[*][3]:numeric,b[*][3]:numeric)
@@ -16443,4 +16525,124 @@ begin
   end if
 
   return(epflx)
+end
+;=============
+undef("heat_index_nws_eqns")
+function heat_index_nws_eqns(t:numeric, rh:numeric, eqnType[1]:integer, opt[1]:logical)
+; 'heat_index_nws' driver; input t is degF
+local t2, rh2, trh
+begin
+                                                           ; in practice
+  HI = (0.5*(t+61.0+((t-68.0)*1.2)+(rh*0.094)) + t)*0.5    ; avg (Steadman and t)
+
+  if (all(t.lt.80)) then
+      eqnType = 0
+  else
+     ;HI = -42.379 + 2.04901523*t + 10.14333127*rh - .22475541*t*rh \
+     ;     -0.00683783*t*t -0.05481717*rh*rh +0.00122874*t*t*rh     \
+     ;     +0.00085282*t*rh*rh -0.00000199*t*t*rh*rh
+      t2  = t^2
+      rh2 = rh^2
+      trh = t*rh
+    
+      HI = where(HI.ge.80  \
+                ,-42.379 + 2.04901523*t + 10.14333127*rh - .22475541*trh \
+                 -0.00683783*t2 -0.05481717*rh2 +0.00122874*t*trh        \
+                 +0.00085282*t*rh2 -0.00000199*t2*rh2                    \
+                ,HI)                 
+    
+      HI = where(rh.lt.13 .and. (t.gt.80 .and. t.lt.112) \
+                ,HI-((13-rh)/4)*sqrt((17-abs(t-95.))/17), HI)
+    
+      HI = where(rh.gt.85 .and. (t.gt.80 .and. t.lt.87)  \
+                ,HI+((rh-85)/10)*((87-t)/5), HI)
+
+      eqnType = 1
+  end if
+
+  return(HI)
+end
+; ------
+undef("heat_index_nws")
+function heat_index_nws(t:numeric, rh:numeric, iounit[2]:integer, opt[1]:logical)
+;
+; http://www.wpc.ncep.noaa.gov/html/heatindex_equation.shtml
+; https://en.wikipedia.org/wiki/Heat_index
+; Reference:
+; R. G. Steadman, 1979: 
+;    The Assessment of Sultriness. Part I: A Temperature-Humidity Index Based on Human Physiology and Clothing Science.
+;    J. Appl. Meteor., 18, 861–873.
+;    doi: http://dx.doi.org/10.1175/1520-0450(1979)018<0861:TAOSPI>2.0.CO;2 
+;
+; Lans P. Rothfusz (1990): NWS Technical Attachment (SR 90-23)
+;
+; The ‘Heat Index’ is a measure of how hot weather "feels" to the body.
+; The combination of temperature an humidity produce an "apparent temperature" 
+; or the temperature the body "feels". The returned values are for shady locations only. 
+; Exposure to full sunshine can increase heat index values by up to 15°F. 
+; Also, strong winds, particularly with very hot, dry air, can be extremely 
+; hazardous as the wind adds heat to the body
+;
+; The computation of the heat index is a refinement of a result obtained by multiple 
+; regression analysis carried out by Lans P. Rothfusz and described in a 
+; 1990 National Weather Service (NWS) Technical Attachment (SR 90-23).  
+;
+; In practice, the Steadman formula is computed first and the result averaged 
+; with the temperature. If this heat index value is 80 degrees F or higher, 
+; the full regression equation along with any adjustment as described above is applied. 
+;
+local HI, T, eqnType, units
+begin
+
+  if (iounit(0).lt.0 .or. iounit(0).gt.2) then
+      print("heat_index_nws: invalid iounit(0): invalid(0)="+iounit(0))
+      exit
+  end if
+  if (iounit(1).lt.0 .or. iounit(1).gt.2) then
+      print("heat_index_nws: invalid iounit(1): invalid(1)="+iounit(1))
+      exit
+  end if
+  if (all(rh.lt.1)) then
+      print("heat_index_nws: rh must be % not fractional; All rh are < 1")
+      exit
+  end if
+
+  eqnType = -1
+
+  if (iounit(0).eq.2) then                          ; t must be degF
+      HI = heat_index_nws_eqns(t, rh, eqnType, opt) ; use input directly
+  else
+      if (iounit(0).eq.0) then
+           T = 1.8*t + 32                           ; degC => degF
+      else
+print("iounit="+iounit(0))
+           T = 1.8*t - 459.67                       ; degK => degF
+      end if
+      HI = heat_index_nws_eqns(T, rh, eqnType, opt) ; use local T
+  end if
+
+  if (iounit(1).eq.2) then                 
+      units = "degF"
+  else
+      if (iounit(1).eq.0) then
+          HI = (HI-32)*0.55555
+          units = "degC"
+      else
+          HI = (HI+459.67)*0.55555
+          units = "degK"
+      end if
+  end if
+
+  HI@long_name = "heat index: NWS"
+  HI@units     = units
+  HI@www       = "http://www.wpc.ncep.noaa.gov/html/heatindex_equation.shtml"
+  HI@info      = "appropriate for shady locations with no wind"
+  if (eqnType.eq.0) then
+      HI@tag   = "NCL: heat_index_nws; (Steadman+t)*0.5"
+  else
+      HI@tag   = "NCL: heat_index_nws; (Steadman+t)*0.5 and Rothfusz"            
+  end if
+  copy_VarCoords(t, HI)
+
+  return(HI)
 end
