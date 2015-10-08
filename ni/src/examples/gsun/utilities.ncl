@@ -301,16 +301,97 @@ begin
   return(unique_values_opt(vals,0))
 end
 
-
 ;----------------------------------------------------------------------
 ; This function takes an array of anything and returns the 
-; # of unique values. If the array 
+; # of unique values.
 ;----------------------------------------------------------------------
 undef("count_unique_values")
 function count_unique_values(vals)
 begin
   return(unique_values_opt(vals,1))
 end
+
+;----------------------------------------------------------------------
+; This function takes an array of anything and returns the 
+; # of unique values for the given dimension. THIS IS CURRENTLY
+; UNADVERTISED BECAUSE I HAVEN'T DECIDED ON A NAME.
+;----------------------------------------------------------------------
+undef("dim_count_unique_values_n")
+function dim_count_unique_values_n(vals,n[1])
+local dims, rank, imsg, irgt, ilft, vals_1d, return_count_1d, \
+      return_dims, size_rgt_dims, size_n_dim, size_lft_dims
+begin
+  dims = dimsizes(vals)
+  rank = dimsizes(dims)
+  imsg = new(1,integer)
+
+  vals_1d = ndtooned(vals)
+
+  if(n.lt.0.or.n.ge.rank) then
+    print("dim_count_unique_values_n: Error: invalid dimension specified, " +n)
+    return(imsg)
+  end if
+  if(rank.eq.1) then
+    return(unique_values_opt(vals,1))
+  end if
+
+;---Return array will have one fewer dimensions than input array
+  return_dims  = new(rank-1,typeof(dims))
+
+  size_n_dim     = dims(n)     ; Size of dimension that is being counted
+  size_rgt_dims  = 1           ; Dimensions to right of "n" dimension
+  size_lft_dims  = 1           ; Dimensions to left of "n" dimension
+  do ilft=0,n-1
+    return_dims(ilft) = dims(ilft)
+    size_lft_dims     = size_lft_dims * dims(ilft)
+  end do
+  do irgt=n+1,rank-1
+    return_dims(irgt-1) = dims(irgt)
+    size_rgt_dims       = size_rgt_dims * dims(irgt)
+  end do
+  size_rgt_n_dims    = size_rgt_dims * size_n_dim
+  size_rgt_n_m1_dims = size_rgt_dims * (size_n_dim-1)
+
+  return_count_1d = new(product(return_dims),long,"No_FillValue")
+
+  icount = 0
+;---Check if "n" is a middle dimension
+  if(rank.ge.3.and.n.gt.0.and.n.lt.(rank-1)) then
+    do ilft=0,size_lft_dims-1
+      lindex = size_rgt_n_dims * ilft
+      do irgt=0,size_rgt_dims-1
+        istrt = lindex+irgt
+        iend  = istrt + size_rgt_dims * (size_n_dim-1)
+        istp  = size_rgt_dims
+        vals_subset = vals_1d(istrt:iend:istp)
+        return_count_1d(icount) = count_unique_values(vals_subset)
+        icount = icount + 1
+      end do
+    end do
+;---Check if "n" is the leftmost dimension
+  else if(n.eq.0) then
+    do irgt=0,size_rgt_dims-1
+      istrt = irgt
+      iend  = istrt + size_rgt_n_m1_dims
+      istp  = size_rgt_dims
+      vals_subset = vals_1d(istrt:iend:istp)
+      return_count_1d(icount) = count_unique_values(vals_subset)
+      icount = icount + 1
+    end do
+;---Check if "n" is the rightmost dimension
+  else   ; n.eq.(rank-1)
+    do ilft=0,size_lft_dims-1
+      istrt = ilft*size_n_dim
+      iend  = istrt+size_n_dim-1
+      vals_subset = vals_1d(istrt:iend)
+      return_count_1d(icount) = count_unique_values(vals_subset)
+      icount = icount + 1
+    end do
+  end if
+  end if
+  return(reshape(return_count_1d,return_dims))
+end
+
 ;---------------------------------------------------------------------
 ; The UNION of two sets is the set of elements which are in either set.
 ; For example: let A = (1,2,3) and let B = (3,4,5). 
