@@ -276,8 +276,11 @@ file_grp_var_compound_alnum   [_a-zA-Z0-9/.]
 white	[\t ]
 digit	[0-9]
 inttype [bBChHiIlLqQ]
+
 %x incl
+%x IN_COMMENT
 %%
+
 	if(inc_line) {
 		IncLine();
 		if(cmd_line) {
@@ -308,6 +311,7 @@ inttype [bBChHiIlLqQ]
         }
 	BEGIN 0;
 }
+
 <incl>["][^"\n]*["] {
 	char *tmp;
 	FILE *tmpfile = NULL;
@@ -367,6 +371,18 @@ inttype [bBChHiIlLqQ]
 
     BEGIN 0;
 }
+
+<INITIAL>{
+     "/;"      BEGIN(IN_COMMENT); 
+}
+
+<IN_COMMENT>{
+     ";/"      BEGIN(INITIAL);
+     [^;\n]+   /* eat comment in chunks */
+     ";"       /* eat the lone semicolon */
+     \n        { IncLine(); if(cmd_line) _NclCallPromptFunc(cur_line_number); }
+}
+
 <<EOF>> {
 	inc_line = 1;
 	yyterminate();
@@ -498,6 +514,7 @@ inttype [bBChHiIlLqQ]
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	
 }
+
 {digit}+\.|{digit}*\.{digit}+ {
 		sscanf(yytext,"%lf",&(yylval.real));
 		printtoken(REAL,yytext);
@@ -918,4 +935,3 @@ inttype [bBChHiIlLqQ]
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return REASSIGN;
 }
-
