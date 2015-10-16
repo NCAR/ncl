@@ -16379,7 +16379,7 @@ begin
       exit
   end if
 
-       ; Default coef are for 80F and 40-100% humidity 
+       ; Default coef are for .ge.80F and 40-100% humidity 
   coef  = (/-42.379, 2.04901523, 10.14333127, -0.22475541   \
            ,-0.00683783, -0.05481717, 0.00122874, 0.00085282, -0.00000199 /)
   crit  = (/ 80, 40, 100/)    ; (T_low (F),  RH_low,  RH_High/)
