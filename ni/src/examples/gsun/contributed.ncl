@@ -13211,238 +13211,6 @@ begin
        return(num (lengths.ge.nCrit(0) .and. lengths.le.nCrit(1)) )
    end if
 end
-;---------------------------------
-undef ("calculate_monthly_values")
-function calculate_monthly_values (x:numeric, arith:string, nDim[1]:integer, opt[1]:logical)
-
-; calculate monthly values [avg, sum, min, max]
-; x: numeric array of 5D or less [eg: time,lev,lat,lon]
-;    *must* have time coordinate recognized by cd_calendar
-;    if 5D [case,time,lev,lat,lon]
-; arith: "avg" [also, "ave"], "sum","min","max"     others may be added later
-; nDim : scalar integer that specifies the 'time' dimension [generally, 0]
-; opt  : only used to eliminate a warning message 
-;        opt= 0 ... default ... print Warning
-;        opt=-1 ... do not print Warning
-;
-; Sample usage:  x(time,lat,lon) where time are n-hrly or daily values.
-;        xMonthAvg = calculate_monthly_values(x, "avg", 0, False)
-;        xMonthSum = calculate_monthly_values(x, "sum", 0, False)
-;        xMonthMin = calculate_monthly_values(x, "min", 0, False)
-;        xMonthMax = calculate_monthly_values(x, "max", 0, False)
-;
-; It is assumed that there will be multiple elements for the dim_avg_n
-; calculation. 
-;
-local dimx, rankx, dnamx, utc_date, year, month, day, hour, ntim \
-    , yrStrt, yrLast, nyrs, NTIM, dAvg, xReturn, xMonth \
-    , NT, nmo, ii, NMOS, MON1, MON2, TNAME, TIME 
-begin
-    dimx   = dimsizes( x )
-    rankx  = dimsizes( dimx )
-
-    if (rankx.gt.5) then
-        print("calculate_monthly_values: rankx="+rankx +" [only 5D or fewer supported]")
-        exit
-    end if
-
-    dnamx    = getvardims(x)  
-    TNAME    = dnamx(nDim)                         ; typically TNAME="time"
-    TIME     = x&$TNAME$                           ; explicit local 'time' array
-   ;printVarSummary(TIME)
-
-    utc_date = cd_calendar(TIME, 0)                ; (x&$TNAME$, 0) ; typically   x&time
-
-    year     = toint(utc_date(:,0))   
-    month    = toint(utc_date(:,1))  
-    day      = toint(utc_date(:,2))
-    hour     = toint(utc_date(:,3))
-   ;minute   = toint(utc_date(:,4))
-   ;second   = utc_date(:,5)
-
-    if (rankx.le.4) then
-        ntim = dimx(0)
-    else
-        ntim = dimx(1)
-    end if
-
-    yrStrt = year(0)
-    yrLast = year(ntim-1)
-    nyrs   = yrLast-yrStrt+1
-
-    NMOS   = 12
-   ;NTIM   = NMOS*nyrs                                     ; total number of months
-    if (yrStrt.eq.yrLast) then
-        NTIM = month(ntim-1) - month(0) + 1
-    else    
-        MON1 = NMOS-month(0)+1                               ; "Sebi" generalization
-        MON2 = month(ntim-1)
-        NTIM = NMOS*(nyrs-2)+MON1+MON2
-      ;;NTIM = NMOS*(nyrs-2)+(12-(month(0)-1))+month(ntim-1) ; "Sebi" generalization
-    end if
-    dAvg   = dimx
-    if (rankx.le.4) then
-        dAvg(0)= NTIM
-    else
-        dAvg(1)= NTIM
-    end if
-
-    if (typeof(x).eq."float" .or. typeof(x).eq."double") then
-        xReturn= new ( dAvg , typeof(x), getFillValue(x))
-    else
-        xReturn= new ( dAvg , "float", tofloat(getFillValue(x)))
-    end if
-
-    xMonth = new ( NTIM , typeof(TIME), "No_FillValue")
-  ;;printVarSummary(xMonth)
-
-    NT   = -1
-    do yr=yrStrt,yrLast
-
-       nmoStrt = 0                           ; index to start
-       nmoLast = NMOS-1                      ; index to end
-       if (yr.eq.yrStrt) then
-           nmoStrt = month(0)-1              ; possible partial year
-       end if
-       if (yr.eq.yrLast) then
-           nmoLast = month(ntim-1)-1         ; possible partial year
-       end if
-
-      do nmo=nmoStrt,nmoLast
-         NT    = NT+1
-         if (isvar("ii")) then    ; keep this here!!
-             delete(ii)
-         end if
-         ii    = ind(yr.eq.year .and. (nmo+1).eq.month)
-
-         if (.not.ismissing(ii(0))) then
-
-             dimii = dimsizes(ii)     ; should be > 1
-             if (dimii.eq.1 .and. opt.ne.-1 ) then
-                 print("calculate_monthly_values: Warning: there should be more than one element")
-            ;    print("This is unsupported code.                                      ")
-            ;    exit
-             end if
-
-             iStrt = ii(0)            
-             iLast = ii(dimii-1)
-
-             xMonth(NT) =  (/ x&$TNAME$(iStrt) /)    ; (/ x&time(ii(0)) /)
-
-             if (rankx.eq.1) then
-                 if (arith.eq."avg" .or. arith.eq."ave") then
-                     xReturn(NT) = dim_avg_n(x(iStrt:iLast) , nDim)
-                 end if
-                 if (arith.eq."sum") then
-                     xReturn(NT) = dim_sum_n(x(iStrt:iLast) , nDim)
-                 end if
-                 if (arith.eq."min") then
-                     xReturn(NT) = dim_min_n(x(iStrt:iLast) , nDim)
-                 end if
-                 if (arith.eq."max") then
-                     xReturn(NT) = dim_max_n(x(iStrt:iLast) , nDim)
-                 end if
-             end if
-
-             if (rankx.eq.2) then
-                 if (arith.eq."avg" .or. arith.eq."ave") then
-                     xReturn(NT,:) = dim_avg_n(x(iStrt:iLast,:) , nDim)
-                 end if
-                 if (arith.eq."sum") then
-                     xReturn(NT,:) = dim_sum_n(x(iStrt:iLast,:) , nDim)
-                 end if
-                 if (arith.eq."min") then
-                     xReturn(NT,:) = dim_min_n(x(iStrt:iLast,:) , nDim)
-                 end if
-                 if (arith.eq."max") then
-                     xReturn(NT,:) = dim_max_n(x(iStrt:iLast,:) , nDim)
-                 end if
-             end if
-
-             if (rankx.eq.3) then
-                 if (arith.eq."avg" .or. arith.eq."ave") then
-                     xReturn(NT,:,:) = dim_avg_n(x(iStrt:iLast,:,:) , nDim)
-                 end if
-                 if (arith.eq."sum") then
-                     xReturn(NT,:,:) = dim_sum_n(x(iStrt:iLast,:,:) , nDim)
-                 end if
-                 if (arith.eq."min") then
-                     xReturn(NT,:,:) = dim_min_n(x(iStrt:iLast,:,:) , nDim)
-                 end if
-                 if (arith.eq."max") then
-                     xReturn(NT,:,:) = dim_max_n(x(iStrt:iLast,:,:) , nDim)
-                 end if
-             end if
-
-             if (rankx.eq.4) then
-                 if (arith.eq."avg" .or. arith.eq."ave") then
-                     xReturn(NT,:,:,:) = dim_avg_n(x(iStrt:iLast,:,:,:) , nDim)
-                 end if
-                 if (arith.eq."sum") then
-                     xReturn(NT,:,:,:) = dim_sum_n(x(iStrt:iLast,:,:,:) , nDim)
-                 end if
-                 if (arith.eq."min") then
-                     xReturn(NT,:,:,:) = dim_min_n(x(iStrt:iLast,:,:,:) , nDim)
-                 end if
-                 if (arith.eq."max") then
-                     xReturn(NT,:,:,:) = dim_max_n(x(iStrt:iLast,:,:,:) , nDim)
-                 end if
-             end if
-
-             if (rankx.eq.5) then        ; note the location of time
-                 if (arith.eq."avg" .or. arith.eq."ave") then
-                     xReturn(:,NT,:,:,:) = dim_avg_n(x(:,iStrt:iLast,:,:,:) , nDim)
-                 end if
-                 if (arith.eq."sum") then
-                     xReturn(:,NT,:,:,:) = dim_sum_n(x(:,iStrt:iLast,:,:,:) , nDim)
-                 end if
-                 if (arith.eq."min") then
-                     xReturn(:,NT,:,:,:) = dim_min_n(x(:,iStrt:iLast,:,:,:) , nDim)
-                 end if
-                 if (arith.eq."max") then
-                     xReturn(:,NT,:,:,:) = dim_max_n(x(:,iStrt:iLast,:,:,:) , nDim)
-                 end if
-             end if
-         end if
-
-         delete(ii)
-      end do      ; month
-    end do        ; year
-
-    if (rankx.le.4) then
-        xReturn!0= "time"
-    else
-        xReturn!1= "time"
-    end if
-
-    xMonth@units = TIME@units            ; x&time@units
-    xReturn&time = xMonth 
-
-    if (isatt(x,"long_name")) then
-        xReturn@long_name = x@long_name
-    end if
-
-    if (isatt(x,"units")) then
-        xReturn@units = x@units
-    end if
-
-    if (rankx.eq.2) then
-        copy_VarCoords(x(0,:), xReturn(0,:))
-    end if
-    if (rankx.eq.3) then
-        copy_VarCoords(x(0,:,:), xReturn(0,:,:))
-    end if
-    if (rankx.eq.4) then
-        copy_VarCoords(x(0,:,:,:), xReturn(0,:,:,:))
-    end if
-    if (rankx.eq.5) then
-        copy_VarCoords(x(:,0,:,:,:), xReturn(:,0,:,:,:))
-    end if
-
-    xReturn@operation_tag = "calculate_monthly_values: "+arith
-
-    return( xReturn ) 
-end
 ;**********************************************************
 undef("merge_levels_sfc")
 function merge_levels_sfc (x, xsfc, levind[1]:integer)
@@ -16526,29 +16294,33 @@ begin
 
   return(epflx)
 end
-;=============
+;---------
 undef("heat_index_nws_eqns")
-function heat_index_nws_eqns(t:numeric, rh:numeric, eqnType[1]:integer, opt[1]:logical)
-; 'heat_index_nws' driver; input t is degF
-local t2, rh2, trh
+function heat_index_nws_eqns(t:numeric, rh:numeric, crit[3]:numeric, c[9]:numeric \
+                            ,eqnType[1]:integer, opt[1]:logical)
+; 'heat_index_nws' driver; input t is **degF**
+local HI, A, t2, rh2, trh
 begin
-                                                           ; in practice
+                                                           ; NWS practice
   HI = (0.5*(t+61.0+((t-68.0)*1.2)+(rh*0.094)) + t)*0.5    ; avg (Steadman and t)
+  HI = where(t.le.40, t, HI)                               ; http://ehp.niehs.nih.gov/1206273/
 
-  if (all(t.lt.80)) then
+ ;A  = -10.3 + 1.1*t + 0.047*HI                            ; ehp.1206273.g003.tif
+ ;if (A.ge.40 .and. A.lt.lt.crit(0)) then
+ ;    HI = A 
+ ;end if
+ ;delete(A)
+
+  if (all(t.lt.crit(0))) then
       eqnType = 0
   else
-     ;HI = -42.379 + 2.04901523*t + 10.14333127*rh - .22475541*t*rh \
-     ;     -0.00683783*t*t -0.05481717*rh*rh +0.00122874*t*t*rh     \
-     ;     +0.00085282*t*rh*rh -0.00000199*t*t*rh*rh
       t2  = t^2
       rh2 = rh^2
       trh = t*rh
     
-      HI = where(HI.ge.80  \
-                ,-42.379 + 2.04901523*t + 10.14333127*rh - .22475541*trh \
-                 -0.00683783*t2 -0.05481717*rh2 +0.00122874*t*trh        \
-                 +0.00085282*t*rh2 -0.00000199*t2*rh2                    \
+      HI = where(HI.ge.crit(0)  \
+                ,c(0)+ c(1)*t + c(2)*rh + c(3)*trh   + c(4)*t2           \
+                +c(5)*rh2 + c(6)*t*trh  + c(7)*t*rh2 + c(8)*t2*rh2       \
                 ,HI)                 
     
       HI = where(rh.lt.13 .and. (t.gt.80 .and. t.lt.112) \
@@ -16591,7 +16363,7 @@ function heat_index_nws(t:numeric, rh:numeric, iounit[2]:integer, opt[1]:logical
 ; with the temperature. If this heat index value is 80 degrees F or higher, 
 ; the full regression equation along with any adjustment as described above is applied. 
 ;
-local HI, T, eqnType, units
+local HI, T, Tcrit, c, eqnType, units
 begin
 
   if (iounit(0).lt.0 .or. iounit(0).gt.2) then
@@ -16607,18 +16379,29 @@ begin
       exit
   end if
 
-  eqnType = -1
+       ; Default coef are for 80F and 40-100% humidity 
+  coef  = (/-42.379, 2.04901523, 10.14333127, -0.22475541   \
+           ,-0.00683783, -0.05481717, 0.00122874, 0.00085282, -0.00000199 /)
+  crit  = (/ 80, 40, 100/)    ; (T_low (F),  RH_low,  RH_High/)
 
+       ; Optional coef are for 70F-115F and humidities between 0 and 80% 
+       ; Within 3F of default coef
+;;if (opt .and. isatt(opt,"coef") .and. opt@coef.eq.2) then
+;;    coef = (/ 0.363445176, 0.988622465, 4.777114035, -0.114037667  \
+;;            ,-0.000850208,-0.020716198, 0.000687678,  0.000274954, 0.0 /)
+;;    crit = (/ 70, 0, 80/)   ; F
+;;end if
+
+  eqnType = -1
   if (iounit(0).eq.2) then                          ; t must be degF
-      HI = heat_index_nws_eqns(t, rh, eqnType, opt) ; use input directly
+      HI = heat_index_nws_eqns(t, rh, crit, coef, eqnType, opt) ; use input (t) directly
   else
       if (iounit(0).eq.0) then
            T = 1.8*t + 32                           ; degC => degF
       else
-print("iounit="+iounit(0))
            T = 1.8*t - 459.67                       ; degK => degF
       end if
-      HI = heat_index_nws_eqns(T, rh, eqnType, opt) ; use local T
+      HI = heat_index_nws_eqns(T, rh, crit, coef, eqnType, opt) ; use local T
   end if
 
   if (iounit(1).eq.2) then                 
@@ -16645,4 +16428,419 @@ print("iounit="+iounit(0))
   copy_VarCoords(t, HI)
 
   return(HI)
+end
+;-------------------------------------
+undef("calculate_monthly_values")
+function calculate_monthly_values (x:numeric, arith:string, nDim[1]:integer, opt[1]:logical)
+
+; calculate monthly values [avg, sum, min, max]
+; x: numeric array of 5D or less [eg: time,lev,lat,lon]
+;    *must* have time coordinate recognized by cd_calendar
+;    if 5D [case,time,lev,lat,lon]
+; arith: "avg" [also, "ave"], "sum","min","max"     others may be added later
+; nDim : scalar integer that specifies the 'time' dimension [generally, 0]
+; opt  : only used to eliminate a warning message
+;        opt= 0 ... default ... print Warning
+;        opt=-1 ... do not print Warning
+;
+; Sample usage:  x(time,lat,lon) where time are n-hrly or daily values.
+;        xMonthAvg = calculate_monthly_values(x, "avg", 0, False)
+;        xMonthSum = calculate_monthly_values(x, "sum", 0, False)
+;        xMonthMin = calculate_monthly_values(x, "min", 0, False)
+;        xMonthMax = calculate_monthly_values(x, "max", 0, False)
+;
+; It is assumed that there will be multiple elements for the dim_avg_n
+; calculation.
+;
+local dnamx, TNAME, TIME, dimx, rankx, NTIM, utc_date, year, month, ntim, work
+     ,yyyy, mm, nt, it, nmos, xStat
+begin
+    if (.not.(arith.eq."ave" .or. arith.eq."avg" .or. arith.eq."sum"  \
+                             .or. arith.eq."min" .or. arith.eq."max") ) then
+        print("calculate_monthly_values: unrecognizezed 'arith' argument="+arith)
+        exit
+    end if
+
+    dnamx    = getvardims(x)                       ; dimension names
+    TNAME    = dnamx(nDim)                         ; typically TNAME="time"
+ 
+    dimx     = dimsizes(x)                         ; dimensions sizes
+    rankx    = dimsizes(dimx)                      ; # of dimensions
+    ntim     = dimx(nDim)                          ; size of input time dimension
+
+;--- Create current yyyy/mm
+
+    utc_date = cd_calendar(x&$TNAME$, 0)           ; (x&$TNAME$, 0) ; typically   x&time
+    year     = floattointeger(utc_date(:,0))
+    month    = floattointeger(utc_date(:,1))
+   ;day      = floattointeger(utc_date(:,2))
+   ;hour     = floattointeger(utc_date(:,3))
+   ;minute   = floattointeger(utc_date(:,4))
+   ;second   = utc_date(:,5)
+
+;--- Create monthly coordinate variable. Size must be determined because
+;    each month *may* have different number of time steps. 
+;    An example might be a field program.
+
+    nt       =  -1                                 ; number of individual days
+    work     = new (ntim, typeof(x&$TNAME$), getFillValue(x&$TNAME$)) 
+    do yyyy=min(year),max(year)
+      do mm=min(month),max(month)
+         it := ind(yyyy.eq.year .and. mm.eq.month) 
+         if (.not.ismissing(it(0))) then
+             nt = nt+1
+             work(nt) = (/ x&$TNAME$(it(0)) /)     ; use 1st time of current month  
+         end if
+      end do       ; mm
+    end do         ; yyyy
+    NTIM = nt+1
+
+    TIME   = work(0:nt)
+    TIME!0 = "TIME"
+    if (isatt(x&$TNAME$,"long_name")) then
+        TIME@long_name = x&$TNAME$@long_name 
+    else
+        TIME@long_name = "time corresponding to 1st time of current month"
+    end if
+    if (isatt(x&$TNAME$,"units")) then
+        TIME@units     = x&$TNAME$@units 
+    end if
+
+    TIME&TIME = TIME               ; create coordinate variable 
+    delete(work)                   ; no longer needed
+
+    nt   = -1
+    nmos = 12
+
+    if (rankx.eq.1) then
+        xStat  = new ( (/NTIM/), typeof(x), getFillValue(x))
+
+        do yyyy=min(year),max(year)
+          do mm=min(month),max(month)
+             it := ind(yyyy.eq.year .and. mm.eq.month) 
+             if (.not.ismissing(it(0))) then
+                 nt = nt+1
+                 if (arith.eq."avg" .or. arith.eq."ave") then
+                     xStat(nt) = dim_avg_n( x(it), nDim)
+                 end if
+                 if (arith.eq."sum") then
+                     xStat(nt) = dim_sum_n( x(it), nDim)
+                 end if
+                 if (arith.eq."min") then
+                     xStat(nt) = dim_min_n( x(it), nDim)
+                 end if
+                 if (arith.eq."max") then
+                     xStat(nt) = dim_max_n( x(it), nDim)
+                 end if
+             end if    ; .not.ismissing(it(0))
+          end do       ; mm
+        end do         ; yyyy
+
+        copy_VarAtts(x, xStat)
+    end if             ; rankx.eq.1 
+
+    if (rankx.eq.2) then
+        xStat  = new ( (/NTIM,dimx(1)/), typeof(x), getFillValue(x))
+
+        do yyyy=min(year),max(year)
+          do mm=min(month),max(month)
+             it := ind(yyyy.eq.year .and. mm.eq.month) 
+             if (.not.ismissing(it(0))) then
+                 nt = nt+1
+                 if (arith.eq."avg" .or. arith.eq."ave") then
+                     xStat(nt,:) = dim_avg_n( x(it,:), nDim)
+                 end if
+                 if (arith.eq."sum") then
+                     xStat(nt,:) = dim_sum_n( x(it,:), nDim)
+                 end if
+                 if (arith.eq."min") then
+                     xStat(nt,:) = dim_min_n( x(it,:), nDim)
+                 end if
+                 if (arith.eq."max") then
+                     xStat(nt,:) = dim_max_n( x(it,:), nDim)
+                 end if
+             end if  ; .not.ismissing(it(0))
+          end do       ; mm
+        end do         ; yyyy
+
+        copy_VarMeta(x(0,:), xStat(0,:))
+    end if             ; rankx.eq.2 
+
+    if (rankx.eq.3) then
+        xStat  = new ( (/NTIM,dimx(1),dimx(2)/), typeof(x), getFillValue(x))
+
+        do yyyy=min(year),max(year)
+          do mm=min(month),max(month)
+             it := ind(yyyy.eq.year .and. mm.eq.month) 
+             if (.not.ismissing(it(0))) then
+                 nt = nt+1
+                 if (arith.eq."avg" .or. arith.eq."ave") then
+                     xStat(nt,:,:) = dim_avg_n( x(it,:,:), nDim)
+                 end if
+                 if (arith.eq."sum") then
+                     xStat(nt,:,:) = dim_sum_n( x(it,:,:), nDim)
+                 end if
+                 if (arith.eq."min") then
+                     xStat(nt,:,:) = dim_min_n( x(it,:,:), nDim)
+                 end if
+                 if (arith.eq."max") then
+                     xStat(nt,:,:) = dim_max_n( x(it,:,:), nDim)
+                 end if
+             end if    ; .not.ismissing(it(0))
+          end do       ; mm
+        end do         ; yyyy
+
+        copy_VarMeta(x(0,:,:), xStat(0,:,:))
+    end if             ; rankx.eq.3 
+
+    if (rankx.eq.4) then
+        xStat  = new ( (/NTIM,dimx(1),dimx(2),dimx(3)/), typeof(x), getFillValue(x))
+
+        do yyyy=min(year),max(year)
+          do mm=min(month),max(month)
+             it := ind(yyyy.eq.year .and. mm.eq.month) 
+             if (.not.ismissing(it(0))) then
+                 nt = nt+1
+                 if (arith.eq."avg" .or. arith.eq."ave") then
+                     xStat(nt,:,:,:) = dim_avg_n( x(it,:,:,:), nDim)
+                 end if
+                 if (arith.eq."sum") then
+                     xStat(nt,:,:,:) = dim_sum_n( x(it,:,:,:), nDim)
+                 end if
+                 if (arith.eq."min") then
+                     xStat(nt,:,:,:) = dim_min_n( x(it,:,:,:), nDim)
+                 end if
+                 if (arith.eq."max") then
+                     xStat(nt,:,:,:) = dim_max_n( x(it,:,:,:), nDim)
+                 end if
+             end if  ; .not.ismissing(it(0))
+          end do       ; mm
+        end do         ; yyyy
+
+        copy_VarMeta(x(0,:,:,:), xStat(0,:,:,:))
+    end if             ; rankx.eq.4 
+
+    if (rankx.eq.5) then
+        xStat  = new ( (/dimx(0),NTIM,dimx(2),dimx(3),dimx(4)/), typeof(x), getFillValue(x))
+
+        do yyyy=min(year),max(year)
+          do mm=min(month),max(month)
+             it := ind(yyyy.eq.year .and. mm.eq.month) 
+             if (.not.ismissing(it(0))) then
+                 nt = nt+1
+                 if (arith.eq."avg" .or. arith.eq."ave") then
+                     xStat(:,nt,:,:,:) = dim_avg_n( x(:,it,:,:,:), nDim)
+                 end if
+                 if (arith.eq."sum") then
+                     xStat(:,nt,:,:,:) = dim_sum_n( x(:,it,:,:,:), nDim)
+                 end if
+                 if (arith.eq."min") then
+                     xStat(:,nt,:,:,:) = dim_min_n( x(:,it,:,:,:), nDim)
+                 end if
+                 if (arith.eq."max") then
+                     xStat(:,nt,:,:,:) = dim_max_n( x(:,it,:,:,:), nDim)
+                 end if
+             end if  ; .not.ismissing(it(0))
+          end do       ; mm
+        end do         ; yyyy
+
+        copy_VarMeta(x(:,0,:,:,:), xStat(:,0,:,:,:))
+    end if             ; rankx.eq.5 
+
+    xStat!nDim    = TNAME 
+    xStat&$TNAME$ = TIME
+    xStat@NCL_tag = "calculate_monthly_values: arith="+arith
+    return(xStat)
+end
+;-------------------------------------
+undef("calculate_daily_values")
+function calculate_daily_values (x:numeric, arith:string, nDim[1]:integer, opt[1]:logical)
+local dnamx, TIME, TNAME, dimx, rankx, NTIM, utc_date, year, month, day \
+     ,ntim, work, yyyy, mm, dd, dymon, it, nt, nmos, xStat
+begin
+    if (.not.(arith.eq."ave" .or. arith.eq."avg" .or. arith.eq."sum"  \
+                             .or. arith.eq."min" .or. arith.eq."max") ) then
+        print("calculate_daily_values: unrecognizezed 'arith' argument="+arith)
+        exit
+    end if
+
+    dnamx    = getvardims(x)                       ; dimension names
+    TNAME    = dnamx(nDim)                         ; typically TNAME="time"
+ 
+    dimx     = dimsizes(x)                         ; dimensions sizes
+    rankx    = dimsizes(dimx)                      ; # of dimensions
+    ntim     = dimx(nDim)                          ; size of input time dimension
+
+;--- Create current yyyy/mm/dd
+
+    utc_date = cd_calendar(x&$TNAME$, 0)           ; (x&$TNAME$, 0) ; typically   x&time
+    year     = floattointeger(utc_date(:,0))
+    month    = floattointeger(utc_date(:,1))
+    day      = floattointeger(utc_date(:,2))
+   ;hour     = floattointeger(utc_date(:,3))
+   ;minute   = floattointeger(utc_date(:,4))
+   ;second   = utc_date(:,5)
+
+;--- Create daily coordinate variable. Size must be determined because
+;    each day *may* have different number of time steps. 
+;    An example might be a field program.
+
+    nt       =  -1                                 ; number of individual days
+    work     = new (ntim, typeof(x&$TNAME$), getFillValue(x&$TNAME$)) 
+    do yyyy=min(year),max(year)
+      do mm=min(month),max(month)
+         dymon = days_in_month ( yyyy, mm) 
+        do dd=1,dymon          
+           it := ind(yyyy.eq.year .and. mm.eq.month .and. dd.eq.day) 
+           if (.not.ismissing(it(0))) then
+               nt = nt+1
+               work(nt) = (/ x&$TNAME$(it(0)) /)   ; use 1st time of current day  
+           end if
+        end do     ; dd
+      end do       ; mm
+    end do         ; yyyy
+    NTIM = nt+1
+
+    TIME   = work(0:nt)
+    TIME!0 = "TIME"
+    if (isatt(x&$TNAME$,"long_name")) then
+        TIME@long_name = x&$TNAME$@long_name 
+    else
+        TIME@long_name = "time corresponding to 1st time of current day"
+    end if
+    if (isatt(x&$TNAME$,"units")) then
+        TIME@units     = x&$TNAME$@units 
+    end if
+
+    TIME&TIME = TIME               ; create coordinate variable 
+    delete(work)                   ; no longer needed
+
+    nt   = -1
+    nmos = 12
+
+    if (rankx.eq.1) then
+        xStat  = new ( (/NTIM/), typeof(x), getFillValue(x))
+
+        do yyyy=min(year),max(year)
+          do mm=min(month),max(month)
+             dymon = days_in_month ( yyyy, mm) 
+            do dd=1,dymon          ; min(day),max(day)
+               it := ind(yyyy.eq.year .and. mm.eq.month .and. dd.eq.day) 
+               if (.not.ismissing(it(0))) then
+                   nt = nt+1
+                   if (arith.eq."avg" .or. arith.eq."ave") then
+                       xStat(nt) = dim_avg_n( x(it), nDim)
+                   end if
+                   if (arith.eq."sum") then
+                       xStat(nt) = dim_sum_n( x(it), nDim)
+                   end if
+                   if (arith.eq."min") then
+                       xStat(nt) = dim_min_n( x(it), nDim)
+                   end if
+                   if (arith.eq."max") then
+                       xStat(nt) = dim_max_n( x(it), nDim)
+                   end if
+               end if  ; .not.ismissing(it(0))
+            end do     ; dd
+          end do       ; mm
+        end do         ; yyyy
+
+        copy_VarAtts(x, xStat)
+    end if             ; rankx.eq.1 
+
+    if (rankx.eq.2) then
+        xStat  = new ( (/NTIM,dimx(1)/), typeof(x), getFillValue(x))
+
+        do yyyy=min(year),max(year)
+          do mm=min(month),max(month)
+             dymon = days_in_month ( yyyy, mm) 
+            do dd=1,dymon          ; min(day),max(day)
+               it := ind(yyyy.eq.year .and. mm.eq.month .and. dd.eq.day) 
+               if (.not.ismissing(it(0))) then
+                   nt = nt+1
+                   if (arith.eq."avg" .or. arith.eq."ave") then
+                       xStat(nt,:) = dim_avg_n( x(it,:), nDim)
+                   end if
+                   if (arith.eq."sum") then
+                       xStat(nt,:) = dim_sum_n( x(it,:), nDim)
+                   end if
+                   if (arith.eq."min") then
+                       xStat(nt,:) = dim_min_n( x(it,:), nDim)
+                   end if
+                   if (arith.eq."max") then
+                       xStat(nt,:) = dim_max_n( x(it,:), nDim)
+                   end if
+               end if  ; .not.ismissing(it(0))
+            end do     ; dd
+          end do       ; mm
+        end do         ; yyyy
+
+        copy_VarMeta(x(0,:), xStat(0,:))
+    end if             ; rankx.eq.2 
+
+    if (rankx.eq.3) then
+        xStat  = new ( (/NTIM,dimx(1),dimx(2)/), typeof(x), getFillValue(x))
+
+        do yyyy=min(year),max(year)
+          do mm=min(month),max(month)
+             dymon = days_in_month ( yyyy, mm) 
+            do dd=min(day),max(day)
+               it := ind(yyyy.eq.year .and. mm.eq.month .and. dd.eq.day) 
+               if (.not.ismissing(it(0))) then
+                   nt = nt+1
+                   if (arith.eq."avg" .or. arith.eq."ave") then
+                       xStat(nt,:,:) = dim_avg_n( x(it,:,:), nDim)
+                   end if
+                   if (arith.eq."sum") then
+                       xStat(nt,:,:) = dim_sum_n( x(it,:,:), nDim)
+                   end if
+                   if (arith.eq."min") then
+                       xStat(nt,:,:) = dim_min_n( x(it,:,:), nDim)
+                   end if
+                   if (arith.eq."max") then
+                       xStat(nt,:,:) = dim_max_n( x(it,:,:), nDim)
+                   end if
+               end if  ; .not.ismissing(it(0))
+            end do     ; dd
+          end do       ; mm
+        end do         ; yyyy
+
+        copy_VarMeta(x(0,:,:), xStat(0,:,:))
+    end if             ; rankx.eq.3 
+
+    if (rankx.eq.4) then
+        xStat  = new ( (/NTIM,dimx(1),dimx(2),dimx(3)/), typeof(x), getFillValue(x))
+
+        do yyyy=min(year),max(year)
+          do mm=min(month),max(month)
+             dymon = days_in_month ( yyyy, mm) 
+            do dd=min(day),max(day)
+               it := ind(yyyy.eq.year .and. mm.eq.month .and. dd.eq.day) 
+               if (.not.ismissing(it(0))) then
+                   nt = nt+1
+                   if (arith.eq."avg" .or. arith.eq."ave") then
+                       xStat(nt,:,:,:) = dim_avg_n( x(it,:,:,:), nDim)
+                   end if
+                   if (arith.eq."sum") then
+                       xStat(nt,:,:,:) = dim_sum_n( x(it,:,:,:), nDim)
+                   end if
+                   if (arith.eq."min") then
+                       xStat(nt,:,:,:) = dim_min_n( x(it,:,:,:), nDim)
+                   end if
+                   if (arith.eq."max") then
+                       xStat(nt,:,:,:) = dim_max_n( x(it,:,:,:), nDim)
+                   end if
+               end if  ; .not.ismissing(it(0))
+            end do     ; dd
+          end do       ; mm
+        end do         ; yyyy
+
+        copy_VarMeta(x(0,:,:,:), xStat(0,:,:,:))
+    end if             ; rankx.eq.4 
+
+    xStat!0       = TNAME 
+    xStat&$TNAME$ = TIME
+
+    xStat@NCL_tag = "calculate_daily_values: arith="+arith
+    return(xStat)
 end
