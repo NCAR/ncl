@@ -16386,11 +16386,11 @@ begin
 
        ; Optional coef are for 70F-115F and humidities between 0 and 80% 
        ; Within 3F of default coef
-;;if (opt .and. isatt(opt,"coef") .and. opt@coef.eq.2) then
-;;    coef = (/ 0.363445176, 0.988622465, 4.777114035, -0.114037667  \
-;;            ,-0.000850208,-0.020716198, 0.000687678,  0.000274954, 0.0 /)
-;;    crit = (/ 70, 0, 80/)   ; F
-;;end if
+  if (opt .and. isatt(opt,"coef") .and. opt@coef.eq.2) then
+      coef := (/ 0.363445176, 0.988622465, 4.777114035, -0.114037667  \
+               ,-0.000850208,-0.020716198, 0.000687678,  0.000274954, 0.0 /)
+      crit := (/ 70, 0, 80/)   ; F
+  end if
 
   eqnType = -1
   if (iounit(0).eq.2) then                          ; t must be degF
