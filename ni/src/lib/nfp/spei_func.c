@@ -31,14 +31,22 @@
 	#define min( a, b ) ( ((a) < (b)) ? (a) : (b) )
 #endif
 
-/* Calculate the Standardized Precipitation Index */
-void spei_driver(double *rainSeries,double *tempSeries,double tmsg,
+/* Calculate the Standardized Precipitation Index.
+ *
+ * Note: the original interface was modified to add "smsg". 
+ *
+ * The original version of this interface set the last "acumulated-1" 
+ * points of acumSeries to 0. It has been modified to set the 
+ * *first* "acumulated-1" points to missing (smsg). This better matches
+ * what 'R' returns.
+ */
+void spei_driver(double *rainSeries,double *tempSeries,double smsg,
 		 int npts,double lat,
 		 int acumulated,int seasonality,double *etpSeries,
 		 double *balanceSeries, double *acumSeries,
 		 double *seasonSeries,double *speiSeries)
 {
-  int   numRegistros,acumRegistros,indice,jndice;
+  int   numRegistros,acumRegistros,indice,jndice,type_size;
 
   /* Initialize variables */
   acumRegistros = indice = jndice = 0;
@@ -63,24 +71,14 @@ void spei_driver(double *rainSeries,double *tempSeries,double tmsg,
  * potential evapotranspiration 
  */
   if (tempSeries[1]!=0 && tempSeries[2]!=0) {
-    thornthwaite(tempSeries, numRegistros, tmsg, lat, etpSeries);
+    thornthwaite(tempSeries, numRegistros, smsg, lat, etpSeries);
     for (indice=0; indice<numRegistros; indice++) {
-      if(etpSeries[indice] != tmsg) {
-	balanceSeries[indice] = rainSeries[indice]-etpSeries[indice];
-      }
-      else {
-	balanceSeries[indice] = tmsg;
-      }
+      balanceSeries[indice] = rainSeries[indice]-etpSeries[indice];
     }
   }
   else {
     for (indice=0; indice<numRegistros; indice++) {
-      if(etpSeries[indice] != tmsg) {
-	balanceSeries[indice] = rainSeries[indice];
-      }
-      else {
-	balanceSeries[indice] = tmsg;
-      }
+      balanceSeries[indice] = rainSeries[indice];
     }
   }
   /* Compute the cumulative series */
@@ -91,19 +89,20 @@ void spei_driver(double *rainSeries,double *tempSeries,double tmsg,
   mes += acumulated-1;
   while (mes>12) mes-=12;
 */
-  acumRegistros = numRegistros-acumulated+1;
   for (indice=acumulated-1; indice<numRegistros; indice++) {
     for (jndice=0; jndice<acumulated; jndice++) {
-      if(balanceSeries[indice-jndice] != tmsg) {
-	acumSeries[indice-acumulated+1] += balanceSeries[indice-jndice];
-      }
-      else {
-	acumSeries[indice-acumulated+1] = tmsg;
-      }
+      acumSeries[indice-acumulated+1] += balanceSeries[indice-jndice];
     }
   }
   /* Compute the SPEI series*/
-  spei_func(acumSeries, acumRegistros, tmsg, seasonality, speiSeries, seasonSeries);
+  acumRegistros = numRegistros-acumulated+1;
+  spei_func(acumSeries, acumRegistros, smsg, seasonality, speiSeries, seasonSeries);
+  type_size = sizeof(double);
+  if(acumulated > 1) {
+    memcpy((void*)((char*)speiSeries + (acumulated-1)*type_size),
+	   (void*)((char*)speiSeries),acumRegistros*type_size);
+    for (indice=0; indice<acumulated-1; indice++) speiSeries[indice] = smsg;
+  }
 }
 
 /*
@@ -112,8 +111,12 @@ void spei_driver(double *rainSeries,double *tempSeries,double tmsg,
 // from a series of climatic balance (precipitation minus etp). The
 // SPEI is the standardized value of the climatic balance (P-ETP),
 // computed following a Log Logistic probability distribution.
+//
+// Note: the original interface was modified to add "smsg". Nothing 
+// is done with missing values yet, but the value is there if
+// needed in the future.
 */
-void spei_func(double *dataSeries, int n, double tmsg, int seasons,
+void spei_func(double *dataSeries, int n, double smsg, int seasons,
 	       double *speiSeries,  double *seasonSeries) {
 
 	int i, j, k, nSeason;
@@ -134,7 +137,7 @@ void spei_func(double *dataSeries, int n, double tmsg, int seasons,
 		}
 		nSeason = k;
 		/* "upward" is a simple ascending order qsort. */
-		   upward(seasonSeries, nSeason);
+		upward(seasonSeries, nSeason);
 		/*
 		 * May not be able to use qsort because seasonSeries may
  		  actually be larger than nSeason. Need to check into this.
