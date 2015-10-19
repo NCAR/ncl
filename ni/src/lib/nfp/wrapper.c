@@ -58,6 +58,7 @@ extern NhlErrorTypes bw_bandpass_filter_W(void);
 extern NhlErrorTypes weibull_W(void);
 extern NhlErrorTypes trend_manken_W(void);
 extern NhlErrorTypes thornthwaite_W(void);
+extern NhlErrorTypes thornthwaite_r_W(void);
 extern NhlErrorTypes speidx_W(void);
 extern NhlErrorTypes spei_driver_W(void);
 extern NhlErrorTypes kmeans_as136_W(void);
@@ -2218,6 +2219,25 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(thornthwaite_W,args,"thornthwaite",nargs);
+
+/*
+ * Register "thornthwaite_r". This is a C routine provided via
+ * the "spei" code for 'R'. This routine is NOT being advertised.
+ * It is mainly to test against the Fortran thornthwaite we already
+ * have.
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(4);
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(thornthwaite_W,args,"thornthwaite_r",nargs);
 
 /*
  * Register "speidx".
