@@ -99,8 +99,8 @@ void spei_driver(double *rainSeries,double *tempSeries,double smsg,
   spei_func(acumSeries, acumRegistros, smsg, seasonality, speiSeries, seasonSeries);
   type_size = sizeof(double);
   if(acumulated > 1) {
-    memcpy((void*)((char*)speiSeries + (acumulated-1)*type_size),
-	   (void*)((char*)speiSeries),acumRegistros*type_size);
+    memmove((void*)((char*)speiSeries + (acumulated-1)*type_size),
+	   (const void*)((char*)speiSeries),acumRegistros*type_size);
     for (indice=0; indice<acumulated-1; indice++) speiSeries[indice] = smsg;
   }
 }
