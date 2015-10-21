@@ -3519,6 +3519,7 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
             H5T_cset_t  cset;
             hid_t       tmp_type;
             htri_t      is_vlstr=FALSE;
+	    char cp[1024*HDF5_BUF_SIZE];
 
 
             tmp_type = H5Tcopy(type);
@@ -3534,6 +3535,9 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
            *fprintf(stderr, "\tis_vlstr=<%d>\n", is_vlstr);
            */
 
+	    /* the first path adds nothing and does not provide space for the buffer 
+	       so eliminate it */
+#if 0
             if(is_vlstr)
             {
                 char *cp;
@@ -3552,11 +3556,13 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
             }
             else
             {
-                char cp[1024*HDF5_BUF_SIZE];
-
+#endif
                 status = H5Aread(attr_id, tmp_type, cp);
 
-                attr_node->nbytes = strlen(cp) + 1;
+		/* see NCL-2292 comment: text attribute values contain garbage following the text */
+                /*attr_node->nbytes = strlen(cp) + 1;*/
+		cp[str_size] = '\0';
+                attr_node->nbytes = str_size + 1;
 
                 attr_node->value = NclMalloc(attr_node->nbytes);
                 assert(attr_node->value);
@@ -3567,7 +3573,9 @@ herr_t _NclHDF5check_attr(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo
                *fprintf(stderr, "\tattr_node->nbytes: %d\n", attr_node->nbytes);
                *fprintf(stderr, "\tstrlen(attr_node->value): <%d>\n", strlen((char *)attr_node->value));
                */
+#if 0
             }
+#endif
         }
         else
         {
