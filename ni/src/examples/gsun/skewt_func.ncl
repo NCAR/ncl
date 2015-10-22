@@ -315,11 +315,29 @@ begin
   else
       xyOpts@tiXAxisString    = "Temperature (C)"
   end if
+  xyOpts@tiYAxisString        = "P (hPa)"
+
+                 ; the following 2 'if' blocks were added for 6.3.1
+  if (Opts .and. isatt(Opts,"tiXAxisString")) then
+      if (Opts@tiXAxisString.eq."") then
+          delete(xyOpts@tiXAxisString)
+      else
+          xyOpts@tiXAxisString= Opts@tiXAxisString
+      end if
+  end if
+
+  if (Opts .and. isatt(Opts,"tiYAxisString")) then
+      if (Opts@tiYAxisString.eq."") then
+          delete(xyOpts@tiYAxisString)
+      else
+          xyOpts@tiYAxisString= Opts@tiYAxisString
+      end if
+  end if
+
   xyOpts@tiXAxisFont          = localOpts@Font
   xyOpts@tiXAxisFontColor     = "Foreground"   ; colTan
   xyOpts@tiXAxisFontHeightF   = 0.0125
   xyOpts@tiYAxisFont          = localOpts@Font
-  xyOpts@tiYAxisString        = "P (hPa)"
   xyOpts@tiYAxisOffsetXF      = 0.0200
   xyOpts@tiYAxisOffsetYF      = -0.0200
   xyOpts@tiYAxisFontColor     = "Foreground"   ; colTan
