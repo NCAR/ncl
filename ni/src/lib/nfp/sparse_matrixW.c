@@ -195,6 +195,7 @@ NhlErrorTypes sparse_matrix_mult_W
     }
     ntotal = nmatrices * nrowcoly;
 #ifdef DEBUG
+    printf("nmatrices = %ld\n", nmatrices);
     for(i = 0; i < ndims_x; i++) {
       printf("dsizes_y[%ld] =  %ld\n", i, dsizes_y[i]);
     }
@@ -263,9 +264,6 @@ NhlErrorTypes sparse_matrix_mult_W
  * Loop across each set of 2D matrices and do the sparse
  * matrix multiplication.
  */
-#ifdef DEBUG
-    printf("nmatrices = %ld\n", nmatrices);
-#endif
     for(l = 0; l < nmatrices; l++) {
       index_x = l*nrowcolx;
       index_y = l*nrowcoly;
