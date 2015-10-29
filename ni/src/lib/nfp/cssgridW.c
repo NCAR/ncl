@@ -883,9 +883,9 @@ NhlErrorTypes csvoro_W(void)
     if (dflag) {
       if ((atypes[4] != NCL_double) || (atypes[5] != NCL_double) ||
           (atypes[6] != NCL_double)) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"csvoro: arguments 4-6 must "
-          "be double\n if either of arguments 0 or 1 is doulbe.  Otherwise\n"
-          "arguments 4-6 must be float\n");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"csvoro: arguments #4-6 must "
+          "be double\n if either of arguments 0 or 1 is double.  Otherwise\n"
+          "arguments #4-6 must be float\n");
       return(NhlFATAL);
       }
     }
