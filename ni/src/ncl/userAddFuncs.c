@@ -851,7 +851,6 @@ loop_through_strings:
             n = len_str - 1;
             if(n - pre_pos)
             {
-		  printf("n-prepos = %d\n", (n-pre_pos));
                 strncpy(prt_str, tmp_str+pre_pos, n - pre_pos);
                 prt_str[n-pre_pos] = '\0';
 
