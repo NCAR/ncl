@@ -629,7 +629,7 @@ NhlErrorTypes _Nclstr_split_csv(void)
         int len_str = 1 + strlen((char *) NrmQuarkToString(strs[0]));
         int max_str_len = len_str;
         int pre_pos = -1;
-        char prt_str[4096];
+        char prt_str[NCL_INITIAL_STRING_LENGTH];
 
         int in_dq = 0;
         int in_sq = 0;
@@ -851,6 +851,7 @@ loop_through_strings:
             n = len_str - 1;
             if(n - pre_pos)
             {
+		  printf("n-prepos = %d\n", (n-pre_pos));
                 strncpy(prt_str, tmp_str+pre_pos, n - pre_pos);
                 prt_str[n-pre_pos] = '\0';
 
