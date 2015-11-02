@@ -16429,6 +16429,89 @@ begin
   return(HI)
 end
 ;-------------------------------------
+undef("latent_heat_water")
+function latent_heat_water(t:numeric, iounit[2]:integer, key[1]:integer, opt[1]:logical)
+;
+;   Baker, Schlatter  17-may-1982     original version.
+;
+;   This function returns the latent heat of
+;               evaporation/condensation         for key=1
+;               melting/freezing                 for key=2
+;               sublimation/deposition           for key=3
+;   for water. The latent heat heatl (joules per kilogram) is a
+;   function of temperature t. The formulas are polynomial
+;   approximations to the values in table 92, p. 343 of the Smithsonian
+;   Meteorological Tables, sixth revised edition, 1963 by Roland List.
+;   The approximations were developed by Eric Smith at Colorado State University.
+;   polynomial coefficients
+
+;   iounit(0)=0 means the input are in degrees C (degC);
+;   iounit(0)=1 means the input are in degrees K (degK);
+;   iounit(0)=2 means the input are in degrees F. 
+
+;   iounit(1)=0 means the output are in J/kg
+;   iounit(1)=1 means the output are in J/g
+;   iounit(1)=2 means the output are in cal/g
+
+;   1 J/g = 0.238846 cal/g; 1 cal/g = 4.1868 J/g
+
+local t0, con, cun, a, tk, heatl, lname
+begin
+
+  t0  = 273.15
+  con = 5.0/9.0
+  cun = (/1.0, 0.001, 0.238846 /)
+
+; Polynomial Coefficients
+
+  if (key.eq.1) then
+      a     = (/ 3337118.5 , -3642.8583 ,  2.1263947  /)
+      lname = "Latent Heat: evaporation/condensation"
+  else if (key.eq.2) then
+      a     = (/-1161004.0 ,  9002.2648 , -12.931292  /)
+      lname = "Latent Heat: melting/freezing"
+  else if (key.eq.3) then
+      a     = (/ 2632536.8 ,  1726.9659 , -3.6248111  /)
+      lname = "Latent Heat: sublimation/deposition"
+  else
+      print("latent_heat_water: illegal key value: key="+key)
+      exit
+  end if   ; key=3
+  end if   ; key=2
+  end if   ; key=1
+
+  if (iounit(0).eq.0) then   ; input in C; convert to K 
+      heatl = a(0)+ a(1)*(t+t0) + a(2)*(t+t0)^2
+  else if (iounit(0).eq.1) then   ; input in K; no need convert units
+      heatl = a(0)+ a(1)*t + a(2)*t*t
+  else if (iounit(0).eq.2) then   ; input in F; convert to K 
+      tk    = (t-32)*con + t0
+      heatl = a(0)+ a(1)*tk + a(2)*tk^2
+  end if   ; iounit(0)=2
+  end if   ; iounit(0)=1
+  end if   ; iounit(0)=0
+
+; meta data
+
+  heatl@long_name =lname
+
+  if (iounit(1).eq.0) then
+      heatl@units = "J/kg"         ; joules per kilogram 
+  else if (iounit(1).eq.1) then
+      heatl = heatl*cun(1) 
+      heatl@units = "J/g"          ; joules per gram 
+  else if (iounit(1).eq.2) then
+      heatl = (heatl*cun(1))*cun(2)
+      heatl@units = "cal/g"        ; calories (IT) per gram 
+  end if   ; iounit(0)=2
+  end if   ; iounit(0)=1
+  end if   ; iounit(0)=r0
+
+  copy_VarCoords(t, heatl)         ; copy coords
+
+  return(heatl)
+end     ; latent_heat_water
+;-------------------------------------
 undef("calculate_monthly_values")
 function calculate_monthly_values (x:numeric, arith:string, nDim[1]:integer, opt[1]:logical)
 
