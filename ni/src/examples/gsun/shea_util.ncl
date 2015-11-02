@@ -4494,13 +4494,27 @@ local tstep, tspan, tunits, tbase, TIME, tuchar, tbchar, ntu, ntb, newunits \
      ,utc_date, year, month, day, hour, minute, second       \
      ,dimx, rankx, ntim, nstep, n   
 begin
-    tstep = opt@tstep
-    tspan = opt@tspan
+    if (isatt(opt,"tstep")) then
+        tstep = opt@tstep
+    else
+        print("calc_day_values: attribute tstep is missing")
+        exit
+    end if
+    if (isatt(opt,"tspan")) then
+        tspan = opt@tspan
+    else
+        tspan = 24
+    end if
 
-    tunits  = x&time@units
+    dnamx    = getvardims(x)
+    TNAME    = dnamx(nDim)                         ; typically TNAME="time"
+    utc_date = cd_calendar(x&$TNAME$, 0)           ; (x&$TNAME$, 0) ; typically   x&time
+
+
+    tunits  = x&$TNAME$@units
     tbase   = str_get_field(tunits, 1, " ")      ; seconds, hours, days
     if (tbase.eq."hours") then
-        TIME = x&time
+        TIME = x&$TNAME$
     else
         tuchar = tochar(tunits)
         tbchar = tochar(tbase)
@@ -4589,6 +4603,7 @@ end
 ; Saji Hameed saji.nh@gmail.com
 ;-------------------
 
+undef("mreg_part_corr")
 function mreg_part_corr(x1,x2,y,opt)
 local opt
 begin
@@ -4909,44 +4924,3 @@ begin
   retVal    = data(uniqueInd) 
   return(retVal) 
 end ; remove_duplicates 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-;; Description: Extract approximately periodic components from a time series. 
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-undef("demod")
-function demod(y[*]:numeric, frq[1]:numeric)
-;
-; simple complex demodulation; Extract approximately periodic components from a time series
-;
-; Complex demodulation is a technique for analyzing nonstationary time series by estimating 
-; the instantaneous amplitude and phase of a given harmonic component. To better understand 
-; the results of complex demodulation several lowpass filters should be tried: the smaller 
-; the pass band, the less instantaneous in time but more specific in frequency is the result.
-; source: http://www.uni-muenster.de/ZIV.BennoSueselbeck/s-html/helpfiles/demod.html
-;
-local ny, pi, arg, amp, pha
-begin
-
-  ny = dimsizes(y)
-  if (typeof(y).eq."double" .or. typeof(frq)) then
-      pi = 4d0*atan(1d0)
-  else
-      pi = 4.0*atan(1.0)
-  end if
-
-  arg = ispan(0,ny-1,1)*frq*2*pi
-  amp =  y*cos(arg)*2             ; real
-  pha = -y*sin(arg)*2             ; imaginary (primary phase)
-
-  amp@long_name = "amplitude"
-  pha@long_name = "phase"         
-  if (isatt(y,"units")) then
-      amp@units = y@units
-  end if
-
-  copy_VarCoords(y, amp)
-  copy_VarCoords(y, pha)
-
-  return([/ amp, pha /])           ; return as a list
-end
