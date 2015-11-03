@@ -1,12 +1,13 @@
-C Copyright 1981-2007 ECMWF
-C 
-C Licensed under the GNU Lesser General Public License which
-C incorporates the terms and conditions of version 3 of the GNU
-C General Public License.
-C See LICENSE and gpl-3.0.txt for details.
+C Copyright 1981-2012 ECMWF.
 C
-
-       SUBROUTINE ROWINA3( P, KO, KI, PW, KCODE, PMSVAL, KRET,
+C This software is licensed under the terms of the Apache Licence 
+C Version 2.0 which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+C
+C In applying this licence, ECMWF does not waive the privileges and immunities 
+C granted to it by virtue of its status as an intergovernmental organisation 
+C nor does it submit to any jurisdiction.
+C
+      SUBROUTINE ROWINA3( P, KO, KI, PW, KCODE, PMSVAL, KRET,
      X                    OMISNG, OPERIO, OVEGGY)
 C
 C---->
@@ -249,21 +250,27 @@ C
       ELSEIF(KCODE.EQ.3) THEN
 C
          IF ( OMISNG ) THEN
+C            WRITE(GRPRSM,*)
             WRITE(*,*)
      X        'ROWINA3: Cubic interpolation not supported'
+C            WRITE(GRPRSM,*)
             WRITE(*,*)
      X        'ROWINA3: for fields containing missing data.'
-            WRITE(*,*) ' Sorry!'
+C            WRITE(GRPRSM,*) ' Sorry!'
+            WRITE(*,*)
             KRET = 1
             GOTO 900
          ENDIF
 C
          DO 210 JL = 1,KI
             IF ( P(JL) .EQ. PMSVAL ) THEN
-              WRITE(*,*) 
+C              WRITE(GRPRSM,*) 
+              WRITE(*,*)
      X          'ROWINA3: Cubic interpolation not supported'
-              WRITE(*,*) 
+C              WRITE(GRPRSM,*) 
+              WRITE(*,*)
      X          'ROWINA3: for fields containing missing data.'
+C              WRITE(GRPRSM,*) ' Sorry!'
               WRITE(*,*) ' Sorry!'
               KRET = 1
               GOTO 900
@@ -300,6 +307,7 @@ C*******************************************************************
 C
   300   CONTINUE
 C
+C        WRITE(GRPRSM,9001) KCODE
         WRITE(*,9001) KCODE
         KRET = 2
       ENDIF

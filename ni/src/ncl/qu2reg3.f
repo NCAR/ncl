@@ -1,11 +1,12 @@
-C Copyright 1981-2007 ECMWF
-C 
-C Licensed under the GNU Lesser General Public License which
-C incorporates the terms and conditions of version 3 of the GNU
-C General Public License.
-C See LICENSE and gpl-3.0.txt for details.
+C Copyright 1981-2012 ECMWF.
 C
-
+C This software is licensed under the terms of the Apache Licence 
+C Version 2.0 which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+C
+C In applying this licence, ECMWF does not waive the privileges and immunities 
+C granted to it by virtue of its status as an intergovernmental organisation 
+C nor does it submit to any jurisdiction.
+C
 C NIO/NCL 
 C Modified for the NIO library by David I. Brown
 C Allocation is eliminated. All allocation is performed by the calling 
@@ -164,21 +165,24 @@ C
       DIMENSION PFIELD(*)
       INTEGER KPOINT, KLAT, KLON, KCODE, KRET
       DIMENSION KPOINT(*)
+      REAL ZLINE, ZWORK, ZTEMP
+      DIMENSION ZLINE(JPMAX*2)
+      DIMENSION ZWORK(0:JPMAX*2+2,3)
+      DIMENSION ZTEMP(JPMAX*JPMAX*2)
 C
       LOGICAL OMISNG, OPERIO, OVEGGY
-      REAL ZLINE, ZWORK, ZTEMP
 C
 C     Local variables.
 C
       INTEGER ICODE, ILII, ILIO, IQUANO, IREGNO
       INTEGER J210, J220, J225, J230, J240
 C
-      DIMENSION ZLINE(JPMAX*2)
-      DIMENSION ZWORK(0:JPMAX*2+2,3)
-      DIMENSION ZTEMP(JPMAX*JPMAX*2)
+C      REAL ZLINE, ZWORK
 C
+C#ifndef _CRAYFTN
 C#ifdef POINTER_64
 C      INTEGER*8 IZTEMP
+C#endif
 C#endif
 C      REAL ZTEMP
 C      DIMENSION ZTEMP(1)
