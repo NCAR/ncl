@@ -1190,6 +1190,30 @@ begin
   
   return (x)
 end
+
+; *****************************************************************
+; Calculate Coriolis parameter:set nonu
+; *****************************************************************
+undef("coriolis_param")
+function coriolis_param(lat:numeric)
+; Coriolis Parameter 
+begin
+  if (typeof(lat).eq."double") then
+      omega = 7.292d-5                   ; (1/s)     ; earth ang rotation
+      rad   = 4d0*atan(1d0)/180d0
+  else
+      omega = 7.292e-5         
+      rad   = 4.0*atan(1.0)/180.0
+  end if
+
+  fcor  = 2*omega*sin(lat*rad)    
+  fcor@long_name = "Coriolis parameter"
+  fcor@units     = "1/s"
+  copy_VarCoords(lat, fcor)
+
+  return(fcor)
+end
+
 ; *****************************************************************
 ; Calculate wind speed
 ; *****************************************************************
@@ -15553,6 +15577,143 @@ begin
   
   return(hinfo(idx(0),1))  ; to the right of = sign
 end
+;------------------------------
+undef("brunt_vaisala_frq")
+function brunt_vaisala_frq(th:numeric, z:numeric, ndimz[1]:integer)
+;
+; Brunt-Vaisala: 
+;   The frequency at which a displaced air parcel will oscillate when displaced 
+;   vertically within a statically stable environment.
+;
+; AMS Glossary:  
+; BruntV: http://glossary.ametsoc.org/wiki/Brunt-v%C3%A4is%C3%A4l%C3%A4_frequency
+;
+; Nomenclature:
+;   th - potential temperature (degK); could also be virtual potential temperature
+;   z  - geometric height (m)
+;
+begin
+;;dimz    = dimsizes(z)
+;;dimth   = dimsizes(th)
+
+;;rankz   = dimsizes(dimz)   
+;;rankth  = dimsizes(dimth)
+
+  dthdz   = center_finite_diff_n(th, z, False, 0, ndimz)
+  dthdz   = where(dthdz.lt.0, 0, dthdz)   ; safety only
+
+ ;copy_VarCoords(th, dthdz)
+ ;dthdz@long_name = "Vertical Gradient of potential temperature"
+ ;dthdz@units     = "degK/m"
+ ;print("brunt_vaisala_atm: dthdz: min="+min(dthdz)+"   max="+max(dthdz))
+
+  g      = 9.80665                ; m/s2 at 45N
+  buoy   = (g/th)*dthdz           ; 'buoyancy' term (N^2): [m/s2][1/K][K/m]=[1/s2]     
+ ;buoy@long_name = "buoyancy"
+ ;buoy@units     = "1/s^2"
+ ;copy_VarCoords(th, buoy)
+ ;print("buoyancy: min="+min(buoy)+"   max="+max(buoy))
+
+  brunt  = sqrt(buoy)
+  copy_VarCoords(th, brunt)
+  brunt@long_name = "Brunt–Vaisala (buoyancy) frequency: atm"
+  brunt@units     = "1/s"
+  brunt@info      = "http://glossary.ametsoc.org/wiki/Brunt-v%C3%A4is%C3%A4l%C3%A4_frequency"
+
+  return( brunt )
+return
+end
+;-------------------------------
+undef("eady_growth_rate")
+function eady_growth_rate(th:numeric, u:numeric, z:numeric, lat:numeric,  ndimz[1]:integer)
+;
+; Maximum Eady Growth Rate  
+;
+; Reference: 
+;   R. S. Lindzen and Brian Farrell, 1980: 
+;   A Simple Approximate Result for the Maximum Growth Rate of Baroclinic Instabilities. 
+;   J. Atmos. Sci., 37, 1648–1654. 
+;    http://dx.doi.org/10.1175/1520-0469(1980)037<1648:ASARFT>2.0.CO;2
+;
+;   Simmonds, I., and E.-P. Lim (2009): 
+;   Biases in the calculation of Southern Hemisphere mean baroclinic eddy growth rate 
+;   Geophys. Res. Lett., 36, L01707 
+;   doi:10.1029/2008GL036320
+;
+;   Vallis, G.K. (2006) 
+;   Atmospheric and Oceanic Dynamics: Fundamentals and Large-Scale Circulation
+;   Cambridge Univ. Press, New York.
+;    
+; Nomenclature
+; th   - potential temperature (K)
+;        http://glossary.ametsoc.org/wiki/potential_temperature
+;        https://www.ncl.ucar.edu/Document/Functions/Contributed/pot_temp.shtml
+; u    - zonal wind components (m/s) ; same dimensionality as 'th'
+; lat  - latitude of each grid point ; same dimensionality as 'th'  
+; z    - height (m)
+; opt  - option
+;        opt=0   return eddy_growth_rater only
+;        opt=1   return Brunt-Vaisala frequency only    
+;        opt=2   return gradient Richardson number & Brunt-Vaisala frequency    
+;        opt=3   return gradient Richardson number , Brunt-Vaisala frequency    
+;                       buoyancy, wind shear2
+; ndimz- dimension of 'th' for which vertical gradient is to be calculated
+;        th(:), wspd(:), z(:) ..... ndimz=0
+;        th(:,:,:)  , z(:) or z(:,:,:)   and the left is the vertical dim, ndimz=0
+;        th(:,:,:,:), z(:) or z(:,:,:,:) and the left is the time dimension 
+;                                        and the next is height,  ndimz=1 
+;
+;
+local dimth, dimu, dimz, dimth, dimlat, rankth, ranku, rankz, rankth, ranklat \
+    , u_shear, brunt, fcor, g, omega, con, rad, egr
+begin
+                                ; dimension checking
+  dimu    = dimsizes(u)
+  dimz    = dimsizes(z)
+  dimth   = dimsizes(th)
+  dimlat  = dimsizes(lat)
+
+  ranku   = dimsizes(dimu)   
+  rankz   = dimsizes(dimz)   
+  rankth  = dimsizes(dimth)
+  ranklat = dimsizes(dimlat)   
+
+  if (.not.(rankth.eq.ranku) .and. all(dimth.eq.dimu)) then
+      print("eady_growth_rate: th, u, lat and must have the same rank & dimensionality")
+      print(dimth)
+      print(dimu) 
+      exit
+  end if
+
+  brunt   = brunt_vaisala_frq(th, z, ndimz)
+  dudz    = center_finite_diff_n(u , z, False, 0, ndimz) 
+  copy_VarCoords(u, dudz)
+  dudz@long_name  = "vertical gradient of the zonal wind (zonal wind shear): du/dz"
+  dudz@units      = "1/s"
+ ;print("eady_growth_rate: dudz: min="+min(dudz)+"   max="+max(dudz))
+
+  g     = 9.80665                    ; m/s2 ; gravity at 45 deg lat used by the WMO
+  con   = 0.3098
+  fcor  = coriolis_param(lat)        ; (1/s)     ; coriolis parameter
+                                     ; prevent 1/0
+  if (any(brunt.eq.0)) then
+      if (.not.isatt(brunt,"_FillValue")) then
+          if (typeof(brunt).eq."double") then
+              brunt@_FillValue = 1d20
+          else
+              brunt@_FillValue = 1e20
+          end if
+       end if
+       brunt = where(brunt.eq.0, brunt@_FillValue, brunt)
+  end if
+
+  egr   = con*abs(fcor)*abs(dudz)/brunt
+  egr@long_name = "maximum eady growth rate"
+  egr@units     = ""
+  copy_VarCoords(u, egr)
+
+  return (egr)
+end
 ;-------------------------------
 undef("rigrad_bruntv_atm")
 function rigrad_bruntv_atm(thv:numeric, u:numeric, v:numeric, z:numeric, opt[1]:integer,  ndim[1]:integer)
@@ -15634,7 +15795,7 @@ begin
  ;dthvdz@units     = "degK/m"
  ;print("brunt_vaisala_atm: dthvdz: min="+min(dthvdz)+"   max="+max(dthvdz))
 
-  g      = 9.8                    ; m/s2
+  g      = 9.80665                ; m/s2
   buoy   = (g/thv)*dthvdz         ; 'buoyancy' term: [m/s2][1/K][K/m]=[1/s2]     
   copy_VarCoords(thv, buoy)
   buoy@long_name = "buoyancy"
@@ -16493,7 +16654,7 @@ begin
 
 ; meta data
 
-  heatl@long_name =lname
+  heatl@long_name = lname
 
   if (iounit(1).eq.0) then
       heatl@units = "J/kg"         ; joules per kilogram 
@@ -16505,7 +16666,7 @@ begin
       heatl@units = "cal/g"        ; calories (IT) per gram 
   end if   ; iounit(0)=2
   end if   ; iounit(0)=1
-  end if   ; iounit(0)=r0
+  end if   ; iounit(0)=0
 
   copy_VarCoords(t, heatl)         ; copy coords
 
