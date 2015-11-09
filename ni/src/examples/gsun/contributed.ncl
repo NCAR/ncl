@@ -15578,8 +15578,8 @@ begin
   return(hinfo(idx(0),1))  ; to the right of = sign
 end
 ;------------------------------
-undef("brunt_vaisala_frq")
-function brunt_vaisala_frq(th:numeric, z:numeric, ndimz[1]:integer)
+undef("brunt_vaisala_atm")
+function brunt_vaisala_atm(th:numeric, z:numeric, opt[1]:integer, ndimz[1]:integer)
 ;
 ; Brunt-Vaisala: 
 ;   The frequency at which a displaced air parcel will oscillate when displaced 
@@ -15591,16 +15591,17 @@ function brunt_vaisala_frq(th:numeric, z:numeric, ndimz[1]:integer)
 ; Nomenclature:
 ;   th - potential temperature (degK); could also be virtual potential temperature
 ;   z  - geometric height (m)
+;   opt- =0 return Brunt-Vaisala frequency only
+;   opt- =1 return Brunt-Vaisala frequency and dthdz as part of a list variable
 ;
+local dimth, dthdz , pmflag, g, buoy, brunt
 begin
 ;;dimz    = dimsizes(z)
-;;dimth   = dimsizes(th)
-
+  dimth   = dimsizes(th)
 ;;rankz   = dimsizes(dimz)   
 ;;rankth  = dimsizes(dimth)
 
   dthdz   = center_finite_diff_n(th, z, False, 0, ndimz)
-  dthdz   = where(dthdz.lt.0, 0, dthdz)   ; safety only
 
  ;copy_VarCoords(th, dthdz)
  ;dthdz@long_name = "Vertical Gradient of potential temperature"
@@ -15609,23 +15610,35 @@ begin
 
   g      = 9.80665                ; m/s2 at 45N
   buoy   = (g/th)*dthdz           ; 'buoyancy' term (N^2): [m/s2][1/K][K/m]=[1/s2]     
+                                  ; buoyancy can be negative if dthdz < 0
  ;buoy@long_name = "buoyancy"
  ;buoy@units     = "1/s^2"
  ;copy_VarCoords(th, buoy)
  ;print("buoyancy: min="+min(buoy)+"   max="+max(buoy))
 
-  brunt  = sqrt(buoy)
+  pmflag = new(dimth, "integer", -9999 )
+  pmflag = where(buoy.lt.0, -1, 1)
+
+  brunt  = sqrt(abs(buoy))     
+  brunt  = brunt*pmflag           ; add negative flag
+  delete(pmflag)
+
   copy_VarCoords(th, brunt)
-  brunt@long_name = "Brunt–Vaisala (buoyancy) frequency: atm"
+  brunt@long_name = "Brunt-Vaisala frequency"
   brunt@units     = "1/s"
   brunt@info      = "http://glossary.ametsoc.org/wiki/Brunt-v%C3%A4is%C3%A4l%C3%A4_frequency"
+  brunt@sign      = "brunt<0 means the buoyancy was <0"
+  brunt@sign_1    = "User could use where(brunt.lt.0, 0, brunt) to create only positive values "
 
-  return( brunt )
-return
+  if (opt.eq.0) then
+      return( brunt )
+  else
+      return( [/ brunt, dthdz /] )
+  end if
 end
 ;-------------------------------
 undef("eady_growth_rate")
-function eady_growth_rate(th:numeric, u:numeric, z:numeric, lat:numeric,  ndimz[1]:integer)
+function eady_growth_rate(th:numeric, u:numeric, z:numeric, lat:numeric,  opt[1]:integer, ndimz[1]:integer)
 ;
 ; Maximum Eady Growth Rate  
 ;
@@ -15649,14 +15662,9 @@ function eady_growth_rate(th:numeric, u:numeric, z:numeric, lat:numeric,  ndimz[
 ;        http://glossary.ametsoc.org/wiki/potential_temperature
 ;        https://www.ncl.ucar.edu/Document/Functions/Contributed/pot_temp.shtml
 ; u    - zonal wind components (m/s) ; same dimensionality as 'th'
-; lat  - latitude of each grid point ; same dimensionality as 'th'  
 ; z    - height (m)
-; opt  - option
-;        opt=0   return eddy_growth_rater only
-;        opt=1   return Brunt-Vaisala frequency only    
-;        opt=2   return gradient Richardson number & Brunt-Vaisala frequency    
-;        opt=3   return gradient Richardson number , Brunt-Vaisala frequency    
-;                       buoyancy, wind shear2
+; lat  - latitude of each grid point ; same dimensionality as 'th'  
+; opt  - =0 (egr only); 
 ; ndimz- dimension of 'th' for which vertical gradient is to be calculated
 ;        th(:), wspd(:), z(:) ..... ndimz=0
 ;        th(:,:,:)  , z(:) or z(:,:,:)   and the left is the vertical dim, ndimz=0
@@ -15685,8 +15693,10 @@ begin
       exit
   end if
 
-  brunt   = brunt_vaisala_frq(th, z, ndimz)
+  brunt   = brunt_vaisala_atm(th, z, 0, ndimz)
+
   dudz    = center_finite_diff_n(u , z, False, 0, ndimz) 
+
   copy_VarCoords(u, dudz)
   dudz@long_name  = "vertical gradient of the zonal wind (zonal wind shear): du/dz"
   dudz@units      = "1/s"
@@ -15712,13 +15722,24 @@ begin
   egr@units     = ""
   copy_VarCoords(u, egr)
 
-  return (egr)
+  if (opt.eq.0) then
+      return (egr)
+  else if (opt.eq.1) then
+      return ( [/egr, dudz /] )
+  else if (opt.eq.2) then
+      return ( [/egr, dudz, brunt /] )
+  end if
+  end if
+  end if
+
 end
 ;-------------------------------
 undef("rigrad_bruntv_atm")
 function rigrad_bruntv_atm(thv:numeric, u:numeric, v:numeric, z:numeric, opt[1]:integer,  ndim[1]:integer)
 ;
 ; Gradient Richardson Number: RI  = buoyancy/shear_flow
+
+;      Criterion for assessing the stability of stratified shear flow
 ;
 ;      A dimensionless ratio, Ri, related to the buoyant production or 
 ;      consumption of turbulence divided by the shear production of turbulence.
@@ -15736,7 +15757,8 @@ function rigrad_bruntv_atm(thv:numeric, u:numeric, v:numeric, z:numeric, opt[1]:
 ;      Large values of Ri indicate very stable conditions while low values *may*
 ;      indicate dynamic stability (subcritical region).
 ;
-;      Note: Above indicates 0.25 as critical number but others indicate 1.0:q
+;      Note: Above indicates 0.25 as critical number but others indicate 1.0
+;
 ;
 ; Brunt-Vaisala: 
 ;   The frequency at which a displaced air parcel will oscillate when displaced 
@@ -15747,7 +15769,8 @@ function rigrad_bruntv_atm(thv:numeric, u:numeric, v:numeric, z:numeric, opt[1]:
 ; Ri_Num: http://glossary.ametsoc.org/wiki/Gradient_richardson_number
 ;         The latter uses Tv and not THETAv in denominator. ?Error?  Think so.
 ;         http://en.wikipedia.org/wiki/Richardson_number
-;         Actually, in the boundary layer (near 100hpa) Tv ~ thv
+;         Actually, in the boundary layer (near 1000hpa) Tv ~ thv
+;         SEE:  http://radiometrics.com/data/uploads/2012/11/chan_iop08b.pdf
 ;
 ; Nomenclature
 ; thv  - *virtual* potential temperature (K): virtual_pot_temp = pot_temp*(1+0.61w)
@@ -15768,7 +15791,7 @@ function rigrad_bruntv_atm(thv:numeric, u:numeric, v:numeric, z:numeric, opt[1]:
 ;        th(:,:,:,:), z(:) or z(:,:,:,:) and the left is the time dimension 
 ;                                        and the next is height,  ndim=1 
 local dimthv, dimu, dimv, dimz, rankthv, ranku, rankv, rankz \
-    , g, dthvdz, buoy, dudz, dvdz, shear2, Ri
+    , g, dthvdz, pmflag, buoy, dudz, dvdz, shear2, Ri
 begin
                                 ; dimension checking
   dimu    = dimsizes(u)
@@ -15790,27 +15813,34 @@ begin
   end if
 
   dthvdz  = center_finite_diff_n(thv, z, False, 0, ndim) 
- ;copy_VarCoords(thv, dthvdz)
- ;dthvdz@long_name = "Vertical Gradient of potential temperature"
- ;dthvdz@units     = "degK/m"
- ;print("brunt_vaisala_atm: dthvdz: min="+min(dthvdz)+"   max="+max(dthvdz))
+
+  copy_VarCoords(thv, dthvdz)
+  dthvdz@long_name = "Vertical Gradient of potential temperature"
+  dthvdz@units     = "degK/m"
+ ;print("rigrad_bruntv_atm: dthvdz: min="+min(dthvdz)+"   max="+max(dthvdz))
 
   g      = 9.80665                ; m/s2
   buoy   = (g/thv)*dthvdz         ; 'buoyancy' term: [m/s2][1/K][K/m]=[1/s2]     
+
   copy_VarCoords(thv, buoy)
   buoy@long_name = "buoyancy"
   buoy@units     = "1/s^2"
  ;print("buoyancy: min="+min(buoy)+"   max="+max(buoy))
 
-  dthvdz = where(dthvdz.lt.0, 0, dthvdz)
-  brunt  = sqrt((g/thv)*dthvdz)     
+  pmflag = new(dimthv, "integer", -9999 )
+  pmflag = where(buoy.lt.0, -1, 1)
+
+  brunt  = sqrt(abs(buoy))     
+  brunt  = brunt*pmflag
+  delete(pmflag)
+
   copy_VarCoords(thv, brunt)
-  brunt@long_name = "Brunt–Vaisala (buoyancy) frequency: atm"
+  brunt@long_name = "Brunt-Vaisala (buoyancy) frequency: atm"
   brunt@units     = "1/s"
   brunt@info      = "http://glossary.ametsoc.org/wiki/Brunt-v%C3%A4is%C3%A4l%C3%A4_frequency"
-  if (opt.eq.1) then
-      return(brunt)
-  end if
+  brunt@sign      = "brunt<0 means the buoyancy was <0"
+  brunt@sign_1    = "User could use where(brunt.lt.0, 0, brunt) to create only positive values "
+
   delete(dthvdz)
   
   dudz   = center_finite_diff_n(u , z, False, 0, ndim) 
@@ -15836,10 +15866,12 @@ begin
   copy_VarCoords(u, Ri)
   Ri@long_name   = "Gradient Richardson Number"
   Ri@info = "http://glossary.ametsoc.org/wiki/Gradient_richardson_number"
+
   if (opt.eq.0) then
       return(Ri)
   end if
-  if (opt.eq.2) then
+
+  if (opt.eq.1) then
       return([/Ri, brunt/])
   end if
   
