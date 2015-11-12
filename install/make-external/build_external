@@ -438,6 +438,9 @@ if [ $INSTALL_PKGCONFIG ] ; then
       make clean
     fi
     echo "Building $PKGCONFIG_DIR..."
+# Mac systems may need the "--with-internal-glib"
+# if using gcc/gfortran.
+#    ./configure --prefix\=$PREFIX  --with-internal-glib
     ./configure --prefix\=$PREFIX
     make all install
     if [ $? ] ; then
