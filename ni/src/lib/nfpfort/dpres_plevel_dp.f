@@ -10,50 +10,87 @@ C                                                ! output
 C NCLEND
 c     dpres = dpres_plevel(plevel, psfc, ptop, iopt)
 c
-c constant pressure level equivalent of dpres_hybrid_ccm
+      integer nt, ml, nl, kl, jer 
+      double precision  dplvl(klvl)
+
+c loop over all grid points
+
+      do nt=1,ntim
+        do nl=1,nlat
+          do ml=1,mlon
+
+c calculate vertical 'dp' at current grid point
+
+             call dpres1d(klvl,plevel,psfc(ml,nl,nt),pmsg
+     +                   ,ptop,dplvl,iopt,kflag,jer)
+             if (jer.ne.0) then
+                 ier = jer
+             end if
+
+c transfer to return array
+
+             do kl=1,klvl
+                dp(ml,nl,kl,nt) = dplvl(kl)
+             end do
+
+          end do
+        end do
+      end do
+
+      return
+      end
+c ------------------------------------------------------------------------
+C NCLFORTSTART
+      subroutine dpres1d(klvl,plevel,psfc,pmsg,ptop,dp,iopt,kflag,ier) 
+      implicit none
+C                                                ! input 
+      integer              klvl, iopt, kflag, ier
+      double precision     plevel(klvl), psfc, ptop, pmsg
+C                                                ! output
+      double precision     dp(klvl)
+C NCLEND
+c     dpres = dpres_plevel(plevel, psfc, ptop, iopt)
 c
+c isobaric (constant) pressure level equivalent of dpres_hybrid_ccm
 c The returned 'dp' are equivalent to having used  beta factors.
  
 C                                                ! local
-      integer mono, nt, kl, nl, ml, kll
-      double precision    plvl(klvl), dplvl(klvl), pbot, pspan, peps
-      double precision    dpsum, psfcmx, psfcmn, work(klvl)
-
-c beta stuff are place holders: they have not been checked out
-cbeta double precision    beta(klvl), PMAX
-cbeta double precision    PMAX should be an argument
+      integer             mono, kl, klStrt, klLast
+      double precision    plvl(klvl), work(klvl)
+      double precision    dpsum, pspan, peps, plow, phi
+cbeta double precision    beta(klvl)             ! ***UNTESTED***
 
       kflag = 0
       peps  = 0.001d0
 c
 c check to see if ptop is reasonable
+c .   psfc = pmsg   is not allowed
 c .   ptop < 0      is not allowed
 c .   ptop > psfcmx is probably due to units difference
 
       ier    = 0
+      if (psfc.eq.pmsg .or. psfc.lt.0) then
+          ier = 100
+          return
+      end if
+
       if (ptop.lt.0.0d0) then
           ier = 1
           return
       end if
 
-      psfcmn =  1d20
-      psfcmx = -1d20
+      if (ptop.ge.psfc) ier = 10
 
-      do nt=1,ntim
-        do nl=1,nlat
-          do ml=1,mlon
-             if (psfc(ml,nl,nt).ne.pmsg) then
-c c c            if (psfc(ml,nl,nt).lt.psfcmn) psfcmn = psfc(ml,nl,nt)
-                 if (psfc(ml,nl,nt).gt.psfcmx) psfcmx = psfc(ml,nl,nt)
-             end if
+      if (ier.ne.0) then   
+          do kl=1,klvl 
+             dp(kl)   = pmsg
+cbeta        beta(kl) = pmsg
           end do
-        end do
-      end do
-      
-      if (ptop.ge.psfcmx) ier = 10
-      if (ier.ne.0) return
+          dpsum = pmsg
+          return
+      end if
 
-c monotonically increasing or decreasing?
+c monotonically increasing or decreasing? Code wants top to bottom
 c if decreasing pressure make increasing; then flip back 
 
       if (plevel(2).gt.plevel(1)) then
@@ -68,120 +105,97 @@ c if decreasing pressure make increasing; then flip back
           end do
       end if
 
+c initialize to missing
 
-c initialize to nominal dplvl
-
-      dplvl(1) = (plvl(1)+plvl(2))*0.5d0 - ptop
-      do kl=2,klvl-1 
-         dplvl(kl)= 0.5d0*(plvl(kl+1) - plvl(kl-1))
-      end do
-      dplvl(klvl) = psfcmx -(plvl(klvl)+plvl(klvl-1))*0.5d0
-
-c levels outside the range should be ste to 0.0
-
-      do kl=1,klvl 
-         if (plvl(kl).lt.ptop  ) dplvl(kl) = 0.0d0
-         if (plvl(kl).gt.psfcmx) dplvl(kl) = 0.0d0
+      do kl=1,klvl
+         dp(kl)   = pmsg                 
       end do
 
-      do nt=1,ntim
-        do kl=1,klvl
-          do nl=1,nlat
-            do ml=1,mlon
-               dp(ml,nl,kl,nt)   = dplvl(kl)
-            end do
+c calculate 'dp'; check if dpsum.eq.(psfc-ptop) within peps then return
+
+      if (ptop.le.plvl(1) .and. psfc.ge.plvl(klvl)) then
+
+          dp(1) = (plvl(1)+plvl(2))*0.5d0 - ptop
+          do kl=2,klvl-1 
+             dp(kl)= 0.5d0*(plvl(kl+1) - plvl(kl-1))
           end do
-        end do
+          dp(klvl) = psfc -(plvl(klvl)+plvl(klvl-1))*0.5d0
+
+cbeta     beta(1) = dp(1)/(plvl(2) - ptop)
+cbeta     do kl=2,klvl-1 
+cbeta        beta(kl)= 1.0d0
+cbeta     end do
+cbeta     beta(klvl) = (psfc - plvl(klvl-1)/(plvl(klvl)-plvl(klvl-1))
+
+      else 
+          klStrt = 1
+          if (ptop.ge.plvl(1)) then
+             do kl=1,klvl 
+                if (ptop.gt.plvl(kl)) then
+                    klStrt = kl
+                    exit
+                end if
+             end do
+          end if
+
+          klLast = klvl
+          if (psfc.le.plvl(klvl)) then
+             do kl=klStrt,klvl 
+                if (psfc.le.plvl(kl)) then
+                    klLast = kl
+                    exit
+                end if
+             end do
+          end if
+
+          dp(klStrt) = (plvl(klStrt)+plvl(klStrt+1))*0.5d0 - ptop
+          do kl=klStrt+1,klLast-1 
+             dp(kl)= 0.5d0*(plvl(kl+1) - plvl(kl-1))
+          end do
+          dp(klLast) = psfc -(plvl(klLast)+plvl(klLast-1))*0.5d0
+
+cbeta     beta(klStrt) = dp(klStrt)/(plvl(2) - ptop)
+cbeta     do kl=klStrt+1,klLast-1 
+cbeta        beta(kl)= 1.0d0
+cbeta     end do
+cbeta     beta(klLast) = (psfc - plvl(klLast-1)/(plvl(klLast)-plvl(klLast-1))
+
+      end if
+
+c error check
+
+c f90 dpsum = sum(dplvl, 1, dplvl.ne.pmsg)  
+      dpsum = 0.0d0
+      do kl=1,klvl
+         if (dp(kl).ne.pmsg) then
+             dpsum = dpsum + dp(kl)
+         end if
       end do
 
-c modify the default dp
+      pspan = psfc-ptop
 
-      do nt=1,ntim
-        do nl=1,nlat
-          do ml=1,mlon
-
-cbeta       do kl=1,klvl
-cbeta          beta(kl) = 1.0d0
-cbeta       end do
-
-             IF (psfc(ml,nl,nt).eq.pmsg) THEN
-                 do kl=1,klvl
-                    dp(ml,nl,kl,nt) = 0.0d0
-cbeta               beta(kl)        = 0.0d0
-                 end do
-             ELSE
-
-             if (ptop.gt.0.0d0) then
-                 do kl=1,klvl-1
-                    if (ptop.ge.plvl(kl) .and. ptop.lt.plvl(kl+1)) then
-                       dp(ml,nl,kl,nt) =(plvl(kl)+plvl(kl+1))*0.5d0-ptop
-cbeta                  beta(kl) =  (plvl(kl)-ptop)/(plvl(kl+1)-plvl(kl))
-                       go to 100
-                    end if
-                 end do
-             end if
-
-  100        pbot  = psfc(ml,nl,nt)
-             if (pbot.ge.plvl(klvl)) then
-                 dp(ml,nl,klvl,nt) = pbot -(plvl(klvl-1)+plvl(klvl))*0.5d0
-cbeta            beta(klvl) =  (pbot - plvl(klvl))/(PMAX-plvl(klvl))
-             else
-                 do kl=1,klvl-1
-                    if (pbot.ge.plvl(kl) .and. pbot.lt.plvl(kl+1)) then
-                        dp(ml,nl,kl,nt)=pbot-(plvl(kl)+plvl(kl-1))*0.5d0
-cbeta                   beta(kl) =  (pbot - plvl(kl))/(PMAX-plvl(kl))
-                        do kll=(kl+1),klvl
-                           dp(ml,nl,kll,nt) = 0.0d0
-cbeta                      beta(kll)        = 0.0d0
-                        end do
-                        go to 200
-                    end if
-                 end do
-             end if
-
-  200        pspan = pbot-ptop
-
-c check to make sure:     sum(dp)=pspan
-c peps could me much smaller [1e-5]
-c should probably be a fatal error .... indicates something is wrong
-
-             dpsum = 0.0d0
-             do kl=1,klvl
-                dpsum = dpsum + dp(ml,nl,kl,nt)
-             end do
-             if (dpsum.gt.(pspan+peps) .or. dpsum.lt.(pspan-peps) ) then
-                 ier = ier-1
-             end if
-c c c                         IF (psfc(ml,nl,nt).eq.pmsg) THEN
-c c c                         ELSE
-           END IF 
+      if (dpsum.gt.0.0d0 .and. pspan.ne.dpsum) then
+          plow = pspan-peps 
+          phi  = pspan+peps 
+          if (dpsum.gt.phi .or. dpsum.lt.plow) then
+              ier = -1
+              do kl=1,klvl
+                 dp(kl) = pmsg                 
+              end do
+          end if
+      end if
 
 c if necessary return to original order
 
-           if (mono.lt.0) then
-               do kl=1,klvl
-                  work(kl) = dp(ml,nl,kl,nt)
-               end do
-
-               do kl=1,klvl
-                  dp(ml,nl,kl,nt) = work(klvl-kl+1)
-               end do
-           end if
-
-c set all dp=0 to pmsg
-
-           do kl=1,klvl
-              if (dp(ml,nl,kl,nt).eq.0.) then
-                  kflag = 1
-                  dp(ml,nl,kl,nt) = pmsg
-              end if
-           end do
-
-c                                  end do   for ml,nl,nt
+      if (mono.lt.0) then
+          do kl=1,klvl
+             work(kl) = dp(kl)
           end do
-        end do
-      end do
 
+          do kl=1,klvl
+             dp(kl) = work(klvl-kl+1)
+          end do
+       end if
 
       return
       end
