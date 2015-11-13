@@ -1,5 +1,5 @@
 C NCLFORTSTART
-      subroutine dpresplvl(klvl,plevel,ntim,nlat,mlon,psfc,pmsg
+      subroutine xpresplvl(klvl,plevel,ntim,nlat,mlon,psfc,pmsg
      +                    ,ptop,dp,iopt,kflag,ier)
       implicit none
 C                                                ! input 
@@ -58,9 +58,7 @@ C                                                ! local
       integer             mono, kl, klStrt, klLast
       double precision    plvl(klvl), work(klvl)
       double precision    dpsum, pspan, peps, plow, phi
-cbeta double precision    beta(klvl)             ! ***UNTESTED***
 
-      kflag = 0
       peps  = 0.001d0
 c
 c check to see if ptop is reasonable
@@ -84,7 +82,6 @@ c .   ptop > psfcmx is probably due to units difference
       if (ier.ne.0) then   
           do kl=1,klvl 
              dp(kl)   = pmsg
-cbeta        beta(kl) = pmsg
           end do
           dpsum = pmsg
           return
@@ -108,12 +105,13 @@ c if decreasing pressure make increasing; then flip back
 c initialize to missing
 
       do kl=1,klvl
-         dp(kl)   = pmsg                 
+         dp(kl) = pmsg                 
       end do
 
 c calculate 'dp'; check if dpsum.eq.(psfc-ptop) within peps then return
 
       if (ptop.le.plvl(1) .and. psfc.ge.plvl(klvl)) then
+          kflag = 0
 
           dp(1) = (plvl(1)+plvl(2))*0.5d0 - ptop
           do kl=2,klvl-1 
@@ -121,17 +119,13 @@ c calculate 'dp'; check if dpsum.eq.(psfc-ptop) within peps then return
           end do
           dp(klvl) = psfc -(plvl(klvl)+plvl(klvl-1))*0.5d0
 
-cbeta     beta(1) = dp(1)/(plvl(2) - ptop)
-cbeta     do kl=2,klvl-1 
-cbeta        beta(kl)= 1.0d0
-cbeta     end do
-cbeta     beta(klvl) = (psfc - plvl(klvl-1)/(plvl(klvl)-plvl(klvl-1))
-
       else 
+          kflag  = 1
+
           klStrt = 1
           if (ptop.ge.plvl(1)) then
              do kl=1,klvl 
-                if (ptop.gt.plvl(kl)) then
+                if (ptop.le.plvl(kl)) then
                     klStrt = kl
                     exit
                 end if
@@ -140,9 +134,9 @@ cbeta     beta(klvl) = (psfc - plvl(klvl-1)/(plvl(klvl)-plvl(klvl-1))
 
           klLast = klvl
           if (psfc.le.plvl(klvl)) then
-             do kl=klStrt,klvl 
+             do kl=1,klvl 
                 if (psfc.le.plvl(kl)) then
-                    klLast = kl
+                    klLast = kl-1
                     exit
                 end if
              end do
@@ -153,12 +147,6 @@ cbeta     beta(klvl) = (psfc - plvl(klvl-1)/(plvl(klvl)-plvl(klvl-1))
              dp(kl)= 0.5d0*(plvl(kl+1) - plvl(kl-1))
           end do
           dp(klLast) = psfc -(plvl(klLast)+plvl(klLast-1))*0.5d0
-
-cbeta     beta(klStrt) = dp(klStrt)/(plvl(2) - ptop)
-cbeta     do kl=klStrt+1,klLast-1 
-cbeta        beta(kl)= 1.0d0
-cbeta     end do
-cbeta     beta(klLast) = (psfc - plvl(klLast-1)/(plvl(klLast)-plvl(klLast-1))
 
       end if
 
