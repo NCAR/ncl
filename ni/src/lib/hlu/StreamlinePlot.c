@@ -1448,6 +1448,7 @@ StreamlinePlotInitialize
 	char			*e_text;
 	NhlStreamlinePlotLayer	stnew = (NhlStreamlinePlotLayer) new;
 	NhlStreamlinePlotLayerPart	*stp = &(stnew->streamlineplot);
+	NhlGridType             grid_type;
 	NhlSArg			sargs[64];
 	int			nargs = 0;
 
@@ -1557,7 +1558,11 @@ StreamlinePlotInitialize
 	subret = InitCoordBounds(stnew,NULL,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
         
-	switch (stnew->trans.grid_type) {
+	grid_type = stnew->trans.grid_type;
+	if (! stp->data_init) {  /* grid type known to work with no data */
+		grid_type = NhltrLOGLIN; 
+	}
+	switch (grid_type) {
 	case NhltrLOGLIN:
 	default:
 		subret = SetUpLLTransObj
@@ -1743,6 +1748,7 @@ static NhlErrorTypes StreamlinePlotSetValues
  	NhlStreamlinePlotLayerPart	*stp = &(stnew->streamlineplot);
 	NhlStreamlinePlotLayer		stold = (NhlStreamlinePlotLayer) old;
  	NhlStreamlinePlotLayerPart	*ostp = &(stold->streamlineplot);
+	NhlGridType             grid_type;
 	/* Note that ManageLabelBar add to sargs */
 	NhlSArg			sargs[128];
 	int			nargs = 0;
@@ -1870,7 +1876,11 @@ static NhlErrorTypes StreamlinePlotSetValues
 	subret = InitCoordBounds(stnew,(NhlStreamlinePlotLayer)old,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
         
-	switch (stnew->trans.grid_type) {
+	grid_type = stnew->trans.grid_type;
+	if (! stp->data_init) {  /* grid type known to work with no data */
+		grid_type = NhltrLOGLIN; 
+	}
+	switch (grid_type) {
 	case NhltrLOGLIN:
 	default:
 		subret = SetUpLLTransObj

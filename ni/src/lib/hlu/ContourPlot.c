@@ -2061,6 +2061,7 @@ ContourPlotInitialize
 	NhlContourPlotLayerPart	*cnp = &(cnew->contourplot);
 	NhlSArg			sargs[64];
 	int			nargs = 0;
+	NhlGridType             grid_type;
 
 	cnp->fws_id = -1;
 	cnp->iws_id = -1;
@@ -2247,7 +2248,11 @@ ContourPlotInitialize
 	subret = InitCoordBounds(cnew,NULL,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
-	switch (cnp->grid_type) {
+	grid_type = cnp->grid_type;
+	if (! cnp->data_init) {  /* grid type known to work with no data */
+		grid_type = NhltrLOGLIN; 
+	}
+	switch (grid_type) {
 	case NhltrLOGLIN:
 	default:
 		subret = SetUpLLTransObj(cnew,(NhlContourPlotLayer) req,True);
@@ -2475,6 +2480,7 @@ static NhlErrorTypes ContourPlotSetValues
  	NhlContourPlotLayerPart	*cnp = &(cnew->contourplot);
 	NhlContourPlotLayer		cold = (NhlContourPlotLayer) old;
  	NhlContourPlotLayerPart	*ocnp = &(cold->contourplot);
+	NhlGridType             grid_type;
 	/* Note that both ManageLegend and ManageLabelBar add to sargs */
 	NhlSArg			sargs[128];
 	int			nargs = 0;
@@ -2654,7 +2660,11 @@ static NhlErrorTypes ContourPlotSetValues
 	subret = InitCoordBounds(cnew,cold,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
-	switch (cnp->grid_type) {
+	grid_type = cnp->grid_type;
+	if (! cnp->data_init) {  /* grid type known to work with no data */
+		grid_type = NhltrLOGLIN; 
+	}
+	switch (grid_type) {
 	case NhltrLOGLIN:
 	default:
 		subret = SetUpLLTransObj(cnew,(NhlContourPlotLayer)old,False);

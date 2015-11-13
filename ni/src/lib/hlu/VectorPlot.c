@@ -1853,6 +1853,7 @@ VectorPlotInitialize
 	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
 	NhlSArg			sargs[64];
 	int			nargs = 0;
+	NhlGridType             grid_type;
 
 	vcp->refvec_anno_id = NhlNULLOBJID;
 	vcp->minvec_anno_id = NhlNULLOBJID;
@@ -2012,7 +2013,11 @@ VectorPlotInitialize
 	subret = InitCoordBounds(vcnew,NULL,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
-	switch (vcnew->trans.grid_type) {
+	grid_type = vcnew->trans.grid_type;
+	if (! vcp->data_init) {  /* grid type known to work with no data */
+		grid_type = NhltrLOGLIN; 
+	}
+	switch (grid_type) {
 	case NhltrLOGLIN:
 	default:
 		subret = SetUpLLTransObj(vcnew,(NhlVectorPlotLayer) req,True);
@@ -2440,6 +2445,7 @@ static NhlErrorTypes VectorPlotSetValues
  	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
 	NhlVectorPlotLayer		vcold = (NhlVectorPlotLayer) old;
  	NhlVectorPlotLayerPart	*ovcp = &(vcold->vectorplot);
+	NhlGridType             grid_type;
 	/* Note that ManageLabelBar add to sargs */
 	NhlSArg			sargs[128];
 	int			nargs = 0;
@@ -2604,7 +2610,11 @@ static NhlErrorTypes VectorPlotSetValues
 	subret = InitCoordBounds(vcnew,(NhlVectorPlotLayer)old,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
-	switch (vcnew->trans.grid_type) {
+	grid_type = vcnew->trans.grid_type;
+	if (! vcp->data_init) {  /* grid type known to work with no data */
+		grid_type = NhltrLOGLIN; 
+	}
+	switch (grid_type) {
 	case NhltrLOGLIN:
 	default:
 		subret = SetUpLLTransObj(vcnew,(NhlVectorPlotLayer)old,False);
