@@ -1,5 +1,5 @@
 C NCLFORTSTART
-      subroutine xpresplvl(klvl,plevel,ntim,nlat,mlon,psfc,pmsg
+      subroutine dpresplvl(klvl,plevel,ntim,nlat,mlon,psfc,pmsg
      +                    ,ptop,dp,iopt,kflag,ier)
       implicit none
 C                                                ! input 
