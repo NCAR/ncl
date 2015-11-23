@@ -25,7 +25,7 @@ extern void NGCALLF(p2hyo,P2HYO)(double*,int*,int*,int*,double*,double*,
                                  double*,double*,double*,int*,double*,
                                  double*,int*,int*,int*);
 
-extern void NGCALLF(xpresplvl,XPRESPLVL)(int *,double *,int *,int *,int *,
+extern void NGCALLF(dpresplvl,DPRESPLVL)(int *,double *,int *,int *,int *,
                                          double *,double *,double *,double *,
                                          int *,int *,int *);
 
@@ -1377,7 +1377,7 @@ NhlErrorTypes dpres_plevel_W( void )
     }
   }
 
-  NGCALLF(xpresplvl,XPRESPLVL)(&iklvl,tmp_plev,&intim,&inlat,&inlon,tmp_psfc,
+  NGCALLF(dpresplvl,DPRESPLVL)(&iklvl,tmp_plev,&intim,&inlat,&inlon,tmp_psfc,
                                &missing_dpsfc.doubleval,tmp_ptop,tmp_dp,
                                iopt,&kflag,&ier);
   if(ier < 0) {
