@@ -12,6 +12,7 @@ c     dpres = dpres_plevel(plevel, psfc, ptop, iopt)
 c
       integer nt, ml, nl, kl, jer 
       double precision  dplvl(klvl)
+      double precision  dpsum, pdif               ! only used in debugging   
 
 c loop over all grid points
 
@@ -22,16 +23,17 @@ c loop over all grid points
 c calculate vertical 'dp' at current grid point
 
              call dpres1d(klvl,plevel,psfc(ml,nl,nt),pmsg
-     +                   ,ptop,dplvl,iopt,kflag,jer)
-             if (jer.ne.0) then
-                 ier = jer
-             end if
+     +                   ,ptop,dplvl,iopt,kflag,ier)
 
 c transfer to return array
 
              do kl=1,klvl
                 dp(ml,nl,kl,nt) = dplvl(kl)
              end do
+
+cdebug       dpsum = sum(dplvl, 1, dplvl.ne.pmsg)   ! f90 array function
+cdebug       pdif  = psfc(ml,nl,nt)-ptop
+cdebug       print *,"dpsum=", dpsum,"  pdif=",pdif
 
           end do
         end do
@@ -49,6 +51,7 @@ C                                                ! input
 C                                                ! output
       double precision     dp(klvl)
 C NCLEND
+c
 c     dpres = dpres_plevel(plevel, psfc, ptop, iopt)
 c
 c isobaric (constant) pressure level equivalent of dpres_hybrid_ccm
@@ -67,19 +70,14 @@ c .   ptop < 0      is not allowed
 c .   ptop > psfcmx is probably due to units difference
 
       ier    = 0
-      if (psfc.eq.pmsg .or. psfc.lt.0) then
-          ier = 100
-          return
-      end if
+      if (ptop.lt.0.0d0) ier = ier + 1
+      if (ptop.ge.psfc)  ier = ier + 10
+      if (psfc.eq.pmsg .or. psfc.lt.0.0d0) ier = ier + 100
 
-      if (ptop.lt.0.0d0) then
-          ier = 1
-          return
-      end if
-
-      if (ptop.ge.psfc) ier = 10
+c if ier.ne.0; input error with psfc and/or ptop
 
       if (ier.ne.0) then   
+          kflag = 1
           do kl=1,klvl 
              dp(kl)   = pmsg
           end do
@@ -148,11 +146,14 @@ c calculate 'dp'; check if dpsum.eq.(psfc-ptop) within peps then return
           end do
           dp(klLast) = psfc -(plvl(klLast)+plvl(klLast-1))*0.5d0
 
+cdebug    print *,"klStrt=",klStrt,"  plvl(klStrt)=",plvl(klStrt)
+cdebug    print *,"klLast=",klLast,"  plvl(klLast)=",plvl(klLast)
+
       end if
 
 c error check
 
-c f90 dpsum = sum(dplvl, 1, dplvl.ne.pmsg)  
+cdebug dpsum = sum(dplvl, 1, dplvl.ne.pmsg)  ! f90 array function  
       dpsum = 0.0d0
       do kl=1,klvl
          if (dp(kl).ne.pmsg) then
