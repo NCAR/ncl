@@ -12,7 +12,7 @@ c     dpres = dpres_plevel(plevel, psfc, ptop, iopt)
 c
       integer nt, ml, nl, kl, jer 
       double precision  dplvl(klvl)
-      double precision  dpsum, pdif               ! only used in debugging   
+cdebugdouble precision  dpsum, pdif   
 
 c loop over all grid points
 
@@ -23,7 +23,7 @@ c loop over all grid points
 c calculate vertical 'dp' at current grid point
 
              call dpres1d(klvl,plevel,psfc(ml,nl,nt),pmsg
-     +                   ,ptop,dplvl,iopt,kflag,ier)
+     +                    ,ptop,dplvl,iopt,kflag,ier)
 
 c transfer to return array
 
@@ -51,7 +51,6 @@ C                                                ! input
 C                                                ! output
       double precision     dp(klvl)
 C NCLEND
-c
 c     dpres = dpres_plevel(plevel, psfc, ptop, iopt)
 c
 c isobaric (constant) pressure level equivalent of dpres_hybrid_ccm
@@ -70,9 +69,9 @@ c .   ptop < 0      is not allowed
 c .   ptop > psfcmx is probably due to units difference
 
       ier    = 0
+      if (psfc.eq.pmsg .or. psfc.lt.0.0d0) ier = ier + 100
       if (ptop.lt.0.0d0) ier = ier + 1
       if (ptop.ge.psfc)  ier = ier + 10
-      if (psfc.eq.pmsg .or. psfc.lt.0.0d0) ier = ier + 100
 
 c if ier.ne.0; input error with psfc and/or ptop
 
@@ -140,20 +139,31 @@ c calculate 'dp'; check if dpsum.eq.(psfc-ptop) within peps then return
              end do
           end if
 
-          dp(klStrt) = (plvl(klStrt)+plvl(klStrt+1))*0.5d0 - ptop
-          do kl=klStrt+1,klLast-1 
-             dp(kl)= 0.5d0*(plvl(kl+1) - plvl(kl-1))
-          end do
-          dp(klLast) = psfc -(plvl(klLast)+plvl(klLast-1))*0.5d0
+cdebugprint *,"klStrt=",klStrt," klLast=",klLast," ptop=",ptop
+cdebugprint *,"plvl(klStrt)=",plvl(klStrt)," plvl(klLast)=",plvl(klLast)
+cdebugprint *,"plvl(klStrt  )=",plvl(klStrt)  
+cdebugprint *,"plvl(klStrt+1)=",plvl(klStrt+1)
+cdebugprint *,"dp(klStrt)=",dp(klStrt)
 
-cdebug    print *,"klStrt=",klStrt,"  plvl(klStrt)=",plvl(klStrt)
-cdebug    print *,"klLast=",klLast,"  plvl(klLast)=",plvl(klLast)
+          if (klStrt.eq.klLast) then
+              dp(klStrt) = psfc-ptop
+          elseif (klStrt.lt.klLast) then
+              dp(klStrt) = (plvl(klStrt)+plvl(klStrt+1))*0.5d0 - ptop
+              do kl=klStrt+1,klLast-1 
+                 dp(kl)= 0.5d0*(plvl(kl+1) - plvl(kl-1))
+              end do
+              dp(klLast) = psfc -(plvl(klLast)+plvl(klLast-1))*0.5d0
+
+c c c     else     ! klStrt>klLast  is a pathological case
+c c c              ! plev(?)=500  plev(?+1)=550, psfc=540, ptop=510
+c c c              ! both level are *between* levels
+          end if
 
       end if
 
 c error check
 
-cdebug dpsum = sum(dplvl, 1, dplvl.ne.pmsg)  ! f90 array function  
+c f90 dpsum = sum(dplvl, 1, dplvl.ne.pmsg)  
       dpsum = 0.0d0
       do kl=1,klvl
          if (dp(kl).ne.pmsg) then
