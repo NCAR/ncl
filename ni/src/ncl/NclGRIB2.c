@@ -3619,6 +3619,7 @@ int stat_type_only
 #endif
 {
 	char buffer[128];
+        int time_period;
 
 	strcpy(buffer,NrmQuarkToString(param->var_info.var_name_quark));
 
@@ -3664,45 +3665,47 @@ int stat_type_only
 		return;
 	}
 
+	time_period = abs(param->time_period);
+
 	switch (param->time_period_units) {
 	case 0:
-		sprintf(&(buffer[strlen(buffer)]),"%dmin",param->time_period);
+		sprintf(&(buffer[strlen(buffer)]),"%dmin",time_period);
 		break;
 	case 1:
-		sprintf(&(buffer[strlen(buffer)]),"%dh",param->time_period);
+		sprintf(&(buffer[strlen(buffer)]),"%dh",time_period);
 		break;
 	case 2:
-		sprintf(&(buffer[strlen(buffer)]),"%dd",param->time_period);
+		sprintf(&(buffer[strlen(buffer)]),"%dd",time_period);
 		break;
 	case 3:
-		sprintf(&(buffer[strlen(buffer)]),"%dm",param->time_period);
+		sprintf(&(buffer[strlen(buffer)]),"%dm",time_period);
 		break;
 	case 4:
-		sprintf(&(buffer[strlen(buffer)]),"%dy",param->time_period);
+		sprintf(&(buffer[strlen(buffer)]),"%dy",time_period);
 		break;
 	case 5:
-		sprintf(&(buffer[strlen(buffer)]),"%dy",param->time_period * 10);
+		sprintf(&(buffer[strlen(buffer)]),"%dy",time_period * 10);
 		break;
 	case 6:
-		sprintf(&(buffer[strlen(buffer)]),"%dy",param->time_period * 30);
+		sprintf(&(buffer[strlen(buffer)]),"%dy",time_period * 30);
 		break;
 	case 7:
-		sprintf(&(buffer[strlen(buffer)]),"%dy",param->time_period * 100);
+		sprintf(&(buffer[strlen(buffer)]),"%dy",time_period * 100);
 		break;
 	case 10:
-		sprintf(&(buffer[strlen(buffer)]),"%dh",param->time_period * 3);
+		sprintf(&(buffer[strlen(buffer)]),"%dh",time_period * 3);
 		break;
 	case 11:
-		sprintf(&(buffer[strlen(buffer)]),"%dh",param->time_period * 6);
+		sprintf(&(buffer[strlen(buffer)]),"%dh",time_period * 6);
 		break;
 	case 12:
-		sprintf(&(buffer[strlen(buffer)]),"%dh",param->time_period * 12);
+		sprintf(&(buffer[strlen(buffer)]),"%dh",time_period * 12);
 		break;
 	case 13:
-		sprintf(&(buffer[strlen(buffer)]),"%dsec",param->time_period);
+		sprintf(&(buffer[strlen(buffer)]),"%dsec",time_period);
 		break;
 	default:
-		sprintf(&(buffer[strlen(buffer)]),"%d",param->time_period);
+		sprintf(&(buffer[strlen(buffer)]),"%d",time_period);
 		break;
 	}
 	param->var_info.var_name_quark = NrmStringToQuark(buffer);
@@ -3719,45 +3722,47 @@ int period;
 int indicator;
 #endif
 {
+	int lperiod = abs(period);
+
 	switch (indicator) {
 	case 0:
-		sprintf(buf,"%d minutes",period);
+		sprintf(buf,"%d minutes",lperiod);
 		return;
 	case  1:
-		sprintf(buf,"%d hours",period);
+		sprintf(buf,"%d hours",lperiod);
 		return;
 	case  2:
-		sprintf(buf,"%d days",period);
+		sprintf(buf,"%d days",lperiod);
 		return;
 	case  3:
-		sprintf(buf,"%d months",period);
+		sprintf(buf,"%d months",lperiod);
 		return;
 	case  4:
-		sprintf(buf,"%d years",period);
+		sprintf(buf,"%d years",lperiod);
 		return;
 	case  5:
-		sprintf(buf,"%d decades",period);
+		sprintf(buf,"%d decades",lperiod);
 		return;
 	case  6:
-		sprintf(buf,"%d decades",period * 3);
+		sprintf(buf,"%d decades",lperiod * 3);
 		return;
 	case  7:
-		sprintf(buf,"%d centuries",period);
+		sprintf(buf,"%d centuries",lperiod);
 		return;
 	case  10:
-		sprintf(buf,"%d hours",period * 3);
+		sprintf(buf,"%d hours",lperiod * 3);
 		return;
 	case  11:
-		sprintf(buf,"%d hours",period * 6);
+		sprintf(buf,"%d hours",lperiod * 6);
 		return;
 	case  12:
-		sprintf(buf,"%d hours",period * 12);
+		sprintf(buf,"%d hours",lperiod * 12);
 		return;
 	case  13:
-		sprintf(buf,"%d seconds",period);
+		sprintf(buf,"%d seconds",lperiod);
 		return;
 	default:
-		sprintf(buf,"%d (unknown units)",period);
+		sprintf(buf,"%d (unknown units)",lperiod);
 		return;
 	}
 
@@ -8822,9 +8827,9 @@ Grib2ParamList  *g2plist;
 	max_count = 10;
 	time_periods = NclMalloc(max_count * sizeof(int));
 	for (i = 0; i < max_count; i++) {
-		time_periods[i] = -999;
+		time_periods[i] = -9999999;
 	}
-	max_period = -999;
+	max_period = -9999999;
 
 	/* 
 	 * get the shortest time period units
