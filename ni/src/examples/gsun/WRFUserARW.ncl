@@ -2129,14 +2129,13 @@ begin
        end if   ;time = -1
 
 
-;Get total pressure
+;Get total pressure and temperature in degrees K
          Pdims = dimsizes(P)
          pres  = P + PB
+         
+         T = T + 300.
+         tk = wrf_tk(pres, T)
          pres  = pres * 0.01
-
-;Get temperature in degrees K
-         T     = T +300.
-         tk    = wrf_tk( pres , T )
 
 ;Get geopotential height on mass points
          stag_ght   = PH
