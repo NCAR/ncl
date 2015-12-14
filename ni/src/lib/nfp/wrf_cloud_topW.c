@@ -665,7 +665,7 @@ NhlErrorTypes wrf_ctt_W( void )
   cdescription = (char *)calloc(22,sizeof(char));
   cunits       = (char *)calloc(2,sizeof(char));
   strcpy(cdescription,"Cloud Top Temperature");
-  strcpy(cunits,"K");
+  strcpy(cunits,"C");
   description = (NclQuark*)NclMalloc(sizeof(NclQuark));
   units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
