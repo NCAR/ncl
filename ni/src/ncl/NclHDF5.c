@@ -1452,7 +1452,14 @@ void _setHDF5AttValue(HDF5AttInqRecList *new_att_list,
                  char *buffer;
                  NclQuark *tmp_quark;
                  int latlon = 0;
+		 int i;
+		 tmp_quark = (NclQuark *)NclMalloc(len * sizeof(NrmQuark *));
+		 for (i = 0; i < len; i++) {
+			 tmp_quark[i] = ((NclQuark *)attr_node->value)[i];
+		 }
+			 
 
+#if 0
                  buffer = (char *)NclMalloc((1 + attr_node->nbytes) * sizeof(char));
                  if(!buffer)
                  {
@@ -1473,7 +1480,7 @@ void _setHDF5AttValue(HDF5AttInqRecList *new_att_list,
                              __FILE__, __LINE__);
                      return;
                  }
-
+#endif
                  if(update)
                  {
                      if(0 == strcmp("LATITUDE", var_name))
@@ -1494,15 +1501,15 @@ void _setHDF5AttValue(HDF5AttInqRecList *new_att_list,
                      }
                  }
 
-                 if(! latlon)
+		 new_att->value = (void *)tmp_quark;
+                 if(latlon)
                  {
-                     *tmp_quark = NrmStringToQuark(buffer);
+			 new_att->n_elem = 1;
                  }
+		 else {
+			 new_att->n_elem = len;
+		 }
 
-                 new_att->value = (void *)tmp_quark;
-                 new_att->n_elem = 1;
-
-                 free(buffer);
              }
              break;
         default:
@@ -1580,8 +1587,10 @@ HDF5AttInqRec *_find_dim_att_inq(HDF5AttInqRecList *head_att_list, int n_atts, N
     {
         att_inq = att_list->att_inq;
 
-        if(att_inq->type != NCL_string)
-            continue;
+        if(att_inq->type != NCL_string) {
+		att_list = att_list->next;
+		continue;
+	}
 
         if(attname == att_inq->name)
             return att_inq;
@@ -2125,13 +2134,19 @@ HDF5GrpInqRec *_HDF5Build_grp_list(NclHDF5group_node_t *HDF5group)
        *    var_cur_list->var_inq->type = NCL_none;
        *}
        */
- 
-        for(i = 0; i < dataset_node->ndims; i++)
-        {
-            var_cur_list->var_inq->dim[i] = (long) dataset_node->dims[i];
-            var_cur_list->var_inq->dim_name[i] = NrmStringToQuark(dataset_node->dim_name[i]);
-        }
 
+        if (! strcmp(dataset_node->space_name,"SCALAR")) {
+		var_cur_list->var_inq->dim[i] = (long) 1;
+		var_cur_list->var_inq->n_dims = 1;
+		var_cur_list->var_inq->dim_name[i] = NrmStringToQuark("ncl_scalar");
+	}
+        else {
+		for(i = 0; i < dataset_node->ndims; i++)
+		{
+			var_cur_list->var_inq->dim[i] = (long) dataset_node->dims[i];
+			var_cur_list->var_inq->dim_name[i] = NrmStringToQuark(dataset_node->dim_name[i]);
+		}
+	}
         if(var_cur_list->var_inq->type == NCL_compound)
         {
           /*
@@ -2401,8 +2416,9 @@ static void _update_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHDF5d
             continue;
 
         num_new_dim = 0;
-        ori_str = strdup((char *)attr_list->attr_node->value);
-        result = strtok(ori_str, delimiter);
+	ori_str = NrmQuarkToString(*(NclQuark *) attr_list->attr_node->value);
+        tmp_str = strdup(ori_str);
+	result = strtok(tmp_str, delimiter);
         while(result != NULL)
         {
             new_dim_name[num_new_dim] = NrmStringToQuark(result);
@@ -2414,7 +2430,7 @@ static void _update_dim_list(HDF5DimInqRecList **dim_list, int *n_dims, NclHDF5d
             result = strtok(NULL, delimiter);
             num_new_dim++;
         }
-        free(ori_str);
+        free(tmp_str);
 
       /*
        *fprintf(stderr, "\tnum_new_dim: %d\n", num_new_dim);
@@ -3026,6 +3042,7 @@ int wr_status;
         return(NULL);
     }
 
+    /*printf("opening file as HDF5\n");*/
     the_file->file_path_q = path;
     the_file->wr_status = wr_status;
 
@@ -3688,7 +3705,7 @@ NclHDF5group_node_t *h5_group;
                 return (0);
             }
 
-            NclHDF5data = _NclHDF5get_data_with_name(fid, dataset_name, h5_group);
+            NclHDF5data = _NclHDF5get_data_with_name(fid, dataset_name, h5_group, start, finish, stride);
 
             for(j = 0; j < thelist->var_inq->n_dims; j++)
             {
@@ -3888,8 +3905,8 @@ void* storage;
                 return (NULL);
             }
 
-            NclHDF5data = _NclHDF5get_data_with_name(fid, dataset_name, thefile->h5_group);
-
+            NclHDF5data = _NclHDF5get_data_with_name(fid, dataset_name, thefile->h5_group, start, finish, stride);
+#if 0
             for(j = 0; j < thelist->var_inq->n_dims; j++)
             {
                 starti[j] = (hsize_t)start[j] ;
@@ -3908,6 +3925,7 @@ void* storage;
                *        j, (long) start[j], j, (long) stride[j], j, (long) start[j], j, (long) finish[j]);
                */
             }
+#endif
 
             H5close();
 
@@ -3920,8 +3938,9 @@ void* storage;
 
                 if(no_stride)
                 {
-                    if(NclHDF5data->is_str)
+		    if (NclHDF5data->is_str == 1 || NclHDF5data->is_str == 2)  /* fixed length string array */
                     {
+			char *cp;
                         NclQuark *qp = NclCalloc(NclHDF5data->nbytes, sizeof(NclQuark));
                         if(!qp)
                         {
@@ -3929,8 +3948,33 @@ void* storage;
                                     __FILE__, __LINE__));
                             return 0;
                         }
-                        for(j = 0; j < NclHDF5data->nbytes; j++)
-                            qp[j] = NrmStringToQuark((char *)NclHDF5data->value);
+			cp = (char *)NclHDF5data->value;
+                        for(j = 0; j < NclHDF5data->nbytes; j++) {
+				int len = strlen(cp);
+				if (NclHDF5data->is_str == 2) {
+					char *rcp = cp + len - 1;
+					while (*rcp == ' ')
+						*(rcp--) = '\0';
+				}
+				qp[j] = NrmStringToQuark(cp);
+				cp += len + 1;
+			}
+                        memcpy(storage, qp, NclHDF5data->nbytes*sizeof(NclQuark));
+                        free(qp);
+                    }
+		    else if (NclHDF5data->is_str == 3) { /* variable length string array */
+			char **cpp;
+                        NclQuark *qp = NclCalloc(NclHDF5data->nbytes, sizeof(NclQuark));
+                        if(!qp)
+                        {
+                            NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Failed to allocated memory for curAttrList. in file: %s, line: %d\n",
+                                    __FILE__, __LINE__));
+                            return 0;
+                        }
+			cpp = (char **)NclHDF5data->value;
+                        for(j = 0; j < NclHDF5data->nbytes; j++) {
+                            qp[j] = NrmStringToQuark(cpp[j]);
+			}
                         memcpy(storage, qp, NclHDF5data->nbytes*sizeof(NclQuark));
                         free(qp);
                     }

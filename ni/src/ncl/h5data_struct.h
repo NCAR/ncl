@@ -318,7 +318,8 @@ void _NclHDF5free_group(NclHDF5group_node_t *HDF5group);
 
 void _NclHDF5var_list(NclHDF5var_list_t **HDF5var_list, NclHDF5group_node_t *HDF5group);
 
-NclHDF5data_t *_NclHDF5get_data_with_name(hid_t fid, char *dataset_name, NclHDF5group_node_t *HDF5group);
+NclHDF5data_t *_NclHDF5get_data_with_name(hid_t fid, char *dataset_name, NclHDF5group_node_t *HDF5group,
+	                                  long *start, long *finish, long *stride);
 
 NclHDF5group_node_t *_NclHDF5allocate_group(hid_t fid, const char *fname, char *gname, H5O_type_t type);
 herr_t _NclHDF5recursive_check(hid_t fid, char *grp_name,
@@ -342,7 +343,8 @@ unsigned char *_NclHDF5get_dataset(hid_t fid, char *dataset_name, hid_t dset, ch
 unsigned char *_NclHDF5get_simple_dataset(hid_t dset, hid_t p_type, char *type_name);
 unsigned char *_NclHDF5get_native_dataset(hid_t fid, char *dataset_name, char *type_name,
                                           NclHDF5compound_t *compound,
-                                          const char *component, int *is_str);
+                                          const char *component, int *is_str,
+	                                  long *start, long *finish, long *stride);
 
 char *_find_parent_group_name(char *name);
 char *_get_short_name(char *name);

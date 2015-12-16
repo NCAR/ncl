@@ -1570,8 +1570,9 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
         if(0 == strcmp(type_name, "string"))
         {
             size_t      str_size=0;
+
+           H5T_str_t   str_pad;
           /*
-           *H5T_str_t   str_pad;
            *H5T_cset_t  cset;
            */
             hid_t       tmp_type;
@@ -1581,56 +1582,68 @@ herr_t _checkH5attribute(hid_t obj_id, char *attr_name, const H5A_info_t *ainfo,
             tmp_type = H5Tcopy(type);
             str_size = H5Tget_size(tmp_type);
           /*
-           *str_pad = H5Tget_strpad(tmp_type);
            *cset = H5Tget_cset(tmp_type);
            */
+            str_pad = H5Tget_strpad(tmp_type);
             is_vlstr = H5Tis_variable_str(tmp_type);
 
-            tmpstr = (char *)NclCalloc(str_size + 1, 1);
-            assert(tmpstr);
+	    if (attnode->n_elem < 1) {
+		    attnode->value = NclMalloc(sizeof(NrmQuark));
+		    *((NrmQuark*)attnode->value) = NrmNULLQUARK;
+	    }
+	    else {
+		    tmpstr = (char *)NclCalloc(str_size + 1, 1);
+		    assert(tmpstr);
 
-            attnode->value = NclMalloc(attnode->n_elem * sizeof(NrmQuark));
-            assert(attnode->value);
-            qptr = (NrmQuark *)attnode->value;
 
-          /*
-           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-           *fprintf(stderr, "\ttype_name=<%s>\n", type_name);
-           *fprintf(stderr, "\tstr_size=<%d>\n", str_size);
-           *fprintf(stderr, "\tis_vlstr=<%d>\n", is_vlstr);
-           */
+		    attnode->value = NclMalloc(attnode->n_elem * sizeof(NrmQuark));
+		    assert(attnode->value);
+		    qptr = (NrmQuark *)attnode->value;
 
-            if(is_vlstr)
-            {
-                char      **vlstr;
-                vlstr = (char **) NclCalloc(attnode->n_elem, sizeof(char *));
-                assert(vlstr);
-                status = H5Aread(attr_id, type, vlstr);
+		    /*
+		     *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+		     *fprintf(stderr, "\ttype_name=<%s>\n", type_name);
+		     *fprintf(stderr, "\tstr_size=<%d>\n", str_size);
+		     *fprintf(stderr, "\tis_vlstr=<%d>\n", is_vlstr);
+		     */
 
-                for(i = 0; i < nelmts; ++i)
-                {
-                    qptr[i] = NrmStringToQuark(vlstr[i]);
-                    NclFree(vlstr[i]);
-                }
+		    if(is_vlstr)
+		    {
+			    char      **vlstr;
+			    vlstr = (char **) NclCalloc(attnode->n_elem, sizeof(char *));
+			    assert(vlstr);
+			    status = H5Aread(attr_id, type, vlstr);
 
-                NclFree(vlstr);
-            }
-            else
-            {
-                char cp[MAX_NCL_BUFFER_LENGTH];
+			    for(i = 0; i < nelmts; ++i)
+			    {
+				    qptr[i] = NrmStringToQuark(vlstr[i]);
+			    }
+			    status = H5Dvlen_reclaim (type, space, H5P_DEFAULT, vlstr);
+			    NclFree(vlstr);
+		    }
+		    else
+		    {
+			    char *str;
+			    char *cp;
 
-                memset(cp, 0, MAX_NCL_BUFFER_LENGTH);
+			    str = (char *) NclCalloc(str_size * nelmts,sizeof(char));
+			    status = H5Aread(attr_id, tmp_type, str);
 
-                status = H5Aread(attr_id, tmp_type, cp);
+			    for(i = 0; i < nelmts; ++i)
+			    {
+				    memset(tmpstr, 0, str_size+1);
+				    memcpy(tmpstr, str + i * str_size, str_size);
+				    if (str_pad == H5T_STR_SPACEPAD) {
+					    cp = &(tmpstr[str_size-1]);
+					    while (*cp == ' ')
+						    *(cp--) = '\0';
 
-                for(i = 0; i < nelmts; ++i)
-                {
-                    memset(tmpstr, 0, str_size+1);
-                    memcpy(tmpstr, cp + i * str_size, str_size);
-                    qptr[i] = NrmStringToQuark(tmpstr);
-                }
-            }
-            free(tmpstr);
+				    }
+				    qptr[i] = NrmStringToQuark(tmpstr);
+			    }
+		    }
+		    free(tmpstr);
+	    }
         }
         else if(NCL_enum == attnode->type)
         {
@@ -2753,7 +2766,7 @@ herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode **node)
     hid_t       space;          /* data space                 */
     hid_t       type;           /* data type                  */
     int         ndims;          /* dimensionality             */
-  /*H5S_class_t space_type;*/   /* type of dataspace          */
+    H5S_class_t space_type;    /* type of dataspace          */
     int   i;
 
     char *typename;
@@ -2767,6 +2780,7 @@ herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode **node)
    */
 
     space = H5Dget_space(dset);
+    space_type = H5Sget_simple_extent_type(space);
     ndims = H5Sget_simple_extent_dims(space, cur_size, max_size);
 
     if(ndims > 0)
@@ -2777,7 +2791,14 @@ herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode **node)
     else
     {
         varnode->dim_rec = _NclFileDimAlloc(1);
-        varnode->dim_rec->n_dims = 0;
+	if (space_type == H5S_SCALAR) {
+		varnode->dim_rec->n_dims = 1;
+		ndims = 1;
+		cur_size[0] = 1;
+	}
+	else {
+		varnode->dim_rec->n_dims = 0;
+	}
     }
 
     varnode->dim_rec->gid = dset;
@@ -3751,6 +3772,7 @@ static int _buildH5VarDimlist(NclFileVarNode *varnode, NclFileDimRecord *grpdimr
             continue;
 
         i = 0;
+	
         ori_str = NrmQuarkToString(*(NclQuark *)attnode->value);
         tmp_str = strdup(ori_str);
         result = strtok(tmp_str, delimiter);
@@ -3950,6 +3972,7 @@ void *H5OpenFile(void *rec, NclQuark path, int status)
         return(NULL);
     }
 
+    /*printf("opening file as H5\n");*/
     grpnode->path = path;
     grpnode->status = status;
     grpnode->compress_level = 0;
@@ -4606,6 +4629,8 @@ void _readH5string(hid_t dset, hid_t d_type,
     char             **strdata;
 
     size_t             numstr = 0;
+    htri_t           is_vlstr=FALSE;
+
 
   /*
    *fprintf(stderr, "\nEnter _readH5string, file: %s, line: %d\n", __FILE__, __LINE__);
@@ -4658,7 +4683,6 @@ void _readH5string(hid_t dset, hid_t d_type,
    *fprintf(stderr, "\tlenstr = %ld\n", lenstr);
    */
 
-    strdata = (char **)NclCalloc(numstr, sizeof(char *));
 
     m_space = H5Screate_simple(ndims, m_count, NULL);
 
@@ -4703,33 +4727,65 @@ void _readH5string(hid_t dset, hid_t d_type,
     d_type = H5Tcopy(H5T_C_S1);
     d_space = H5Screate(H5S_SCALAR);
    */
-    status = H5Dread(dset, d_type, m_space, d_space, H5P_DEFAULT, strdata);
+    is_vlstr = H5Tis_variable_str(d_type);
+    
+    if (is_vlstr) {
+	    strdata = (char **)NclCalloc(numstr, sizeof(char *));
+	    status = H5Dread(dset, d_type, m_space, d_space, H5P_DEFAULT, strdata);
 
-    if(0 != status)
-    {
-        fprintf(stderr, "\nError in file: %s, line: %d\n", __FILE__, __LINE__);
+	    if(0 != status)
+	    {
+		    fprintf(stderr, "\nError in file: %s, line: %d\n", __FILE__, __LINE__);
+	    }
+
+	    for(i = 0; i < numstr; ++i)
+	    {
+		    if(NULL != strdata[i])
+		    {
+			    /*
+			     *fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
+			     *fprintf(stderr, "\tstrdata[%ld]: <%s>\n", i, strdata[i]);
+			     */
+			    strquark[i] = NrmStringToQuark(strdata[i]);
+		    }
+		    else
+		    {
+			    strquark[i] = -1;
+		    }
+	    }
+	    status = H5Dvlen_reclaim(d_type,m_space,H5P_DEFAULT,strdata);
+	    NclFree(strdata);
     }
+    else {
+	    char *cptr;
+	    char *tmpstr;
+	    size_t lenstr;
+	    H5T_str_t   str_pad;
 
-    for(i = 0; i < numstr; ++i)
-    {
-        if(NULL != strdata[i])
-        {
-          /*
-           *fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
-           *fprintf(stderr, "\tstrdata[%ld]: <%s>\n", i, strdata[i]);
-           */
-            strquark[i] = NrmStringToQuark(strdata[i]);
-        }
-        else
-        {
-            strquark[i] = -1;
-        }
+            str_pad = H5Tget_strpad(d_type);
+	    lenstr = H5Tget_size(d_type);
+	    tmpstr = (char *) NclCalloc(lenstr + 1,sizeof(char));
+            cptr = (char *) NclCalloc(numstr * lenstr, sizeof(char));
+            assert(cptr);
+	    status = H5Dread(dset, d_type, m_space, d_space, H5P_DEFAULT, cptr);
+            for(i = 0; i < numstr; i++)
+            {
+                strncpy(tmpstr, &cptr[i*lenstr], lenstr);
+		tmpstr[lenstr] = '\0';
+		if (str_pad == H5T_STR_SPACEPAD) {
+			char *cp = &(tmpstr[lenstr-1]);
+			while (*cp == ' ')
+				*(cp--) = '\0';
+		}
+		strquark[i] = NrmStringToQuark(tmpstr);
+            }
+            free(cptr);
+	    free(tmpstr);
     }
 
     H5Sclose(m_space);
     H5Sclose(d_space);
 
-    NclFree(strdata);
   /*
    *fprintf(stderr, "Leave _readH5string, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */

@@ -2542,6 +2542,8 @@ NclQuark  varname;
 				for(j = 0; j < thefile->file.var_info[i]->num_dimensions;j++) {
 					if(_NclFileVarIsCoord(thefile,thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark)!= -1) {
 						ng_size_t size = thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_size;
+						NclSelectionRecord  sel_ptr;
+
 						ret = nclfprintf(fp,"            ");
 						if(ret < 0) {
 							return(NhlWARNING);
@@ -2557,8 +2559,15 @@ NclQuark  varname;
 							}
 							continue;
 						}
+						sel_ptr.n_entries = 1;
+						sel_ptr.selection[0].sel_type = Ncl_SUBSCR;
+						sel_ptr.selection[0].dim_num = 0;
+						sel_ptr.selection[0].u.sub.start = 0;
+						sel_ptr.selection[0].u.sub.finish = size - 1;
+						sel_ptr.selection[0].u.sub.stride = size - 1;
+						sel_ptr.selection[0].u.sub.is_single = 0;
 						tmp_var = _NclFileReadCoord(thefile,thefile->file.file_dim_info
-									    [thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark,NULL);
+									    [thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark,&sel_ptr);
 						if (! tmp_var) {
 							return NhlFATAL;
 						}
