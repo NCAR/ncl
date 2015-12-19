@@ -1640,6 +1640,7 @@ begin
        P  = P + PB 
        tk = wrf_tk( P , T )
        PH =  PH + PHB 
+       PSFC = PSFC / 100.
        z = wrf_user_unstagger(PH,PH@stagger)
        z = z/9.81
 
