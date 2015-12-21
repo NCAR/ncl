@@ -17119,3 +17119,165 @@ begin
     xStat@NCL_tag = "calculate_daily_values: arith="+arith
     return(xStat)
 end
+;------------------------------------------------------
+undef("satvpr_water_bolton")
+function satvpr_water_bolton(t:numeric, iounit[2]:integer)
+;
+; Saturation vapor pressure over liquid water given a temperature
+; 
+; Reference:
+;   Bolton, David, 1980: 
+;   The computation of equivalent potential temperature 
+;   Monthly Weather Review, vol. 108, no. 7 (july),  p. 1047, eq.(10) 
+;   http://dx.doi.org/10.1175/1520-0493(1980)108<1046:TCOEPT>2.0.CO;2
+;
+;   The quoted accuracy is 0.3% or better for -35 < t < 35c.
+
+local tk0, es0, es, tdc
+begin
+  tk0  = 273.15
+  es0  = 6.1121 
+
+  if (iounit(0).eq.0) then                  ; input C
+      es  = es0*exp(17.67*t/(t+243.5))
+  else if (iounit(0).eq.1) then             ; input K
+      tc  = t-tk0
+      es  = es0*exp(17.67*tc/(tc+243.5))
+  else if (iounit(0).eq.2) then             ; input F
+      tc  = 0.555556*(t-32)
+      es  = es0*exp(17.67*tc/(tc+243.5))
+  end if   ; F
+  end if   ; K
+  end if   ; C
+
+  es@long_name = "saturation vapor pressure over liquid water"
+
+  if (iounit(1).eq.0) then
+      es@units     = "hPa"   ; "mb"
+  else if (iounit(1).eq.1) then
+      es           = 100*es
+      es@units     = "Pa"  
+  else if (iounit(1).eq.2) then
+      es           = 0.1*es
+      es@units     = "kPa"   
+
+  end if           ; hPa=>Pa
+  end if           ; hPa=>kPa
+  end if           ; hPa     
+
+  es@NCL       = "satvpr_water_bolton"
+  es@doi       = "http://dx.doi.org/10.1175/1520-0493(1980)108<1046:TCOEPT>2.0.CO;2"
+  es@info      = "Equation 10 of reference"
+
+  copy_VarCoords(t, es)
+  return(es)
+end
+;------------------------------------------------------
+undef("satvpr_water_stipanuk")
+function satvpr_water_stipanuk(t:numeric, iounit[2]:integer)
+;
+; Saturation vapor pressure over liquid water given a temperature
+; 
+; Reference:  g.s. stipanuk     1973            original version.
+;            "algorithms for generating a skew-t, log p diagram
+;             and computing selected meteorological quantities"
+;             atmospheric sciences laboratory
+;             U.S. army electronics command
+;             white sands missile range, new mexico 88002
+;
+local tk0, tk, p1, p2, c1, esat
+begin
+  tk0  = 273.15
+
+  if (iounit(0).eq.0) then                  ; input C
+      tk   = t + tk0
+      p1   = 11.344-0.0303998*tk
+      p2   = 3.49149-1302.8844/tk
+      c1   = 23.832241-5.02808*log10(tk)
+      es   = 10.^(c1-1.3816e-7*10.^p1+8.1328e-3*10.^p2-2949.076/tk)
+  else if (iounit(0).eq.1) then             ; input K
+      p1   = 11.344-0.0303998*t 
+      p2   = 3.49149-1302.8844/t 
+      c1   = 23.832241-5.02808*log10(t)
+      es   = 10.^(c1-1.3816e-7*10.^p1+8.1328e-3*10.^p2-2949.076/t)
+  else if (iounit(0).eq.2) then             ; input F
+      tk  = 0.555556*(t-32) + tk0
+      p1   = 11.344-0.0303998*tk
+      p2   = 3.49149-1302.8844/tk
+      c1   = 23.832241-5.02808*log10(tk)
+      es   = 10.^(c1-1.3816e-7*10.^p1+8.1328e-3*10.^p2-2949.076/tk)
+  end if   ; F
+  end if   ; K
+  end if   ; C
+
+  es@long_name = "saturation vapor pressure over liquid water"
+
+  if (iounit(1).eq.0) then
+      es@units     = "hPa"   ; "mb"
+  else if (iounit(1).eq.1) then
+      es           = 100*es
+      es@units     = "Pa"  
+  else if (iounit(1).eq.2) then
+      es           = 0.1*es
+      es@units     = "kPa"   
+  end if           ; hPa=>Pa
+  end if           ; hPa=>kPa
+  end if           ; hPa     
+
+  es@NCL       = "satvpr_water_stipanuk"
+
+  copy_VarCoords(t, es)
+  return(es)
+end
+;------------------------------------------------------
+undef("thornthwaite_driver")
+function thornthwaite_driver(t:numeric, lat:numeric, opt[1]:logical, dim[1]:integer, iounit[2]:integer)
+local pet, dymo, dimt, ntim, DYMO
+;
+; Driver for the 'thornthwaite' (6.3.1) fuction.
+; The 1st 4 arguments are the same as 'thornthwaite'. The additional argument
+; is an option that allows assorted input units for the input  't' and the
+; return 'pet'. 
+; 
+; Use of this may result in cleaner more concise code.
+begin
+   if (any(iounit.lt.0) .or. any(iounit.gt.2)) then               ; iounit error check
+       print("thornthwaite_driver: unrecognized iounit argument: iounit="+iounit)
+       exit
+   end if
+
+   if (iounit(0).eq.0) then                               ; degC
+       pet = thornthwaite(t, lat, False, dim)
+   else if (iounit(0).eq.1) then                          ; degK
+       pet = thornthwaite((t-273.16), lat, False, dim)
+   else if (iounit(0).eq.2) then                          ; F
+       pet = thornthwaite(((t-32)*0.5555556), lat, False, dim)
+   end if        ; F
+   end if        ; K 
+   end if        ; C  
+
+   pet@long_name = "PET: Thornthwaite"
+
+   if (iounit(1).eq.0) then     
+        pet@units = "mm/month"
+   else if (iounit(1).eq.1) then
+        dymo      = (/31,28,31,30,31,30,31,31,30,31,30,31/)
+        dimt      = dimsizes(t)
+        ntim      = dimt(dim)
+        DYMO      = new( ntim, integer) 
+        do nt=0,ntim-1,12
+           DYMO(nt:nt+11) = dymo
+        end do
+        pet       = pet/conform(t,DYMO,dim)
+        pet@units = "mm/day"
+   else if (iounit(1).eq.2) then
+        pet       = pet*0.03937008
+        pet@units = "inches/month"
+   end if        ; mm/month
+   end if        ; mm/day
+   end if        ; inches/month
+
+   copy_VarCoords(t, pet)
+   return(pet)
+end
+
