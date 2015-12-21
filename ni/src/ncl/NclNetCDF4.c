@@ -3874,9 +3874,9 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
     size_t count[MAX_NC_DIMS];
     size_t locstart[MAX_NC_DIMS];
     ng_size_t n_elem = 1;
-    int in_whole = 0;
+    int in_whole = 1;
     int no_stride = 1;
-    int i,j,n;
+    int i,n;
     int ret;
     int fill_mode;
 
@@ -3913,10 +3913,11 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 if(dimnode->is_unlimited)
                 {
                     dimnode->size = MAX(finish[i] + 1, dimnode->size);
+		    in_whole = 0;
                 }
 
-                if((1 == locstart[i]) && (count[i] == (size_t)dimnode->size))
-                    in_whole = 1;
+                if(0 != locstart[i] || (count[i] != (size_t)dimnode->size))
+                    in_whole = 0;
 
               /*
                *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -4031,19 +4032,9 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 char **tmpstr = (char **)NclCalloc(n_elem, sizeof(char *));
                 NclQuark *qd = (NclQuark *)data;
 
-                n = 0;
-                for(i = 0; i < varnode->dim_rec->n_dims; i++)
-                {
-                    dimnode = &(varnode->dim_rec->dim_node[i]);
-                    if(dimnode->is_unlimited)
-                        in_whole = 0;
-                    for(j = locstart[i]; j < dimnode->size; j++)
-                    {
-                        tmpstr[n] = NrmQuarkToString(qd[n]);
-                        n++;
-                    }
-                }
-                
+		for (i = 0; i < n_elem; i++) {
+			tmpstr[i] = NrmQuarkToString(qd[i]);
+		}
                 if(no_stride && in_whole)
                 {
                     ret = nc_put_var_string(fid, varnode->id, (const char **)tmpstr);
@@ -4078,8 +4069,6 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                 {
                     dimnode = &(varnode->dim_rec->dim_node[n]);
                     data_size *= (size_t) dimnode->size;
-                    if(dimnode->is_unlimited)
-                        in_whole = 0;
                 }
 
                 if(NULL != comp_rec)
