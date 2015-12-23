@@ -1390,7 +1390,7 @@ GribFileRecord *therec;
 			int tr_ix = -1;
 			int num, test_num, need_array = 0;
 			int j;
-			if (grib_rec->center_ix == 32 && grib_rec->ptable_version == 200) {
+			if (centers[grib_rec->center_ix].index == 34 && grib_rec->ptable_version == 200) {
 				for (i = 0; i < sizeof(jra55_local_time_range_indicator) / sizeof(int); i++) {
 					if (jra55_local_time_range_indicator[i] == step->time_range_indicator) {
 						tr_ix = jra55_local_time_range_indicator_start + i;
@@ -1505,7 +1505,7 @@ GribFileRecord *therec;
 			att_list_ptr->att_inq->name = NrmStringToQuark("statistical_process_duration");
 			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 			buffer[0] = '\0';
-			if  (grib_rec->center_ix == 32 && grib_rec->ptable_version == 200 && step->time_range_indicator > 127 && step->time_range_indicator < 133) {
+			if  (centers[grib_rec->center_ix].index == 34 && grib_rec->ptable_version == 200 && step->time_range_indicator > 127 && step->time_range_indicator < 133) {
 				switch (step->time_range_indicator) {
 				case 128:
 				case 129:
@@ -5372,11 +5372,11 @@ static void SetLevelInfo
 		l1 = -1;
 	}
 	/* JRA55 reanalysis has some special indexes */
-	if (grib_rec->center_ix == 32 && grib_rec->ptable_version == 200 && grib_rec->level_indicator == 213) {
+	if (centers[grib_rec->center_ix].index == 34 && grib_rec->ptable_version == 200 && grib_rec->level_indicator == 213) {
 		l0 = CnvtToDecimal(2,lv);
 		l1 = -1;
 	}
-	else if (grib_rec->center_ix == 98 && grib_rec->level_indicator == 210) {
+	else if (centers[grib_rec->center_ix].index == 98 && grib_rec->level_indicator == 210) {
 		l0 = CnvtToDecimal(2,lv);
 		l1 = -1;
 	}
@@ -7533,7 +7533,7 @@ int wr_status;
 						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_%d",grib_rec->grid_number);
 					}
 					grib_rec->level_index = -1;
-					if (grib_rec->center_ix == 98) { /* look for possible ecmwf local level */
+					if (centers[grib_rec->center_ix].index == 98) { /* look for possible ecmwf local level */
 						for (i = 0; i < sizeof(ecmwf_local_level) / sizeof(int); i++) {
 							if (ecmwf_local_level[i] == (int)grib_rec->pds[9]) {
 							        grib_rec->level_index =  ecmwf_local_start_index + i;
@@ -7541,7 +7541,8 @@ int wr_status;
 							}
 						}
 					}
-					if (grib_rec->level_index == -1 && grib_rec->center_ix == 32 && grib_rec->ptable_version == 200) { /* look for possible jra55 local level */
+					if (grib_rec->level_index == -1 && centers[grib_rec->center_ix].index == 34 && 
+					    grib_rec->ptable_version == 200) { /* look for possible jra55 local level */
 						for (i = 0; i < sizeof(jra55_local_level) / sizeof(int); i++) {
 							if (jra55_local_level[i] == (int)grib_rec->pds[9]) {
 							        grib_rec->level_index =  jra55_local_start_index + i;
@@ -7651,7 +7652,7 @@ int wr_status;
 						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_S%d",(int)grib_rec->pds[20]);
 						break;
 					case 132:
-						if  (grib_rec->center_ix == 32 && grib_rec->ptable_version == 200) {
+						if  (centers[grib_rec->center_ix].index == 34 && grib_rec->ptable_version == 200) {
 							grib_rec->time_period = 0;
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_S%d",(int)grib_rec->pds[20]);
 							break;
