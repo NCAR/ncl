@@ -14927,9 +14927,9 @@ undef("static_stability")
 function static_stability (p:numeric, t:numeric, npr[1]:integer, sopt[1]:integer)
 ;
 ; Compute Static Stability
-; Bluestein: Synoptic-Dynamic Meteorology in Midlatitudes
-;            pg 197
-;            s = -T*d[log(theta)]/dp = -(T/theta)*d(theta)/dp
+; Bluestein (1992): Synoptic-Dynamic Meteorology in Midlatitudes
+;                   pg 197, eqn=4.3.8
+;                   s = -T*d[log(theta)]/dp = -(T/theta)*d(theta)/dp
 ;
 ; Nomenclature
 ;     p       - pressure levels (Pa is default)  
@@ -15152,7 +15152,9 @@ function pot_vort_isobaric\
 ;
 ; Compute Potential Vorticity on constant pressure levels
 ; Bluestein: Synoptic-Dynamic Meteorology in Midlatitudes
-;            pg 264  Eq 4.5.93
+;            Bug reported by Andy Show (Dec 2015)
+;            pg 264  Eq 4.5.93 with [ (R/(s*p) ] replaced by [ 1/s ]) 
+;            R/(s*p) = (R/p)(p/(R*T*d(theta)/dp) = 1/(T*d(theta)/dp ]= 1/s 
 ;
 ; Nomenclature
 ;     p       - pressure levels (Pa)  [1D]
@@ -15271,7 +15273,7 @@ begin
 
   vr  = vr + conform(vr,f,nlt)     ; absolute vorticity   
   s   = where(s.eq.0, s@_FillValue, s)    ; safety
-  con = R/(s*conform(t,p,npr))  
+  con = 1/s
                                    ; G* added to get common pv units 
   pv  = -G*(vr + con*(dvdp*dtdx-dudp*dtdy))*dthdp  
   pv@long_name  = "potential vorticity"
