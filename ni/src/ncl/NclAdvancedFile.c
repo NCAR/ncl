@@ -1827,8 +1827,7 @@ void _NclFileUDTRealloc(NclFileUDTRecord *udt_rec)
         if(0 >= udt_rec->max_udts)
             udt_rec->max_udts = 1;
 
-        while(udt_rec->n_udts >= udt_rec->max_udts)
-            udt_rec->max_udts *= 2;
+	udt_rec->max_udts = udt_rec->n_udts + 1;
 
         udtnodeptr = (NclFileUDTNode *)NclRealloc(udt_rec->udt_node,
                     udt_rec->max_udts * sizeof(NclFileUDTNode));
@@ -2536,8 +2535,12 @@ void FileDestroyAttRecord(NclFileAttRecord *att_rec)
                 attnode = &(att_rec->att_node[n]);
                 if(NULL != attnode->value)
                 {
-                    NclFree(attnode->value);
-                    attnode->value = NULL;
+			if (attnode->is_opaque) {
+				NclFileOpaqueRecord *opaquerec = (NclFileOpaqueRecord *) attnode->value;
+				NclFree(opaquerec->values);
+			}
+			NclFree(attnode->value);
+			attnode->value = NULL;
                 }
             }
             NclFree(att_rec->att_node);

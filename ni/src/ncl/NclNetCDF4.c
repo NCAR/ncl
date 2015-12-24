@@ -362,6 +362,7 @@ void _NC4_add_udt(NclFileUDTRecord **rootudtrec,
 
         udtrec->gid = gid;
         udtrec->uid = uid;
+	udtrec->n_udts = 0;  /* this gets bumped up below */
     }
   
     if(udtrec->n_udts >= udtrec->max_udts)
@@ -390,7 +391,7 @@ void _NC4_add_udt(NclFileUDTRecord **rootudtrec,
         udtnode->mem_type[n] = mem_type[n];
     }
 
-    udtrec->n_udts ++;
+    udtrec->n_udts++;
   /*
    *fprintf(stderr, "Leave _NC4_add_udt, file: %s, line: %d\n\n", __FILE__, __LINE__);
    */
@@ -3212,7 +3213,7 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
     void *out_data;
     size_t n_elem = 1;
     int fid = -1;
-    int ret = -1;
+    int ret = NhlNOERROR;
     size_t i, k, n;
     int nc_ret = NC_NOERR;
     int get_all = 1;
@@ -3349,6 +3350,7 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
                 numval *= varnode->dim_rec->dim_node[i].size;
 
             component_name =  _getComponentName(NrmQuarkToString(thevar), &struct_name);
+	    NclFree(struct_name);
             if(NULL != component_name)
             {
                 found = 0;
@@ -3376,7 +3378,7 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
                                 for(k = 0; k < field_ndims; k++)
                                     complength *= field_sizes[k];
 
-                                ret = 0;
+                                ret = NhlNOERROR;
                                 found = 1;
                               /*
                                *fprintf(stderr, "\toffset = %d, complength = %d\n", offset, complength);
@@ -3423,8 +3425,7 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
                }
 
                free(values);
-               ret = 0;
-               return(storage);
+               ret = NhlNOERROR;
             }
             else
             {
@@ -3436,9 +3437,9 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
                 varnode->udt_type = NCL_UDT_compound;
                 storage = (void *)get_nc4_compoundlist(varnode->gid, varnode->id, n_elem,
                                                        start, finish, stride, get_all);
-                ret = 0;
-                return(storage);
+                ret = NhlNOERROR;
             }
+	    NclFree(component_name);
         }
         else if(NCL_list == varnode->type)
         {
@@ -3450,8 +3451,7 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
 
             varnode->udt_type = NCL_UDT_vlen;
             storage = (void *)get_nc4_vlenlist(varnode->gid, varnode->id, varnode->the_nc_type, &varnode->base_type);
-            ret = 0;
-            return(storage);
+            ret = NhlNOERROR;
         }
         else if(NCL_opaque == varnode->type)
         {
@@ -3462,8 +3462,7 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
            */
 
             storage = (void *)get_nc4_opaque(varnode->gid, varnode->id, varnode->the_nc_type);
-            ret = 0;
-            return(storage);
+            ret = NhlNOERROR;
         }
         else if(NCL_enum == varnode->type)
         {
@@ -3556,93 +3555,82 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
             ret = _addNclAttNode(&(varnode->att_rec), NrmStringToQuark("enum_value"),
                                  enumrec->type, enumrec->size, values);
             NclFree(values);
-            return(storage);
         }
-        else
-        {
-            if(NCL_string == varnode->type)
-            {
+        else if (NCL_string == varnode->type) {
                 char **tmp_strs;
                 NclQuark *qptr = (NclQuark *) out_data;
 
-              /*
-               *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-               *fprintf(stderr, "\tn_elem = %d\n", n_elem);
-               */
+		/*
+		 *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+		 *fprintf(stderr, "\tn_elem = %d\n", n_elem);
+		 */
 
                 tmp_strs = (char **)NclCalloc(n_elem, sizeof(char *));
                 assert(tmp_strs);
 
-              /*
-               *for(n = 0; n < n_elem; n++)
-               *{
-               *    fprintf(stderr, "\tn = %d\n", n);
-               *}
-               */
+		/*
+		 *for(n = 0; n < n_elem; n++)
+		 *{
+		 *    fprintf(stderr, "\tn = %d\n", n);
+		 *}
+		 */
                 
                 if(no_stride)
                 {    
-                    ret = ncvargetg(varnode->gid,
-                        varnode->id,
-                        start,
-                        (long *)count,
-                        NULL,
-                        NULL,
-                        (char *)tmp_strs);
+			nc_ret = ncvargetg(varnode->gid,
+					varnode->id,
+					start,
+					(long *)count,
+					NULL,
+					NULL,
+					(char *)tmp_strs);
                 }
                 else
                 {
-                    ret = ncvargetg(varnode->gid,
-                        varnode->id,
-                        start,
-                        (long *)count,
-                        stride,
-                        NULL,
-                        (char *)tmp_strs);
+			nc_ret = ncvargetg(varnode->gid,
+					varnode->id,
+					start,
+					(long *)count,
+					stride,
+					NULL,
+					(char *)tmp_strs);
                 }
 
                 for(n = 0; n < n_elem; n++)
                 {
-                  /*
-                   *fprintf(stderr, "\tstrin[%d]: <%s>\n", n, tmp_strs[n]);
-                   */
-                    qptr[n] = NrmStringToQuark(tmp_strs[n]);
-                    free(tmp_strs[n]);
+			/*
+			 *fprintf(stderr, "\tstrin[%d]: <%s>\n", n, tmp_strs[n]);
+			 */
+			qptr[n] = NrmStringToQuark(tmp_strs[n]);
+			free(tmp_strs[n]);
                 }
 
                 free(tmp_strs);
-            }
-            else
-            {
-#if 1
+	}
+	else {
                 if(get_all)
                 {
-                    ret = nc_get_var(varnode->gid, varnode->id, out_data);
+			nc_ret = nc_get_var(varnode->gid, varnode->id, out_data);
                 }
                 else if(no_stride)
-#else
-                if(no_stride)
-#endif
                 {
-                    ret = nc_get_vara(varnode->gid, varnode->id,
-                                      locstart, count, out_data);
+			nc_ret = nc_get_vara(varnode->gid, varnode->id,
+					  locstart, count, out_data);
                 }
                 else
                 {
-                    ret = nc_get_vars(varnode->gid, varnode->id,
-                                      locstart, count, stride, out_data);
+			nc_ret = nc_get_vars(varnode->gid, varnode->id,
+					  locstart, count, stride, out_data);
                 }
-            }
-        }
+	}
 
-#if 0
+
         CloseOrSync(grpnode, fid, 0);
-#endif
 
-        if(ret == -1)
+        if(ret < NhlWARNING || nc_ret != NC_NOERR)
         {
             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                "NclNetCDF4: Error to read variable (%s) from file (%s)",
+                "NclNetCDF4: Error reading variable (%s) from file (%s)",
                 NrmQuarkToString(thevar),NrmQuarkToString(grpnode->path)));
 
             return(NULL);
@@ -4142,6 +4130,7 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                     }
 
                     NclFree(data_value);
+		    NclFree(mem_len);
                 }
             }
             else if(NCL_enum == varnode->type)
@@ -6405,10 +6394,10 @@ NhlErrorTypes NC4AddOpaque(void *rec, NclQuark opaque_name, NclQuark var_name,
     dim_sizes[0] = (long) dimnode->size;
     ret =  NC4AddOpaqueVar(rec, var_name, nc_opaque_type_id, n_dims, dim_names, dim_sizes);
 
-  /*
-   *NclFree(mem_name);
-   *NclFree(mem_type);
-   */
+
+    NclFree(mem_name);
+    NclFree(mem_type);
+   
     NclFree(dim_names);
     NclFree(dim_sizes);
 
