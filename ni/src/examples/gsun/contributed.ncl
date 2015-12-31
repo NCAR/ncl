@@ -13050,7 +13050,7 @@ begin
        end if
    end if
 
-   if (opt .and. opt@PrintStat) then 
+   if (opt .and. (isatt(opt,"PrintStat") .and. opt@PrintStat)) then 
        print(" ")
        print("   ===> "+statx@long_name+" <===")
        print(" [0]            Mean="+statx(0)  ) 
