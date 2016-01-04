@@ -81,9 +81,7 @@ int NclDriver(int argc, char **argv)
 		      buffer);
     }
 
-    error_fp = stderr;
-    stdout_fp = stdout;
-    stdin_fp = stdin;
+    InitStdStreams(stdin, stdout, stderr);
 	
     ncopts = NC_VERBOSE;
 
@@ -253,9 +251,6 @@ int NclDriver(int argc, char **argv)
 		NCL_PROF_INIT("cmdline");
 	}
 
-    error_fp = stderr;
-    stdout_fp = stdout;
-    stdin_fp = stdin;
     cur_line_text = NclMalloc((unsigned int) 512);
     cur_line_maxsize = 512;
     cur_line_text_pos = &(cur_line_text[0]);

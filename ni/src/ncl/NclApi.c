@@ -148,9 +148,7 @@ extern char *cur_line_text;
 extern int cur_line_maxsize;
 extern char *cur_line_text_pos;
 
-
-extern FILE* error_fp;
-extern FILE* stdout_fp;
+extern void InitStdStreams(FILE* in, FILE* out, FILE* err);
 
 void NclResetServer
 #if 	NhlNeedProto
@@ -200,6 +198,8 @@ int NclInitServer
 	/* init to -3 so begin/end determination of start_state isn't counted */
 	cur_line_number = -3;
 
+        InitStdStreams(stdin, stdout, stderr);
+        
 	NhlOpen();
 
 	_NclInitMachine();

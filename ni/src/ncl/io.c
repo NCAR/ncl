@@ -67,6 +67,13 @@ static void child_stat_notify(int tmp)
 	child_status = 0;
 } 
 
+void InitStdStreams(FILE* in, FILE* out, FILE* err) 
+{
+    stdin_fp = in;
+    stdout_fp = out;
+    error_fp = err;
+}
+
 void InitializeReadLine
 #if	NhlNeedProto
 (int opt)

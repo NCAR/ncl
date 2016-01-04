@@ -65,11 +65,9 @@ extern int yyparse(int);
 
 #define    BUFF_SIZE   512
 
-extern FILE *error_fp;
-extern FILE *stdout_fp ;
-extern FILE *stdin_fp ;
 extern int  number_of_constants;
 
+extern void InitStdStreams(FILE* inp, FILE* out, FILE* err);
 extern void nclprompt(void *user_data, int arg);
 extern void InitializeReadLine(int opt);
 extern void NclSetPromptFunc(NclPromptFunc prmf, void *user_data);
