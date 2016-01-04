@@ -667,8 +667,8 @@ void *GetCachedValue(NclFileVarNode *varnode,
                      long start, long finish, long stride, void *storage)
 {
     long i,j;
-    int tsize = varnode->the_nc_type < 1 ? 1 : nctypelen(varnode->the_nc_type);
-
+    /*int tsize = varnode->the_nc_type < 1 ? 1 : nctypelen(varnode->the_nc_type);*/
+    int tsize = _NclSizeOf(varnode->type);
     for (j = 0, i = start; i <= finish; i += stride,j++)
     {
         memcpy(((char*)storage) + j * tsize,((char *)varnode->value) + i * tsize,tsize);

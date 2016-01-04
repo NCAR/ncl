@@ -2572,20 +2572,21 @@ void FileDestroyAttRecord(NclFileAttRecord *att_rec)
 
 void FileDestroyDimRecord(NclFileDimRecord *dim_rec)
 {
-    if(NULL != dim_rec)
-    {
-        if(dim_rec->max_dims)
-        {
-            if(NULL != dim_rec->dim_node)
-            {
-                NclFree(dim_rec->dim_node);
-                dim_rec->dim_node = NULL;
-            }
+	int i;
+	if(NULL != dim_rec)
+	{
+		if(dim_rec->max_dims)
+		{
+			if(NULL != dim_rec->dim_node)
+			{
+				NclFree(dim_rec->dim_node);
+				dim_rec->dim_node = NULL;
+			}
 
-            NclFree(dim_rec);
-            dim_rec = NULL;
-        }
-    }
+			NclFree(dim_rec);
+			dim_rec = NULL;
+		}
+	}
 }
 
 void FileDestroyCompoundRecord(NclFileCompoundRecord *comprec)
@@ -2676,10 +2677,10 @@ void FileDestroyVarRecord(NclFileVarRecord *var_rec)
                     varnode->value = NULL;
                 }
 
+                FileDestroyDimRecord(varnode->dim_rec);
                 FileDestroyAttRecord(varnode->att_rec);
                 FileDestroyDimRecord(varnode->chunk_dim_rec);
                 FileDestroyCompoundRecord(varnode->comprec);
-                FileDestroyDimRecord(varnode->dim_rec);
             }
             NclFree(var_rec->var_node);
             var_rec->var_node = NULL;

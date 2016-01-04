@@ -2979,9 +2979,9 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
                 nmembs = H5Tget_nmembers(type);
                 assert(nmembs>0);
                 super = H5Tget_super(type);
-                printf("enum ");
+                /*printf("enum ");
                 _NclHDF5get_typename(super, ind+4);
-                printf(" {");
+                printf(" {");*/
 
                 /* Determine what data type to use for the native values.  To simplify
                  * things we entertain three possibilities:
@@ -3025,7 +3025,7 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
 
                 /* Sort members by increasing value */
                 /*not implemented yet*/
-
+#if 0
                 /* Print members */
                 for (i=0; i<nmembs; i++)
                 {
@@ -3054,6 +3054,7 @@ NclHDF5datatype_t *_NclHDF5get_typename(hid_t type, int ind)
                         fprintf(stderr,"%"H5_PRINTF_LL_WIDTH"d",*((long long*)((void*)copy)));
                     }
                 }
+#endif
 
                 /* Release resources */
                 for (i=0; i<nmembs; i++) free(name[i]);
