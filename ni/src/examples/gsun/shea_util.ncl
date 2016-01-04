@@ -3222,6 +3222,12 @@ function advect_gradient (u:numeric, v:numeric, x:numeric \
 local dimu, dimv, dimx, ranku, rankv, rankx, ier \
     , x_grad_lon, x_grad_lat, advect
 begin
+  print("============================================================")
+  print("advect_gradient is not supported")
+  print("Use advect_variable")
+  print("http://www.ncl.ucar.edu/Document/Functions/Contributed/advect_variable.shtml")
+  exit
+  print("============================================================")
                              ; ERROR CHECKING
   dimu  = dimsizes(u)
   dimv  = dimsizes(v)
@@ -3323,6 +3329,59 @@ function AdvectGradient (u:numeric, v:numeric, x:numeric \
                         ,long_name:string, units:string, iopt[1]:integer)
 begin
   return(advect_gradient(u , v, x, gridType, con, long_name, units, iopt) )
+end
+;----------------------------------------------------------------------------
+;----------------------- Unsupported: DJS -----------------------------------
+;----------------------------------------------------------------------------
+undef("thornthwaite_driver")
+function thornthwaite_driver(t:numeric, lat:numeric, opt[1]:logical, dim[1]:integer, iounit[2]:integer)
+local pet, dymo, dimt, ntim, DYMO
+;
+; Driver for the 'thornthwaite' (6.3.1) function.
+; The 1st 4 arguments are the same as 'thornthwaite'. The additional argument
+; is an option that allows assorted input units for the input  't' and the
+; return 'pet'. 
+; 
+; Use of this may result in cleaner more concise code.
+begin
+   if (any(iounit.lt.0) .or. any(iounit.gt.2)) then               ; iounit error check
+       print("thornthwaite_driver: unrecognized iounit argument: iounit="+iounit)
+       exit
+   end if
+
+   if (iounit(0).eq.0) then                               ; degC
+       pet = thornthwaite(t, lat, False, dim)
+   else if (iounit(0).eq.1) then                          ; degK
+       pet = thornthwaite((t-273.16), lat, False, dim)
+   else if (iounit(0).eq.2) then                          ; F
+       pet = thornthwaite(((t-32)*0.5555556), lat, False, dim)
+   end if        ; F
+   end if        ; K 
+   end if        ; C  
+
+   pet@long_name = "PET: Thornthwaite"
+
+   if (iounit(1).eq.0) then     
+        pet@units = "mm/month"
+   else if (iounit(1).eq.1) then
+        dymo      = (/31,28,31,30,31,30,31,31,30,31,30,31/)
+        dimt      = dimsizes(t)
+        ntim      = dimt(dim)
+        DYMO      = new( ntim, integer) 
+        do nt=0,ntim-1,12
+           DYMO(nt:nt+11) = dymo
+        end do
+        pet       = pet/conform(t,DYMO,dim)
+        pet@units = "mm/day"
+   else if (iounit(1).eq.2) then
+        pet       = pet*0.03937008
+        pet@units = "inches/month"
+   end if        ; mm/month
+   end if        ; mm/day
+   end if        ; inches/month
+
+   copy_VarCoords(t, pet)
+   return(pet)
 end
 ;----------------------------------------------------------------------------
 ;----------------------- Unsupported: DJS -----------------------------------
@@ -4644,7 +4703,7 @@ end if
 end
 
 ;----------
-; The following was posted as part od an ncl-talk question
+; The following was posted as part of an ncl-talk question
 ; http://mailman.ucar.edu/pipermail/ncl-talk/2014-August/000231.html
 ; 
 undef("eta2isop_wrf")

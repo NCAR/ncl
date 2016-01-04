@@ -17232,54 +17232,74 @@ begin
   return(es)
 end
 ;------------------------------------------------------
-undef("thornthwaite_driver")
-function thornthwaite_driver(t:numeric, lat:numeric, opt[1]:logical, dim[1]:integer, iounit[2]:integer)
-local pet, dymo, dimt, ntim, DYMO
-;
-; Driver for the 'thornthwaite' (6.3.1) fuction.
-; The 1st 4 arguments are the same as 'thornthwaite'. The additional argument
-; is an option that allows assorted input units for the input  't' and the
-; return 'pet'. 
-; 
-; Use of this may result in cleaner more concise code.
+undef("gradLatLon_cfd")
+function gradLatLon_cfd(z:numeric, lon[*]:numeric, lat[*]:numeric, rCyclic[1]:logical, opt[1]:logical)
+local dimz, rankz, nlat, mlon, rad, re, con, dlon, dx, cgx, cgy, gradLatLon
 begin
-   if (any(iounit.lt.0) .or. any(iounit.gt.2)) then               ; iounit error check
-       print("thornthwaite_driver: unrecognized iounit argument: iounit="+iounit)
-       exit
-   end if
+  dimz  = dimsizes(z)
+  rankz = dimsizes(dimz)
 
-   if (iounit(0).eq.0) then                               ; degC
-       pet = thornthwaite(t, lat, False, dim)
-   else if (iounit(0).eq.1) then                          ; degK
-       pet = thornthwaite((t-273.16), lat, False, dim)
-   else if (iounit(0).eq.2) then                          ; F
-       pet = thornthwaite(((t-32)*0.5555556), lat, False, dim)
-   end if        ; F
-   end if        ; K 
-   end if        ; C  
+  if (rankz.lt.2 .or. rankz.gt.4) then
+      print("gradLatLon_cfd: illegal rank: rankz="+rankz)
+      exit
+  end if
 
-   pet@long_name = "PET: Thornthwaite"
+  mlon  = dimz(rankz-1)  
+  nlat  = dimz(rankz-2) 
+;************************************************
+; Miscellaneous
+;************************************************
+  rad   = 4.0*atan(1.0)/180.0
+  re    = 6.37122e6  
+  con   = re*rad                 ; one deg lat = 111198.8 meters
 
-   if (iounit(1).eq.0) then     
-        pet@units = "mm/month"
-   else if (iounit(1).eq.1) then
-        dymo      = (/31,28,31,30,31,30,31,31,30,31,30,31/)
-        dimt      = dimsizes(t)
-        ntim      = dimt(dim)
-        DYMO      = new( ntim, integer) 
-        do nt=0,ntim-1,12
-           DYMO(nt:nt+11) = dymo
-        end do
-        pet       = pet/conform(t,DYMO,dim)
-        pet@units = "mm/day"
-   else if (iounit(1).eq.2) then
-        pet       = pet*0.03937008
-        pet@units = "inches/month"
-   end if        ; mm/month
-   end if        ; mm/day
-   end if        ; inches/month
+;************************************************
+; Use 'center_finite_diff_n for meridional (Y) gradient
+;************************************************
+  cgy  = center_finite_diff_n( z, lat, False ,0,rankz-2) 
+  cgy  = cgy/con
+  copy_VarCoords( z, cgy)                         ; add mets 
+  cgy@long_name = "cfd: meridional gradient"
+  cgy@units     = "?/m"
 
-   copy_VarCoords(t, pet)
-   return(pet)
+;************************************************
+; Use cfd for zonal (X) gradients
+; Generally, these are much smaller than the meridional (Y) gradients
+; This assumes that the longitudes are equally spaced
+; Pre-allocate space for gradients
+;************************************************
+
+  dlon = (lon(2)-lon(1))*0.0174533   ; convert to radians
+  dx   = re*cos(0.0174533*lat)*dlon  ; different at each latitude; dx(nlat)
+  cgx  = new( dimz, typeof(z), getFillValue(z) )  ; lon=>X
+
+;;       These don't work
+;;DX   = conform_dims( dimz, dx, rankz-2)
+;;CGX  = center_finite_diff_n (z, DX, rCyclic,0,0)
+;;copy_VarCoords( z, CGX)            
+;;CGX@long_name = "gradx: ZONAL GRADIENT"
+;;CGX@units     = "?/m"
+
+  if (rankz.eq.2) then
+      do nl=0,nlat-1                     ; loop over each latitude
+          cgx(nl,:)     = center_finite_diff_n (z(nl,:), dx(nl), rCyclic,0,0)
+      end do
+  else if (rankz.eq.3) then
+      do nl=0,nlat-1                     ; loop over each latitude
+          cgx(:,nl,:)   = center_finite_diff_n (z(:,nl,:), dx(nl), rCyclic,0,0)
+      end do
+  else if (rankz.eq.4) then
+      do nl=0,nlat-1                     ; loop over each latitude
+          cgx(:,:,nl,:) = center_finite_diff_n (z(:,:,nl,:), dx(nl), rCyclic,0,0)
+      end do
+    end if      ; rankz=4
+   end if       ; rankz=3
+  end if        ; rankz=2
+
+  copy_VarCoords( z, cgx)            
+  cgx@long_name = "cfd: zonal gradient"
+  cgx@units     = "?/m"
+
+  gradLatLon = [/ cgy, cgx /]   ; return two variables as a type 'list'
+  return( gradLatLon )
 end
-
