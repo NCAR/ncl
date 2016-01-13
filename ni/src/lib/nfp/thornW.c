@@ -124,9 +124,15 @@ NhlErrorTypes thornthwaite_W( void )
  */
   ntim = dsizes_temp[dim[0]];
   if(ntim > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite: ntim = %ld is greater than INT_MAX", ntim);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite: ntime = %ld is greater than INT_MAX", ntim);
     return(NhlFATAL);
   }
+
+  if((ntim %12) != 0) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite: ntime must be a multiple of 12");
+    return(NhlFATAL);
+  }
+
   intim = (int) ntim;
 
 /*
@@ -448,6 +454,12 @@ NhlErrorTypes thornthwaite_r_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite_r: ntim = %ld is greater than INT_MAX", ntim);
     return(NhlFATAL);
   }
+
+  if((ntim %12) != 0) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite_r: ntime must be a multiple of 12");
+    return(NhlFATAL);
+  }
+
   intim = (int) ntim;
 
 /*
