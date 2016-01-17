@@ -1,91 +1,54 @@
 ; 
 ;      $Id: contributed.ncl,v 1.273 2010-05-07 17:38:12 haley Exp $
 ;
-;
-; -------------- added Feb 14 2002
-; copy_VarMeta
-; cssgrid_Wrap
-; epzZero
-; flt2dble
-; getVarDimNames
-; numAsciiRow
-; numAsciiCol
-; month_to_season 
-; month_to_seasonN
-; month_to_season12
-; wave_number_spc
-; uv2dvG_Wrap
-; uv2vrG_Wrap
-; uv2dvF_Wrap
-; uv2vrF_Wrap
-; dv2uvG_Wrap
-; vr2uvG_Wrap
-; dv2uvF_Wrap
-; vr2uvF_Wrap
-; ilapsG_Wrap
-; ilapsF_Wrap
-; dim_standardize_Wrap
-; msrcp_mss2local
-
-; -------------- changed 13 May 2002
-; eofMeta:  changed a dimension name from "eval" to "evn"
-; -------------- added   13 May 2002
-; eofcor_pcmsg_Wrap
-; eofcov_pcmsg_Wrap
-
-; -------------- changed June 2002
-; short2flt:   added extra names
-;
-; -------------- replaced June 2002
-; NewCosWeight
-; SqrtCosWeight
-;
-; -------------- added July  3 2002
-; GetFillColorIndex
-; yyyymmdd2yyyyFrac
-;
-; -------------- bug fix 30 Aug 2002
-; closest_val:   mult "closest" values Murphy
-;
-; -------------- added 13 Sept 2002
-; grib_stime2itime:  convert initial_time (string) to time (integer)
-; wgt_areaave_Wrap
-;
-; -------------- 19 Sept 2002
-; NormCosWgtGlobe: make lat wgts sum to 2.0 like gaussian whts 
-; namDimCheck    : makes sure all dimensions are named
-; calcMonStandardizeAnomTLL : calculated standardized anomalies for each month
-;
-; --------------    Oct  2002
-; cat2var: Concatenate 2 (or more) variables to create one variable
-; byte2float
-; svdHomHet2LatLon: convert SVD output arrays to lat/lon for plotting
-; svdAkBk2time    : convert SVD output attributes to timefor plotting
-; trimBlankRight  ; trim trailing (rightmost) blanks from strings
-;
-; --------------    Nov  2002
-; All routines had local variables explicitly declared.
-; All 'undef' statements were activated.
-; Numerous regridding routines had changes made to them. [lat/lon stuff]
-;
-; -------------     Feb-Mar 2003
-; added clmMonTLLL, stdMonTLLL
-; namelist
-; merge_VarAtts
-; timeCoads2YYYYMM
-; -------------   
-; Now using CVS .... no longer will I manually maintain the change log
-; -------------
-;
 ; Contributed.ncl
 ;
 ; The codes in this script were contributed by various NCL'ers.  They are
 ; designed to be completely self contained so that if a user desires, the
 ; code can be extracted without loss of functionality.
 ;
-
 ;************************************************************
-; D. Shea
+undef("get_pi")
+function get_pi( p )
+local pi
+begin
+  if (isnumeric(p)) then
+      if (typeof(p).eq."double") then
+          pi = 4d0*atan(1d0)
+      else
+          pi = 4.0*atan(1.0)
+      end if
+  else
+      if (typeof(p).eq."string") then
+          if (p.eq."double" .or. p.eq."d") then
+              pi = 4d0*atan(1d0)
+          else
+              pi = 4.0*atan(1.0)
+          end if
+      end if
+  end if
+  pi@long_name = "ratio of a circle's circumference to its diameter"
+  return( pi )
+end
+;************************************************************
+undef("get_d2r")                ; degrees to radians
+function get_d2r( x )
+local d2r
+begin
+  d2r = get_pi(x)/180
+  d2r@long_name = "convert degrees to radians"
+  return( d2r )
+end
+;************************************************************
+undef("get_r2d")                ; radians to degrees
+function get_r2d( x )
+local r2d
+begin
+  r2d = 180/get_pi(x)
+  r2d@long_name = "convert radians to degrees"
+  return( r2d )
+end
+;************************************************************
 ; return number of elements of an array [scalar==> size=1]
 ;************************************************************
 undef("size_array")
@@ -16706,7 +16669,7 @@ begin
 
   return(heatl)
 end     ; latent_heat_water
-;-------------------------------------
+;----------------------------------------------------------
 undef("calculate_monthly_values")
 function calculate_monthly_values (x:numeric, arith:string, nDim[1]:integer, opt[1]:logical)
 
@@ -16725,17 +16688,33 @@ function calculate_monthly_values (x:numeric, arith:string, nDim[1]:integer, opt
 ;        xMonthSum = calculate_monthly_values(x, "sum", 0, False)
 ;        xMonthMin = calculate_monthly_values(x, "min", 0, False)
 ;        xMonthMax = calculate_monthly_values(x, "max", 0, False)
-;
-; It is assumed that there will be multiple elements for the dim_avg_n
-; calculation.
+;                  ************
+; Note that NCL's 'dimension reduction' which, in general, I view as a feature,
+;      introduces some processing issues in the 'corner case' of one value.
+;      This requires extra (nuisance) steps and leads to 'code bloat'.  :-(
+;                  ************
+; If this function is slow, consider using the Climate Data Operator (CDO)
+;      cdo monmean foo_hourly_or_daily.nc  foo_monthly_mean.nc
+;      cdo monmin  foo_hourly_or_daily.nc  foo_monthly_min.nc
+;      cdo monmax  foo_hourly_or_daily.nc  foo_monthly_max.nc
+;      cdo monsum  foo_hourly_or_daily.nc  foo_monthly_sum.nc
+;                  ************
 ;
 local dnamx, TNAME, TIME, dimx, rankx, NTIM, utc_date, year, month, ntim, work
-     ,yyyy, mm, nt, it, nmos, xStat
+     ,yyyy, mm, nt, it, nmos, xStat, nval_crit
 begin
     if (.not.(arith.eq."ave" .or. arith.eq."avg" .or. arith.eq."sum"  \
                              .or. arith.eq."min" .or. arith.eq."max") ) then
         print("calculate_monthly_values: unrecognizezed 'arith' argument="+arith)
         exit
+    end if
+
+; a monthly mean will be calculated only if the # of values is >= nval_crit
+
+    if (opt .and. isatt(opt,"nval_crit") .and. typeof(opt@nval_crit).eq."integer") then
+        nval_crit = opt@nval_crit
+    else
+        nval_crit = 1
     end if
 
     dnamx    = getvardims(x)                       ; dimension names
@@ -16750,7 +16729,7 @@ begin
     utc_date = cd_calendar(x&$TNAME$, 0)           ; (x&$TNAME$, 0) ; typically   x&time
     year     = floattointeger(utc_date(:,0))
     month    = floattointeger(utc_date(:,1))
-   ;day      = floattointeger(utc_date(:,2))
+    day      = floattointeger(utc_date(:,2))
    ;hour     = floattointeger(utc_date(:,3))
    ;minute   = floattointeger(utc_date(:,4))
    ;second   = utc_date(:,5)
@@ -16763,8 +16742,9 @@ begin
     work     = new (ntim, typeof(x&$TNAME$), getFillValue(x&$TNAME$)) 
     do yyyy=min(year),max(year)
       do mm=min(month),max(month)
-         it := ind(yyyy.eq.year .and. mm.eq.month) 
-         if (.not.ismissing(it(0))) then
+         it  := ind(yyyy.eq.year .and. mm.eq.month) 
+         nit  = dimsizes(it)
+         if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
              nt = nt+1
              work(nt) = (/ x&$TNAME$(it(0)) /)     ; use 1st time of current month  
          end if
@@ -16794,20 +16774,37 @@ begin
 
         do yyyy=min(year),max(year)
           do mm=min(month),max(month)
-             it := ind(yyyy.eq.year .and. mm.eq.month) 
-             if (.not.ismissing(it(0))) then
+             it  := ind(yyyy.eq.year .and. mm.eq.month) 
+             nit  = dimsizes(it)
+             if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
                  nt = nt+1
                  if (arith.eq."avg" .or. arith.eq."ave") then
-                     xStat(nt) = dim_avg_n( x(it), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(nt)  = dim_avg_n( x(it), nDim)
+                     else               ; one 'it'
+                         xStat(nt)  = x(it(0))
+                     end if
                  end if
                  if (arith.eq."sum") then
-                     xStat(nt) = dim_sum_n( x(it), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(nt)  = dim_sum_n( x(it), nDim)
+                     else               ; one 'it'
+                         xStat(nt)  = x(it(0))
+                     end if
                  end if
                  if (arith.eq."min") then
-                     xStat(nt) = dim_min_n( x(it), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(nt)  = dim_min_n( x(it), nDim)
+                     else               ; one 'it'
+                         xStat(nt)  = x(it(0))
+                     end if
                  end if
                  if (arith.eq."max") then
-                     xStat(nt) = dim_max_n( x(it), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(nt)  = dim_max_n( x(it), nDim)
+                     else               ; one 'it'
+                         xStat(nt)  = x(it(0))
+                     end if
                  end if
              end if    ; .not.ismissing(it(0))
           end do       ; mm
@@ -16821,20 +16818,37 @@ begin
 
         do yyyy=min(year),max(year)
           do mm=min(month),max(month)
-             it := ind(yyyy.eq.year .and. mm.eq.month) 
-             if (.not.ismissing(it(0))) then
+             it  := ind(yyyy.eq.year .and. mm.eq.month) 
+             nit  = dimsizes(it)
+             if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
                  nt = nt+1
                  if (arith.eq."avg" .or. arith.eq."ave") then
-                     xStat(nt,:) = dim_avg_n( x(it,:), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(nt,:)  = dim_avg_n( x(it,:), nDim)
+                     else               ; one 'it'
+                         xStat(nt,:)  = x(it(0),:)
+                     end if
                  end if
                  if (arith.eq."sum") then
-                     xStat(nt,:) = dim_sum_n( x(it,:), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(nt,:)  = dim_sum_n( x(it,:), nDim)
+                     else               ; one 'it'
+                         xStat(nt,:)  = x(it(0),:)
+                     end if
                  end if
                  if (arith.eq."min") then
-                     xStat(nt,:) = dim_min_n( x(it,:), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(nt,:)  = dim_min_n( x(it,:), nDim)
+                     else               ; one 'it'
+                         xStat(nt,:)  = x(it(0),:)
+                     end if
                  end if
                  if (arith.eq."max") then
-                     xStat(nt,:) = dim_max_n( x(it,:), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(nt,:)  = dim_max_n( x(it,:), nDim)
+                     else               ; one 'it'
+                         xStat(nt,:)  = x(it(0),:)
+                     end if
                  end if
              end if  ; .not.ismissing(it(0))
           end do       ; mm
@@ -16848,20 +16862,37 @@ begin
 
         do yyyy=min(year),max(year)
           do mm=min(month),max(month)
-             it := ind(yyyy.eq.year .and. mm.eq.month) 
-             if (.not.ismissing(it(0))) then
+             it  := ind(yyyy.eq.year .and. mm.eq.month) 
+             nit  = dimsizes(it)
+             if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
                  nt = nt+1
                  if (arith.eq."avg" .or. arith.eq."ave") then
-                     xStat(nt,:,:) = dim_avg_n( x(it,:,:), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(nt,:,:)  = dim_avg_n( x(it,:,:), nDim)
+                     else               ; one 'it'
+                         xStat(nt,:,:)  = x(it(0),:,:)
+                     end if
                  end if
                  if (arith.eq."sum") then
-                     xStat(nt,:,:) = dim_sum_n( x(it,:,:), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(nt,:,:)  = dim_sum_n( x(it,:,:), nDim)
+                     else               ; one 'it'
+                         xStat(nt,:,:)  = x(it(0),:,:)
+                     end if
                  end if
                  if (arith.eq."min") then
-                     xStat(nt,:,:) = dim_min_n( x(it,:,:), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(nt,:,:)  = dim_min_n( x(it,:,:), nDim)
+                     else               ; one 'it'
+                         xStat(nt,:,:)  = x(it(0),:,:)
+                     end if
                  end if
                  if (arith.eq."max") then
-                     xStat(nt,:,:) = dim_max_n( x(it,:,:), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(nt,:,:)  = dim_max_n( x(it,:,:), nDim)
+                     else               ; one 'it'
+                         xStat(nt,:,:)  = x(it(0),:,:)
+                     end if
                  end if
              end if    ; .not.ismissing(it(0))
           end do       ; mm
@@ -16875,20 +16906,37 @@ begin
 
         do yyyy=min(year),max(year)
           do mm=min(month),max(month)
-             it := ind(yyyy.eq.year .and. mm.eq.month) 
-             if (.not.ismissing(it(0))) then
+             it  := ind(yyyy.eq.year .and. mm.eq.month) 
+             nit  = dimsizes(it)
+             if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
                  nt = nt+1
                  if (arith.eq."avg" .or. arith.eq."ave") then
-                     xStat(nt,:,:,:) = dim_avg_n( x(it,:,:,:), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(nt,:,:,:)  = dim_avg_n( x(it,:,:,:), nDim)
+                     else               ; one 'it'
+                         xStat(nt,:,:,:)  = x(it(0),:,:,:)
+                     end if
                  end if
                  if (arith.eq."sum") then
-                     xStat(nt,:,:,:) = dim_sum_n( x(it,:,:,:), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(nt,:,:,:)  = dim_sum_n( x(it,:,:,:), nDim)
+                     else               ; one 'it'
+                         xStat(nt,:,:,:)  = x(it(0),:,:,:)
+                     end if
                  end if
                  if (arith.eq."min") then
-                     xStat(nt,:,:,:) = dim_min_n( x(it,:,:,:), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(nt,:,:,:)  = dim_min_n( x(it,:,:,:), nDim)
+                     else               ; one 'it'
+                         xStat(nt,:,:,:)  = x(it(0),:,:,:)
+                     end if
                  end if
                  if (arith.eq."max") then
-                     xStat(nt,:,:,:) = dim_max_n( x(it,:,:,:), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(nt,:,:,:)  = dim_max_n( x(it,:,:,:), nDim)
+                     else               ; one 'it'
+                         xStat(nt,:,:,:)  = x(it(0),:,:,:)
+                     end if
                  end if
              end if  ; .not.ismissing(it(0))
           end do       ; mm
@@ -16902,26 +16950,41 @@ begin
 
         do yyyy=min(year),max(year)
           do mm=min(month),max(month)
-             it := ind(yyyy.eq.year .and. mm.eq.month) 
-             if (.not.ismissing(it(0))) then
+             it  := ind(yyyy.eq.year .and. mm.eq.month) 
+             nit  = dimsizes(it)
+             if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
                  nt = nt+1
                  if (arith.eq."avg" .or. arith.eq."ave") then
-                     xStat(:,nt,:,:,:) = dim_avg_n( x(:,it,:,:,:), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(:,nt,:,:,:)  = dim_avg_n( x(:,it,:,:,:), nDim)
+                      else               ; one 'it'
+                         xStat(:nt,:,:,:)  = x(:,it(0),:,:,:)
+                     end if
                  end if
                  if (arith.eq."sum") then
-                     xStat(:,nt,:,:,:) = dim_sum_n( x(:,it,:,:,:), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(:,nt,:,:,:)  = dim_sum_n( x(:,it,:,:,:), nDim)
+                     else               ; one 'it'
+                         xStat(:,nt,:,:,:)  = x(:,it(0),:,:,:)
+                     end if
                  end if
                  if (arith.eq."min") then
-                     xStat(:,nt,:,:,:) = dim_min_n( x(:,it,:,:,:), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(:,nt,:,:,:)  = dim_min_n( x(:,it,:,:,:), nDim)
+                     else               ; one 'it'
+                         xStat(:,nt,:,:,:)  = x(:,it(0),:,:,:)
+                     end if
                  end if
                  if (arith.eq."max") then
-                     xStat(:,nt,:,:,:) = dim_max_n( x(:,it,:,:,:), nDim)
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(:,nt,:,:,:)  = dim_max_n( x(:,it,:,:,:), nDim)
+                     else               ; one 'it'
+                         xStat(:,nt,:,:,:)  = x(:,it(0),:,:,:)
+                     end if
                  end if
              end if  ; .not.ismissing(it(0))
           end do       ; mm
         end do         ; yyyy
-
-        copy_VarMeta(x(:,0,:,:,:), xStat(:,0,:,:,:))
     end if             ; rankx.eq.5 
 
     xStat!nDim    = TNAME 
@@ -16929,11 +16992,22 @@ begin
     xStat@NCL_tag = "calculate_monthly_values: arith="+arith
     return(xStat)
 end
-;-------------------------------------
+;----------------------------------------------------------
 undef("calculate_daily_values")
 function calculate_daily_values (x:numeric, arith:string, nDim[1]:integer, opt[1]:logical)
+;                  ************
+; Note that NCL's 'dimension reduction' which, in general, I view as a feature,
+;      introduces some processing issues in the 'corner case' of one value.
+;      This requires extra (nuisance) steps and leads to 'code bloat'.  :-(
+;                  ************
+; If this function is slow, consider using the Climate Data Operator (CDO)
+;      cdo daymean foo_hourly.nc  foo_daily_mean.nc
+;      cdo daymin  foo_hourly.nc  foo_daily_min.nc
+;      cdo daymax  foo_hourly.nc  foo_daily_max.nc
+;      cdo daysum  foo_hourly.nc  foo_daily_sum.nc
+;                  ************
 local dnamx, TIME, TNAME, dimx, rankx, NTIM, utc_date, year, month, day \
-     ,ntim, work, yyyy, mm, dd, dymon, it, nt, nmos, xStat
+     ,ntim, work, yyyy, mm, dd, dymon, it, nt, nmos, xSta, nval_crit
 begin
     if (.not.(arith.eq."ave" .or. arith.eq."avg" .or. arith.eq."sum"  \
                              .or. arith.eq."min" .or. arith.eq."max") ) then
@@ -16941,10 +17015,18 @@ begin
         exit
     end if
 
+; a daily mean will be calculated only if the # of values is >= nval_crit
+
+    if (opt .and. isatt(opt,"nval_crit") .and. typeof(opt@nval_crit).eq."integer") then
+        nval_crit = opt@nval_crit
+    else
+        nval_crit = 1
+    end if
+
     dnamx    = getvardims(x)                       ; dimension names
     TNAME    = dnamx(nDim)                         ; typically TNAME="time"
  
-    dimx     = dimsizes(x)                         ; dimensions sizes
+    dimx     = dimsizes(x)
     rankx    = dimsizes(dimx)                      ; # of dimensions
     ntim     = dimx(nDim)                          ; size of input time dimension
 
@@ -16954,7 +17036,7 @@ begin
     year     = floattointeger(utc_date(:,0))
     month    = floattointeger(utc_date(:,1))
     day      = floattointeger(utc_date(:,2))
-   ;hour     = floattointeger(utc_date(:,3))
+    hour     = floattointeger(utc_date(:,3))
    ;minute   = floattointeger(utc_date(:,4))
    ;second   = utc_date(:,5)
 
@@ -16966,17 +17048,18 @@ begin
     work     = new (ntim, typeof(x&$TNAME$), getFillValue(x&$TNAME$)) 
     do yyyy=min(year),max(year)
       do mm=min(month),max(month)
-         dymon = days_in_month ( yyyy, mm) 
+         dymon  = days_in_month ( yyyy, mm) 
         do dd=1,dymon          
-           it := ind(yyyy.eq.year .and. mm.eq.month .and. dd.eq.day) 
-           if (.not.ismissing(it(0))) then
+           it  := ind(yyyy.eq.year .and. mm.eq.month .and. dd.eq.day) 
+           nit  = dimsizes(it)
+           if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
                nt = nt+1
                work(nt) = (/ x&$TNAME$(it(0)) /)   ; use 1st time of current day  
            end if
         end do     ; dd
       end do       ; mm
     end do         ; yyyy
-    NTIM = nt+1
+    NTIM = nt+1    ; get 1-based total
 
     TIME   = work(0:nt)
     TIME!0 = "TIME"
@@ -17003,19 +17086,36 @@ begin
              dymon = days_in_month ( yyyy, mm) 
             do dd=1,dymon          ; min(day),max(day)
                it := ind(yyyy.eq.year .and. mm.eq.month .and. dd.eq.day) 
-               if (.not.ismissing(it(0))) then
+               nit = dimsizes(it)
+               if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
                    nt = nt+1
                    if (arith.eq."avg" .or. arith.eq."ave") then
-                       xStat(nt) = dim_avg_n( x(it), nDim)
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt)  = dim_avg_n( x(it), nDim)
+                       else               ; one 'it'
+                           xStat(nt)  = x(it(0))
+                       end if
                    end if
                    if (arith.eq."sum") then
-                       xStat(nt) = dim_sum_n( x(it), nDim)
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt)  = dim_sum_n( x(it), nDim)
+                       else               ; one 'it'
+                           xStat(nt)  = x(it(0))
+                       end if
                    end if
                    if (arith.eq."min") then
-                       xStat(nt) = dim_min_n( x(it), nDim)
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt)  = dim_min_n( x(it), nDim)
+                       else               ; one 'it'
+                           xStat(nt)  = x(it(0))
+                       end if
                    end if
                    if (arith.eq."max") then
-                       xStat(nt) = dim_max_n( x(it), nDim)
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt)  = dim_max_n( x(it), nDim)
+                       else               ; one 'it'
+                           xStat(nt)  = x(it(0))
+                       end if
                    end if
                end if  ; .not.ismissing(it(0))
             end do     ; dd
@@ -17033,19 +17133,36 @@ begin
              dymon = days_in_month ( yyyy, mm) 
             do dd=1,dymon          ; min(day),max(day)
                it := ind(yyyy.eq.year .and. mm.eq.month .and. dd.eq.day) 
-               if (.not.ismissing(it(0))) then
+               nit = dimsizes(it)
+               if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
                    nt = nt+1
                    if (arith.eq."avg" .or. arith.eq."ave") then
-                       xStat(nt,:) = dim_avg_n( x(it,:), nDim)
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:)  = dim_avg_n( x(it,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:)  = x(it(0),:)
+                       end if
                    end if
                    if (arith.eq."sum") then
-                       xStat(nt,:) = dim_sum_n( x(it,:), nDim)
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:)  = dim_sum_n( x(it,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:)  = x(it(0),:)
+                       end if
                    end if
                    if (arith.eq."min") then
-                       xStat(nt,:) = dim_min_n( x(it,:), nDim)
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:)  = dim_min_n( x(it,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:)  = x(it(0),:)
+                       end if
                    end if
                    if (arith.eq."max") then
-                       xStat(nt,:) = dim_max_n( x(it,:), nDim)
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:)  = dim_max_n( x(it,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:)  = x(it(0),:)
+                       end if
                    end if
                end if  ; .not.ismissing(it(0))
             end do     ; dd
@@ -17063,19 +17180,36 @@ begin
              dymon = days_in_month ( yyyy, mm) 
             do dd=min(day),max(day)
                it := ind(yyyy.eq.year .and. mm.eq.month .and. dd.eq.day) 
-               if (.not.ismissing(it(0))) then
+               nit = dimsizes(it)
+               if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
                    nt = nt+1
                    if (arith.eq."avg" .or. arith.eq."ave") then
-                       xStat(nt,:,:) = dim_avg_n( x(it,:,:), nDim)
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:,:)  = dim_avg_n( x(it,:,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:,:)  = x(it(0),:,:)
+                       end if
                    end if
                    if (arith.eq."sum") then
-                       xStat(nt,:,:) = dim_sum_n( x(it,:,:), nDim)
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:,:)  = dim_sum_n( x(it,:,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:,:)  = x(it(0),:,:)
+                       end if
                    end if
                    if (arith.eq."min") then
-                       xStat(nt,:,:) = dim_min_n( x(it,:,:), nDim)
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:,:)  = dim_min_n( x(it,:,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:,:)  = x(it(0),:,:)
+                       end if
                    end if
                    if (arith.eq."max") then
-                       xStat(nt,:,:) = dim_max_n( x(it,:,:), nDim)
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:,:)  = dim_max_n( x(it,:,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:,:)  = x(it(0),:,:)
+                       end if
                    end if
                end if  ; .not.ismissing(it(0))
             end do     ; dd
@@ -17093,19 +17227,36 @@ begin
              dymon = days_in_month ( yyyy, mm) 
             do dd=min(day),max(day)
                it := ind(yyyy.eq.year .and. mm.eq.month .and. dd.eq.day) 
-               if (.not.ismissing(it(0))) then
+               nit = dimsizes(it)
+               if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
                    nt = nt+1
                    if (arith.eq."avg" .or. arith.eq."ave") then
-                       xStat(nt,:,:,:) = dim_avg_n( x(it,:,:,:), nDim)
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:,:,:)  = dim_avg_n( x(it,:,:,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:,:,:)  = x(it(0),:,:,:)
+                       end if
                    end if
                    if (arith.eq."sum") then
-                       xStat(nt,:,:,:) = dim_sum_n( x(it,:,:,:), nDim)
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:,:,:)  = dim_sum_n( x(it,:,:,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:,:,:)  = x(it(0),:,:,:)
+                       end if
                    end if
                    if (arith.eq."min") then
-                       xStat(nt,:,:,:) = dim_min_n( x(it,:,:,:), nDim)
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:,:,:)  = dim_min_n( x(it,:,:,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:,:,:)  = x(it(0),:,:,:)
+                       end if
                    end if
                    if (arith.eq."max") then
-                       xStat(nt,:,:,:) = dim_max_n( x(it,:,:,:), nDim)
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:,:,:)  = dim_max_n( x(it,:,:,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:,:,:)  = x(it(0),:,:,:)
+                       end if
                    end if
                end if  ; .not.ismissing(it(0))
             end do     ; dd
@@ -17115,7 +17266,53 @@ begin
         copy_VarMeta(x(0,:,:,:), xStat(0,:,:,:))
     end if             ; rankx.eq.4 
 
-    xStat!0       = TNAME 
+    if (rankx.eq.5) then
+        xStat  = new ( (/dimx(0),NTIM,dimx(2),dimx(3),dimx(4)/), typeof(x), getFillValue(x))
+        do yyyy=min(year),max(year)
+          do mm=min(month),max(month)
+             dymon = days_in_month ( yyyy, mm) 
+            do dd=min(day),max(day)
+               it := ind(yyyy.eq.year .and. mm.eq.month .and. dd.eq.day) 
+               nit = dimsizes(it)
+               if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
+                   nt = nt+1
+                   if (arith.eq."avg" .or. arith.eq."ave") then
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(:,nt,:,:,:)  = dim_avg_n( x(:,it,:,:,:), nDim)
+                       else               ; one 'it'
+                           xStat(:,nt,:,:,:)  = x(:,it(0),:,:,:)
+                       end if
+                   end if
+                   if (arith.eq."sum") then
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(:,nt,:,:,:)  = dim_sum_n( x(:,it,:,:,:), nDim)
+                       else               ; one 'it'
+                           xStat(:,nt,:,:,:)  = x(:,it(0),:,:,:)
+                       end if
+                   end if
+                   if (arith.eq."min") then
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(:,nt,:,:,:)  = dim_min_n( x(:,it,:,:,:), nDim)
+                       else               ; one 'it'
+                           xStat(:,nt,:,:,:)  = x(:,it(0),:,:,:)
+                       end if
+                   end if
+                   if (arith.eq."max") then
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(:,nt,:,:,:)  = dim_max_n( x(:,it,:,:,:), nDim)
+                       else               ; one 'it'
+                           xStat(:,nt,:,:,:)  = x(:,it(0),:,:,:)
+                       end if
+                   end if
+               end if  ; .not.ismissing(it(0))
+            end do     ; dd
+          end do       ; mm
+        end do         ; yyyy
+
+        copy_VarMeta(x(:,0,:,:,:), xStat(:,0,:,:,:))
+    end if             ; rankx.eq.5 
+
+    xStat!nDim    = TNAME 
     xStat&$TNAME$ = TIME
 
     xStat@NCL_tag = "calculate_daily_values: arith="+arith
@@ -17233,7 +17430,7 @@ begin
 end
 ;------------------------------------------------------
 undef("gradLatLon_cfd")
-function gradLatLon_cfd(z:numeric, lon[*]:numeric, lat[*]:numeric, rCyclic[1]:logical, opt[1]:logical)
+function gradLatLon_cfd(z:numeric, lat[*]:numeric, lon[*]:numeric, rCyclic[1]:logical, opt[1]:logical)
 local dimz, rankz, nlat, mlon, rad, re, con, dlon, dx, cgx, cgy, gradLatLon
 begin
   dimz  = dimsizes(z)
