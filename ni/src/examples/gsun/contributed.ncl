@@ -56,8 +56,10 @@ function size_array(x)
 begin
   return( product(dimsizes(x)) )
 end
+;************************************************************
 ; D. Shea
 ; return True if "x" has one of several synonyms for "long_name"
+;************************************************************
 
 undef ("isatt_LongName")
 function isatt_LongName(x)
@@ -14473,25 +14475,25 @@ begin
        b@long_name = "multiple regression coefficients"
        b@model     = "Yest = b(0) + b(1)*X1 + b(2)*X2 + ...+b(M)*XM"
 
-       b@N     = N              ; # of 'observations'
-       b@NP    = NP             ; # of predictors
-       b@M     = M              ; design matrix size
-       b@bstd  = bstd           ; standardized coefficients
+       b@N      = N             ; # of 'observations'
+       b@NP     = NP            ; # of predictors
+       b@M      = M             ; design matrix size
+       b@bstd   = bstd          ; standardized coefficients
 
-       b@SST   = SST            ; [1]
-       b@SSE   = SSE
-       b@SSR   = SSR
+       b@SST    = SST           ; [1]
+       b@SSE    = SSE
+       b@SSR    = SSR
 
-       b@MST   = MST
-       b@MSE   = MSE
+       b@MST    = MST
+       b@MSE    = MSE
        b@MSE_dof = dof 
-       b@MSR   = MSR
+       b@MSR    = MSR
 
-       b@RSE   = RSE            ; [1]
+       b@RSE    = RSE           ; [1]
        b@RSE_dof= N-M-1         ; [1]
        
-       b@F     = Frat           ; [1]
-       b@F_dof = (/NP,dof/)     ; [2]
+       b@F      = Frat          ; [1]
+       b@F_dof  = (/NP,dof/)    ; [2]
 
        df1      = b@F_dof(0)
        df2      = b@F_dof(1)
@@ -14551,10 +14553,15 @@ begin
    end if
 
    if (any(ismissing(x)) .or. any(ismissing(y))) then
+       MSG = True
+      ;print("nmsg_x="+num(ismissing(x))+" nmsg_y="+num(ismissing(x)) )
+
        ii  = ind(.not.ismissing(x) .and. .not.ismissing(y))
        nii = dimsizes(ii)
        if (nii.gt.2) then
-           RC  = reg_multlin_stats(y(ii),x(ii),False)
+           xii = x(ii)
+           yii = y(ii)
+           RC  = reg_multlin_stats(yii,xii,False)
        else
            RC  = new(1,typeof(y),getVarFillValue(y))
            RC@info = "Not enough non-missing values: nii="+nii
@@ -14562,8 +14569,10 @@ begin
            return(RC)
        end if
    else
+       MSG = False                            ; mo msg data
        RC  = reg_multlin_stats(y,x,False)
    end if
+
    rc = RC(1)           ; transfers all attributes
 
    rc@long_name = "simple linear regression"
@@ -14573,10 +14582,10 @@ begin
    rc@xave  = rc@Xavg   ; with the original 'regline'
    rc@yave  = rc@Yavg
    rc@rstd  = rc@RSE
-   rc@yintercept = RC(0)
-   rc@b     = RC
+   rc@yintercept = (/ RC(0) /)               ; (/ ... /)  transfer values only
+   rc@b     = (/ RC /)
 
-;  -------- added 6.3.1 ----------> alpha=0.05; (1-alpha)=95%
+;  -------- added 6.4.0 ----------> alpha=0.05; (1-alpha)=95%
    Sxy          = (rc@SST - rc@SSE)/rc       ; = sum((x-rc@Xavg)*(y-rc@Yavg))
                                              ; = sum(x*y)-((sum(x)*sum(y))/rc@N)
    Sxx          =  Sxy/rc                    ; = sum((x-rc@Xavg)^2)
@@ -14595,11 +14604,19 @@ begin
    rc@y95       = (/ rc@yintercept +t025*qint  , rc@yintercept +t975*qint   /) ; y-int
 
                                              ; 95% mean response confidence intervals
-   zz           = sqrt(rc@MSE*(1.0/rc@N + (x-rc@Xavg)^2/Sxx))          ; z[*] 
+   if (MSG) then
+       zz       = sqrt(rc@MSE*(1.0/rc@N + (xii-rc@Xavg)^2/Sxx))          ; z[*] 
+   else
+       zz       = sqrt(rc@MSE*(1.0/rc@N + (  x-rc@Xavg)^2/Sxx))          ; z[*] 
+   end if
    rc@YMR025    = rc@Yest + t025*zz           
    rc@YMR975    = rc@Yest + t975*zz           
                                              ; 95% prediction interval
-   zz           = sqrt(rc@MSE*(1.0 + 1.0/rc@N + (x-rc@Xavg)^2/Sxx))    ; z[*]
+   if (MSG) then
+       zz       = sqrt(rc@MSE*(1.0 + 1.0/rc@N + (xii-rc@Xavg)^2/Sxx))    ; z[*]
+   else
+       zz       = sqrt(rc@MSE*(1.0 + 1.0/rc@N + (  x-rc@Xavg)^2/Sxx))    ; z[*]
+   end if
    rc@YPI025    = rc@Yest + t025*zz           
    rc@YPI975    = rc@Yest + t975*zz           
 ;  -------------------------------
