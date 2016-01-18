@@ -64,10 +64,17 @@ C***FIRST EXECUTABLE STATEMENT  DBETAI
       ENDIF
       FIRST = .FALSE.
 C
-      IF (X .LT. 0.D0 .OR. X .GT. 1.D0) CALL XERDJS ('SLATEC/NCL', 
-     +   'DBETAI','X IS NOT IN THE RANGE (0,1)', 1, 2)
-      IF (PIN .LE. 0.D0 .OR. QIN .LE. 0.D0) CALL XERDJS ('SLATEC/NCL',
-     +   'DBETAI', 'P AND/OR Q IS LE ZERO', 2, 2)
+cdjs  18 JAN 2016
+cdjs  IF (X .LT. 0.D0 .OR. X .GT. 1.D0) CALL XERDJS ('SLATEC/NCL', 
+cdjs +   'DBETAI','X IS NOT IN THE RANGE (0,1)', 1, 2)
+cdjs  IF (PIN .LE. 0.D0 .OR. QIN .LE. 0.D0) CALL XERDJS ('SLATEC/NCL',
+cdjs +   'DBETAI', 'P AND/OR Q IS LE ZERO', 2, 2)
+C
+      IF (X .LT. 0.D0 .OR. X .GT. 1.D0 .OR.
+     +    PIN .LE. 0.D0 .OR. QIN .LE. 0.D0) THEN
+          DBETAISLATEC = 1.0D30
+          RETURN
+      END IF
 C
       Y = X
       P = PIN
