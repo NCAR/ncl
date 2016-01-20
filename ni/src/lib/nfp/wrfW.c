@@ -12492,7 +12492,7 @@ NhlErrorTypes wrf_omega_W( void )
  */
   qvp = (void*)NclGetArgValue(
            0,
-           3,
+           4,
            &ndims_qvp,
            dsizes_qvp,
            NULL,
