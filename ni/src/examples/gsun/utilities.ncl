@@ -486,6 +486,70 @@ begin
    abi@tag = "NCL: get_unique_intersection has created the result"
    return(abi(0:k))                   
 end
+;
+;---------------------------------------------------------------------
+; The DIFFERENCE of two sets is the set of elements which are unique to each set.
+; For example: let A = (1,2,3) and B = (3,4,5). 
+; The DIFFERENCE of A and B, written A difference B = (1,2,4,5).
+;---------------------------------------------------------------------
+undef("get_unique_difference")   
+function get_unique_difference( a, b )
+local atype, btype, abi, nabi, au, bu, abd, AB, nAB, n
+begin
+   atype = typeof(a)
+   btype = typeof(b)
+   if (atype.ne.btype) then
+       print("get_unique_difference: arguments a and b must be the same type")
+       print("                       typeof(a)="+atype)
+       print("                       typeof(b)="+btype)
+       exit
+   end if
+                                          ; 'get_unique_values' sorts the elements
+                                          ;  and returns a one-dimensional arry
+   abi  = get_unique_intersection(a, b)   ; intersect (common) values
+   if (ismissing(abi(0))) then            ; NO intersect
+                                          ; 'get_unique_values' sorts the elements
+       au  = get_unique_values(a)         ; unique 'a' [au]
+       bu  = get_unique_values(b)         ; unique 'b' [bu]
+       abd = array_append_record(au,bu, 0); all unique valuesl [d] difference
+       delete( [/au, bu /] )
+       if (atype.eq."string") then        ; must sort again cuz 'ab' may not be in order
+           sqsort(abd)
+       else
+           qsort(abd)
+       end if
+       abd@tag = "NCL: get_unique_difference; arrays are DISJOINT; no intersection"
+       return(abd)
+   end if
+   nabi = dimsizes(abi)
+
+   au   = get_unique_values(a)   ; 'a' [u]nique entries
+   bu   = get_unique_values(b)   ; 'b' [u]nique entries
+   nau  = dimsizes(au)
+   nbu  = dimsizes(bu)
+                                 ; reserve space
+   abd  = new ( nau+nbu,  typeof(a), default_fillvalue(atype))
+   ABu  = array_append_record(au,bu,0)    ; unique AB
+   delete( [/au, bu /] )
+   nABu = dimsizes(ABu)
+
+   abd  = new ( nABu, typeof(a), default_fillvalue(atype))
+   k    = -1
+   do n=0,nABu-1
+      if (.not.any(abi.eq.ABu(n))) then
+          k = k+1
+          abd(k) = ABu(n)
+      end if
+   end do
+
+   if (atype.eq."string") then        ; must sort again cuz 'ab' may not be in order
+       sqsort(abd(0:k))
+   else
+       qsort(abd(0:k))
+   end if
+   abd@tag = "NCL: get_unique_difference has created the result"
+   return(abd(0:k))
+end
 
 ;=============
 undef("cla_sq")
