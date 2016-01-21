@@ -1021,6 +1021,12 @@ double dy;
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = dy * 1000.0;
 	GribPushAtt(lat_att_list_ptr,"Dy",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[11] / 1000.0;
+	GribPushAtt(lat_att_list_ptr,"Latin1",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[12] / 1000.0;
+	GribPushAtt(lat_att_list_ptr,"Latin2",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
