@@ -313,11 +313,10 @@ end
 
 ;----------------------------------------------------------------------
 ; This function takes an array of anything and returns the 
-; # of unique values for the given dimension. THIS IS CURRENTLY
-; UNADVERTISED BECAUSE I HAVEN'T DECIDED ON A NAME.
+; # of unique values for the given dimension.
 ;----------------------------------------------------------------------
-undef("dim_count_unique_values_n")
-function dim_count_unique_values_n(vals,n[1])
+undef("count_unique_values_n")
+function count_unique_values_n(vals,n[1])
 local dims, rank, imsg, irgt, ilft, vals_1d, return_count_1d, \
       return_dims, size_rgt_dims, size_n_dim, size_lft_dims
 begin
@@ -328,7 +327,7 @@ begin
   vals_1d = ndtooned(vals)
 
   if(n.lt.0.or.n.ge.rank) then
-    print("dim_count_unique_values_n: Error: invalid dimension specified, " +n)
+    print("count_unique_values_n: Error: invalid dimension specified, " +n)
     return(imsg)
   end if
   if(rank.eq.1) then
