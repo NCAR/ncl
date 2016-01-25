@@ -1,12 +1,12 @@
 C NCLFORTSTART
-        subroutine wetbulbprofs(npts,t,td,p,twb,tmsg,pmsg,ier)
+        subroutine wetbulbprofs(npts,t,td,p,twb,tmsg,tdmsg,pmsg,ier)
         implicit none
 c                                      INPUT
         integer ier, npts
         double precision t(npts) 
         double precision td(npts) 
         double precision p(npts) 
-        double precision tmsg, pmsg
+        double precision tmsg, tdmsg, pmsg
 c                                      OUTPUT
         double precision twb(npts) 
 c NCLEND
@@ -27,13 +27,15 @@ c       baker, schlatter  17-may-1982
 c PROFS: Program for Regional Observing and Forecasting Services (NOAA)
 
         do n=1,npts
-           if (t(n).ne.tmsg .and. td(n).ne.tmsg .and. p(n).ne.pmsg) then
+           if (t(n).ne.tmsg.and.td(n).ne.tdmsg.and.p(n).ne.pmsg) then
                twb(n) = twbprofs(t(n),td(n),p(n))
            else
                twb(n) = tmsg
            end if
         end do
 
+c Note: ier isn't used for anything yet, so set to 0 here.
+        ier = 0
         return
         end
 c---
@@ -43,11 +45,9 @@ c                                      INPUT
         double precision t 
         double precision td 
         double precision p 
-c                                      OUTPUT
-        double precision twb 
 c                                      LOCAL 
         integer i
-        double precision aw, ao, pi, x, ti, aos, os, eps
+        double precision aw, ao, pi, x, ti, aos, eps
 
         external          wxprofs, oxprofs, tmrprofs, tmaprofs, tdaprofs
      +                 ,  osprofs, tsaprofs
@@ -102,8 +102,6 @@ c ---------------------------------------------------------------------
         implicit none
 c                                      INPUT
         double precision t, p
-c                                      OUTPUT
-        double precision  ox 
 c                                      LOCAL
         double precision  tk 
 
@@ -176,9 +174,9 @@ c   this function returns the temperature tsa (celsius) on a saturation
 c   adiabat at pressure p (millibars). os is the equivalent potential
 c   temperature of the parcel (celsius). sign(a,b) replaces the
 c   algebraic sign of a with that of b.
-c   b is an empirical constant approximately equal to 0.001 of the latent
-c   heat of vaporization for water divided by the specific heat at constant
-c   pressure for dry air.
+c   b is an empirical constant approximately equal to 0.001 of the 
+c   latent heat of vaporization for water divided by the specific heat
+c   at constant pressure for dry air.
 c                                      LOCAL
         integer i
         double precision a, b, d, tq, tqk, x, eps 
