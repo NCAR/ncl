@@ -118,6 +118,7 @@ extern NhlErrorTypes bin_sum_W(void);
 extern NhlErrorTypes bin_avg_W(void);
 extern NhlErrorTypes trop_wmo_W(void);
 extern NhlErrorTypes moc_globe_atl_W(void);
+extern NhlErrorTypes wetbulb_W(void);
 
 extern NhlErrorTypes rgbhsv_W(void);
 extern NhlErrorTypes hsvrgb_W(void);
@@ -2129,6 +2130,20 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",3,NclANY);nargs++;
 
     NclRegisterFunc(moc_globe_atl_W,args,"moc_globe_atl",nargs);
+
+/*
+ * Register "wetbulb".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(3);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+    NclRegisterFunc(wetbulb_W,args,"wetbulb",nargs);
 
 /*
  * Register "gc_onarc".
