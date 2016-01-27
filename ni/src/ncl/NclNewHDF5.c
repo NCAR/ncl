@@ -1118,7 +1118,6 @@ char *_getH5typeName(hid_t type, int ind)
                 }
 
                 /* Print parent type */
-                putchar(' ');
                 super = H5Tget_super(type);
                 attTypeName = _getH5typeName(super, ind+4);
                 H5Tclose(super);
