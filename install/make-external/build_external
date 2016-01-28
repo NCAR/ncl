@@ -107,6 +107,7 @@ os=`uname -s`
 # Use one of these eval command to set the compiler version. It seems to work!
 #eval `/glade/apps/opt/lmod/lmod/libexec/lmod sh swap intel gnu/4.4.7`
 #eval `/glade/apps/opt/lmod/lmod/libexec/lmod sh swap intel gnu/4.7.2`
+#eval `/glade/apps/opt/lmod/lmod/libexec/lmod sh swap intel gnu/4.8.3`
 
 if [ -n "$COMPILER_VERSION" ] ; then
   if [ "$COMPILER_VERSION" = "4.8.3" ] ; then
@@ -863,8 +864,10 @@ then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lssl -lldap -lrt -lssh2 -lrtmp"
       elif [ "$un" = "logan.cgd.ucar.edu" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lz -lidn -lrt -ldl"
-      elif [ "$un" = "yellowstone_gnu483" ] || [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
+      elif [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl -lidn -lssl -lcrypto -lz -lrt"
+      elif [ "$un" = "yellowstone_gnu483" ] ; then
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl -lz -lrt -lssl -lidn -lldap"
       elif [ "$un" = "yellowstone_intel1215" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lssl -lidn -lrt -ldl"
       else
@@ -1418,8 +1421,10 @@ if [ $INSTALL_ESMF ] ; then
 
     if [ "$un" = "cisl-denton.local" ] || [ "$os_version" = "10.8.4" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
-    elif [ "$un" = "yellowstone_gnu483" ] || [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
+    elif [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lcrypto -lz -lrt -ldl -lssl -lidn -lsz -lz"
+    elif [ "$un" = "yellowstone_gnu483" ] ; then
+      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz -lcurl -lz -lrt -lssl -lidn -lldap"
     elif [ "$un" = "yellowstone_intel1215" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lssl -lidn -lrt -ldl"
     elif [ "$un" = "cisl-denton.local" ] || [ "$un" = "cisl-denton.scd.ucar.edu" ] || [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ] || [ "$os_version" = "10.9.4" ] || [ "$os_version" = "10.9.5" ] ; then
