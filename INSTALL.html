@@ -1,14 +1,14 @@
 <html>
 <head>
-<title>How to build NCL and NCAR Graphics version 6.3.0 from source code</title>
+<title>How to build NCL and NCAR Graphics version 6.4.0 from source code</title>
 </head>
 
 </head>
 
-<h1>How to build NCL and NCAR Graphics version 6.3.0 from source code</h1>
+<h1>How to build NCL and NCAR Graphics version 6.4.0 from source code</h1>
 <p>
 
-<i>March 15, 2015</i><p>
+<i>January 27, 2016</i><p>
 
 <b>The latest version of this document can be found at
 <a href="http://www.ncl.ucar.edu/Download/build_from_src.shtml">http://www.ncl.ucar.edu/Download/build_from_src.shtml</a>.</b>
@@ -466,7 +466,7 @@ use <a href="http://www.macports.org/">MacPorts</a>. Under Cygwin, the
 <p>
 
 Each package is listed below, along with the version we used to build
-NCL V6.3.0 on our own systems. In most cases you don't need to have
+NCL V6.4.0 on our own systems. In most cases you don't need to have
 the exact version of the software we used, but it's a good idea to
 match them as much as possible. We've included the "wget" command we
 used for the retrieving the source code, where applicable.
@@ -1289,17 +1289,17 @@ HREF="http://www.ncl.ucar.edu/Download/">http://www.ncl.ucar.edu/Download/</A>
 <p>
 
 The NCL source code you download will be a single compressed tar
-file (we'll call it "ncl_ncarg-6.3.0.tar.gz"). Move the
-"ncl_ncarg-6.3.0.tar.gz" file to a temporary directory where you
+file (we'll call it "ncl_ncarg-6.4.0.tar.gz"). Move the
+"ncl_ncarg-6.4.0.tar.gz" file to a temporary directory where you
 have plenty of disk space (around 630 megabytes to hold all of the
 source code, object files, binaries, and so on). Then, uncompress and
 untar the file as follows:<P>
 
 <pre>
-  tar -zxvf ncl_ncarg-6.3.0.tar.gz
+  tar -zxvf ncl_ncarg-6.4.0.tar.gz
 </pre>
 
-The above steps will create a directory called "ncl_ncarg-6.3.0".  For
+The above steps will create a directory called "ncl_ncarg-6.4.0".  For
 convenience, we'll use the notation $NCARG to mean the top level of
 the NCL/NCAR Graphics source tree. Set the environment variable NCARG
 to the full path of this directory.
@@ -1311,21 +1311,21 @@ From tcsh or csh:
 <p>
 
 <pre>
-  setenv NCARG /usr/local/src/ncl_ncarg-6.3.0
+  setenv NCARG /usr/local/src/ncl_ncarg-6.4.0
 </pre>
 
 From ksh or bash:
 <p>
 
 <pre>
-  export NCARG=/usr/local/src/ncl_ncarg-6.3.0
+  export NCARG=/usr/local/src/ncl_ncarg-6.4.0
 </pre>
 
 sh:
 <p>
 
 <pre>
-  NCARG=/usr/local/src/ncl_ncarg-6.3.0
+  NCARG=/usr/local/src/ncl_ncarg-6.4.0
   export NCARG
 </pre>
 <p>

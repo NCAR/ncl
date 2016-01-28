@@ -75,43 +75,43 @@ endif
 
 if ("$un" == "logan") then
   setenv NCARGTEST /project/yampa02/haley/ncargtest
-  setenv NCARG_EXTERNAL /contrib/ncl-6.3.0/external
-  setenv NCARG_ROOT /contrib/ncl-6.3.0
-  setenv NCARG /contrib/ncl-6.3.0/src/ncarg
+  setenv NCARG_EXTERNAL /contrib/ncl-6.4.0/external
+  setenv NCARG_ROOT /contrib/ncl-6.4.0
+  setenv NCARG /contrib/ncl-6.4.0/src/ncarg
   set dap_string   = "Linux_CentOS7.0_x86_64_gcc482"
   set nodap_string = "Linux_CentOS7.0_x86_64_nodap_gcc482"
 else if ("$un" == "k5") then
   setenv NCARGTEST /d2/haley/ncargtest
   setenv NCARG_EXTERNAL /d2/haley/external
-  setenv NCARG_ROOT /d2/haley/ncl-6.3.0
+  setenv NCARG_ROOT /d2/haley/ncl-6.4.0
   setenv NCARG /d2/haley/src/ncarg
   set dap_string   = "Linux_RHEL5.11_i686_gcc412"
   set nodap_string = "Linux_RHEL5.11_i686_nodap_gcc412"
 else if ("$un" == "k6") then
   setenv NCARGTEST /d2/haley/ncargtest
   setenv NCARG_EXTERNAL /d2/haley/external
-  setenv NCARG_ROOT /d2/haley/ncl-6.3.0
+  setenv NCARG_ROOT /d2/haley/ncl-6.4.0
   setenv NCARG /d2/haley/src/ncarg
   set dap_string   = "Linux_Debian6.0_i686_gcc445"
   set nodap_string = "Linux_Debian6.0_i686_nodap_gcc445"
 else if ("$un" == "k7") then
   setenv NCARGTEST /d2/haley/ncargtest
   setenv NCARG_EXTERNAL /d2/haley/external
-  setenv NCARG_ROOT /d2/haley/ncl-6.3.0
+  setenv NCARG_ROOT /d2/haley/ncl-6.4.0
   setenv NCARG /d2/haley/src/ncarg
   set dap_string   = "Linux_Debian6.0_x86_64_gcc445"
   set nodap_string = "Linux_Debian6.0_x86_64_nodap_gcc445"
 else if ("$un" == "k8") then
   setenv NCARGTEST /d2/haley/ncargtest
   setenv NCARG_EXTERNAL /d2/haley/external
-  setenv NCARG_ROOT /d2/haley/ncl-6.3.0
+  setenv NCARG_ROOT /d2/haley/ncl-6.4.0
   setenv NCARG /d2/haley/src/ncarg
   set dap_string   = "Linux_RHEL5.11_x86_64_gcc412"
   set nodap_string = "Linux_RHEL5.11_x86_64_nodap_gcc412"
 else if ("$un" == "k9") then
   setenv NCARGTEST /d2/haley/ncargtest
   setenv NCARG_EXTERNAL /d2/haley/external
-  setenv NCARG_ROOT /d2/haley/ncl-6.3.0
+  setenv NCARG_ROOT /d2/haley/ncl-6.4.0
   setenv NCARG /d2/haley/src/ncarg
   set dap_string   = "Linux_Debian7.8_x86_64_gcc472"
   set nodap_string = "Linux_Debian7.8_x86_64_nodap_gcc472"
@@ -150,7 +150,7 @@ else if ("$un" == "yellowstone_intel1215") then
   setenv NCARG /glade/p/work/haley/src/ncl-trunk-intel
   setenv NCARGTEST /glade/u/ncldev/test/ncargtest
   setenv NCARG_EXTERNAL /glade/p/work/haley/dev/external/intel/12.1.5
-  setenv NCARG_ROOT /glade/apps/opt/ncl/6.3.0/intel/12.1.5
+  setenv NCARG_ROOT /glade/apps/opt/ncl/6.4.0/intel/12.1.5
   setenv YMAKE_DEV_FILE $NCARG/ymakedevfile
 
   unsetenv LIB_NCAR
@@ -172,7 +172,7 @@ else if ("$un" == "riley") then
 else if ("$un" == "cordy") then
   setenv NCARGTEST /Users/haley/ncargtest
   setenv NCARG_EXTERNAL /Users/haley/dev/external
-  setenv NCARG_ROOT /Users/haley/dev/ncl-6.3.0
+  setenv NCARG_ROOT /Users/haley/dev/ncl-6.4.0
   setenv NCARG /Users/haley/src/ncarg
   set dap_string   = "MacOS_10.10_64bit_gcc481"
   set nodap_string = "MacOS_10.10_64bit_nodap_gcc481"
@@ -283,7 +283,7 @@ set nodap_gzfile  = "$nodap_tarfile.gz"
 
 #set sys_name = "yellowstone.ucar.edu"
 set sys_name = "cisl-denton.scd.ucar.edu"
-set sys_dir  = "/Users/haley/tmp/6.3.0"
+set sys_dir  = "/Users/haley/tmp/6.4.0"
 
 echo "----------------------------------------------------------------------"
 echo "Tar files: $tar_dir/$dap_gzfile"
