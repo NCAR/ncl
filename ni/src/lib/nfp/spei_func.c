@@ -2,7 +2,7 @@
 #include <math.h>
 #include <time.h>
 #include <stdlib.h>
-
+#include <string.h>
 
 /*
  * Original code used #include to include other *.c files.
@@ -97,6 +97,11 @@ void spei_driver(double *rainSeries,double *tempSeries,double smsg,
   /* Compute the SPEI series*/
   acumRegistros = numRegistros-acumulated+1;
   spei_func(acumSeries, acumRegistros, smsg, seasonality, speiSeries, seasonSeries);
+
+/* The first acumRegistros values of speiSeries are the spei values, and the 
+ * last (acumulated-1) values are 0.0. Shift these 0.0 to the beginning of
+ * the speiSeries array, and replace them with missing values (smsg).
+ */
   type_size = sizeof(double);
   if(acumulated > 1) {
     memmove((void*)((char*)speiSeries + (acumulated-1)*type_size),
