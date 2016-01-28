@@ -10,22 +10,28 @@
 ;************************************************************
 undef("get_pi")
 function get_pi( p )
-local pi
+local pi, ptype
 begin
-  if (isnumeric(p)) then
-      if (typeof(p).eq."double") then
-          pi = 4d0*atan(1d0)
-      else
-          pi = 4.0*atan(1.0)
-      end if
-  else
-      if (typeof(p).eq."string") then
-          if (p.eq."double" .or. p.eq."d") then
+  ptype = typeof(p)
+
+  if (ptype.eq."numeric" .or. ptype.eq."string") then  
+      if (isnumeric(p)) then
+          if (ptype.eq."double") then
               pi = 4d0*atan(1d0)
           else
               pi = 4.0*atan(1.0)
           end if
+      else
+          if (ptype.eq."string") then
+              if (p.eq."double" .or. p.eq."d") then
+                  pi = 4d0*atan(1d0)
+              else
+                  pi = 4.0*atan(1.0)
+              end if
+          end if
       end if
+  else
+      pi = 4.0*atan(1.0)       ; default is to return float
   end if
   pi@long_name = "ratio of a circle's circumference to its diameter"
   return( pi )
@@ -16776,6 +16782,9 @@ begin
     ntim     = dimx(nDim)                          ; size of input time dimension
 
 ;--- Create current yyyy/mm
+;   'cd_calendar' recognizes any 'calendar' attribute associated with ' x&$TNAME$ '.
+;    Hence, the elements below (yyyy, month, ..) reflect that calendar.
+;    No calendar attributes defaults to gregorian [standard].
 
     utc_date = cd_calendar(x&$TNAME$, 0)           ; (x&$TNAME$, 0) ; typically   x&time
     year     = floattointeger(utc_date(:,0))
@@ -16812,6 +16821,9 @@ begin
     end if
     if (isatt(x&$TNAME$,"units")) then
         TIME@units     = x&$TNAME$@units 
+    end if
+    if (isatt(x&$TNAME$,"calendar")) then
+        TIME@calendar  = x&$TNAME$@calendar 
     end if
 
     TIME&TIME = TIME               ; create coordinate variable 
@@ -17082,6 +17094,9 @@ begin
     ntim     = dimx(nDim)                          ; size of input time dimension
 
 ;--- Create current yyyy/mm/dd
+;   'cd_calendar' recognizes any 'calendar' attribute associated with ' x&$TNAME$ '.
+;    Hence, the elements below (yyyy, month, ..) reflect that calendar.
+;    No calendar attribute defaults to gregorian [standard].
 
     utc_date = cd_calendar(x&$TNAME$, 0)           ; (x&$TNAME$, 0) ; typically   x&time
     year     = floattointeger(utc_date(:,0))
@@ -17121,6 +17136,9 @@ begin
     end if
     if (isatt(x&$TNAME$,"units")) then
         TIME@units     = x&$TNAME$@units 
+    end if
+    if (isatt(x&$TNAME$,"calendar")) then
+        TIME@calendar  = x&$TNAME$@calendar
     end if
 
     TIME&TIME = TIME               ; create coordinate variable 
