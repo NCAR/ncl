@@ -150,7 +150,7 @@ else if ("$un" == "yellowstone_intel1215") then
   setenv NCARG /glade/p/work/haley/src/ncl-trunk-intel
   setenv NCARGTEST /glade/u/ncldev/test/ncargtest
   setenv NCARG_EXTERNAL /glade/p/work/haley/dev/external/intel/12.1.5
-  setenv NCARG_ROOT /glade/apps/opt/ncl/6.4.0/intel/12.1.5
+  setenv NCARG_ROOT /glade/p/work/haley/dev/ncl-trunk-intel-opt
   setenv YMAKE_DEV_FILE $NCARG/ymakedevfile
 
   unsetenv LIB_NCAR
