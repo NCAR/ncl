@@ -572,6 +572,7 @@ lib/ncarg/colormaps/MPL_spring.rgb
 lib/ncarg/colormaps/MPL_sstanom.rgb
 lib/ncarg/colormaps/MPL_summer.rgb
 lib/ncarg/colormaps/MPL_terrain.rgb
+lib/ncarg/colormaps/MPL_viridis.rgb
 lib/ncarg/colormaps/MPL_winter.rgb
 lib/ncarg/colormaps/NCV_banded.rgb
 lib/ncarg/colormaps/NCV_blu_red.rgb
@@ -1264,6 +1265,15 @@ lib/ncarg/grib2_codetables/ncep/4/4.212.table
 lib/ncarg/grib2_codetables/ncep/4/4.213.table
 lib/ncarg/grib2_codetables/ncep/4/4.215.table
 lib/ncarg/grib2_codetables/ncep/4/4.216.table
+lib/ncarg/grib2_codetables/ncep/4/4.2.209.10.table
+lib/ncarg/grib2_codetables/ncep/4/4.2.209.11.table
+lib/ncarg/grib2_codetables/ncep/4/4.2.209.2.table
+lib/ncarg/grib2_codetables/ncep/4/4.2.209.3.table
+lib/ncarg/grib2_codetables/ncep/4/4.2.209.4.table
+lib/ncarg/grib2_codetables/ncep/4/4.2.209.6.table
+lib/ncarg/grib2_codetables/ncep/4/4.2.209.7.table
+lib/ncarg/grib2_codetables/ncep/4/4.2.209.8.table
+lib/ncarg/grib2_codetables/ncep/4/4.2.209.9.table
 lib/ncarg/grib2_codetables/ncep/4/4.217.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.2.0.table
 lib/ncarg/grib2_codetables/ncep/4/4.220.table
@@ -1714,6 +1724,7 @@ lib/ncarg/nclex/xyplot/xy17n.ncl
 lib/ncarg/nclscripts/contrib/NCL_GETools.ncl
 lib/ncarg/nclscripts/contrib/calcMonAnomTXXX.ncl
 lib/ncarg/nclscripts/contrib/calendar_decode2.ncl
+lib/ncarg/nclscripts/contrib/cd_inv_string.ncl
 lib/ncarg/nclscripts/contrib/cd_string.ncl
 lib/ncarg/nclscripts/contrib/clmMonTXXX.ncl
 lib/ncarg/nclscripts/contrib/kf_filter.ncl
@@ -1723,9 +1734,11 @@ lib/ncarg/nclscripts/contrib/time_axis_labels.ncl
 lib/ncarg/nclscripts/contrib/ut_string.ncl
 lib/ncarg/nclscripts/csm/ccm_func.ncl
 lib/ncarg/nclscripts/csm/contributed.ncl
+lib/ncarg/nclscripts/csm/crop.ncl
 lib/ncarg/nclscripts/csm/diagnostics_cam.ncl
 lib/ncarg/nclscripts/csm/gsn_code.ncl
 lib/ncarg/nclscripts/csm/gsn_csm.ncl
+lib/ncarg/nclscripts/csm/heat_stress.ncl
 lib/ncarg/nclscripts/csm/popRemap.ncl
 lib/ncarg/nclscripts/csm/shea_util.ncl
 lib/ncarg/nclscripts/csm/skewt_func.ncl
