@@ -3666,7 +3666,7 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 	int n = -1;
 	int sizeofextlist = sizeof(ext_list) / sizeof(ext_list[0]);
 
-	if(strncmp(the_path,"http://",7))
+	if(strncmp(the_path,"http://",7) && strncmp(the_path,"https://",8))
 		*is_http = False;
 	else
 		*is_http = True;

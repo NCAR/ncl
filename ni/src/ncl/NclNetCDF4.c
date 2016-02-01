@@ -2649,7 +2649,7 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
         if (emsg == NULL)
         {
             emsg = "NclNetCDF4: The specified file (%s) cannot be opened; invalid file or system error";
-            if (! strncmp(NrmQuarkToString(path),"http://",7))
+            if ((! strncmp(NrmQuarkToString(path),"http://",7)) || (! strncmp(NrmQuarkToString(path),"https://",8)))
             {
                 emsg = "The specified URL (%s) does not reference an active DODS server or cannot be processed by the DODS server";
             }

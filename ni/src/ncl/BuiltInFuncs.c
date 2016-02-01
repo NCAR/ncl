@@ -21704,7 +21704,7 @@ NhlErrorTypes   _NclIFileIsPresent
     for(i = 0; i < sz; i++)
     {
 	fpath = (char *) NrmQuarkToString(files[i]);
-        if(0 == strncmp(fpath, "http", 4))
+        if((0 == strncmp(fpath, "http://", 7)) || (0 == strncmp(fpath, "https://", 8)))
 	{
             fid = ncopen(fpath, NC_NOWRITE);
             if(0 <= fid)
