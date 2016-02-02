@@ -8993,6 +8993,101 @@ NclScalar         *missing_rx)
 }
 
 /*
+ * Coerce a missing value to double.  Also, set a default missing
+ * value and set an int/long/float missing value for the return.
+ */
+void coerce_missing_more_types(
+NclBasicDataTypes type_x,
+int               has_missing_x,
+NclScalar         *missing_x,
+NclScalar         *missing_dx,
+NclScalar         *missing_rx)
+{
+/*
+ * Check for missing value and coerce if neccesary.
+ */
+  if(has_missing_x) {
+/*
+ * Coerce missing value to double.
+ */
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               (void*)missing_dx,
+               (void*)missing_x,
+               1,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+
+    if(missing_rx != NULL) {
+      if(type_x == NCL_double) { 
+        _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+                   (void*)missing_rx,
+                   (void*)missing_x,
+                   1,
+                   NULL,
+                   NULL,
+                   _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+      }
+      else if(type_x == NCL_float) { 
+        _Nclcoerce((NclTypeClass)nclTypefloatClass,
+                   (void*)missing_rx,
+                   (void*)missing_x,
+                   1,
+                   NULL,
+                   NULL,
+                   _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+      }
+      else if(type_x == NCL_long) { 
+        _Nclcoerce((NclTypeClass)nclTypelongClass,
+                   (void*)missing_rx,
+                   (void*)missing_x,
+                   1,
+                   NULL,
+                   NULL,
+                   _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+      }
+      else {
+        _Nclcoerce((NclTypeClass)nclTypeintClass,
+                   (void*)missing_rx,
+                   (void*)missing_x,
+                   1,
+                   NULL,
+                   NULL,
+                   _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+      }
+    }
+  }
+  else {
+    if(missing_dx != NULL) {
+/*
+ * Get the default missing value, just in case.
+ */ 
+      if(type_x == NCL_double) {
+        missing_dx->doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+      }
+      else if(type_x == NCL_float) {
+        missing_dx->doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+        if(missing_rx != NULL) {
+          missing_rx->floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+        }
+      }
+      else if(type_x == NCL_long) {
+        missing_dx->doubleval = (double)((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+        if(missing_rx != NULL) {
+          missing_rx->longval = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+        }
+      }
+      else {
+        missing_dx->doubleval = (double)((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+        if(missing_rx != NULL) {
+          missing_rx->intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+        }
+      }
+    }
+  }
+}
+
+/*
  * Coerce data to double, or just return a pointer to it if
  * it is already double.
  */
@@ -9548,6 +9643,41 @@ ng_size_t step_x
   }
   else {
     for( i = 0; i < size_x; i++ ) ((float*)x)[index_x+(step_x*i)]  = (float)dx[i];
+  }
+}
+
+
+/*
+ * Copy double data back to double, float, long, or int non-contiguous
+ * array, using a void array.  Really, there's no need for both
+ * coerce_output_step and coerce_output_float_or_double_step to
+ * both exist. coerce_output_float_or_double_step has been around
+ * awhile, and we never need a routine that returned something other
+ * than floats or doubles until NCL V6.4.0 (dim_acumrun_n)
+ *
+ */
+void coerce_output_step(
+void   *x,
+double *dx,
+NclBasicDataTypes type_x,
+ng_size_t size_x,
+ng_size_t index_x,
+ng_size_t step_x
+)
+{
+  ng_size_t i;
+
+  if(type_x == NCL_double) {
+    for( i = 0; i < size_x; i++ ) ((double*)x)[index_x+(step_x*i)] = dx[i];
+  }
+  else if(type_x == NCL_float) {
+    for( i = 0; i < size_x; i++ ) ((float*)x)[index_x+(step_x*i)]  = (float)dx[i];
+  }
+  else if(type_x == NCL_long) {
+    for( i = 0; i < size_x; i++ ) ((long*)x)[index_x+(step_x*i)]  = (long)dx[i];
+  }
+  else {
+    for( i = 0; i < size_x; i++ ) ((int*)x)[index_x+(step_x*i)]  = (int)dx[i];
   }
 }
 

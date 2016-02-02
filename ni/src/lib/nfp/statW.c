@@ -4633,17 +4633,25 @@ NhlErrorTypes dim_acumrun_n_W( void )
 /*
  * Coerce missing values, if any.
  */
-  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+  coerce_missing_more_types(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
 
   tmp_x   = (double*)calloc(npts,sizeof(double));
   tmp_acr = (double*)calloc(npts,sizeof(double));
-  if(type_x != NCL_double) {
+  if(type_x == NCL_double) {
+    type_acr = NCL_double;
+    acr = (void*)calloc(total_size_x,sizeof(double));
+  }
+  else if(type_x == NCL_float) {
     type_acr = NCL_float;
     acr = (void*)calloc(total_size_x,sizeof(float));
   }
+  else if(type_x == NCL_long) {
+    type_acr = NCL_long;
+    acr = (void*)calloc(total_size_x,sizeof(long));
+  }
   else {
-    type_acr = NCL_double;
-    acr = (void*)calloc(total_size_x,sizeof(double));
+    type_acr = NCL_int;
+    acr = (void*)calloc(total_size_x,sizeof(int));
   }
   if( tmp_x == NULL || acr == NULL || tmp_acr == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_acumrun_n: Unable to allocate memory for coercing arrays to double precision");
@@ -4664,8 +4672,7 @@ NhlErrorTypes dim_acumrun_n_W( void )
       NGCALLF(dacumrun,DACUMRUN)(tmp_x,&inpts,&missing_dx.doubleval,
                                  lrun,tmp_acr,&nmsg,opt);
 
-      coerce_output_float_or_double_step(acr,tmp_acr,type_acr,npts,index_x,
-                                         total_nr);
+      coerce_output_step(acr,tmp_acr,type_acr,npts,index_x,total_nr);
     }
   }
 
@@ -4674,23 +4681,7 @@ NhlErrorTypes dim_acumrun_n_W( void )
  */
   NclFree(tmp_acr);
   NclFree(tmp_x);
-/*
- * Return float if input isn't double, otherwise return double.
- */
-  if(type_acr != NCL_double) {
-/*
- * Return float values. 
- */
-    return(NclReturnValue(acr,ndims_x,dsizes_x,&missing_rx,
-                          NCL_float,0));
-  }
-  else {
-/*
- * Return double values. 
- */
-    return(NclReturnValue(acr,ndims_x,dsizes_x,&missing_dx,
-                          NCL_double,0));
-  }
+  return(NclReturnValue(acr,ndims_x,dsizes_x,&missing_rx,type_acr,0));
 }
 
 
