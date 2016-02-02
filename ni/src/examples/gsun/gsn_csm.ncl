@@ -2046,6 +2046,7 @@ begin
   set_attr(amres,"amResizeNotify",True)
   set_attr(amres,"amParallelPosF",parallel)
   set_attr(lbres,"lbLabelFontHeightF",font_height)
+  set_attr(lbres,"lbBoxEndCapStyle",0)
 
 ; Default is horizontal at the bottom.
 
@@ -2138,17 +2139,38 @@ begin
       "lbLabelStrings"        : lbstrings
     end getvalues
 ;
+; As of V6.4.0, you can create labelbars with triangles via 
+; lbBoxEndCapStyle. The cap styles are:
+;
+; 0 - rectangle 
+; 1 - triangle low 
+; 2 - triangle high
+; 3 - triangle both
+;
+; You can't have end style = 2 and cap style != 0.
+;
+    if(end_labelbar_style.eq.2.and.\
+        (.not.check_attr(lbres,"lbBoxEndCapStyle","RectangleEnds",True).and.\
+         .not.check_attr(lbres,"lbBoxEndCapStyle",0,False))) then
+      print("Warning:add_labelbar: you can't turn on triangle ends for the labelbar if")
+      print("  cnLabelBarEndStyle is set to 'ExcludeOuterBoxes")
+      print("  Turning off triangle(s) for labelbar.")
+      cap_style = 0
+    else
+      cap_style = lbres@lbBoxEndCapStyle
+    end if
+;
 ; cnLabelBarEndLabelsOn was deprecated in V5.0, but we still need to
 ; check for it. It's been replaced by cnLabelBarEndStyle.
 ;
-; The three styles are:
+; The three end label styles are:
 ;
 ; 0 - IncludeOuterBoxes  (default)
 ; 1 - IncludeMinMaxLabels (the equivalent of cnLabelBarEndLabelsOn=True)
 ; 2 - ExcludeOuterBoxes
 ; 
-; If the style is 0 (the default) *and* xxLabelBarEndLabelsOn is
-; True, then set the style to 1. If the style is 1 or 2 (the only
+; If the end label style is 0 (the default) *and* xxLabelBarEndLabelsOn
+; is True, then set the style to 1. If the style is 1 or 2 (the only
 ; other valid values), then xxLabelBarEndLabelsOn should be set True.
 ;
     if(end_labelbar_style.eq.0) then
@@ -2184,7 +2206,8 @@ begin
 ; Check if we want different fill patterns or fill scales.  If so, we
 ; have to pass these on to the labelbar.
 ;
-    lbres@lbMonoFillColor = mono_fill_col
+    lbres@lbMonoFillColor  = mono_fill_col
+    lbres@lbBoxEndCapStyle = cap_style
     if(.not.mono_fill_pat)
       lbres@lbMonoFillPattern = False
       lbres@lbFillPatterns    = fill_patterns
