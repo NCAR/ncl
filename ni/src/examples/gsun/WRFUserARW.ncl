@@ -1782,9 +1782,16 @@ begin
        za     = wrf_user_unstagger(geopt,geopt@stagger)
        za     = za / 9.81  ; change to height
 
-       ua1    = ua(::-1,:,:)
-       va1    = va(::-1,:,:)
-       za1    = za(::-1,:,:)
+       nd = dimsizes(dimsizes(ua))
+       if(nd.eq.3) then
+         ua1    = ua(::-1,:,:)
+         va1    = va(::-1,:,:)
+         za1    = za(::-1,:,:)
+       else
+         ua1    = ua(:,::-1,:,:)
+         va1    = va(:,::-1,:,:)
+         za1    = za(:,::-1,:,:)
+       end if
 
        top_ok = 0
        top = 3000.
