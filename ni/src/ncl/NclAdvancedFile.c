@@ -5268,14 +5268,16 @@ static struct _NclMultiDValDataRec *AdvancedFileReadVarAtt(NclFile infile,
         char *type_name;
         NclTypeClass type_class;
 
-        if(varnode->att_rec->id < 0)
-            AdvancedLoadVarAtts(thefile, var);
+	tmp_md = NULL;
+	if (varnode->att_rec) {
+		if(varnode->att_rec->id < 0)
+			AdvancedLoadVarAtts(thefile, var);
 
-        tmp_md = _NclGetAtt(varnode->att_rec->id,NrmQuarkToString(attname),sel_ptr);
-
+		tmp_md = _NclGetAtt(varnode->att_rec->id,NrmQuarkToString(attname),sel_ptr);
+	}
         if(NULL == tmp_md)
 	{
-    		NHLPERROR((NhlINFO, NhlWARNING,
+    		NHLPERROR((NhlWARNING, NhlEUNKNOWN,
         		"AdvancedFileReadVarAtt: (%s) is not an attribute of (%s)",
          		NrmQuarkToString(attname),NrmQuarkToString(var)));
     		return(_NclCreateMissing());
@@ -5285,7 +5287,7 @@ static struct _NclMultiDValDataRec *AdvancedFileReadVarAtt(NclFile infile,
             return (tmp_md);
         else if (tmp_md->multidval.val == NULL)
         {
-            NhlPError(NhlINFO, NhlWARNING,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
                   "AdvancedFileReadVarAtt: _FillValue attribute for  variable (%s) in file (%s) has NULL value, substituting default fill value of variable type",
                   NrmQuarkToString(var),NrmQuarkToString(thefile->advancedfile.fname));
         }
