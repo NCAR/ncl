@@ -2022,139 +2022,95 @@ begin
   end if
 
   if( variable .eq. "ctt") then
+      if(.not.ISFILE) 
+        nc_file = file_handle[0]
+      end if
+      if(isfilevar(nc_file,"QICE")) then
+        have_qci = 1
+      else
+        have_qci = 0
+      end if
+      ter = nc_file->HGT(0,:,:)
+
+      required_vars = (/"QVAPOR","QCLOUD"/)
+      do nrv=0,dimsizes(required_vars)-1
+        if(.not.isfilevar(nc_file,required_vars(nrv))) then
+           print("wrf_user_getvar: " + required_vars(nrv) + \
+                 " is needed to calculate the cloud top temperature.")
+           print("It has not been found in the data set.")
+           exit
+        end if
+      end do
       if ( time .eq. -1 ) then
-         explicit_time = 0
          if(ISFILE) then
             P     = nc_file->P
             PB    = nc_file->PB
             T     = nc_file->T
-
-;geopotential height
             PHB   = nc_file->PHB
             PH    = nc_file->PH
-
-            if(isfilevar(nc_file,"QVAPOR")) then
-               qvp =  nc_file->QVAPOR * 1000.  ; kg/kg -> g/kg
-            else
-               print("wrf_user_getvar: QVAPOR is needed to calculate the cloud top temperature.")
-               print("It has not been found in the data set.")
-               exit
-            end if
-
-
-            haveqci = 1
-            if(isfilevar(nc_file,"QICE")) then
+            qvp   = nc_file->QVAPOR * 1000.  ; kg/kg -> g/kg
+            qcw   = nc_file->QCLOUD * 1000.
+            if(have_qci.eq.1) then
                qci = nc_file->QICE * 1000.  ; kg/kg -> g/kg
-            else
-               qci = new( (/Pdims(0),Pdims(1),Pdims(2),Pdims(3)/),float)
-               haveqci = 0
             end if
-
-
-            if(isfilevar(nc_file,"QCLOUD")) then
-               qcw = nc_file->QCLOUD * 1000.  ; kg/kg -> g/kg
-            else
-               print("wrf_user_getvar: QCLOUD is needed to calculate the cloud top temperature.")
-               print("It has not been found in the data set.")
-               exit
-            end if
-
-            ter = nc_file->HGT(0,:,:)
-
-         else ; the else for ISFILE
-            P      = file_handle[:]->P
-            PB     = file_handle[:]->PB
-            T      = file_handle[:]->T
-            PHB    = file_handle[:]->PHB
-            PH     = file_handle[:]->PH
-            nc_file =  file_handle[0]
-            ter    = nc_file->HGT(0,:,:)
-            if(isfilevar(nc_file,"QVAPOR")) then
-               qvp = file_handle[:]->QVAPOR * 1000.  ; kg/kg -> g/kg
-            else
-               print("wrf_user_getvar: QVAPOR is needed to calculate the cloud top temperature.")
-               print("It has not been found in the data set.")
-               exit
-            end if 
- 
-            haveqci = 1
-            if(isfilevar(nc_file,"QICE")) then
+         else
+            P     = file_handle[:]->P
+            PB    = file_handle[:]->PB
+            T     = file_handle[:]->T
+            PHB   = file_handle[:]->PHB
+            PH    = file_handle[:]->PH
+            qvp   = file_handle[:]->QVAPOR * 1000.  ; kg/kg -> g/kg
+            qcw   = file_handle[:]->QCLOUD * 1000.
+            if(have_qci.eq.1) then
                qci = file_handle[:]->QICE * 1000.  ; kg/kg -> g/kg
-            else
-               qci = new( (/Pdims(0),Pdims(1),Pdims(2),Pdims(3)/),float)
-               haveqci = 0
             end if
-
-
-            if(isfilevar(nc_file,"QCLOUD")) then
-               qcw = file_handle[:]->QCLOUD * 1000.  ; kg/kg -> g/kg
-            else
-               print("wrf_user_getvar: QCLOUD is needed to calculate the cloud top temperature.")
-               print("It has not been found in the data set.")
-               exit
-            end if
-
-         end if ;if ISFILE
-       else     ;the else for time = -1
-          if(ISFILE) then
-            explicit_time = 1
+         end if
+      else
+         if(ISFILE) then
             P     = nc_file->P(time_in,:,:,:)
             PB    = nc_file->PB(time_in,:,:,:)
             T     = nc_file->T(time_in,:,:,:)
-
-;geopotential height
             PHB   = nc_file->PHB(time_in,:,:,:)
             PH    = nc_file->PH(time_in,:,:,:)
-
-            if(isfilevar(nc_file,"QVAPOR")) then
-               qvp =  nc_file->QVAPOR(time_in,:,:,:) * 1000.  ; kg/kg -> g/kg
-            else
-               print("wrf_user_getvar: QVAPOR is needed to calculate the cloud top temperature.")
-               print("It has not been found in the data set")
-               exit
-            end if
-
-
-            haveqci = 1
-            if(isfilevar(nc_file,"QICE")) then
+            qvp   = nc_file->QVAPOR(time_in,:,:,:) * 1000.  ; kg/kg -> g/kg
+            qcw   = nc_file->QCLOUD(time_in,:,:,:) * 1000.
+            if(have_qci.eq.1) then
                qci = nc_file->QICE(time_in,:,:,:) * 1000.  ; kg/kg -> g/kg
-            else
-               qci = new( (/Pdims(0),Pdims(1),Pdims(2),Pdims(3)/),float)
-               haveqci = 0
             end if
-
-
-            if(isfilevar(nc_file,"QCLOUD")) then
-               qcw = nc_file->QCLOUD(time_in,:,:,:) * 1000.  ; kg/kg -> g/kg
-            else
-               print("wrf_user_getvar: QCLOUD is needed to calculate the cloud top temperature.")
-               print("It has not been found in the data set.")
-               exit
+         else
+            P     = file_handle[:]->P(time_in,:,:,:)
+            PB    = file_handle[:]->PB(time_in,:,:,:)
+            T     = file_handle[:]->T(time_in,:,:,:)
+            PHB   = file_handle[:]->PHB(time_in,:,:,:)
+            PH    = file_handle[:]->PH(time_in,:,:,:)
+            qvp   = file_handle[:]->QVAPOR(time_in,:,:,:) * 1000.  ; kg/kg -> g/kg
+            qcw   = file_handle[:]->QCLOUD(time_in,:,:,:) * 1000.
+            if(have_qci.eq.1) then
+               qci = file_handle[:]->QICE(time_in,:,:,:) * 1000.  ; kg/kg -> g/kg
             end if
-
-            ter = nc_file->HGT(0,:,:)
-          end if ;end if for ISFILE
-       end if   ;time = -1
-
+        end if
+      end if
+         Pdims = dimsizes(P)
+      if(have_qci.ne.1) then
+        qci = new( Pdims,float)
+      end if
 
 ;Get total pressure and temperature in degrees K
-         Pdims = dimsizes(P)
-         pres  = P + PB
-         
-         T = T + 300.
-         tk = wrf_tk(pres, T)
-         pres  = pres * 0.01
+      pres  = P + PB
+      T     = T + 300.
+      tk    = wrf_tk(pres, T)
+      pres  = pres * 0.01
 
 ;Get geopotential height on mass points
-         stag_ght   = PH
-         stag_ght   = (PHB + PH)/9.81
-         ght        =  wrf_user_unstagger(stag_ght,PHB@stagger)
+      stag_ght   = PH
+      stag_ght   = (PHB + PH)/9.81
+      ght        =  wrf_user_unstagger(stag_ght,PHB@stagger)
 
-         fctt = wrf_ctt(pres,tk,qci,qcw,qvp,ght,ter,haveqci)
+      fctt = wrf_ctt(pres,tk,qci,qcw,qvp,ght,ter,have_qci)
 ; fctt will have description, units, and dimension names attached
-       delete_VarAtts(T,(/"description","units"/))
-       copy_VarAtts(T,fctt)
-       return(fctt)
+      delete_VarAtts(T,(/"description","units"/))
+      copy_VarAtts(T,fctt)
+      return(fctt)
   end if         ;variable is ctt
  
 
