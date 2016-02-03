@@ -81,7 +81,7 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status);
 void _NC4_get_grpnode(int pid, int gid, NclQuark pn, NclFileGrpNode *parentgrpnode, NclFileGrpNode *grpnode);
 
 NclFileGrpRecord *_NC4_get_grprec(int gid, int unlimited_dim_idx, NclFileGrpNode *parentgrpnode);
-NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
+NclFileVarRecord *_NC4_get_vars(NclFileGrpNode *grpnode, int n_vars, int *has_scalar_dim,
                                 int unlimited_dim_idx, char *grpnamestr);
 NclFileDimRecord *_NC4_get_dims(int gid, int n_dims, int unlimited_dim_idx);
 NclFileAttRecord *_NC4_get_atts(int gid, int aid, int n_atts);
@@ -2195,7 +2195,13 @@ void _NC4_get_grpnode(int pid, int gid, NclQuark pn, NclFileGrpNode *parentgrpno
 
     grpnode->dim_rec = _NC4_get_dims(gid, n_dims, unlimited_dim_idx);
 
+    /*
     grpnode->var_rec = _NC4_get_vars(gid, n_vars, &has_scalar_dim,
+                                     unlimited_dim_idx, NrmQuarkToString(grpnode->real_name));
+    * we need the grpnode inside this function to most easily evaluate the number of unlimited
+    * dimensions and figure out which one they are 
+    */
+    grpnode->var_rec = _NC4_get_vars(grpnode, n_vars, &has_scalar_dim,
                                      unlimited_dim_idx, NrmQuarkToString(grpnode->real_name));
 
     if(n_dims)
@@ -2314,7 +2320,7 @@ NclFileDimRecord *_NC4_get_dims(int gid, int n_dims, int unlimited_dim_idx)
     return dimrec;
 }
 
-NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
+NclFileVarRecord *_NC4_get_vars(NclFileGrpNode *grpnode, int n_vars, int *has_scalar_dim,
                                 int unlimited_dim_idx, char *grpnamestr)
 {
     char buffer[MAX_NC_NAME];
@@ -2322,6 +2328,7 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
     int  nc_dim_id[MAX_VAR_DIMS];
     int  i, j, n_atts, n_dims, nc_dims;
     long tmp_size = 0;
+    int gid = grpnode->gid;
 
     NclFileVarRecord  *varrec;
     NclFileDimRecord  *dimrec;
@@ -2464,18 +2471,41 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
         
         for(j = 0; j < nc_dims; j++)
         {
+	    NclFileDimRecord *gdimrec;
+	    NclFileGrpNode *gnode;
+	    int k;
+
             tmp_size = 0;
             ncdiminq(gid,nc_dim_id[j],buffer2,&tmp_size);
             dimrec->dim_node[j].id = nc_dim_id[j];
-            dimrec->dim_node[j].is_unlimited = (unlimited_dim_idx == nc_dim_id[j])?1:0;
+
+            /*dimrec->dim_node[j].is_unlimited = (unlimited_dim_idx == nc_dim_id[j])?1:0;*/
+	    gnode = grpnode;
+	    dimrec->dim_node[j].is_unlimited = 0;
+	    while (gnode != NULL) {
+		    int found = 0;
+		    if (! gnode->dim_rec) {
+			    gnode = gnode->parent;
+			    continue;
+		    }
+		    gdimrec = gnode->dim_rec;
+		    for (k = 0; k < gdimrec->n_dims; k++) {
+			    if (gdimrec->dim_node[k].id == dimrec->dim_node[j].id) {
+				    dimrec->dim_node[j].is_unlimited = gdimrec->dim_node[k].is_unlimited;
+				    found = 1;
+				    break;
+			    }
+		    }
+		    if (found) break;
+	    }
             dimrec->dim_node[j].name = NrmStringToQuark(buffer2);
             dimrec->dim_node[j].size = tmp_size;
 
-          /*
-           *fprintf(stderr, "\t\tDim No. %d, name: <%s>, size: %d, id: %d\n",
-           *                j, NrmQuarkToString(dimrec->dim_node[j].name),
-           *                dimrec->dim_node[j].size, nc_dim_id[j]);
-           */
+	    /*
+	     * fprintf(stderr, "\t\tDim No. %d, name: <%s>, size: %d, id: %d, unlim: %s\n",
+	     * j, NrmQuarkToString(dimrec->dim_node[j].name),
+	     *    dimrec->dim_node[j].size, nc_dim_id[j],dimrec->dim_node[j].is_unlimited? "yes" : "no");
+	     */
         }
 
       /*
@@ -2574,11 +2604,11 @@ NclFileVarRecord *_NC4_get_vars(int gid, int n_vars, int *has_scalar_dim,
                 dimrec->dim_node[j].name = varnode->dim_rec->dim_node[j].name;
                 dimrec->dim_node[j].size = chunksizes[j];
 
-              /*
-               *fprintf(stderr, "\t\tChunk_Dim No. %d, name: <%s>, size: %d, id: %d\n",
-               *                j, NrmQuarkToString(dimrec->dim_node[j].name),
-               *                dimrec->dim_node[j].size, nc_dim_id[j]);
-               */
+
+		/* fprintf(stderr, "\t\tChunk_Dim No. %d, name: <%s>, size: %d, id: %d, unlim: %s\n",
+		 *                j, NrmQuarkToString(dimrec->dim_node[j].name),
+		 *                dimrec->dim_node[j].size, nc_dim_id[j]);
+		 */
             }
         }
     }
@@ -2649,7 +2679,7 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
         if (emsg == NULL)
         {
             emsg = "NclNetCDF4: The specified file (%s) cannot be opened; invalid file or system error";
-            if ((! strncmp(NrmQuarkToString(path),"http://",7)) || (! strncmp(NrmQuarkToString(path),"https://",8)))
+	    if ((! strncmp(NrmQuarkToString(path),"http://",7)) || (! strncmp(NrmQuarkToString(path),"https://",8)))
             {
                 emsg = "The specified URL (%s) does not reference an active DODS server or cannot be processed by the DODS server";
             }
@@ -2680,7 +2710,7 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
         grpnode->dim_rec = _NC4_get_dims(fid, n_dims, unlimited_dim_idx);
 
     if(n_vars)
-        grpnode->var_rec = _NC4_get_vars(fid, n_vars, &has_scalar_dim,
+        grpnode->var_rec = _NC4_get_vars(grpnode, n_vars, &has_scalar_dim,
                                          unlimited_dim_idx, NrmQuarkToString(grpnode->real_name));
 
     /*check chunking info*/
