@@ -15542,33 +15542,6 @@ begin
   sig = eofunc_north(eval, N, prinfo)
   return(sig)
 end
-;===================
-undef("cla_sq")
-function cla_sq(sleft[1]:string, sright[1]:string)
-; Utility used for creating Command Line Assignments (CLAs) within a script
-; Return a string with a single quote (sq) at the  beginning and end 
-; These can enclose a pair of double quote (dq)
-;
-; [1]  s  = cla_sq("PATH","./FIM.G5test.nc")  => 'PATH="./FIM.G5test.nc"'
-;
-; [2]  sleft = "PATH" 
-;      srght = "./FIM.G5test.nc"
-;      sa    = cla_sq(sleft,srght)      => 'PATH="./FIM.G5test.nc"'
-;
-;      var  = "slp"
-;      sb   = cla_sqdq("vname",var)    => 'vname="slp"'
-;      
-;      p    = (/850,200/)
-;
-;      NCL  = "ncl "+cla_sqdq(left,rght)+" "+cla_sqdq("vname",var)+" foo.ncl"
-;      NCL  = "ncl "+sa+" "+sb+" foo.ncl"
-;           => "ncl 'PATH="./FIM.G5test.nc"' 'vname="slp"'./FIM_CL.ncl
-local dq, sq
-begin
-   sq    = str_get_sq()      ; single quote character
-   dq    = str_get_dq()      ; double quote character
-   return(sq+ sleft +"="+ sright +sq)
-end
 ;-----
 undef("parse_globalatts_hdf5")
 function parse_globalatts_hdf5( f, attName[1]:string )
