@@ -805,6 +805,8 @@ end
 ;*************************************************************************
 ; D. Shea
 ; print Min and Max of a numeric variable using long_name [if present]
+; Haley
+; Added units [if present] in 6.4.0
 ;
 undef("printMinMax")
 procedure printMinMax (x:numeric,optSpace:logical)  
@@ -812,20 +814,35 @@ procedure printMinMax (x:numeric,optSpace:logical)
 begin                                             
           ; attribute names to check             
    vLongName = (/"long_name", "description", "standard_name" /)
+   vUnits    = get_valid_units()
    long_name = ""        
+   units     = ""
    do n=0,dimsizes(vLongName)-1            
       if (isatt(x,vLongName(n))) then     
           long_name = x@$vLongName(n)$   
           break
       end if
    end do
+; Don't bother with units if long_name doesn't exist
+   if(long_name.ne."") then
+     do n=0,dimsizes(vUnits)-1            
+        if (isatt(x,vUnits(n))) then     
+            units = x@$vUnits(n)$   
+            break
+        end if
+     end do
+   end if
         
    if (optSpace) then
        print (" ")  
    end if          
                   
-   if (long_name.ne."") then 
-       print (long_name+ ": min="+min(x)+"   max="+max(x)) 
+   if (long_name.ne."") then
+      if(units.ne."") then 
+        print (long_name+ " ("+units+")" + " : min="+min(x)+"   max="+max(x)) 
+      else
+        print (long_name+ " : min="+min(x)+"   max="+max(x)) 
+      end if
    else 
        print ("min="+min(x)+"   max="+max(x))
    end if 
