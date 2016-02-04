@@ -14,22 +14,9 @@ local pi, ptype
 begin
   ptype = typeof(p)
 
-  if (ptype.eq."numeric" .or. ptype.eq."string") then  
-      if (isnumeric(p)) then
-          if (ptype.eq."double") then
-              pi = 4d0*atan(1d0)
-          else
-              pi = 4.0*atan(1.0)
-          end if
-      else
-          if (ptype.eq."string") then
-              if (p.eq."double" .or. p.eq."d") then
-                  pi = 4d0*atan(1d0)
-              else
-                  pi = 4.0*atan(1.0)
-              end if
-          end if
-      end if
+  if (ptype.eq."double" .or.  \
+     (ptype.eq."string" .and. (p.eq."double" .or. p.eq."d"))) then
+      pi = 4d*atan(1d0)
   else
       pi = 4.0*atan(1.0)       ; default is to return float
   end if
@@ -53,6 +40,29 @@ begin
   r2d = 180/get_pi(x)
   r2d@long_name = "convert radians to degrees"
   return( r2d )
+end
+; *****************************************************************
+; Calculate Coriolis parameter:set nonu
+; *****************************************************************
+undef("coriolis_param")
+function coriolis_param(lat:numeric)
+; Coriolis Parameter 
+local rad, omega
+begin
+  if (typeof(lat).eq."double") then
+      omega = 7.292d-5                   ; (1/s)     ; earth ang rotation
+      rad   = get_d2r("double")          ; rad=4d0*atan(1d0)/180d0
+  else
+      omega = 7.292e-5         
+      rad   = get_d2r("float")           ; rad=4.0*atan(1.0)/180.0
+  end if
+
+  fcor  = 2*omega*sin(lat*rad)    
+  fcor@long_name = "Coriolis parameter"
+  fcor@units     = "1/s"
+  copy_VarCoords(lat, fcor)
+
+  return(fcor)
 end
 ;************************************************************
 ; return number of elements of an array [scalar==> size=1]
@@ -1180,29 +1190,6 @@ begin
 end
 
 ; *****************************************************************
-; Calculate Coriolis parameter:set nonu
-; *****************************************************************
-undef("coriolis_param")
-function coriolis_param(lat:numeric)
-; Coriolis Parameter 
-begin
-  if (typeof(lat).eq."double") then
-      omega = 7.292d-5                   ; (1/s)     ; earth ang rotation
-      rad   = 4d0*atan(1d0)/180d0
-  else
-      omega = 7.292e-5         
-      rad   = 4.0*atan(1.0)/180.0
-  end if
-
-  fcor  = 2*omega*sin(lat*rad)    
-  fcor@long_name = "Coriolis parameter"
-  fcor@units     = "1/s"
-  copy_VarCoords(lat, fcor)
-
-  return(fcor)
-end
-
-; *****************************************************************
 ; Calculate wind speed
 ; *****************************************************************
 undef ("wind_speed")
@@ -1250,14 +1237,14 @@ begin
       wmsg = 1d20
       con  = 180.0d
       wcrit= 360d0-0.00002d0
-      radi = 1.0d0/0.0174532925199433d0
+      radi = get_r2d("double")            ; radi = 1.0d0/0.0174532925199433d0
       wdir = new (dimu, typeof(u), wmsg) 
   else
       zero = 0.0
       wmsg = 1e20
       con  = 180.0
       wcrit= 360-0.00002
-      radi = 1.0/0.01745329
+      radi = get_r2d("float")             ; radi = 1.0/0.01745329
       wdir = new (dimu, "float", wmsg) 
   end if
 
@@ -15448,6 +15435,37 @@ begin
   return (y)
 end
 ;================
+undef("pres_hybrid_ccm_se")
+function pres_hybrid_ccm_se(ps:numeric,p0[1]:numeric,hya[*]:numeric,hyb[*]:numeric)
+local dimNames, dim_ps, ntim, ncol, ps_dumy, pres_dumy, pres
+begin
+
+  dimNames = getvardims(ps) ; (time,ncol)
+  if (dimNames(1).ne."ncol") then
+      print("pres_hybrid_ccm_se: You are a MORON! This is not an SE grid!")
+      exit
+  end if
+
+  dim_ps = dimsizes(ps)
+  ntim = dim_ps(0)
+  ncol = dim_ps(1)
+
+  ps_dumy = conform_dims( (/ntim,1,ncol/), ps, (/0,2/))
+
+  pres_dumy = pres_hybrid_ccm (ps_dumy,p0,hya,hyb) ; (ntim,klev,1,ncol)
+  pres = pres_dumy(:,:,0,:) ; (ntim,klev,ncol)
+
+; the following is not needed for builtin function
+
+  pres@long_name = "vertical pressure"
+  pres@units = "Pa" ; [kg/(m s2)]
+
+  copy_VarCoords(ps, pres(:,0,:))
+  pres!1 = "lev"
+
+  return(pres)
+end 
+;================
 undef("dpres_hybrid_ccm_se")
 function dpres_hybrid_ccm_se(ps:numeric,p0[1]:numeric,hya[*]:numeric,hyb[*]:numeric)
 local dimNames, dim_ps, ntim, ncol, ps_dumy, dpres_dumy, dpres
@@ -16633,7 +16651,7 @@ begin
 
   return(HI)
 end
-;-------------------------------------
+;----------------------------------------------------------
 undef("latent_heat_water")
 function latent_heat_water(t:numeric, iounit[2]:integer, key[1]:integer, opt[1]:logical)
 ;
@@ -16660,23 +16678,42 @@ function latent_heat_water(t:numeric, iounit[2]:integer, key[1]:integer, opt[1]:
 
 ;   1 J/g = 0.238846 cal/g; 1 cal/g = 4.1868 J/g
 
-local t0, con, cun, a, tk, heatl, lname
+local ttype, t0, con, cun, a, tk, heatl, lname
 begin
+  ttype = typeof(t)
 
-  t0  = 273.15
-  con = 5.0/9.0
-  cun = (/1.0, 0.001, 0.238846 /)
+  if (ttype.eq."double") then
+      t0  = 273.15d
+      con = 5.0d/9.0d
+      cun = (/1.0d, 0.001d, 0.238846d /)
+  else
+      t0  = 273.15
+      con = 5.0/9.0
+      cun = (/1.0, 0.001, 0.238846 /)
+  end if
 
 ; Polynomial Coefficients
 
   if (key.eq.1) then
-      a     = (/ 3337118.5 , -3642.8583 ,  2.1263947  /)
+      if (ttype.eq."double") then
+          a = (/ 3337118.5d, -3642.8583d,  2.1263947d /)
+      else
+          a = (/ 3337118.5 , -3642.8583 ,  2.1263947  /)
+      end if
       lname = "Latent Heat: evaporation/condensation"
   else if (key.eq.2) then
-      a     = (/-1161004.0 ,  9002.2648 , -12.931292  /)
+      if (ttype.eq."double") then
+          a = (/-1161004.0d,  9002.2648d, -12.931292d /)
+      else
+          a = (/-1161004.0 ,  9002.2648 , -12.931292  /)
+      end if
       lname = "Latent Heat: melting/freezing"
   else if (key.eq.3) then
-      a     = (/ 2632536.8 ,  1726.9659 , -3.6248111  /)
+      if (ttype.eq."double") then
+          a = (/ 2632536.8d,  1726.9659d, -3.6248111d /)
+      else
+          a = (/ 2632536.8 ,  1726.9659 , -3.6248111  /)
+      end if
       lname = "Latent Heat: sublimation/deposition"
   else
       print("latent_heat_water: illegal key value: key="+key)
@@ -16685,7 +16722,7 @@ begin
   end if   ; key=2
   end if   ; key=1
 
-  if (iounit(0).eq.0) then   ; input in C; convert to K 
+  if (iounit(0).eq.0) then        ; input in C; convert to K 
       heatl = a(0)+ a(1)*(t+t0) + a(2)*(t+t0)^2
   else if (iounit(0).eq.1) then   ; input in K; no need convert units
       heatl = a(0)+ a(1)*t + a(2)*t*t
@@ -16695,6 +16732,8 @@ begin
   end if   ; iounit(0)=2
   end if   ; iounit(0)=1
   end if   ; iounit(0)=0
+
+ ;print("latent_heat_water: key="+key+"  heatl="+heatl)
 
 ; meta data
 
@@ -16713,7 +16752,6 @@ begin
   end if   ; iounit(0)=0
 
   copy_VarCoords(t, heatl)         ; copy coords
-
   return(heatl)
 end     ; latent_heat_water
 ;----------------------------------------------------------
@@ -17554,15 +17592,25 @@ local tk0, es0, es, tdc
 begin
   tk0  = 273.15
   es0  = 6.1121 
+  warn = False
 
   if (iounit(0).eq.0) then                  ; input C
       es  = es0*exp(17.67*t/(t+243.5))
+      if (any(abs(t).gt.35)) then
+          warn = True
+      end if
   else if (iounit(0).eq.1) then             ; input K
       tc  = t-tk0
       es  = es0*exp(17.67*tc/(tc+243.5))
+      if (any(abs(tc).gt.35)) then
+          warn = True
+      end if
   else if (iounit(0).eq.2) then             ; input F
       tc  = 0.555556*(t-32)
       es  = es0*exp(17.67*tc/(tc+243.5))
+      if (any(abs(tc).gt.35)) then
+          warn = True
+      end if
   end if   ; F
   end if   ; K
   end if   ; C
@@ -17585,6 +17633,9 @@ begin
   es@NCL       = "satvpr_water_bolton"
   es@doi       = "http://dx.doi.org/10.1175/1520-0493(1980)108<1046:TCOEPT>2.0.CO;2"
   es@info      = "Equation 10 of reference"
+  if (warn) then
+      es@warning = "one or more temperatures outside of valid range: -35C to +35C"
+  end if
 
   copy_VarCoords(t, es)
   return(es)
