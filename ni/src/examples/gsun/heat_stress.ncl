@@ -302,9 +302,11 @@ function heat_apptemp(t:numeric, vp:numeric, w10:numeric, iounit[3]:integer, opt
 ;
 ; http://www.weather-watch.com/smf/index.php?topic=52051.0
 ;
-; t      ! temperature (C)
-; vp     ! Vapor Pressure (pa)
-; w10    ! Winds at 10m (m/s)
+; t      : temperature (C)
+; vp     : Vapor Pressure (pa)
+; w10    : Winds at 10m (m/s)
+; iounit : {in/out} unit flags
+; opt    : optional argument
 ;
 local at, con, c0, tk0
 begin
