@@ -41,29 +41,6 @@ begin
   r2d@long_name = "convert radians to degrees"
   return( r2d )
 end
-; *****************************************************************
-; Calculate Coriolis parameter:set nonu
-; *****************************************************************
-undef("coriolis_param")
-function coriolis_param(lat:numeric)
-; Coriolis Parameter 
-local rad, omega
-begin
-  if (typeof(lat).eq."double") then
-      omega = 7.292d-5                   ; (1/s)     ; earth ang rotation
-      rad   = get_d2r("double")          ; rad=4d0*atan(1d0)/180d0
-  else
-      omega = 7.292e-5         
-      rad   = get_d2r("float")           ; rad=4.0*atan(1.0)/180.0
-  end if
-
-  fcor  = 2*omega*sin(lat*rad)    
-  fcor@long_name = "Coriolis parameter"
-  fcor@units     = "1/s"
-  copy_VarCoords(lat, fcor)
-
-  return(fcor)
-end
 ;************************************************************
 ; return number of elements of an array [scalar==> size=1]
 ;************************************************************
@@ -17768,4 +17745,27 @@ begin
 
   gradLatLon = [/ cgy, cgx /]   ; return two variables as a type 'list'
   return( gradLatLon )
+end
+; *****************************************************************
+; Calculate Coriolis parameter:set nonu
+; *****************************************************************
+undef("coriolis_param")
+function coriolis_param(lat:numeric)
+; Coriolis Parameter 
+local rad, omega
+begin
+  if (typeof(lat).eq."double") then
+      omega = 7.292d-5                   ; (1/s)     ; earth ang rotation
+      rad   = get_d2r("double")          ; rad=4d0*atan(1d0)/180d0
+  else
+      omega = 7.292e-5         
+      rad   = get_d2r("float")           ; rad=4.0*atan(1.0)/180.0
+  end if
+
+  fcor  = 2*omega*sin(lat*rad)    
+  fcor@long_name = "Coriolis parameter"
+  fcor@units     = "1/s"
+  copy_VarCoords(lat, fcor)
+
+  return(fcor)
 end
