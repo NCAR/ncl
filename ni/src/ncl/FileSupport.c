@@ -35,6 +35,7 @@ short    NCLuseAFS;
 
 #include <ctype.h>
 #include <unistd.h>
+#include <alloca.h>
 #include <netcdf.h>
 
 #ifdef BuildHDF4
@@ -3731,8 +3732,8 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 		{
 			if(stat(_NGResolvePath(the_path),&buf) == -1)
 			{
-				char tmp_path[NCL_MAX_STRING];
-				char tmp_name[NCL_MAX_STRING];
+				char *tmp_path = (char*) alloca(strlen(the_path) + 1);
+				char *tmp_name = (char*) alloca(strlen(*end_of_name) + 1);
 				strcpy(tmp_path, the_path);
 				strcpy(tmp_name, *end_of_name);
 				tmp_path[strlen(the_path) - strlen(tmp_name)] = '\0';
@@ -3795,7 +3796,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 	int n = -1;
 	int sizeofextlist = sizeof(ext_list) / sizeof(ext_list[0]);
 
-	char filename[NCL_MAX_STRING];
+	char *filename = (char*) alloca(strlen(NrmQuarkToString(the_path)) + 1);
 	struct stat buf;
 
 	for(n = 0; n < strlen(fext); ++n)
@@ -3853,8 +3854,8 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 
 	if(stat(_NGResolvePath(filename),&buf) == -1)
 	{
-		char tmp_path[NCL_MAX_STRING];
-		char tmp_name[NCL_MAX_STRING];
+		char *tmp_path = (char*) alloca(strlen(filename) + 1); 
+		char *tmp_name = (char*) alloca(strlen(NrmQuarkToString(pre_file_ext_q)) + 1);
 		strcpy(tmp_path, filename);
 		strcpy(tmp_name, NrmQuarkToString(pre_file_ext_q));
 		tmp_path[strlen(filename) - strlen(tmp_name) - 1] = '\0';
@@ -4186,7 +4187,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, &use_advanced_file_structure);
 			else
 			{
-				char tmp_path[NCL_MAX_STRING];
+				char *tmp_path = (char*) alloca(strlen(NrmQuarkToString(the_real_path)) + 1);  
 				char *ext_name;
 				strcpy(tmp_path, NrmQuarkToString(the_real_path));
 
