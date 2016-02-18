@@ -1253,7 +1253,7 @@ hid_t Ncl2HDF5type(const char *type)
     }
     else
     {
-        fprintf(stderr, "\nUNKOWN TYPE: <%s>. file: %s, line: %d\n", type, __FILE__, __LINE__);
+        fprintf(stderr, "\nUNKNOWN TYPE: <%s>. file: %s, line: %d\n", type, __FILE__, __LINE__);
     }
 
     return h5type;
@@ -1326,7 +1326,7 @@ unsigned long NclHDF5sizeof(const char *type)
     }
     else
     {
-        fprintf(stderr, "\nUNKOWN TYPE: <%s>. file: %s, line: %d\n", type, __FILE__, __LINE__);
+        fprintf(stderr, "\nUNKNOWN TYPE: <%s>. file: %s, line: %d\n", type, __FILE__, __LINE__);
     }
 
     return size;

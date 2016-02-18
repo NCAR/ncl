@@ -1677,7 +1677,7 @@ Unneeded translations
 				_NclPutIntInstr(nsubs,var->line,var->file);
 				break;
 			default:
-				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Unkown var->ref_type %d\n", var->ref_type));
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Unknown var->ref_type %d\n", var->ref_type));
 				return (NhlFATAL);
 			}
 			break;

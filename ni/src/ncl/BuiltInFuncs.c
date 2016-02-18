@@ -22429,7 +22429,7 @@ NhlErrorTypes _NclItoint
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "toint: don't know how to convert unkown type to integer.");
+                NhlPError(NhlFATAL, errno, "toint: don't know how to convert unknown type to integer.");
                 return NhlFATAL;
         }
 
@@ -23055,7 +23055,7 @@ NhlErrorTypes _NclItouint
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "touint: don't know how to convert unkown type to uint.");
+                NhlPError(NhlFATAL, errno, "touint: don't know how to convert unknown type to uint.");
                 return NhlFATAL;
         }
 
@@ -23603,7 +23603,7 @@ NhlErrorTypes _NclItolong
                 return NhlFATAL;
                 break;
             default:
-                NHLPERROR((NhlFATAL, errno, "tolong: don't know how to convert unkown type to long."));
+                NHLPERROR((NhlFATAL, errno, "tolong: don't know how to convert unknown type to long."));
                 return NhlFATAL;
         }
 
@@ -24189,7 +24189,7 @@ NhlErrorTypes _NclItoulong
                 return NhlFATAL;
                 break;
             default:
-                NHLPERROR((NhlFATAL, errno, "toulong: don't know how to convert unkown type to ulong."));
+                NHLPERROR((NhlFATAL, errno, "toulong: don't know how to convert unknown type to ulong."));
                 return NhlFATAL;
         }
 
@@ -24660,7 +24660,7 @@ NhlErrorTypes _NclItoint64
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "toint64: don't know how to convert unkown type to int64.");
+                NhlPError(NhlFATAL, errno, "toint64: don't know how to convert unknown type to int64.");
                 return NhlFATAL;
         }
 
@@ -25230,7 +25230,7 @@ NhlErrorTypes _NclItouint64
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "touint64: don't know how to convert unkown type to uint64.");
+                NhlPError(NhlFATAL, errno, "touint64: don't know how to convert unknown type to uint64.");
                 return NhlFATAL;
         }
 
@@ -25908,7 +25908,7 @@ NhlErrorTypes _NclItoubyte
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "toubyte: don't know how to convert unkown type to ubyte.");
+                NhlPError(NhlFATAL, errno, "toubyte: don't know how to convert unknown type to ubyte.");
                 return NhlFATAL;
         }
 
@@ -26535,7 +26535,7 @@ NhlErrorTypes _NclItoshort
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "toshort: don't know how to convert unkown type to short.");
+                NhlPError(NhlFATAL, errno, "toshort: don't know how to convert unknown type to short.");
                 return NhlFATAL;
         }
 
@@ -27179,7 +27179,7 @@ NhlErrorTypes _NclItoushort
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "toushort: don't know how to convert unkown type to ushort.");
+                NhlPError(NhlFATAL, errno, "toushort: don't know how to convert unknown type to ushort.");
                 return NhlFATAL;
         }
 
@@ -27657,7 +27657,7 @@ NhlErrorTypes _NclItofloat
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "tofloat: don't know how to convert unkown type to float.");
+                NhlPError(NhlFATAL, errno, "tofloat: don't know how to convert unknown type to float.");
                 return NhlFATAL;
         }
 
@@ -28049,7 +28049,7 @@ NhlErrorTypes _NclItostring
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "tostring: don't know how to convert unkown type to string.");
+                NhlPError(NhlFATAL, errno, "tostring: don't know how to convert unknown type to string.");
                 return NhlFATAL;
         }
 
@@ -28402,7 +28402,7 @@ NhlErrorTypes _NclItostring_with_format
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "tostring_with_format: don't know how to convert unkown type to string.");
+                NhlPError(NhlFATAL, errno, "tostring_with_format: don't know how to convert unknown type to string.");
                 return NhlFATAL;
         }
 
@@ -28776,7 +28776,7 @@ NhlErrorTypes _NclItodouble
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "todouble: don't know how to convert unkown type to double.");
+                NhlPError(NhlFATAL, errno, "todouble: don't know how to convert unknown type to double.");
                 return NhlFATAL;
         }
 
@@ -29465,7 +29465,7 @@ NhlErrorTypes _NclItobyte
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "tobyte: don't know how to convert unkown type to byte.");
+                NhlPError(NhlFATAL, errno, "tobyte: don't know how to convert unknown type to byte.");
                 return NhlFATAL;
         }
 
@@ -30143,7 +30143,7 @@ NhlErrorTypes _NclItochar
                 return NhlFATAL;
                 break;
             default:
-                NhlPError(NhlFATAL, errno, "tochar: don't know how to convert unkown type to char.");
+                NhlPError(NhlFATAL, errno, "tochar: don't know how to convert unknown type to char.");
                 return NhlFATAL;
         }
 

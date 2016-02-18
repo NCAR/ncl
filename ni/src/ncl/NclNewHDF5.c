@@ -202,7 +202,7 @@ hid_t h5memtype2filetype(hid_t memtype)
        else if(H5T_NATIVE_DOUBLE == memtype)
             h5type = H5T_IEEE_F64BE;
        else
-            fprintf(stderr, "\nUNKOWN TYPE: <%d>. file: %s, line: %d\n",
+            fprintf(stderr, "\nUNKNOWN TYPE: <%d>. file: %s, line: %d\n",
                             memtype, __FILE__, __LINE__);
     }
     else
@@ -242,7 +242,7 @@ hid_t h5memtype2filetype(hid_t memtype)
         else if(H5T_NATIVE_DOUBLE == memtype)
             h5type = H5T_IEEE_F64LE;
         else
-            fprintf(stderr, "\nUNKOWN TYPE: <%d>. file: %s, line: %d\n",
+            fprintf(stderr, "\nUNKNOWN TYPE: <%d>. file: %s, line: %d\n",
                                memtype, __FILE__, __LINE__);
     }
 
@@ -370,7 +370,7 @@ hid_t Ncltype2HDF5type(NclBasicDataTypes type)
               else if(type & NCL_vlen)
                   h5type = H5T_VLEN;
               else
-                  fprintf(stderr, "\nUNKOWN TYPE: <%d>. file: %s, line: %d\n", type, __FILE__, __LINE__);
+                  fprintf(stderr, "\nUNKNOWN TYPE: <%d>. file: %s, line: %d\n", type, __FILE__, __LINE__);
               break;
     }
 
@@ -454,7 +454,7 @@ hid_t toH5type(const char *type)
     }
     else
     {
-        fprintf(stderr, "\nUNKOWN TYPE: <%s>. file: %s, line: %d\n", type, __FILE__, __LINE__);
+        fprintf(stderr, "\nUNKNOWN TYPE: <%s>. file: %s, line: %d\n", type, __FILE__, __LINE__);
     }
 
     return h5type;

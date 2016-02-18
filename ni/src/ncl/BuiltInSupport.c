@@ -68,7 +68,7 @@ int access_type;
 		tmp_md = _NclVarValueRead(val.u.data_var,NULL,NULL);
 		break;
 	default:
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGetArgValue: In correct argument type passed to function");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGetArgValue: Incorrect argument type passed to function");
 		return(NULL);
 	}
 	if(n_dims != NULL) {
