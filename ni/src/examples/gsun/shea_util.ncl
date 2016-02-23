@@ -4548,110 +4548,271 @@ begin
 
 end
 ;-------------------------------------
-undef("calc_day_values")
-function calc_day_values(x, arith[1]:string, nDim[1]:integer, opt[1]:logical)  
-;;function calculate_daily_values (x:numeric, arith:string, nDim[1]:integer, opt[1]:logical)
-local tstep, tspan, tunits, tbase, TIME, tuchar, tbchar, ntu, ntb, newunits \
-     ,utc_date, year, month, day, hour, minute, second       \
-     ,dimx, rankx, ntim, nstep, n   
+undef("calculate_segment_values")
+function calculate_segment_values (x:numeric, arith:string, nDim[1]:integer, opt[1]:logical)
+;                  ************
+; Note that NCL's 'dimension reduction' which, in general, I view as a feature,
+;      introduces some processing issues in the 'corner case' of one value.
+;      This requires extra (nuisance) steps and leads to 'code bloat'.  :-(
+;                  ************
+local dnamx, TIME, TNAME, dimx, rankx, NTIM, utc_date, year, month, day \
+     ,ntim, work, yyyy, mm, dd, dymon, it, nt, nmos, xSta, nval_crit, lseg, nseg
 begin
-    if (isatt(opt,"tstep")) then
-        tstep = opt@tstep
-    else
-        print("calc_day_values: attribute tstep is missing")
+    if (.not.(arith.eq."ave" .or. arith.eq."avg" .or. arith.eq."sum"  \
+                             .or. arith.eq."min" .or. arith.eq."max") ) then
+        print("calculate_segment_values: unrecognizezed 'arith' argument="+arith)
         exit
     end if
-    if (isatt(opt,"tspan")) then
-        tspan = opt@tspan
+
+; define segment length in terms of 'day length' ... default is 7
+
+    lseg = 7                                        ; week [7 days]
+    if (opt .and. isatt(opt,"segment_length") .and. typeof(opt@segment_length).eq."integer") then
+        lseg = opt@segment_length
+    end if
+    lseg1 = lseg-1
+
+; a segment mean will be calculated only if the # of values is >= nval_crit
+
+    if (opt .and. isatt(opt,"nval_crit") .and. typeof(opt@nval_crit).eq."integer") then
+        nval_crit = opt@nval_crit
     else
-        tspan = 24
+        nval_crit = 1
     end if
 
-    dnamx    = getvardims(x)
+    dnamx    = getvardims(x)                       ; dimension names
     TNAME    = dnamx(nDim)                         ; typically TNAME="time"
+ 
+    dimx     = dimsizes(x)
+    rankx    = dimsizes(dimx)                      ; # of dimensions
+    ntim     = dimx(nDim)                          ; size of input time dimension
+
+;--- Create current yyyy/mm/dd
+
     utc_date = cd_calendar(x&$TNAME$, 0)           ; (x&$TNAME$, 0) ; typically   x&time
+    year     = floattointeger(utc_date(:,0))
+    month    = floattointeger(utc_date(:,1))
+    day      = floattointeger(utc_date(:,2))
+    hour     = floattointeger(utc_date(:,3))
+   ;minute   = floattointeger(utc_date(:,4))
+   ;second   = utc_date(:,5)
 
+;--- Trick: create a 'time' variable in units of 'days since' the start of the input array.
 
-    tunits  = x&$TNAME$@units
-    tbase   = str_get_field(tunits, 1, " ")      ; seconds, hours, days
-    if (tbase.eq."hours") then
-        TIME = x&$TNAME$
-    else
-        tuchar = tochar(tunits)
-        tbchar = tochar(tbase)
-        ntu    = dimsizes(tuchar)
-        ntb    = dimsizes(tbchar)
-        newunits = "hours "+ tostring(tuchar(ntb:ntu-2))
+    timeDay  = cd_convert( x&$TNAME$, "days since "+year(0)+"-"+month(0)+"-"+day(0)+" 00:00" )
+    timeDay@info = "indicates the start time of the current segment"
 
-        utc_date = cd_calendar(x&time, 0)
-        year     = floattointeger(utc_date(:,0))
-        month    = floattointeger(utc_date(:,1))
-        day      = floattointeger(utc_date(:,2))
-        hour     = floattointeger(utc_date(:,3))
-        minute   = floattointeger(utc_date(:,4))
-        second   = utc_date(:,5)
+    nday_span= round((timeDay(ntim-1)-timeDay(0)), 3)  ; last_day - start_day; start_day=0  
+    nseg     = nday_span/lseg                          ; eg: lseg=7;  nseg= # weeks
 
-        TIME   = cd_inv_calendar(year,month,day,hour,minute,second,newunits, 0)
-    end if
+    nt       = -1
+    ndyStrt  = 0
+    ndyLast  = lseg1
+    timeSeg  = new( nseg, typeof(timeDay)) 
 
-    dimx  = dimsizes(x)
-    rankx = dimsizes(dimx)
-    ntim  = dimx(0)
+   ;print(year+"  "+month+"  "+day+"  "+timeDay)
+   ;print("nday_span="+nday_span+"; nseg="+nseg)
+   ;print("rankx="+rankx+"  ndyStrt="+ndyStrt+"  ndyLast="+ndyLast)
 
-    nstep = toint(tspan/tstep)
-    NTIM  = ntim/nstep
+    if (rankx.eq.1) then
+        xStat  = new ( (/nseg/), typeof(x), getFillValue(x))
+
+        do ns=0,nseg-1
+           it := ind(timeDay.ge.ndyStrt .and. timeDay.le.ndyLast)
+           nit = dimsizes(it)
+           nt  = nt+1
+
+           if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
+               timeSeg(nt) = timeDay(it(0))
+
+               if (arith.eq."avg" .or. arith.eq."ave") then
+                   if (nit.gt.1) then ; work around for NCL's dimension reduction
+                       xStat(nt)  = dim_avg_n( x(it), nDim)
+                   else               ; one 'it'
+                       xStat(nt)  = x(it(0))
+                   end if
+               end if
+               if (arith.eq."sum") then
+                   if (nit.gt.1) then ; work around for NCL's dimension reduction
+                       xStat(nt)  = dim_sum_n( x(it), nDim)
+                   else               ; one 'it'
+                       xStat(nt)  = x(it(0))
+                   end if
+               end if
+               if (arith.eq."min") then
+                   if (nit.gt.1) then ; work around for NCL's dimension reduction
+                       xStat(nt)  = dim_min_n( x(it), nDim)
+                   else               ; one 'it'
+                       xStat(nt)  = x(it(0))
+                   end if
+               end if
+               if (arith.eq."max") then
+                   if (nit.gt.1) then ; work around for NCL's dimension reduction
+                       xStat(nt)  = dim_max_n( x(it), nDim)
+                   else               ; one 'it'
+                       xStat(nt)  = x(it(0))
+                   end if
+               end if
+           end if      ; .not.ismissing(it(0))
+
+           ndyStrt = ndyLast+1          ; update segment bounds
+           ndyLast = ndyStrt+lseg1
+        end do         ; ns (segment loop)         
+
+        copy_VarAtts(x, xStat)
+    end if             ; rankx.eq.1 
 
     if (rankx.eq.2) then
-        xStat  = new ( (/NTIM,dimx(1)/), typeof(x), getFillValue(x))
-        if (arith.eq."avg" .or. arith.eq."ave") then
-            do n=0,ntim-1,nstep
-               xStat(n/nstep,:) = dim_avg_n( x(n:n+nstep-1,:), nDim)
-            end do
-        end if
+        xStat  = new ( (/nseg,dimx(1)/), typeof(x), getFillValue(x))
+
+        do ns=0,nseg-1
+           it  := ind(timeDay.ge.ndyStrt .and. timeDay.le.ndyLast)
+           nit  = dimsizes(it)
+           nt   = nt+1
+
+           if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
+               timeSeg(nt) = timeDay(it(0))
+
+               if (arith.eq."avg" .or. arith.eq."ave") then
+                   if (nit.gt.1) then ; work around for NCL's dimension reduction
+                       xStat(nt,:)  = dim_avg_n( x(it,:), nDim)
+                   else               ; one 'it'
+                       xStat(nt,:)  = x(it(0),:)
+                   end if
+               end if
+               if (arith.eq."sum") then
+                   if (nit.gt.1) then ; work around for NCL's dimension reduction
+                       xStat(nt,:)  = dim_sum_n( x(it,:), nDim)
+                   else               ; one 'it'
+                       xStat(nt,:)  = x(it(0),:)
+                   end if
+               end if
+               if (arith.eq."min") then
+                   if (nit.gt.1) then ; work around for NCL's dimension reduction
+                       xStat(nt,:)  = dim_min_n( x(it,:), nDim)
+                   else               ; one 'it'
+                       xStat(nt,:)  = x(it(0),:)
+                   end if
+               end if
+               if (arith.eq."max") then
+                   if (nit.gt.1) then ; work around for NCL's dimension reduction
+                       xStat(nt,:)  = dim_max_n( x(it,:), nDim)
+                   else               ; one 'it'
+                       xStat(nt,:)  = x(it(0),:)
+                   end if
+               end if
+           end if                     ; .not.ismissing(it(0))
+
+           ndyStrt = ndyLast+1          ; update segment bounds
+           ndyLast = ndyStrt+lseg1
+        end do         ; ns (segment loop)         
+
         copy_VarMeta(x(0,:), xStat(0,:))
-    end if
+    end if             ; rankx.eq.2 
 
     if (rankx.eq.3) then
-        xStat  = new ( (/NTIM,dimx(1),dimx(2)/), typeof(x), getFillValue(x))
-        if (arith.eq."avg" .or. arith.eq."ave") then
-            do n=0,ntim-1,nstep
-               xStat(n/nstep,:,:) = dim_avg_n( x(n:n+nstep-1,:,:), nDim)
-            end do
-        end if
-        if (arith.eq."sum") then
-            do n=0,ntim-1,nstep
-               xStat(n/nstep,:,:) = dim_sum_n( x(n:n+nstep-1,:,:), nDim)
-            end do
-        end if
-        if (arith.eq."min") then
-            do n=0,ntim-1,nstep
-               xStat(n/nstep,:,:) = dim_min_n( x(n:n+nstep-1,:,:), nDim)
-            end do
-        end if
-        if (arith.eq."max") then
-            do n=0,ntim-1,nstep
-               xStat(n/nstep,:,:) = dim_max_n( x(n:n+nstep-1,:,:), nDim)
-            end do
-        end if
+        xStat  = new ( (/nseg,dimx(1),dimx(2)/), typeof(x), getFillValue(x))
+
+        do ns=0,nseg-1
+           it  := ind(timeDay.ge.ndyStrt .and. timeDay.le.ndyLast)
+           nit  = dimsizes(it)
+           nt   = nt+1
+
+           if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
+               timeSeg(nt) = timeDay(it(0))
+
+               if (arith.eq."avg" .or. arith.eq."ave") then
+                   if (nit.gt.1) then ; work around for NCL's dimension reduction
+                       xStat(nt,:,:)  = dim_avg_n( x(it,:,:), nDim)
+                   else               ; one 'it'
+                       xStat(nt,:,:)  = x(it(0),:,:)
+                   end if
+               end if
+               if (arith.eq."sum") then
+                   if (nit.gt.1) then ; work around for NCL's dimension reduction
+                       xStat(nt,:,:)  = dim_sum_n( x(it,:,:), nDim)
+                   else               ; one 'it'
+                       xStat(nt,:,:)  = x(it(0),:,:)
+                   end if
+               end if
+               if (arith.eq."min") then
+                   if (nit.gt.1) then ; work around for NCL's dimension reduction
+                       xStat(nt,:,:)  = dim_min_n( x(it,:,:), nDim)
+                   else               ; one 'it'
+                       xStat(nt,:,:)  = x(it(0),:,:)
+                   end if
+               end if
+               if (arith.eq."max") then
+                   if (nit.gt.1) then ; work around for NCL's dimension reduction
+                       xStat(nt,:,:)  = dim_max_n( x(it,:,:), nDim)
+                   else               ; one 'it'
+                       xStat(nt,:,:)  = x(it(0),:,:)
+                   end if
+               end if
+           end if                     ; .not.ismissing(it(0))
+
+           ndyStrt = ndyLast+1          ; update segment bounds
+           ndyLast = ndyStrt+lseg1
+        end do         ; ns (segment loop)         
+
+
         copy_VarMeta(x(0,:,:), xStat(0,:,:))
-    end if
+    end if             ; rankx.eq.3 
 
     if (rankx.eq.4) then
-        xStat  = new ( (/NTIM,dimx(1),dimx(2),dimx(3)/), typeof(x), getFillValue(x))
-        if (arith.eq."avg" .or. arith.eq."ave") then
-            do n=0,ntim-1,nstep
-               xStat(n/nstep,:,:,:) = dim_avg_n( x(n:n+nstep-1,:,:,:), nDim)
-            end do
-        end if
+        xStat  = new ( (/nseg,dimx(1),dimx(2),dimx(3)/), typeof(x), getFillValue(x))
+
+        do ns=0,nseg-1
+           it  := ind(timeDay.ge.ndyStrt .and. timeDay.le.ndyLast)
+           nit  = dimsizes(it)
+           nt   = nt+1
+
+           if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
+               timeSeg(nt) = timeDay(it(0))
+
+               if (arith.eq."avg" .or. arith.eq."ave") then
+                   if (nit.gt.1) then ; work around for NCL's dimension reduction
+                       xStat(nt,:,:,:)  = dim_avg_n( x(it,:,:,:), nDim)
+                   else               ; one 'it'
+                       xStat(nt,:,:,:)  = x(it(0),:,:,:)
+                   end if
+               end if
+               if (arith.eq."sum") then
+                   if (nit.gt.1) then ; work around for NCL's dimension reduction
+                       xStat(nt,:,:,:)  = dim_sum_n( x(it,:,:,:), nDim)
+                   else               ; one 'it'
+                       xStat(nt,:,:,:)  = x(it(0),:,:,:)
+                   end if
+               end if
+               if (arith.eq."min") then
+                   if (nit.gt.1) then ; work around for NCL's dimension reduction
+                       xStat(nt,:,:,:)  = dim_min_n( x(it,:,:,:), nDim)
+                   else               ; one 'it'
+                       xStat(nt,:,:,:)  = x(it(0),:,:,:)
+                   end if
+               end if
+               if (arith.eq."max") then
+                   if (nit.gt.1) then ; work around for NCL's dimension reduction
+                       xStat(nt,:,:,:)  = dim_max_n( x(it,:,:,:), nDim)
+                   else               ; one 'it'
+                       xStat(nt,:,:,:)  = x(it(0),:,:,:)
+                   end if
+               end if
+           end if                     ; .not.ismissing(it(0))
+
+           ndyStrt = ndyLast+1          ; update segment bounds
+           ndyLast = ndyStrt+lseg1
+        end do         ; ns (segment loop)         
+
         copy_VarMeta(x(0,:,:,:), xStat(0,:,:,:))
-    end if
+    end if             ; rankx.eq.4 
 
-    xStat!0 = "time"
-    xStat&time = TIME
+    xStat!nDim    = TNAME 
+    xStat&$TNAME$ = timeSeg
 
+    xStat@NCL_tag = "calculate_segment_values: lseg="+lseg+" days: arith="+arith
     return(xStat)
 end
-
 ;---------------------------------------------
 ; 22 Oct 2014
 ; in respose to an ncl-talk question:
