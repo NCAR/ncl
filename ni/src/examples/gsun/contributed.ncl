@@ -16519,7 +16519,7 @@ begin
   else
       HI = where(HI.ge.crit(0)  \
                 ,c(0)+ c(1)*t + c(2)*rh + c(3)*t*rh  + c(4)*t^2              \
-                +c(5)*rh^2 + c(6)*t^2*rh  + c(7)*t*rh^2 + c(8)*(T^2)*(rh^2)  \
+                +c(5)*rh^2 + c(6)*t^2*rh  + c(7)*t*rh^2 + c(8)*(t^2)*(rh^2)  \
                 ,HI)                 
     
       HI = where(rh.lt.13 .and. (t.gt.80 .and. t.lt.112) \
