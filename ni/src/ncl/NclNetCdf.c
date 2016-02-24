@@ -338,7 +338,7 @@ NetCdfAttInqRec* frec
 		}
 		if (! vl || vl->var_inq->n_dims > 1 || (vl->var_inq->dim[0] != dim_inq->dimid))
 			continue;
-		if (dim_inq->size == 0)
+		if (dim_inq->size == 0 || dim_inq->is_unlimited)
 			continue;
 	        vl->var_inq->value = NclMalloc(nctypelen(vl->var_inq->data_type) * dim_inq->size);
 		ret = ncvarget(ncid,vl->var_inq->varid,&start,&dim_inq->size,vl->var_inq->value);

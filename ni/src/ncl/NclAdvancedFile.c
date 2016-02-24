@@ -5981,10 +5981,6 @@ static NhlErrorTypes AdvancedFileAddDim(NclFile infile, NclQuark dimname,
         {
             if(NULL != thefile->advancedfile.format_funcs->add_dim)
             {
-#if 0		    
-                if(ds < 1)
-                    ds = 1;
-#endif
                 ret = (*thefile->advancedfile.format_funcs->add_dim)
                        (thefile->advancedfile.grpnode,
                         dimname, ds, is_unlimited);
@@ -6446,7 +6442,7 @@ static NhlErrorTypes AdvancedFileAddChunkDim(NclFile infile, NclQuark chunkdimna
         if (chunkdimname == NrmStringToQuark("ncl_scalar"))
         {
             NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                "AdvancedFileAddChunkDim: <ncl_scalar> is a reserved file chunkdimension name in NCL\n\t\t%s\n",
+                "AdvancedFileAddChunkDim: <ncl_scalar> is a reserved file dimension name in NCL\n\t\t%s\n",
                 "it cannot be defined by the user"));
             return (NhlWARNING);
         }
@@ -6458,8 +6454,6 @@ static NhlErrorTypes AdvancedFileAddChunkDim(NclFile infile, NclQuark chunkdimna
 
         if(NULL != thefile->advancedfile.format_funcs->add_chunk_dim)
         {
-            if(ds < 1)
-                ds = 1;
             ret = (*thefile->advancedfile.format_funcs->add_chunk_dim)
                    (thefile->advancedfile.grpnode,
                     chunkdimname, ds, is_unlimited);
