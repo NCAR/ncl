@@ -18003,15 +18003,15 @@ begin
 
   if (rankz.eq.2) then
       do nl=0,nlat-1                     ; loop over each latitude
-          cgx(nl,:)     = center_finite_diff_n (z(nl,:), dx(nl), rCyclic,0,0)
+          cgx(nl,:)     = totype( center_finite_diff_n (z(nl,:), dx(nl), rCyclic,0,0), typeof(cgx))
       end do
   else if (rankz.eq.3) then
       do nl=0,nlat-1                     ; loop over each latitude
-          cgx(:,nl,:)   = center_finite_diff_n (z(:,nl,:), dx(nl), rCyclic,0,0)
+          cgx(:,nl,:)   = totype( center_finite_diff_n (z(:,nl,:), dx(nl), rCyclic,0,0), typeof(cgx))
       end do
   else if (rankz.eq.4) then
       do nl=0,nlat-1                     ; loop over each latitude
-          cgx(:,:,nl,:) = center_finite_diff_n (z(:,:,nl,:), dx(nl), rCyclic,0,0)
+          cgx(:,:,nl,:) = totype( center_finite_diff_n (z(:,:,nl,:), dx(nl), rCyclic,0,0), typeof(cgx))
       end do
     end if      ; rankz=4
    end if       ; rankz=3
