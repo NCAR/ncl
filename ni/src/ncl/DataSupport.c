@@ -1299,6 +1299,55 @@ NclBasicDataTypes totype;
 		default:
 			return(0);
 		}
+	case NCL_ubyte:
+		switch(totype) {
+		case NCL_byte:
+			*(byte*) to = *(ubyte*)from;
+			return(1);
+		case NCL_char:
+			*(char*) to = *(ubyte*)from;
+			return(1);
+		case NCL_float:
+			*(float*) to = *(ubyte*)from;
+			return(1);
+		case NCL_double:
+			*(double*) to = *(ubyte*)from;
+			return(1);
+		case NCL_long:
+			*(long*) to = *(ubyte*)from;
+			return(1);
+		case NCL_int64:
+			*(long long*) to = *(ubyte*)from;
+			return(1);
+                case NCL_ulong:
+                        *(unsigned long*) to = *(ubyte*)from;
+                        return(1);
+                case NCL_uint64:
+                        *(unsigned long long*) to = *(ubyte*)from;
+                        return(1);
+		case NCL_logical:
+			*(logical*)to = (logical)(*(ubyte*)from?1:0);
+			return(1);
+		case NCL_short:
+			*(short*) to = *(ubyte*)from;
+			return(1);
+		case NCL_int:
+			*(int*) to = *(ubyte*)from;
+			return(1);
+                case NCL_ushort:
+                        *(unsigned short*) to = *(ubyte*)from;
+                        return(1);
+                case NCL_uint:
+                        *(unsigned int*) to = *(ubyte*)from;
+                        return(1);
+		case NCL_string:
+			buffer[0] = *(ubyte*)from;
+			buffer[1] = '\0';
+			*(NclQuark*)to = NrmStringToQuark(buffer);
+			return(1);
+		default:
+			return(0);
+		}
 	case NCL_string:
 		switch(totype) {
 		case NCL_string:
