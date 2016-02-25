@@ -63,7 +63,7 @@ static struct _NclDataRec *MultiDVal_nclfile_ReadSection
 
 	ng_size_t total_elements = 1;
 	int n_dims_input = self_md->multidval.n_dims;
-	long n_elem=0;
+	ng_size_t n_elem=0;
 	int done = 0;
 	int chckmiss =0;
 	int inc_done = 0;
@@ -120,11 +120,8 @@ static struct _NclDataRec *MultiDVal_nclfile_ReadSection
                                         sel_ptr->u.sub.stride = 1;
                                 }
 
-				n_elem = (long)(((double)
-					(sel_ptr->u.sub.start 
-					- sel_ptr->u.sub.finish))
-					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1;
-
+                                n_elem = (ng_size_t) labs((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
+					 	          / sel_ptr->u.sub.stride) + 1L;
 /*
 * Need to be able to determine which type of comparision < or > is needed to
 * determine whether the finish has been passed up
@@ -149,12 +146,8 @@ static struct _NclDataRec *MultiDVal_nclfile_ReadSection
                                         sel_ptr->u.sub.stride = 1;
                                 }
 
-
-				n_elem = (long)(((double)
-					(sel_ptr->u.sub.finish 
-					- sel_ptr->u.sub.start))
-					/((double)sel_ptr->u.sub.stride)) + 1;
-
+                                n_elem = (ng_size_t) labs((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
+					 	          / sel_ptr->u.sub.stride) + 1L;
 				
 				if(sel_ptr->u.sub.stride < 0){
                                         compare_sel[i] = -1;
@@ -382,7 +375,7 @@ static NhlErrorTypes MultiDVal_nclfile_md_WriteSection
 	int n_dims_sel = 0;
 	ng_size_t total_elements = 1;
 	int n_dims_target = target_md->multidval.n_dims;
-	long n_elem=0;
+	ng_size_t n_elem=0;
 	int done = 0;
 	int inc_done = 0;
 	int chckmiss = 0;
@@ -449,11 +442,8 @@ static NhlErrorTypes MultiDVal_nclfile_md_WriteSection
                                         sel_ptr->u.sub.stride = 1;
                                 }
 
-				n_elem = (long)(((double)
-					(sel_ptr->u.sub.start 
-					- sel_ptr->u.sub.finish))
-					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1;
-
+                                n_elem = (ng_size_t) labs((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
+                                        / sel_ptr->u.sub.stride) + 1L;
 /*
 * Need to be able to determine which type of comparision < or > is needed to
 * determine whether the finish has been passed up
@@ -475,10 +465,8 @@ static NhlErrorTypes MultiDVal_nclfile_md_WriteSection
                                         sel_ptr->u.sub.stride = 1;
                                 }
 
-				n_elem = (long)(((double)
-					(sel_ptr->u.sub.finish 
-					- sel_ptr->u.sub.start))
-					/((double)sel_ptr->u.sub.stride)) + 1;
+                                n_elem = (ng_size_t) labs((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
+                                        / sel_ptr->u.sub.stride) + 1L;
 
 				if(sel_ptr->u.sub.stride < 0){
                                         compare_sel[i] = -1;
@@ -695,9 +683,9 @@ static NhlErrorTypes MultiDVal_nclfile_s_WriteSection
 	int strider[NCL_MAX_DIMENSIONS];
 	int output_dim_sizes[NCL_MAX_DIMENSIONS];
 
-	int total_elements = 1;
+	ng_size_t total_elements = 1;
 	int n_dims_target = target_md->multidval.n_dims;
-	long n_elem=0;
+	ng_size_t n_elem=0;
 	int done = 0;
 	int inc_done = 0;
 	int chckmiss = 0;
@@ -750,10 +738,8 @@ static NhlErrorTypes MultiDVal_nclfile_s_WriteSection
 
                                 }
 
-				n_elem = (long)(((double)
-					(sel_ptr->u.sub.start 
-					- sel_ptr->u.sub.finish))
-					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1;
+                                n_elem = (ng_size_t) labs((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
+					 	          / sel_ptr->u.sub.stride) + 1L;
 
 /*
 * Need to be able to determine which type of comparision < or > is needed to
@@ -777,10 +763,8 @@ static NhlErrorTypes MultiDVal_nclfile_s_WriteSection
 
                                 }
 
-				n_elem = (long)(((double)
-					(sel_ptr->u.sub.finish 
-					- sel_ptr->u.sub.start))
-					/((double)sel_ptr->u.sub.stride)) + 1;
+                                n_elem = (ng_size_t) labs((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
+					 	          / sel_ptr->u.sub.stride) + 1L;
 
 				if(sel_ptr->u.sub.stride < 0){
                                         compare_sel[i] = -1;
@@ -1050,8 +1034,8 @@ NclSelectionRecord *from_selection;
 	ng_size_t total_elements_value = 1;
 	ng_size_t total_elements_target = 1;
 	int n_dims_target = 0;
-	long n_elem_target=0;
-	long n_elem_value=0;
+	ng_size_t n_elem_target=0;
+	ng_size_t n_elem_value=0;
 
 	int done = 0;
 	int inc_done = 0;
@@ -1120,20 +1104,18 @@ NclSelectionRecord *from_selection;
 
                                 }
 
-				n_elem_target = (long)(((double)
-					(to_sel_ptr->u.sub.start 
-					- to_sel_ptr->u.sub.finish))
-					/(double)fabs(((double)to_sel_ptr->u.sub.stride))) + 1;
+                                n_elem_target = (ng_size_t) labs((to_sel_ptr->u.sub.start - to_sel_ptr->u.sub.finish)
+                                        / to_sel_ptr->u.sub.stride) + 1L;
 
 /*
 * Need to be able to determine which type of comparision < or > is needed to
 * determine whether the finish has been passed up
 */
 				if(to_sel_ptr->u.sub.stride < 0){
+                                        to_compare_sel[i] = -2;
                                         to_current_index[i] = to_sel_ptr->u.sub.finish + (to_sel_ptr->u.sub.start - to_sel_ptr->u.sub.finish) % abs(to_sel_ptr->u.sub.stride);
                                         to_sel_ptr->u.sub.finish = to_sel_ptr->u.sub.start;
                                         to_sel_ptr->u.sub.start = to_current_index[i];
-                                        to_compare_sel[i] = -2;
                                         to_strider[i] = -(to_sel_ptr->u.sub.stride);
                                 } else {
                                         to_compare_sel[i] = -1;
@@ -1146,10 +1128,8 @@ NclSelectionRecord *from_selection;
                                         to_sel_ptr->u.sub.stride = 1;
                                 }
 
-				n_elem_target = (long)(((double)
-					(to_sel_ptr->u.sub.finish 
-					- to_sel_ptr->u.sub.start))
-					/((double)to_sel_ptr->u.sub.stride)) + 1;
+                                n_elem_target = (ng_size_t) labs((to_sel_ptr->u.sub.start - to_sel_ptr->u.sub.finish)
+                                        / to_sel_ptr->u.sub.stride) + 1L;
 
 				if(to_sel_ptr->u.sub.stride < 0){
                                         to_compare_sel[i] = -1;
@@ -1233,11 +1213,8 @@ NclSelectionRecord *from_selection;
 
                                 }
 
-				n_elem_value = (long)(((double)
-					(from_sel_ptr->u.sub.start 
-					- from_sel_ptr->u.sub.finish))
-					/(double)fabs(((double)from_sel_ptr->u.sub.stride))) + 1;
-
+                                n_elem_value = (ng_size_t) labs((from_sel_ptr->u.sub.start - from_sel_ptr->u.sub.finish)
+                                        / from_sel_ptr->u.sub.stride) + 1L;
 /*
 * Need from be able from determine which type of comparision < or > is needed from
 * determine whether the finish has been passed up
@@ -1255,16 +1232,26 @@ NclSelectionRecord *from_selection;
                                 }
 
 			} else {
-				if(from_sel_ptr->u.sub.stride <= 0 ) {
+				if(from_sel_ptr->u.sub.stride == 0 ) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Invalid stride: start is less than end and stride is negative, error in subscript #%d",i);
 					return(NhlFATAL);
 				}
 
-				n_elem_value = (long)(((double)
-					(from_sel_ptr->u.sub.finish 
-					- from_sel_ptr->u.sub.start))
-					/((double)from_sel_ptr->u.sub.stride)) + 1;
-				from_compare_sel[i] = -2;
+                                n_elem_value = (ng_size_t) labs((from_sel_ptr->u.sub.start - from_sel_ptr->u.sub.finish)
+                                        / from_sel_ptr->u.sub.stride) + 1L;
+
+				if(from_sel_ptr->u.sub.stride < 0){
+                                        from_compare_sel[i] = -1;
+                                        from_current_index[i] = from_sel_ptr->u.sub.finish - (from_sel_ptr->u.sub.finish - from_sel_ptr->u.sub.start) % abs(from_sel_ptr->u.sub.stride);
+                                        from_sel_ptr->u.sub.finish = from_sel_ptr->u.sub.start;
+                                        from_sel_ptr->u.sub.start = from_current_index[i];
+                                        from_strider[i] = from_sel_ptr->u.sub.stride;
+
+                                } else {
+                                        from_compare_sel[i] = -2;
+                                        from_current_index[i] = from_sel_ptr->u.sub.start;
+                                        from_strider[i] = from_sel_ptr->u.sub.stride;
+                                }
 			}
 			if((from_sel_ptr->u.sub.start > value_md->multidval.dim_sizes[from_sel_ptr->dim_num] - 1)||(from_sel_ptr->u.sub.start < 0)) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
