@@ -676,14 +676,25 @@ NhlErrorTypes _NclIGetFileVarNames
 			}
 		}
 	}
+        
+        if (thefile == NULL) {
+		NclQuark *tmp_str =(NclQuark*) NclMalloc(((NclTypeClass)nclTypestringClass)->type_class.size);
+		*tmp_str = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+		dimsize = (ng_size_t)1;
+		data.kind = NclStk_VAL;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"getfilevarnames: %s is not a valid file variable",
+			  NrmQuarkToString(file_q));
+		data.u.data_obj = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void*)tmp_str,
+						      &((NclTypeClass)nclTypestringClass)->type_class.default_mis,
+						      1,&dimsize,TEMPORARY,NULL,(NclTypeClass)nclTypestringClass);
+		_NclPlaceReturn(data);
+		return(NhlWARNING);            
+        }
 
-	if(NULL != thefile)
-	{
-		if(thefile->file.advanced_file_structure)
-			var_names = _NclAdvancedFileReadVarNames(thefile, &num_vars);
-		else
-			var_names = _NclFileReadVarNames(thefile, &num_vars);
-	}
+        if(thefile->file.advanced_file_structure)
+		var_names = _NclAdvancedFileReadVarNames(thefile, &num_vars);
+	else
+		var_names = _NclFileReadVarNames(thefile, &num_vars);
 
 	if (NULL == var_names || num_vars == 0) {
 		NclQuark *tmp_str =(NclQuark*) NclMalloc(((NclTypeClass)nclTypestringClass)->type_class.size);
