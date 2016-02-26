@@ -8129,13 +8129,16 @@ static NhlErrorTypes AdvancedFileWriteVarVar(NclFile infile, NclQuark lhs_var,
                     }
                     else if(thefile->advancedfile.grpnode->coord_var_rec != NULL)
                     {
-                     /*
-                      * right hand side has no dimension name
-                      * and hence no coordinate variable so give warning and proceed
-                      */
-                        NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                            "Right hand side has no coordinate variable can not delete coordinate variable of a file, use (/ .. /) to avoid this message"));
-                        ret = NhlWARNING;
+			    int k;
+			    /* if there is a coordinate for this dimension, then it's an error */
+			    for (k = 0; k < thefile->advancedfile.grpnode->coord_var_rec->n_vars; k++) {
+				    if (thefile->advancedfile.grpnode->coord_var_rec->var_node[k]->name == dimnode->name) {
+					    NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+						       "Right hand side has no coordinate variable can not delete coordinate variable of a file, use (/ .. /) to avoid this message"));
+					    ret = NhlWARNING;
+					    break;
+				    }
+			    }
                     }
                 }
                 j++;

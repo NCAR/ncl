@@ -2589,18 +2589,11 @@ NclFileVarRecord *_NC4_get_vars(NclFileGrpNode *grpnode, int n_vars, int *has_sc
        *     A pointer to an array list of chunk sizes.
        *     The array must have one chunksize for each dimension in the variable. 
        */
+	nc_inq_var_deflate(gid, i, &(varnode->shuffle), &deflatep, &(varnode->compress_level));
         nc_inq_var_chunking(gid, i, &storage_in, chunksizes);
         varnode->is_chunked = 0;
         if(NC_CHUNKED == storage_in)
         {
-            nc_inq_var_deflate(gid, i, &(varnode->shuffle), &deflatep, &(varnode->compress_level));
-
-          /*
-           *fprintf(stderr, "\nfile: %s, line: %d\n", __FILE__, __LINE__);
-           *fprintf(stderr, "\t\tvarnode->shuffle = %d, deflatep = %d, compress_level = %d\n",
-           *                     varnode->shuffle, deflatep, varnode->compress_level);
-           */
-
             varnode->is_chunked = 1;
             dimrec = _NclFileDimAlloc(n_dims);
             dimrec->gid = gid;
@@ -2609,7 +2602,7 @@ NclFileVarRecord *_NC4_get_vars(NclFileGrpNode *grpnode, int n_vars, int *has_sc
             for(j = 0; j < nc_dims; j++)
             {
                 dimrec->dim_node[j].id = nc_dim_id[j];
-                dimrec->dim_node[j].is_unlimited = (unlimited_dim_idx == nc_dim_id[j])?1:0;
+                dimrec->dim_node[j].is_unlimited = varnode->dim_rec->dim_node[j].is_unlimited;
                 dimrec->dim_node[j].name = varnode->dim_rec->dim_node[j].name;
                 dimrec->dim_node[j].size = chunksizes[j];
 
@@ -4220,6 +4213,20 @@ static NhlErrorTypes NC4WriteVar(void *therec, NclQuark thevar, void *data,
                      NrmQuarkToString(thevar),NrmQuarkToString(grpnode->path));
                 return(NhlFATAL);
             }
+	    
+            for(i = 0; i < varnode->dim_rec->n_dims; i++)
+            {
+                dimnode = &(varnode->dim_rec->dim_node[i]);
+                if(dimnode->is_unlimited) {
+			int j;
+			for (j = 0; j < grpnode->dim_rec->n_dims; j++) {
+				if (dimnode->id == grpnode->dim_rec->dim_node[j].id) {
+					grpnode->dim_rec->dim_node[j].size = MAX(grpnode->dim_rec->dim_node[j].size,dimnode->size);
+				}
+			}
+		}
+	    }
+			
 
           /*
            *fprintf(stderr, "Leave NC4WriteVar, file: %s, line: %d\n\n", __FILE__, __LINE__);
@@ -5349,6 +5356,49 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
                *varnode->chunk_dim_rec->dim_node[i].id = dim_ids[i];
                */
             }
+	    {
+		    int    storage_in = -1;
+		    size_t chunksizes[MAX_VAR_DIMS];
+		    NclFileDimRecord *dimrec = NULL;
+		    NclFileDimNode *dimnode = NULL;
+		    NclFileDimNode *gdimnode = NULL;
+
+		    nc_inq_var_chunking(fid, var_id, &storage_in, chunksizes);
+		    varnode->is_chunked = storage_in == NC_CHUNKED ? 1 : 0;
+		    grpnode->is_chunked = varnode->is_chunked ? 1 : grpnode->is_chunked;
+		    if (varnode->is_chunked) {
+			    dimrec = _NclFileDimAlloc(n_dims);
+			    dimrec->gid = grpnode->gid;
+			    varnode->chunk_dim_rec = dimrec;
+
+			    for(j = 0; j < n_dims; j++)
+			    {
+				    dimnode = &(dimrec->dim_node[j]);
+				    dimnode->id = dim_ids[j];
+				    dimnode->is_unlimited = varnode->dim_rec->dim_node[j].is_unlimited;
+				    dimnode->name = varnode->dim_rec->dim_node[j].name;
+				    dimnode->size = chunksizes[j];
+				    if (! grpnode->chunk_dim_rec) {
+					    _addNclDimNode(&(grpnode->chunk_dim_rec), dimnode->name, dimnode->id,
+							   dimnode->size, dimnode->is_unlimited);
+				    }
+				    else {
+					    for (i = 0; i < grpnode->chunk_dim_rec->n_dims; i++) {
+						    gdimnode = &(grpnode->chunk_dim_rec->dim_node[i]);
+						    if (gdimnode->name != dimnode->name)
+							    continue;
+						    break;
+					    }
+					    if (i == grpnode->chunk_dim_rec->n_dims) {
+						    _addNclDimNode(&(grpnode->chunk_dim_rec), dimnode->name, dimnode->id,
+								   dimnode->size, dimnode->is_unlimited);
+					    }
+				    }	    
+
+			    }
+		    }
+			    
+	    }
 
             if(add_scalar_dim)
             {
