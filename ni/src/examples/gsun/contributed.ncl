@@ -14755,11 +14755,12 @@ begin
 end
 ; *****************************************************************
 ; Generate index values that can be used for sampling
+; NCL indices span 0 to (N-1)
 ;
 undef("generate_sample_indices")
 function generate_sample_indices(N[1], method[1]:integer)
 ;
-; simple function to generate indices
+; simple function to generate 0-based indices
 ;           N = sample size
 ;      method = 0   ==> sample *without* replacement; reshuffle the order 
 ;                       mean/std/... unchanged
@@ -14767,18 +14768,20 @@ function generate_sample_indices(N[1], method[1]:integer)
 ;
 ;      method = 1   ==> sample *with* replacement
 ;                       mean/std/... will change
-local k
+local k, N1
 begin
     if (method.lt.0 .or. method.gt.1) then
         print("generate_sample_indices: method="+method+": only 0 or 1 allowed")
         exit
     end if
 
+
     if (method.eq.0) then                  
-        k = generate_unique_indices( N )  
+        k  = generate_unique_indices( N )  
     else
-       ;k = round(random_uniform(-0.499999,N-0.500001,N), 3)       ; original
-        k = round(random_uniform(-0.499999d0, N-0.500001d0, N), 3) 
+        N1 = todouble(N-1)       ; largest valid index is (N-1)
+       ;k  = toint(random_uniform(-0.499999999d0, N1+0.499999999d0, N))
+        k  = toint(random_uniform(-0.500000000d0, N1+0.500000000d0, N))
     end if
 
     return(k)
