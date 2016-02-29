@@ -17958,7 +17958,7 @@ end
 ;------------------------------------------------------
 undef("grad_latlon_cfd")
 function grad_latlon_cfd(z:numeric, lat[*]:numeric, lon[*]:numeric, rCyclic[1]:logical, opt[1]:logical)
-local dimz, rankz, nlat, mlon, rad, re, con, dlon, dx, cgx, cgy, gradLatLon
+local dimz, rankz, nlat, mlon, rad, re, con, dlon, dx, cgx, cgy, gradLatLon, dlon_re, lon_re, lonx
 begin
   dimz  = dimsizes(z)
   rankz = dimsizes(dimz)
@@ -17979,7 +17979,9 @@ begin
 
 ;************************************************
 ; Use 'center_finite_diff_n for meridional (Y) gradient
+; .    the 'lat' may be unequally spaced (eg: gaussian latitudes)
 ;************************************************
+
   cgy  = center_finite_diff_n( z, lat, False ,0,rankz-2) 
   cgy  = cgy/con
   copy_VarCoords( z, cgy)                         ; add mets 
@@ -17993,28 +17995,25 @@ begin
 ; Pre-allocate space for gradients
 ;************************************************
 
-  dlon = (lon(2)-lon(1))*0.0174533   ; convert to radians
-  dx   = re*cos(0.0174533*lat)*dlon  ; different at each latitude; dx(nlat)
+  dlon_re = re*(lon(2)-lon(1))*rad    ; meters at 're' radius 
+  lon_re  = ispan(0,mlon-1,1)*dlon_re ; lon(mlon)
+
   cgx  = new( dimz, typeof(z), getFillValue(z) )  ; lon=>X
 
-;;       These don't work
-;;DX   = conform_dims( dimz, dx, rankz-2)
-;;CGX  = center_finite_diff_n (z, DX, rCyclic,0,0)
-;;copy_VarCoords( z, CGX)            
-;;CGX@long_name = "gradx: ZONAL GRADIENT"
-;;CGX@units     = "?/m"
-
   if (rankz.eq.2) then
-      do nl=0,nlat-1                     ; loop over each latitude
-          cgx(nl,:)     = totype( center_finite_diff_n (z(nl,:), dx(nl), rCyclic,0,0), typeof(cgx))
+      do nl=0,nlat-1                              ; loop over each latitude (y)
+          lonx          = lon_re*cos(lat(nl)*rad) ; longitude spacing (x) function(latitude)
+          cgx(nl,:)     = totype( center_finite_diff_n (z(nl,:)    , lonx, rCyclic,0,0), typeof(cgx))
       end do
   else if (rankz.eq.3) then
-      do nl=0,nlat-1                     ; loop over each latitude
-          cgx(:,nl,:)   = totype( center_finite_diff_n (z(:,nl,:), dx(nl), rCyclic,0,0), typeof(cgx))
+      do nl=0,nlat-1                              ; loop over each latitude (y)
+          lonx          = lon_re*cos(lat(nl)*rad) ; longitude spacing (x) function(latitude)
+          cgx(:,nl,:)   = totype( center_finite_diff_n (z(:,nl,:)  , lonx, rCyclic,0,0), typeof(cgx))
       end do
   else if (rankz.eq.4) then
-      do nl=0,nlat-1                     ; loop over each latitude
-          cgx(:,:,nl,:) = totype( center_finite_diff_n (z(:,:,nl,:), dx(nl), rCyclic,0,0), typeof(cgx))
+      do nl=0,nlat-1                              ; loop over each latitude (y)
+          lonx          = lon_re*cos(lat(nl)*rad) ; longitude spacing (x) function(latitude)
+          cgx(:,:,nl,:) = totype( center_finite_diff_n (z(:,:,nl,:), lonx, rCyclic,0,0), typeof(cgx))
       end do
     end if      ; rankz=4
    end if       ; rankz=3
