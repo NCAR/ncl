@@ -98,19 +98,11 @@ NhlErrorTypes day_of_year_W( void )
   }
 
 /*
- * Check for potential missing values
+ * Check for potential missing values. 
  */
-  if(has_missing_year) {
+  missing_dayofyear.intval = -9999;
+  if(has_missing_year || has_missing_month || has_missing_day) {
     has_missing_dayofyear = 1;
-    missing_dayofyear = missing_year;
-  }
-  else if(has_missing_month) {
-    has_missing_dayofyear = 1;
-    missing_dayofyear = missing_month;
-  }
-  else if(has_missing_day) {
-    has_missing_dayofyear = 1;
-    missing_dayofyear = missing_day;
   }
   else {
     has_missing_dayofyear = 0;
@@ -129,9 +121,13 @@ NhlErrorTypes day_of_year_W( void )
   }
 
 /*
- * Call function.
+ * Loop through each value and calculate the value.
+ * 
+ * If any of the input is potentially missing, then check for this. If
+ * none of the input is missing, it's still possible for the function to
+ * return missing, if a bad value was input (like month = 14).
  */
-  if(has_missing_year || has_missing_month || has_missing_day) {
+  if(has_missing_dayofyear) {
     for( i = 0; i < total; i++ ) {
       if( (has_missing_year  && year[i]  == missing_year.intval) ||
           (has_missing_month && month[i] == missing_month.intval) ||
@@ -146,6 +142,7 @@ NhlErrorTypes day_of_year_W( void )
   else {    
     for( i = 0; i < total; i++ ) {
       dayofyear[i] = day_of_year(year[i],month[i],day[i],calendar);
+      if(dayofyear[i] == missing_dayofyear.intval) has_missing_dayofyear = 1;
     }
   }
 /*
@@ -240,13 +237,9 @@ NhlErrorTypes days_in_month_W( void )
 /*
  * Check for potential missing values
  */
-  if(has_missing_year) {
+  missing_daysinmonth.intval = -9999;
+  if(has_missing_year || has_missing_month) {
     has_missing_daysinmonth = 1;
-    missing_daysinmonth = missing_year;
-  }
-  else if(has_missing_month) {
-    has_missing_daysinmonth = 1;
-    missing_daysinmonth = missing_month;
   }
   else {
     has_missing_daysinmonth = 0;
@@ -265,9 +258,13 @@ NhlErrorTypes days_in_month_W( void )
   }
 
 /*
- * Call function.
+ * Loop through each value and calculate the value.
+ * 
+ * If any of the input is potentially missing, then check for this. If
+ * none of the input is missing, it's still possible for the function to
+ * return missing, if a bad value was input (like month = 14).
  */
-  if(has_missing_year || has_missing_month) {
+  if(has_missing_daysinmonth) {
     for( i = 0; i < total; i++ ) {
       if( (has_missing_year  && year[i]  == missing_year.intval) ||
           (has_missing_month && month[i] == missing_month.intval)) {
@@ -281,6 +278,7 @@ NhlErrorTypes days_in_month_W( void )
   else {
     for( i = 0; i < total; i++ ) {
       daysinmonth[i] = days_in_month(year[i],month[i],calendar);
+      if(daysinmonth[i] == missing_daysinmonth.intval) has_missing_daysinmonth = 1;
     }
   }
 /*
@@ -381,26 +379,22 @@ NhlErrorTypes day_of_week_W( void )
 /*
  * Check for potential missing values
  */
-  if(has_missing_year) {
+  missing_dayofweek.intval = -9999;
+  if(has_missing_year || has_missing_month || has_missing_day) {
     has_missing_dayofweek = 1;
-    missing_dayofweek = missing_year;
-  }
-  else if(has_missing_month) {
-    has_missing_dayofweek = 1;
-    missing_dayofweek = missing_month;
-  }
-  else if(has_missing_day) {
-    has_missing_dayofweek = 1;
-    missing_dayofweek = missing_day;
   }
   else {
     has_missing_dayofweek = 0;
   }
 
 /*
- * Call function.
+ * Loop through each value and calculate the value.
+ * 
+ * If any of the input is potentially missing, then check for this. If
+ * none of the input is missing, it's still possible for the function to
+ * return missing, if a bad value was input (like month = 14).
  */
-  if(has_missing_year || has_missing_month || has_missing_day) {
+  if(has_missing_dayofweek) {
     for( i = 0; i < total; i++ ) {
       if( (has_missing_year  && year[i]  == missing_year.intval) ||
           (has_missing_month && month[i] == missing_month.intval) ||
@@ -415,6 +409,7 @@ NhlErrorTypes day_of_week_W( void )
   else {
     for( i = 0; i < total; i++ ) {
       dayofweek[i] = day_of_week(year[i],month[i],day[i]);
+      if(dayofweek[i] == missing_dayofweek.intval) has_missing_dayofweek = 1;
     }
   }
 /*
@@ -445,6 +440,7 @@ NhlErrorTypes isleapyear_W( void )
 /*
  * Output variables
  */
+  int has_missing_isleap, iret;
   logical *isleap;
   NclScalar missing_isleap;
   const char *calendar;
@@ -480,6 +476,18 @@ NhlErrorTypes isleapyear_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"isleapyear: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
+
+/*
+ * Check for potential missing values
+ */
+  missing_isleap.logicalval = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
+  if(has_missing_year) {
+    has_missing_isleap = 1;
+  }
+  else {
+    has_missing_isleap = 0;
+  }    
+
 /*
  * Check for a calendar attribute. If it comes back NULL, then 
  * something is wrong and we need to return all missing values.
@@ -492,26 +500,40 @@ NhlErrorTypes isleapyear_W( void )
                           &missing_isleap,NCL_logical,0));
   }
 /*
- * Call function.
+ * Loop through each value and calculate the value.
+ * 
+ * If any of the input is potentially missing, then check for this. If
+ * none of the input is missing, it's still possible for the function to
+ * return missing, if a bad value was input (like year = -1990).
  */
-  if(has_missing_year) {
-    missing_isleap.logicalval = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
-    for( i = 0; i < total; i++ ) {
-      if( (has_missing_year  && year[i]  == missing_year.intval)) {
+  if(has_missing_isleap) {
+    for( i = 0; i < total; i++ ){ 
+      if(year[i] == missing_year.intval) {
         isleap[i] = missing_isleap.logicalval;
       }
       else {
-        isleap[i] = (logical)isleapyear(year[i],calendar);
+        iret = (logical)isleapyear(year[i],calendar);
+        if(iret != -9999) isleap[i] = (logical)iret;
+        else              isleap[i] = missing_isleap.logicalval;
       }
     }
   }
   else {
-    for( i = 0; i < total; i++ ) isleap[i] = (logical)isleapyear(year[i],calendar);
+    for( i = 0; i < total; i++ ) {
+      iret = (logical)isleapyear(year[i],calendar);
+      if(iret != -9999) {
+        isleap[i] = (logical)iret;
+      }
+      else {
+        has_missing_isleap = 1;
+        isleap[i] = missing_isleap.logicalval;
+      }
+    }
   }
 /*
  * Return.
  */
-  if(has_missing_year) {
+  if(has_missing_isleap) {
     return(NclReturnValue((void*)isleap,ndims_year,dsizes_year,
                           &missing_isleap,NCL_logical,0));
   }
@@ -598,13 +620,9 @@ NhlErrorTypes monthday_W( void )
 /*
  * Check for potential missing values
  */
-  if(has_missing_year) {
+  missing_mnthdy.intval = -9999;
+  if(has_missing_year || has_missing_day) {
     has_missing_mnthdy = 1;
-    missing_mnthdy = missing_year;
-  }
-  else if(has_missing_day) {
-    has_missing_mnthdy = 1;
-    missing_mnthdy = missing_day;
   }
   else {
     has_missing_mnthdy = 0;
@@ -623,9 +641,13 @@ NhlErrorTypes monthday_W( void )
   }
 
 /*
- * Call function.
+ * Loop through each value and calculate the value.
+ * 
+ * If any of the input is potentially missing, then check for this. If
+ * none of the input is missing, it's still possible for the function to
+ * return missing, if a bad value was input (like year = 14).
  */
-  if(has_missing_year || has_missing_day) {
+  if(has_missing_mnthdy) {
     for( i = 0; i < total; i++ ) {
       if( (has_missing_year  && year[i]  == missing_year.intval) ||
           (has_missing_day   && day[i]   == missing_day.intval)) {
@@ -637,7 +659,10 @@ NhlErrorTypes monthday_W( void )
     }
   }
   else {
-    for( i = 0; i < total; i++ ) mnthdy[i] = monthday(year[i],day[i],calendar);
+    for( i = 0; i < total; i++ ) {
+      mnthdy[i] = monthday(year[i],day[i],calendar);
+      if(mnthdy[i] == missing_mnthdy.intval) has_missing_mnthdy = 1;
+    }
   }
 /*
  * Return.
@@ -1001,15 +1026,16 @@ int isleapyear(int year,const char *calendar)
  * "calendar" attribute.
  */
   int y4, y100, y400;
+  int lmsg = -9999;
  
   if (year < 0) {
     fprintf (stderr,"isleapyear: illegal argument, year = %d\n", year);
-    return(0);
+    return(lmsg);
   }
 
   if (calendar == NULL) {
     fprintf (stderr,"isleapyear: calendar is NULL\n");
-    return(0);
+    return(lmsg);
   }
 
   if(!strcasecmp(calendar,"standard")  || 
@@ -1040,7 +1066,7 @@ int isleapyear(int year,const char *calendar)
   }
   else  {
     fprintf (stderr,"isleapyear: illegal calendar = '%s'\n", calendar);
-    return(0);
+    return(lmsg);
   }
 }
 
