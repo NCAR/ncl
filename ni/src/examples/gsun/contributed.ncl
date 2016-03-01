@@ -18008,12 +18008,12 @@ begin
   else if (rankz.eq.3) then
       do nl=0,nlat-1                              ; loop over each latitude (y)
           lonx          = lon_re*cos(lat(nl)*rad) ; longitude spacing (x) function(latitude)
-          cgx(:,nl,:)   = totype( center_finite_diff_n (z(:,nl,:)  , lonx, rCyclic,0,0), typeof(cgx))
+          cgx(:,nl,:)   = totype( center_finite_diff_n (z(:,nl,:)  , lonx, rCyclic,0,1), typeof(cgx))
       end do
   else if (rankz.eq.4) then
       do nl=0,nlat-1                              ; loop over each latitude (y)
           lonx          = lon_re*cos(lat(nl)*rad) ; longitude spacing (x) function(latitude)
-          cgx(:,:,nl,:) = totype( center_finite_diff_n (z(:,:,nl,:), lonx, rCyclic,0,0), typeof(cgx))
+          cgx(:,:,nl,:) = totype( center_finite_diff_n (z(:,:,nl,:), lonx, rCyclic,0,2), typeof(cgx))
       end do
     end if      ; rankz=4
    end if       ; rankz=3
