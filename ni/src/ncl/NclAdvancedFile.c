@@ -387,229 +387,141 @@ void _decreaseNclPrintIndentation()
      blank_space[indentation_length] = '\0';
 }
 
+void _printNclTypeUtil(FILE *fp, NclBasicDataTypes type, void *val, size_t index, int align, int newline)
+{
+    if (align) {
+        nclfprintf(fp, "%s", blank_space);
+    }
+    
+    switch(type)
+    {
+        case NCL_string:
+        {
+             NclQuark *v = (NclQuark*)val;
+             nclfprintf(fp, "%s", NrmQuarkToString(v[index]));
+             break;
+        }
+        case NCL_float:
+        {
+             float *v = (float *)val;
+             nclfprintf(fp, "%2.7g", v[index]);
+             break;
+        }
+        case NCL_double:
+        {
+             double *v = (double *)val;
+             nclfprintf(fp, "%4.16lg", v[index]);
+             break;
+        }
+        case NCL_int:
+        {
+             int *v = (int *)val;
+             nclfprintf(fp, "%d", v[index]);
+             break;
+        }
+        case NCL_uint:
+        {
+             int *v = (int *)val;
+             nclfprintf(fp, "%u", v[index]);
+             break;
+        }
+        case NCL_byte:
+        {
+             char *v = (char *)val;
+             nclfprintf(fp, "%hhd", v[index]);
+             break;
+        }
+        case NCL_ubyte:
+        {
+             char *v = (char *)val;
+             nclfprintf(fp, "%hhu", v[index]);
+             break;
+        }
+        case NCL_short:
+        {
+             short *v = (short *)val;
+             nclfprintf(fp, "%hd", v[index]);
+             break;
+        }
+        case NCL_ushort:
+        {
+             short *v = (short *)val;
+             nclfprintf(fp, "%hu", v[index]);
+             break;
+        }
+        case NCL_long:
+        {
+             long *v = (long *)val;
+             nclfprintf(fp, "%ld", v[index]);
+             break;
+        }
+        case NCL_ulong:
+        {
+             long *v = (long *)val;
+             nclfprintf(fp, "%lu", v[index]);
+             break;
+        }
+        case NCL_int64:
+        {
+             long long *v = (long long *)val;
+             nclfprintf(fp, "%lld", v[index]);
+             break;
+        }
+        case NCL_uint64:
+        {
+             long long *v = (long long *)val;
+             nclfprintf(fp, "%llu", v[index]);
+             break;
+        }
+        case NCL_char:
+        {
+             char *v = (char *)val;
+             nclfprintf(fp, "%c", v[index]);
+             break;
+        }
+        default:
+            fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
+            fprintf(stderr, "\tUNKNOWN type: 0%o, val (in char): <%s>", type, (char *)val);
+            break;
+    }
+
+    if(newline)
+        nclfprintf(fp, "\n");
+}
+
+void _printNclTypeValAligned(FILE *fp, NclBasicDataTypes type, void *val, int newline)
+{
+    _printNclTypeUtil(fp, type, val, 0, TRUE, newline);
+}
+
 void _printNclTypeVal(FILE *fp, NclBasicDataTypes type, void *val, int newline)
 {
-    switch(type)
-    {
-        case NCL_string:
-            {
-             NclQuark *v = (NclQuark *)val;
-             nclfprintf(fp, "%s%s", blank_space, (char *)NrmQuarkToString(v[0]));
-             break;
-            }
-        case NCL_float:
-        {
-             float *v = (float *)val;
-             nclfprintf(fp, "%s%f", blank_space, v[0]);
-             break;
-            }
-        case NCL_double:
-        {
-             double *v = (double *)val;
-             nclfprintf(fp, "%s%f", blank_space, v[0]);
-             break;
-            }
-        case NCL_int:
-        case NCL_uint:
-        {
-             int *v = (int *)val;
-             nclfprintf(fp, "%s%d", blank_space, v[0]);
-             break;
-            }
-        case NCL_byte:
-        case NCL_ubyte:
-        {
-             char *v = (char *)val;
-             nclfprintf(fp, "%s%d", blank_space, (int)v[0]);
-             break;
-            }
-        case NCL_short:
-        case NCL_ushort:
-        {
-             short *v = (short *)val;
-             nclfprintf(fp, "%s%d", blank_space, (int)v[0]);
-             break;
-            }
-        case NCL_long:
-        case NCL_ulong:
-        {
-             long *v = (long *)val;
-             nclfprintf(fp, "%s%ld", blank_space, v[0]);
-             break;
-            }
-        case NCL_int64:
-        case NCL_uint64:
-        {
-             long long *v = (long long *)val;
-             nclfprintf(fp, "%s%lld", blank_space, v[0]);
-             break;
-            }
-        case NCL_char:
-        {
-             char *v = (char *)val;
-             nclfprintf(fp, "%s%s", blank_space, v);
-             break;
-            }
-        default:
-            fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\tUNKNOWN type: 0%o, val (in char): <%s>", type, (char *)val);
-            break;
-    }
-
-    if(newline)
-        nclfprintf(fp, "\n");
+    _printNclTypeUtil(fp, type, val, 0, FALSE, newline);
 }
 
-void _justPrintTypeVal(FILE *fp, NclBasicDataTypes type, void *val, int newline)
+void _printNclTypeValIndexed(FILE *fp, NclBasicDataTypes type, void *val, size_t np, int newline)
 {
-    switch(type)
-    {
-        case NCL_string:
-            {
-             NclQuark *v = (NclQuark *)val;
-             nclfprintf(fp, "%s", (char *)NrmQuarkToString(v[0]));
-             break;
-            }
-        case NCL_float:
-            {
-             float *v = (float *)val;
-             nclfprintf(fp, "%2.7g", v[0]);
-             break;
-            }
-        case NCL_double:
-            {
-             double *v = (double *)val;
-             nclfprintf(fp, "%4.16g", v[0]);
-             break;
-            }
-        case NCL_byte:
-        case NCL_ubyte:
-            {
-             char *v = (char *)val;
-             nclfprintf(fp, "%d", v[0]);
-             break;
-            }
-        case NCL_short:
-        case NCL_ushort:
-            {
-             short *v = (short *)val;
-             nclfprintf(fp, "%h", v[0]);
-             break;
-            }
-        case NCL_int:
-        case NCL_uint:
-            {
-             int *v = (int *)val;
-             nclfprintf(fp, "%d", v[0]);
-             break;
-            }
-        case NCL_long:
-        case NCL_ulong:
-            {
-             long *v = (long *)val;
-             nclfprintf(fp, "%ld", v[0]);
-             break;
-            }
-        case NCL_int64:
-        case NCL_uint64:
-            {
-             long long *v = (long long *)val;
-             nclfprintf(fp, "%lld", v[0]);
-             break;
-            }
-        case NCL_char:
-            {
-             char *v = (char *)val;
-             nclfprintf(fp, "%s", v);
-             break;
-            }
-        default:
-            fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\tUNKNOWN type: 0%o\n", type);
-          /*
-            fprintf(stderr, "\tUNKNOWN type: 0%o, val (in char): <%s>\n", type, (char *)val);
-           *_justPrintTypeVal(fp, NCL_char, val, newline);
-           */
-            break;
-    }
-
-    if(newline)
-        nclfprintf(fp, "\n");
+    _printNclTypeUtil(fp, type, val, np, FALSE, newline);
 }
 
-void _justPrintTypeValAtPoint(FILE *fp, NclBasicDataTypes type, void *val, size_t np, int newline)
+void _printStringConstUtil(FILE *fp, char* str, int align, int newline)
 {
-    switch(type)
-    {
-        case NCL_string:
-            {
-             NclQuark *v = (NclQuark *)val;
-             nclfprintf(fp, "%s", (char *)NrmQuarkToString(v[np]));
-             break;
-            }
-        case NCL_float:
-            {
-             float *v = (float *)val;
-             nclfprintf(fp, "%f", v[np]);
-             break;
-            }
-        case NCL_double:
-            {
-             double *v = (double *)val;
-             nclfprintf(fp, "%d", v[np]);
-             break;
-            }
-        case NCL_byte:
-        case NCL_ubyte:
-            {
-             char *v = (char *)val;
-             nclfprintf(fp, "%d", v[np]);
-             break;
-            }
-        case NCL_short:
-        case NCL_ushort:
-            {
-             short *v = (short *)val;
-             nclfprintf(fp, "%d", v[np]);
-             break;
-            }
-        case NCL_int:
-        case NCL_uint:
-            {
-             int *iv = (int *)val;
-             nclfprintf(fp, "%d", iv[np]);
-             break;
-            }
-        case NCL_long:
-        case NCL_ulong:
-            {
-             long *v = (long *)val;
-             nclfprintf(fp, "%ld", v[np]);
-             break;
-            }
-        case NCL_int64:
-        case NCL_uint64:
-            {
-             long long *v = (long long *)val;
-             nclfprintf(fp, "%lld", v[np]);
-             break;
-            }
-        case NCL_char:
-            {
-             char *v = (char *)val;
-             nclfprintf(fp, "%c", v[np]);
-             break;
-            }
-        default:
-#if 0
-            fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
-            fprintf(stderr, "\tUNKNOWN type: 0%o, val (in char): <%s>", type, (char *)val);
-#endif
-            break;
-    }
+    if (align)
+        nclfprintf(fp, "%s", blank_space);
 
+    nclfprintf(fp, "%s", str);    
+    
     if(newline)
-        nclfprintf(fp, "\n");
+        nclfprintf(fp, "\n");    
+}
+
+void _printStringConstAligned(FILE *fp, char* str, int newline)
+{
+    _printStringConstUtil(fp, str, TRUE, newline);
+}
+
+void _printStringConst(FILE *fp, char* str, int newline) {
+    _printStringConstUtil(fp, str, FALSE, newline);
 }
 
 void _printNclFileAttRecord(FILE *fp, NclAdvancedFile thefile, NclFileAttRecord *attrec)
@@ -625,8 +537,8 @@ void _printNclFileAttRecord(FILE *fp, NclAdvancedFile thefile, NclFileAttRecord 
   /*
    *_justPrintTypeVal(fp, NCL_char, "\n", 0);
    */
-    _printNclTypeVal(fp, NCL_char, "Number of Attributes:", 0);
-    _printNclTypeVal(fp, NCL_int, &attrec->n_atts, 1);
+    _printStringConstAligned(fp, "Number of Attributes:", FALSE);
+    _printNclTypeValAligned(fp, NCL_int, &attrec->n_atts, TRUE);
 
     _increaseNclPrintIndentation();
 
@@ -637,8 +549,8 @@ void _printNclFileAttRecord(FILE *fp, NclAdvancedFile thefile, NclFileAttRecord 
     for(i = 0; i < attrec->n_atts; i++)
     {
         attnode = &(attrec->att_node[i]);
-        _printNclTypeVal(fp, NCL_string, &(attnode->name), 0);
-        _justPrintTypeVal(fp, NCL_char, "\t: ", 0);
+        _printNclTypeValAligned(fp, NCL_string, &(attnode->name), FALSE);
+        _printStringConst(fp, "\t: ", FALSE);
 
         if(attnode->is_compound)
         {
@@ -651,19 +563,19 @@ void _printNclFileAttRecord(FILE *fp, NclAdvancedFile thefile, NclFileAttRecord 
            *                 attnode->type, NrmQuarkToString(comprec->name));
            */
 
-            _justPrintTypeVal(fp, NCL_char, "\t", 0);
-            _justPrintTypeVal(fp, NCL_char, NrmQuarkToString(comprec->name), 0);
-            _justPrintTypeVal(fp, NCL_char, " (\"", 0);
+            _printStringConst(fp, "\t", FALSE);
+            _printNclTypeVal(fp, NCL_string, &comprec->name, FALSE);
+            _printStringConst(fp, " (\"", FALSE);
 
             for(j = 0; j < comprec->n_comps; j++)
             {
                 compnode = &(comprec->compnode[j]);
                 if(j)
                 {
-                    _justPrintTypeVal(fp, NCL_char, "\", \"", 0);
+                    _printStringConst(fp, "\", \"", FALSE);
                 }
                 if(NULL != compnode->value)
-                    _justPrintTypeVal(fp, NCL_string, compnode->value, 0);
+                    _printNclTypeVal(fp, NCL_string, compnode->value, FALSE);
               /*
                *_justPrintTypeVal(fp, compnode->type, compnode->value, 0);
                */
@@ -676,7 +588,7 @@ void _printNclFileAttRecord(FILE *fp, NclAdvancedFile thefile, NclFileAttRecord 
                */
             }
 
-            _justPrintTypeVal(fp, NCL_char, "\")", 1);
+            _printStringConst(fp, "\")", TRUE);
 
             continue;
         }
@@ -691,15 +603,15 @@ void _printNclFileAttRecord(FILE *fp, NclAdvancedFile thefile, NclFileAttRecord 
            *                 vlenrec->type, NrmQuarkToString(vlenrec->name));
            */
 
-            _justPrintTypeVal(fp, NCL_char, "\t", 0);
-            _justPrintTypeVal(fp, NCL_char, NrmQuarkToString(vlenrec->name), 0);
-            _justPrintTypeVal(fp, NCL_char, " {{", 0);
+            _printStringConst(fp, "\t", FALSE);
+            _printNclTypeVal(fp, NCL_string, &vlenrec->name, FALSE);
+            _printStringConst(fp, " {{", FALSE);
 
             for(j = 0; j < vlenrec->n_vlens; j++)
             {
                 if(j)
                 {
-                    _justPrintTypeVal(fp, NCL_char, "}, {", 0);
+                    _printStringConst(fp, "}, {", FALSE);
                 }
 
               /*
@@ -716,8 +628,8 @@ void _printNclFileAttRecord(FILE *fp, NclAdvancedFile thefile, NclFileAttRecord 
                    */
 
                     if(n > vlenrec->vs[j])
-                        _justPrintTypeVal(fp, NCL_char, ", ", 0);
-                    _justPrintTypeValAtPoint(fp, vlenrec->type, vlenrec->values, n, 0);
+                        _printStringConst(fp, ", ", FALSE);
+                    _printNclTypeValIndexed(fp, vlenrec->type, vlenrec->values, n, FALSE);
                 }
 
               /*
@@ -727,7 +639,7 @@ void _printNclFileAttRecord(FILE *fp, NclAdvancedFile thefile, NclFileAttRecord 
                */
             }
 
-            _justPrintTypeVal(fp, NCL_char, "}}", 1);
+            _printStringConst(fp, "}}", TRUE);
 
             continue;
         }
@@ -745,26 +657,26 @@ void _printNclFileAttRecord(FILE *fp, NclAdvancedFile thefile, NclFileAttRecord 
            *                   opaquerec->n_opaques, opaquerec->size);
            */
 
-            _justPrintTypeVal(fp, NCL_char, "\t", 0);
-            _justPrintTypeVal(fp, NCL_char, NrmQuarkToString(opaquerec->name), 0);
-            _justPrintTypeVal(fp, NCL_char, " {{", 0);
+            _printStringConst(fp, "\t", FALSE);
+            _printNclTypeVal(fp, NCL_string, &opaquerec->name, FALSE);
+            _printStringConst(fp, " {{", FALSE);
 
             for(j = 0; j < opaquerec->n_opaques; j++)
             {
                 if(j)
                 {
-                    _justPrintTypeVal(fp, NCL_char, "}, {", 0);
+                    _printStringConst(fp, "}, {", FALSE);
                 }
 
                 for(k = 0; k < opaquerec->size; k++)
                 {
-                    if(k) _justPrintTypeVal(fp, NCL_char, ", ", 0);
-                    _justPrintTypeValAtPoint(fp, opaquerec->type, opaquerec->values, n, 0);
+                    if(k) _printStringConst(fp, ", ", FALSE);
+                    _printNclTypeValIndexed(fp, opaquerec->type, opaquerec->values, n, FALSE);
                     n++;
                 }
             }
 
-            _justPrintTypeVal(fp, NCL_char, "}}", 1);
+            _printStringConst(fp, "}}", TRUE);
 
             continue;
         }
@@ -779,36 +691,36 @@ void _printNclFileAttRecord(FILE *fp, NclAdvancedFile thefile, NclFileAttRecord 
 
         if(1 == attnode->n_elem)
         {
-            _justPrintTypeVal(fp, NCL_char, "\t", 0);
-            _justPrintTypeVal(fp, attnode->type, attnode->value, 1);
+            _printStringConst(fp, "\t", FALSE);
+            _printNclTypeVal(fp, attnode->type, attnode->value, TRUE);
         }
         else if (attnode->n_elem > 1)
         {
             max_print_att = attnode->n_elem;
             if(max_print_att > 10)
                 max_print_att = 10;
-            _justPrintTypeVal(fp, NCL_char, "\t( ", 0);
+            _printStringConst(fp, "\t( ", FALSE);
             for (j = 0; j < max_print_att; j++)
             {
                 if(j)
-                    _justPrintTypeVal(fp, NCL_char, ", ", 0);
-                _justPrintTypeValAtPoint(fp, attnode->type, attnode->value, j, 0);
+                    _printStringConst(fp, ", ", FALSE);
+                _printNclTypeValIndexed(fp, attnode->type, attnode->value, j, FALSE);
             }
 
             if(max_print_att != attnode->n_elem)
             {
-                _justPrintTypeVal(fp, NCL_char, ", ... [Total of ", 0);
-                _justPrintTypeVal(fp, NCL_int, &(attnode->n_elem), 0);
-                _justPrintTypeVal(fp, NCL_char, " values] )", 1);
+                _printStringConst(fp, ", ... [Total of ", FALSE);
+                _printNclTypeVal(fp, NCL_int, &(attnode->n_elem), FALSE);
+                _printStringConst(fp, " values] )", TRUE);
             }
             else
-                _justPrintTypeVal(fp, NCL_char, " )", 1);
+                _printStringConst(fp, " )", TRUE);
         }
         else
         {
-            _justPrintTypeVal(fp, NCL_char, "<ARRAY of ", 0);
-            _justPrintTypeVal(fp, NCL_int, &(attnode->n_elem), 0);
-            _justPrintTypeVal(fp, NCL_char, " elements>", 1);
+            _printStringConst(fp, "<ARRAY of ", FALSE);
+            _printNclTypeVal(fp, NCL_int, &(attnode->n_elem), FALSE);
+            _printStringConst(fp, " elements>", TRUE);
         }
     }
 
@@ -827,7 +739,7 @@ void _printNclFileUDTRecord(FILE *fp, NclAdvancedFile thefile, NclFileUDTRecord 
    *_justPrintTypeVal(fp, NCL_char, "\n", 0);
    */
 
-    _printNclTypeVal(fp, NCL_char, "User Defined Types:", 1);
+    _printStringConstAligned(fp, "User Defined Types:", TRUE);
     _increaseNclPrintIndentation();
 
   /*
@@ -843,9 +755,9 @@ void _printNclFileUDTRecord(FILE *fp, NclAdvancedFile thefile, NclFileUDTRecord 
        *                 NrmQuarkToString(udtnode->name));
        */
 
-        _printNclTypeVal(fp, NCL_string, &(udtnode->name), 1);
+        _printNclTypeValAligned(fp, NCL_string, &(udtnode->name), TRUE);
 
-        _printNclTypeVal(fp, NCL_char, "{", 1);
+        _printStringConstAligned(fp, "{", TRUE);
 
         _increaseNclPrintIndentation();
 
@@ -857,13 +769,13 @@ void _printNclFileUDTRecord(FILE *fp, NclAdvancedFile thefile, NclFileUDTRecord 
            *                 NrmQuarkToString(udtnode->mem_name[n]));
            */
 
-            _printNclTypeVal(fp, NCL_string, &(udtnode->mem_name[n]), 0);
-            _justPrintTypeVal(fp, NCL_char, ",", 1);
+            _printNclTypeValAligned(fp, NCL_string, &(udtnode->mem_name[n]), FALSE);
+            _printStringConst(fp, ",", TRUE);
         }
 
         _decreaseNclPrintIndentation();
 
-        _printNclTypeVal(fp, NCL_char, "};\n\n", 0);
+        _printStringConstAligned(fp, "};\n\n", FALSE);
       /*
        *_printNclTypeVal(fp, NCL_char, "} \t // ", 0);
        *_justPrintTypeVal(fp, NCL_string, &(udtnode->name), 0);
@@ -887,24 +799,24 @@ void _printNclFileDimRecord(FILE *fp, NclAdvancedFile thefile, NclFileDimRecord 
     if(NULL == dimrec)
         return;
 
-    _justPrintTypeVal(fp, NCL_char, "\n", 0);
-    _printNclTypeVal(fp, NCL_char, "dimensions:", 1);
+    _printStringConst(fp, "\n", FALSE);
+    _printStringConstAligned(fp, "dimensions:", TRUE);
     _increaseNclPrintIndentation();
 
     for(i = 0; i < dimrec->n_dims; i++)
     {
         dimnode = &(dimrec->dim_node[i]);
         llv = dimnode->size;
-        _printNclTypeVal(fp, NCL_string, &(dimnode->name), 0);
-        _justPrintTypeVal(fp, NCL_char, "\t= ", 0);
+        _printNclTypeValAligned(fp, NCL_string, &(dimnode->name), FALSE);
+        _printStringConst(fp, "\t= ", FALSE);
         if(dimnode->is_unlimited)
         {
-            _justPrintTypeVal(fp, NCL_int64, &llv, 0);
-            _justPrintTypeVal(fp, NCL_char, " // unlimited", 1);
+            _printNclTypeVal(fp, NCL_int64, &llv, FALSE);
+            _printStringConst(fp, " // unlimited", TRUE);
         }
         else
         {
-            _justPrintTypeVal(fp, NCL_int64, &llv, 1);
+            _printNclTypeVal(fp, NCL_int64, &llv, TRUE);
         }
     }
 
@@ -920,24 +832,24 @@ void _printNclFileChunkDimRecord(FILE *fp, NclAdvancedFile thefile, NclFileDimRe
     if(NULL == dimrec)
         return;
 
-    _justPrintTypeVal(fp, NCL_char, "\n", 0);
-    _printNclTypeVal(fp, NCL_char, "chunk dimensions:", 1);
+    _printStringConst(fp, "\n", FALSE);
+    _printStringConstAligned(fp, "chunk dimensions:", TRUE);
     _increaseNclPrintIndentation();
 
     for(i = 0; i < dimrec->n_dims; i++)
     {
         dimnode = &(dimrec->dim_node[i]);
         llv = dimnode->size;
-        _printNclTypeVal(fp, NCL_string, &(dimnode->name), 0);
-        _justPrintTypeVal(fp, NCL_char, "\t= ", 0);
+        _printNclTypeValAligned(fp, NCL_string, &(dimnode->name), FALSE);
+        _printStringConst(fp, "\t= ", FALSE);
         if(dimnode->is_unlimited)
         {
-            _justPrintTypeVal(fp, NCL_int64, &llv, 0);
-            _justPrintTypeVal(fp, NCL_char, " // unlimited", 1);
+            _printNclTypeVal(fp, NCL_int64, &llv, FALSE);
+            _printStringConst(fp, " // unlimited", TRUE);
         }
         else
         {
-            _justPrintTypeVal(fp, NCL_int64, &llv, 1);
+            _printNclTypeVal(fp, NCL_int64, &llv, TRUE);
         }
     }
 
@@ -950,26 +862,26 @@ void _printNclFileVarDimRecord(FILE *fp, NclFileDimRecord *dim_rec)
     long long llv;
     int i;
    
-    _justPrintTypeVal(fp, NCL_char, "\t[ ", 0);
+    _printStringConst(fp, "\t[ ", FALSE);
 
     for(i = 0; i < dim_rec->n_dims; i++)
     {
         dimnode = &(dim_rec->dim_node[i]);
 
         if(i)
-            _justPrintTypeVal(fp, NCL_char, " x ", 0);
+            _printStringConst(fp, " x ", FALSE);
 
         llv = dimnode->size;
-        _justPrintTypeVal(fp, NCL_int64, &llv, 0);
-        _justPrintTypeVal(fp, NCL_char, " <", 0);
-        _justPrintTypeVal(fp, NCL_string, &(dimnode->name), 0);
+        _printNclTypeVal(fp, NCL_int64, &llv, FALSE);
+        _printStringConst(fp, " <", FALSE);
+        _printNclTypeVal(fp, NCL_string, &(dimnode->name), FALSE);
         if(dimnode->is_unlimited)
-            _justPrintTypeVal(fp, NCL_char, " | unlimited", 0);
+            _printStringConst(fp, " | unlimited", FALSE);
 
-        _justPrintTypeVal(fp, NCL_char, ">", 0);
+        _printStringConst(fp, ">", FALSE);
     }
 
-    _justPrintTypeVal(fp, NCL_char, " ]", 1);
+    _printStringConst(fp, " ]", TRUE);
 }
 
 void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *varnode)
@@ -1002,11 +914,11 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
    *}
   */
 
-    _printNclTypeVal(fp, NCL_char, "Variable: ", 0);
-    _justPrintTypeVal(fp, NCL_string, &(varnode->name), 1);
+    _printStringConstAligned(fp, "Variable: ", FALSE);
+    _printNclTypeVal(fp, NCL_string, &(varnode->name), TRUE);
 
-    _printNclTypeVal(fp, NCL_char, "Type: ", 0);
-    _justPrintTypeVal(fp, NCL_char, type_str, 1);
+    _printStringConstAligned(fp, "Type: ", FALSE);
+    _printStringConst(fp, type_str, TRUE);
   
     dim_rec = varnode->dim_rec;
 
@@ -1018,28 +930,28 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
             total_size *= dimnode->size;
         }
 
-        _printNclTypeVal(fp, NCL_char, "Total Size: ", 0);
-        _justPrintTypeVal(fp, NCL_int64, &total_size, 0);
-        _justPrintTypeVal(fp, NCL_char, " values", 1);
+        _printStringConstAligned(fp, "Total Size: ", FALSE);
+        _printNclTypeVal(fp, NCL_int64, &total_size, FALSE);
+        _printStringConst(fp, " values", TRUE);
 
         total_size *= _NclSizeOf(varnode->type);
-        _printNclTypeVal(fp, NCL_char, "            ", 0);
-        _justPrintTypeVal(fp, NCL_int64, &total_size, 0);
-        _justPrintTypeVal(fp, NCL_char, " bytes", 1);
+        _printStringConstAligned(fp, "            ", FALSE);
+        _printNclTypeVal(fp, NCL_int64, &total_size, FALSE);
+        _printStringConst(fp, " bytes", TRUE);
 
-        _printNclTypeVal(fp, NCL_char, "Number of Dimensions: ", 0);
-        _justPrintTypeVal(fp, NCL_int, &dim_rec->n_dims, 1);
+        _printStringConstAligned(fp, "Number of Dimensions: ", FALSE);
+        _printNclTypeVal(fp, NCL_int, &dim_rec->n_dims, TRUE);
 
-        _printNclTypeVal(fp, NCL_char, "Dimensions and sizes:", 0);
+        _printStringConstAligned(fp, "Dimensions and sizes:", FALSE);
         _printNclFileVarDimRecord(fp, varnode->dim_rec);
 
         if(0 < varnode->is_chunked)
         {
-            _printNclTypeVal(fp, NCL_char, "Chunking Info:", 0);
+            _printStringConstAligned(fp, "Chunking Info:", FALSE);
             _printNclFileVarDimRecord(fp, varnode->chunk_dim_rec);
         }
 
-        _printNclTypeVal(fp, NCL_char, "Coordinates:", 1);
+        _printStringConstAligned(fp, "Coordinates:", TRUE);
         for(i = 0; i < dim_rec->n_dims; i++)
         {
             dimnode = &(dim_rec->dim_node[i]);
@@ -1092,13 +1004,13 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
                     }
                 }
 
-                _printNclTypeVal(fp, NCL_char, "            ", 0);
-                _justPrintTypeVal(fp, NCL_char, NrmQuarkToString(dimnode->name), 0);
-                _justPrintTypeVal(fp, NCL_char, ": [", 0);
-                _justPrintTypeVal(fp, NCL_float, &sval, 0);
-                _justPrintTypeVal(fp, NCL_char, "..", 0);
-                _justPrintTypeVal(fp, NCL_float, &eval, 0);
-                _justPrintTypeVal(fp, NCL_char, "]", 1);
+                _printStringConstAligned(fp, "            ", FALSE);
+                _printNclTypeVal(fp, NCL_string, &dimnode->name, FALSE);
+                _printStringConst(fp, ": [", FALSE);
+                _printNclTypeVal(fp, NCL_float, &sval, FALSE);
+                _printStringConst(fp, "..", FALSE);
+                _printNclTypeVal(fp, NCL_float, &eval, FALSE);
+                _printStringConst(fp, "]", TRUE);
             }
             }
         }
@@ -1148,8 +1060,8 @@ void _printNclFileVarRecord(FILE *fp, NclAdvancedFile thefile, NclFileVarRecord 
     if(NULL == varrec)
         return;
 
-    _justPrintTypeVal(fp, NCL_char, "\n", 0);
-    _printNclTypeVal(fp, NCL_char, "variables:", 1);
+    _printStringConst(fp, "\n", FALSE);
+    _printStringConstAligned(fp, "variables:", TRUE);
     _increaseNclPrintIndentation();
 
     for(i = 0; i < varrec->n_vars; i++)
@@ -1171,17 +1083,17 @@ void _printNclFileGrpRecord(FILE *fp, NclAdvancedFile thefile, NclFileGrpRecord 
         return;
 
     _increaseNclPrintIndentation();
-    _justPrintTypeVal(fp, NCL_char, "\n", 0);
-    _printNclTypeVal(fp, NCL_char, "groups:", 1);
+    _printStringConst(fp, "\n", FALSE);
+    _printStringConstAligned(fp, "groups:", TRUE);
 
     for(i = 0; i < grprec->n_grps; i++)
     {
         grpnode = grprec->grp_node[i];
 
-        _printNclTypeVal(fp, NCL_string, &(grpnode->name), 0);
-        _justPrintTypeVal(fp, NCL_char, "\t<group>", 1);
+        _printNclTypeValAligned(fp, NCL_string, &(grpnode->name), FALSE);
+        _printStringConst(fp, "\t<group>", TRUE);
 
-        _printNclTypeVal(fp, NCL_char, "{", 1);
+        _printStringConstAligned(fp, "{", TRUE);
 
         _increaseNclPrintIndentation();
 
@@ -1195,8 +1107,8 @@ void _printNclFileGrpRecord(FILE *fp, NclAdvancedFile thefile, NclFileGrpRecord 
 
         _decreaseNclPrintIndentation();
 
-        _printNclTypeVal(fp, NCL_char, "}  end of ", 0);
-        _justPrintTypeVal(fp, NCL_string, &(grpnode->name), 1);
+        _printStringConstAligned(fp, "}  end of ", FALSE);
+        _printNclTypeVal(fp, NCL_string, &(grpnode->name), TRUE);
 
         nclfprintf(fp, "\n");
     }

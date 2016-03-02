@@ -344,9 +344,9 @@ NclFileCompoundRecord *get_nc4_compoundrec(int ncid, nc_type xtype, NrmQuark **c
 
 NclMultiDValData get_nc4_vlenlist(int ncid, int varid, nc_type xtype, NclBasicDataTypes* vlentype);
 
+void _printNclTypeValAligned(FILE *fp, NclBasicDataTypes type, void *val, int newline);
 void _printNclTypeVal(FILE *fp, NclBasicDataTypes type, void *val, int newline);
-void _justPrintTypeVal(FILE *fp, NclBasicDataTypes type, void *val, int newline);
-void _justPrintTypeValAtPoint(FILE *fp, NclBasicDataTypes type, void *val,
+void _printNclTypeValIndexed(FILE *fp, NclBasicDataTypes type, void *val,
                               size_t np, int newline);
 
 NclFileEnumRecord *_NclFileEnumAlloc(int n_enums);
