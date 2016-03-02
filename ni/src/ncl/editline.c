@@ -5,6 +5,7 @@
 #include "editline.h"
 #include <ctype.h>
 #include <stdlib.h>
+#include <errno.h>
 
 /*
 **  Manifest constants.
@@ -175,7 +176,24 @@ TTYget()
     }
     if (*Input)
 	return *Input++;
+
+#if defined(Darwin)
+    /* This addresses Jira ticket NCL-2072, which is a MacOS-specific issue. Bash shell users
+     * using CTRL-Z to suspend an interactive NCL session would see NCL terminate immediately
+     * upon returning the process to the foreground (i.e., via bash command "fg"). 
+     * The cause is that the read() returns an error EINTR, which is "Interrupted system call".
+     * We'll simply retry when that happens.   --RLB, 3/2016
+     */
+    int ret;
+    do {
+        ret = read(0, &c, (SIZE_T)1);
+    } while (ret < 0 && errno == EINTR);
+    return ret == 1 ? c : EOF;
+
+#else
     return read(0, &c, (SIZE_T)1) == 1 ? c : EOF;
+
+#endif 
 }
 
 #define TTYback()	(backspace ? TTYputs((CHAR *)backspace) : TTYput('\b'))
