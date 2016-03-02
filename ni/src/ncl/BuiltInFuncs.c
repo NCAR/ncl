@@ -555,7 +555,7 @@ NhlErrorTypes _NclIListFuncs
         return(NhlNOERROR);
 }
 
-NclQuark *_NclGetAdvancedFileVarNames(void *therec, int *num_vars)
+NclQuark *_NclGetAdvancedFileVarNames(void *therec, int *num_vars, int level)
 {
     NclFileGrpNode *grpnode = (NclFileGrpNode *) therec;
     NclFileGrpNode *tmpgrpnode = NULL;
@@ -577,7 +577,9 @@ NclQuark *_NclGetAdvancedFileVarNames(void *therec, int *num_vars)
 
             for(i = 0; i < grpnode->var_rec->n_vars; ++i)
             {
-                out_quarks[i] = grpnode->var_rec->var_node[i].real_name;
+                out_quarks[i] = (level == 0) ?
+                    grpnode->var_rec->var_node[i].name :
+                    grpnode->var_rec->var_node[i].real_name;
             }
         }
     }
@@ -590,7 +592,7 @@ NclQuark *_NclGetAdvancedFileVarNames(void *therec, int *num_vars)
             {
                 tmpgrpnode = grpnode->grp_rec->grp_node[n];
 
-                tmp_quarks = _NclGetAdvancedFileVarNames((void *)tmpgrpnode, &nv);
+                tmp_quarks = _NclGetAdvancedFileVarNames((void *)tmpgrpnode, &nv, ++level);
 
                 if(nv)
                 {
@@ -618,7 +620,7 @@ NclQuark *_NclAdvancedFileReadVarNames(NclFile thefile, int *num_vars)
     NclAdvancedFile advancedfile = (NclAdvancedFile) thefile;
     NclQuark *out_quarks = NULL;
 
-    out_quarks = _NclGetAdvancedFileVarNames((void *)advancedfile->advancedfile.grpnode, num_vars);
+    out_quarks = _NclGetAdvancedFileVarNames((void *)advancedfile->advancedfile.grpnode, num_vars, 0);
 
     return(out_quarks);
 }
