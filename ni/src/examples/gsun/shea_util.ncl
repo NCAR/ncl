@@ -10,17 +10,9 @@
 ; I will try to help people out but these routines are NOT
 ; meant to be general purpose.
 ; ********************************************************
-; ********************************************************
-; Function/Procedures included here can call built-in functions
-; and functions contained within the gsn*.ncl and contributed.ncl
-; libraries. Hence, they must be loaded prior to shea_util.ncl 
-; shea_util.ncl must be loaded last.
-;;EG:
-;;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
-;;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
-;;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
+;; Users must load shea_util.ncl
 ;;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/shea_util.ncl"
-
+; ********************************************************
 ; ------------------------------------------------------------
 undef("printVarInfo")
 procedure printVarInfo (x, xInfo:string)
