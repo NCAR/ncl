@@ -21011,18 +21011,20 @@ NhlErrorTypes _NclISetFileOption(void)
 			{
 				if(ad_lower_quark == fso)
 				{
-					for(n = 0; n < _NclNumberOfFileFormats; ++n)
+					for(n = 0; n < _NioNumberOfFileStructOptions; ++n)
 						NCLadvancedFileStructure[n] = 1;
 				}
 				else
 				{
-					for(n = 0; n < _NclNumberOfFileFormats; ++n)
+					for(n = 0; n < _NioNumberOfFileStructOptions; ++n)
 						NCLadvancedFileStructure[n] = 0;
 				}
 			}
 		}
 		else if(nc_quark == filetype_lower)
 		{
+#if 0
+			/* don't do this here */
        			if(NrmStringToQuark("format") == option_lower)
 			{
                         	if(NrmStringToQuark("netcdf4") == fso)
@@ -21034,8 +21036,9 @@ NhlErrorTypes _NclISetFileOption(void)
 									NULL,1,&ndims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
                                 	ret = _NclFileSetOption(f, filetype_lower, fs_quark, tmp_md2);
 					NCLadvancedFileStructure[_NclNETCDF4] = 1;
-					/*Actually, _NclNETCDF4 should be alway 1, so we set NC3 to use new-fs.*/
-					NCLadvancedFileStructure[_NclNETCDF] = 1;
+					/*Actually, _NclNETCDF4 should be alway 1, so we set NC3 to use new-fs.
+					  --- really? what if you want to read a NetCDF3 file at the same time as creating an NC4 file */
+					NCLadvancedFileStructure[_NclNETCDF] = 0;
                         	}
 				else
                         	{
@@ -21043,18 +21046,16 @@ NhlErrorTypes _NclISetFileOption(void)
 					NCLadvancedFileStructure[_NclNETCDF4] = 0;
                         	}
 			}
-
+#endif
 			if(fs_quark == option_lower)
 			{
 				if(ad_lower_quark == fso)
                         	{
-					NCLadvancedFileStructure[_NclNETCDF] = 1;
-					NCLadvancedFileStructure[_NclNETCDF4] = 1;
+					NCLadvancedFileStructure[_Nio_Opt_NETCDF] = 1;
                         	}
 				else
                         	{
-					NCLadvancedFileStructure[_NclNETCDF] = 0;
-					NCLadvancedFileStructure[_NclNETCDF4] = 0;
+					NCLadvancedFileStructure[_Nio_Opt_NETCDF] = 0;
                         	}
 			}
 		}
@@ -21064,13 +21065,11 @@ NhlErrorTypes _NclISetFileOption(void)
 			{
 				if(ad_lower_quark == fso)
 				{
-					NCLadvancedFileStructure[_NclNewHDF5] = 1;
-					NCLadvancedFileStructure[_NclHDF5] = 1;
+					NCLadvancedFileStructure[_Nio_Opt_HDF5] = 1;
 				}
 				else
 				{
-					NCLadvancedFileStructure[_NclNewHDF5] = 0;
-					NCLadvancedFileStructure[_NclHDF5] = 0;
+					NCLadvancedFileStructure[_Nio_Opt_HDF5] = 0;
 				}
 			}
 
@@ -21081,13 +21080,12 @@ NhlErrorTypes _NclISetFileOption(void)
 			{
 				if(ad_lower_quark == fso)
 				{
-					NCLadvancedFileStructure[_NclHDFEOS5] = 1;
-					NCLadvancedFileStructure[_NclNewHE5] = 1;
+					NCLadvancedFileStructure[_Nio_Opt_HDFEOS5] = 1;
 				}
 				else
 				{
-					NCLadvancedFileStructure[_NclHDFEOS5] = 0;
-					NCLadvancedFileStructure[_NclNewHE5] = 0;
+					NCLadvancedFileStructure[_Nio_Opt_HDFEOS5] = 0;
+
 				}
 			}
 
@@ -21097,9 +21095,9 @@ NhlErrorTypes _NclISetFileOption(void)
 			if(fs_quark == option_lower)
 			{
 				if(ad_lower_quark == fso)
-					NCLadvancedFileStructure[_NclAdvancedOGR] = 1;
+					NCLadvancedFileStructure[_Nio_Opt_OGR] = 1;
 				else
-					NCLadvancedFileStructure[_NclAdvancedOGR] = 0;
+					NCLadvancedFileStructure[_Nio_Opt_OGR] = 0;
 			}
     		}
     	}

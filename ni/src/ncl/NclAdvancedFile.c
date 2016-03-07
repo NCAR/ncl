@@ -7485,7 +7485,7 @@ static NhlErrorTypes MyAdvancedFileWriteVar(NclFile infile, NclQuark var,
                 {
                     for(i = 0; i < value->multidval.n_dims; i++)
                     {
-                        sprintf(buffer,"ncl_%3.3d",i);
+			sprintf(buffer,"ncl_%3.3d",thefile->advancedfile.grpnode->dim_rec->n_dims);
                         new_dim_quarks[i] = NrmStringToQuark(buffer);
                         new_dim_sizes[i] = (long)value->multidval.dim_sizes[i];
                         start[i] = 0;

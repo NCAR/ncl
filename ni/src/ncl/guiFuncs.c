@@ -84,13 +84,17 @@ NclAdvancedFile NclCreateAdvancedFile(const char *path)
 void guiSetAdvancedFileStructure(const char *format)
 {
     if(0 == strcmp("shp", format))
-        NCLadvancedFileStructure[_NclAdvancedOGR] = 1;
+        NCLadvancedFileStructure[_Nio_Opt_OGR] = 1;
     else if(0 == strcmp("nc", format))
-        NCLadvancedFileStructure[_NclNETCDF] = 1;
+        NCLadvancedFileStructure[_Nio_Opt_NETCDF] = 1;
     else if(0 == strcmp("he5", format))
-        NCLadvancedFileStructure[_NclNewHE5] = 1;
-    else if(0 == strcmp("all", format))
-        NCLadvancedFileStructure[0] = 1;
+        NCLadvancedFileStructure[_Nio_Opt_HDFEOS5] = 1;
+    else if(0 == strcmp("all", format)) {
+	    int i;
+	    for (i = 0; i < _NioNumberOfFileStructOptions; i++) {
+		    NCLadvancedFileStructure[i] = 1;
+	    }
+    }
 }
 
 char **GetNclFileVarNames(NclFile thefile, int *num_vars)

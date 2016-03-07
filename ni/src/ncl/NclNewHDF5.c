@@ -592,6 +592,8 @@ char *_getH5typeName(hid_t type, int ind)
     }
 
     /* Shared? If so then print the type's OID */
+    type_class = H5Tget_class(type);
+#if 0
     if(H5Tcommitted(type))
     {
         H5O_info_t  oi;
@@ -612,6 +614,7 @@ char *_getH5typeName(hid_t type, int ind)
 
         return attTypeName;
     }
+#endif
 
     if (H5Tequal(type, H5T_IEEE_F32BE)==TRUE)
     {
@@ -3365,6 +3368,7 @@ herr_t _searchH5obj(char *name, H5O_info_t *oinfo,
             H5Aiterate(obj_id, H5_INDEX_NAME, H5_ITER_INC, NULL, _checkH5attribute, &curvarnode->att_rec);
 #endif
             H5Oclose(obj_id);
+            return SUCCEED;
             return FAILED;
             break;
         default:

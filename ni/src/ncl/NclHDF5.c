@@ -302,7 +302,7 @@ static void *HDF5InitializeFileRec
 (NclFileFormat *format)
 #else
 (format)
-NclFileFormatType *format;
+NclFileFormat *format;
 #endif
 {
     static int first = True;

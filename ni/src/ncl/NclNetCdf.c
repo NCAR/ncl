@@ -220,7 +220,7 @@ static void *NetMapFromNcl
 {
 	static int first = 1;
 	static NclBasicDataTypes long_type;
-	void *out_type = (void*)NclMalloc((unsigned)sizeof(nc_type));;
+	void *out_type = (void*)NclMalloc((unsigned)sizeof(nc_type));
 	if(first) {
 		if(sizeof(nclong) == _NclSizeOf(NCL_long)) {
 			long_type = NCL_long;
@@ -250,9 +250,8 @@ static void *NetMapFromNcl
 		if(long_type == the_type) {
 			*(nc_type*)out_type = NC_LONG;
 		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"Can't map type, netCDF does not support 64 bit longs, NCL will try to promote type to double, errors may occur");
-			NclFree(out_type);
-			return(NULL);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"Classic NetCDF does not support 8-byte longs; convert to a supported data type or use the NetCDF4 format");
+			*(nc_type*)out_type = NULL;
 		}
 		break;
 	case NCL_float:
@@ -601,7 +600,7 @@ static void *NetInitializeFileRec
 (NclFileFormat *format)
 #else
 (format)
-NclFileFormatType *format;
+NclFileFormat *format;
 #endif
 {
 	static int first = True;
@@ -951,6 +950,15 @@ NclQuark path;
 	    NrmStringToQuark("netcdf4classic")) {
 		mode = (NC_NOCLOBBER|NC_NETCDF4|NC_CLASSIC_MODEL);
 		format = 4;
+	}
+#endif
+#ifdef NC_FORMAT_CDF5
+	if (((NrmQuark)(tmp->options[NC_FORMAT_OPT].values) == 
+	     NrmStringToQuark("cdf5")) ||
+	    ((NrmQuark)(tmp->options[NC_FORMAT_OPT].values) == 
+	     NrmStringToQuark("64bitdata"))) {
+		mode = (NC_NOCLOBBER|NC_64BIT_DATA);
+		format = 5;
 	}
 #endif
 	else {
@@ -2177,7 +2185,7 @@ void* data;
 							CloseOrNot(rec,cdfid,0);
 						}
 						if(ret == -1) {
-							if (theatt == NrmStringToQuark("_FillValue") && rec->format > 2) {
+							if (theatt == NrmStringToQuark("_FillValue") && rec->format == 4) {
 								NhlPError(NhlWARNING,NhlEUNKNOWN,"NetCdf: NetCDF 4 does not allow the _FillValue attribute to be modified after data written to variable (%s) in file (%s)",NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
 								return (NhlWARNING);
 							}
@@ -2765,7 +2773,7 @@ long* dim_sizes;
 				       cdfid,NrmQuarkToString(thevar),(int)*the_data_type,n_dims);
 #endif                
 #ifdef USE_NETCDF4_FEATURES
-				if (ret == NC_NOERR && rec->format > 2 &&
+				if (ret == NC_NOERR && rec->format == 4 &&
 				    ((int)(rec->options[NC_COMPRESSION_LEVEL_OPT].values) > -1)) {
 					int shuffle = 1;
 					int deflate = 1;

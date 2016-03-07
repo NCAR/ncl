@@ -8560,7 +8560,7 @@ static void *Grib2InitializeFileRec
 (NclFileFormat *format)
 #else
 (format)
-NclFileFormatType *format;
+NclFileFormat *format;
 #endif
 {
     Grib2FileRecord *g2rec = NULL;

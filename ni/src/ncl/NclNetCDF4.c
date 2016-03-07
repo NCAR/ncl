@@ -2768,13 +2768,13 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
           case NC_FORMAT_NETCDF4_CLASSIC:
                grpnode->kind = NrmStringToQuark("NETCDF4 CLASSIC");
                break;
-          case NC_FORMAT_64BIT:
+          case NC_FORMAT_64BIT_OFFSET:
                grpnode->kind = NrmStringToQuark("64BIT OFFSET");
                break;
 #ifdef NC_FORMAT_CDF5
           case NC_FORMAT_64BIT_DATA:
 	       grpnode->kind = NrmStringToQuark("64BIT DATA"); /* aka CDF5 */
-	       break;
+               break;
 #endif
           case NC_FORMAT_CLASSIC:
                grpnode->kind = NrmStringToQuark("CLASSIC");
@@ -2823,9 +2823,8 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
         grpnode->dim_rec->dim_node[n_dims].size = 1;
         grpnode->dim_rec->dim_node[n_dims].is_unlimited = 0;
         grpnode->dim_rec->dim_node[n_dims].name = NrmStringToQuark("ncl_scalar");
-        grpnode->dim_rec->max_dims = n_dims + 1;
-        grpnode->dim_rec->n_dims = n_dims + 1;
-
+	grpnode->dim_rec->max_dims = n_dims + 1;
+	grpnode->dim_rec->n_dims = n_dims + 1;
     }
     else
     {

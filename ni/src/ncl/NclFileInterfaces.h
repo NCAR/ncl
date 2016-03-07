@@ -83,6 +83,19 @@ typedef enum _NclFileFormat {
         _NclNumberOfFileFormats
 } NclFileFormat;
 
+/*
+ * These are the formats for which there are FileStructure options
+ * Note NetCDF4 and CDF5 must use the advanced file option so
+ * _Nio_NETCDF only applies to classic, 64bitoffset, and netcdf4-classic files
+ */
+typedef enum _NioFileStructOptions {
+	_Nio_Opt_NETCDF,
+	_Nio_Opt_HDF5,
+	_Nio_Opt_HDFEOS5,
+	_Nio_Opt_OGR,
+	_NioNumberOfFileStructOptions
+} NioFileStructOptions;
+
 typedef void * (*NclInitializeFileRecFunc)(
 #if	NhlNeedProto
 	NclFileFormat *format

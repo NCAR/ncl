@@ -1009,7 +1009,7 @@ static void *CcmInitializeFileRec
 (NclFileFormat *format)
 #else
 (format)
-NclFileFormatType *format;
+NclFileFormat *format;
 #endif
 {
 	CCMFileRec *therec = NULL;

@@ -6757,7 +6757,7 @@ static void *GribInitializeFileRec
 (NclFileFormat *format)
 #else
 (format)
-NclFileFormatType *format;
+NclFileFormat *format;
 #endif
 {
 	GribFileRecord *therec = NULL;

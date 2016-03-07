@@ -796,7 +796,7 @@ static void *OGRInitializeFileRec
 (NclFileFormat *format)
 #else
 (format)
-NclFileFormatType *format;
+NclFileFormat *format;
 #endif
 {
         OGRRecord*  therec = (OGRRecord*) NULL;

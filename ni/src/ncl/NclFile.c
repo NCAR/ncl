@@ -30,7 +30,7 @@
 #include "NclCoordVar.h"
 #include "NclCallBacksI.h"
 
-short NCLadvancedFileStructure[_NclNumberOfFileFormats];
+short NCLadvancedFileStructure[_NioNumberOfFileStructOptions];
 
 NclQuark FileGetDimName(
 #if	NhlNeedProto
@@ -2274,6 +2274,12 @@ int vtype;
 * Take care of simplest case here
 */
 	if((vtype == FILE_VAR_ACCESS? thefile->file.format_funcs->read_var != NULL:thefile->file.format_funcs->read_coord != NULL)) {
+		if (thefile->file.var_info[index]->data_type == NCL_none) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable <%s> in file <%s> does not have a recognized type: cannot get value",
+				  NrmQuarkToString(thefile->file.var_info[index]->var_name_quark),
+				  NrmQuarkToString(thefile->file.fname));
+			return(NULL);
+		}
 		if((!has_vectors)&&(!has_reverse)&&(!has_reorder)) {
 			val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
 			if (! val) {

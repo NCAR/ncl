@@ -675,7 +675,7 @@ static void *HDFInitializeFileRec
 (NclFileFormat *format)
 #else
 (format)
-NclFileFormatType *format;
+NclFileFormat *format;
 #endif
 {
 	HDFFileRecord *therec = NULL;

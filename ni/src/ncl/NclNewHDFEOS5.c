@@ -516,7 +516,7 @@ static void *HE5InitializeFileRec
 (NclFileFormat *format)
 #else
 (format)
-NclFileFormatType *format;
+NclFileFormat *format;
 #endif
 {
     static int first = 1;

@@ -728,7 +728,7 @@ static void *HDFEOS5InitializeFileRec
 (NclFileFormat *format)
 #else
 (format)
-NclFileFormatType *format;
+NclFileFormat *format;
 #endif
 {
 	HDFEOS5FileRecord *therec = NULL;
