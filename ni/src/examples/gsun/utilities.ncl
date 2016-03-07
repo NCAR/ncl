@@ -1012,6 +1012,129 @@ begin
 end
 
 ;***********************************************************************;
+; This function returns the list of colormap names.
+; This can be used to test for valid colormap names.
+;***********************************************************************;
+undef("get_colormap_names")
+function get_colormap_names()
+local cmap_dirs, nfiles, ndirs, cmaps, i, j, tmp_files, tmp_names
+begin
+;---Get the list of color map directories
+  cmap_dirs = str_split(ncargpath("colormaps"),":")
+  ndirs     = dimsizes(cmap_dirs)
+
+  max_files = 500
+  cmaps = new(max_files,string)
+  nfiles = 0
+  do i=0,ndirs-1
+    tmp_files := systemfunc("ls -1 " + cmap_dirs(i))
+    nt = dimsizes(tmp_files)
+    do j=0,nt-1
+      tmp_names     := str_split(tmp_files(j),".")
+      cmaps(nfiles) = str_join(tmp_names(0:dimsizes(tmp_names)-2),".")
+      nfiles = nfiles + 1
+      if(nfiles.ge.max_files) then
+        print("get_colormap_names: reached maximum limit of color maps")
+        print("Will only return " + max_files + " color map names.") 
+        break
+      end if
+    end do
+    if(nfiles.ge.max_files) then
+      break
+    end if 
+  end do
+  return(cmaps(0:nfiles-1))
+end
+
+;***********************************************************************;
+; This function checks the list of named colors to make sure they are
+; all valid.  It will return a logical array of the same size as the 
+; input array.
+;***********************************************************************;
+undef("is_valid_named_colors")
+function is_valid_named_colors(colors[*]:string)
+local i, valid_named_colors, ncolors
+begin
+  named_colors = str_lower(get_named_color_list())   ; list of valid colors
+  ncolors            = dimsizes(colors)
+  valid_named_colors = new(ncolors,logical)
+  valid_named_colors = False    ; initialize to False
+  do i=0,ncolors-1
+    if(any(str_lower(colors(i)).eq.named_colors)) then
+      valid_named_colors(i) = True
+    end if
+  end do
+  return(valid_named_colors)
+end
+
+;***********************************************************************;
+; This function checks the list of color map names to see if they are
+; all valid.  It will return a logical array of the same size as the 
+; input array.
+;***********************************************************************;
+undef("is_valid_colormap_names")
+function is_valid_colormap_names(colormap_names[*]:string)
+local i, valid_colormaps, ncmaps
+begin
+  cmaps  = get_colormap_names()
+  ncmaps = dimsizes(colormap_names)
+  valid_colormaps = new(ncmaps,logical)
+  valid_colormaps = False    ; initialize to False
+  do i=0,ncmaps-1
+    if(any(colormap_names(i).eq.cmaps)) then
+      valid_colormaps(i) = True
+    end if
+  end do
+  return(valid_colormaps)
+end
+
+;***********************************************************************;
+; This function returns the type of color being used: 
+;
+;    color index     - values 0 to 255    "index"
+;    named color     - "blue"             "named"
+;    RGB triplet     - (/1,0,0.5/)        "rgb"
+;    RGBA quadruplet - (/1,0,0.5,0.5/)    "rgba"
+;    color map name  - "amwg"             "colormap"
+;
+; A missing string is returned if no valid type is detected.
+;***********************************************************************;
+undef("get_color_type")
+function get_color_type(colors)
+local dims_color, rank_color
+begin
+  dims_color = dimsizes(colors)
+  rank_color = dimsizes(dims_color)
+
+  if(rank_color.eq.1.and.typeof(colors).eq."string".and.\
+     all(is_valid_colormap_names(colors))) then
+    return("colormap")
+  end if
+
+  if(rank_color.eq.1.and.typeof(colors).eq."string".and.\
+     all(is_valid_named_colors(colors))) then
+    return("named")
+  end if
+
+  if(dims_color(rank_color-1).eq.3.and.isnumeric(colors).and.\
+     all(colors.ge.0.and.colors.le.1.0)) then
+    return("rgb")
+  end if
+
+  if(dims_color(rank_color-1).eq.4.and.isnumeric(colors).and.\
+     all(colors.ge.0.and.colors.le.1.0)) then
+    return("rgba")
+  end if
+
+  if(any(typeof(colors).eq.(/"short","integer","long"/)).and.\
+     all(colors.ge.0.and.colors.le.255)) then
+    return("index")
+  end if
+
+  return(new(1,string))    ; otherwise return missing
+end
+
+;***********************************************************************;
 ; Given a list of color maps, color indexes, named colors, RGB, or RGBA ;
 ; colors, convert them to RGBA colors.                                  ;
 ;***********************************************************************;
@@ -1262,129 +1385,6 @@ begin
   else
     return(rgb_array)
   end if
-end
-
-;***********************************************************************;
-; This function returns the list of colormap names.
-; This can be used to test for valid colormap names.
-;***********************************************************************;
-undef("get_colormap_names")
-function get_colormap_names()
-local cmap_dirs, nfiles, ndirs, cmaps, i, j, tmp_files, tmp_names
-begin
-;---Get the list of color map directories
-  cmap_dirs = str_split(ncargpath("colormaps"),":")
-  ndirs     = dimsizes(cmap_dirs)
-
-  max_files = 500
-  cmaps = new(max_files,string)
-  nfiles = 0
-  do i=0,ndirs-1
-    tmp_files := systemfunc("ls -1 " + cmap_dirs(i))
-    nt = dimsizes(tmp_files)
-    do j=0,nt-1
-      tmp_names     := str_split(tmp_files(j),".")
-      cmaps(nfiles) = str_join(tmp_names(0:dimsizes(tmp_names)-2),".")
-      nfiles = nfiles + 1
-      if(nfiles.ge.max_files) then
-        print("get_colormap_names: reached maximum limit of color maps")
-        print("Will only return " + max_files + " color map names.") 
-        break
-      end if
-    end do
-    if(nfiles.ge.max_files) then
-      break
-    end if 
-  end do
-  return(cmaps(0:nfiles-1))
-end
-
-;***********************************************************************;
-; This function checks the list of named colors to make sure they are
-; all valid.  It will return a logical array of the same size as the 
-; input array.
-;***********************************************************************;
-undef("is_valid_named_colors")
-function is_valid_named_colors(colors[*]:string)
-local i, valid_named_colors, ncolors
-begin
-  named_colors = str_lower(get_named_color_list())   ; list of valid colors
-  ncolors            = dimsizes(colors)
-  valid_named_colors = new(ncolors,logical)
-  valid_named_colors = False    ; initialize to False
-  do i=0,ncolors-1
-    if(any(str_lower(colors(i)).eq.named_colors)) then
-      valid_named_colors(i) = True
-    end if
-  end do
-  return(valid_named_colors)
-end
-
-;***********************************************************************;
-; This function checks the list of color map names to see if they are
-; all valid.  It will return a logical array of the same size as the 
-; input array.
-;***********************************************************************;
-undef("is_valid_colormap_names")
-function is_valid_colormap_names(colormap_names[*]:string)
-local i, valid_colormaps, ncmaps
-begin
-  cmaps  = get_colormap_names()
-  ncmaps = dimsizes(colormap_names)
-  valid_colormaps = new(ncmaps,logical)
-  valid_colormaps = False    ; initialize to False
-  do i=0,ncmaps-1
-    if(any(colormap_names(i).eq.cmaps)) then
-      valid_colormaps(i) = True
-    end if
-  end do
-  return(valid_colormaps)
-end
-
-;***********************************************************************;
-; This function returns the type of color being used: 
-;
-;    color index     - values 0 to 255    "index"
-;    named color     - "blue"             "named"
-;    RGB triplet     - (/1,0,0.5/)        "rgb"
-;    RGBA quadruplet - (/1,0,0.5,0.5/)    "rgba"
-;    color map name  - "amwg"             "colormap"
-;
-; A missing string is returned if no valid type is detected.
-;***********************************************************************;
-undef("get_color_type")
-function get_color_type(colors)
-local dims_color, rank_color
-begin
-  dims_color = dimsizes(colors)
-  rank_color = dimsizes(dims_color)
-
-  if(rank_color.eq.1.and.typeof(colors).eq."string".and.\
-     all(is_valid_colormap_names(colors))) then
-    return("colormap")
-  end if
-
-  if(rank_color.eq.1.and.typeof(colors).eq."string".and.\
-     all(is_valid_named_colors(colors))) then
-    return("named")
-  end if
-
-  if(dims_color(rank_color-1).eq.3.and.isnumeric(colors).and.\
-     all(colors.ge.0.and.colors.le.1.0)) then
-    return("rgb")
-  end if
-
-  if(dims_color(rank_color-1).eq.4.and.isnumeric(colors).and.\
-     all(colors.ge.0.and.colors.le.1.0)) then
-    return("rgba")
-  end if
-
-  if(any(typeof(colors).eq.(/"short","integer","long"/)).and.\
-     all(colors.ge.0.and.colors.le.255)) then
-    return("index")
-  end if
-
-  return(new(1,string))    ; otherwise return missing
 end
 
 ;***********************************************************************;
