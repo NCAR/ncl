@@ -41,7 +41,7 @@
 #define CCompiler   gcc
 #define CxxCompiler   g++
 #define FCompiler   gfortran
-#define CcOptions      -ansi -fPIC -m64 -Wall -fopenmp
+#define CcOptions      -ansi -fPIC -m64 -Wall -fopenmp -std=c99
 #define FcOptions      -fPIC -fno-range-check  -m64 -Wall -fopenmp
 #define CtoFLibraries      -lgfortran -lquadmath
 #define CtoFLibrariesUser  -lgfortran -lquadmath
