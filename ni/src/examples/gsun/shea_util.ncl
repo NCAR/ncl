@@ -3819,15 +3819,6 @@ begin
 
   return(pv)
 end
-;--new interface
-undef("pot_vort_hybrid")
-function pot_vort_hybrid\
-            (p:numeric, u:numeric, v:numeric, t:numeric
-            ,lat[*]:numeric, gridType[1]:integer, opt:integer)
-begin
-        ; PotVortHybrid is the original function name
-  return( PotVortHybrid (p, u, v, t, lat, gridType, opt) )
-end
 
 ;----------------------------------------------------------------------------
 ;----------------------- Unsupported: DJS -----------------------------------
@@ -3966,15 +3957,6 @@ begin
   copy_VarCoords(t,pv)
 
   return( pv )
-end
-;-- new interface
-undef("pot_vort_isobaric")
-function pot_vort_isobaric\
-            (p[*]:numeric, u:numeric, v:numeric, t:numeric
-            ,lat[*]:numeric, gridType[1]:integer, opt:integer)
-begin
-        ; PotVortIsobaric is the original function name
-  return(PotVortIsobaric (p, u, v, t, lat, gridType, opt) )
 end
 ; ******************************************************************
 ; *******  THERE IS NO SUPPORT FOR THE PIE CHART FUNCTION **********
