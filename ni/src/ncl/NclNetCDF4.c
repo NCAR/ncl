@@ -2768,7 +2768,7 @@ void *NC4OpenFile(void *rootgrp, NclQuark path, int status)
           case NC_FORMAT_NETCDF4_CLASSIC:
                grpnode->kind = NrmStringToQuark("NETCDF4 CLASSIC");
                break;
-          case NC_FORMAT_64BIT_OFFSET:
+          case NC_FORMAT_64BIT:
                grpnode->kind = NrmStringToQuark("64BIT OFFSET");
                break;
 #ifdef NC_FORMAT_CDF5
