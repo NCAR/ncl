@@ -3646,13 +3646,48 @@ begin
       if(in_file@MAP_PROJ .eq. 6)
         projection          = "CylindricalEquidistant"
         opts@mpProjection = projection
-        opts@mpGridSpacingF = 45
+        opts@mpGridSpacingF = 5
+        ;; if we can't figure it out then assume northern hemisphere
+
+        southern = False
+
+        ;; according to the docs if POLE_LON is 0 then the projection center is in the southern hemisphere
+        ;; if POLE_LON is 180 the projection center is in the northern hemisphere
+        ;; otherwise you can't tell for sure -- CEN_LAT does not have to be the projection center but hopefully
+        ;; it is in the same hemisphere. The same is true for REF_LAT except that if REF_Y is specified REF_LAT might
+        ;; be in a corner or somewhere else and therefore it is even less reliable
+        ;; 
+        if (isatt(in_file,"POLE_LON")) then
+          if (in_file@POLE_LON .eq. 0.0) then
+            southern = True
+          else if (in_file@POLE_LON .ne. 180) then
+            if (isatt(in_file,"CEN_LAT") .and. in_file@CEN_LAT .lt. 0.0) then
+            ;; this is only probably true
+              southern = True
+            end if
+          end if
+          end if
+        else 
+          if (isatt(in_file,"CEN_LAT") .and. in_file@CEN_LAT .lt. 0.0) then
+            ;; this is only probably true
+            southern = True
+          end if
+        end if
+
+        if  (isatt(in_file,"POLE_LAT") .and. isatt(in_file,"STAND_LON")) then
+          if (.not. southern) then
+            opts@mpCenterLatF = get_res_value_keep(opts, "mpCenterLatF", 90.0 - in_file@POLE_LAT) 
+            opts@mpCenterLonF = get_res_value_keep(opts, "mpCenterLonF", -in_file@STAND_LON) 
+          else 
+            opts@mpCenterLatF = get_res_value_keep(opts, "mpCenterLatF", in_file@POLE_LAT - 90) 
+            opts@mpCenterLonF = get_res_value_keep(opts, "mpCenterLonF", 180 - in_file@STAND_LON) 
+          end if
+        else if (isatt(in_file,"CEN_LAT") .and. isatt(in_file,"CEN_LON")) then
+          ;; this could well be bogus
         opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
-        if( isatt(in_file,"POLE_LAT") ) then
-          opts@mpCenterRotF = get_res_value_keep(opts, "mpCenterRotF", 90.0 - in_file@POLE_LAT) 
-          delete(opts@mpCenterLonF)
-          calcen = -190.
-          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF", calcen )
+	
+	opts@mpCenterLatF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LAT)
+        end if 
         end if
       end if
   
@@ -4467,14 +4502,49 @@ begin
   
 ;    global WRF CylindricalEquidistant
       if(in_file@MAP_PROJ .eq. 6)
-        map_args@mpProjection          = "CylindricalEquidistant"
-        map_args@mpGridSpacingF = 45
-        map_args@mpCenterLonF  = get_res_value_keep(map_args, "mpCenterLonF",in_file@CEN_LON)
-        if( isatt(in_file,"POLE_LAT") ) then
-          map_args@mpCenterRotF = get_res_value_keep(map_args, "mpCenterRotF", 90.0 - in_file@POLE_LAT) 
-          delete(map_args@mpCenterLonF)
-          calcen = -190.
-          map_args@mpCenterLonF  = get_res_value_keep(map_args, "mpCenterLonF", calcen )
+        map_args@mpProjection = "CylindricalEquidistant"
+        map_args@mpGridSpacingF = 5
+        
+        ;; if we can't figure it out then assume northern hemisphere
+
+        southern = False
+
+        ;; according to the docs if POLE_LON is 0 then the projection center is in the southern hemisphere
+        ;; if POLE_LON is 180 the projection center is in the northern hemisphere
+        ;; otherwise you can't tell for sure -- CEN_LAT does not have to be the projection center but hopefully
+        ;; it is in the same hemisphere. The same is true for REF_LAT except that if REF_Y is specified REF_LAT might
+        ;; be in a corner or somewhere else and therefore it is even less reliable
+        ;; 
+        if (isatt(in_file,"POLE_LON")) then
+          if (in_file@POLE_LON .eq. 0.0) then
+            southern = True
+          else if (in_file@POLE_LON .ne. 180) then
+            if (isatt(in_file,"CEN_LAT") .and. in_file@CEN_LAT .lt. 0.0) then
+            ;; this is only probably true
+              southern = True
+            end if
+          end if
+          end if
+        else 
+          if (isatt(in_file,"CEN_LAT") .and. in_file@CEN_LAT .lt. 0.0) then
+            ;; this is only probably true
+            southern = True
+          end if
+        end if
+
+        if  (isatt(in_file,"POLE_LAT") .and. isatt(in_file,"STAND_LON")) then
+          if (.not. southern) then
+            map_args@mpCenterLatF = get_res_value_keep(map_args, "mpCenterLatF", 90.0 - in_file@POLE_LAT) 
+            map_args@mpCenterLonF = get_res_value_keep(map_args, "mpCenterLonF", -in_file@STAND_LON) 
+          else 
+            map_args@mpCenterLatF = get_res_value_keep(map_args, "mpCenterLatF", in_file@POLE_LAT - 90) 
+            map_args@mpCenterLonF = get_res_value_keep(map_args, "mpCenterLonF", 180 - in_file@STAND_LON) 
+          end if
+        else if (isatt(in_file,"CEN_LAT") .and. isatt(in_file,"CEN_LON")) then
+          ;; this could well be bogus
+          map_args@mpCenterLonF  = get_res_value_keep(map_args, "mpCenterLonF",in_file@CEN_LON)
+          map_args@mpCenterLatF  = get_res_value_keep(map_args, "mpCenterLonF",in_file@CEN_LAT)
+        end if
         end if
       end if
   
