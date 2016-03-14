@@ -52,7 +52,5 @@ NUG_SCRIPTS =	NUG_GrADS_binary_data.ncl NUG_ICON_triangles_colored.ncl		\
 		NUG_write_Binary_1.ncl NUG_write_Binary_2.ncl NUG_write_netCDF_1.ncl	\
 		NUG_write_netCDF_2.ncl NUG_xy_plot.ncl NUG_xy_plot_res.ncl		\
 		NUG_xy_plot_timeseries.ncl NUG_xy_plot_timeseries_2.ncl
-		
-InstallTarget($(NUG_SCRIPTS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclscripts/$(MYNAME))
-		
-		
+
+InstallTarget($(NUG_SCRIPTS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclex/$(MYNAME))
