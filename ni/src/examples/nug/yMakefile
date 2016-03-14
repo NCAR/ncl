@@ -1,0 +1,58 @@
+#
+#   $Id$
+#
+#   Makefile for NUG examples - added in NCL V6.4.0
+#
+
+MYNAME = nug
+
+NUG_SCRIPTS =	NUG_GrADS_binary_data.ncl NUG_ICON_triangles_colored.ncl		\
+		NUG_axis_annotations.ncl NUG_bar_chart.ncl				\
+		NUG_bar_chart_col_above_below.ncl NUG_bar_chart_multi.ncl		\
+		NUG_bipolar_grid_MPI-ESM.ncl NUG_bipolar_grid_MPI-ESM_subregion.ncl	\
+		NUG_color_Land_Ocean.ncl NUG_color_country_user.ncl NUG_colormaps.ncl	\
+		NUG_contour_dashpattern.ncl NUG_contour_filled_map.ncl			\
+		NUG_contour_fillpattern.ncl NUG_contour_labels.ncl NUG_contour_map.ncl	\
+		NUG_contour_map_add_zonal_average.ncl NUG_curvilinear_basic.ncl		\
+		NUG_curvilinear_grid.ncl NUG_date_format.ncl				\
+		NUG_function_procedure.ncl NUG_globe_orography_grid_resolution.ncl	\
+		NUG_grid_resolution_comparison.ncl NUG_histograms-transparent.ncl	\
+		NUG_histograms.ncl NUG_insert_logo.ncl NUG_labelbar_title.ncl		\
+		NUG_labelbars.ncl NUG_legends.ncl NUG_map_countries.ncl			\
+		NUG_map_default.ncl NUG_map_grid_and_tickmark_settings.ncl		\
+		NUG_map_land_ocean_settings.ncl NUG_map_resolutions.ncl			\
+		NUG_map_selected_countries.ncl NUG_map_settings.ncl NUG_masking.ncl	\
+		NUG_multi_timeseries.ncl NUG_multiple_plots_along_y.ncl			\
+		NUG_panel_3x2_plot.ncl NUG_panel_control.ncl NUG_panel_plot.ncl		\
+		NUG_panel_vp.ncl NUG_plot_in_5_steps.ncl NUG_plot_rotated_grid.ncl	\
+		NUG_polar_NH.ncl NUG_polyline_polygon_polymarker.ncl			\
+		NUG_polyline_polygon_polymarker_old.ncl NUG_projections.ncl		\
+		NUG_projections_mollweide.ncl NUG_projections_robinson.ncl		\
+		NUG_read_ASCII_1.ncl NUG_read_ASCII_2.ncl NUG_read_ASCII_3.ncl		\
+		NUG_read_Binary_1.ncl NUG_read_Binary_GrADS.ncl NUG_read_CSV_1.ncl	\
+		NUG_read_CSV_1_noloop.ncl NUG_read_CSV_2.ncl				\
+		NUG_regrid_bilinear_CMIP5_grid_to_1x1deg_grid.ncl			\
+		NUG_regrid_curvilinear_to_rectilinear_bilinear_weights_ESMF.ncl		\
+		NUG_regrid_curvilinear_to_rectilinear_bilinear_wgts_destgrid_ESMF.ncl	\
+		NUG_regrid_rectilinear_to_curvilinear_bilinear_wgts_destgrid_ESMF.ncl	\
+		NUG_regrid_unstructured_to_rectilinear_bilinear_wgts_ESMF.ncl		\
+		NUG_regrid_unstructured_to_rectilinear_bilinear_wgts_destgrid_ESMF.ncl	\
+		NUG_shapefile_plot.ncl NUG_shapefile_plot_data.ncl NUG_slice_plot.ncl	\
+		NUG_statistics_linear_regression.ncl NUG_statistics_running_mean.ncl	\
+		NUG_strings.ncl NUG_system_calls.ncl NUG_template_script.ncl		\
+		NUG_text_settings.ncl NUG_title_strings.ncl				\
+		NUG_transparent_filled_contour.ncl					\
+		NUG_transparent_land_sea_mask_Africa.ncl NUG_triangular_grid_ICON.ncl	\
+		NUG_tripolar_grid_STORM.ncl NUG_unstructured_grid.ncl			\
+		NUG_unstructured_grid_ICON.ncl NUG_use_Fortran_subroutines.ncl		\
+		NUG_vector_curly.ncl NUG_vector_default.ncl				\
+		NUG_vector_plot_colorized.ncl NUG_vector_plot_overlay.ncl		\
+		NUG_wind_mag.ncl NUG_write_ASCII_1.ncl NUG_write_ASCII_2.ncl		\
+		NUG_write_ASCII_3.ncl NUG_write_ASCII_4.ncl NUG_write_ASCII_5.ncl	\
+		NUG_write_Binary_1.ncl NUG_write_Binary_2.ncl NUG_write_netCDF_1.ncl	\
+		NUG_write_netCDF_2.ncl NUG_xy_plot.ncl NUG_xy_plot_res.ncl		\
+		NUG_xy_plot_timeseries.ncl NUG_xy_plot_timeseries_2.ncl
+		
+InstallTarget($(NUG_SCRIPTS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclscripts/$(MYNAME))
+		
+		

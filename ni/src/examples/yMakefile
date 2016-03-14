@@ -21,6 +21,6 @@
 
 #define IHaveSubdirs
 
-SUBDIRS	= app basic contourplot gsun labelbar legend mapplot ngmath \
+SUBDIRS	= app basic contourplot gsun labelbar legend mapplot ngmath nug \
 	primitives streamlineplot textitem tickmark title vectorplot xyplot \
 	data

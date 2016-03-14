@@ -1,0 +1,63 @@
+;-----------------------------------------------------------------
+;  NCL User Guide Example:   NCL_xy_plot_timeseries_2.ncl
+;
+;  KMF 30.10.14
+;-----------------------------------------------------------------
+;==================================
+;== define function getDate(t)
+;==================================
+undef ("getDate")
+function getDate(t)
+begin
+   ;-- convert the time proleptic_gregorian calendar in UTC date
+   utc_date = cd_calendar(t, 0)
+   ;-- set date variable names (just helpful) 
+   year   = tointeger(utc_date(:,0))
+   month  = tointeger(utc_date(:,1))
+   day    = tointeger(utc_date(:,2))
+   hour   = tointeger(utc_date(:,3))
+   minute = tointeger(utc_date(:,4))
+   second = utc_date(:,5)
+  ;-- write date as string (DD.MM.YYYY)
+   date_str_i = sprinti("%0.2i",day) + "." + sprinti("%0.2i",month) + "."  + sprinti("%0.4i",year)
+   return(date_str_i)
+end
+
+;==================================================================================
+;== MAIN
+;==================================================================================
+load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
+load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
+load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
+
+begin
+   diri = "./"
+   fili = "rectilinear_grid_2D.nc"
+   
+   f    =  addfile(diri+fili, "r")
+
+   var  =  f->tsurf
+   time =  var&time
+   print(time)
+
+   fldmean = wgt_areaave_Wrap(var,1.0,1.0,1)
+   
+   date_str_i = getDate(time)
+   labels     = (/ date_str_i/)
+
+   wks = gsn_open_wks("png","xy_plot_timeseries_2")
+
+   res                        =  True
+   res@tiMainString           = "NCL UG Example: xy-plot timeseries"
+   res@tmXBMode               = "Explicit"
+   res@tmXBValues             =  time
+   res@tmXBLabels             =  labels
+   res@tmXBLabelFontHeightF   =  0.01
+   res@tmXBLabelJust          = "CenterRight"
+   res@tmXBLabelDeltaF        =  1.0
+   res@tmXBLabelAngleF        =  50.
+   res@tmLabelAutoStride      =  True
+
+   plot = gsn_csm_xy(wks, time, fldmean, res)
+
+ end
