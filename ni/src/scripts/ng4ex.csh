@@ -44,6 +44,8 @@
 #
 #     GSUN examples             gsun
 #
+#     NCL User Guide examples   nug   ( added in NCL V6.4.0 )
+#
 # How to add an example to this script:
 #
 #   First add it to appropriate variable below (c_xyplot, f_vector,
@@ -75,7 +77,7 @@ if ($#argv < 1) then
   echo "   [-list] [-n] [-clean]"
   echo ""
   echo "   To invoke various types of examples:"
-  echo "   [-A] [-C] [-Fortran] [-NCL] [-cdf] [-gui] [-app] [-basic] [-gsun]"
+  echo "   [-A] [-C] [-Fortran] [-NCL] [-cdf] [-gui] [-app] [-basic] [-nug] [-gsun]"
   echo ""
   echo "   To invoke various types of objects:"
   echo "   [-contourplot] [-labelbar] [-legend] [-mapplot] [-ngmath]"
@@ -139,6 +141,7 @@ set dir_tm = "tickmark"
 set dir_ti = "title"
 set dir_vc = "vectorplot"
 set dir_xy = "xyplot"
+set dir_nug = "nug"
 set dir_gsun = "gsun"
 
 #******************#
@@ -408,6 +411,70 @@ set x_list = ($x_list xy11c xy11f xy11n xy12c xy13c)
 
 #*********************#
 #                     #
+#  Set NUG examples   #
+#                     #
+#*********************#
+set n_nug  = (NUG_GrADS_binary_data NUG_ICON_triangles_colored \
+              NUG_axis_annotations NUG_bar_chart \
+              NUG_bar_chart_col_above_below NUG_bar_chart_multi \
+              NUG_bipolar_grid_MPI-ESM \
+              NUG_bipolar_grid_MPI-ESM_subregion \
+              NUG_color_Land_Ocean NUG_color_country_user \
+              NUG_colormaps NUG_contour_dashpattern \
+              NUG_contour_filled_map NUG_contour_fillpattern \
+              NUG_contour_labels NUG_contour_map \
+              NUG_contour_map_add_zonal_average \
+              NUG_curvilinear_basic NUG_curvilinear_grid \
+              NUG_date_format NUG_function_procedure \
+              NUG_globe_orography_grid_resolution \
+              NUG_grid_resolution_comparison \
+              NUG_histograms-transparent NUG_histograms \
+              NUG_insert_logo NUG_labelbar_title \
+              NUG_labelbars NUG_legends NUG_map_countries \
+              NUG_map_default NUG_map_grid_and_tickmark_settings \
+              NUG_map_land_ocean_settings NUG_map_resolutions \
+              NUG_map_selected_countries NUG_map_settings \
+              NUG_masking NUG_multi_timeseries \
+              NUG_multiple_plots_along_y NUG_panel_3x2_plot \
+              NUG_panel_control NUG_panel_plot NUG_panel_vp \
+              NUG_plot_in_5_steps NUG_plot_rotated_grid \
+              NUG_polar_NH NUG_polyline_polygon_polymarker \
+              NUG_polyline_polygon_polymarker_old \
+              NUG_projections NUG_projections_mollweide \
+              NUG_projections_robinson NUG_read_ASCII_1 \
+              NUG_read_ASCII_2 NUG_read_ASCII_3 \
+              NUG_read_Binary_1 NUG_read_Binary_GrADS \
+              NUG_read_CSV_1 NUG_read_CSV_1_noloop \
+              NUG_read_CSV_2 \
+              NUG_regrid_bilinear_CMIP5_grid_to_1x1deg_grid \
+              NUG_regrid_curvilinear_to_rectilinear_bilinear_weights_ESMF \
+              NUG_regrid_curvilinear_to_rectilinear_bilinear_wgts_destgrid_ESMF \
+              NUG_regrid_rectilinear_to_curvilinear_bilinear_wgts_destgrid_ESMF \
+              NUG_regrid_unstructured_to_rectilinear_bilinear_wgts_ESMF \
+              NUG_regrid_unstructured_to_rectilinear_bilinear_wgts_destgrid_ESMF \
+              NUG_shapefile_plot NUG_shapefile_plot_data \
+              NUG_slice_plot NUG_statistics_linear_regression \
+              NUG_statistics_running_mean NUG_strings \
+              NUG_system_calls NUG_template_script \
+              NUG_text_settings NUG_title_strings \
+              NUG_transparent_filled_contour \
+              NUG_transparent_land_sea_mask_Africa \
+              NUG_triangular_grid_ICON NUG_tripolar_grid_STORM \
+              NUG_unstructured_grid NUG_unstructured_grid_ICON \
+              NUG_use_Fortran_subroutines NUG_vector_curly \
+              NUG_vector_default NUG_vector_plot_colorized \
+              NUG_vector_plot_overlay NUG_wind_mag \
+              NUG_write_ASCII_1 NUG_write_ASCII_2 \
+              NUG_write_ASCII_3 NUG_write_ASCII_4 \
+              NUG_write_ASCII_5 NUG_write_Binary_1 \
+              NUG_write_Binary_2 NUG_write_netCDF_1 \
+              NUG_write_netCDF_2 NUG_xy_plot NUG_xy_plot_res \
+              NUG_xy_plot_timeseries NUG_xy_plot_timeseries_2 \
+              )
+set nug_list = ($n_nug)
+
+#*********************#
+#                     #
 #  Set GSUN examples  #
 #                     #
 #*********************#
@@ -665,6 +732,12 @@ while ($#argv > 0)
       set names=($names $gsun_list)
       breaksw
 
+    case "-nug":
+    case "-NUG":
+      shift
+      set names=($names $nug_list)
+      breaksw
+
     case "-clean":
       shift
       set CleanOption
@@ -722,7 +795,7 @@ if ($?OLDPS && $?Unique && -f $name.ps) goto theend
 if ($?OLDPDF && $?Unique && -f $name.pdf) goto theend
 if ($?PS && $?Unique && -f $name.ps) goto theend
 if ($?PDF && $?Unique && -f $name.pdf) goto theend
-if ($?PNG && $?Unique && -f $name.000001.png) goto theend
+if ($?PNG && $?Unique && (-f $name.000001.png || -f $name.png)) goto theend
 
 #*********************************************#
 #                                             #
@@ -768,6 +841,13 @@ foreach known ($n_list)
   endif
 end
 
+foreach known ($nug_list)
+  if ("$name" == "$known") then
+    set ex_type = "NUG"
+    break
+  endif
+end
+
 #***************#
 #               #
 # Echo the type #
@@ -788,6 +868,12 @@ switch($ex_type)
     echo ""
     breaksw 
  
+    case NUG:
+    echo ""
+    echo "NCL User Guide Example <$name.ncl>"
+    echo ""
+    breaksw 
+ 
     default:
     echo ""
     echo "NCAR Graphics High Level Utility $ex_type Example <$name>"
@@ -801,8 +887,13 @@ endsw
 # the example resides in.      #
 #                              #
 #******************************#
-set obj = `expr $name : '\(.*\)[0-9][0-9].*'`
-set obj_dir = `eval echo \$dir_$obj`
+if($ex_type != "NUG") then
+  set obj = `expr $name : '\(.*\)[0-9][0-9].*'`
+  set obj_dir = `eval echo \$dir_$obj`
+else
+  set obj = `expr $name : '\(.*\)[0-9][0-9].*'`
+  set obj_dir = $dir_nug
+endif
 
 #************************************************#
 #                                                #
@@ -819,7 +910,12 @@ set bindata_file
 set ncl_file
 set comp_flags = ($ncarbd_flag $ngmathbd_flag)
 set generic_name = `expr $name : '\(.*[0-9][0-9]\).*'`
-set prog_type = `expr $name : '.*[0-9][0-9]\(.\)'`
+
+if($ex_type != "NUG") then
+  set prog_type = `expr $name : '.*[0-9][0-9]\(.\)'`
+else
+  set prog_type = "nug"
+endif
 set resfile_dir = "$res_dir/$obj_dir"
 
 if ("$prog_type" == "c") then
@@ -835,15 +931,18 @@ else if ("$prog_type" == "f") then
   set fprog
   set example_dir = "$hluex_dir/$obj_dir"
   set src_file = "$name.f"
-else if ("$prog_type" == "n") then
+else if ("$prog_type" == "n" || "$prog_type" == "nug") then
   if (! -d "$nclex_dir") then
     echo "Warning: NCL directory <$nclex_dir> doesn't exist."
     echo "         Won't generate $name example."
     continue
   endif
-
+  if ("$prog_type" == "n") then
+    set example_dir = "$nclex_dir/$obj_dir"
+  else
+    set example_dir = "$nclex_dir/$dir_nug"
+  endif
   set nprog
-  set example_dir = "$nclex_dir/$obj_dir"
   set src_file = "$name.ncl"
 else
   echo ""
@@ -1147,7 +1246,7 @@ if (! $?NoRunOption) then
           exit
       endif
       echo ""
-      echo "Finished running 'ncl < $name'..."
+      echo "Finished running 'ncl < $src_file'..."
       echo ""
     endif
     if( -e $name.ncgm ) then
@@ -1181,7 +1280,13 @@ if (! $?NoRunOption) then
       echo ""
     endif
 
-    if( -e $name.000001.png  && ("$ws_type" == "png" || "$ws_type" == "PNG")) then
+    if($ex_type == "NUG") then
+      echo ""
+      echo "    Example $src_file produced PNG file."
+      echo ""
+    endif
+
+    if( (-e $name.png || -e $name.000001.png)  && ("$ws_type" == "png" || "$ws_type" == "PNG")) then
       echo ""
       echo "    Example $name produced one or more cairo PNG files."
       echo "    If single PNG file, it is named $name.png"
@@ -1202,3 +1307,4 @@ endif
 theend:
 
 end
+
