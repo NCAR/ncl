@@ -6543,7 +6543,7 @@ static void _g2SetFileDimsAndCoordVars
     Grib2ParamList  *step,
                     *last,
                     *tmpstep;
-    char buffer[80];
+    char buffer[1024];
 
     NclQuark    ygrid_q,
                 lat_q;
@@ -6584,7 +6584,7 @@ static void _g2SetFileDimsAndCoordVars
     NhlErrorTypes is_err = NhlNOERROR;
 
     int tmp_file_dim_numbers[2];
-    char name_buffer[80];
+    char name_buffer[1024];
 
     Grib2AttInqRecList  *att_list_ptr = NULL;
     Grib2AttInqRecList  *tmp_att_list_ptr = NULL;
@@ -6652,7 +6652,14 @@ static void _g2SetFileDimsAndCoordVars
 			dstep = therec->probability_dims;
 			if (step->probability) { /* either a lower or an upper limit (but not both) */
 				for(i = 0; i < therec->n_probability_dims; i++) {
-					if(dstep->dim_inq->size == step->probability->multidval.dim_sizes[0]) {
+					char *cp;
+					strcpy(buffer,NrmQuarkToString(dstep->dim_inq->dim_name));
+					cp = strchr(buffer,'_');
+					if (cp) *cp = '\0';
+					if (NrmStringToQuark(buffer) != step->var_info.param_q) {
+						dstep = dstep->next;
+					}
+					else if(dstep->dim_inq->size == step->probability->multidval.dim_sizes[0]) {
 						tmp_md = _Grib2GetInternalVar(therec,dstep->dim_inq->dim_name,&test);
 						if(tmp_md != NULL) {
 							lhs_f = (float*)tmp_md->multidval.val;
