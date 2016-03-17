@@ -3646,48 +3646,56 @@ begin
       if(in_file@MAP_PROJ .eq. 6)
         projection          = "CylindricalEquidistant"
         opts@mpProjection = projection
-        opts@mpGridSpacingF = 5
-        ;; if we can't figure it out then assume northern hemisphere
+        opts@mpGridSpacingF = 45
 
-        southern = False
+        if (isatt(in_file,"POLE_LON") .and. isatt(in_file,"POLE_LAT") .and. isatt(in_file,"STAND_LON")) then
 
-        ;; according to the docs if POLE_LON is 0 then the projection center is in the southern hemisphere
-        ;; if POLE_LON is 180 the projection center is in the northern hemisphere
-        ;; otherwise you can't tell for sure -- CEN_LAT does not have to be the projection center but hopefully
-        ;; it is in the same hemisphere. The same is true for REF_LAT except that if REF_Y is specified REF_LAT might
-        ;; be in a corner or somewhere else and therefore it is even less reliable
-        ;; 
-        if (isatt(in_file,"POLE_LON")) then
-          if (in_file@POLE_LON .eq. 0.0) then
-            southern = True
-          else if (in_file@POLE_LON .ne. 180) then
-            if (isatt(in_file,"CEN_LAT") .and. in_file@CEN_LAT .lt. 0.0) then
-            ;; this is only probably true
-              southern = True
-            end if
-          end if
-          end if
-        else 
-          if (isatt(in_file,"CEN_LAT") .and. in_file@CEN_LAT .lt. 0.0) then
-            ;; this is only probably true
-            southern = True
-          end if
-        end if
+          if (in_file@POLE_LON .eq. 0 .and. in_file@POLE_LAT .eq. 90) then
+            ; not rotated
 
-        if  (isatt(in_file,"POLE_LAT") .and. isatt(in_file,"STAND_LON")) then
-          if (.not. southern) then
-            opts@mpCenterLatF = get_res_value_keep(opts, "mpCenterLatF", 90.0 - in_file@POLE_LAT) 
-            opts@mpCenterLonF = get_res_value_keep(opts, "mpCenterLonF", -in_file@STAND_LON) 
+            opts@mpCenterLatF   = get_res_value_keep(opts, "mpCenterLatF", 0.0)
+            opts@mpCenterLonF   = get_res_value_keep(opts, "mpCenterLonF",180 - in_file@STAND_LON)
+
           else 
-            opts@mpCenterLatF = get_res_value_keep(opts, "mpCenterLatF", in_file@POLE_LAT - 90) 
-            opts@mpCenterLonF = get_res_value_keep(opts, "mpCenterLonF", 180 - in_file@STAND_LON) 
+            ; rotated
+
+            southern = False ; default to northern hemisphere
+            if (in_file@POLE_LON .eq. 0.0) then
+              southern = True
+            else if (in_file@POLE_LON .ne. 180) then
+              if (isatt(in_file,"CEN_LAT") .and. in_file@CEN_LAT .lt. 0.0) then
+                southern = True  ; probably but not necessarily true -- no way to tell for sure
+              end if
+            end if
+            end if
+
+            if (.not. southern) then
+              opts@mpCenterLatF = get_res_value_keep(opts, "mpCenterLatF", 90.0 - in_file@POLE_LAT) 
+              opts@mpCenterLonF = get_res_value_keep(opts, "mpCenterLonF", -in_file@STAND_LON) 
+            else 
+              opts@mpCenterLatF = get_res_value_keep(opts, "mpCenterLatF", in_file@POLE_LAT - 90) 
+              opts@mpCenterLonF = get_res_value_keep(opts, "mpCenterLonF", 180 - in_file@STAND_LON) 
+            end if
+
           end if
-        else if (isatt(in_file,"CEN_LAT") .and. isatt(in_file,"CEN_LON")) then
-          ;; this could well be bogus
-        opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
-	
-	opts@mpCenterLatF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LAT)
-        end if 
+
+        else if (isatt(in_file,"ref_lon") .and. isatt(in_file,"ref_lat")) then
+          ;; this is definitely true for NMM grids but unlikely for ARW grids especially if ref_x and ref_y are set
+          opts@mpCenterLatF = get_res_value_keep(opts, "mpCenterLatF", in_file@REF_LAT) 
+          opts@mpCenterLonF = get_res_value_keep(opts, "mpCenterLonF", in_file@REF_LON) 
+
+        else if (isatt(in_file,"cen_lat") .and. isatt(in_file,"cen_lon")) then
+          ;; these usually specifiy the center of the coarse domain --- not necessarily the center of the projection
+          opts@mpCenterLatF  = get_res_value_keep(opts, "mpCenterLatF",in_file@CEN_LAT)
+          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
+
+        else 
+          ;; default values for global grid
+          opts@mpCenterLatF  = get_res_value_keep(opts, "mpCenterLatF", 0.0)
+          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF", 180.0)
+
+        end if
+        end if
         end if
       end if
   
@@ -4098,17 +4106,55 @@ begin
       if(opts@map_proj .eq. 6)
         projection          = "CylindricalEquidistant"
         opts@mpGridSpacingF = 45
-        if( isatt(opts,"cenlon") ) then
-          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",opts@cenlon)
-        else
-          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",opts@ref_lon)
+
+        if (isatt(opts,"pole_lon") .and. isatt(opts,"pole_lat") .and. isatt(opts,"stand_lon")) then
+
+          if (opts@pole_lon .eq. 0 .and. opts@pole_lat .eq. 90) then
+            ; not rotated
+
+            opts@mpCenterLatF   = get_res_value_keep(opts, "mpCenterLatF", 0.0)
+            opts@mpCenterLonF   = get_res_value_keep(opts, "mpCenterLonF",180 - opts@stand_lon)
+
+          else 
+            ; rotated
+
+            southern = False ; default to northern hemisphere
+            if (opts@pole_lon .eq. 0.0) then
+              southern = True
+            else if (opts@pole_lon .ne. 180) then
+              if (isatt(opts,"cen_lat") .and. opts@cen_lat .lt. 0.0) then
+                southern = True  ; probably but not necessarily true -- no way to tell for sure
+              end if
+            end if
+            end if
+
+            if (.not. southern) then
+              opts@mpCenterLatF = get_res_value_keep(opts, "mpCenterLatF", 90.0 - opts@pole_lat) 
+              opts@mpCenterLonF = get_res_value_keep(opts, "mpCenterLonF", -opts@stand_lon) 
+            else 
+              opts@mpCenterLatF = get_res_value_keep(opts, "mpCenterLatF", opts@pole_lat - 90) 
+              opts@mpCenterLonF = get_res_value_keep(opts, "mpCenterLonF", 180 - opts@stand_lon) 
+            end if
+
+          end if
+
+        else if (isatt(opts,"ref_lon") .and. isatt(opts,"ref_lat")) then
+          ;; this is definitely true for NMM grids but unlikely for ARW grids especially if ref_x and ref_y are set
+          opts@mpCenterLatF = get_res_value_keep(opts, "mpCenterLatF", opts@ref_lat) 
+          opts@mpCenterLonF = get_res_value_keep(opts, "mpCenterLonF", opts@ref_lon) 
+
+        else if (isatt(opts,"cen_lat") .and. isatt(opts,"cen_lon")) then
+          ;; these usually specifiy the center of the coarse domain --- not necessarily the center of the projection
+          opts@mpCenterLatF  = get_res_value_keep(opts, "mpCenterLatF",opts@cen_lat)
+          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",opts@cen_lon)
+
+        else 
+          ;; default values for global grid
+          opts@mpCenterLatF  = get_res_value_keep(opts, "mpCenterLatF", 0.0)
+          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF", 180.0)
+
         end if
-        if( isatt(opts,"pole_lat") ) then
-          delete(opts@mpCenterLonF)
-          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF", - 190. )
-          opts@mpCenterRotF = get_res_value_keep(opts, "mpCenterRotF", 90.0 - opts@pole_lat) 
-        else
-          opts@mpCenterRotF = get_res_value_keep(opts, "mpCenterRotF", 0.0) 
+        end if
         end if
       end if
 
@@ -4419,7 +4465,7 @@ end
 ;--------------------------------------------------------------------------------
 undef("wrf_map_resources")
 function wrf_map_resources(in_file[1]:file,map_args[1]:logical)   
-local lat, lon, x1, x2, y1, y2, dims, ii, jj
+local lat, lon, x1, x2, y1, y2, dims, ii, jj, southern
 begin
 ;
 ; This function sets resources for a WRF map plot, basing the projection on
@@ -4502,52 +4548,69 @@ begin
   
 ;    global WRF CylindricalEquidistant
       if(in_file@MAP_PROJ .eq. 6)
-        map_args@mpProjection = "CylindricalEquidistant"
-        map_args@mpGridSpacingF = 5
+        projection          = "CylindricalEquidistant"
+        map_args@mpProjection = projection
+        map_args@mpGridSpacingF = 45
         
-        ;; if we can't figure it out then assume northern hemisphere
-
-        southern = False
-
         ;; according to the docs if POLE_LON is 0 then the projection center is in the southern hemisphere
         ;; if POLE_LON is 180 the projection center is in the northern hemisphere
         ;; otherwise you can't tell for sure -- CEN_LAT does not have to be the projection center but hopefully
         ;; it is in the same hemisphere. The same is true for REF_LAT except that if REF_Y is specified REF_LAT might
         ;; be in a corner or somewhere else and therefore it is even less reliable
         ;; 
-        if (isatt(in_file,"POLE_LON")) then
-          if (in_file@POLE_LON .eq. 0.0) then
-            southern = True
-          else if (in_file@POLE_LON .ne. 180) then
-            if (isatt(in_file,"CEN_LAT") .and. in_file@CEN_LAT .lt. 0.0) then
-            ;; this is only probably true
+
+        if (isatt(in_file,"POLE_LON") .and. isatt(in_file,"POLE_LAT") .and. isatt(in_file,"STAND_LON")) then
+
+          if (in_file@POLE_LON .eq. 0 .and. in_file@POLE_LAT .eq. 90) then
+            ; not rotated
+
+            map_args@mpCenterLatF   = get_res_value_keep(map_args, "mpCenterLatF", 0.0)
+            map_args@mpCenterLonF   = get_res_value_keep(map_args, "mpCenterLonF",180 - in_file@STAND_LON)
+
+          else 
+            ; rotated
+
+            southern = False ; default to northern hemisphere
+            if (in_file@POLE_LON .eq. 0.0) then
               southern = True
+            else if (in_file@POLE_LON .ne. 180) then
+              if (isatt(in_file,"CEN_LAT") .and. in_file@CEN_LAT .lt. 0.0) then
+                southern = True  ; probably but not necessarily true -- no way to tell for sure
+              end if
             end if
+            end if
+
+            if (.not. southern) then
+              map_args@mpCenterLatF = get_res_value_keep(map_args, "mpCenterLatF", 90.0 - in_file@POLE_LAT) 
+              map_args@mpCenterLonF = get_res_value_keep(map_args, "mpCenterLonF", -in_file@STAND_LON) 
+            else 
+              map_args@mpCenterLatF = get_res_value_keep(map_args, "mpCenterLatF", in_file@POLE_LAT - 90) 
+              map_args@mpCenterLonF = get_res_value_keep(map_args, "mpCenterLonF", 180 - in_file@STAND_LON) 
+            end if
+
           end if
-          end if
+
+        else if (isatt(in_file,"ref_lon") .and. isatt(in_file,"ref_lat")) then
+          ;; this is definitely true for NMM grids but unlikely for ARW grids especially if ref_x and ref_y are set
+          map_args@mpCenterLatF = get_res_value_keep(map_args, "mpCenterLatF", in_file@REF_LAT) 
+          map_args@mpCenterLonF = get_res_value_keep(map_args, "mpCenterLonF", in_file@REF_LON) 
+
+        else if (isatt(in_file,"cen_lat") .and. isatt(in_file,"cen_lon")) then
+          ;; these usually specifiy the center of the coarse domain --- not necessarily the center of the projection
+          map_args@mpCenterLatF  = get_res_value_keep(map_args, "mpCenterLatF",in_file@CEN_LAT)
+          map_args@mpCenterLonF  = get_res_value_keep(map_args, "mpCenterLonF",in_file@CEN_LON)
+
         else 
-          if (isatt(in_file,"CEN_LAT") .and. in_file@CEN_LAT .lt. 0.0) then
-            ;; this is only probably true
-            southern = True
-          end if
+          ;; default values for global grid
+          map_args@mpCenterLatF  = get_res_value_keep(map_args, "mpCenterLatF", 0.0)
+          map_args@mpCenterLonF  = get_res_value_keep(map_args, "mpCenterLonF", 180.0)
+
+        end if
+        end if
         end if
 
-        if  (isatt(in_file,"POLE_LAT") .and. isatt(in_file,"STAND_LON")) then
-          if (.not. southern) then
-            map_args@mpCenterLatF = get_res_value_keep(map_args, "mpCenterLatF", 90.0 - in_file@POLE_LAT) 
-            map_args@mpCenterLonF = get_res_value_keep(map_args, "mpCenterLonF", -in_file@STAND_LON) 
-          else 
-            map_args@mpCenterLatF = get_res_value_keep(map_args, "mpCenterLatF", in_file@POLE_LAT - 90) 
-            map_args@mpCenterLonF = get_res_value_keep(map_args, "mpCenterLonF", 180 - in_file@STAND_LON) 
-          end if
-        else if (isatt(in_file,"CEN_LAT") .and. isatt(in_file,"CEN_LON")) then
-          ;; this could well be bogus
-          map_args@mpCenterLonF  = get_res_value_keep(map_args, "mpCenterLonF",in_file@CEN_LON)
-          map_args@mpCenterLatF  = get_res_value_keep(map_args, "mpCenterLonF",in_file@CEN_LAT)
-        end if
-        end if
       end if
-  
+
     else
   
       return(map_args)
@@ -4577,6 +4640,11 @@ begin
       map_args@start_lon = lon(0,0)
       map_args@end_lat   = lat(dims(0)-1,dims(1)-1)
       map_args@end_lon   = lon(dims(0)-1,dims(1)-1)
+      
+      ; end_lon must be greater than start_lon, or errors are thrown
+      if (map_args@end_lon .le. map_args@start_lon) then
+          map_args@end_lon = map_args@end_lon + 360.0
+      end if
 
 
 ; Set some resources common to all map projections.
@@ -4612,10 +4680,14 @@ begin
         map_args@mpLeftCornerLonF      = lon(y1,x1)
         map_args@mpRightCornerLatF     = lat(y2,x2)
         map_args@mpRightCornerLonF     = lon(y2,x2)
-
+        
         if ( map_args@mpRightCornerLonF .lt. 0.0 ) then
           map_args@mpRightCornerLonF  = map_args@mpRightCornerLonF + 360.0
         end if 
+        
+        if ( map_args@mpRightCornerLonF .le. map_args@mpRightCornerLonF ) then
+          map_args@mpRightCornerLonF  = map_args@mpRightCornerLonF + 360.0
+        end if
 
         delete(map_args@ZoomIn)
       end if
