@@ -1,51 +1,29 @@
 C NCLFORTSTART
-      SUBROUTINE DINT2P(PPIN,XXIN,P,X,NPIN,PPOUT,XXOUT,NPOUT,LINLOG,
-     +     XMSG,IER)
+      SUBROUTINE DINT2P(PPIN,XXIN,PIN,XIN,P,X,NPIN,PPOUT,XXOUT,NPOUT
+     +                 ,LINLOG,XMSG,IER)
       IMPLICIT NONE
-
-c routine to interpolate from one set of pressure levels
-c .   to another set  using linear or ln(p) interpolation
 c
-c NCL: xout = int2p (pin,xin,pout,linlog)
-c
-c This code was originally written for a specific purpose.
-c .   Several features were added for incorporation into NCL's
-c .   function suite including linear extrapolation.
-c
-c nomenclature:
-c
-c .   ppin   - input pressure levels. The pin can be
-c .            be in ascending or descending order
-c .   xxin   - data at corresponding input pressure levels
-c .   npin   - number of input pressure levels >= 2
-c .   ppout  - output pressure levels (input by user)
-c .            same (ascending or descending) order as pin
-c .   xxout  - data at corresponding output pressure levels
-c .   npout  - number of output pressure levels
-c .   linlog - if abs(linlog)=1 use linear interp in pressure
-c .            if abs(linlog) anything but =1 linear interp in
-c .                ln(pressure)
-c .            If the value is negative then the routine will
-c .            extrapolate. Be wary of results in this case.
-c .   xmsg   - missing data code. if none, set to some number
-c .            which will not be encountered (e.g., 1.e+36)
-c .   ier    - error code
-
+c This code was designed for one simple task. It has since
+c been mangled and abused for assorted reasons. For example,
+c early gfortran compilers had some issues with automatic arrays.
+c Hence, the C-Wrapper was used to create 'work' arrays which
+c were then passed to this code.  The original focused (non-NCL) 
+c task was to handle PPIN & PPOUT that had the same 'monotonicity.' 
+c Extra code was added to handle the more general case. 
+c Blah-Blah:  Punch line: it is embarrassingly convoluted!!!
 c                                                ! input types
       INTEGER NPIN,NPOUT,LINLOG,IER
       DOUBLE PRECISION PPIN(NPIN),XXIN(NPIN),PPOUT(NPOUT),XMSG
 C                                                ! output
       DOUBLE PRECISION XXOUT(NPOUT)
-C NCLEND
-
 c local
       INTEGER J1,NP,NL,NIN,NLMAX,NPLVL,NLSAVE,NP1,NO1,N1,N2,LOGLIN,
      +        NLSTRT
       DOUBLE PRECISION SLOPE,PA,PB,PC
 
-C automatic arrays
       DOUBLE PRECISION PIN(NPIN),XIN(NPIN),P(NPIN),X(NPIN)
       DOUBLE PRECISION POUT(NPOUT),XOUT(NPOUT)
+C NCLEND
 
       LOGLIN = ABS(LINLOG)
 
@@ -74,14 +52,16 @@ C          PRINT *,'INT2P: error exit: ier=',IER
           RETURN
       END IF
 
-c should input arrays be reordered: want p(1) > p(2) > p(3) etc
+c should *input arrays* be reordered? want p(1) > p(2) > p(3) etc
 c so that it will match order for which code was originally designed
-c copy to local arrays
+c copy to 'work'  arrays
 
       NP1 = 0
       NO1 = 0
-      IF (PPIN(1).LT.PPIN(2)) THEN
+      IF (PPIN(1).LT.PPIN(2)) THEN    
           NP1 = NPIN + 1
+      END IF
+      IF (PPOUT(1).LT.PPOUT(2)) THEN 
           NO1 = NPOUT + 1
       END IF
 
@@ -90,12 +70,12 @@ c copy to local arrays
           XIN(NP) = XXIN(ABS(NP1-NP))
       END DO
 
-      DO NP = 1,NPOUT
+      DO NP = 1,NPOUT   
           POUT(NP) = PPOUT(ABS(NO1-NP))
       END DO
 c
-c eliminate levels with missing data. This can easily
-c .   happen with observational data.
+c eliminate XIN levels with missing data. 
+c .   This can happen with observational data.
 c
       NL = 0
       DO NP = 1,NPIN
@@ -203,11 +183,20 @@ c . use the 'last' valid slope for extrapolating
       END IF
 
 c place results in the return array;
-c .   reverse to original order
+c .   possibly .... reverse to original order
 
-      DO NP = 1,NPOUT
-          XXOUT(NP) = XOUT(ABS(NO1-NP))
-      END DO
+      if (NO1.GT.0) THEN
+          DO NP = 1,NPOUT
+             n1 = ABS(NO1-NP)
+             PPOUT(NP) = POUT(n1)
+             XXOUT(NP) = XOUT(n1)
+          END DO
+      ELSE
+          DO NP = 1,NPOUT
+             PPOUT(NP) = POUT(NP)
+             XXOUT(NP) = XOUT(NP)
+          END DO
+      END IF
 
       RETURN
       END
