@@ -11,19 +11,25 @@ c were then passed to this code.  The original focused (non-NCL)
 c task was to handle PPIN & PPOUT that had the same 'monotonicity.' 
 c Extra code was added to handle the more general case. 
 c Blah-Blah:  Punch line: it is embarrassingly convoluted!!!
+c
 c                                                ! input types
       INTEGER NPIN,NPOUT,LINLOG,IER
       DOUBLE PRECISION PPIN(NPIN),XXIN(NPIN),PPOUT(NPOUT),XMSG
 C                                                ! output
       DOUBLE PRECISION XXOUT(NPOUT)
+C                                                ! work
+      DOUBLE PRECISION PIN(NPIN),XIN(NPIN),P(NPIN),X(NPIN)
+      DOUBLE PRECISION POUT(NPOUT),XOUT(NPOUT)
+C NCLEND
+
 c local
       INTEGER J1,NP,NL,NIN,NLMAX,NPLVL,NLSAVE,NP1,NO1,N1,N2,LOGLIN,
      +        NLSTRT
       DOUBLE PRECISION SLOPE,PA,PB,PC
-
-      DOUBLE PRECISION PIN(NPIN),XIN(NPIN),P(NPIN),X(NPIN)
-      DOUBLE PRECISION POUT(NPOUT),XOUT(NPOUT)
-C NCLEND
+c
+      print *,"++++++++++++++++++++++++++++++++++++++++++++++++"
+      print *,"+++++++  ENTER new DINT2P ++++++++++++++++++++++"
+      print *,"++++++++++++++++++++++++++++++++++++++++++++++++"
 
       LOGLIN = ABS(LINLOG)
 
