@@ -2,8 +2,8 @@
 #include "wrapper.h"
 
 extern void NGCALLF(dint2p,DINT2P)(double *,double *,double *,double *,
-                                   int *,double *,double *,int *,int *,
-                                   double *,int*);
+                                   double *,double *,int *,double *,
+                                   double *,int *,int *,double *,int*);
 
 NhlErrorTypes int2p_W( void )
 {
@@ -27,7 +27,7 @@ NhlErrorTypes int2p_W( void )
 /*
  * work arrays
  */
-  double *p, *x;
+  double *p, *x, *p2, *x2;
 /*
  * output variable 
  */
@@ -272,9 +272,11 @@ NhlErrorTypes int2p_W( void )
 /*
  * Allocate space for work arrays.
  */
-  p = (double*)calloc(npin,sizeof(double));
-  x = (double*)calloc(npin,sizeof(double));
-  if (p == NULL || x == NULL) {
+  p  = (double*)calloc(npin,sizeof(double));
+  x  = (double*)calloc(npin,sizeof(double));
+  p2 = (double*)calloc(npin,sizeof(double));
+  x2 = (double*)calloc(npin,sizeof(double));
+  if (p == NULL || x == NULL || p2 == NULL || x2 == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: Unable to allocate space for work arrays\n" );
     return(NhlFATAL);
   }
@@ -331,8 +333,8 @@ NhlErrorTypes int2p_W( void )
 
     if(type_xout == NCL_double) tmp_xout = &((double*)xout)[index_out];
 
-    NGCALLF(dint2p,DINT2P)(tmp_pin,tmp_xin,&p[0],&x[0],&inpin,
-                           tmp_pout,tmp_xout,&inpout,linlog,
+    NGCALLF(dint2p,DINT2P)(tmp_pin,tmp_xin,&p[0],&x[0],&p2[0],&x2[0],
+                           &inpin,tmp_pout,tmp_xout,&inpout,linlog,
                            &missing_dx.doubleval,&ier);
     if (ier) {
       if (ier >= 1000) nmiss++;
@@ -362,6 +364,8 @@ NhlErrorTypes int2p_W( void )
  */
   NclFree(p);
   NclFree(x);
+  NclFree(p2);
+  NclFree(x2);
   if(type_xin  != NCL_double) NclFree(tmp_xin);
   if(type_pin  != NCL_double) NclFree(tmp_pin);
   if(type_pout != NCL_double) NclFree(tmp_pout);
@@ -397,7 +401,7 @@ NhlErrorTypes int2p_n_W( void )
 /*
  * work arrays
  */
-  double *p, *x;
+  double *p, *x, *p2, *x2;
 /*
  * output variable 
  */
@@ -670,9 +674,11 @@ NhlErrorTypes int2p_n_W( void )
 /*
  * Allocate space for work arrays.
  */
-  p = (double*)calloc(npin,sizeof(double));
-  x = (double*)calloc(npin,sizeof(double));
-  if (p == NULL || x == NULL) {
+  p  = (double*)calloc(npin,sizeof(double));
+  x  = (double*)calloc(npin,sizeof(double));
+  p2 = (double*)calloc(npin,sizeof(double));
+  x2 = (double*)calloc(npin,sizeof(double));
+  if (p == NULL || x == NULL || p2 == NULL || x2 == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p_n: Unable to allocate space for work arrays" );
     return(NhlFATAL);
   }
@@ -716,8 +722,8 @@ NhlErrorTypes int2p_n_W( void )
                                         size_rightmost,type_pout,
                                         npout,0,NULL,NULL);
       }
-      NGCALLF(dint2p,DINT2P)(tmp_pin,tmp_xin,&p[0],&x[0],&inpin,
-                             tmp_pout,tmp_xout,&inpout,linlog,
+      NGCALLF(dint2p,DINT2P)(tmp_pin,tmp_xin,&p[0],&x[0],&p2[0],&x2[0],
+                             &inpin,tmp_pout,tmp_xout,&inpout,linlog,
                              &missing_dx.doubleval,&ier);
 
       if (ier) {
@@ -746,6 +752,8 @@ NhlErrorTypes int2p_n_W( void )
  */
   NclFree(p);
   NclFree(x);
+  NclFree(p2);
+  NclFree(x2);
   NclFree(tmp_xin);
   if(ndims_pin  > 1 || type_pin  != NCL_double) NclFree(tmp_pin);
   if(ndims_pout > 1 || type_pout != NCL_double) NclFree(tmp_pout);
