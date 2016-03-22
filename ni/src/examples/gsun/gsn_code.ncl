@@ -5159,27 +5159,27 @@ begin
   if(all_scalar.or.all((/xsize,ysize,tsize/).gt.1)) then
     len  = xsize
     dims = dimsizes(xo)
-    x    = xo
-    y    = yo
-    text = texto
+    x    = ndtooned(xo)
+    y    = ndtooned(yo)
+    text = ndtooned(texto)
   else if(xsize.eq.1.and.ysize.eq.1.and.tsize.gt.1) then
     len  = tsize
     dims = dimsizes(texto)
     x    = conform_dims(len,xo,-1)
     y    = conform_dims(len,yo,-1)
-    text = texto
+    text = ndtooned(texto)
   else if(xsize.eq.1.and.tsize.eq.1.and.ysize.gt.1) then
-    len   = ysize
+    len  = ysize
     dims = dimsizes(y)
-    x     = conform_dims(len,xo,-1)
-    y     = yo
-    texto = conform_dims(len,texto,-1)
+    x    = conform_dims(len,xo,-1)
+    y    = ndtooned(yo)
+    text = conform_dims(len,texto,-1)
   else if(ysize.eq.1.and.tsize.eq.1.and.xsize.gt.1) then
-    len   = xsize
+    len  = xsize
     dims = dimsizes(x)
-    x     = xo
-    y     = conform_dims(len,yo,-1)
-    texto = conform_dims(len,texto,-1)
+    x    = ndtooned(xo)
+    y    = conform_dims(len,yo,-1)
+    text = conform_dims(len,texto,-1)
   end if
   end if
   end if
@@ -5249,7 +5249,7 @@ begin
   if(all_scalar) then
     return(txid)
   else
-    return(onedtond(txid,dims))
+    return(reshape(txid,dims))
   end if
 end
 
