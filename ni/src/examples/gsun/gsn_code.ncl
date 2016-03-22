@@ -5136,54 +5136,54 @@ end
 undef("gsn_create_text_ndc")
 function gsn_create_text_ndc(wks:graphic, texto:string, xo:numeric, \
                              yo:numeric, resources:logical )
-local i, txid, plot_object, res, tx_res_index, x2, y2, x, y, res2, \
-calldraw, callframe
+local i, txid, plot_object, res, tx_res_index, x, y, res2, \
+calldraw, callframe, xsize, ysize, tsize, len, dims
 begin
 ;
 ; Any one of xo, yo, and texto can just be one element, but if two or more
 ; are more than one element, then they must be exactly the same size.
 ;
-  xsizes = dimsizes(xo)
-  ysizes = dimsizes(yo)
-  tsizes = dimsizes(texto)
-  xrank  = dimsizes(xsizes)
-  yrank  = dimsizes(ysizes)
-  trank  = dimsizes(tsizes)
-  if(xrank.gt.1.and.yrank.gt.1.and..not.all(xsizes.eq.ysizes)) then
-    print("Error: gsn_text_ndc: x and y must have the same dimension sizes, or either be a single value.")
+  xsize = product(dimsizes(xo))
+  ysize = product(dimsizes(yo))
+  tsize = product(dimsizes(texto))
+  if((xsize.gt.1.and.ysize.gt.1.and.xsize.ne.ysize).or.\
+     (xsize.gt.1.and.tsize.gt.1.and.xsize.ne.tsize).or.\
+     (ysize.gt.1.and.tsize.gt.1.and.ysize.ne.tsize))
+    print("Error: gsn_create_text_ndc: x, y, and text must have the same dimension sizes, or be scalars.")
     dummy = new(1,graphic)
     return(dummy)
-  end if
-  if(trank.gt.1.and. \
-     (xrank.gt.1.and..not.all(xsizes.eq.tsizes)) .or. \
-     (yrank.gt.1.and..not.all(ysizes.eq.tsizes))) then
-    print("Error: gsn_text_ndc: text must be a single string or the same dimension size as x and/or y.")
-    dummy = new(1,graphic)
-    return(dummy)
-  end if
-;
-; Convert to 1-dimensional arrays of all the same length.
-;
-  if(xrank.gt.1) then
-    x    = ndtooned(new(xsizes, typeof(xo)))
-    y    = ndtooned(new(xsizes, typeof(yo)))
-    text = ndtooned(new(xsizes, typeof(texto)))
-  else
-    if(yrank.gt.1) then
-      x    = ndtooned(new(ysizes, typeof(xo)))
-      y    = ndtooned(new(ysizes, typeof(yo)))
-      text = ndtooned(new(ysizes, typeof(texto)))
-    else
-      x    = new(xsizes > ysizes, typeof(xo))
-      y    = new(xsizes > ysizes, typeof(yo))
-      text = new(xsizes > ysizes, typeof(texto))
-    end if
   end if
 
-  x    = ndtooned(xo)
-  y    = ndtooned(yo)
-  text = ndtooned(texto)
-  len  = dimsizes(x)
+;---Convert to 1-dimensional arrays of all the same length.
+  all_scalar = all((/xsize,ysize,tsize/).eq.1)
+  if(all_scalar.or.all((/xsize,ysize,tsize/).gt.1)) then
+    len  = xsize
+    dims = dimsizes(xo)
+    x    = xo
+    y    = yo
+    text = texto
+  else if(xsize.eq.1.and.ysize.eq.1.and.tsize.gt.1) then
+    len  = tsize
+    dims = dimsizes(texto)
+    x    = conform_dims(len,xo,-1)
+    y    = conform_dims(len,yo,-1)
+    text = texto
+  else if(xsize.eq.1.and.tsize.eq.1.and.ysize.gt.1) then
+    len   = ysize
+    dims = dimsizes(y)
+    x     = conform_dims(len,xo,-1)
+    y     = yo
+    texto = conform_dims(len,texto,-1)
+  else if(ysize.eq.1.and.tsize.eq.1.and.xsize.gt.1) then
+    len   = xsize
+    dims = dimsizes(x)
+    x     = xo
+    y     = conform_dims(len,yo,-1)
+    texto = conform_dims(len,texto,-1)
+  end if
+  end if
+  end if
+  end if
 
   res2 = get_resources(resources)
 
@@ -5246,13 +5246,11 @@ begin
     end if
   end if
 
-  if(xrank.gt.1) then
-    return(onedtond(txid,xsizes))
+  if(all_scalar) then
+    return(txid)
+  else
+    return(onedtond(txid,dims))
   end if
-  if(yrank.gt.1) then
-    return(onedtond(txid,ysizes))
-  end if
-  return(txid)
 end
 
 ;***********************************************************************;
