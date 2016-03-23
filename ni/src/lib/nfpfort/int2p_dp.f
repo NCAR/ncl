@@ -27,10 +27,6 @@ c local
      +        NLSTRT
       DOUBLE PRECISION SLOPE,PA,PB,PC
 c
-      print *,"++++++++++++++++++++++++++++++++++++++++++++++++"
-      print *,"+++++++  ENTER new DINT2P ++++++++++++++++++++++"
-      print *,"++++++++++++++++++++++++++++++++++++++++++++++++"
-
       LOGLIN = ABS(LINLOG)
 
 c error check: enough points: pressures consistency?
