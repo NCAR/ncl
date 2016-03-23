@@ -199,6 +199,41 @@ begin
   end if 
 end
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; is_string_numeric
+; Carl Schreck (cjschrec@ncsu.edu)
+; March 2016
+; Added to NCL in V6.4.0; enhanced to handle missing values.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+undef ("is_string_numeric")
+function is_string_numeric( \
+  i_string[*] : string \
+)
+local okChars, retVal, indNotMsg, charArray, i, im, j
+begin
+
+  okChars = (/ "+", "-", ".", "0", "1", "2", "3", "4", "5", "6", "7", "8",  \
+      "9", "E", "e" /)
+
+  retVal    = new( dimsizes(i_string), logical, "No_FillValue" )
+  retVal    = False
+  indNotMsg = ind(.not.ismissing(i_string))
+
+  if(any(.not.ismissing(indNotMsg))) then
+    do i = 0, dimsizes(indNotMsg)-1
+      im = indNotMsg(i)
+      charArray := stringtocharacter( i_string(im) )
+      retVal(im) = True
+      j          = 0
+      do while( retVal(im) .and. (j .le. (dimsizes(charArray)-2)))
+        retVal(im) = any( charArray(j).eq.okChars )
+        j = j + 1
+      end do
+    end do
+  end if
+  return(retVal)
+end ; is_string_numeric
 
 ;----------------------------------------------------------------------
 ; This function takes an array of anything and depending on "opt", 
