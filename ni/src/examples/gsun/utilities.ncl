@@ -207,32 +207,56 @@ end
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 undef ("is_string_numeric")
-function is_string_numeric( \
-  i_string[*] : string \
-)
-local okChars, retVal, indNotMsg, charArray, i, im, j
+function is_string_numeric( i_string : string )
+local okChars, retVal, charArray, sDims, i, j, sDims_1D, istring_1D, retVal_1D
 begin
-
   okChars = (/ "+", "-", ".", "0", "1", "2", "3", "4", "5", "6", "7", "8",  \
       "9", "E", "e" /)
 
-  retVal    = new( dimsizes(i_string), logical, "No_FillValue" )
-  retVal    = False
-  indNotMsg = ind(.not.ismissing(i_string))
+  sDims = dimsizes(i_string)
+  sRank = dimsizes(sDims)
 
-  if(any(.not.ismissing(indNotMsg))) then
-    do i = 0, dimsizes(indNotMsg)-1
-      im = indNotMsg(i)
-      charArray := stringtocharacter( i_string(im) )
-      retVal(im) = True
-      j          = 0
-      do while( retVal(im) .and. (j .le. (dimsizes(charArray)-2)))
-        retVal(im) = any( charArray(j).eq.okChars )
+  if(sRank.eq.1) then
+    retVal = new( sDims, logical, "No_FillValue" )
+    retVal = False
+    do i = 0, sDims-1
+      if(ismissing(i_string(i))) then
+        continue
+      end if
+      charArray := stringtocharacter( i_string(i) )
+      retVal(i) = True
+      j = 0
+      do while( retVal(i) .and. (j .le. (dimsizes(charArray)-2)))
+        retVal(i) = any( charArray(j).eq.okChars )
         j = j + 1
       end do
     end do
+    return(retVal)
+  else
+;
+; Special case to handle multiple dimension arrays.
+; This is done so we are not unnecessarily making a 
+; copy of a 1D string array; strings in NCL can be
+; expensive.
+;
+    i_string_1D = ndtooned(i_string)
+    sDims_1D    = dimsizes(i_string_1D)
+    retVal_1D   = new( sDims_1D, logical, "No_FillValue" )
+    retVal_1D   = False
+    do i = 0, sDims_1D-1
+      if(ismissing(i_string_1D(i))) then
+        continue
+      end if
+      charArray := stringtocharacter( i_string_1D(i) )
+      retVal_1D(i) = True
+      j = 0
+      do while( retVal_1D(i) .and. (j .le. (dimsizes(charArray)-2)))
+        retVal_1D(i) = any( charArray(j).eq.okChars )
+        j = j + 1
+      end do
+    end do
+    return(reshape(retVal_1D,sDims))
   end if
-  return(retVal)
 end ; is_string_numeric
 
 ;----------------------------------------------------------------------
