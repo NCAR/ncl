@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_curvilinear_basic.ncl
+;  NCL User Guide Example:  NUG_curvilinear_basic.ncl
 ; 
 ;  KMF 
 ;-----------------------------------------------------------------
@@ -10,7 +10,21 @@ begin
    diri = "./"
    fili = "tos_ocean_bipolar_grid.nc"
    
-   f           =  addfile(diri+fili, "r")
+   if (fileexists(diri+fili)) then
+      f = addfile(diri+fili, "r")
+   else
+      print("")
+      print("You don't have the necessary data for this script. You can download it from:​")
+      print("")
+      print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+      print("")
+      print("or use the wget command:")
+      print("")
+      print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+      print("")
+      exit
+   end if
+
    var         =  f->tos(0,:,:)
    var@lat2d   =  f->lat
    var@lon2d   =  f->lon

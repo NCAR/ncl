@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_xy_plot.ncl
+;  NCL User Guide Example:   NUG_xy_plot.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -14,7 +14,7 @@ begin
    wks = gsn_open_wks("png","xy_plot")
 
    res                        =  True
-   res@tiMainString           = "NCL UG Example: xy-plot"
+   res@tiMainString           = "NCL Doc Example: xy-plot"
 
    plot = gsn_csm_xy(wks, x, y, res)
 

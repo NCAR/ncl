@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_colormaps.ncl
+;  NCL User Guide Example:  NUG_colormaps.ncl
 ; 
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -12,8 +12,22 @@ begin
    diri  = "./"
    fili  = "rectilinear_grid_2D.nc"
    
-   file1 =  addfile(diri+fili, "r")
-   var   =  file1->tsurf(0,:,:)
+  if (fileexists(diri+fili)) then
+     file1 = addfile(diri+fili, "r")
+  else
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
+  
+  var   =  file1->tsurf(0,:,:)
 
 ;-- define the workstation (plot type and name)
    wks = gsn_open_wks("png","plot_colormaps")
@@ -24,7 +38,7 @@ begin
 
    res@cnFillOn              =  True            ;-- turn on contour fill
 
-   res@tiMainString          = "NCL UG Example: Color maps"     ;-- title string
+   res@tiMainString          = "NCL Doc Example: Color maps"     ;-- title string
    res@tiMainFontHeightF     =  0.02
 
 ;-- 1: set color mapto "ncl_default" and draw the contour map

@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_shapefile_plot.ncl
+;  NCL User Guide Example:  NUG_shapefile_plot.ncl
 ; 
 ;  This example requires the "DEU_adm1.shp" shapefile, which you
 ;  can download from:
@@ -21,7 +21,18 @@ begin
 
   diri = "./"
   fili = "DEU_adm/DEU_adm1.shp"
-   
+
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary "+fili+" shapefile data for this script. You can download it from:​")
+     print("")
+     print("http://www.gadm.org/country/")
+     print("")
+     print("Select 'Germany' from the country list and 'Shapefile' for the file format.")
+     print("")
+     exit
+  end if
+  
 ;-- open workstation
    wks = gsn_open_wks("png","plot_shapefile_plot")
 
@@ -41,7 +52,7 @@ begin
    res@mpLeftCornerLonF    =  5.
    res@mpRightCornerLonF   =  16.
 
-   res@tiMainString        = "NCL UG Example: Shapefile plot"
+   res@tiMainString        = "NCL Doc Example: Shapefile plot"
    res@tiMainFontHeightF   =  0.015
 
 ;-- generate map, but don't draw it

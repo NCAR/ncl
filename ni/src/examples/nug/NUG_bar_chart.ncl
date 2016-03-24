@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_bar_chart.ncl
+;  NCL User Guide Example:   NUG_bar_chart.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -34,7 +34,7 @@ begin
                                  "Oct","Nov","Dec"/)
    res@tmXBLabelFontHeightF  =  0.015
 
-   res@tiMainString          = "NCL UG Example: bar chart"
+   res@tiMainString          = "NCL Doc Example: bar chart"
 
    plot = gsn_csm_xy(wks, x, y, res)
 

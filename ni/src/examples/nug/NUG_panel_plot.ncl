@@ -1,10 +1,31 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_panel_plot.ncl
+;  NCL User Guide Example:   NUG_panel_plot.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
+
+undef("file_ERROR")
+procedure file_ERROR(diri,names[*]:string)
+local files_exist, ii
+begin
+   files_exist = fileexists(diri+names)
+   if(any(.not.files_exist)) then
+     ii = ind(.not.files_exist)
+     print("")
+     print("You don't have the necessary data file(s) for this script. You can download them from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+names(ii))
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+names(ii))
+     print("")
+     exit
+  end if
+end
+
 
 begin
 ;-- read data and set variable references
@@ -15,7 +36,9 @@ begin
   fil3 = "tas_rectilinear_grid_2D.nc"
   fil4 = "uas_rectilinear_grid_2D.nc"
   fil5 = "vas_rectilinear_grid_2D.nc"
-  
+
+  file_ERROR(diri,(/fil1,fil2,fil3,fil4,fil5/))
+
   f1   =  addfile(diri+fil1, "r")
   f2   =  addfile(diri+fil2, "r")
   f3   =  addfile(diri+fil3, "r")
@@ -40,7 +63,7 @@ begin
   res@gsnFrame                        =  False
   res@gsnAddCyclic                    =  True
   res@gsnMaximize                     =  True
-  res@tiMainString                    = "NCL UG Example: panel plot"
+  res@tiMainString                    = "NCL Doc Example: panel plot"
   res@cnInfoLabelOn                   =  False
 
   plot(0) = gsn_csm_contour_map(wks,u(0,:,:),res)

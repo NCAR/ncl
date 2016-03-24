@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_template_script.ncl
+;  NCL User Guide Example:   NUG_template_script.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------

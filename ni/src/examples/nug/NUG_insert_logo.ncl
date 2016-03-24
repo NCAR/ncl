@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_insert_logo.ncl
+;  NCL User Guide Example:  NUG_insert_logo.ncl
 ; 
 ;  This example requires the Climate Data Operators (cdo), which
 ;  can be downloaded from: https://code.zmaw.de/projects/cdo/files
@@ -87,13 +87,27 @@ begin
   draw(plot)
   frame(wks)
   delete(wks)
-  
+
 ;----------------------------------------------------------
 ;-- add a logo to the finished plot (upper left corner)
 ;-- (this could be done only for PNG plot output)
 ;----------------------------------------------------------
+
   logo = "./NCLLogoWeb.jpg"
+  if (.not. fileexists(logo)) then
+     print("")
+     print("You don't have the necessary NCL logo for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Images/NCLLogoWeb.jpg")
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Images/NCLLogoWeb.jpg")
+     print("")
+     exit
+  end if
   
+
   cmd  = "composite -geometry 80x80+20+20 "+logo+" "+dummy+" "+output
   system(cmd)
   system("rm -rf "+dummy)

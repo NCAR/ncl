@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_strings.ncl
+;  NCL User Guide Example:  NUG_strings.ncl
 ; 
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -9,7 +9,6 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 
 begin
    title = "Strings"
-   diri  = "./"
    fili  = "tas_AFR-44_MPI-ESM-LR_historical_r1i1p1_CCLM_4-8-17_mon_1961-1990.nc"
 
 ;-- get number of field elements of a given string and delimiter

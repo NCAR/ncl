@@ -1,6 +1,5 @@
 ;----------------------------------------------------------
-;-- NCL User Guide example:  
-;--  NCL_regrid_unstructured_to_rectilinear_bilinear_wgts_destgrid_ESMF.ncl
+;-- NCL Doc example:  NUG_regrid_unstructured_to_rectilinear_bilinear_wgts_destgrid_ESMF.ncl
 ;--
 ;-- Description:      regrid unstructured to dest grid 192x96 grid
 ;--
@@ -12,6 +11,22 @@
 ;----------------------------------------------------------
 load "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl"
 
+undef("file_ERROR")
+procedure file_ERROR(name)
+begin
+   print("")
+   print("You don't have the necessary data for this script. You can download it from:​")
+   print("")
+   print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   print("or use the wget command:")
+   print("")
+   print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   exit
+end
+
+  
 begin
   start_time = get_cpu_time()               ;-- get cpu time
 
@@ -22,6 +37,13 @@ begin
   diri = "./"
   fili = "triangular_grid_ICON.nc"
   grid = "tas_rectilinear_grid_2D.nc"       ;-- use grid from file
+
+  if (.not. fileexists(diri+fili)) then
+     file_ERROR(fili)
+  end if
+  if (.not. fileexists(diri+grid)) then
+     file_ERROR(grid)
+  end if
   
 ;-- read destination grid data
   g       =  addfile(diri+grid,"r")
@@ -94,7 +116,7 @@ begin
   fAtt@project_id       = "NCL User Guide" 
   fAtt@source_file      =  fili
   fAtt@creation_date    =  systemfunc ("date")        
-  fAtt@history          = "NCL_regrid_ICON_bilinear_with_weights.ncl: "+fili+\
+  fAtt@history          = "NUG_regrid_ICON_bilinear_with_weights.ncl: "+fili+\
                           " to 1x1 deg rectilinear grid" 
   fileattdef(fout,fAtt)                     ;-- copy file attributes    
 

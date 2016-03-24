@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_shapefile_plot_data.ncl
+;  NCL User Guide Example:  NUG_shapefile_plot_data.ncl
 ; 
 ;  This example requires the "DEU_adm1.shp" shapefile, which you
 ;  can download from:
@@ -17,12 +17,50 @@
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
+undef("file_ERROR")
+procedure file_ERROR(name)
+begin
+   print("")
+   print("You don't have the necessary data for this script. You can download it from:​")
+   print("")
+   print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   print("or use the wget command:")
+   print("")
+   print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   exit
+end
+
+undef("shp_file_ERROR")
+procedure shp_file_ERROR(name)
+begin
+   print("")
+   print("You don't have the necessary "+name+" shapefile data for this script. You can download it from:​")
+   print("")
+   print("http://www.gadm.org/country/")
+   print("")
+   print("Select 'Germany' from the country list and 'Shapefile' for the file format.")
+   print("")
+   exit
+end
+
+  
 begin
    diri    = "./"
    shpname = "DEU_adm/DEU_adm1.shp"
    
 ;-- read data to display
    fili = "rectilinear_grid_2D.nc"
+   
+   if (.not. fileexists(diri+fili)) then
+      file_ERROR(fili)
+   end if
+   if (.not. fileexists(diri+shpname)) then
+      shp_file_ERROR(shpname)
+   end if
+  
+  
    g    =  addfile(diri+fili,"r")
    var  =  g->tsurf(0,:,:)
 
@@ -58,7 +96,7 @@ begin
    res@mpDataResolution    = "Medium"
    res@mpProjection        = "Mercator"
 
-   res@tiMainString        = "NCL UG Example: Using Shapefile for border lines"
+   res@tiMainString        = "NCL Doc Example: Using Shapefile for border lines"
    res@tiMainFontHeightF   =  0.015
 
 ;-- generate map, but don't draw it

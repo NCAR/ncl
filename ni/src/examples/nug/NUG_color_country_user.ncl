@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_color_country_user.ncl
+;  NCL User Guide Example:   NUG_color_country_user.ncl
 ; 
 ;  This example requires the Climate Data Operators (cdo), which
 ;  can be downloaded from: https://code.zmaw.de/projects/cdo/files
@@ -9,8 +9,22 @@
 begin
   diri = "./"
   fili = "data_country_user.txt"
+
+  if (fileexists(diri+fili)) then
+     data =  asciiread(diri+fili, -1,"string" );-- read all lines
+  else
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
   
-  data    =  asciiread(diri+fili, -1,"string" );-- read all lines
   delim   = ";"                                ;-- set delimiter
   nfields =  str_fields_count(data(0),delim)   ;-- count number of columns
  

@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_map_resolutions.ncl
+;  NCL User Guide Example:  NUG_map_resolutions.ncl
 ; 
 ;     Use HighRes RANGS/GSHHS database
 ;
@@ -13,7 +13,31 @@ begin
 
   diri = "./"
   fili = "tas_rectilinear_grid_2D.nc"
-   
+
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
+
+;-- check for existence of one of the high-res map database files
+  rangs_dir  = ncargpath("rangs")
+  rangs_file = "gshhs(0).rim"
+  if(.not.fileexists(rangs_dir + "/" + rangs_file)) then
+     print("")
+     print("You don't have the necessary RANGS map database files for this script. For more information, see:")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Graphics/rangs.shtml")
+     exit
+  end if
+
   f    =  addfile(diri+fili, "r")
   var  =  f->tas(0,:,:)
 ;  var&lat@units             = "degrees_north"
@@ -51,7 +75,7 @@ begin
 
   do i=0,(dimsizes(reslist)-1)
      res@mpDataBaseVersion     = reslist(i)
-     res@tiMainString          = "NCL UG Example: coastline resolution~C~        "+reslist(i)   ;-- title string
+     res@tiMainString          = "NCL Doc Example: coastline resolution~C~        "+reslist(i)   ;-- title string
      res@tiMainFontHeightF     =  0.02
 
      if (reslist(i) .eq. "HighRes") then
@@ -60,7 +84,7 @@ begin
            print("High resolution plot will take some time")
            print("")
            res@mpDataResolution  = datares(j)
-           res@tiMainString      = "NCL UG Example: coastline resolution~C~        "+reslist(i)+"   "+datares(j)   ;-- title string
+           res@tiMainString      = "NCL Doc Example: coastline resolution~C~        "+reslist(i)+"   "+datares(j)   ;-- title string
            plot = gsn_csm_contour_map(wks, var, res)
         end do
      else

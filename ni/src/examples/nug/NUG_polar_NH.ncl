@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_polar_NH.ncl
+;  NCL User Guide Example:  NUG_polar_NH.ncl
 ; 
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -48,7 +48,20 @@ begin
 
   diri = "./"
   fili = "rectilinear_grid_2D.nc"
-   
+
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
+  
   f    =  addfile(diri+fili, "r")
   u    =  f->tsurf(0,:,:)
 
@@ -69,7 +82,7 @@ begin
 
   res@cnFillOn                 =  True
 
-  res@tiMainString             = "NCL UG Example: Polar Plot (NH)"
+  res@tiMainString             = "NCL Doc Example: Polar Plot (NH)"
 
 ;-- draw the plot
   plot = gsn_csm_contour_map_polar(wks,u,res)    ;-- from contributed.ncl library

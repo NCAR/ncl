@@ -1,5 +1,5 @@
 ;---------------------------------------------------
-;  NCL User Guide Example:   NCL_labelbars.ncl
+;  NCL User Guide Example:   NUG_labelbars.ncl
 ;
 ;  KMF 30.10.14
 ;---------------------------------------------------
@@ -12,7 +12,21 @@ begin
    fili  = "T2M_ERAINT_rectilinear_grid_2D.nc"
    
 ;-- read the data
-   f     =  addfile(diri+fili, "r")
+   if (fileexists(diri+fili)) then
+      f = addfile(diri+fili, "r")
+   else
+      print("")
+      print("You don't have the necessary data for this script. You can download it from:​")
+      print("")
+      print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+      print("")
+      print("or use the wget command:")
+      print("")
+      print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+      print("")
+      exit
+   end if
+   
    var   =  f->T2M(0,:,:)
 
 ;-- define the workstation (graphic will be written to a file)

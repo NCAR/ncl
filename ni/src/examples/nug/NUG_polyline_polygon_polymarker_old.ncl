@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_polyline_polygon_polymarker_old.ncl
+;  NCL User Guide Example:  NUG_polyline_polygon_polymarker_old.ncl
 ; 
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -56,7 +56,7 @@ begin
   res@mpRightCornerLonF       =  16.0
   res@mpLeftCornerLatF        =  47.0
   res@mpRightCornerLatF       =  58.0
-  res@tiMainString            = "NCL UG Example: polyline, polygon, polymarker"
+  res@tiMainString            = "NCL Doc Example: polyline, polygon, polymarker"
   res@tiMainFontHeightF       =  0.02
   map = gsn_csm_map(wks, res)
 

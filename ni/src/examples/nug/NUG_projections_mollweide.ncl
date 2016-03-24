@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_projections_mollweide.ncl
+;  NCL User Guide Example:  NUG_projections_mollweide.ncl
 ; 
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -11,12 +11,25 @@ begin
 
   diri = "./"
   fili = "MITgcm_rectilinear_grid_3D.nc"
+
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
   
   file1 =  addfile(diri+fili,"r")
   var   =  file1->SSS(0,0,:,:)
 
 ;-- define the workstation (plot type and name)
-  wks = gsn_open_wks("png","NCL_mollweide")
+  wks = gsn_open_wks("png","NUG_mollweide")
 
 ;-- set resources
   res                       =  True
@@ -33,7 +46,7 @@ begin
   res@mpProjection          = "Mollweide"      ;-- change projection
   res@mpGridAndLimbOn       =  True             ;-- plot grid lines
 
-  res@tiMainString          = "NCL UG Example: Mollweide projection"   ;-- title string
+  res@tiMainString          = "NCL Doc Example: Mollweide projection"   ;-- title string
   res@tiMainFontHeightF     =  0.02
 
 ;-- draw the contour map

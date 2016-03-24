@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_system_calls.ncl
+;  NCL User Guide Example:   NUG_system_calls.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------

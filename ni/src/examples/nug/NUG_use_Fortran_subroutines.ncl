@@ -1,13 +1,21 @@
 ;---------------------------------------------------
-;  NCL User Guide Example:   NCL_use_Fortran_subroutines.ncl
+;  NCL User Guide Example:   NUG_use_Fortran_subroutines.ncl
 ;
 ;  KMF 30.10.14
 ;---------------------------------------------------
-external EX01 "./NCL_fortran_ex01.so"
+if (.not. fileexists("./NUG_fortran_ex01.so")) then
+   print("")
+   print("You don't have the necessary shared object for this script: ./NUG_fortran_ex01.so")
+   print("")
+   exit
+end if
+  
+
+external EX01 "./NUG_fortran_ex01.so"
  
 begin
    print("")
-   
+
 ;-- Calculate three values of a quadratic equation
    nump = 3
    x    = (/ -1., 0.0, 1.0 /)

@@ -1,5 +1,5 @@
 ;-------------------------------------------------------------------
-;  NCL User Guide Example:  NCL_ICON_triangles_colored.ncl  
+;  NCL User Guide Example:  NUG_ICON_triangles_colored.ncl  
 ;
 ;  Read ICON data and plot variable clt (data from Renate Brokopf).
 ;  Input data file does not contain the grid information, a second
@@ -17,9 +17,24 @@
 ;
 ;  KMF 30.10.14
 ;-------------------------------------------------------------------
- load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
- load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
- load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
+load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
+load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
+load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
+
+undef("file_ERROR")
+procedure file_ERROR(name)
+begin
+   print("")
+   print("You don't have the necessary data for this script. You can download it from:​")
+   print("")
+   print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   print("or use the wget command:")
+   print("")
+   print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   exit
+end
 
 ;---------------------------------------
 ;-- function attach_labelbar
@@ -73,8 +88,17 @@ begin
 ;-------------------------------------------------------------------
 ;-- add data and grid file
 ;-------------------------------------------------------------------
-  File         = addfile( DataFileName, "r" )        ;-- add data file
-  GridInfoFile = addfile( gridinfofile, "r" )        ;-- add grid file (not contained in data file!!!)
+  if (fileexists(DataFileName)) then
+     File = addfile(DataFileName, "r" )              ;-- add data file
+  else
+     file_ERROR(DataFileName)
+  end if
+  if (fileexists(gridinfofile)) then
+     GridInfoFile = addfile(gridinfofile, "r" )      ;-- add grid file (not contained in data file!!!)
+  else
+     file_ERROR(gridinfofile)
+  end if
+  
   var          = File->$VarName$(time|0,ncells|:)    ;-- set variable with dims: (time,ncell)
   var          = var*scale                           ;-- scale factor (here 100 to get %)
 

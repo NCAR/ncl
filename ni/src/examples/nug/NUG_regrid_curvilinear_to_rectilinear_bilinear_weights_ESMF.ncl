@@ -1,5 +1,5 @@
 ;---------------------------------------------------
-;  NCL User Guide Example:   NCL_regrid_curvilinear_to_rectilinear_bilinear_weights_ESMF.ncl
+;  NCL User Guide Example:   NUG_regrid_curvilinear_to_rectilinear_bilinear_weights_ESMF.ncl
 ;
 ;  KMF
 ;---------------------------------------------------
@@ -11,6 +11,19 @@ begin
   diri = "./"
   fili = "thetao_curvilinear_ocean.nc"
 
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
+  
 ;-- read data
   sfile               =  addfile(diri+fili,"r")
   thetao              =  sfile->thetao(0,0,:,:)
@@ -51,8 +64,8 @@ begin
   
 ;-- assign a output netcdf file for the new regridded data 
 ;-- (npoints = 180x360)
-  system("rm -rf regridded_bilinear_CMIP5_thetao_ESMF.nc")
-  fout = addfile("regridded_rectilinear_bilinear_ocean_thetao_ESMF.nc","c")
+  system("rm -rf regridded_curvilinear_bilinear_CMIP5_thetao_ESMF.nc")
+  fout = addfile("regridded_curvilinear_bilinear_CMIP5_thetao_ESMF.nc","c")
 
 ;-- start to define output file settings
   setfileoption(fout,"DefineMode",True) 
@@ -60,12 +73,12 @@ begin
 ;-- create global attributes of the file
   fAtt             =  True         ;-- assign file attributes
   fAtt@Conventions = "CF-1.4"   
-  fAtt@comment    = "Regrid curvilinear to 1x1 rectilinear grid using ESMF"       
+  fAtt@comment     = "Regrid curvilinear to 1x1 rectilinear grid using ESMF"       
   fAtt@title       = "Regrid to 1x1 deg rectilinear grid"
   fAtt@project_id  = "NCL User Guide" 
   fAtt@source_file =  fili
   fAtt@creation_date =  systemfunc ("date")        
-  fAtt@history = "NCL_regrid_CMIP5_bilinear_with_weights.ncl: "+fili+" to 1x1 deg rectilinear grid" 
+  fAtt@history = "NUG_regrid_CMIP5_bilinear_with_weights.ncl: "+fili+" to 1x1 deg rectilinear grid" 
   fileattdef(fout,fAtt)                          ;-- copy file attributes    
 
 ;-- predefine the coordinate variables and their dimensionality

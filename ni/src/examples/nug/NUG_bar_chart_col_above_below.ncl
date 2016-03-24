@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_bar_chart_col_above_below.ncl
+;  NCL User Guide Example:   NUG_bar_chart_col_above_below.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -32,7 +32,7 @@ begin
    res@tmXBLabels            =  (/"Jan","","Feb","","Mar","","Apr","","May","","Jun","",\
                                   "Jul","","Aug","","Sep","","Oct","","Nov","","Dec",""/)
    res@tmXBLabelFontHeightF  =  0.015
-   res@tiMainString          = "NCL UG Example: bar chart coloring above/below"
+   res@tiMainString          = "NCL Doc Example: bar chart coloring above/below"
 
    res@gsnYRefLine           =  0.              ; reference line   
    res@gsnXYBarChart         =  True            ; create bar chart 

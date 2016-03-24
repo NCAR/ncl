@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_multiple_plots_along_y.ncl
+;  NCL User Guide Example:  NUG_multiple_plots_along_y.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -12,7 +12,20 @@ begin
 
    diri  = "./"
    fili  = "rectilinear_grid_3D.nc"
-   
+
+   if (.not. fileexists(diri+fili)) then
+      print("")
+      print("You don't have the necessary data for this script. You can download it from:​")
+      print("")
+      print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+      print("")
+      print("or use the wget command:")
+      print("")
+      print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+      print("")
+      exit
+   end if
+  
    f     = addfile(diri+fili,"r")
    var   = f->t(0,:,{40},:)
 
@@ -37,7 +50,7 @@ begin
    res@cnLevelSpacingF          =    5.             ;-- contour spacing
    res@gsnSpreadColors          =  True             ;-- use full range of colors
    res@pmLabelBarOrthogonalPosF = -0.05             ;-- position label bar
-   res@tiMainString             = "NCL UG Example: attach plot ~C~                     lat: 40~S~o~N~"
+   res@tiMainString             = "NCL Doc Example: attach plot ~C~                     lat: 40~S~o~N~"
    res@trYReverse               =  True             ;-- reverese y-axis
    res@vpWidthF                 =  .65              ;-- set width
    res@vpHeightF                =  .60              ;-- set height

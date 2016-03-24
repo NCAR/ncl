@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_polyline_polygon_polymarker.ncl
+;  NCL User Guide Example:  NUG_polyline_polygon_polymarker.ncl
 ; 
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------

@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_title_strings.ncl
+;  NCL User Guide Example:   NUG_title_strings.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -11,7 +11,20 @@ begin
 
   diri  = "./"
   fili  = "rectilinear_grid_2D.nc"
-   
+
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
+  
   file1 =  addfile(diri+fili, "r")
   var   =  file1->tsurf(0,:,:)
 
@@ -28,7 +41,7 @@ begin
   res@gsnRightString        = "Right String"
 
 ;-- set the title string. ~C~ insert a carriage return (no \ allowed).
-  res@tiMainString          = "NCL UG Example:  Title strings ~C~      - second line of the title string ~C~ ~Z70~             - third line of the title string with font size 70% ~C~  "
+  res@tiMainString          = "NCL Doc Example:  Title strings ~C~      - second line of the title string ~C~ ~Z70~             - third line of the title string with font size 70% ~C~  "
   res@tiMainFontHeightF     =  0.02
 
   res@tiXAxisString         = "X-Axis title string"  

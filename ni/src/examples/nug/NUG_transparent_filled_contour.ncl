@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_transparent_filled_contour.ncl
+;  NCL User Guide Example:   NUG_transparent_filled_contour.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -12,6 +12,19 @@ begin
 ;-- read data
   diri = "./"
   fili = "uv300.nc"
+
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
   
   a   = addfile(diri+fili,"r")
   u   = a->U(1,:,:)
@@ -35,7 +48,7 @@ begin
   bres                       =  res
   bres@gsnMaximize           =  True       ;-- maximize main plot
   bres@mpFillOn              =  False 
-  bres@tiMainString          = "NCL UG Example: transparency I"
+  bres@tiMainString          = "NCL Doc Example: transparency I"
   bres@cnFillOpacityF        =  0.5        ;-- 50% opaque
 
   main_plot = gsn_csm_contour_map(wks,u,bres)
@@ -55,7 +68,7 @@ begin
   frame(wks)
 
 ;-- create a new plot with 100% opacity
-  bres@tiMainString          = "NCL UG Example: transparency II"
+  bres@tiMainString          = "NCL Doc Example: transparency II"
   bres@cnFillOpacityF        =  1.0        ;-- 100% opaque
   plot = gsn_csm_contour_map(wks,u,bres)
 

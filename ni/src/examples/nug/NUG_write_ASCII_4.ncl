@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_write_ASCII_4.ncl
+;  NCL User Guide Example:   NUG_write_ASCII_4.ncl
 ;
 ;  KMF
 ;-----------------------------------------------------------------

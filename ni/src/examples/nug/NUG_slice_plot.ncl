@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_slice_plot.ncl
+;  NCL User Guide Example:   NUG_slice_plot.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -10,18 +10,31 @@ begin
 
   diri  = "./"
   fili  = "rectilinear_grid_3D.nc"
+
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
    
   f     =  addfile(diri+fili, "r")  
-  var   = f->t(0,:,{40},{0:60})     ;-- first time step, latitude=40N, longitude=0-60E.
-  lon_t = f->lon({0:60})            ;-- longitude=0-60E
-  lev_t = f->lev                    ;-- currently 17 levels
+  var   =  f->t(0,:,{40},{0:60})     ;-- first time step, latitude=40N, longitude=0-60E.
+  lon_t =  f->lon({0:60})            ;-- longitude=0-60E
+  lev_t =  f->lev                    ;-- currently 17 levels
 
 ;-- define workstation
   wks = gsn_open_wks("png","plot_slice_plot")
 
 ;-- set resources
   res                          =  True
-  res@tiMainString             = "NCL UG Example: Slice plot at 40N"   ;-- title string
+  res@tiMainString             = "NCL Doc Example: Slice plot at 40N"   ;-- title string
 
   res@cnFillOn                 =  True       ;-- turn on color fill
   res@cnLineLabelsOn           =  False      ;-- turns off contour line labels

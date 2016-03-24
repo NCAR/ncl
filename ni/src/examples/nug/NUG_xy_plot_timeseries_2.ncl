@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_xy_plot_timeseries_2.ncl
+;  NCL User Guide Example:   NUG_xy_plot_timeseries_2.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -34,8 +34,21 @@ begin
    diri = "./"
    fili = "rectilinear_grid_2D.nc"
    
-   f    =  addfile(diri+fili, "r")
-
+   if (fileexists(diri+fili)) then
+      f = addfile(diri+fili, "r")
+   else
+      print("")
+      print("You don't have the necessary data for this script. You can download it from:​")
+      print("")
+      print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+      print("")
+      print("or use the wget command:")
+      print("")
+      print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+      print("")
+      exit
+   end if
+  
    var  =  f->tsurf
    time =  var&time
    print(time)
@@ -48,7 +61,7 @@ begin
    wks = gsn_open_wks("png","xy_plot_timeseries_2")
 
    res                        =  True
-   res@tiMainString           = "NCL UG Example: xy-plot timeseries"
+   res@tiMainString           = "NCL Doc Example: xy-plot timeseries"
    res@tmXBMode               = "Explicit"
    res@tmXBValues             =  time
    res@tmXBLabels             =  labels

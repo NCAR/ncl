@@ -1,7 +1,7 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_read_CSV_1_noloop.ncl
+;  NCL User Guide Example:   NUG_read_CSV_1_noloop.ncl
 ;
-;  MLH 25.09.15 - this code is an alternative to NCL_read_csv.ncl
+;  MLH 25.09.15 - this code is an alternative to NUG_read_csv.ncl
 ;                 which doesn't use a loop for plotting.
 ;-----------------------------------------------------------------
 load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsn_code.ncl"
@@ -10,6 +10,19 @@ load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsn_csm.ncl"
 begin
   diri = "./"
   fili = "Test_6h.csv"
+
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
   
 ;-- read in file as array of strings so we can parse each line
 
@@ -28,7 +41,7 @@ begin
   wks = gsn_open_wks("png","plot_csv")
 
   res                        =  True
-  res@tiMainString           = "NCL UG Example: Read CSV data (delimiter = ;)"
+  res@tiMainString           = "NCL Doc Example: Read CSV data (delimiter = ;)"
   res@xyLineThicknessF       =   5
   res@trYMinF                =   0.0
   res@trYMaxF                =  12.0

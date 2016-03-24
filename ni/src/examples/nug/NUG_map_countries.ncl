@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_map_countries.ncl
+;  NCL User Guide Example:   NUG_map_countries.ncl
 ;
 ;  KMF
 ;-----------------------------------------------------------------

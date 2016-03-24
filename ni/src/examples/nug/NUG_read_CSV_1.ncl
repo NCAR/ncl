@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_read_CSV_1.ncl
+;  NCL User Guide Example:   NUG_read_CSV_1.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -9,6 +9,19 @@ load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsn_csm.ncl"
 begin
   diri = "./"
   fili = "Test_6h.csv"
+
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
   
 ;-- read in file as array of strings so we can parse each line
 
@@ -31,7 +44,7 @@ begin
   res                        =  True
   res@gsnDraw                =  False
   res@gsnFrame               =  False
-  res@tiMainString           = "NCL UG Example: Read CSV data (delimiter = ;)"
+  res@tiMainString           = "NCL Doc Example: Read CSV data (delimiter = ;)"
   res@xyLineThicknessF       =   5
   res@trYMinF                =   0.0
   res@trYMaxF                =  12.0

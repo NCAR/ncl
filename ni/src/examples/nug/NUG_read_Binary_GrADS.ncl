@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_read_Binary_GrADS.ncl
+;  NCL User Guide Example:   NUG_read_Binary_GrADS.ncl
 ;
 ;  KMF
 ;-----------------------------------------------------------------
@@ -11,6 +11,19 @@ begin
 
   diri = "./"
   fili = "ps_grads_model.dat"
+
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
   
 ;-- read data
   setfileoption("bin", "ReadByteOrder", "LittleEndian")

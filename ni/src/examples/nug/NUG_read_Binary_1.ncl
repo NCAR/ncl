@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_read_Binary_1.ncl
+;  NCL User Guide Example:   NUG_read_Binary_1.ncl
 ;
 ;  KMF
 ;-----------------------------------------------------------------
@@ -7,13 +7,26 @@ begin
 
 ;-- path and file name
   diri  = "./"
-  fname = "topo.bin"
+  fili = "topo.bin"
 
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
+  
 ;-- set byte order
   setfileoption("bin","ReadByteOrder","BigEndian")
   
 ;-- read binary file
-  topo =  fbindirread(diri+fname,0,(/293,343/),"float")
+  topo =  fbindirread(diri+fili,0,(/293,343/),"float")
 
 ;-- set some attributes
   topo@units     = "m"

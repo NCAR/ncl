@@ -1,13 +1,27 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_read_ASCII_3.ncl
+;  NCL User Guide Example:   NUG_read_ASCII_3.ncl
 ;
 ;  KMF
 ;-----------------------------------------------------------------
 begin
 
   diri   = "./"
-  fname  = "asc3.txt"
-  data   =  asciiread(diri+fname,-1,"string")
+  fili   = "asc3.txt"
+  
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
+  
+  data   =  asciiread(diri+fili,-1,"string")
   year   =  tofloat(str_get_cols(data, 1,4))
   month  =  tofloat(str_get_cols(data,5,6))
   day    =  tofloat(str_get_cols(data,7,8))

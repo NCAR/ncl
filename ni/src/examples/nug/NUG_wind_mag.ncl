@@ -1,8 +1,25 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_wind_mag.ncl
+;  NCL User Guide Example:   NUG_wind_mag.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
+
+undef("file_ERROR")
+procedure file_ERROR(name)
+begin
+   print("")
+   print("You don't have the necessary data for this script. You can download it from:​")
+   print("")
+   print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   print("or use the wget command:")
+   print("")
+   print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   exit
+end
+
+  
 ;======================================
 ;== define the function wind_mag(u,v)
 ;======================================
@@ -34,6 +51,14 @@ begin
   fil1 = "uas_rectilinear_grid_2D.nc"
   fil2 = "vas_rectilinear_grid_2D.nc"
 
+
+  if (.not. fileexists(diri+fil1)) then
+     file_ERROR(fil1)
+  end if
+  if (.not. fileexists(diri+fil2)) then
+     file_ERROR(fil2)
+  end if
+  
   f1 = addfile(diri+fil1,"r")
   f2 = addfile(diri+fil2,"r")
   u  = f1->uas(0,:,:)
@@ -43,7 +68,7 @@ begin
 
   res                   =  True
   res@gsnAddCyclic      =  True
-  res@tiMainString      = "NCL UG Example: Function wind_mag()"
+  res@tiMainString      = "NCL Doc Example: Function wind_mag()"
   res@tiMainFontHeightF =  0.02
  
   mag             = wind_mag(u,v)

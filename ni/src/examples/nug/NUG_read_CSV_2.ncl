@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_read_CSV_2.ncl
+;  NCL User Guide Example:   NUG_read_CSV_2.ncl
 ;
 ;  KMF
 ;-----------------------------------------------------------------
@@ -9,15 +9,29 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/time_axis_labels.ncl"
 
 begin
 ;-- input file name
-  fname = "multiple_columns.csv"
+  diri = "./"
+  fili = "multiple_columns.csv"
 
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
+  
 ;-- used delimiter in file for columns or strings (date)
   delim1 = ","
   delim2 = "/"
   delim3 = ":"
 
 ;-- read in file as array of strings so we can parse each line
-  data   = asciiread(fname, -1, "string")
+  data   = asciiread(diri+fili, -1, "string")
   scount = str_fields_count(data(0),delim1)      ;-- get number of columns
  
 ;-- read variable AOD (500)
@@ -41,7 +55,7 @@ begin
   time2!0= "time"
   
 ;-- define the workstation (plot type and name)
-  wks  = gsn_open_wks("png","plot_NCL_read_CSV_2")
+  wks  = gsn_open_wks("png","plot_NUG_read_CSV_2")
 
 ;-- set resources
   res                        =  True

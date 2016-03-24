@@ -1,10 +1,29 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_grid_resolution_comparison.ncl
+;  NCL User Guide Example:  NUG_grid_resolution_comparison.ncl
 ; 
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
+
+undef("file_ERROR")
+procedure file_ERROR(diri,names[*]:string)
+begin
+   files_exist = fileexists(diri+names)
+   if(any(.not.files_exist)) then
+     ii = ind(.not.files_exist)
+     print("")
+     print("You don't have the necessary data file(s) for this script. You can download them from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+names(ii))
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+names(ii))
+     print("")
+     exit
+  end if
+end
 
 begin
 
@@ -23,9 +42,11 @@ begin
   msk1 = "sftlf_mod1_rectilinear_grid_2D.nc"
   msk2 = "sftlf_mod2_rectilinear_grid_2D.nc"
   msk3 = "sftlf_mod3_rectilinear_grid_2D.nc"  
-  
-  file_1    =  addfile(diri+fil1, "r")
-  variable1  = file_1->orog(:,:)
+
+  file_ERROR(diri,(/fil1,fil2,fil3,msk1,msk2,msk3/))
+
+  file_1    = addfile(diri+fil1, "r")
+  variable1 = file_1->orog(:,:)
 
   mask_1 = addfile(diri+msk1,"r")
   lsm1   = mask_1->sftlf(:,:)
@@ -37,7 +58,7 @@ begin
   land_only1  = mask(variable1,lsm1,-9999)
 
 ;-- second file
-  file_2    =  addfile(diri+fil2, "r")
+  file_2     = addfile(diri+fil2, "r")
   variable2  = file_2->orog(0,{lat0:lat1-border1},{lon0+border1:lon1})
   variable2&rlat@units = "degrees_north"
   variable2&rlon@units = "degrees_east"
@@ -51,7 +72,7 @@ begin
   land_only2  = mask(variable2,lsm2,-9999)
 
 ;-- third file
-  file_3    =  addfile(diri+fil3, "r")
+  file_3     = addfile(diri+fil3, "r")
   variable3  = file_3->orog(0,{lat0:lat1-border2},{lon0+border2:lon1})
   variable3&rlat@units = "degrees_north"
   variable3&rlon@units = "degrees_east"

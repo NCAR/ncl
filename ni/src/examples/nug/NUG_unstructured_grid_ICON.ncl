@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_unstructured_grid_ICON.ncl
+;  NCL User Guide Example:  NUG_unstructured_grid_ICON.ncl
 ; 
 ;  Data:             ICON - unstructured
 ;
@@ -15,6 +15,19 @@ begin
   diri = "./"
   fili = "triangular_grid_ICON.nc"
 
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
+  
 ;-- read data
   f       =  addfile(diri+fili,"r")
   var     =  f->S(time|0,depth|0,ncells|:)  ;-- set variable with dims: (time,ncell)

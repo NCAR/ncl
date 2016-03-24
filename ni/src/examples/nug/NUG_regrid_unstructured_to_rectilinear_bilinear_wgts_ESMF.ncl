@@ -1,5 +1,5 @@
 ;----------------------------------------------------------
-;-- NCL User Guide Example:  NCL_regrid_unstructured_to_rectilinear_bilinear_wgts_ESMF.ncl
+;-- NCL User Guide Example:  NUG_regrid_unstructured_to_rectilinear_bilinear_wgts_ESMF.ncl
 ;--
 ;-- Description:      regrid unstructured to 1x1 deg grid
 ;--
@@ -18,7 +18,20 @@ begin
 
   diri = "./"
   fili = "triangular_grid_ICON.nc"
-
+  
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
+  
 ;-- read data
   f       =  addfile(diri+fili,"r")
   var     =  f->S(time|0,depth|0,ncells|:)  ;-- set variable with dims: (time,depth,ncells)
@@ -85,7 +98,7 @@ begin
   fAtt@project_id       = "NCL User Guide" 
   fAtt@source_file      =  fili
   fAtt@creation_date    =  systemfunc ("date")        
-  fAtt@history          = "NCL_regrid_ICON_bilinear_with_weights.ncl: "+fili+" to 1x1 deg rectilinear grid" 
+  fAtt@history          = "NUG_regrid_ICON_bilinear_with_weights.ncl: "+fili+" to 1x1 deg rectilinear grid" 
   fileattdef(fout,fAtt)                              ;-- copy file attributes    
 
 ;-- predefine the coordinate variables and their dimensionality

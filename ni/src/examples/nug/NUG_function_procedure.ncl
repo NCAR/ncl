@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_function_procedure.ncl
+;  NCL User Guide Example:   NUG_function_procedure.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -66,7 +66,21 @@ begin
   diri = "./"
   fili = "tas_rectilinear_grid_2D.nc"
   
-  file1    =  addfile(diri+fili,"r")
+  if (fileexists(diri+fili)) then
+     file1 = addfile(diri+fili, "r")
+  else
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if  
+  
   variable =  file1->tas(0,:,:)
   wks      =  gsn_open_wks("png","plot_function_average_data")
 

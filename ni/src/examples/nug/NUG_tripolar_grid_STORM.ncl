@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_tripolar_grid_STORM.ncl
+;  NCL User Guide Example:  NUG_tripolar_grid_STORM.ncl
 ; 
 ;  INFO: The STORM model grid is MPIOM TP6ML80 (3602x2394).
 ;        Only small regions could be plotted with cell outlines.
@@ -18,6 +18,19 @@ begin
    diri = "./"
    fili = "tripolar_grid_STORM.nc"
 
+   if (.not. fileexists(diri+fili)) then
+      print("")
+      print("You don't have the necessary data for this script. You can download it from:​")
+      print("")
+      print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+      print("")
+      print("or use the wget command:")
+      print("")
+      print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+      print("")
+      exit
+   end if
+  
    f              = addfile(diri+fili, "r")
    var            =  f->sst(0,0,:,:)
    var@lat2d      =  f->lat
@@ -53,7 +66,7 @@ begin
    res@cnCellFillEdgeColor   =  -1
    res@cnCellFillMissingValEdgeColor = -1
 
-   res@tiMainString          = "NCL UG Example: Tripolar grid STORM"   ;-- title string
+   res@tiMainString          = "NCL Doc Example: Tripolar grid STORM"   ;-- title string
    res@tiMainFontHeightF     =  0.02
 
 ;-- plot sub-region

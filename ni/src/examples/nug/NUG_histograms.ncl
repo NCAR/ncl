@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_histograms.ncl
+;  NCL User Guide Example:   NUG_histograms.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -25,7 +25,7 @@ begin
   res@tmXBLabelAngleF                   =  325.        ;-- change label angle
   res@tmLabelAutoStride                 =  True        ;-- prevent label overlap
 
-  res@tiMainString                      = "NCL UG Example: Histograms"
+  res@tiMainString                      = "NCL Doc Example: Histograms"
 
   plot=gsn_histogram(wks,data,res)                     ;-- create histogram
 

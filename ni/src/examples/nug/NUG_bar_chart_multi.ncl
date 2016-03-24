@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_bar_chart_multi.ncl
+;  NCL User Guide Example:   NUG_bar_chart_multi.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -34,7 +34,7 @@ begin
    res@tmXBLabels            = (/"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep", \
                                  "Oct","Nov","Dec"/)
    res@tmXBLabelFontHeightF  =  0.015
-   res@tiMainString          = "NCL UG Example: bar chart of multi data sets"
+   res@tiMainString          = "NCL Doc Example: bar chart of multi data sets"
 
    res@gsnXYBarChartColors   = "blue"
    plots1 = gsn_csm_xy(wks, x, y1, res)

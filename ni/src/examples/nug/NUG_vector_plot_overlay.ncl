@@ -1,5 +1,5 @@
 ;---------------------------------------------------
-;  NCL User Guide Example:   NCL_vector_plot_overlay.ncl
+;  NCL User Guide Example:   NUG_vector_plot_overlay.ncl
 ;
 ;  KMF 30.10.14
 ;---------------------------------------------------
@@ -8,12 +8,25 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
 begin
 
-  diri  = "./"
-  fili  = "rectilinear_grid_2D.nc"
-  
-  uname = "u10"
-  vname = "v10"
-  tname = "tsurf"
+   diri  = "./"
+   fili  = "rectilinear_grid_2D.nc"
+ 
+   if (.not. fileexists(diri+fili)) then
+      print("")
+      print("You don't have the necessary data for this script. You can download it from:​")
+      print("")
+      print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+      print("")
+      print("or use the wget command:")
+      print("")
+      print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+      print("")
+      exit
+   end if
+   
+   uname = "u10"
+   vname = "v10"
+   tname = "tsurf"
 
 ;-- read the data
    f   =  addfile(diri+fili,"r")			   ;-- open file with read access
@@ -35,7 +48,7 @@ begin
    cnres@mpFillOn            = False           ;-- no map fill
    cnres@gsnLeftString       = "surface temperature"  ;-- change left string
    cnres@gsnRightString      = t@units         ;-- assign right string
-   cnres@tiMainString        = "NCL UG Example:  vectors overlay on map"
+   cnres@tiMainString        = "NCL Doc Example:  vectors overlay on map"
 
    vcres                     = True            ;-- vector only resources
    vcres@gsnDraw             = False           ;-- don't draw

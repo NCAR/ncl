@@ -1,5 +1,5 @@
 ;---------------------------------------------------
-;  NCL User Guide Example:   NCL_transparent_land_sea_mask_Africa.ncl
+;  NCL User Guide Example:   NUG_transparent_land_sea_mask_Africa.ncl
 ;
 ;  KMF 30.10.14
 ;---------------------------------------------------
@@ -7,19 +7,43 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 
+undef("file_ERROR")
+procedure file_ERROR(name)
+begin
+   print("")
+   print("You don't have the necessary data for this script. You can download it from:​")
+   print("")
+   print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   print("or use the wget command:")
+   print("")
+   print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   exit
+end
+
 begin
    diri      = "./"
    file1     = "tas_rectilinear_grid_2D.nc"
    mask_file = "sftlf_mod1_rectilinear_grid_2D.nc"
 
+   if (fileexists(diri+file1)) then
+      f = addfile(diri+file1, "r")
+   else
+      file_ERROR(file1)
+   end if
+   if (fileexists(diri+mask_file)) then
+      mask1 = addfile(diri+mask_file, "r")
+   else
+      file_ERROR(mask_file)
+   end if
+  
 ;-- read the data
-   f                         =  addfile(diri+file1,"r")
    var                       =  f->tas(0,:,:)
    var&lat@units             = "degrees_north"
    var&lon@units             = "degrees_east"
    var                       =  lonFlip(var)         ;-- flip from 0-360 degrees to -180-180 degrees
 
-   mask1                     =  addfile(diri+mask_file,"r")
    lsm1                      =  mask1->sftlf(:,:)
    lsm1&lat@units            = "degrees_north"
    lsm1&lon@units            = "degrees_east"
@@ -47,7 +71,7 @@ begin
    mres@cnFillOpacityF       =  0.5        ;-- 50% opaque
    mres@lbLabelStride        =  10
    mres@lbBoxLinesOn         =  False
-   mres@tiMainString         = "NCL UG Example: transparent lsm"
+   mres@tiMainString         = "NCL Doc Example: transparent lsm"
 
    map = gsn_csm_contour_map(wks,var,mres)
 

@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_multi_timeseries.ncl
+;  NCL User Guide Example:   NUG_multi_timeseries.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -7,6 +7,27 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/shea_util.ncl"
+
+undef("file_ERROR")
+procedure file_ERROR(diri,names[*]:string)
+local files_exist, ii
+begin
+   files_exist = fileexists(diri+names)
+   if(any(.not.files_exist)) then
+     ii = ind(.not.files_exist)
+     print("")
+     print("You don't have the necessary data file(s) for this script. You can download them from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+names(ii))
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+names(ii))
+     print("")
+     exit
+  end if
+end
+
 
 begin
   diri  = "./"
@@ -22,19 +43,22 @@ begin
   fil10 = "tas_mod4_hist_rectilin_grid_2D.nc"
   fil11 = "tas_mod4_rcp45_rectilin_grid_2D.nc"
   fil12 = "tas_mod4_rcp85_rectilin_grid_2D.nc"
-   
-  f1    = addfile(diri+fil1,  "r")
-  f2    = addfile(diri+fil2,  "r")
-  f3    = addfile(diri+fil3,  "r")
-  f4    = addfile(diri+fil4,  "r")
-  f5    = addfile(diri+fil5,  "r")
-  f6    = addfile(diri+fil6,  "r")
-  f7    = addfile(diri+fil7,  "r")
-  f8    = addfile(diri+fil8,  "r")
-  f9    = addfile(diri+fil9,  "r")
-  f10   = addfile(diri+fil10, "r")
-  f11   = addfile(diri+fil11, "r")
-  f12   = addfile(diri+fil12, "r")
+
+  file_ERROR(diri,(/fil1,fil2,fil3,fil4,fil5,fil6,fil7,fil8,fil9,fil10,fil11,fil12/))
+
+  f1  = addfile(diri+fil1,  "r")
+  f2  = addfile(diri+fil2,  "r")
+  f3  = addfile(diri+fil3,  "r")
+  f4  = addfile(diri+fil4,  "r")
+  f5  = addfile(diri+fil5,  "r")
+  f6  = addfile(diri+fil6,  "r")
+  f7  = addfile(diri+fil7,  "r")
+  f8  = addfile(diri+fil8,  "r")
+  f9  = addfile(diri+fil9,  "r")
+  f10 = addfile(diri+fil10, "r")
+  f11 = addfile(diri+fil11, "r")
+  f12 = addfile(diri+fil12, "r")
+
 ;---------------------------------------------------
   temp1           =  f1->tas(:,0,0,0)
   temp1@long_name = "2m temperature"
@@ -109,7 +133,7 @@ begin
   res@tiXAxisFontHeightF     =  0.012
   res@tiXAxisOffsetYF        =  0.0
   res@tiMainOffsetYF         =  0.11
-  res@tiMainString           = "NCL UG Example: multiple timeseries"
+  res@tiMainString           = "NCL Doc Example: multiple timeseries"
   res@tmXBLabelFontAspectF   =  1.3
   res@tmXBLabelFontHeightF   =  0.012
   res@trYMinF                =  292.0

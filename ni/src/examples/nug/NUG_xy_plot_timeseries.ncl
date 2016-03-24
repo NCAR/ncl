@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_xy_plot_timeseries.ncl
+;  NCL User Guide Example:   NUG_xy_plot_timeseries.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -11,7 +11,20 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/time_axis_labels.ncl"
 begin
    diri = "./"
    fili = "rectilinear_grid_2D.nc"
-   
+
+   if (.not. fileexists(diri+fili)) then
+      print("")
+      print("You don't have the necessary data for this script. You can download it from:​")
+      print("")
+      print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+      print("")
+      print("or use the wget command:")
+      print("")
+      print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+      print("")
+      exit
+   end if
+  
    f    =  addfile(diri+fili, "r")
    var  = f->tsurf
    time = var&time
@@ -23,7 +36,7 @@ begin
 
 ;-- set resources
    res                      =  True
-   res@tiMainString         = "NCL UG Example: xy-plot timeseries"
+   res@tiMainString         = "NCL Doc Example: xy-plot timeseries"
 
    restime                  = True       ;-- set time tickmark resources
    restime@ttmFormat        = "%d %c %y" ;-- time tickmark format

@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_axis_annotations.ncl
+;  NCL User Guide Example:   NUG_axis_annotations.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -12,7 +12,21 @@ begin
    diri  = "./"
    fili  = "rectilinear_grid_3D.nc"
    
-   f     =  addfile(diri+fili, "r")
+   if (fileexists(diri+fili)) then
+      f = addfile(diri+fili, "r")
+   else
+      print("")
+      print("You don't have the necessary data for this script. You can download it from:​")
+      print("")
+      print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+      print("")
+      print("or use the wget command:")
+      print("")
+      print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+      print("")
+      exit
+   end if
+  
    var   = f->t(0,{70000},{55},{0:60})
    lon_t = f->lon({0:60})                     ;-- longitude=0-60E
 
@@ -24,7 +38,7 @@ begin
    res@gsnMaximize            =  True
  
 ;-- set the title string. ~C~ insert a carriage return (no \ allowed).
-   res@tiMainString           = "NCL UG Example:  Axis Annotations"
+   res@tiMainString           = "NCL Doc Example:  Axis Annotations"
    res@tiMainFontHeightF      =  0.02
 
    res@tiXAxisSide            = "Bottom"         ;-- X-Axis title on bottom

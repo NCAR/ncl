@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_statistics_running_mean.ncl
+;  NCL User Guide Example:   NUG_statistics_running_mean.ncl
 ;
 ;  KMF
 ;-----------------------------------------------------------------
@@ -7,6 +7,19 @@ begin
 
   diri = "./"
   fili = "tas_mod1_rcp85_rectilin_grid_2D.nc"
+  
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
   
   f    =  addfile(diri+fili,"r")
   var  =  f->tas(:,0,:,:)
@@ -35,7 +48,7 @@ begin
   res@gsnDraw           =  False          ;-- don't draw plot yet
   res@gsnFrame          =  False          ;-- don't advance frame
   
-  res@tiMainString      = "NCL UG Example:  Running Mean"
+  res@tiMainString      = "NCL Doc Example:  Running Mean"
   
   res@vpHeightF         =  0.4            ;-- viewport height
   res@vpWidthF          =  0.78           ;-- viewport width

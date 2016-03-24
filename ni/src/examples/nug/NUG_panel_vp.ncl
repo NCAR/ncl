@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_panel_vp.ncl
+;  NCL User Guide Example:   NUG_panel_vp.ncl
 ;
 ;  KMF
 ;-----------------------------------------------------------------
@@ -10,6 +10,19 @@ begin
 ;-- read data and set variable references
   diri = "./"
   fili = "tas_rectilinear_grid_2D.nc"
+
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
   
   f    =  addfile(diri+fili, "r")
   t    =  f->tas

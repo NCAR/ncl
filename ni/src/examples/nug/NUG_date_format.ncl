@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_date_format.ncl
+;  NCL User Guide Example:  NUG_date_format.ncl
 ; 
 ;  This example requires the Climate Data Operators (cdo), which
 ;  can be downloaded from: https://code.zmaw.de/projects/cdo/files
@@ -34,6 +34,19 @@ begin
   diri = "./"
   fil1 = "tas_mon_1961-1990_rectilinear_grid_2D.nc"
 
+  if (.not. fileexists(diri+fil1)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fil1)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fil1)
+     print("")
+     exit
+  end if
+
 ;-- Calculate yearly means using climate data operators (cdo)
   system("cdo -s -r -f nc yearmean "+diri+fil1+" tser_tmp.nc")
 
@@ -66,7 +79,7 @@ begin
   res@xyDashPattern          =  0
   res@vpWidthF               =  0.7
   res@vpHeightF              =  0.37
-  res@tiMainString           = "NCL UG Example: date format"
+  res@tiMainString           = "NCL Doc Example: date format"
   res@tiXAxisString          = "Time"
   res@tiYAxisString          = "Temperature"
   res@trYMinF                =  279.2

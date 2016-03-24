@@ -1,10 +1,25 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_globe_orography_grid_resolution.ncl
+;  NCL User Guide Example:  NUG_globe_orography_grid_resolution.ncl
 ; 
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
+
+undef("file_ERROR")
+procedure file_ERROR(name)
+begin
+   print("")
+   print("You don't have the necessary data for this script. You can download it from:​")
+   print("")
+   print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   print("or use the wget command:")
+   print("")
+   print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   exit
+end
 
 begin
   diri = "./"
@@ -13,9 +28,28 @@ begin
   fil3 = "HSURF_regional_model_0.44deg.nc"
   fil4 = "FR-LAND_regional_model_0.44deg.nc"
   
-  f1          = addfile(diri+fil1,"r")
+  if (fileexists(diri+fil1)) then
+     f1 = addfile(diri+fil1, "r")
+  else
+     file_ERROR(fil1)
+  end if
+  if (fileexists(diri+fil2)) then
+     mask1 = addfile(diri+fil2, "r")
+  else
+     file_ERROR(fil2)
+  end if
+  if (fileexists(diri+fil3)) then
+     f2 = addfile(diri+fil3, "r")
+  else
+     file_ERROR(fil3)
+  end if
+  if (fileexists(diri+fil4)) then
+     mask2 = addfile(diri+fil4, "r")
+  else
+     file_ERROR(fil4)
+  end if
+  
   var1        = f1->HSURF(0,:,:)
-  mask1       = addfile(diri+fil2,"r")
   lsm1        = mask1->FR_LAND(0,:,:)
   lsm1        = where(lsm1.gt.0.5,-9999,lsm1)
   land_only1  = var1
@@ -26,9 +60,7 @@ begin
   nlat        = dimsizes(lat2d(:,0))
   nlon        = dimsizes(lon2d(0,:))
 
-  f2          = addfile(diri+fil3,"r")
   var2        = f2->HSURF(0,:,:)
-  mask2       = addfile(diri+fil4,"r")
   lsm2        = mask2->FR_LAND(0,:,:)
   lsm2        = where(lsm2.gt.0.5,-9999,lsm2)
   land_only2  = var2

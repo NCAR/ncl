@@ -1,5 +1,5 @@
 ;------------------------------------------------------------
-; NCL User Guide Example:      NCL_plot_rotated_grid.ncl
+; NCL User Guide Example:      NUG_plot_rotated_grid.ncl
 ;
 ; Description:  How to plot rotated data
 ;
@@ -137,6 +137,20 @@ begin
 ;-- open file and read variables
   diri    = "./"
   fili    = "tas_rotated_grid_EUR11.nc"
+  
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
+  
   f       =  addfile(diri+fili,"r")
   var     =  f->tas
   rlat    =  f->rlat
@@ -178,7 +192,7 @@ begin
 
   res@lbLabelBarOn          =  True                    ;-- turn on labelbar
 
-  res@tiMainString          = "NCL UG: rotated grid"  ;-- title
+  res@tiMainString          = "NCL Doc: rotated grid"  ;-- title
   res@tiMainOffsetYF        = -0.025                   ;-- move title downward
   
   res@vpWidthF              =  0.6                     ;-- width of viewport

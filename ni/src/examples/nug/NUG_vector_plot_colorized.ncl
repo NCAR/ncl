@@ -1,5 +1,5 @@
 ;---------------------------------------------------
-;  NCL User Guide Example:   NCL_vector_plot_colorized.ncl
+;  NCL User Guide Example:   NUG_vector_plot_colorized.ncl
 ;
 ;  KMF 30.10.14
 ;---------------------------------------------------
@@ -10,6 +10,19 @@ begin
 
   diri  = "./"
   fili  = "rectilinear_grid_2D.nc"
+
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
   
   uname = "u10"
   vname = "v10"
@@ -34,7 +47,7 @@ begin
   res@vcRefLengthF         =  0.045			    ;-- ref vec length
   res@vcGlyphStyle         = "CurlyVector"		;-- turn on curly vectors
   res@vcMinDistanceF       =  0.01			    ;-- thin out vectors
-  res@tiMainString         = "NCL UG Example:  vectors colorized by temperature" ;-- set title string
+  res@tiMainString         = "NCL Doc Example:  vectors colorized by temperature" ;-- set title string
   res@vcLevelPalette       = "ncl_default"     		    ;-- choose color map
 
 ;-- draw the vectors

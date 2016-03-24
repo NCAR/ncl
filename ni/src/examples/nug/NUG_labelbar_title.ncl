@@ -1,5 +1,5 @@
 ;---------------------------------------------------
-;  NCL User Guide Example:   NCL_labelbar_title.ncl
+;  NCL User Guide Example:   NUG_labelbar_title.ncl
 ;
 ;  KMF 30.10.14
 ;---------------------------------------------------
@@ -10,8 +10,23 @@ begin
 ;-- read the data and define
   diri   = "./"
   fili   = "rectilinear_grid_2D.nc"
-  file1  = addfile(diri+fili,"r")
-  var    = file1->tsurf(0,:,:)
+  
+  if (fileexists(diri+fili)) then
+     file1 = addfile(diri+fili, "r")
+  else
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
+  
+  var = file1->tsurf(0,:,:)
 
 ;-- define the workstation (plot type and name)
   wks = gsn_open_wks("png","plot_labelbar_title")
@@ -36,7 +51,7 @@ begin
   res@pmLabelBarWidthF      = 0.8              ;-- increase labelbar width
   res@pmLabelBarHeightF     =  0.08            ;-- decrease labelbar height
 
-  res@tiMainString          = "NCL UG Example: labelbar"   ;-- title
+  res@tiMainString          = "NCL Doc Example: labelbar"   ;-- title
   res@tiMainFontHeightF     =  0.02
 
 ;-- draw the contour map

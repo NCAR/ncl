@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_write_netCDF_1.ncl
+;  NCL User Guide Example:   NUG_write_netCDF_1.ncl
 ;
 ;  KMF
 ;-----------------------------------------------------------------
@@ -7,6 +7,19 @@ begin
   diri    = "./"
   fili    = "rectilinear_grid_2D.nc"
   outfile = "t_in_Celsius_1.nc"
+
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
   
   if (isfilepresent(outfile)) then
     system("rm -rf "+outfile)      ;-- make sure that file does not exist

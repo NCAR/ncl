@@ -1,5 +1,5 @@
 ;---------------------------------------------------
-;  NCL User Guide Example:   NCL_vector_curly.ncl
+;  NCL User Guide Example:   NUG_vector_curly.ncl
 ;
 ;  KMF 30.10.14
 ;---------------------------------------------------
@@ -10,7 +10,20 @@ begin
 
   diri = "./"
   fili = "rectilinear_grid_2D.nc"
-   
+
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
+  
   f    =  addfile(diri+fili, "r")
   u    =  f->u10(0,:,:)         	  	    ;-- first time step
   v    =  f->v10(0,:,:)         		    ;-- first time step
@@ -23,7 +36,7 @@ begin
 
   vres =  True
   vres@gsnMaximize          =  True
-  vres@tiMainString         = "NCL UG Example:  vector curly"
+  vres@tiMainString         = "NCL Doc Example:  vector curly"
   vres@vcMinFracLengthF     =  1.0		    ;-- length of min vector as fraction of reference vector
   vres@vcRefMagnitudeF      =  3.0		    ;-- make vectors larger
   vres@vcRefLengthF         =  0.045		;-- ref vec length

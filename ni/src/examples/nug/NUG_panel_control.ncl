@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_panel_control.ncl
+;  NCL User Guide Example:   NUG_panel_control.ncl
 ;
 ;  KMF
 ;-----------------------------------------------------------------
@@ -10,6 +10,19 @@ begin
 ;-- read data and set variable references
   diri = "./"
   fili = "tas_rectilinear_grid_2D.nc"
+
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
   
   f    =  addfile(diri+fili, "r")
   t    =  f->tas
@@ -71,7 +84,7 @@ begin
   pnlres@gsnPanelXWhiteSpacePercent   =  0
   pnlres@gsnPanelXWhiteSpacePercent   =  30
   pnlres@txFontHeightF                =  0.020    ;-- text font size
-  pnlres@txString                     = "NCL UG Example: panel control"
+  pnlres@txString                     = "NCL Doc Example: panel control"
   
 ;-- create panel plot
   gsn_panel(wks,(/plot_1,plot_2,plot_3,plot_4,plot_5/),(/3,2/),pnlres)

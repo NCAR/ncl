@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_GrADS_binary_data.ncl
+;  NCL User Guide Example:   NUG_GrADS_binary_data.ncl
 ;
 ;  grads ctl data descriptor file
 ;
@@ -22,14 +22,39 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl" 
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 
+undef("file_ERROR")
+procedure file_ERROR(name)
+begin
+   print("")
+   print("You don't have the necessary data for this script. You can download it from:​")
+   print("")
+   print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   print("or use the wget command:")
+   print("")
+   print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   exit
+end
+
 begin
 
   diri = "./"
 
 ;-- read file informations from GrADS descriptor file ctl
   
-  ctl = diri+"ps_grads_model.ctl"    
-  fin = systemfunc("cat "+ctl+" | grep DSET | awk '{print $2}'| sed -e 's/\^//g'")
+  ctl = "ps_grads_model.ctl" 
+  
+  if (fileexists(diri+ctl)) then
+     fin = systemfunc("cat "+diri+ctl+" | grep DSET | awk '{print $2}'| sed -e 's/\^//g'")
+  else
+     file_ERROR(ctl)
+  end if
+  
+  if (.not. fileexists(fin)) then
+     file_ERROR(fin)
+  end if
+
   print("Binary file:  "+fin)
 
 ;-- read data

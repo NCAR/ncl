@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_text_settings.ncl
+;  NCL User Guide Example:  NUG_text_settings.ncl
 ; 
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -37,7 +37,7 @@ begin
   txres                   = True   
   txres@txFontHeightF     = 0.03
   txres@txJust            = "CenterCenter"
-  str                     = "NCL UG Example: Text settings"
+  str                     = "NCL Doc Example: Text settings"
   gsn_text_ndc(wks,str,0.5,y,txres) 
 
   txres@txJust            = "CenterLeft"

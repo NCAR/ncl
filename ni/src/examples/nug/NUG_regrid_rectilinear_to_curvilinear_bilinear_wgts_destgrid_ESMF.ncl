@@ -1,6 +1,6 @@
 ;----------------------------------------------------------
 ;-- NCL User Guide example:  
-;-- NCL_regrid_rectilinear_to_curvilinear_bilinear_wgts_destgrid_ESMF.ncl
+;--   NUG_regrid_rectilinear_to_curvilinear_bilinear_wgts_destgrid_ESMF.ncl
 ;--
 ;-- Description:      regrid to curvilinear grid
 ;--
@@ -18,6 +18,20 @@ begin
 ;-- read data
   diri    = "../data/"
   fili    = "tas_rectilinear_grid_2D.nc"
+    
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
+  
   f       =  addfile(diri+fili,"r")
   var     =  f->tas(0,:,:) 
 
@@ -82,7 +96,7 @@ begin
   fAtt@project_id       = "NCL User Guide" 
   fAtt@source_file      =  fili
   fAtt@creation_date    =  systemfunc ("date")        
-  fAtt@history          = "NCL_regrid_rectilinear_to_curvilinear_bilinear_wgts_destgrid_ESMF.ncl: "+fili+" to curvilinear grid" 
+  fAtt@history          = "NUG_regrid_rectilinear_to_curvilinear_bilinear_wgts_destgrid_ESMF.ncl: "+fili+" to curvilinear grid" 
   fileattdef(fout,fAtt)                     ;-- copy file attributes    
 
 ;-- predefine the coordinate variables and their dimensionality

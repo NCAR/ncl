@@ -1,5 +1,5 @@
 ;---------------------------------------------------------------
-;  NCL User Guide Example: NCL_triangular_grid_ICON.ncl
+;  NCL User Guide Example: NUG_triangular_grid_ICON.ncl
 ;
 ;  Grid type:         ICON - Unstructured grid
 ;
@@ -16,6 +16,19 @@ begin
   
   diri = "./"
   fili = "triangular_grid_ICON.nc"
+
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
   
   f    = addfile(diri+fili, "r")
   var  = f->S(0,2,:)
@@ -58,7 +71,7 @@ begin
   res@gsnRightString         = ""                 ;-- don't add units to plot
   res@gsnMaximize            =  True              ;-- maximize plot output
   
-  res@tiMainString           = "NCL UG Example: ICON  -  Salinity [psu]" ;-- title
+  res@tiMainString           = "NCL Doc Example: ICON  -  Salinity [psu]" ;-- title
   res@tiMainFontHeightF      = 0.020
   res@pmTitleZone            = 2                  ;-- move title closer to plot
 

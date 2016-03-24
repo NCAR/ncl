@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_write_Binary_2.ncl
+;  NCL User Guide Example:   NUG_write_Binary_2.ncl
 ;
 ;  KMF
 ;-----------------------------------------------------------------

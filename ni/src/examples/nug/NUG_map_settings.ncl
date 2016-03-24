@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_map_settings.ncl
+;  NCL User Guide Example:  NUG_map_settings.ncl
 ; 
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -11,7 +11,20 @@ begin
 
   diri = "./"
   fili = "rectilinear_grid_2D.nc"
-   
+
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
+  
   f    =  addfile(diri+fili, "r")
   var  =  f->tsurf(0,:,:)
   
@@ -46,7 +59,7 @@ begin
   res@tmXBMinorOn           =  False           ;-- no minor x-tickmarks
   res@tmYLMinorOn           =  False           ;-- no minor y-tickmarks
 
-  res@tiMainString          = "NCL UG Example: map settings"   ;-- title string
+  res@tiMainString          = "NCL Doc Example: map settings"   ;-- title string
   res@tiMainFontHeightF     =  0.02
 
 ;-- draw the contour map

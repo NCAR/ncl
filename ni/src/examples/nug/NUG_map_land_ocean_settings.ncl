@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_map_land_ocean_settings.ncl
+;  NCL User Guide Example:   NUG_map_land_ocean_settings.ncl
 ;
 ;  KMF
 ;-----------------------------------------------------------------

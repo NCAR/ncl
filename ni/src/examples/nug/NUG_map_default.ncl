@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_map_default.ncl
+;  NCL User Guide Example:   NUG_map_default.ncl
 ;
 ;  KMF
 ;-----------------------------------------------------------------

@@ -1,17 +1,38 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_masking.ncl
+;  NCL User Guide Example:   NUG_masking.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
+undef("file_ERROR")
+procedure file_ERROR(name)
+begin
+   print("")
+   print("You don't have the necessary data for this script. You can download it from:​")
+   print("")
+   print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   print("or use the wget command:")
+   print("")
+   print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   exit
+end
+
 begin
 ;---- read the data and define variable reference var
-
   diri  = "./"
   fil1  = "tas_rectilinear_grid_2D.nc"
   fil2  = "sftlf_mod1_rectilinear_grid_2D.nc"
+
+  if (.not. fileexists(diri+fil1)) then
+     file_ERROR(fil1)
+  end if
+  if (.not. fileexists(diri+fil2)) then
+     file_ERROR(fil2)
+  end if
   
   file1          = addfile(diri+fil1,"r")
   var            =  file1->tas(0,:,:)
@@ -43,7 +64,7 @@ begin
   res@cnMinLevelValF        =  250.                                   ;-- minimum contour level
   res@cnMaxLevelValF        =  310.                                   ;-- maximum contour level
   res@cnLevelSpacingF       =  1                                      ;-- contour level spacing
-  res@tiMainString          = "NCL UG Example:  masking"   ;-- title string
+  res@tiMainString          = "NCL Doc Example:  masking"   ;-- title string
   res@tiMainFontHeightF     =  0.02
 
 ;---- draw the contour map

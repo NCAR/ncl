@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:  NCL_regrid_bilinear_CMIP5_grid_to_1x1deg_grid.ncl
+;  NCL User Guide Example:  NUG_regrid_bilinear_CMIP5_grid_to_1x1deg_grid.ncl
 ; 
 ;
 ;     Regrid CMIP5 grid to world grid 1x1 degrees - without plotting
@@ -30,6 +30,19 @@ begin
   diri  = "./"
   fili  = "thetao_ocean_rectilinear_grid_2D.nc"
 
+  if (.not. fileexists(diri+fili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
+     print("")
+     exit
+  end if
+  
   sfile        =  addfile(diri+fili,"r")
   thetao       =  sfile->thetao(0,0,:,:)
   thetao@lat2d =  sfile->lat

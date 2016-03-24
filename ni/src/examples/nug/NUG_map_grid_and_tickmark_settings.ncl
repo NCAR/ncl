@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_map_grid_and_tickmark_settings.ncl
+;  NCL User Guide Example:   NUG_map_grid_and_tickmark_settings.ncl
 ;
 ;  KMF
 ;-----------------------------------------------------------------

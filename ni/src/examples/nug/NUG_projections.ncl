@@ -1,5 +1,5 @@
 ;---------------------------------------------------
-;  NCL User Guide Example:   NCL_projections.ncl
+;  NCL User Guide Example:   NUG_projections.ncl
 ;
 ;  KMF 30.10.14
 ;---------------------------------------------------
@@ -9,6 +9,19 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 begin
    diri  = "./"
    file1 = "rectilinear_grid_2D.nc"
+
+  if (.not. fileexists(diri+file1)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+file1)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+file1)
+     print("")
+     exit
+  end if
   
 ;-- read the data
    f   =  addfile(diri+file1,"r")

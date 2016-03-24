@@ -1,5 +1,5 @@
 ;-----------------------------------------------------------------
-;  NCL User Guide Example:   NCL_xy_plot_res.ncl
+;  NCL User Guide Example:   NUG_xy_plot_res.ncl
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
@@ -14,7 +14,7 @@ begin
    wks = gsn_open_wks("png","xy_plot_res")
 
    res                        =  True
-   res@tiMainString           = "NCL UG Example:~C~        xy-plot resources"
+   res@tiMainString           = "NCL Doc Example:~C~        xy-plot resources"
 
    res@xyLineColor            =  "blue"
    res@xyLineThicknessF       =  5
