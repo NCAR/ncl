@@ -2771,7 +2771,7 @@ static int _NclFileFillHLFS(NclAdvancedFile file_out, int is_http,
 		if(NULL == file_out->advancedfile.grpnode)
                 {
                     NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                              "_NclFileFillHLFS: Problem write to file <%s>", NrmQuarkToString(path)));
+                              "_NclFileFillHLFS: Error opening file <%s>", NrmQuarkToString(path)));
 
                     if(need_free_file) 
                         NclFree((void*)file_out);

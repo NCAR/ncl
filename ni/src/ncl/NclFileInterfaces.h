@@ -612,6 +612,13 @@ int _NclGribVersion(
 #endif
 );
 
+int _NclIsGrib(
+#if NhlNeedProto
+	char * path,
+	ng_size_t limit
+#endif
+);
+
 extern NclFormatFunctionRecPtr _NclGetFormatFuncsWithAdvancedFileStructure
                                (NclQuark file_extension);
 

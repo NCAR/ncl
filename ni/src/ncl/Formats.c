@@ -160,11 +160,10 @@ int _NclGribVersion
 {
     ng_size_t gbuf_size = 1024;
     unsigned char buf[4 * gbuf_size];
-    int len,
-        version = -1;
+    int len, version = -1;
     int j;
 
-    static void *vbuf;
+    void *vbuf;
     FILE    *fd;
 
     fd = fopen(NrmQuarkToString(path), "r");
@@ -198,4 +197,84 @@ int _NclGribVersion
 
     NclFree(vbuf);
     return version;
+}
+
+int _NclIsGrib
+#if NhlNeedProto
+(char *path,
+ ng_size_t limit)
+#else
+(path,limit)
+    char *path;
+    ng_size_t limit;
+#endif
+{
+    ng_size_t j,len;
+    ng_size_t total;
+    char *vbuf;
+    FILE    *fd;
+    ng_size_t vbuflen;
+    struct stat statbuf;
+    int version;
+    int griblen;
+    char end[10];
+    int ret4;
+
+
+    if(stat(path,&statbuf) == -1) {
+	    return 0;
+    }
+
+    fd = fopen(path, "r");
+    vbuflen = statbuf.st_blksize;
+    vbuf = (char*)NclMalloc(vbuflen*4);
+    setvbuf(fd, (void *)vbuf, _IOFBF, vbuflen*4);
+
+    /*
+     * Read file, look for sequence 'G' 'R' 'I' 'B' ; version will follow
+     */
+    total = 0;
+    (void) fseek(fd, 0L, SEEK_SET);
+    while ((len = fread((void *) vbuf, 1, vbuflen*4, fd)) > 0) {
+	    if (len < 32)
+		    return 0;
+            for (j = 0; j < len - 16; j++) {
+		    /* look for "GRIB" indicator */
+		    if (vbuf[j] != 'G') {
+			    continue;
+		    } else {
+			    if ((vbuf[j + 1] == 'R' && vbuf[j + 2] == 'I' && vbuf[j + 3] == 'B')) {
+				    version = vbuf[j + 7];
+				    if (version == 1) {
+					    griblen = UnsignedCnvtToDecimal(3,&vbuf[j + 4]);
+				    }
+				    else {
+					    griblen = UnsignedCnvtToDecimal(4,&vbuf[j + 12]);
+				    }
+				    fseek(fd,j + griblen - 4, SEEK_SET);
+				    ret4 = fread((void*)end,1,4,fd);
+				    if(ret4 < 4) {
+					    return 0;
+				    }	 
+				    if(!strncmp("7777",end,4)) {
+					    fclose(fd);
+					    NclFree(vbuf);
+					    return 1;
+				    }
+				    return 0;
+			    }
+		    }
+            }
+	    total += len - 16;
+	    if (total > limit) 
+		    return 0;
+	    (void) fseek(fd, total, SEEK_SET);
+    }
+
+    if (fd) {
+        fclose(fd);
+    }
+
+    NclFree(vbuf);
+    return 0;
 }

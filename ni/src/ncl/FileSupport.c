@@ -82,6 +82,7 @@ short    NCLuseAFS;
 #include <sys/stat.h>
 
 NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_advanced_file_structure);
+
 void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *varnode);
 
 NhlErrorTypes _NclBuildOriginalFileCoordRSelection
@@ -3698,16 +3699,9 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 		return file_ext_q;
 	}
 	else if(*end_of_name == NULL) {
-		NclQuark the_real_path = NrmStringToQuark(_NGResolvePath(NrmQuarkToString(path)));
-		NclQuark old_file_ext_q = NrmStringToQuark("nc");
-		struct stat file_stat;
-
-		if(0 == stat(NrmQuarkToString(the_real_path), &file_stat))
-		{
-			if(file_stat.st_size)
-				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, use_advanced_file_structure);
-		}
-
+		/* no extension -- assume NetCDF for now 
+		   file_ext_q = NrmStringToQuark("nc");*/
+		return file_ext_q;  /* this is still -1 */
 	} else {
 		if (1 == rw_status)
 		{
@@ -3752,22 +3746,22 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_advanced_file_structure)
 {
 	NclQuark cur_ext_q;
-	NclQuark ori_file_ext_q = _NclGetLower(pre_file_ext_q);
-	NclQuark file_ext_q = ori_file_ext_q;
+	NclQuark ori_file_ext_q = -1;
+	NclQuark file_ext_q = pre_file_ext_q;
 
         char *ext_list[] = {"nc"
                           , "gr"
 #ifdef BuildHDF5
-                          , "h5"
 #ifdef BuildHDFEOS5
 			   , "he5"
 #endif
+                          , "h5"
 #endif
-#ifdef BuildHDF4
-			   , "h4"
 #ifdef BuildHDFEOS
 			   , "he2"
 #endif
+#ifdef BuildHDF4
+			   , "h4"
 #endif
 			   };
 
@@ -3778,8 +3772,12 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 	char *filename = (char*) alloca(strlen(NrmQuarkToString(the_path)) + 1);
 	struct stat buf;
 
-	if (_NclFormatEqual(NrmStringToQuark("grb"),file_ext_q))
-		ori_file_ext_q = NrmStringToQuark("gr");
+	if (_NclFormatEqual(NrmStringToQuark("grb"),file_ext_q)) {
+		/* if there is a grib extension don't verify here -- because the
+		   verification is limited to a fixed number of bytes. Files that have
+		   a GRIB extension will be read completely for evidence of GRIB-ness */
+       		return file_ext_q;
+	}
 #ifdef BuildGDAL
 	else if(_NclFormatEqual(NrmStringToQuark("shp"),file_ext_q))
 	{
@@ -3790,7 +3788,6 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 	else if (_NclFormatEqual(NrmStringToQuark("nc"),file_ext_q))
 	{
 		ori_file_ext_q = NrmStringToQuark("nc");
-		*use_advanced_file_structure = NCLadvancedFileStructure[_Nio_Opt_NETCDF];
 	}
 #ifdef BuildHDF4
 	/* note a file with "hdf" suffix could actually be an HDF5 file */
@@ -3804,14 +3801,12 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 #ifdef BuildHDF5
 	else if (_NclFormatEqual(NrmStringToQuark("h5"),file_ext_q)) 
 	{
-		*use_advanced_file_structure = NCLadvancedFileStructure[_Nio_Opt_HDF5];
 		ori_file_ext_q = NrmStringToQuark("h5");
 	}
 #ifdef BuildHDFEOS5
 	else if  (_NclFormatEqual(NrmStringToQuark("he5"),file_ext_q)) 
 	{
 		ori_file_ext_q = NrmStringToQuark("he5");
-		*use_advanced_file_structure = NCLadvancedFileStructure[_Nio_Opt_HDFEOS5];
 	}
 #endif
 #endif
@@ -3837,8 +3832,11 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 
 	for(n = -1; n < sizeofextlist; n++)
 	{
-		if(0 > n)
+		if(0 > n) {
+			if (ori_file_ext_q == -1)
+				continue;
 			cur_ext_q = ori_file_ext_q;
+		}
 		else
 		{
 			cur_ext_q = NrmStringToQuark(ext_list[n]);
@@ -3856,7 +3854,9 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 
 			if(NC_NOERR != nc_ret)
 			{
-				continue;
+				if (ori_file_ext_q == -1)
+					continue;
+				break;
 			}
 
 			nc_inq_format(cdfid, &format);
@@ -3885,6 +3885,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
               			case NC_FORMAT_CLASSIC:
 					file_ext_q = cur_ext_q;
 					found = 1;
+					*use_advanced_file_structure = NCLadvancedFileStructure[_Nio_Opt_NETCDF];
                    			break;
               			default:
 					found = 0;
@@ -3893,8 +3894,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 
 			ncclose(cdfid);
 
-			if(found)
-				break;
+			break;
 		}
 #ifdef BuildHDF5
 		else if(NrmStringToQuark("h5") == cur_ext_q)
@@ -3923,7 +3923,6 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 			/*HDFEOS5 file should be first a HDF5 file.*/
 			htri_t status = H5Fis_hdf5(filename);
 
-			*use_advanced_file_structure = NCLadvancedFileStructure[_Nio_Opt_HDFEOS5];
 
 			if(! status)
 			{
@@ -3942,6 +3941,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 			{
         			file_ext_q = cur_ext_q;
         			found = 1;
+				*use_advanced_file_structure = NCLadvancedFileStructure[_Nio_Opt_HDFEOS5];
 				break;
 			}
 		}
@@ -4020,42 +4020,13 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 #endif
 		else if(NrmStringToQuark("gr") == cur_ext_q)
 		{
-#ifdef BuildGRIB2			
-			g2int   lgrib;
-			size_t  lskip = 0;
-			size_t  seek = 0;
-
-			FILE *fd = fopen(filename, "r");
-
-			_g2_seekgb(fd, seek, (size_t)32 * GBUFSZ_T, &lskip, &lgrib);
-  			fclose(fd);
-			if (lgrib == 0)
-				break;
-
 			found = 0;
-
-			if(lgrib)
-			{
+			if (_NclIsGrib(filename,50000)) {
         			file_ext_q = cur_ext_q;
-        			found = 1;
+				found = 1;
 				break;
 			}
-#endif
-			{
-				off_t offset = 0;
-				off_t nextoff = 0;
-				unsigned int size = 0;
-				int version;
-				int fid = open(filename, O_RDONLY);
-				int ret = GetNextGribOffset(fid,&offset,&size,offset,&nextoff,&version);
-				close(fid);
-                        	if((ret != GRIBEOF) && (ret != GRIBERROR))
-                        	{
-                                	file_ext_q = cur_ext_q;
-                                	found = 1;
-                               		break;
-                        	}
-			}
+				
 		}
 #if 0
 		/*We do not need to say anything, but let it return -1. Wei 09/21/2014*/
@@ -4068,6 +4039,8 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 		}
 #endif
 	}
+	if (!found)
+		return -1;
 
 	return file_ext_q;
 }
@@ -4094,14 +4067,20 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 	if(! is_http)
 	{
-
+/*
 		if(0 > file_ext_q)
 		{
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"(%s) has no file extension, can't determine type of file to open",NrmQuarkToString(path)));
 			return(NULL);
 		}
+*/
 		if (rw_status == -1) {   
 			/* file has not been created */
+			if(0 > file_ext_q)
+			{
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,"(%s) has no file extension, can't determine type of file to open",NrmQuarkToString(path)));
+				return(NULL);
+			}
 			if (_NclFormatEqual(NrmStringToQuark("nc"),file_ext_q)) {
 				NrmQuark nc4 = NrmStringToQuark("netcdf4");
 				NrmQuark cdf5 = NrmStringToQuark("cdf5");
@@ -4127,8 +4106,9 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 			file_ext_q = -1;
 
-			if((0 == stat(NrmQuarkToString(the_real_path), &file_stat)) &&
-					(file_stat.st_size))
+			if ((0 == stat(NrmQuarkToString(the_real_path), &file_stat)) &&
+			    file_stat.st_size &&
+			    ((file_stat.st_mode & S_IFMT) == S_IFREG || (file_stat.st_mode & S_IFMT) == S_IFLNK))
 				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, &use_advanced_file_structure);
 			else
 			{
@@ -4158,10 +4138,9 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 			if(0 > file_ext_q)
 			{
-				fprintf(stderr, "\tfile_ext_q: <%s>\n", "Undefined");
-				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-					"_NclCreateFile: Can not open file: <%s> properly.\n",
-				 	NrmQuarkToString(the_real_path)));
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					"_NclCreateFile: Can not open file: <%s> properly; possibly a non-supported file format",
+				 	NrmQuarkToString(the_real_path));
 				return file_out;
 			}
 		}

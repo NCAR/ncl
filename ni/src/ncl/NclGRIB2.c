@@ -9245,7 +9245,9 @@ void _g2_seekgb(FILE *lugb,size_t iseek,size_t mseek,size_t *lskip,g2int *lgrib)
 	size_t ipos;
 	int    end;
 	unsigned char *cbuf;
+	g2int  max_bytes;
 
+	max_bytes = *lgrib;
 	*lgrib=0;
 	cbuf=(unsigned char *)malloc(mseek);
 	nread=mseek;
@@ -9277,9 +9279,12 @@ void _g2_seekgb(FILE *lugb,size_t iseek,size_t mseek,size_t *lskip,g2int *lgrib)
 			}
 		}
 		ipos=ipos+lim;
+		if (ipos > max_bytes)
+			return;
 	}
 
 	free(cbuf);
+	return;
 }
 
 
@@ -9419,6 +9424,12 @@ static void *Grib2OpenFile
      */
     t_nrecs = nrecs;
     for (;;) {
+	/* lgrib is now in and out; setting it to 0 causes _g2_seekgb to
+	   look all the way through a file to find GRIB records. Setting it
+           to a positive value makes _g2_seekgb to return failure if more
+	   than that many bytes are read without finding a valid GRIB record. */
+
+	lgrib = 0;
 	_g2_seekgb(fd, seek, (size_t)32 * GBUFSZ_T, &lskip, &lgrib);
         /* EOF or other problem? */
         if (lgrib == 0)
