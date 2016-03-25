@@ -204,6 +204,10 @@ end
 ; Carl Schreck (cjschrec@ncsu.edu)
 ; March 2016
 ; Added to NCL in V6.4.0; enhanced to handle missing values.
+;
+; Based on discussions with Carl, we decided to go with having
+; this routine return missing values if the input was missing,
+; instead of returning False.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 undef ("is_string_numeric")
@@ -217,8 +221,7 @@ begin
   sRank = dimsizes(sDims)
 
   if(sRank.eq.1) then
-    retVal = new( sDims, logical, "No_FillValue" )
-    retVal = False
+    retVal = new( sDims, logical )
     do i = 0, sDims-1
       if(ismissing(i_string(i))) then
         continue
@@ -242,7 +245,6 @@ begin
     i_string_1D = ndtooned(i_string)
     sDims_1D    = dimsizes(i_string_1D)
     retVal_1D   = new( sDims_1D, logical, "No_FillValue" )
-    retVal_1D   = False
     do i = 0, sDims_1D-1
       if(ismissing(i_string_1D(i))) then
         continue
