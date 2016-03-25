@@ -244,7 +244,7 @@ begin
 ;
     i_string_1D = ndtooned(i_string)
     sDims_1D    = dimsizes(i_string_1D)
-    retVal_1D   = new( sDims_1D, logical, "No_FillValue" )
+    retVal_1D   = new( sDims_1D, logical)
     do i = 0, sDims_1D-1
       if(ismissing(i_string_1D(i))) then
         continue
