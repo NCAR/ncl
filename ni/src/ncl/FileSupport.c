@@ -3484,7 +3484,10 @@ struct _NclMultiDValDataRec *value;
 	NhlErrorTypes ret;
 	int do_both = 0;
 
-	fc = &nclFileClassRec;
+	if (thefile && thefile->file.advanced_file_structure)
+		fc = &nclAdvancedFileClassRec;
+	else
+		fc = &nclFileClassRec;
 
 	while(fc)
 	{

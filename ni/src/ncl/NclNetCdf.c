@@ -953,7 +953,7 @@ NclQuark path;
 	}
 #endif
 #ifdef NC_FORMAT_CDF5
-	if (((NrmQuark)(tmp->options[NC_FORMAT_OPT].values) == 
+	else if (((NrmQuark)(tmp->options[NC_FORMAT_OPT].values) == 
 	     NrmStringToQuark("cdf5")) ||
 	    ((NrmQuark)(tmp->options[NC_FORMAT_OPT].values) == 
 	     NrmStringToQuark("64bitdata"))) {
