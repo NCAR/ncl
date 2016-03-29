@@ -55,8 +55,8 @@ spv = -9999.0
 ; Create variable for holding data values.
 ;
 temp = new((/NSTATIONS,NHOURS/),float,spv)
-pressure = new((/NSTATIONS,NHOURS/),float,spv)
-wind_speed = new((/NSTATIONS,NHOURS/),float,spv)
+pres = new((/NSTATIONS,NHOURS/),float,spv)
+wspd = new((/NSTATIONS,NHOURS/),float,spv)
 
 ;
 ; We need to initialize a non-constant dummy array for our Data
@@ -200,8 +200,8 @@ date = "950318"
 ;
 
 temp@_FillValue = spv
-pressure@_FillValue = spv
-wind_speed@_FillValue = spv
+pres@_FillValue = spv
+wspd@_FillValue = spv
 filedir = ncargpath("data")
 do j = 0,NHOURS-1
   if((j.lt.10))
@@ -220,13 +220,13 @@ do j = 0,NHOURS-1
     if(.not.all(ismissing(i)))
       print("loaded hour " + j)
       temp(l,j) = (/tmpfile->T(i(0))/)
-      pressure(l,j) = (/tmpfile->PSL(i(0))/)
-      wind_speed(l,j) = (/tmpfile->SPD(i(0))/)
+      pres(l,j) = (/tmpfile->PSL(i(0))/)
+      wspd(l,j) = (/tmpfile->SPD(i(0))/)
     else
       print("missing hour " + j)
       temp(l,j) = spv
-      pressure(l,j) = spv
-      wind_speed(l,j) = spv
+      pres(l,j) = spv
+      wspd(l,j) = spv
     end if
     delete(i)
   end do
@@ -266,7 +266,7 @@ frame(xworkid)
 ; name as when we originally created it, "xyData".
 ;
 setvalues dataid
-    "caYArray" : pressure
+    "caYArray" : pres
 end setvalues
 
 ;
@@ -291,7 +291,7 @@ frame(xworkid)
 ; name as when we originally created it, "xyData".
 ;
 setvalues dataid
-    "caYArray" : wind_speed
+    "caYArray" : wspd
 end setvalues
 
 ;
