@@ -16753,6 +16753,8 @@ function calculate_monthly_values (x:numeric, arith:string, nDim[1]:integer, opt
 ;        xMonthSum = calculate_monthly_values(x, "sum", 0, False)
 ;        xMonthMin = calculate_monthly_values(x, "min", 0, False)
 ;        xMonthMax = calculate_monthly_values(x, "max", 0, False)
+;        xMonthVar = calculate_monthly_values(x, "var", 0, False)
+;        xMonthStd = calculate_monthly_values(x, "std", 0, False)
 ;                  ************
 ; Note that NCL's 'dimension reduction' which, in general, I view as a feature,
 ;      introduces some processing issues in the 'corner case' of one value.
