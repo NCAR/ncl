@@ -16769,7 +16769,8 @@ local dnamx, TNAME, TIME, dimx, rankx, NTIM, utc_date, year, month, ntim, work
      ,yyyy, mm, nt, it, nmos, xStat, nval_crit
 begin
     if (.not.(arith.eq."ave" .or. arith.eq."avg" .or. arith.eq."sum"  \
-                             .or. arith.eq."min" .or. arith.eq."max") ) then
+                             .or. arith.eq."min" .or. arith.eq."max") \     
+                             .or. arith.eq."var" .or. arith.eq."std") then
         print("calculate_monthly_values: unrecognizezed 'arith' argument="+arith)
         exit
     end if
@@ -16875,6 +16876,20 @@ begin
                          xStat(nt)  = dim_max_n( x(it), nDim)
                      else               ; one 'it'
                          xStat(nt)  = x(it(0))
+                     end if
+                 end if
+                 if (arith.eq."var") then
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(nt)  = dim_variance_n( x(it), nDim)
+                     else               ; one 'it'; variance set to zero
+                         xStat(nt)  = 0.0       
+                     end if
+                 end if
+                 if (arith.eq."std") then
+                     if (nit.gt.1) then ; work around for NCL's dimension reduction
+                         xStat(nt)  = dim_stddev_n( x(it), nDim)
+                     else               ; one 'it'; std. dev set to zero
+                         xStat(nt)  = 0.0       
                      end if
                  end if
              end if    ; .not.ismissing(it(0))
