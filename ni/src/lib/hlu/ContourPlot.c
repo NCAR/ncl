@@ -6055,6 +6055,24 @@ static NhlErrorTypes ManageLabelBar
 
 	if (cnp->const_field && cnp->display_labelbar < NhlFORCEALWAYS && ! cnp->do_constf_fill) return ret;
 	
+	if (! cnp->explicit_lbar_labels_on) {
+		cnp->lbar_labels_set = False; 
+		if (init || set_all ||
+		    cnp->llabel_strings != ocnp->llabel_strings ||
+		    cnp->explicit_lbar_labels_on != ocnp->explicit_lbar_labels_on) {
+			redo_lbar = True;
+		}
+	}
+	else if (! cnp->lbar_labels_set) {
+		redo_lbar = True;
+		cnp->lbar_labels_set = True;  /* this must remain set as long as explicit mode is on in order
+						 to prevent the explicit labels from being reset automatically */
+	}
+	else {
+		/* don't copy line label strings if set to explicit and lbar_labels_set is True */
+		redo_lbar = False;
+	}
+
         if (! (cnp->explicit_lbar_labels_on && cnp->lbar_alignment_set)) {
 		if (init || cnp->lbar_end_style != ocnp->lbar_end_style ||
 		    cnp->explicit_lbar_labels_on != ocnp->explicit_lbar_labels_on) {
@@ -6070,25 +6088,6 @@ static NhlErrorTypes ManageLabelBar
 			}
 		}
 	}
-
-	if (! cnp->explicit_lbar_labels_on) {
-		cnp->lbar_labels_set = False; 
-		if (init || set_all ||
-		    cnp->llabel_strings != ocnp->llabel_strings ||
-		    cnp->explicit_lbar_labels_on != ocnp->explicit_lbar_labels_on) {
-			redo_lbar = True;
-		}
-	}
-	else if (! cnp->lbar_labels_set) {
-		redo_lbar = True;
-		cnp->lbar_labels_set = True;  /* this must remain set as long as explcit mode is on in order
-						 to prevent the explicit labels from being reset automatically */
-	}
-	else {
-		/* don't copy line label strings if set to explcit and lbar_labels_set is True */
-		redo_lbar = False;
-	}
-
 
 	if (cnp->lbar_end_style == NhlEXCLUDEOUTERBOXES) {
 		cnp->lbar_fill_count = cnp->level_count - 1;
