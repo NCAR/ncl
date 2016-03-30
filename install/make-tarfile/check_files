@@ -800,6 +800,7 @@ lib/ncarg/data/cdf/uv300.nc
 lib/ncarg/data/cdf/vinth2p.nc
 lib/ncarg/data/grb/ced1.lf00.t00z.eta.grb
 lib/ncarg/data/grb/fh.0012_tl.press_gr.awp211.grb2
+lib/ncarg/data/grb/MET9_IR108_cosmode_0909210000.grb2
 lib/ncarg/data/grb/wafsgfs_L_t06z_intdsk60.grib2
 lib/ncarg/data/hdf/avhrr.hdf
 lib/ncarg/data/hdf/MLS-Aura_L2GP-IWC_v02-21-c02_2007d210.he5
