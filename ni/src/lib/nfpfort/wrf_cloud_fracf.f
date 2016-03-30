@@ -10,6 +10,9 @@ C NCLEND
       integer i,j,k
       integer kchi,kcmi,kclo 
 
+      kclo = 0
+      kcmi = 0
+      kchi = 0
 
       DO j = 1,ns
       DO i = 1,ew
