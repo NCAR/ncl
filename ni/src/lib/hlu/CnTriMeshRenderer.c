@@ -854,324 +854,309 @@ static NhlErrorTypes BuildTriangularMesh
 	int tid,nthreads;
 	int tsize;
 
-	rlat = (float*)cnp->sfp->y_arr->data;
-	rlon = (float*)cnp->sfp->x_arr->data;
-	rdat = (float*)cnp->sfp->d_arr->data;
-
 	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
 
-#if 0
-#pragma omp parallel shared(cnp, tmp,missing_val,flx,frx,fby,fuy,wlx,wrx,wby,wuy,ll,nthreads,rdat,rlat,rlon) \
-	private(tid,tbp,block_ix,npnt,ntri,nedg,i,j, blk_idim, blk_jdim, idm1, jdm1, mnop,mnoe,mnot,mpnt,medg,mtri,iscr, \
-		rpnt,iedg,itri,tlat,tlon,tdat,coords_alloced,tsize,blk_j_off,blk_i_off)
-	{
-#ifdef _OPENMP
+	tid = 0;
+	nthreads = 1;
 
-	    tid = omp_get_thread_num();
-	    nthreads = omp_get_num_threads();
-#endif
-#endif
-	    tid = 0;
-	    nthreads = 1;
-
-	    if (nthreads > 1) {
-		    if (tid == 0) 
-			    CreateTilePartitions2D(tmp,cnl,entry_name);
-	    }
-	    else {
-		    tbp = &(tmp->tri_block[0]);
-		    tbp->xs = tbp->xsr = wlx;
-		    tbp->xe = tbp->xer = wrx;
-		    tbp->ys = tbp->ysr = wby;
-		    tbp->ye = tbp->yer = wuy;
-		    tbp->ixmn = tbp->iymn = 0;
-		    tbp->ixmx = cnp->sfp->fast_len - 1;
-		    tbp->iymx = cnp->sfp->slow_len - 1;
-		    tbp->dat = (float*)cnp->sfp->d_arr->data;
-		    tbp->npnt = cnp->sfp->slow_len * cnp->sfp->fast_len;
-		    tmp->nblocks = 1;
-	    }
-
-		    
-#if 0
-#pragma omp barrier
-
-#pragma omp for schedule(static,1)
-#endif
-	    for (block_ix = 0; block_ix < tmp->nblocks; block_ix++) {
-		    
-		    tbp = &(tmp->tri_block[block_ix]);
-		    blk_idim = tbp->ixmx - tbp->ixmn + 1;
-		    blk_jdim = tbp->iymx - tbp->iymn + 1;
-		    idm1 = blk_idim - 1;
-		    jdm1 = blk_jdim - 1;
-		    blk_j_off = tbp->iymn * cnp->sfp->fast_len;
-		    blk_i_off = tbp->ixmn;
-
-		    mnop = blk_idim * blk_jdim;
-		    mnoe = 3 *idm1 * jdm1 + idm1 + jdm1;
-		    mnot = 2 * idm1 * jdm1;
-		    mpnt = mnop * Lopn;
-		    medg = mnoe * Loen;
-		    mtri = mnot * Lotn;
-
-		    iscr = NhlMalloc(4 * blk_idim * blk_jdim * sizeof(int));
-		    rpnt = NhlMalloc(mpnt * sizeof(float));
-		    iedg = NhlMalloc(medg * sizeof(int));
-		    itri = NhlMalloc(mtri * sizeof(int));
-#if 0
-		    if (! iscr || ! rpnt || ! iedg || ! itri) {
-			    NHLPERROR((NhlFATAL,ENOMEM,NULL));
-			    return NhlFATAL;
-		    }
-#endif
-	
-		    missing_val = cnp->sfp->missing_value_set ?
-			    cnp->sfp->missing_value : -FLT_MAX;
-
-		    tsize = blk_jdim * blk_idim * sizeof(float);
-		    coords_alloced = 0;
-		    if (tmp->nblocks == 1 &&  cnp->sfp->x_arr->num_dimensions == 2
-			&& ! (cnp->sfp->xc_is_bounds || cnp->sfp->yc_is_bounds)) {
-			    /* in this case only there is no need to copy the arrays */
-			    tlat = rlat;
-			    tlon = rlon;
-			    tdat = rdat;
-		    }
-		    else {
-			    coords_alloced = 1;
-			    tlat = NhlMalloc( tsize * sizeof(float));
-			    tlon = NhlMalloc( tsize * sizeof(float));
-			    tdat = NhlMalloc( tsize * sizeof(float));
-			    if (cnp->sfp->x_arr && cnp->sfp->x_arr->num_dimensions == 2) {
-				    float *rlon_off = rlon + blk_j_off;
-				    float *rlat_off = rlat + blk_j_off;
-		
-				    /* 
-				     * since the triangular mesh algorithm does not handle
-				     * coordinates not defined at the grid points we 
-				     * must interpolate bounding coordinates to the 
-				     * cell centers as best we can.
-				     */
-				    if (cnp->sfp->xc_is_bounds && cnp->sfp->yc_is_bounds) {
-					    int jd, jbd, jbdp;
-					    int ix;
-					    int xcoord_len = idim + 1;
-				    
-					    for (j = 0; j < blk_jdim; j++) {
-						    jd = j * idim;
-						    jbd = j * xcoord_len;
-						    jbdp = (j+1) * xcoord_len;
-						    for (i = 0; i < blk_idim; i++) {
-							    ix = i + blk_i_off;
-							    *(tlon+jd+i) = 
-								    (*(rlon_off + jbd+ix) + *(rlon_off+jbd+ix+1) +
-								     *(rlon_off+jbdp + ix) + *(rlon_off+jbdp+ix+1)) 
-								    / 4.0;
-							    *(tlat+jd+i) =
-								    (*(rlat_off+jbd+ix) + *(rlat_off+jbd+ix+1) +
-								     *(rlat_off+jbdp+ix) + *(rlat_off+jbdp+ix+1)) 
-								    / 4.0;
-						    }
-					    }
-					    if (tbp->ixmn == 0) {
-						    memcpy(tdat,rdat + tbp->iymn * cnp->sfp->fast_len,tsize);
-					    }
-					    else {
-						    int tysize = tbp->iymx - tbp->iymn + 1;
-						    int txsize = tbp->ixmx -tbp->ixmn + 1;
-						    int rstart = tbp->iymn * cnp->sfp->fast_len;
-						    for (i = 0; i < tysize; i++) {
-							    memcpy(tdat + i * txsize, rdat + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
-						    }
-					    }
-				    }
-				    else if (cnp->sfp->xc_is_bounds) {
-					    int jd, jbd;
-					    int ix;
-					    int xcoord_len = idim + 1;
-					    for (j = 0; j < blk_jdim; j++) {
-						    jd = j * idim;
-						    jbd = j * xcoord_len;
-						    for (i = 0; i < blk_idim; i++) {
-							    ix = i + blk_i_off;
-							    *(tlon+jd+i) = 
-								    (*(rlon_off+jbd+ix) + *(rlon_off+jbd+ix+1)) / 2.0;
-							    *(tlat+jd+i) = 
-								    (*(rlat_off+jbd+ix) + *(rlat_off+jbd+ix+1)) / 2.0;
-						    }
-					    }
-					    if (tbp->ixmn == 0) {
-						    memcpy(tdat,rdat + tbp->iymn * cnp->sfp->fast_len,tsize);
-					    }
-					    else {
-						    int tysize = tbp->iymx - tbp->iymn + 1;
-						    int txsize = tbp->ixmx -tbp->ixmn + 1;
-						    int rstart = tbp->iymn * cnp->sfp->fast_len;
-						    for (i = 0; i < tysize; i++) {
-							    memcpy(tdat + i * txsize, rdat + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
-						    }
-					    }
-				    }
-				    else if (cnp->sfp->yc_is_bounds) {
-					    int jd, jdp;
-					    int ix;
-					    for (j = 0; j < blk_jdim; j++) {
-						    jd = j * idim;
-						    jdp = (j + 1) * idim;
-						    for (i = 0; i < blk_idim; i++) {
-							    ix = i + blk_i_off;
-							    *(tlon+jd+i) = 
-								    (*(rlon_off+jd+ix) + *(rlon_off+jdp+ix)) / 2.0;
-							    *(tlat+jd+i) = 
-								    (*(rlat_off+jd+ix) + *(rlat_off+jdp+ix)) / 2.0;
-						    }
-					    }
-					    if (tbp->ixmn == 0) {
-						    memcpy(tdat,rdat + tbp->iymn * cnp->sfp->fast_len,tsize);
-					    }
-					    else {
-						    int tysize = tbp->iymx - tbp->iymn + 1;
-						    int txsize = tbp->ixmx -tbp->ixmn + 1;
-						    int rstart = tbp->iymn * cnp->sfp->fast_len;
-						    for (i = 0; i < tysize; i++) {
-							    memcpy(tdat + i * txsize, rdat + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
-						    }
-					    }
-				    }
-				    else {
-					    if (tbp->ixmn == 0) {
-						    memcpy(tlat,rlat + tbp->iymn * cnp->sfp->fast_len,tsize);
-						    memcpy(tlon,rlon + tbp->iymn * cnp->sfp->fast_len,tsize);
-						    memcpy(tdat,rdat + tbp->iymn * cnp->sfp->fast_len,tsize);
-					    }
-					    else {
-						    int tysize = tbp->iymx - tbp->iymn + 1;
-						    int txsize = tbp->ixmx -tbp->ixmn + 1;
-						    int rstart = tbp->iymn * cnp->sfp->fast_len;
-						    for (i = 0; i < tysize; i++) {
-							    memcpy(tlat + i * txsize, rlat + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
-							    memcpy(tlon + i * txsize, rlon + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
-							    memcpy(tdat + i * txsize, rdat + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
-						    }
-					    }
-				    }
-			    }
-			    else {
-				    if (cnp->sfp->y_arr) {
-					    float y;
-					    int jix;
-					    if (! cnp->sfp->yc_is_bounds) {
-						    for (j = 0; j < blk_jdim; j++) {
-							    jix = tbp->iymn + j;
-							    y = rlat[jix];
-							    for (i = 0; i < blk_idim; i++) {
-								    *(tlat + j*blk_idim+i) = y;
-							    }
-						    }
-					    }
-					    else {
-						    for (j = 0; j < blk_jdim; j++) {
-							    jix = tbp->iymn + j;
-							    y = (rlat[jix] + rlat[jix + 1]) * 0.5;
-							    for (i = 0; i < blk_idim; i++) {
-								    *(tlat + j*blk_idim+i) = y;
-							    }
-						    }
-					    }
-				    }
-				    else {
-					    /* need to do something here */
-					    float y;
-					    float step = (cnp->sfp->y_end - cnp->sfp->y_start) /    
-						    (blk_jdim - 1);
-					    for (j = 0; j < blk_jdim; j++) {
-						    y = cnp->sfp->y_start + (j + tbp->iymn) * step;
-						    for (i = 0; i < blk_idim; i++) {
-							    *(tlat + j*blk_idim+i) = y;
-						    }
-					    }
-				    }
-				    if (cnp->sfp->x_arr) {
-					    if (! cnp->sfp->xc_is_bounds) {
-						    float *x = rlon + tbp->ixmn; 
-						    for (j = 0; j < blk_jdim; j++) {
-							    memcpy(tlon + j*blk_idim,x,blk_idim * sizeof(float));
-						    }
-					    }
-					    else {
-						    int ix;
-						    float x;
-						    for (i = 0; i < blk_idim; i++) {
-							    ix = i + tbp->ixmn;
-							    x = (rlon[ix] + rlon[ix + 1]) * 0.5;
-							    for (j = 0; j < blk_jdim; j++) {
-								    tlon[j * blk_idim + i] = x;
-							    }
-						    }
-					    }
-				    }
-				    else {
-					    /* need to do something here */
-					    float x;
-					    float step = (cnp->sfp->x_end - cnp->sfp->x_start) /
-						    (blk_idim - 1);
-					    for (i = 0; i < blk_idim; i++) {
-						    x = cnp->sfp->x_start + (i + tbp->iymn) * step;
-						    for (j = 0; j < blk_jdim; j++) {
-							    *(tlon + j*blk_idim + i) = x;
-						    }
-					    }
-				    }
-				    if (tbp->ixmn == 0) {
-					    memcpy(tdat,rdat + tbp->iymn * cnp->sfp->fast_len,tsize);
-				    }
-				    else {
-					    int tysize = tbp->iymx - tbp->iymn + 1;
-					    int txsize = tbp->ixmx -tbp->ixmn + 1;
-					    int rstart = tbp->iymn * cnp->sfp->fast_len;
-					    for (i = 0; i < tysize; i++) {
-						    memcpy(tdat + i * txsize, rdat + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
-					    }
-				    }
-
-			    }
-		    }
-
-		    if (tmp->ezmap) {
-			    c_cttmrg(blk_idim,blk_jdim,tlat,tlon,tdat,
-				     iscr,missing_val,
-				     _NHLCALLF(rtmi,RTMI),
-				     rpnt,mpnt,&npnt,Lopn,
-				     iedg,medg,&nedg,Loen,
-				     itri,mtri,&ntri,Lotn);
-		    }
-		    else {
-			    _NHLCALLF(trmrgr,TRMRGR)
-				    (&blk_idim,&blk_jdim,rlon,rlat,rdat,
-				     iscr,&missing_val,
-				     rpnt,&mpnt,&npnt,&Lopn,
-				     iedg,&medg,&nedg,&Loen,
-				     itri,&mtri,&ntri,&Lotn);
-		    }
-
-		    NhlFree(iscr);
-		    if (coords_alloced) {
-			    NhlFree(tdat);
-			    NhlFree(tlon);
-			    NhlFree(tlat);
-		    }
-	
-		    tbp->npnt = npnt;
-		    tbp->nedg = nedg;
-		    tbp->ntri = ntri;
-		    tbp->rpnt = rpnt;
-		    tbp->iedg = iedg;
-		    tbp->itri = itri;
-	    }
-#if 0
+	if (nthreads > 1) {
+		if (tid == 0) 
+			CreateTilePartitions2D(tmp,cnl,entry_name);
 	}
-#endif
+	else {
+		tbp = &(tmp->tri_block[0]);
+		tbp->xs = tbp->xsr = wlx;
+		tbp->xe = tbp->xer = wrx;
+		tbp->ys = tbp->ysr = wby;
+		tbp->ye = tbp->yer = wuy;
+		tbp->ixmn = tbp->iymn = 0;
+		tbp->ixmx = cnp->sfp->fast_len - 1;
+		tbp->iymx = cnp->sfp->slow_len - 1;
+		tbp->dat = (float*)cnp->sfp->d_arr->data;
+		tbp->npnt = cnp->sfp->slow_len * cnp->sfp->fast_len;
+		tmp->nblocks = 1;
+	}
+
+		    
+	for (block_ix = 0; block_ix < tmp->nblocks; block_ix++) {
+		    
+		tbp = &(tmp->tri_block[block_ix]);
+		blk_idim = tbp->ixmx - tbp->ixmn + 1;
+		blk_jdim = tbp->iymx - tbp->iymn + 1;
+		idm1 = blk_idim - 1;
+		jdm1 = blk_jdim - 1;
+		blk_j_off = tbp->iymn * cnp->sfp->fast_len;
+		blk_i_off = tbp->ixmn;
+
+		mnop = blk_idim * blk_jdim;
+		mnoe = 3 *idm1 * jdm1 + idm1 + jdm1;
+		mnot = 2 * idm1 * jdm1;
+		mpnt = mnop * Lopn;
+		medg = mnoe * Loen;
+		mtri = mnot * Lotn;
+
+		iscr = NhlMalloc(4 * blk_idim * blk_jdim * sizeof(int));
+		rpnt = NhlMalloc(mpnt * sizeof(float));
+		iedg = NhlMalloc(medg * sizeof(int));
+		itri = NhlMalloc(mtri * sizeof(int));
+
+		if (! iscr || ! rpnt || ! iedg || ! itri) {
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NhlFATAL;
+		}
+	
+		missing_val = cnp->sfp->missing_value_set ?
+			cnp->sfp->missing_value : -FLT_MAX;
+
+		tsize = blk_jdim * blk_idim * sizeof(float);
+		coords_alloced = 0;
+		if (tmp->nblocks == 1 &&  cnp->sfp->x_arr && cnp->sfp->y_arr &&
+                    cnp->sfp->x_arr->num_dimensions == 2
+		    && ! (cnp->sfp->xc_is_bounds || cnp->sfp->yc_is_bounds)) {
+			/* in this case only there is no need to copy the arrays */
+			tlat = (float*)cnp->sfp->y_arr->data;
+			tlon = (float*)cnp->sfp->x_arr->data;
+			tdat = (float*)cnp->sfp->d_arr->data;
+
+		}
+		else {
+			coords_alloced = 1;
+                        rdat = (float*)cnp->sfp->d_arr->data;
+
+			tlat = NhlMalloc( tsize * sizeof(float));
+			tlon = NhlMalloc( tsize * sizeof(float));
+			tdat = NhlMalloc( tsize * sizeof(float));
+			if (cnp->sfp->x_arr && cnp->sfp->x_arr->num_dimensions == 2) {
+                                rlon = (float*)cnp->sfp->x_arr->data;
+                                rlat = (float*)cnp->sfp->y_arr->data;
+				float *rlon_off = rlon + blk_j_off;
+				float *rlat_off = rlat + blk_j_off;
+		
+				/* 
+				 * since the triangular mesh algorithm does not handle
+				 * coordinates not defined at the grid points we 
+				 * must interpolate bounding coordinates to the 
+				 * cell centers as best we can.
+				 */
+				if (cnp->sfp->xc_is_bounds && cnp->sfp->yc_is_bounds) {
+					int jd, jbd, jbdp;
+					int ix;
+					int xcoord_len = idim + 1;
+				    
+					for (j = 0; j < blk_jdim; j++) {
+						jd = j * idim;
+						jbd = j * xcoord_len;
+						jbdp = (j+1) * xcoord_len;
+						for (i = 0; i < blk_idim; i++) {
+							ix = i + blk_i_off;
+							*(tlon+jd+i) = 
+								(*(rlon_off + jbd+ix) + *(rlon_off+jbd+ix+1) +
+								 *(rlon_off+jbdp + ix) + *(rlon_off+jbdp+ix+1)) 
+								/ 4.0;
+							*(tlat+jd+i) =
+								(*(rlat_off+jbd+ix) + *(rlat_off+jbd+ix+1) +
+								 *(rlat_off+jbdp+ix) + *(rlat_off+jbdp+ix+1)) 
+								/ 4.0;
+						}
+					}
+					if (tbp->ixmn == 0) {
+						memcpy(tdat,rdat + tbp->iymn * cnp->sfp->fast_len,tsize);
+					}
+					else {
+						int tysize = tbp->iymx - tbp->iymn + 1;
+						int txsize = tbp->ixmx -tbp->ixmn + 1;
+						int rstart = tbp->iymn * cnp->sfp->fast_len;
+						for (i = 0; i < tysize; i++) {
+							memcpy(tdat + i * txsize, rdat + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
+						}
+					}
+				}
+				else if (cnp->sfp->xc_is_bounds) {
+					int jd, jbd;
+					int ix;
+					int xcoord_len = idim + 1;
+					for (j = 0; j < blk_jdim; j++) {
+						jd = j * idim;
+						jbd = j * xcoord_len;
+						for (i = 0; i < blk_idim; i++) {
+							ix = i + blk_i_off;
+							*(tlon+jd+i) = 
+								(*(rlon_off+jbd+ix) + *(rlon_off+jbd+ix+1)) / 2.0;
+							*(tlat+jd+i) = 
+								(*(rlat_off+jbd+ix) + *(rlat_off+jbd+ix+1)) / 2.0;
+						}
+					}
+					if (tbp->ixmn == 0) {
+						memcpy(tdat,rdat + tbp->iymn * cnp->sfp->fast_len,tsize);
+					}
+					else {
+						int tysize = tbp->iymx - tbp->iymn + 1;
+						int txsize = tbp->ixmx -tbp->ixmn + 1;
+						int rstart = tbp->iymn * cnp->sfp->fast_len;
+						for (i = 0; i < tysize; i++) {
+							memcpy(tdat + i * txsize, rdat + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
+						}
+					}
+				}
+				else if (cnp->sfp->yc_is_bounds) {
+					int jd, jdp;
+					int ix;
+					for (j = 0; j < blk_jdim; j++) {
+						jd = j * idim;
+						jdp = (j + 1) * idim;
+						for (i = 0; i < blk_idim; i++) {
+							ix = i + blk_i_off;
+							*(tlon+jd+i) = 
+								(*(rlon_off+jd+ix) + *(rlon_off+jdp+ix)) / 2.0;
+							*(tlat+jd+i) = 
+								(*(rlat_off+jd+ix) + *(rlat_off+jdp+ix)) / 2.0;
+						}
+					}
+					if (tbp->ixmn == 0) {
+						memcpy(tdat,rdat + tbp->iymn * cnp->sfp->fast_len,tsize);
+					}
+					else {
+						int tysize = tbp->iymx - tbp->iymn + 1;
+						int txsize = tbp->ixmx -tbp->ixmn + 1;
+						int rstart = tbp->iymn * cnp->sfp->fast_len;
+						for (i = 0; i < tysize; i++) {
+							memcpy(tdat + i * txsize, rdat + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
+						}
+					}
+				}
+				else {
+					if (tbp->ixmn == 0) {
+						memcpy(tlat,rlat + tbp->iymn * cnp->sfp->fast_len,tsize);
+						memcpy(tlon,rlon + tbp->iymn * cnp->sfp->fast_len,tsize);
+						memcpy(tdat,rdat + tbp->iymn * cnp->sfp->fast_len,tsize);
+					}
+					else {
+						int tysize = tbp->iymx - tbp->iymn + 1;
+						int txsize = tbp->ixmx -tbp->ixmn + 1;
+						int rstart = tbp->iymn * cnp->sfp->fast_len;
+						for (i = 0; i < tysize; i++) {
+							memcpy(tlat + i * txsize, rlat + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
+							memcpy(tlon + i * txsize, rlon + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
+							memcpy(tdat + i * txsize, rdat + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
+						}
+					}
+				}
+			}
+			else {
+				if (cnp->sfp->y_arr) {
+					float y;
+					int jix;
+                                        rlat = (float*)cnp->sfp->y_arr->data;
+					if (! cnp->sfp->yc_is_bounds) {
+						for (j = 0; j < blk_jdim; j++) {
+							jix = tbp->iymn + j;
+							y = rlat[jix];
+							for (i = 0; i < blk_idim; i++) {
+								*(tlat + j*blk_idim+i) = y;
+							}
+						}
+					}
+					else {
+						for (j = 0; j < blk_jdim; j++) {
+							jix = tbp->iymn + j;
+							y = (rlat[jix] + rlat[jix + 1]) * 0.5;
+							for (i = 0; i < blk_idim; i++) {
+								*(tlat + j*blk_idim+i) = y;
+							}
+						}
+					}
+				}
+				else {
+					/* need to do something here */
+					float y;
+					float step = (cnp->sfp->y_end - cnp->sfp->y_start) /    
+						(blk_jdim - 1);
+					for (j = 0; j < blk_jdim; j++) {
+						y = cnp->sfp->y_start + (j + tbp->iymn) * step;
+						for (i = 0; i < blk_idim; i++) {
+							*(tlat + j*blk_idim+i) = y;
+						}
+					}
+				}
+				if (cnp->sfp->x_arr) {
+                                        rlon = (float*)cnp->sfp->x_arr->data;
+					if (! cnp->sfp->xc_is_bounds) {
+						float *x = rlon + tbp->ixmn; 
+						for (j = 0; j < blk_jdim; j++) {
+							memcpy(tlon + j*blk_idim,x,blk_idim * sizeof(float));
+						}
+					}
+					else {
+						int ix;
+						float x;
+						for (i = 0; i < blk_idim; i++) {
+							ix = i + tbp->ixmn;
+							x = (rlon[ix] + rlon[ix + 1]) * 0.5;
+							for (j = 0; j < blk_jdim; j++) {
+								tlon[j * blk_idim + i] = x;
+							}
+						}
+					}
+				}
+				else {
+					/* need to do something here */
+					float x;
+					float step = (cnp->sfp->x_end - cnp->sfp->x_start) /
+						(blk_idim - 1);
+					for (i = 0; i < blk_idim; i++) {
+						x = cnp->sfp->x_start + (i + tbp->iymn) * step;
+						for (j = 0; j < blk_jdim; j++) {
+							*(tlon + j*blk_idim + i) = x;
+						}
+					}
+				}
+				if (tbp->ixmn == 0) {
+					memcpy(tdat,rdat + tbp->iymn * cnp->sfp->fast_len,tsize);
+				}
+				else {
+					int tysize = tbp->iymx - tbp->iymn + 1;
+					int txsize = tbp->ixmx -tbp->ixmn + 1;
+					int rstart = tbp->iymn * cnp->sfp->fast_len;
+					for (i = 0; i < tysize; i++) {
+						memcpy(tdat + i * txsize, rdat + rstart + i * cnp->sfp->fast_len + tbp->ixmn, txsize * sizeof(float));
+					}
+				}
+
+			}
+		}
+
+		if (tmp->ezmap) {
+			c_cttmrg(blk_idim,blk_jdim,tlat,tlon,tdat,
+				 iscr,missing_val,
+				 _NHLCALLF(rtmi,RTMI),
+				 rpnt,mpnt,&npnt,Lopn,
+				 iedg,medg,&nedg,Loen,
+				 itri,mtri,&ntri,Lotn);
+		}
+		else {
+			_NHLCALLF(trmrgr,TRMRGR)
+				(&blk_idim,&blk_jdim,tlon,tlat,tdat,
+				 iscr,&missing_val,
+				 rpnt,&mpnt,&npnt,&Lopn,
+				 iedg,&medg,&nedg,&Loen,
+				 itri,&mtri,&ntri,&Lotn);
+		}
+
+		NhlFree(iscr);
+		if (coords_alloced) {
+			NhlFree(tdat);
+			NhlFree(tlon);
+			NhlFree(tlat);
+		}
+	
+		tbp->npnt = npnt;
+		tbp->nedg = nedg;
+		tbp->ntri = ntri;
+		tbp->rpnt = rpnt;
+		tbp->iedg = iedg;
+		tbp->itri = itri;
+	}
+
 	tmp->update_mode = TRIMESH_NOUPDATE;
 	return NhlNOERROR;
 
@@ -2272,6 +2257,8 @@ CnTriMeshRendererInitialize
 	tmp->tri_block = (TriBlock *) NhlCalloc(initial_block_count, sizeof (TriBlock));
 	tmp->nblocks = 0;
 	tmp->nblocks_alloced = initial_block_count;
+        tmp->trans_change_count = 0;
+        tmp->ezmap = False;
 
         return ret;
 }
