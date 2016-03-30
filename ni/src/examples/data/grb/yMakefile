@@ -7,10 +7,11 @@
 MYNAME = grb
 
 DATA  = ced1.lf00.t00z.eta.grb wafsgfs_L_t06z_intdsk60.grib2 \
-	fh.0012_tl.press_gr.awp211.grb2
+	fh.0012_tl.press_gr.awp211.grb2 MET9_IR108_cosmode_0909210000.grb2
 
 
 InstallTarget($(DATA),$(INSTALL_LIB),$(DATAROOT)/grb)
 #ifdef BuildPyNGL
 InstallTarget($(DATA),$(INSTALL_LIB),$(PYNGLNCARGPATH)/$(DATADIR)/grb)
 #endif
+
