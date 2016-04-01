@@ -4155,6 +4155,20 @@ int it_equal(GIT *it1,GIT* it2)
 		return 1;
 	return 0;
 }
+int it_greaterthan(GIT *it1,GIT* it2)
+{
+	if (it1->year > it2->year)
+		return 1;
+	else if (it1->year == it2->year) {
+	    if (it1->days_from_jan1 > it2->days_from_jan1)
+		    return 1;
+	    else if (it1->days_from_jan1 == it2->days_from_jan1) {
+		    if (it1->minute_of_day > it2->minute_of_day)
+			    return 1;
+	    }
+	}
+	return 0;
+}
 
 int ens_equal(ENS *ens1, ENS *ens2)
 {
@@ -4178,6 +4192,546 @@ int ens_equal(ENS *ens1, ENS *ens2)
 	}
 	return 0;
 }
+int ens_greaterthan(ENS *ens1, ENS *ens2)
+{
+	if (memcmp((void *)ens1,(void *)ens2,4 * sizeof(int)) > 0) {
+		return 1;
+	}
+	return 0;
+}
+
+typedef struct coordinfo {
+	ng_size_t dim_size;
+	ng_size_t alloc_size;
+	int el_size;
+	void *coord_vals;
+	ng_size_t last_ix;
+	int ok_to_free;
+} CoordInfo;
+
+typedef struct dim_construct {
+	int prob_type;
+	CoordInfo lower_prob;
+	CoordInfo upper_prob;
+	CoordInfo ens_members;
+	CoordInfo initial_times;
+	CoordInfo forecast_times;
+	CoordInfo levels;
+	CoordInfo levels_1;
+} Dim_Construct;
+
+void AddCoordValueFloat(CoordInfo *coord_info,float val,ng_size_t ix)
+{
+	ng_size_t i;
+	float *coords;
+	if (coord_info->alloc_size == coord_info->dim_size) {
+		if (coord_info->dim_size == 0) {
+			coord_info->coord_vals = NclMalloc(16 * sizeof(float));
+			coord_info->alloc_size = 16;
+		}
+		else {
+			coord_info->coord_vals = NclRealloc(coord_info->coord_vals, coord_info->alloc_size * 2 * sizeof(float));
+			coord_info->alloc_size = coord_info->alloc_size * 2;
+		}
+	}
+	coords = (float *) coord_info->coord_vals;
+	for (i = coord_info->dim_size; i > ix; i--) {
+		coords[i] = coords[i-1];
+	}
+	coords[ix] = val;
+	coord_info->dim_size++;
+	return;
+}
+void AddCoordValueInt(CoordInfo *coord_info,int val,ng_size_t ix)
+{
+	ng_size_t i;
+	int *coords;
+	if (coord_info->alloc_size == coord_info->dim_size) {
+		if (coord_info->dim_size == 0) {
+			coord_info->coord_vals = NclMalloc(16 * sizeof(int));
+			coord_info->alloc_size = 16;
+		}
+		else {
+			coord_info->coord_vals = NclRealloc(coord_info->coord_vals, coord_info->alloc_size * 2 * sizeof(int));
+			coord_info->alloc_size = coord_info->alloc_size * 2;
+		}
+	}
+	coords = (int *) coord_info->coord_vals;
+	for (i = coord_info->dim_size; i > ix; i--) {
+		coords[i] = coords[i-1];
+	}
+	coords[ix] = val;
+	coord_info->dim_size++;
+
+	return;
+}
+
+void AddCoordValue(CoordInfo *coord_info,void *val,ng_size_t ix,int el_size)
+{
+	ng_size_t i;
+	void *coords;
+	if (coord_info->alloc_size == coord_info->dim_size) {
+		if (coord_info->dim_size == 0) {
+			coord_info->coord_vals = NclMalloc(16 * el_size);
+			coord_info->alloc_size = 16;
+		}
+		else {
+			coord_info->coord_vals = NclRealloc(coord_info->coord_vals, coord_info->alloc_size * 2 * el_size);
+			coord_info->alloc_size = coord_info->alloc_size * 2;
+		}
+	}
+	coords = coord_info->coord_vals;
+	for (i = coord_info->dim_size; i > ix; i--) {
+		memcpy(coords + (i * el_size), coords + ((i-1) * el_size), el_size);
+	}
+	memcpy (coords + (ix * el_size), val, el_size);
+	coord_info->dim_size++;
+
+	return;
+}
+
+void _update_probability_dim(GribParamList *step, GribRecordInqRec *rec)
+{
+	Dim_Construct *dim_c;
+	float *lprob, *uprob;
+	int i;
+
+	if (! step->prob_param) {
+		return;
+	}
+	dim_c = (Dim_Construct *) step->info;
+	if (! dim_c->prob_type) dim_c->prob_type = rec->ens.prob_type;
+	lprob = (float *) dim_c->lower_prob.coord_vals;
+	uprob = (float *) dim_c->upper_prob.coord_vals;
+
+	switch (dim_c->prob_type) {
+	case 1:
+		for (i = dim_c->lower_prob.dim_size - 1; i >= 0; i--) {
+			if (rec->ens.lower_prob == lprob[i]) {
+				return;
+			}
+			else if (rec->ens.lower_prob > lprob[i]) {
+				AddCoordValue(&(dim_c->lower_prob),&(rec->ens.lower_prob),i+1,sizeof(float));
+				return;
+			}
+		}
+		AddCoordValue(&(dim_c->lower_prob),&(rec->ens.lower_prob),0,sizeof(float));
+		return;
+	case 2:
+		for (i = dim_c->upper_prob.dim_size - 1; i >= 0; i--) {
+			if (rec->ens.upper_prob == uprob[i]) {
+				return;
+			}
+			else if (rec->ens.upper_prob > uprob[i]) {
+				AddCoordValue(&(dim_c->upper_prob),&(rec->ens.upper_prob),i+1,sizeof(float));
+				return;
+			}
+		}
+		AddCoordValue(&(dim_c->upper_prob),&(rec->ens.upper_prob),0,sizeof(float));
+		return;
+	case 3:
+		/* both must be considered together since more than one spacing may share one of the boundaries */
+		for (i = dim_c->lower_prob.dim_size - 1; i >= 0; i--) {
+			if (rec->ens.lower_prob == lprob[i] && rec->ens.upper_prob == uprob[i]) {
+				break;
+			}
+			else if (rec->ens.lower_prob > lprob[i] || 
+				 (rec->ens.lower_prob == lprob[i] && rec->ens.upper_prob > uprob[i])) {
+				AddCoordValue(&(dim_c->lower_prob),&(rec->ens.lower_prob),i+1,sizeof(float));
+				AddCoordValue(&(dim_c->upper_prob),&(rec->ens.upper_prob),i+1,sizeof(float));
+				break;
+			}
+		}
+		if (i == -1) {
+			AddCoordValue(&(dim_c->lower_prob),&(rec->ens.lower_prob),0,sizeof(float));
+			AddCoordValue(&(dim_c->upper_prob),&(rec->ens.upper_prob),0,sizeof(float));
+		}
+		return;
+	}
+}
+
+void _update_forecast_time_dim(GribParamList *step, GribRecordInqRec *rec)
+{
+	Dim_Construct *dim_c;
+	int *forecast_times;
+	int i;
+
+	dim_c = (Dim_Construct *) step->info;
+	forecast_times  = (int *) dim_c->forecast_times.coord_vals;
+
+	for (i = dim_c->forecast_times.dim_size - 1; i >= 0; i--) {
+		if (rec->time_offset == forecast_times[i]) {
+			return;
+		}
+		else if (rec->time_offset > forecast_times[i]) {
+			AddCoordValue(&(dim_c->forecast_times),&(rec->time_offset),i+1,sizeof(int));
+			return;
+		}
+	}
+	AddCoordValue(&(dim_c->forecast_times),&(rec->time_offset),0,sizeof(int));
+	return;
+}
+
+void _update_ensemble_dim(GribParamList *step, GribRecordInqRec *rec)
+{
+	Dim_Construct *dim_c;
+	ENS *ens_members;
+	int i;
+
+	dim_c = (Dim_Construct *) step->info;
+	ens_members  = (ENS *) dim_c->ens_members.coord_vals;
+
+	for (i = dim_c->ens_members.dim_size - 1; i >= 0; i--) {
+		if (ens_equal(&(rec->ens), &(ens_members[i]))) {
+			return;
+		}
+		else if (ens_greaterthan(&(rec->ens), &(ens_members[i]))) {
+			AddCoordValue(&(dim_c->ens_members),&(rec->ens),i+1,sizeof(ENS));
+			return;
+		}
+	}
+	AddCoordValue(&(dim_c->ens_members),&(rec->ens),0,sizeof(ENS));
+	return;
+}
+
+void _update_initial_time_dim(GribParamList *step, GribRecordInqRec *rec)
+{
+	Dim_Construct *dim_c;
+	GIT *initial_times;
+	int i;
+
+	dim_c = (Dim_Construct *) step->info;
+	initial_times  = (GIT *) dim_c->initial_times.coord_vals;
+
+	for (i = dim_c->initial_times.dim_size - 1; i >= 0; i--) {
+		if (it_equal(&(rec->initial_time), &(initial_times[i]))) {
+			return;
+		}
+		else if (it_greaterthan(&(rec->initial_time), &(initial_times[i]))) {
+			AddCoordValue(&(dim_c->initial_times),&(rec->initial_time),i+1,sizeof(GIT));
+			return;
+		}
+	}
+	AddCoordValue(&(dim_c->initial_times),&(rec->initial_time),0,sizeof(GIT));
+	return;
+}
+void _update_level_dim(GribParamList *step, GribRecordInqRec *rec)
+{
+	Dim_Construct *dim_c;
+	int *levels, *levels_1;
+	int i;
+
+	dim_c = (Dim_Construct *) step->info;
+	levels  = (int *) dim_c->levels.coord_vals;
+	levels_1  = (int *) dim_c->levels_1.coord_vals;
+
+	if (rec->level0 != -1 && rec->level1 != -1) {
+		/* both must be considered together since more than one spacing may share one of the boundaries */
+		for (i = dim_c->levels.dim_size - 1; i >= 0; i--) {
+			if (rec->level0 == levels[i] && rec->level1 == levels_1[i]) {
+				break;
+			}
+			else if (rec->level0 > levels[i] || 
+				 (rec->level0 == levels[i] && rec->level1 > levels_1[i])) {
+				AddCoordValue(&(dim_c->levels),&(rec->level0),i+1,sizeof(int));
+				AddCoordValue(&(dim_c->levels_1),&(rec->level1),i+1,sizeof(int));
+				break;
+			}
+		}
+		if (i == -1) {
+			AddCoordValue(&(dim_c->levels),&(rec->level0),0,sizeof(int));
+			AddCoordValue(&(dim_c->levels_1),&(rec->level1),0,sizeof(int));
+		}
+	}
+	else if (rec->level0 != -1) {
+		for (i = dim_c->levels.dim_size - 1; i >= 0; i--) {
+			if (rec->level0 == levels[i]) {
+				break;
+			}
+			else if (rec->level0 > levels[i]) {
+				AddCoordValue(&(dim_c->levels),&(rec->level0),i+1,sizeof(int));
+				break;
+			}
+		}
+		if (i == -1) {
+			AddCoordValue(&(dim_c->levels),&(rec->level0),0,sizeof(int));
+		}
+	}
+	return;
+}
+
+
+static NhlErrorTypes _compute_dimensions(GribParamList *step)
+{
+	GribRecordInqRecList *rstep;
+	Dim_Construct *dim_construct;
+
+	rstep = step->thelist;
+	dim_construct = (Dim_Construct *) NhlCalloc(1,sizeof(Dim_Construct));
+	step->info = (void *) dim_construct;
+	
+	while (rstep) {
+		_update_probability_dim(step, rstep->rec_inq);
+		_update_ensemble_dim(step, rstep->rec_inq);
+		_update_initial_time_dim(step, rstep->rec_inq);
+		_update_forecast_time_dim(step,rstep->rec_inq);
+		_update_level_dim(step, rstep->rec_inq);
+		rstep = rstep->next;
+	}
+	return NhlNOERROR;
+}
+ng_size_t _get_floatval_index(float val, CoordInfo *coords)
+{
+	ng_size_t i;
+	float *coord_vals = (float *) coords->coord_vals;
+
+	for (i = coords->last_ix; i < coords->dim_size; i++) {
+		if (val == coord_vals[i]) {
+			coords->last_ix = i;
+			return i;
+		}
+		if (val < coord_vals[i]) 
+			break;
+	}
+	for (i = 0; i < coords->last_ix; i++) {
+		if (val == coord_vals[i]) {
+			coords->last_ix = i;
+			return i;
+		}
+		if (val < coord_vals[i]) 
+			break;
+	}
+ 	coords->last_ix = 0;
+	return -1;
+}
+
+ng_size_t _get_intval_index(int val, CoordInfo *coords)
+{
+	ng_size_t i;
+	int *coord_vals = (int *) coords->coord_vals;
+
+	for (i = coords->last_ix; i < coords->dim_size; i++) {
+		if (val == coord_vals[i]) {
+			coords->last_ix = i;
+			return i;
+		}
+		if (val < coord_vals[i]) 
+			break;
+	}
+	for (i = 0; i < coords->last_ix; i++) {
+		if (val == coord_vals[i]) {
+			coords->last_ix = i;
+			return i;
+		}
+		if (val < coord_vals[i]) 
+			break;
+	}
+ 	coords->last_ix = 0;
+	return -1;
+}
+
+ng_size_t _get_2_intval_index(int val0, int val1, CoordInfo *coords0, CoordInfo *coords1)
+{
+	ng_size_t i;
+	int *coord0_vals = (int *) coords0->coord_vals;
+	int *coord1_vals = (int *) coords1->coord_vals;
+
+	for (i = coords0->last_ix; i < coords0->dim_size; i++) {
+		if (val0 == coord0_vals[i] && val1 == coord1_vals[i]) {
+			coords0->last_ix = coords1->last_ix = i;
+			return i;
+		}
+		if (val0 < coord0_vals[i] || (val0 == coord0_vals[i] && val1 < coord1_vals[i])) 
+			break;
+	}
+	for (i = 0; i < coords0->last_ix; i++) {
+		if (val0 == coord0_vals[i] && val1 == coord1_vals[i]) {
+			coords0->last_ix = coords1->last_ix = i;
+			return i;
+		}
+		if (val0 < coord0_vals[i] || (val0 == coord0_vals[i] && val1 < coord1_vals[i])) 
+			break;
+	}
+	coords0->last_ix = coords1->last_ix = 0;
+	return -1;
+}
+
+ng_size_t _get_2_floatval_index(float val0, float val1, CoordInfo *coords0, CoordInfo *coords1)
+{
+	ng_size_t i;
+	float *coord0_vals = (float *) coords0->coord_vals;
+	float *coord1_vals = (float *) coords1->coord_vals;
+
+	for (i = coords0->last_ix; i < coords0->dim_size; i++) {
+		if (val0 == coord0_vals[i] && val1 == coord1_vals[i]) {
+			coords0->last_ix = coords1->last_ix = i;
+			return i;
+		}
+		if (val0 < coord0_vals[i] || (val0 == coord0_vals[i] && val1 < coord1_vals[i])) 
+			break;
+	}
+	for (i = 0; i < coords0->last_ix; i++) {
+		if (val0 == coord0_vals[i] && val1 == coord1_vals[i]) {
+			coords0->last_ix = coords1->last_ix = i;
+			return i;
+		}
+		if (val0 < coord0_vals[i] || (val0 == coord0_vals[i] && val1 < coord1_vals[i])) 
+			break;
+	}
+	coords0->last_ix = coords1->last_ix = 0;
+	return -1;
+}
+
+ng_size_t _get_ensemble_index(ENS *val, CoordInfo *coords)
+{
+	ng_size_t i;
+	ENS *coord_vals = (ENS *) coords->coord_vals;
+
+	for (i = coords->last_ix; i < coords->dim_size; i++) {
+		if (ens_equal(val,&(coord_vals[i]))) {
+			coords->last_ix = i;
+			return i;
+		}
+		if (ens_greaterthan(&(coord_vals[i]),val))
+			break;
+	}
+	for (i = 0; i < coords->last_ix; i++) {
+		if (ens_equal(val,&(coord_vals[i]))) {
+			coords->last_ix = i;
+			return i;
+		}
+		if (ens_greaterthan(&(coord_vals[i]),val))
+			break;
+	}
+	coords->last_ix = 0;
+	return -1;
+}
+
+ng_size_t _get_initial_time_index(GIT *val, CoordInfo *coords)
+{
+	ng_size_t i;
+	GIT *coord_vals = (GIT *) coords->coord_vals;
+
+	for (i = coords->last_ix; i < coords->dim_size; i++) {
+		if (it_equal(val,&(coord_vals[i]))) {
+			coords->last_ix = i;
+			return i;
+		}
+		if (it_greaterthan(&(coord_vals[i]),val))
+			break;
+	}
+	for (i = 0; i < coords->last_ix; i++) {
+		if (it_equal(val,&(coord_vals[i]))) {
+			coords->last_ix = i;
+			return i;
+		}
+		if (it_greaterthan(&(coord_vals[i]),val))
+			break;
+	}
+	coords->last_ix = 0;
+	return -1;
+}
+	
+
+ng_size_t _rec_array_index (GribParamList* step, Dim_Construct *dim_c, GribRecordInqRec *grec)
+{
+	int dim_count =  step->var_info.num_dimensions - (step->var_info.doff +1);
+	int current_dim, i, j;
+	ng_size_t dim_array[6] = { 0,0,0,0,0,0 };
+	ng_size_t dim_stride[6] = { 0,0,0,0,0,0 };
+	ng_size_t ix;
+
+        current_dim = 0;
+	if (dim_c->prob_type) {
+		switch  (dim_c->prob_type) {
+		case 1:
+			ix = _get_floatval_index(grec->ens.lower_prob,&(dim_c->lower_prob));
+			dim_array[current_dim] = ix;
+			dim_stride[current_dim] = dim_c->lower_prob.dim_size;
+			break;
+		case 2:
+			ix = _get_floatval_index(grec->ens.upper_prob,&(dim_c->upper_prob));
+			dim_array[current_dim] = ix;
+			dim_stride[current_dim] = dim_c->upper_prob.dim_size;
+			break;
+		case 3:
+			ix = _get_2_floatval_index(grec->ens.lower_prob,grec->ens.upper_prob,&(dim_c->lower_prob),&(dim_c->upper_prob));
+			dim_array[current_dim] = ix;
+			dim_stride[current_dim] = dim_c->lower_prob.dim_size;
+			break;
+		}
+		current_dim++;
+	}
+	else if (dim_c->ens_members.dim_size > 1 || (dim_c->ens_members.dim_size == 1 && ! step->ensemble_isatt)) {
+		ix = _get_ensemble_index(&(grec->ens),&(dim_c->ens_members));
+		dim_array[current_dim] = ix;
+		dim_stride[current_dim] = dim_c->ens_members.dim_size;
+		current_dim++;
+	}
+	if (current_dim < dim_count) {
+		if (dim_c->initial_times.dim_size > 1 || (dim_c->initial_times.dim_size == 1 && ! step->yymmddhh_isatt)) {
+			ix = _get_initial_time_index(&(grec->initial_time), &(dim_c->initial_times));
+			dim_array[current_dim] = ix;
+			dim_stride[current_dim] = dim_c->initial_times.dim_size;
+			current_dim++;
+		}
+	}
+	if (current_dim < dim_count) {
+		if (dim_c->forecast_times.dim_size > 1 || (dim_c->forecast_times.dim_size == 1 && ! step->forecast_time_isatt)) {
+			ix = _get_intval_index(grec->time_offset, &(dim_c->forecast_times));
+			dim_array[current_dim] = ix;
+			dim_stride[current_dim] = dim_c->forecast_times.dim_size;
+			current_dim++;
+		}
+	}
+	if (current_dim < dim_count) {
+		if (dim_c->levels.dim_size > 1 || (dim_c->levels.dim_size == 1 && ! step->levels_isatt)) {
+			if (step->levels_has_two) {
+				ix = _get_2_intval_index(grec->level0,grec->level1,&(dim_c->levels),&(dim_c->levels_1));
+			}
+			else {
+				ix = _get_intval_index(grec->level0, &(dim_c->levels));
+			}
+			dim_array[current_dim] = ix;
+			dim_stride[current_dim] = dim_c->levels.dim_size;
+			current_dim++;
+		}
+	}
+	if (current_dim != dim_count) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+	}
+	
+	ix = 0;
+	for (i = 0; i < dim_count; i++) {
+		if (dim_array[i] < 0) 
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+		ng_size_t stride = dim_array[i]; 
+		for (j = i+1; j < dim_count; j++) {
+			stride *= dim_stride[j];
+		}
+		ix += stride;
+	}
+	return (ix);
+}
+
+void _free_dim_construct(Dim_Construct *dim_c)
+{
+	if (dim_c->lower_prob.dim_size > 0 && dim_c->lower_prob.ok_to_free)
+		NclFree(dim_c->lower_prob.coord_vals);
+	if (dim_c->upper_prob.dim_size > 0 && dim_c->upper_prob.ok_to_free)
+		NclFree(dim_c->upper_prob.coord_vals);
+	if (dim_c->ens_members.dim_size > 0 && dim_c->ens_members.ok_to_free)
+		NclFree(dim_c->ens_members.coord_vals);
+	if (dim_c->initial_times.dim_size > 0 && dim_c->initial_times.ok_to_free)
+		NclFree(dim_c->initial_times.coord_vals);
+	if (dim_c->forecast_times.dim_size > 0 && dim_c->forecast_times.ok_to_free)
+		NclFree(dim_c->forecast_times.coord_vals);
+	if (dim_c->levels.dim_size > 0 && dim_c->levels.ok_to_free)
+		NclFree(dim_c->levels.coord_vals);
+	if (dim_c->levels_1.dim_size > 0 && dim_c->levels_1.ok_to_free)
+		NclFree(dim_c->levels_1.coord_vals);
+	NclFree(dim_c);
+}
 
 static NhlErrorTypes _DetermineDimensionAndGridInfo
 #if     NhlNeedProto
@@ -4188,7 +4742,7 @@ GribFileRecord *therec;
 GribParamList* step;
 #endif
 {
-	GribRecordInqRecList *rstep,*strt,*fnsh,*free_rec;
+	GribRecordInqRecList *rstep,*strt,*fnsh,*free_rec,*rec_array;
 	int n_ens = 0,i,j,k,m,icount = 0;
 	ENS current_ens;
 	ENSLIST  header;
@@ -4205,178 +4759,43 @@ GribParamList* step;
 	NclQuark *it_vals_q = NULL;
 	NclQuark *ens_vals_q = NULL;
 	int *ens_indexes = NULL;
-	int n_tmp_ens_vals = 0;
+	ng_size_t n_tmp_ens_vals = 0;
 	ENS *tmp_ens_vals;
-	ng_size_t total, tmp_dim_siz = 0;
+	ng_size_t total, tmp_dim_size = 0, total_missing;
 	int doff;
 	char *name;
 	float *lprob, *uprob;
 	NhlErrorTypes returnval = NhlNOERROR;
+	Dim_Construct *dim_c;
+
 
 	doff = step->var_info.doff;
 	the_end = &header;
 	memset(&header,0,sizeof(ENSLIST));
 	name = NrmQuarkToString(step->var_info.var_name_quark);
 
-	if(step->n_entries > 1) {
-		strt = rstep  = step->thelist;
-		current_ens = rstep->rec_inq->ens;
-		while(rstep->next != NULL) {
-			if (ens_equal(&rstep->next->rec_inq->ens,&current_ens)) {
-				rstep = rstep->next;
-				continue;
-			}
-			current_ens = rstep->next->rec_inq->ens;
-			fnsh = rstep;
-			rstep = rstep->next;
-			fnsh->next = NULL;
-		
-			the_end->next = (ENSLIST*)NclMalloc((unsigned)sizeof(ENSLIST));
-			the_end = the_end->next;
-			the_end->next = NULL;
-			the_end->ens = strt->rec_inq->ens;
-			the_end->ens_ix = n_ens;
-			the_end->thelist = GetITList(therec,step,strt,&the_end->n_it,&the_end->it_vals,
-						     &the_end->n_ft,&the_end->ft_vals,
-						     &the_end->n_lv,&the_end->lv_vals,&the_end->lv_vals1);
-			strt = rstep;
-			n_ens++;
-		}
-		the_end->next = (ENSLIST*)NclMalloc((unsigned)sizeof(ENSLIST));
-		the_end = the_end->next;
-		the_end->next = NULL;
-		the_end->ens = strt->rec_inq->ens;
-		the_end->ens_ix = n_ens;
-		the_end->thelist = GetITList(therec,step,strt,&the_end->n_it,&the_end->it_vals,
-					     &the_end->n_ft,&the_end->ft_vals,
-					     &the_end->n_lv,&the_end->lv_vals,&the_end->lv_vals1);
-		n_ens++;
-		the_end = header.next;
-
-		n_tmp_ens_vals = n_ens;	
-		tmp_ens_vals = (ENS*)NclMalloc(sizeof(ENS)*n_ens);
-		i = 0;
-		while(the_end != NULL) {
-			tmp_ens_vals[i] = the_end->ens;
-			if((the_end->n_lv > 0)&&(the_end->lv_vals1 == NULL) ) {
-				if(tmp_lv_vals == NULL) {
-					tmp_lv_vals = NclMalloc((unsigned)sizeof(int)*the_end->n_lv);
-					n_tmp_lv_vals = the_end->n_lv;
-					memcpy((void*)tmp_lv_vals,the_end->lv_vals,the_end->n_lv*sizeof(int));
-				} else 	{
-					tmp_lv_vals  = Merge(tmp_lv_vals,&n_tmp_lv_vals,the_end->lv_vals,the_end->n_lv);
-				}
-			} else {
-				if(tmp_lv_vals == NULL) {
-					tmp_lv_vals = NclMalloc((unsigned)sizeof(int)*the_end->n_lv);
-					tmp_lv_vals1 = NclMalloc((unsigned)sizeof(int)*the_end->n_lv);
-					n_tmp_lv_vals = the_end->n_lv;
-					memcpy((void*)tmp_lv_vals,the_end->lv_vals,the_end->n_lv*sizeof(int));
-					memcpy((void*)tmp_lv_vals1,the_end->lv_vals1,the_end->n_lv*sizeof(int));
-				} else 	{
-					Merge2(tmp_lv_vals,tmp_lv_vals1,&n_tmp_lv_vals,the_end->lv_vals,the_end->lv_vals1,the_end->n_lv,&tmp_lv_vals,&tmp_lv_vals1);
-				}
-			}
-			if(the_end->n_ft > 0) {
-				if(tmp_ft_vals == NULL) {
-					tmp_ft_vals = NclMalloc((unsigned)sizeof(int)*the_end->n_ft);
-					n_tmp_ft_vals = the_end->n_ft;
-					memcpy((void*)tmp_ft_vals,the_end->ft_vals,the_end->n_ft*sizeof(int));
-				} else {
-					tmp_ft_vals = Merge(tmp_ft_vals,&n_tmp_ft_vals,the_end->ft_vals,the_end->n_ft);
-				}
-			}
-			if(the_end->n_it > 0) {
-				if(tmp_it_vals == NULL) {
-					tmp_it_vals = (GIT *)NclMalloc((unsigned)sizeof(GIT)*the_end->n_it);
-					n_tmp_it_vals = the_end->n_it;
-					memcpy((void*)tmp_it_vals,the_end->it_vals,the_end->n_it*sizeof(GIT));
-
-				} 
-				else {
-					tmp_it_vals = MergeIT(tmp_it_vals,&n_tmp_it_vals,the_end->it_vals,the_end->n_it);
-				}
-			}
-			the_end = the_end->next;
-/*
-			fprintf(stdout,"%s\n",NrmQuarkToString(it_vals_q[i]));
-*/
-			i++;
-		}
-#if 0
-		if(n_tmp_lv_vals > 0) {
-			fprintf(stdout,"(");
-			for(j = 0; j< n_tmp_lv_vals-1; j++) {	
-				fprintf(stdout,"%d, ",tmp_lv_vals[j]);
-			}
-
-			fprintf(stdout,"%d)\n",tmp_lv_vals[j]);
-		}
-		if( n_tmp_ft_vals > 0) {
-			fprintf(stdout,"(");
-			for(j = 0; j< n_tmp_ft_vals-1; j++) {	
-				fprintf(stdout,"%d, ",tmp_ft_vals[j]);
-			}
-			fprintf(stdout,"%d)\n",tmp_ft_vals[j]);
-		}
-#endif
-		
-	} else {
-		n_tmp_ens_vals = 1;
-		tmp_ens_vals = (ENS*)NclMalloc((unsigned)sizeof(ENS));
-		memset(tmp_ens_vals,0,sizeof(ENS));
-		header.next = (ENSLIST*)NclMalloc((unsigned)sizeof(ENSLIST));
-		memset(header.next,0,sizeof(ENSLIST));
-		memset(&header.next->ens,0,sizeof(ENS));
-		the_end = header.next;
-		the_end->thelist = GetITList(therec,step,step->thelist,&n_tmp_it_vals,&tmp_it_vals,
-					     &n_tmp_ft_vals,&tmp_ft_vals,
-					     &n_tmp_lv_vals,&tmp_lv_vals,&tmp_lv_vals1);
-/*
-		fprintf(stdout,"%d/%d/%d\t(%d:%d)-%d,%d\t%d,%d\ttoff=%d\t%d,%d,%d\n",
-			(int)step->thelist->rec_inq->pds[13],
-			(int)step->thelist->rec_inq->pds[14],
-			(int)step->thelist->rec_inq->pds[12],
-			(int)step->thelist->rec_inq->pds[15],
-			(int)step->thelist->rec_inq->pds[16],
-			(int)step->thelist->rec_inq->pds[18],
-			(int)step->thelist->rec_inq->pds[19],
-			(int)step->thelist->rec_inq->pds[17],
-			(int)step->thelist->rec_inq->pds[20],
-			step->thelist->rec_inq->time_offset,
-			(int)step->thelist->rec_inq->pds[9],
-			step->thelist->rec_inq->level0,
-			step->thelist->rec_inq->level1);
-*/
-	}
+	_compute_dimensions(step);
+	dim_c = (Dim_Construct *) step->info;
 
 	i = 0;
 	step->var_info.num_dimensions = 0;
-	if (step->prob_param && n_tmp_ens_vals > 0) {
+	step->lower_probs = NULL;
+	step->upper_probs = NULL;
+	step->probability = NULL;
+	if (dim_c->prob_type) {
 		float minlp, maxlp, minup, maxup;
-		lprob = NclMalloc(n_tmp_ens_vals * sizeof(float));
-		uprob = NclMalloc(n_tmp_ens_vals * sizeof(float));
-		minlp = maxlp = tmp_ens_vals[0].lower_prob;
-		minup = maxup = tmp_ens_vals[0].upper_prob;
-		for (j = 0; j < n_tmp_ens_vals; j++) {
-			lprob[j] = tmp_ens_vals[j].lower_prob * 1e-6;
-			uprob[j] = tmp_ens_vals[j].upper_prob * 1e-6;
-			/*
-			if (lprob[j] < minlp) minlp = lprob[j];
-			if (lprob[j] > maxlp) maxlp = lprob[j];
-			if (uprob[j] < minup) minup = uprob[j];
-			if (uprob[j] > maxup) maxup = uprob[j];
-			*/
-		}
-		/*
-		const_lp = maxlp == minlp;
-		const_up = maxup == minup;
-		*/
-		step->lower_probs = NULL;
-		step->upper_probs = NULL;
-		step->probability = NULL;
-		if (tmp_ens_vals[0].prob_type == 1) {
-			tmp_dim_siz = (ng_size_t) n_tmp_ens_vals;
+		switch (dim_c->prob_type) {
+		case 1:
+			tmp_dim_size = dim_c->lower_prob.dim_size;
+			n_tmp_ens_vals = tmp_dim_size;
+			if (! tmp_dim_size) 
+				break;
+			lprob = NclMalloc(tmp_dim_size * sizeof(float));
+			minlp = maxlp = ((float *)dim_c->lower_prob.coord_vals)[0];
+			for (j = 0; j < tmp_dim_size; j++) {
+				lprob[j] = ((float *)dim_c->lower_prob.coord_vals)[j] * 1e-6;
+			}
+			dim_c->lower_prob.ok_to_free = 1;
 			step->probability = (NclOneDValCoordData)_NclCreateVal(
 				NULL,
 				NULL,
@@ -4385,15 +4804,22 @@ GribParamList* step;
 				(void*)lprob,
 				NULL,
 				1,
-/*				(void*)&n_tmp_ens_vals,*/
-                &tmp_dim_siz,
+				&tmp_dim_size,
 				TEMPORARY,
 				NULL,
 				nclTypefloatClass);
-			NclFree(uprob);
-		}
-		else if (tmp_ens_vals[0].prob_type == 2) {
-			tmp_dim_siz = (ng_size_t) n_tmp_ens_vals;
+			break;
+		case 2:
+			tmp_dim_size = dim_c->upper_prob.dim_size;
+			n_tmp_ens_vals = tmp_dim_size;
+			if (! tmp_dim_size) 
+				break;
+			uprob = NclMalloc(tmp_dim_size * sizeof(float));
+			minup = maxup = ((float *)dim_c->upper_prob.coord_vals)[0];
+			for (j = 0; j < tmp_dim_size; j++) {
+				uprob[j] = ((float *)dim_c->upper_prob.coord_vals)[j] * 1e-6;
+			}
+			dim_c->upper_prob.ok_to_free = 1;
 			step->probability = (NclOneDValCoordData)_NclCreateVal(
 				NULL,
 				NULL,
@@ -4402,15 +4828,25 @@ GribParamList* step;
 				(void*)uprob,
 				NULL,
 				1,
-/*				(void*)&n_tmp_ens_vals,*/
-                &tmp_dim_siz,
+				&tmp_dim_size,
 				TEMPORARY,
 				NULL,
 				nclTypefloatClass);
-			NclFree(lprob);
-		}
-		else {
-			tmp_dim_siz = (ng_size_t) n_tmp_ens_vals;
+			break;
+		case 3:
+			tmp_dim_size = MAX(dim_c->lower_prob.dim_size,dim_c->upper_prob.dim_size); 
+			n_tmp_ens_vals = tmp_dim_size;
+			if (! tmp_dim_size) 
+				break;
+			lprob = NclMalloc(tmp_dim_size * sizeof(float));
+			uprob = NclMalloc(tmp_dim_size * sizeof(float));
+			minup = maxup = ((float *)dim_c->upper_prob.coord_vals)[0];
+			for (j = 0; j < tmp_dim_size; j++) {
+				lprob[j] = ((float *)dim_c->lower_prob.coord_vals)[j] * 1e-6;
+				uprob[j] = ((float *)dim_c->upper_prob.coord_vals)[j] * 1e-6;
+			}
+			dim_c->lower_prob.ok_to_free = 1;
+			dim_c->upper_prob.ok_to_free = 1;
 			step->lower_probs = (NclMultiDValData)_NclCreateVal(
 				NULL,
 				NULL,
@@ -4419,8 +4855,7 @@ GribParamList* step;
 				(void*)lprob,
 				NULL,
 				1,
-/*				(void*)&n_tmp_ens_vals,*/
-                &tmp_dim_siz,
+				&tmp_dim_size,
 				TEMPORARY,
 				NULL,
 				nclTypefloatClass);
@@ -4432,21 +4867,23 @@ GribParamList* step;
 				(void*)uprob,
 				NULL,
 				1,
-/*				(void*)&n_tmp_ens_vals,*/
-                &tmp_dim_siz,
+				&tmp_dim_size,
 				TEMPORARY,
 				NULL,
 				nclTypefloatClass);
+			break;
 		}
 	}
-	else if (n_tmp_ens_vals > 0) {
-		ens_vals_q = (NclQuark *) NclMalloc(sizeof(NclQuark) * n_tmp_ens_vals);
-		ens_indexes = (int *) NclMalloc(sizeof(int) * n_tmp_ens_vals);
-		for (j = 0; j < n_tmp_ens_vals; j++) {
-			ens_vals_q[j] = GetEnsQuark(&(tmp_ens_vals[j]));
+	else if (dim_c->ens_members.dim_size > 0) {
+		tmp_dim_size = dim_c->ens_members.dim_size;
+		n_tmp_ens_vals = tmp_dim_size;
+		ens_vals_q = (NclQuark *) NclMalloc(sizeof(NclQuark) * tmp_dim_size);
+		ens_indexes = (int *) NclMalloc(sizeof(int) * tmp_dim_size);
+		for (j = 0; j < tmp_dim_size; j++) {
+			ens_vals_q[j] = GetEnsQuark(&(((ENS *)dim_c->ens_members.coord_vals)[j]));
 			ens_indexes[j] = j;
 		}
-		tmp_dim_siz = (ng_size_t) n_tmp_ens_vals;
+		dim_c->ens_members.ok_to_free = 1;
 		step->ensemble = (NclMultiDValData)_NclCreateVal(
 					NULL,
 					NULL,
@@ -4455,8 +4892,7 @@ GribParamList* step;
 					(void*)ens_vals_q,
 					NULL,
 					1,
-/*					(void*)&n_tmp_ens_vals,*/
-                    &tmp_dim_siz,
+					&tmp_dim_size,
 					TEMPORARY,
 					NULL,
 					nclTypestringClass);
@@ -4468,16 +4904,13 @@ GribParamList* step;
 					(void*)ens_indexes,
 					NULL,
 					1,
-/*					(void*)&n_tmp_ens_vals,*/
-                    &tmp_dim_siz,
+					&tmp_dim_size,
 					TEMPORARY,
 					NULL,
 					nclTypeintClass);
 	}
-	if(n_tmp_ens_vals > 1 || 
-	   (n_tmp_ens_vals > 0 && 
-	    step->thelist->rec_inq->is_ensemble && 
-	    (therec->single_dims & GRIB_Ensemble_Dims))) {
+	if(n_tmp_ens_vals > 1 || (n_tmp_ens_vals > 0 && step->thelist->rec_inq->is_ensemble && 
+				  (therec->single_dims & GRIB_Ensemble_Dims))) {
 		step->var_info.dim_sizes[i] = n_tmp_ens_vals;
 		step->ensemble_isatt = 0;
 		i++;
@@ -4486,15 +4919,17 @@ GribParamList* step;
 	} else {
 		step->ensemble_isatt = 0;
 	}
-	NclFree(tmp_ens_vals);
-	if (n_tmp_it_vals > 0) {
-		it_vals_q = (NclQuark *) NclMalloc(sizeof(NclQuark) * n_tmp_it_vals);
-		for (j = 0; j < n_tmp_it_vals; j++)
-			it_vals_q[j] = GetItQuark(&(tmp_it_vals[j]));
+
+	if (dim_c->initial_times.dim_size > 0) {
+		it_vals_q = (NclQuark *) NclMalloc(sizeof(NclQuark) * dim_c->initial_times.dim_size);
+		for (j = 0; j < dim_c->initial_times.dim_size; j++) {
+			it_vals_q[j] = GetItQuark(&(((GIT*)dim_c->initial_times.coord_vals)[j]));
+		}
+		dim_c->initial_times.ok_to_free = 0;
 	}
-	if(n_tmp_it_vals > 1 || (n_tmp_it_vals > 0 && (therec->single_dims & GRIB_Initial_Time_Dims))) {
-		step->var_info.dim_sizes[i] = (ng_size_t) n_tmp_it_vals;
-		tmp_dim_siz = (ng_size_t) n_tmp_it_vals;
+	if(dim_c->initial_times.dim_size > 1 || (dim_c->initial_times.dim_size > 0 && (therec->single_dims & GRIB_Initial_Time_Dims))) {
+		step->var_info.dim_sizes[i] = dim_c->initial_times.dim_size;
+		tmp_dim_size = dim_c->initial_times.dim_size;
 		step->yymmddhh = (NclOneDValCoordData)_NclCreateVal(
 					NULL,
 					NULL,
@@ -4503,18 +4938,16 @@ GribParamList* step;
 					(void*)it_vals_q,
 					NULL,
 					1,
-/*					(void*)&n_tmp_it_vals,*/
-                    &tmp_dim_siz,
+					&tmp_dim_size,
 					TEMPORARY,
 					NULL,
 					nclTypestringClass);
-		step->it_vals = tmp_it_vals;
-			
+		step->it_vals = dim_c->initial_times.coord_vals;
 		step->yymmddhh_isatt = 0;
 		i++;
-	} else if(n_tmp_it_vals == 1) {
+	} else if(dim_c->initial_times.dim_size == 1) {
 		step->yymmddhh_isatt = 1;
-		tmp_dim_siz = (ng_size_t) n_tmp_it_vals;
+		tmp_dim_size = 1;
 		step->yymmddhh = (NclOneDValCoordData)_NclCreateVal(
 					NULL,
 					NULL,
@@ -4523,94 +4956,90 @@ GribParamList* step;
 					(void*)it_vals_q,
 					NULL,
 					1,
-/*					(void*)&n_tmp_it_vals,*/
-					&tmp_dim_siz,
+					&tmp_dim_size,
 					TEMPORARY,
 					NULL,
 					nclTypestringClass);
-		step->it_vals = tmp_it_vals;
+		step->it_vals = dim_c->initial_times.coord_vals;
 	} else {
 		step->yymmddhh_isatt = 0;
 		step->yymmddhh = NULL;
 		step->it_vals = NULL;
-/*
-		fprintf(stdout,"n_it: %d\n",n_tmp_it_vals);
-*/
+
 	}
-	if(n_tmp_ft_vals > 1 || (n_tmp_ft_vals > 0 && (therec->single_dims & GRIB_Forecast_Time_Dims))) {
-		step->var_info.dim_sizes[i] = (ng_size_t) n_tmp_ft_vals;
-		tmp_dim_siz = (ng_size_t) n_tmp_ft_vals;
+
+	if (dim_c->forecast_times.dim_size > 1 || (dim_c->forecast_times.dim_size > 0 && (therec->single_dims & GRIB_Forecast_Time_Dims))) {
+		step->var_info.dim_sizes[i] = dim_c->forecast_times.dim_size;
+		tmp_dim_size = dim_c->forecast_times.dim_size;
+		dim_c->forecast_times.ok_to_free = 0;
 		step->forecast_time = (NclOneDValCoordData)_NclCreateVal(
 					NULL,
 					NULL,
 					Ncl_OneDValCoordData,
 					0,
-					(void*)tmp_ft_vals,
+					dim_c->forecast_times.coord_vals,
 					NULL,
 					1,
-/*					(void*)&n_tmp_ft_vals,*/
-                    &tmp_dim_siz,
+					&tmp_dim_size,
 					TEMPORARY,
 					NULL,
 					nclTypeintClass);
 		step->forecast_time_isatt = 0;
 		i++;
-	} else if(n_tmp_ft_vals == 1) {
-		tmp_dim_siz = (ng_size_t) n_tmp_ft_vals;
+	} else if (dim_c->forecast_times.dim_size == 1) {
+		tmp_dim_size = dim_c->forecast_times.dim_size;
+		dim_c->forecast_times.ok_to_free = 0;
 		step->forecast_time = (NclOneDValCoordData)_NclCreateVal(
 					NULL,
 					NULL,
 					Ncl_OneDValCoordData,
 					0,
-					(void*)tmp_ft_vals,
+					dim_c->forecast_times.coord_vals,
 					NULL,
 					1,
-/*					(void*)&n_tmp_ft_vals,*/
-                    &tmp_dim_siz,
+					&tmp_dim_size,
 					TEMPORARY,
 					NULL,
 					nclTypeintClass);
 		step->forecast_time_isatt = 1;
 	} else {
 		step->forecast_time_isatt = 0;
-/*
-		fprintf(stdout,"n_ft: %d\n",n_tmp_ft_vals);
-*/
 	}
-	if((tmp_lv_vals != NULL)&&(tmp_lv_vals1 == NULL)) {
-		if(n_tmp_lv_vals > 1 || (n_tmp_lv_vals > 0 && (therec->single_dims & GRIB_Level_Dims))) {
-			step->var_info.dim_sizes[i] = (ng_size_t) n_tmp_lv_vals;
-			tmp_dim_siz = (ng_size_t) n_tmp_lv_vals;
+
+	if(dim_c->levels.dim_size > 0 && dim_c->levels_1.dim_size == 0) {
+		if(dim_c->levels.dim_size > 1 || (dim_c->levels.dim_size == 1 && (therec->single_dims & GRIB_Level_Dims))) {
+			step->var_info.dim_sizes[i] = dim_c->levels.dim_size;
+			tmp_dim_size = dim_c->levels.dim_size;
+			dim_c->levels.ok_to_free = 0;
 			step->levels = (NclOneDValCoordData)_NclCreateVal(
 						NULL,
 						NULL,
 						Ncl_OneDValCoordData,
 						0,
-						(void*)tmp_lv_vals,
+						dim_c->levels.coord_vals,
 						NULL,
 						1,
-/*						(void*)&n_tmp_lv_vals,*/
-                        &tmp_dim_siz,
+						&tmp_dim_size,
 						TEMPORARY,
 						NULL,
 						nclTypeintClass);
 			step->levels0 = NULL;
 			step->levels1 = NULL;
 			i++;
-				step->levels_isatt = 0;
-		} else if (n_tmp_lv_vals == 1) {
+			step->levels_isatt = 0;
+		} else if (dim_c->levels.dim_size == 1) {
 			step->levels_isatt = 1;
-			tmp_dim_siz = (ng_size_t) n_tmp_lv_vals;
+			tmp_dim_size = dim_c->levels.dim_size;
+			dim_c->levels.ok_to_free = 0;
 			step->levels = (NclOneDValCoordData)_NclCreateVal(
 						NULL,
 						NULL,
 						Ncl_OneDValCoordData,
 						0,
-						(void*)tmp_lv_vals,
+						dim_c->levels.coord_vals,
 						NULL,
 						1,
-/*						(void*)&n_tmp_lv_vals,*/
-                        &tmp_dim_siz,
+						&tmp_dim_size,
 						TEMPORARY,
 						NULL,
 						nclTypeintClass);
@@ -4618,25 +5047,23 @@ GribParamList* step;
 			step->levels1 = NULL;
 		} else {
 			step->levels_isatt = 0;
-/*
-			fprintf(stdout,"n_lv: %d\n",n_tmp_lv_vals);
-*/
 		}
-	} else if((tmp_lv_vals != NULL)&&(tmp_lv_vals1 != NULL)) { 
-		if(n_tmp_lv_vals > 1 || (n_tmp_lv_vals > 0 && (therec->single_dims & GRIB_Level_Dims))) {
-			step->var_info.dim_sizes[i] = (ng_size_t) n_tmp_lv_vals;
-			tmp_dim_siz = (ng_size_t) n_tmp_lv_vals;
+	} else if (dim_c->levels.dim_size > 0 && dim_c->levels_1.dim_size > 0) {
+		if (dim_c->levels.dim_size  > 1 || (dim_c->levels.dim_size == 1 && (therec->single_dims & GRIB_Level_Dims))) {
+			step->var_info.dim_sizes[i] = dim_c->levels.dim_size;
+			tmp_dim_size = dim_c->levels.dim_size;
 			step->levels = NULL;
+			dim_c->levels.ok_to_free = 0;
+			dim_c->levels_1.ok_to_free = 0;
 			step->levels0 = (NclMultiDValData)_NclCreateVal(
 						NULL,
 						NULL,
 						Ncl_MultiDValData,
 						0,
-						(void*)tmp_lv_vals,
+						dim_c->levels.coord_vals,
 						NULL,
 						1,
-/*						(void*)&n_tmp_lv_vals,*/
-                        &tmp_dim_siz,
+						&tmp_dim_size,
 						TEMPORARY,
 						NULL,
 						nclTypeintClass);
@@ -4645,31 +5072,31 @@ GribParamList* step;
 						NULL,
 						Ncl_MultiDValData,
 						0,
-						(void*)tmp_lv_vals1,
+						dim_c->levels_1.coord_vals,
 						NULL,
 						1,
-/*						(void*)&n_tmp_lv_vals,*/
-                        &tmp_dim_siz,
+						&tmp_dim_size,
 						TEMPORARY,
 						NULL,
 						nclTypeintClass);
 			step->levels_has_two = 1;
 			i++;
-				step->levels_isatt = 0;
-		} else if (n_tmp_lv_vals == 1) {
+			step->levels_isatt = 0;
+		} else if (dim_c->levels.dim_size == 1) {
 			step->levels_isatt = 1;
 			step->levels = NULL;
-			tmp_dim_siz = (ng_size_t) n_tmp_lv_vals;
+			tmp_dim_size = 1;
+			dim_c->levels.ok_to_free = 0;
+			dim_c->levels_1.ok_to_free = 0;
 			step->levels0 = (NclMultiDValData)_NclCreateVal(
 						NULL,
 						NULL,
 						Ncl_MultiDValData,
 						0,
-						(void*)tmp_lv_vals,
+						dim_c->levels.coord_vals,
 						NULL,
 						1,
-/*						(void*)&n_tmp_lv_vals,*/
-                        &tmp_dim_siz,
+						&tmp_dim_size,
 						TEMPORARY,
 						NULL,
 						nclTypeintClass);
@@ -4678,226 +5105,64 @@ GribParamList* step;
 						NULL,
 						Ncl_MultiDValData,
 						0,
-						(void*)tmp_lv_vals1,
+						dim_c->levels_1.coord_vals,
 						NULL,
 						1,
-/*						(void*)&n_tmp_lv_vals,*/
-                        &tmp_dim_siz,
+						&tmp_dim_size,
 						TEMPORARY,
 						NULL,
 						nclTypeintClass);
 			step->levels_has_two = 1;
 		} else {
 			step->levels_isatt = 0;
-/*
-			fprintf(stdout,"n_lv: %d\n",n_tmp_lv_vals);
-*/
 		}
 	} else {
 		step->levels_isatt = 0;
 	}
+	
 	step->var_info.num_dimensions = i + (doff+1);
 	for (i = 0; i < step->var_info.num_dimensions; i++) {
 		/* initialize the file dim number to something out of range */
 		step->var_info.file_dim_num[i] = -1;
-	}
-/*
-* Now call grid code to get coordinates
-*/
-/*
-* Now build single array of GribRecordInqRecList*'s
-*/
-	if( step->var_info.num_dimensions - (doff+1) <= 0) {
-		if(header.next != NULL) {
-			free_ens = header.next;
-			if(free_ens->lv_vals != NULL) 
-				NclFree(free_ens->lv_vals);
-			if(free_ens->lv_vals1 != NULL) 
-				NclFree(free_ens->lv_vals1);
-			if(free_ens->ft_vals != NULL) 
-				NclFree(free_ens->ft_vals);
-			if(free_ens->it_vals != NULL) 
-				NclFree(free_ens->it_vals);
-			if(free_ens->thelist != NULL) {
-				if(free_ens->thelist->lv_vals != NULL)
-					NclFree(free_ens->thelist->lv_vals);
-				if(free_ens->thelist->lv_vals1 != NULL)
-					NclFree(free_ens->thelist->lv_vals1);
-				if(free_ens->thelist->ft_vals != NULL)
-					NclFree(free_ens->thelist->ft_vals);
-				if (free_ens->thelist->thelist != NULL) {
-					if (free_ens->thelist->thelist->lv_vals != NULL)
-						NclFree(free_ens->thelist->thelist->lv_vals);
-					if (free_ens->thelist->thelist->lv_vals1 != NULL)
-						NclFree(free_ens->thelist->thelist->lv_vals1);
-					NclFree(free_ens->thelist->thelist);
-				}
-				NclFree(free_ens->thelist);
-			}
-			NclFree(free_ens);
-		}
-		return( returnval);
 	}
 
 	total = 1;
 	for(i = 0; i < step->var_info.num_dimensions - (doff +1); i++) {
 		total *= step->var_info.dim_sizes[i];
 	}
-	strt = (GribRecordInqRecList*)NclMalloc((unsigned)sizeof(GribRecordInqRecList)*total);
+	rec_array = (GribRecordInqRecList*)NclMalloc((unsigned)sizeof(GribRecordInqRecList)*total);
 	for (i = 0; i < total; i++) {
-		strt[i].rec_inq = (GribRecordInqRec*)10;
-		strt[i].next = NULL;
+		rec_array[i].rec_inq = (GribRecordInqRec*)NULL;
+		rec_array[i].next = NULL;
 	}
-	the_end = header.next;
-	i = 0;
-	icount = 0;
-
-#define PRINT_MISSING(ens_ix,it_ix,ft_ix,lv_ix) \
-	sprintf(buf,"%s->%s is missing",NrmQuarkToString(therec->file_path_q),name); \
-	if (n_tmp_ens_vals > 1) \
-		sprintf(&(buf[strlen(buf)])," ens: %d",ens_ix); \
-	if (n_tmp_it_vals > 1) \
-		sprintf(&(buf[strlen(buf)])," it: %s",NrmQuarkToString(it_vals_q[it_ix])); \
-	if (n_tmp_ft_vals > 1) \
-		sprintf(&(buf[strlen(buf)])," ft: %d",tmp_ft_vals[ft_ix]); \
-	if (n_tmp_lv_vals > 1) { \
-		if (! step->levels_has_two) {	\
-			sprintf(&(buf[strlen(buf)])," lv: %d",tmp_lv_vals[lv_ix]); \
-		} \
-		else {	\
-			sprintf(&(buf[strlen(buf)])," lv: (%d, %d)",tmp_lv_vals[lv_ix],tmp_lv_vals1[lv_ix]); \
-		} \
-	} \
-	NhlPError(NhlWARNING,NhlEUNKNOWN,buf)
-			
-	while(the_end != NULL) {
-		char buf[256];
-		itstep = the_end->thelist;
-		j = 0;
-		while(itstep != NULL) {
-			ftstep = itstep->thelist;
-			if ((tmp_it_vals != NULL) && (! it_equal(&itstep->it,&(tmp_it_vals[j])))) {
-				for (k = 0; k < n_tmp_ft_vals; k++) {
-					for( m = 0 /* i already set */; m < n_tmp_lv_vals; i++,m++) {
-						strt[i].rec_inq = NULL;
-						PRINT_MISSING(the_end->ens_ix,j,k,m);
-					}
-				}
-				j++;
-				continue;
-			}
-			k = 0;
-			while (ftstep != NULL) {
-				rstep = ftstep->thelist;
-				if((tmp_ft_vals != NULL)&&(ftstep->ft != tmp_ft_vals[k])){
-					for( m = 0 /* i already set */; m < n_tmp_lv_vals; i++,m++) {
-						strt[i].rec_inq = NULL;
-						PRINT_MISSING(the_end->ens_ix,j,k,m);
-					}
-					k++;
-					continue;
-				}
-				m = 0;
-				if(!step->levels_has_two) {
-					while(rstep != NULL) {
-						if((tmp_lv_vals == NULL) ||(rstep->rec_inq->level0 == tmp_lv_vals[m])) {
-							strt[i].rec_inq = rstep->rec_inq;	
-							icount +=1;
-							free_rec = rstep;
-							rstep = rstep->next;
-							NclFree(free_rec);
-							m++;
-						} else {
-							strt[i].rec_inq = NULL;
-							PRINT_MISSING(the_end->ens_ix,j,k,m);
-							m++;
-						}
-						i++;
-					}
-					if((rstep == NULL)&&(m < n_tmp_lv_vals)) {
-						for( ;m < n_tmp_lv_vals; m++) {
-							strt[i].rec_inq = NULL;
-							PRINT_MISSING(the_end->ens_ix,j,k,m);
-							i++;
-						}
-					}
-				} else {
-					while(rstep != NULL) {
-						if((rstep->rec_inq->level0 == tmp_lv_vals[m])
-						   &&(rstep->rec_inq->level1 == tmp_lv_vals1[m])) {
-							strt[i].rec_inq = rstep->rec_inq;	
-							icount +=1;
-							free_rec = rstep;
-							rstep = rstep->next;
-							NclFree(free_rec);
-							m++;
-						} else {
-							strt[i].rec_inq = NULL;
-							PRINT_MISSING(the_end->ens_ix,j,k,m);
-							m++;
-						}
-						i++;
-					}
-					if((rstep == NULL)&&(m < n_tmp_lv_vals)) {
-						for( ;m < n_tmp_lv_vals; m++) {
-							strt[i].rec_inq = NULL;
-							PRINT_MISSING(the_end->ens_ix,j,k,m);
-							i++;
-						}
-					}
-				}
-				free_ft = ftstep;
-				ftstep = ftstep->next;
-				if(free_ft->lv_vals != NULL) 
-					NclFree(free_ft->lv_vals);
-				if(free_ft->lv_vals1 != NULL) 
-					NclFree(free_ft->lv_vals1);
-				NclFree(free_ft);
-				k++;
-			}
-			while(k < n_tmp_ft_vals) {
-				for( m = 0 /* i already set */; m < n_tmp_lv_vals; i++,m++) {
-					strt[i].rec_inq = NULL;
-					PRINT_MISSING(the_end->ens_ix,j,k,m);
-				}
-				k++;
-			}
-			free_it = itstep;
-			itstep = itstep->next;
-			if (free_it->lv_vals != NULL)
-				NclFree(free_it->lv_vals);
-			if(free_it->lv_vals1 != NULL) 
-				NclFree(free_it->lv_vals1);
-			if(free_it->ft_vals != NULL) 
-				NclFree(free_it->ft_vals);
-			NclFree(free_it);
-			j++;
-		}
-		while (j < n_tmp_it_vals) {
-			for (k = 0; k < n_tmp_ft_vals; k++) {
-				for( m = 0 /* i already set */; m < n_tmp_lv_vals; i++,m++) {
-					strt[i].rec_inq = NULL;
-					PRINT_MISSING(the_end->ens_ix,j,k,m);
-				}
-			}
-			j++;
-		}
-		free_ens = the_end;
-		the_end = the_end->next;
-		if(free_ens->lv_vals != NULL) 
-			NclFree(free_ens->lv_vals);
-		if(free_ens->lv_vals1 != NULL) 
-			NclFree(free_ens->lv_vals1);
-		if(free_ens->ft_vals != NULL) 
-			NclFree(free_ens->ft_vals);
-		if(free_ens->it_vals != NULL) 
-			NclFree(free_ens->it_vals);
-		NclFree(free_ens);
+	for (rstep = step->thelist; rstep != NULL; rstep = rstep->next) {
+		GribRecordInqRec *grec = rstep->rec_inq;
+		ng_size_t ix = _rec_array_index(step,dim_c,grec);
+		rec_array[ix].rec_inq = grec;
 	}
-	while(i<total) strt[i++].rec_inq = NULL;
-	step->thelist = strt;
+	rstep = step->thelist;
+	while (rstep) {
+		free_rec = rstep;
+		rstep = rstep->next;
+		NclFree(free_rec);
+	}
+	step->thelist = rec_array;
 	step->n_entries = total;
-	
+	total_missing = 0;
+	for (i = 0; i < total; i++) {
+		if (rec_array[i].rec_inq == NULL) {
+			total_missing++;
+		}
+	}
+	if (total_missing > 0) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "NclGRIB: %ld records are missing from variable <%s>",
+			  total_missing,NrmQuarkToString(step->var_info.var_name_quark));
+	}
+
+	_free_dim_construct(dim_c);
+	step->info = NULL;
+
 	return(returnval);
 }
 
@@ -5607,7 +5872,7 @@ void *s2;
 {
 	GribRecordInqRecList *s_1 = *(GribRecordInqRecList**)s1;
 	GribRecordInqRecList *s_2 = *(GribRecordInqRecList**)s2;
-	short result = 0;
+	int result = 0;
 
 	result = s_1->rec_inq->initial_time.year - s_2->rec_inq->initial_time.year;
 	if(!result) {

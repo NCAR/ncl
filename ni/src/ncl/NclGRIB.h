@@ -185,6 +185,7 @@ struct _GribParamList {
 	GribRecordInqRecList *thelist;
 	int n_atts;
 	GribAttInqRecList *theatts;
+	void *info;
 	GribParamList *next;
 };
 struct _GribRecordInqRecList {
