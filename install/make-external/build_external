@@ -6,10 +6,13 @@
 # 
 # You will need to read through the notes below, to:
 # 
-#   - set environment variables for your compilers and options,
+#   - set possible environment variables for your compilers and options,
 #   - indicate which packages you want to install,
 #   - edit some files by hand before you run this script.
 # 
+#  Search for lines that start with "### CHANGE". These are things
+#  you will likely need to change.
+#
 # Software packages to install:
 # 
 # NCL/NCARG:
@@ -79,17 +82,17 @@
 #
 # PREFIX is the parent location for installing external software.
 #
-# PREFIX_NODAP is the parent location for installing a version
-# of NetCDF that is not opendap-enabled.  This is done because
-# the OPeNDAP version can have a lot of dependencies that make it
-# hard for a user who doesn't have the correct shared libraries on
-# their system. If you don't want to build the non-opendap version
-# of NetCDF (and ESMF), then set BUILD_NON_OPENDAP to 0.
-#
+### CHANGE THE NEXT TWO LINES AS NEEDED
 PREFIX=/usr/local
 NCARG_ROOT=/usr/local
+
+# PREFIX_NODAP is the parent location for installing a version
+# of NetCDF that is not opendap-enabled.
+# If you don't want to build the non-opendap version
+# of NetCDF (and ESMF), then set BUILD_NON_OPENDAP to 0.
+
+BUILD_NON_OPENDAP=0
 PREFIX_NODAP=$PREFIX/nodap
-BUILD_NON_OPENDAP=1
 
 # Set up file to hold build output.
 dd=`date +'%m%d%y'`
@@ -136,7 +139,7 @@ if [ "$os" = "Darwin" ] ; then
   os_version=`sw_vers -productVersion`
 fi
 
-# Set environment variables for building software
+### Change to indicate what options you want for compilation.
 if [ "$os" = "Darwin" ] ; then
   export CC=/usr/local/bin/gcc
   export CXX=/usr/local/bin/g++
@@ -210,6 +213,10 @@ echo "=================================================="
 # Software directories, sorted alphabetically
 #--------------------------------------------------------------------
 
+### Change to indicate what versions of the following software you have.
+# Note that this build script expects the directory for this software
+# to be called exactly by these names, i.e. the netCDF software better
+# be in a directory called "netcdf-4.4.0".
 CAIRO_DIR="cairo-1.14.6"
 CURL_DIR="curl-7.47.0"
 ESMF_DIR="esmf-6.3.0rp1"
@@ -243,8 +250,9 @@ INSTALL_PYTHON_DIR="$PREFIX/$PYTHON_DIR-$NUMPY_DIR"
 #DAP_DIR="libdap-3.8.2"
 #NC_DIR="libnc-dap-3.7.4"
 
-# Indicate which packages you want. These are listed in the order
-# they should generally be built in.
+### Change to indicate which packages you want to build.
+# Any packages that are already built should have the line commented out.
+# The packages are listed in the order they get built in.
 INSTALL_PKGCONFIG=1
 INSTALL_ZLIB=1
 INSTALL_PNG=1
