@@ -439,11 +439,17 @@ if [ $INSTALL_PKGCONFIG ] ; then
       make clean
     fi
     echo "Building $PKGCONFIG_DIR..."
-# Mac systems may need the "--with-internal-glib"
-# if using gcc/gfortran.
-#    ./configure --prefix\=$PREFIX  --with-internal-glib
+    if [ "$os" = "Darwin" ] ; then
+      export PKG_CONFIG_PATH="/opt/local/lib/pkgconfig"
+    fi
+# You shouldn't need --with-internal-glib if you set PKG_CONFIG_PATH
+# to point to directory containing the glib-2.0.pc file.
+#   ./configure --with-internal-glib --prefix\=$PREFIX
     ./configure --prefix\=$PREFIX
     make all install
+    if [ "$os" = "Darwin" ] ; then
+      export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
+    fi
     if [ $? ] ; then
       echo "$PKGCONFIG_DIR build successful."
       export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
@@ -835,7 +841,7 @@ then
         make clean
       fi
       echo "Cleaning $NETCDF4_DIR to do OPeNDAP build"
-      if [ "$un" = "cisl-denton.local" ] || [ "$os_version" = "10.8.4" ] ; then
+      if [ "$os_version" = "10.8.4" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
       elif [ "$un" = "cisl-denton.local" ] || [ "$un" = "cisl-denton.scd.ucar.edu" ] || [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ] || [ "$os_version" = "10.9.4" ] || [ "$os_version" = "10.9.5" ]; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
@@ -865,7 +871,7 @@ then
       elif [ "$un" = "logan.cgd.ucar.edu" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lz -lidn -lrt -ldl"
       elif [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
-        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl -lidn -lssl -lcrypto -lz -lrt"
+        export LIBS="-lhdf5_hl -lhdf5 -lsz -lcurl -lidn -lssl -lcrypto -lz -lrt"
       elif [ "$un" = "yellowstone_gnu483" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl -lz -lrt -lssl -lidn -lldap"
       elif [ "$un" = "yellowstone_intel1215" ] ; then
@@ -1248,7 +1254,7 @@ if [ $INSTALL_CAIRO ] ; then
       make clean
     fi
     echo "Building $CAIRO_DIR..."
-# Needed the quartz disabled on GNU 4.1.2 system, so make it default for all systems?
+# Need the quartz disabled for all systems?
     ./configure --prefix\=$PREFIX --enable-quartz-font=no --enable-quartz=no --enable-shared=no --enable-static=yes
 # Needed for k5? disable-gobject??
 #    ./configure --prefix\=$PREFIX --enable-quartz-font=no --enable-quartz=no --enable-shared=no --enable-static=yes --disable-gobject 
@@ -1419,16 +1425,16 @@ if [ $INSTALL_ESMF ] ; then
     export ESMFREGRIDFILE="$ESMF_INSTALL_PREFIX/bin/binO/$ESMFBUILDDIR/ESMF_RegridWeightGen"
     unset ESMF_CXXLINKPATHS
 
-    if [ "$un" = "cisl-denton.local" ] || [ "$os_version" = "10.8.4" ] ; then
+    if [ "$os_version" = "10.8.4" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
+    elif [ "$un" = "cisl-denton.local" ] || [ "$un" = "cisl-denton.scd.ucar.edu" ] || [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ] || [ "$os_version" = "10.9.4" ] || [ "$os_version" = "10.9.5" ] ; then
+      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
     elif [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lcrypto -lz -lrt -ldl -lssl -lidn -lsz -lz"
     elif [ "$un" = "yellowstone_gnu483" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz -lcurl -lz -lrt -lssl -lidn -lldap"
     elif [ "$un" = "yellowstone_intel1215" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lssl -lidn -lrt -ldl"
-    elif [ "$un" = "cisl-denton.local" ] || [ "$un" = "cisl-denton.scd.ucar.edu" ] || [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ] || [ "$os_version" = "10.9.4" ] || [ "$os_version" = "10.9.5" ] ; then
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
     elif [ "$un" = "k5" ] || [ "$un" = "k6" ] || [ "$un" = "k7" ] ; then
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lldap -lrt -lssl"
     elif [ "$un" = "k9" ] ; then
