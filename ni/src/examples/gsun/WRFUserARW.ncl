@@ -1332,10 +1332,10 @@ begin
            end if
          end if  
          Q2 = Q2 > 0.000
-         rh = wrf_rh( Q2, PSFC, T2 )
+         rh2 = wrf_rh( Q2, PSFC, T2 )
          delete_VarAtts(T2,(/"description","units"/))
-         copy_VarAtts(T2,rh)
-         rh@description = "2m Relative Humidity"           
+         copy_VarAtts(T2,rh2)
+         rh2@description = "2m Relative Humidity"           
        else
          ;; may be a met_em file - see if we can get RH
          if(isfilevar(nc_file,"RH")) then
@@ -1355,7 +1355,7 @@ begin
            end if
          end if
        end if  
-       return(rh)
+       return(rh2)
   end if
 
 
