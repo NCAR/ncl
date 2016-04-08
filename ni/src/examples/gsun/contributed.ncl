@@ -18122,40 +18122,57 @@ begin
 
   return(fcor)
 end
-;========================================
-; BOOTSTRAP FUNCTIONS
-;========================================
-undef("bootstrap_start")
-function bootstrap_start(z:numeric, nBoot[1]:integer, nDim[1]:integer, opt[1]:logical)
-;
+;===========================================================
+; BOOTSTRAP: V2
+;===========================================================
+undef("bootstrap_optarg")
+function bootstrap_optarg(z:numeric, nBoot[1]:integer, nDim:integer, opt[1]:logical)
 ; ----------------------------------------------------------
 ; ---******************Not called users*********************
 ; ----------------------------------------------------------
-;
-; ---This is called internally by the various boot_*functions. 
-; ---Common front-end to all bootstrap functions
-; ---Check Input and options; return finish information
-;
-local dimz, rankz, N, NN, NRL, zBoot, nLow, nHi, rankLow, rankHi, rseed1, rseed2, err \
-    , zType, zFillValue
+; ---This is called internally by various boot_*functions. 
+; ---Common front-end to selected bootstrap functions
+; ---Check Input and options; return extracted information
+; ----------------------------------------------------------
+local dimz, rankz, N, NN, NRL, zBoot, rseed1, rseed2, err, zType \
+    , zFillValue, n0, n1
 begin
   err      = 0
   err@long_name = "error code"
-
+;----------------------------------------------
+;--- dimension sizes and rank of the 'z' array
+;----------------------------------------------
   dimz     = dimsizes(z)
   rankz    = dimsizes(dimz)
   if (rankz.gt.4) then
       err  = -20 
-      print("bootstrap_start: rankz="+rankz+": rankz>4 not currently supported")
-    ;;return([/ err, -999, -999, -999, -999.0, -999.0, -999.0, -999.0, -999.0 /])
+      print("bootstrap_optarg: rankz="+rankz+": rankz>4 not currently supported")
+    ;;return([/ err, -999, -999, -999, -999.0, -999.0 /])
       exit
   end if
 
-  N          = dimz(nDim)        
+;----------------------------------------------
+;--- dimension number for each variable        
+;----------------------------------------------
+  rank_nDim = dimsizes(dimsizes(nDim))
+
+  n0 = nDim(0)
+  if (rank_nDim.eq.1) then
+      n1 = nDim(0)
+  else
+      n1 = nDim(1)
+  end if
+;----------------------------------------------
+;--- Dimension size of the specified dimension
+;----------------------------------------------
+  N          = dimz(n0)               ; Most commonly, this is the 'time' dimension
   NN         = N                      ; Sub-sample size; most commonly NN=N
                                       ; Also, Regression segment Length; contiguous
                                       ;       used in bootstrap_regcoef
-  dimz(nDim) = nBoot                  ; 'trick'                                      
+;----------------------------------------------
+;--- Allocate memory for the bootstrapped array
+;----------------------------------------------
+  dimz(n0)   = nBoot                  ; 'trick'                                      
 
   zType      = typeof(z) 
   zFillValue = getFillValue(z)
@@ -18165,16 +18182,14 @@ begin
       zBoot  = new (dimz,"float", 1e20 )   ; integer, etc ... force 'float'
   end if
 
-  rankLow    = 0.025                  ; default
-  rankHi     = 0.975 
-
-; Option and error checking
-
+;----------------------------------------------
+;--- Optional argumenta and error checking; (kinda) overkill but ...
+;----------------------------------------------
   if (opt) then
       if (isatt(opt,"sample_size")) then
           if (typeof(opt@sample_size).ne."integer") then
               err = -14
-              print("bootstrap_start: opt@sample_size must be integer: typeof(opt@sample_size)=" \
+              print("bootstrap_optarg: opt@sample_size must be integer: typeof(opt@sample_size)=" \
                     +typeof(opt@sample_size))
               exit
           end if
@@ -18183,7 +18198,7 @@ begin
 
           if (NN.gt.N) then
               err  = -13
-              print("bootstrap_start: opt@sample_size="+NN+" is > sample size, N="+N) 
+              print("bootstrap_optarg: opt@sample_size="+NN+" is > sample size, N="+N) 
               exit
           end if
       end if
@@ -18193,7 +18208,7 @@ begin
               rseed1 = opt@rseed1 
           else
               err = -12
-              print("bootstrap_start: rseed1 must be integer: typeof(rseed1)="+typeof(opt@rseed1))
+              print("bootstrap_optarg: rseed1 must be integer: typeof(rseed1)="+typeof(opt@rseed1))
               exit
           end if
       end if
@@ -18203,7 +18218,7 @@ begin
               rseed2 = opt@rseed2 
           else
               err = -11
-              print("bootstrap_start: rseed2 must be integer: typeof(rseed2)="+typeof(opt@rseed2))
+              print("bootstrap_optarg: rseed2 must be integer: typeof(rseed2)="+typeof(opt@rseed2))
               exit
           end if
       end if
@@ -18214,58 +18229,47 @@ begin
               rseed2 = toint((12345l*rseed1)%2147483398l)      ; NCL mod operator (%) 
           else
               err = -10
-              print("bootstrap_start: rseed3 must be set to clock: opt@rseed3="+opt@rseed3)
+              print("bootstrap_optarg: rseed3 must be set to clock: opt@rseed3="+opt@rseed3)
               exit
           end if
       end if
-
-      if (isatt(opt,"rankLow") .and. (opt@rankLow.ge.0 .and. opt@rankLow.le.1) ) then
-          rankLow = opt@rankLow         ; 0.0 <= rankLow <= 1.0 
-      end if
-      if (isatt(opt,"rankHi" ) .and. (opt@rankHi .ge.0 .and. opt@rankHi .le.1) ) then
-          rankHi   = opt@rankHi         ; 0.0 <= rankLow <= 1.0
-      end if
   end if
-
-  nLow = max((/ round(rankLow*(nBoot-1), 3), 0 /))            ; NCL subscripts [ 0->(nBoot-1)]
-  nHi  = min((/ round(rankHi *(nBoot-1), 3), (nBoot-1) /))
 
   if (isvar("rseed1") .and. isvar("rseed2")) then  
       random_setallseed(rseed1, rseed2)     ; set seeds
   end if
-
-  if (rankLow.ge. rankHi) then
-      err = 2
-      print("bootstrap_start: rankLow ("+rankLow+") >= rankHi ("+rankHi+")")
-      exit
-  end if
-
-  return( [/err, dimz, rankz, N, zBoot, rankLow, rankHi, nLow, nHi, NN/] )
+;----------------------------------------------
+;--- Return the needed information to the calling bootstrap function  
+;----------------------------------------------
+  return( [/dimz, rankz, N, NN, zBoot/] )
 end
-;-------------------------------------------------------------------
-undef("bootstrap_stat_finish")
-function bootstrap_stat_finish(statName[1]:string, z:numeric, zBoot:numeric      \
-                              ,dimz[*]:integer, rankz[1]:integer, nLow[1]:integer, nHi[1]:integer \
-                              ,rankLow[1]:numeric, rankHi[1]:numeric             \
-                              ,zAvg:numeric, zStd:numeric, zStdErr:numeric )
-;
+;===========================================================
+undef("bootstrap_finish")
+function bootstrap_finish(statName[1]:string, z:numeric, zBoot:numeric \
+                         ,dimz[*]:integer, rankz[1]:integer            \
+                         ,N[1]:integer, NN[1]:integer, nBoot[1]:integer)
 ; ----------------------------------------------------------
 ; ---******************Not called users*********************
 ; ----------------------------------------------------------
-; ---This is called internally by the bootstrap_stat function. 
+; ---This is called internally by the bootstrap function. 
 ; ---Common end to all bootstrap functions
 ; ---Basic stats on 'zBoot' and add coordinate and units information (if present) 
-;
-local dimz, N, idz, dimBoot, nBoot, zBootAvg, zBootStd, zBootLow, zBootHi
+; ----------------------------------------------------------
+local dimz, idz, dimBoot, zBootAvg, zBootStd, Z, ZAVG, ZSTD
 begin
-  N        = dimz(0)                            ; dimz(nDim)
+;----------------------------------------------
+;--- Retrieve some info from input arguments
+;----------------------------------------------
+  dimz     = dimsizes(z)
   dimBoot  = dimsizes(zBoot)
-  nBoot    = dimBoot(0)                         ; # boot samples 
 
-  if (statName.eq."correl") then
-      Z     = 0.5*log((1+zBoot)/(1-zBoot))       ; Fischer z-transform of all bootstrapped correlations
-      ZAVG  = dim_avg_n(Z, 0)                    ; avg Z
-      ZSTD  = dim_stddev_n(Z, 0)                 ; stddev Z
+;----------------------------------------------
+;--- Calculate mean and std, dev. of the input arguments 
+;----------------------------------------------
+  if (statName.eq."correl") then                ; special case
+      Z     = 0.5*log((1+zBoot)/(1-zBoot))      ; Fischer z-transform of all bootstrapped correlations
+      ZAVG  = dim_avg_n(Z, 0)                   ; avg Z
+      ZSTD  = dim_stddev_n(Z, 0)                ; stddev Z
     ;;ZSE  = 1.0/sqrt(nBoot-1)                  ; SE of boot strapped values
     ;;NVAL = cdft_t(rankHi,9999)                ; 2-sided; use 'big' number for normal dist   
     ;;ZLOW = Z-NVAL*ZSE                         ; normal low:  2.5% 
@@ -18275,90 +18279,135 @@ begin
       zBootStd = tanh(ZSTD)                     ; not really correct ... place holder
     ;;rBootLow = tanh(ZLOW)                     ; =(exp(2*zlow)-1)/(exp(2*zlow)+1)
     ;;rBootHi  = tanh(ZHI)                      ; =(exp(2*zhi )-1)/(exp(2*zhi )+1)
+      delete([/Z, ZAVG, ZSTD /])
   else
       zBootAvg = dim_avg_n(zBoot, 0)          
       zBootStd = dim_stddev_n(zBoot, 0) 
   end if
+;----------------------------------------------
+;--- Sort bootstrap values into ascending order 
+;----------------------------------------------
 
-  idz      = dim_pqsort_n(zBoot, 2, 0) ; sort bootstrap means into ascending order 
+  idz = dim_pqsort_n(zBoot, 2, 0)               ; sort bootstrap means into ascending order 
   
-; Add meta data to returned variables 
+;----------------------------------------------
+;---  Add meta data to returned variables 
+;----------------------------------------------
 
   zBoot!0    = "boot"
-  zBoot&boot = ispan(0,nBoot-1,1)      ; could also be (1,nBoot,1) 
-
-  if (rankz.eq.1) then
-      zBootLow = zBoot(nLow)           ; low % level
-      zBootHi  = zBoot(nHi )           ; hi  % level
-  end if
+  zBoot&boot = ispan(0,nBoot-1,1)               ; could also be (1,nBoot,1) 
 
   if (rankz.eq.2) then
-      zBootLow = zBoot(nLow,:)         ; low % level
-      zBootHi  = zBoot(nHi ,:)         ; hi  % level
       copy_VarCoords(z(0,:), zBoot(0,:))
       copy_VarCoords(z(0,:), zBootAvg)
       copy_VarCoords(z(0,:), zBootStd)
-      copy_VarCoords(z(0,:), zBootLow)
-      copy_VarCoords(z(0,:), zBootHi )
   end if
 
   if (rankz.eq.3) then
-      zBootLow = zBoot(nLow,:,:)         ; low % level
-      zBootHi  = zBoot(nHi ,:,:)         ; hi  % level
       copy_VarCoords(z(0,:,:), zBoot(0,:,:))
       copy_VarCoords(z(0,:,:), zBootAvg)
       copy_VarCoords(z(0,:,:), zBootStd)
-      copy_VarCoords(z(0,:,:), zBootLow)
-      copy_VarCoords(z(0,:,:), zBootHi )
   end if
 
   if (rankz.eq.4) then
-      zBootLow = zBoot(nLow,:,:,:)       ; low % level
-      zBootHi  = zBoot(nHi ,:,:,:)       ; hi  % level
       copy_VarCoords(z(0,:,:,:), zBoot(0,:,:,:))
       copy_VarCoords(z(0,:,:,:), zBootAvg)
       copy_VarCoords(z(0,:,:,:), zBootStd)
-      copy_VarCoords(z(0,:,:,:), zBootLow)
-      copy_VarCoords(z(0,:,:,:), zBootHi )
+  end if
+
+  if (isatt(z,"long_name")) then
+      zBoot@long_name    = z@long_name
+      zBootAvg@long_name = z@long_name 
+      zBootStd@long_name = z@long_name 
   end if
 
   if (isatt(z,"units")) then
       zBoot@units    = z@units
       zBootAvg@units = z@units 
       zBootStd@units = z@units 
-      zBootLow@units = z@units 
-      zBootHi@units  = z@units 
   end if
 
 ; add attributes data
 
-  N@long_name         = "bootstrap_"+statName+": Source variable input rank="+rankz
-  nBoot@long_name     = "bootstrap_"+statName+": Number of bootstrap samples" 
-  zAvg@long_name      = "bootstrap_"+statName+": Original Sample"
-  zStd@long_name      = "bootstrap_"+statName+": Ortiginal Sample Std. Deviation"
-  if (any((/"mean","stddev","variance"/).eq.statName)) then
-      zStdErr@long_name   = "bootstrap_"+statName+": Std. error of mean : N="+N
-  else if (statName.eq."regCoef") then
-      zStdErr@long_name   = "bootstrap_"+statName+": Original regression coefficient(s)"
-  else if (statName.eq."correl") then
-      zStdErr@long_name   = "bootstrap_"+statName+": Original correlation coefficient(s)"
-  end if
-  end if
-  end if
-  zBoot@long_name     = "bootstrap_"+statName+": Boot samples"
-  zBootAvg@long_name  = "bootstrap_"+statName+": Average: "+nBoot+"  bootstrapped samples"
-  zBootLow@long_name  = "bootstrap_"+statName+": "+(rankLow*100)+"% bootstrapped samples"
-  zBootHi@long_name   = "bootstrap_"+statName+": "+(rankHi *100)+"% bootstrapped samples"
-  zBootStd@long_name  = "bootstrap_"+statName+": Std. Deviation: "+nBoot+" bootstrapped samples" 
-;;zBootStdErr@long_name  = "bootstrap_"+statName+": Std. Error: "+nBoot+" bootstrapped samples" 
+  zBoot@bootstrap_info     = "bootstrap_"+statName+": Boot samples"
+  zBootAvg@bootstrap_info  = "bootstrap_"+statName+": Average: "+nBoot+"  bootstrapped samples"
+  zBootStd@bootstrap_info  = "bootstrap_"+statName+": Std. Deviation: "+nBoot+" bootstrapped samples" 
 
-  return( [/ zBootAvg, zBootStd, zBootLow, zBootHi /] )
+  return( [/ zBoot, zBootAvg, zBootStd /] )
 end
-;------------------------------------------------------------------------
-; utility used to print elements of a variable of type list
-;------------------------------------------------------------------------
+;===========================================================
+undef("bootstrap_indices")
+function bootstrap_indices(K[1]:integer, KK[1]:integer, opt[1]:logical)
+;-----------------------------------------------------------
+; ---******************Not called users*********************
+;-----------------------------------------------------------
+;--- Utility used select all or sub-sample of total K 
+;-----------------------------------------------------------
+local sample_method, IW, k, kStrt, kLast, n
+begin
+  sample_method = 1                             ; Sample with replacement (default)
+  if (opt) then
+      if (isatt(opt,"sample_method")) then  
+          if (typeof(opt@sample_method).eq."integer" .and.       \
+              opt@sample_method.ge.0 .and. opt@sample_method.le.1) then
+              sample_method = opt@sample_method
+          else
+              print("bootstrap_indices: something wrong: opt@sample_method="+ opt@sample_method)
+              exit
+          end if
+      end if   ; opt@sample_method
+  end if       ; opt
+
+  IW = generate_sample_indices(K,sample_method) ; random indices from all
+
+  if (K.eq.KK) then                                                    
+      return(IW)                                ; default
+  else if (opt .and. isatt(opt,"sequential") .and. opt@sequential) then
+          do k=0,KK-1 
+             kStrt = IW(k)                      ; random initial subscript
+             kLast = kStrt+KK-1                 ; last subscript
+             if (kLast.le.(K-1)) then
+                 return(ispan(kStrt,kLast,1))   ; sequential indices 
+             end if
+          end do
+       else
+          return(IW(0:KK-1))                    ; 1st KK random indices
+       end if
+  end if    ; K=KK
+end
+;==============================================================
+undef("resample_method")
+function resample_method(iw,isamp,N,NN,opt)
+;--------------------------------------------------------------
+; ---******************Not called users*********************
+;--------------------------------------------------------------
+; utility used to specify *internal* resampling        
+; IMHO ... do not use isamp=1 or isamp=2
+;--------------------------------------------------------------
+local jw
+begin
+  jw  = iw                             ; isamp=0 [x,y pairs]
+  if (isamp.eq.0) then
+      return(jw)
+  end if
+
+  if (isamp.eq.1) then
+      jw = bootstrap_indices(N,NN,opt) ; isamp=1 [x,y independent]  
+      return(jw)
+  end if
+
+  jw = iw(::-1)                        ; isamp=2 [randomized pairs values]
+  return(jw)
+end
+;================================================================
+;          FUNCTIONS (possibly) CALLED BY USERS
+;================================================================
 undef("bootstrap_print_list")
 procedure bootstrap_print_list(x:list, opt_print[1]:integer)
+;------------------------------------------------------------------------
+;--- Utility used to print elements of a variable of type list
+;--- Primarily used for debug but can be user called also
+;------------------------------------------------------------------------
 ;
 ; Nomenclature
 ; x         - variable of type list created by one of the bootstrap functions
@@ -18384,52 +18433,39 @@ begin
      end if
   end do
 end
-;--------------------------------------------------------------------------------
-; utility used select all or sub-sample of total K 
-;------------------------------------------------------------------------
-undef("bootstrap_indices")
-function bootstrap_indices(K[1]:integer, KK[1]:integer, opt[1]:logical)
-local IW, k, kStrt, kLast, n
+;===========================================================
+; bootstrapped information
+;===========================================================
+undef("bootstrap_estimate")
+function bootstrap_estimate(xBoot:numeric, pc[1]:numeric, opt[1]:logical)
+local dimBoot, nBoot, npc, xBoot_pc
 begin
-  IW = generate_sample_indices(K,1)           ; random indices from all
-  if (K.eq.KK) then                                                    
-      return(IW)                              ; default
-  else if (opt .and. isatt(opt,"sequential") .and. opt@sequential) then
-          do k=0,KK-1 
-             kStrt = IW(k)                    ; random initial subscript
-             kLast = kStrt+KK-1               ; last subscript
-             if (kLast.le.(K-1)) then
-                 return(ispan(kStrt,kLast,1)) ; sequential indices 
-             end if
-          end do
-       else
-          return(IW(0:KK-1))                  ; 1st KK random indices
-       end if
-  end if    ; K=KK
-end
-;--------------------------------------------------------------------------------
-; utility used select resample method         
-; IMHO ... do not use isamp=1 or isamp=2
-;------------------------------------------------------------------------
-undef("resample_method")
-function resample_method(iw,isamp,N,NN,opt)
-local jw
-begin
-  jw  = iw                              ; isamp=0 [x,y pairs]
-  if (isamp.eq.0) then
-      return(jw)
+  if (pc.lt.0 .or. pc.gt.1) then
+      print("bootstrap_estimate: illegal pc="+pc)
+      exit
   end if
 
-  if (isamp.eq.1) then
-      jw = bootstrap_indices(N,NN,opt) ; isamp=1 [x,y independent]  
-      return(jw)
-  end if
+  dimBoot    = dimsizes(xBoot)
+  rankBoot   = dimsizes(dimBoot)
+  nBoot      = dimBoot(0)
+  npc        = round(pc*(nBoot-1),3)    ; index for sorted array
 
-  jw = iw(::-1)                        ; isamp=2 [randomized pairs values]
-  return(jw)
+  if (rankBoot.eq.1) then
+      xBoot_pc   = xBoot(npc)    
+  else if (rankBoot.eq.2) then
+      xBoot_pc   = xBoot(npc,:)
+  else if (rankBoot.eq.3) then
+      xBoot_pc   = xBoot(npc,:,:)
+  else if (rankBoot.eq.4) then
+      xBoot_pc   = xBoot(npc,:,:,:)
+     end if      ; 4
+    end if       ; 3
+   end if        ; 2
+  end if         ; 1
+  xBoot_pc@estimate = sprintf("%5.1f", (pc*100))+"%"
+  return(xBoot_pc)
 end
-;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-;-------------------------------------------------------------------------
+;================================================================
 undef("bootstrap_stat")
 function bootstrap_stat(z:numeric, stat[1]:integer \
                        ,nBoot[1]:integer, nDim[1]:integer, opt[1]:logical)
@@ -18442,31 +18478,22 @@ function bootstrap_stat(z:numeric, stat[1]:integer \
 ; stat  - flag: =0 mean; =1 stddev; =2 variance
 ; nBoot - # of bootstrapped  estimates to be generated
 ; nDim  - dimension to be operated upon; currently nDim should be 0
-; opt   - option (See function 'bootstrap_start') 
+; opt   - option (See function 'bootstrap_optarg') 
 ;-------------------------------------------------------------------------
 
-local start, err, dimz, rankz, N, NN, zBoot, rankLow, rankHi, nLow, nHi \
-     ,zAvg, zStd, zStdErr, statName, iw \
-     ,finish, zBootAvg, zBootStd, zBootLow, zBootHi, zBootStdErr
+local start, err, dimz, rankz, N, NN, zBoot \
+     ,statName, iw, finish, zBootAvg, zBootStd
 begin
-  start = bootstrap_start(z, nBoot, nDim, opt)
-  err     = start[0]
-  dimz    = start[1]
-  rankz   = start[2]
-  N       = start[3]
+;-------------------------------------------------------------------------
+; bootstrap_optarg: extract 'opt' information and create th array
+;-------------------------------------------------------------------------
+  start = bootstrap_optarg(z, nBoot, nDim, opt)
+  dimz    = start[0]
+  rankz   = start[1]
+  N       = start[2]
+  NN      = start[3]      ; NN=N (most commonly)
   zBoot   = start[4]
-  rankLow = start[5]
-  rankHi  = start[6]
-  nLow    = start[7]
-  nHi     = start[8]
-  NN      = start[9]      ; NN=N (most commonly)
   delete(start)
-  
-; Input variable's 'mean' (avg) statistic
-
-  zAvg    = dim_avg_n_Wrap( z, nDim )       ; average input sample
-  zStd    = dim_stddev_n_Wrap( z, nDim )    ; std dev input sample
-  zStdErr = zStd/sqrt(N)                    ; standard error of input sample
 
   if (stat.lt.0 .or. stat.gt.6) then
      err = -1
@@ -18701,25 +18728,17 @@ begin
       end if
   end if
            ; associate meta data with returned variables
-  finish   = bootstrap_stat_finish(statName, z, zBoot, dimz, rankz, nLow, nHi    \
-                                  ,rankLow, rankHi, zAvg, zStd, zStdErr )
-  zBootAvg = finish[0]
-  zBootStd = finish[1]
-  zBootLow = finish[2]
-  zBootHi  = finish[3]
-;;zBootStdErr = finish[4]
-              
-  if (opt .and. isatt(opt,"return_boot") .and. opt@return_boot) then
-      return([/ N, nBoot, zAvg, zStd, zStdErr, zBootAvg \
-              , zBootLow, zBootHi, zBootStd, zBoot /])
-  else
-      return([/ N, nBoot, zAvg, zStd, zStdErr, zBootAvg \
-              , zBootLow, zBootHi, zBootStd /])
-  end if
+  finish   = bootstrap_finish(statName, z, zBoot, dimz, rankz, N, NN, nBoot)
+
+;;zBoot    = finish[0]
+;;zBootAvg = finish[1]
+;;zBootStd = finish[2]
+;;return([/ zBoot, zBootAvg, zBootStd /]) 
+  return([/ finish[0], finish[1], finish[2] /]) ; [/ zBoot, zBootAvg, zBootStd /]
 end
 ;---------------------------------------------------------------
 undef("bootstrap_regcoef")
-function bootstrap_regcoef(x[*]:numeric, z:numeric, nBoot[1]:integer, nDim[1]:integer, opt[1]:logical)
+function bootstrap_regcoef(x[*]:numeric, z:numeric, nBoot[1]:integer, nDim:integer, opt[1]:logical)
 
 ;;function bootstrap_regcoef(x[*]:numeric, z:numeric, nBoot[1]:integer, nDim[2]:integer, opt[1]:logical)
 ;;                       ,nBoot[1]:integer, nDim[1]:integer, opt[1]:logical)
@@ -18731,87 +18750,67 @@ function bootstrap_regcoef(x[*]:numeric, z:numeric, nBoot[1]:integer, nDim[1]:in
 ;         N (usually 'time') is source sample size
 ; nBoot - # of bootstrapped  estimates to be generated
 ; nDim  - dimension to be operated upon; currently nDim should be 0
-; opt   - option (See function 'bootstrap_start') 
+; opt   - option (See function 'bootstrap_optarg') 
 ;-------------------------------------------------------------------------
-local start, err, dimz, rankz, N, NN, rankLow, rankHi, nLow, nHi, statName \
-    , rcOrig, iw, rcBoot, rcBootAvg, rcBootStd, rcBootStdErr, rcBootLow, rcBootHi
+local start, err, dimz, rankz, N, NN, statName, rank_nDim, n0, n1 \
+    , rcOrig, iw, rcBoot, rcBootAvg, rcBootStd
 begin
-  start = bootstrap_start(z, nBoot, nDim(0), opt)
-  err     = start[0]
-  dimz    = start[1]
-  rankz   = start[2]
-  N       = start[3]
+  start = bootstrap_optarg(z, nBoot, nDim, opt)
+  dimz    = start[0]
+  rankz   = start[1]
+  N       = start[2]
+  NN      = start[3]      ; NN=N (most commonly)
   rcBoot  = start[4]
-  rankLow = start[5]
-  rankHi  = start[6]
-  nLow    = start[7]
-  nHi     = start[8]
-  NN      = start[9]
   delete(start)
 
   statName = "regcoef"
+  rank_nDim = dimsizes(dimsizes(nDim))
   
-; Original regression coef statistic; will take the zStdErr argument place
-
-  rcOrig = regCoef_n(x, z, nDim(0), nDim(0) )      ; nDim(0), nDim(1) ; here = 0
+  n0 = nDim(0)
+  if (rank_nDim.eq.1) then
+      n1 = nDim(0)
+  else
+      n1 = nDim(1)
+  end if
 
 ; Bootstrap 
 
   if (rankz.eq.1) then 
       do nb=0,nBoot-1
          iw = bootstrap_indices(N,NN,opt)
-         rcBoot(nb) = (/ regCoef_n(x(iw), z(iw), nDim(0), nDim(0)) /)    ; no attributes
+         rcBoot(nb) = (/ regCoef_n(x(iw), z(iw), n0, n1) /)    ; no attributes
       end do
   end if
 
   if (rankz.eq.2) then 
       do nb=0,nBoot-1
          iw = bootstrap_indices(N,NN,opt)
-         rcBoot(nb,:) = (/ regCoef_n(x(iw), z(iw,:), nDim(0), nDim(0)) /) 
+         rcBoot(nb,:) = (/ regCoef_n(x(iw), z(iw,:), n0, n1) /) 
       end do
   end if
 
   if (rankz.eq.3) then 
       do nb=0,nBoot-1
          iw = bootstrap_indices(N,NN,opt)
-         rcBoot(nb,:,:) = (/ regCoef_n(x(iw), z(iw,:,:), nDim(0), nDim(0)) /)
+         rcBoot(nb,:,:) = (/ regCoef_n(x(iw), z(iw,:,:), n0, n1) /)
       end do
   end if
 
   if (rankz.eq.4) then 
       do nb=0,nBoot-1
          iw = bootstrap_indices(N,NN,opt)
-         rcBoot(nb,:,:,:) = (/ regCoef_n(x(iw), z(iw,:,:,:), nDim(0), nDim(0)) /)
+         rcBoot(nb,:,:,:) = (/ regCoef_n(x(iw), z(iw,:,:,:), n0, n1) /)
       end do
   end if 
+            ; associate meta data with returned variables
+  finish   = bootstrap_finish(statName, z, rcBoot, dimz, rankz, N, NN, nBoot)
 
-           ; associate meta data with returned variables
-  finish   = bootstrap_stat_finish(statName, z, rcBoot, dimz, rankz, nLow, nHi   \
-                                  ,rankLow, rankHi,rcOrig,2,3 )  ; 2,3 are place holders
-  rcBootAvg = finish[0]
-  rcBootStd = finish[1]
-  rcBootLow = finish[2]
-  rcBootHi  = finish[3]
-  rcBootStdErr = rcBootStd/N
+;;rcBoot    = finish[0]
+;;rcBootAvg = finish[1]
+;;rcBootStd = finish[2]
+;;return([/ rcBoot, rcBootAvg, rcBootStd /]) 
 
-; meta data
-
- ;N@long_name         = "bootstrap_regCoef: Original sample size="+rankz
- ;nBoot@long_name     = "bootstrap_regCoef: Number of bootstrap samples" 
- ;rcOrig@long_name    = "bootstrap_regCoef: original regression coef"
- ;rcBoot@long_name    = "bootstrap_regCoef: rcBoot samples"
- ;rcBootAvg@long_name = "bootstrap_regCoef: Average: "+nBoot+" bootstrapped regression coefficients"
- ;rcBootStd@long_name = "bootstrap_regCoef: Std Dev: "+nBoot+" bootstrapped regression coefficients"
-;;rcBootStdErr@long_name = "bootstrap_regCoef: Std Error: "+nBoot+" bootstrapped regression coefficients"
- ;rcBootLow@long_name = "bootstrap_regCoef: Std Error: "+nBoot+" bootstrapped regression coefficients"
- ;rcBootHi@long_name  = "bootstrap_regCoef: Std Error: "+nBoot+" bootstrapped regression coefficients"
-
-  if (opt .and. isatt(opt,"return_boot") .and. opt@return_boot) then
-      return([/ N, nBoot, rcOrig, rcBootAvg, rcBootStd, rcBootStdErr, rcBootLow, rcBootHi, rcBoot /])
-  else
-      return([/ N, nBoot, rcOrig, rcBootAvg, rcBootStd, rcBootStdErr, rcBootLow, rcBootHi /])
-  end if
-
+  return([/ finish[0], finish[1], finish[2] /]) ; [/ rcBoot, rcBootAvg, rcBootStd /]
 end
 ;---------------------------------------------------------------
 undef("bootstrap_correl")
@@ -18824,7 +18823,7 @@ function bootstrap_correl(x:numeric, z:numeric, nBoot[1]:integer, nDim:integer, 
 ;         N (usually 'time') is source sample size
 ; nBoot - # of bootstrapped  estimates to be generated
 ; nDim  - dimension to be operated upon; currently nDim should be 0
-; opt   - option (See function 'bootstrap_start') 
+; opt   - option (See function 'bootstrap_optarg') 
 ;-------------------------------------------------------------------------
 ; The following is *NOT* in effect
 ;-------------------------------------------------------------------------
@@ -18836,21 +18835,15 @@ function bootstrap_correl(x:numeric, z:numeric, nBoot[1]:integer, nDim:integer, 
 ;;<li> <em>opt</em>@resample_method=2: Resample <em>x</em> and <em>y</em> via randomized pairs.
 ;;</ul>
 ;-------------------------------------------------------------------------
-local start, err, dimz, rankz, N, NN, zBoot, rankLow, rankHi, nLow, nHi, idz \
-     ,ccBoot, ccBootAvg, ccBootStd, ccBootStdErr, ccBootLow, ccBootHi
-     ,cc, iw , ccOrig, iw, ccOrig, ccOrigStdErr, z, zse, zLow, zHi, isamp
+local start, err, dimz, rankz, N, NN, zBoot, idz, dimx, rankx, n0, n1, rank_nDim \
+     ,ccBoot, ccBootAvg, ccBootStd, jw, iw, statname, isamp 
 begin
-  start   = bootstrap_start(z, nBoot, nDim(0), opt)
-  err     = start[0]
-  dimz    = start[1]
-  rankz   = start[2]
-  N       = start[3]
+  start = bootstrap_optarg(z, nBoot, nDim, opt)
+  dimz    = start[0]
+  rankz   = start[1]
+  N       = start[2]
+  NN      = start[3]      ; NN=N (most commonly)
   ccBoot  = start[4]
-  rankLow = start[5]
-  rankHi  = start[6]
-  nLow    = start[7]
-  nHi     = start[8]
-  NN      = start[9]
   delete(start)
 
   dimx    = dimsizes(x)
@@ -18863,10 +18856,18 @@ begin
       print("bootstrap_correl: rankx>1 and rankx.ne.rankz: unexpected: rankx="+rankx+"  rankz="+rankz)
       exit
   end if
+  
+  n0        = nDim(0)
+  rank_nDim = dimsizes(dimsizes(nDim))
+  if (rank_nDim.eq.1) then
+      n1 = nDim(0)
+  else
+      n1 = nDim(1)
+  end if
 
   statName = "correl"
   
-  ccOrig = escorc_n(x, z, nDim(0), nDim(0) )  ; original
+;;ccOrig = escorc_n(x, z, nDim(0), nDim(0) )  ; original
 ;;ccOrigStdErr = sqrt(1-ccOrig^2)/sqrt(NN-2)  ; standard error of r statistic 
 ;;z      = 0.5*log((1+ccOrig)/(1-ccOrig))     ; Fischer z-transform 
 ;;zse    = 1.0/sqrt(NN-3)         ; standard error of z statistic
@@ -18881,20 +18882,22 @@ begin
 ; Which resampling 'strategy' (method)"
 
   isamp = 0
- ;if (opt) then 
- ;    if (isatt(opt,"resample_method")) then
- ;        isamp = opt@resample_method
- ;    end if
- ;end if
+  if (opt) then 
+      if (isatt(opt,"resample_method")) then
+          isamp = opt@resample_method
+      end if
+  end if
 
   if (rankz.eq.1) then 
       if (rankx.eq.1) then
           do nb=0,nBoot-1
-             iw = bootstrap_indices(N,NN,opt)
-            ;jw = resample_method(iw,isamp,N,NN,opt)
-
-              ccBoot(nb) = escorc_n(x(iw), z(iw), nDim(0), nDim(0))  ; (iw), (iw) pairs
-             ;ccBoot(nb) = escorc_n(x(iw), z(jw), nDim(0), nDim(0))
+             if (isamp.eq.0) then
+                 iw = bootstrap_indices(N,NN,opt)
+                 ccBoot(nb) = escorc_n(x(iw), z(iw), n0, n1)  ; (iw), (iw) pairs
+             else
+                 jw = resample_method(iw,isamp,N,NN,opt)
+                 ccBoot(nb) = escorc_n(x(iw), z(jw), n0, n1)
+             end if
           end do
       else
           print("bootstrap_correl: rankz=1 and rankx.ne.1: rankx="+rankx+"  rankz="+rankz)
@@ -18908,11 +18911,11 @@ begin
         ;jw = resample_method(iw,isamp,N,NN,opt)
 
          if (rankx.eq.1) then
-             ccBoot(nb,:) = escorc_n(x(iw)  , z(iw,:), nDim(0), nDim(0))
-            ;ccBoot(nb,:) = escorc_n(x(iw)  , z(jw,:), nDim(0), nDim(0))
+             ccBoot(nb,:) = escorc_n(x(iw)  , z(iw,:), n0, n1)
+            ;ccBoot(nb,:) = escorc_n(x(iw)  , z(jw,:), n0, n1)
          else
-             ccBoot(nb,:) = escorc_n(x(iw,:), z(iw,:), nDim(0), nDim(0))
-            ;ccBoot(nb,:) = escorc_n(x(iw,:), z(jw,:), nDim(0), nDim(0))
+             ccBoot(nb,:) = escorc_n(x(iw,:), z(iw,:), n0, n1)
+            ;ccBoot(nb,:) = escorc_n(x(iw,:), z(jw,:), n0, n1)
          end if
       end do
   end if
@@ -18923,11 +18926,11 @@ begin
         ;jw = resample_method(iw,isamp,N,NN,opt)
 
          if (rankx.eq.1) then
-             ccBoot(nb,:,:) = escorc_n(x(iw)    , z(iw,:,:), nDim(0), nDim(0))
-            ;ccBoot(nb,:,:) = escorc_n(x(iw)    , z(jw,:,:), nDim(0), nDim(0))
+             ccBoot(nb,:,:) = escorc_n(x(iw)    , z(iw,:,:), n0, n1)
+            ;ccBoot(nb,:,:) = escorc_n(x(iw)    , z(jw,:,:), n0, n1)
          else
-             ccBoot(nb,:,:) = escorc_n(x(iw,:,:), z(iw,:,:), nDim(0), nDim(0))
-            ;ccBoot(nb,:,:) = escorc_n(x(iw,:,:), z(jw,:,:), nDim(0), nDim(0))
+             ccBoot(nb,:,:) = escorc_n(x(iw,:,:), z(iw,:,:), n0, n1)
+            ;ccBoot(nb,:,:) = escorc_n(x(iw,:,:), z(jw,:,:), n0, n1)
          end if
       end do
   end if
@@ -18938,42 +18941,24 @@ begin
         ;jw = resample_method(iw,isamp,N,NN,opt)
 
          if (rankx.eq.1) then
-             ccBoot(nb,:,:,:) = escorc_n(x(iw)      , z(iw,:,:,:), nDim(0), nDim(0))
-            ;ccBoot(nb,:,:,:) = escorc_n(x(iw)      , z(jw,:,:,:), nDim(0), nDim(0))
+             ccBoot(nb,:,:,:) = escorc_n(x(iw)      , z(iw,:,:,:), n0, n1)
+            ;ccBoot(nb,:,:,:) = escorc_n(x(iw)      , z(jw,:,:,:), n0, n1)
          else
-             ccBoot(nb,:,:,:) = escorc_n(x(iw,:,:,:), z(iw,:,:,:), nDim(0), nDim(0))
-            ;ccBoot(nb,:,:,:) = escorc_n(x(iw,:,:,:), z(jw,:,:,:), nDim(0), nDim(0))
+             ccBoot(nb,:,:,:) = escorc_n(x(iw,:,:,:), z(iw,:,:,:), n0, n1)
+            ;ccBoot(nb,:,:,:) = escorc_n(x(iw,:,:,:), z(jw,:,:,:), n0, n1)
          end if
       end do
   end if
 
            ; associate meta data with returned variables
-  finish   = bootstrap_stat_finish(statName, z, ccBoot, dimz, rankz, nLow, nHi   \
-                                  ,rankLow, rankHi,ccOrig,2,3 )
-  ccBootAvg = finish[0]   ; 'z' average of correlation coef
-  ccBootStd = finish[1]
-  ccBootLow = finish[2]
-  ccBootHi  = finish[3]
+  finish   = bootstrap_finish(statName, z, ccBoot, dimz, rankz, N, NN, nBoot)
 
-; meta data
+;;ccBoot    = finish[0]   
+;;ccBootAvg = finish[1]   ; 'z' average of correlation coef
+;;ccBootStd = finish[2]
+;;return([/ ccBoot, ccBootAvg, ccBootStd /]) 
 
- ;N@long_name         = "bootstrap_correl: Sample size; input rank="+rankz
- ;nBoot@long_name     = "bootstrap_correl: Number of bootstrap samples" 
- ;zAvg@long_name      = "bootstrap_correl: Average: original sample"
- ;zStd@long_name      = "bootstrap_correl: Std. Deviation: original sample"
- ;zStdErr@long_name   = "bootstrap_correl: Std. error of mean: N="+N
- ;zBoot@long_name     = "bootstrap_correl: zBoot samples"
- ;zBootAvg@long_name  = "bootstrap_correl: Average: "+nBoot+"  bootstrapped samples"
- ;zBootLow@long_name  = "bootstrap_correl: "+(rankLow*100)+"% bootstrapped samples"
- ;zBootHi@long_name   = "bootstrap_correl: "+(rankHi *100)+"% bootstrapped samples"
- ;zBootStd@long_name  = "bootstrap_correl: Std. Deviation: "+nBoot+" bootstrapped samples" 
-
-  if (opt .and. isatt(opt,"return_boot") .and. opt@return_boot) then
-      return([/ N, nBoot, ccOrig, ccBootAvg, ccBootLow, ccBootHi, ccBoot /])
-  else
-      return([/ N, nBoot, ccOrig, ccBootAvg, ccBootLow, ccBootHi /])
-  end if
-
+  return([/ finish[0], finish[1], finish[2] /]) ; [/ ccBoot, ccBootAvg, ccBootStd /]
 end
 ;---------------------------------------------------------------
 undef("bootstrap_diff")
@@ -18986,38 +18971,27 @@ function bootstrap_diff(x:numeric, z:numeric, nBoot[1]:integer, nDim:integer, op
 ;         N (usually 'time') is source sample size
 ; nBoot - # of bootstrapped  estimates to be generated
 ; nDim  - dimension to be operated upon; currently nDim should be 0
-; opt   - option (See function 'bootstrap_start') 
+; opt   - option (See function 'bootstrap_optarg') 
 ;-------------------------------------------------------------------------
-local startz, err, dimz, rankz, NZ, NNZ, rankLowz, rankHiz, nLowz, nHiz, idz \
-     ,startx, err, dimx, rankx, NX, NNX, rankLowx, rankHix, nLowx, nHix, idx \
-     ,diffBoot, diffBootAvg, diffBootStd, diffBootStdErr, diffBootLow, diffBootHi
-     ,xAvg, zAvg, xziw , diffOrig, iw, diffOrig, diffOrigStdErr, z, zse, zLow, zHi
+local startz, err, dimz, rankz, NZ, NNZ, idz \
+     ,startx, err, dimx, rankx, NX, NNX, idx \
+     ,diffBoot, diffBootAvg, diffBootStd \
+     ,xAvg, zAvg, xziw , diffOrig, iw, diffOrig, diffOrigStdErr, z, zse, zLow, zHi\
+     ,nMidZ, rankMidZ
 begin
-  startz   = bootstrap_start(z, nBoot, nDim(0), opt)
-  err      = startz[0]
-  dimz     = startz[1]
-  rankz    = startz[2]
-  NZ       = startz[3]
+  startz  = bootstrap_optarg(z, nBoot, nDim, opt)
+  dimz     = startz[0]
+  rankz    = startz[1]
+  NZ       = startz[2]
+  NNZ      = startz[3]      ; NN=N (most commonly)
   diffBoot = startz[4]
-printVarSummary(diffBoot)
-  rankLow  = startz[5]
-  rankHi   = startz[6]
-  nLow     = startz[7]
-  nHi      = startz[8]
-  NNZ      = startz[9]
   delete(startz)
 
-  startx   = bootstrap_start(x, nBoot, nDim(0), opt)
-  err      = startx[0]
-  dimx     = startx[1]
-  rankx    = startx[2]
-  NX       = startx[3]
-;;diffBoot = startx[4]
-;;rankLowx = startx[5]
-;;rankHix  = startx[6]
-;;nLowx    = startx[7]
-;;nHix     = startx[8]
-  NNX      = startx[9]
+  startx   = bootstrap_optarg(x, nBoot, nDim, opt)
+  dimx     = startx[0]
+  rankx    = startx[1]
+  NX       = startx[2]
+  NNX      = startx[3]
   delete(startx)
 
   if (rankx.ne.rankz) then
@@ -19027,11 +19001,10 @@ printVarSummary(diffBoot)
   end if
 
   statName = "diff"
-  
-  xAvg  = dim_avg_n(x, nDim(0) )  ; original
-  zAvg  = dim_avg_n(z, nDim(0) )  ; original
-  xzDiff= xAvg-zAvg               ; original sample difference
-
+  xAvg     = dim_avg_n(x, nDim(0) )  ; original
+  zAvg     = dim_avg_n(z, nDim(0) )  ; original
+  xzDiff   = xAvg-zAvg               ; original sample difference
+  copy_VarCoords(zAvg, xzDiff)
 
 ; Bootstrap sample means
 
@@ -19074,19 +19047,12 @@ printVarSummary(diffBoot)
          diffBoot(nb,:,:,:) = xAve - zAve
       end do
   end if
-
            ; associate meta data with returned variables
-  finish   = bootstrap_stat_finish(statName, z, diffBoot, dimz, rankz, nLow, nHi   \
-                                   ,rankLow, rankHi, 1, 2, 3 ) ; 1,2,3 are placeholders
-  diffBootAvg = finish[0]   ; 'z' average of correlation coef
-  diffBootStd = finish[1]
-  diffBootLow = finish[2]
-  diffBootHi  = finish[3]
+  finish   = bootstrap_finish(statName, z, diffBoot, dimz, rankz, NZ, NNZ, nBoot)
+;;diffBoot    = finish[0]
+;;diffBootAvg = finish[1]
+;;diffBootStd = finish[2]
+;;return([/diffBoot, diffBootAvg, diffBootStd /])
 
-  if (opt .and. isatt(opt,"return_boot") .and. opt@return_boot) then
-      return([/ (/NX,NZ/), nBoot, xzDiff, diffBootAvg, diffBootStd, diffBootLow, diffBootHi, diffBoot /])
-  else
-      return([/ (/NX,NZ/), nBoot, xzDiff, diffBootAvg, diffBootStd, diffBootLow, diffBootHi /])
-  end if
-
+  return([/ finish[0], finish[1], finish[2] /]) 
 end
