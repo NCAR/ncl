@@ -1158,6 +1158,10 @@ end
 ;    RGBA quadruplet - (/1,0,0.5,0.5/)    "rgba"
 ;    color map name  - "amwg"             "colormap"
 ;
+;  Note, if the user enters something like (/1,0,0/) or (/1,0,0,0/), this
+;  will be seen as an rgb or rgba color type, and not an index color 
+;  type with just 0s and 1s.
+;
 ; A missing string is returned if no valid type is detected.
 ;***********************************************************************;
 undef("get_color_type")
