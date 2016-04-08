@@ -713,28 +713,34 @@ begin
          nd = dimsizes(dims)
          if ( nd .eq. 5 ) then
            uvmet = new( (/ 2, dims(0), dims(1), dims(2), dims(3), dims(4) /), typeof(u))
-           uvmet(0,:,:,:,:,:) = u(:,:,:,:,:) 
-           uvmet(1,:,:,:,:,:) = v(:,:,:,:,:)
+           uvmet(0,:,:,:,:,:) = (/u(:,:,:,:,:) /)
+           uvmet(1,:,:,:,:,:) = (/v(:,:,:,:,:)/)
          end if
          if ( nd .eq. 4 ) then
            uvmet = new( (/ 2, dims(0), dims(1), dims(2), dims(3) /), typeof(u))
-           uvmet(0,:,:,:,:) = u(:,:,:,:) 
-           uvmet(1,:,:,:,:) = v(:,:,:,:)
+           uvmet(0,:,:,:,:) = (/u/)
+           uvmet(1,:,:,:,:) = (/v(:,:,:,:)/)
          end if
          if ( nd .eq. 3 ) then
            uvmet = new( (/ 2, dims(0), dims(1), dims(2) /), typeof(u))
-           uvmet(0,:,:,:) = u(:,:,:) 
-           uvmet(1,:,:,:) = v(:,:,:)
+           uvmet(0,:,:,:) = (/u(:,:,:) /)
+           uvmet(1,:,:,:) = (/v(:,:,:)/)
          end if
          if ( nd .eq. 2 ) then
            uvmet = new( (/ 2, dims(0), dims(1) /), typeof(u))
-           uvmet(0,:,:) = u(:,:) 
-           uvmet(1,:,:) = v(:,:)
+           uvmet(0,:,:) = (/u(:,:) /)
+           uvmet(1,:,:) = (/v(:,:)/)
+         else
+;           uvmet!1 = u!0
          end if
-         delete_VarAtts(u,(/"description","units"/))
-         copy_VarAtts(u,uvmet)
+         copy_VarAtts_except(u,uvmet,(/"description","units"/))
          uvmet@description = " u,v met velocity"
          uvmet!0 = "u_v"
+         do n=0,dimsizes(dims)-1           ; Copy dimension names
+           if(isdimnamed(u,n))
+             uvmet!(n+1) = u!n
+           end if
+         end do
        end if
 
 
