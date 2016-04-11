@@ -23,7 +23,7 @@ begin
 end
 
 begin
-   diri      = "./"
+   diri      = "$NCARG_ROOT/lib/ncarg/data/nug/"
    file1     = "tas_rectilinear_grid_2D.nc"
    mask_file = "sftlf_mod1_rectilinear_grid_2D.nc"
 

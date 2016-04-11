@@ -8,8 +8,8 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
 begin
 ;-- read the data
-   diri      = "./"
-   fili      = "CNTASN_1m_200103_grid_T_curvilinear_grid.nc"
+   diri = "./"
+   fili = "CNTASN_1m_200103_grid_T_curvilinear_grid.nc"
    
    if (fileexists(diri+fili)) then
       f = addfile(diri+fili, "r")

@@ -8,7 +8,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
 begin
 ;---- read the data to be plotted
-   diri  = "./"
+   diri  = "$NCARG_ROOT/lib/ncarg/data/nug/"
    fili  = "rectilinear_grid_3D.nc"
    
    if (fileexists(diri+fili)) then

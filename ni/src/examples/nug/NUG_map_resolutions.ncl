@@ -11,7 +11,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 begin
 ;-- read the data and define
 
-  diri = "./"
+  diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fili = "tas_rectilinear_grid_2D.nc"
 
   if (.not. fileexists(diri+fili)) then

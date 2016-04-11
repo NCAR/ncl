@@ -34,7 +34,7 @@ begin
   
   rad2deg =  45./atan(1.)                   ;-- radians to degrees
 
-  diri = "./"
+  diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fili = "triangular_grid_ICON.nc"
   grid = "tas_rectilinear_grid_2D.nc"       ;-- use grid from file
 

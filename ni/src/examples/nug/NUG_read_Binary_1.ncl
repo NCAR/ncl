@@ -6,7 +6,7 @@
 begin
 
 ;-- path and file name
-  diri  = "./"
+  diri  = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fili = "topo.bin"
 
   if (.not. fileexists(diri+fili)) then

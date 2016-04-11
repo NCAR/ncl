@@ -9,7 +9,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 begin
 ;-- read the data and define
 
-   diri = "./"
+   diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
    fili = "tos_ocean_bipolar_grid.nc"
    
    if (fileexists(diri+fili)) then

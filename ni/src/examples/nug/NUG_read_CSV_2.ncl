@@ -9,7 +9,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/time_axis_labels.ncl"
 
 begin
 ;-- input file name
-  diri = "./"
+  diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fili = "multiple_columns.csv"
 
   if (.not. fileexists(diri+fili)) then

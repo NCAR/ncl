@@ -16,8 +16,10 @@ begin
   start_time = get_cpu_time()               ;-- get cpu time
 
 ;-- read data
-  diri    = "../data/"
+  diri    = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fili    = "tas_rectilinear_grid_2D.nc"
+  dird    = "./"
+  dstfili = "thetao_curvilinear_ocean.nc"   ;-- get destination grid from file
     
   if (.not. fileexists(diri+fili)) then
      print("")
@@ -32,15 +34,24 @@ begin
      exit
   end if
   
+  if (.not. fileexists(dird+dstfili)) then
+     print("")
+     print("You don't have the necessary data for this script. You can download it from:​")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+dstfili)
+     print("")
+     print("or use the wget command:")
+     print("")
+     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+dstfili)
+     print("")
+     exit
+  end if
+  
   f       =  addfile(diri+fili,"r")
   var     =  f->tas(0,:,:) 
 
-;-- name of output file
-  outputfile = "regridded_rectilinear_to_curvilinear_bilinear_wgts_destgrid_ESMF.nc"
-
 ;-- read the destination grid lat/lon arrays
-  dstfili = "thetao_curvilinear_ocean.nc"   ;-- get destination grid from file
-  d       =  addfile(diri+dstfili,"r")
+  d       =  addfile(dird+dstfili,"r")
   dst_lat =  d->lat
   dst_lon =  d->lon
   dvar    =  d->thetao(0,0,:,:)
@@ -52,6 +63,9 @@ begin
   print("----> Destination dims:  lat "+nlat+"  lon "+nlon)
   print("")
   
+;-- name of output file
+  outputfile = "regridded_rectilinear_to_curvilinear_bilinear_wgts_destgrid_ESMF.nc"
+
 ;-- set resources
   Opt                 =  True
   Opt@InterpMethod    = "bilinear"                  ;-- interpolation method

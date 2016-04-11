@@ -9,7 +9,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 
 begin
 
-  diri = "./"
+  diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fili = "ps_grads_model.dat"
 
   if (.not. fileexists(diri+fili)) then

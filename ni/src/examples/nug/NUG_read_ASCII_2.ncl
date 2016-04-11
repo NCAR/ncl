@@ -8,7 +8,7 @@ begin
 ; To read this data into a 2D array dimensioned 17 x 2 
 ; (17 rows by 2 columns), use: 
 
-  diri = "./"
+  diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fili = "asc2.txt"
   
   if (.not. fileexists(diri+fili)) then

@@ -10,24 +10,10 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
 begin
 ;-- read data
-  diri = "./"
+  diri = "$NCARG_ROOT/lib/ncarg/data/cdf/"
   fili = "uv300.nc"
-
-  if (.not. fileexists(diri+fili)) then
-     print("")
-     print("You don't have the necessary data for this script. You can download it from:​")
-     print("")
-     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
-     print("")
-     print("or use the wget command:")
-     print("")
-     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+fili)
-     print("")
-     exit
-  end if
-  
-  a   = addfile(diri+fili,"r")
-  u   = a->U(1,:,:)
+  a    = addfile(diri+fili,"r")
+  u    = a->U(1,:,:)
 
 ;-- open a workstation
   wks  = gsn_open_wks("png","plot_transparency")

@@ -48,6 +48,7 @@ begin
   end if
 
 ;-- Calculate yearly means using climate data operators (cdo)
+  print("You must have 'cdo' installed on this system. See comments for more informtion.")
   system("cdo -s -r -f nc yearmean "+diri+fil1+" tser_tmp.nc")
 
   f1                         = addfile("tser_tmp.nc","r")

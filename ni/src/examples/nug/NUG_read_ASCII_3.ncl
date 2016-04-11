@@ -5,7 +5,7 @@
 ;-----------------------------------------------------------------
 begin
 
-  diri   = "./"
+  diri   = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fili   = "asc3.txt"
   
   if (.not. fileexists(diri+fili)) then

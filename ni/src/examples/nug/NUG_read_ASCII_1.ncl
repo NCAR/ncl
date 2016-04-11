@@ -6,7 +6,7 @@
 begin
 ; Read data into a one-dimensional int array of length 14:
 
-  diri = "./"
+  diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fili = "asc1.txt"
   
   if (.not. fileexists(diri+fili)) then

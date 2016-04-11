@@ -24,24 +24,25 @@ end
 begin
   start_time = get_cpu_time()                    ;-- get cpu time
 
-  diri = "./"
-  fili = "thetao_curvilinear_ocean.nc"
-  grid = "tas_rectilinear_grid_2D.nc"
+  diri1 = "./"
+  fili  = "thetao_curvilinear_ocean.nc"
+  diri2 = "$NCARG_ROOT/lib/ncarg/data/nug/"
+  grid  = "tas_rectilinear_grid_2D.nc"
 
-  if (.not. fileexists(diri+fili)) then
+  if (.not. fileexists(diri1+fili)) then
      file_ERROR(fili)
   end if
-  if (.not. fileexists(diri+grid)) then
+  if (.not. fileexists(diri2+grid)) then
      file_ERROR(grid)
   end if
   
 ;-- read destination grid data
-  g       =  addfile(diri+grid,"r")
+  g       =  addfile(diri2+grid,"r")
   dst_lat =  g->lat
   dst_lon =  g->lon
 
 ;-- read data
-  sfile                   =  addfile(diri+fili,"r")
+  sfile                   =  addfile(diri1+fili,"r")
   thetao                  =  sfile->thetao(0,0,:,:)
   thetao@lat2d            =  sfile->lat
   thetao@lon2d            =  sfile->lon

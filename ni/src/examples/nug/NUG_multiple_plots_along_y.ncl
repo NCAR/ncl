@@ -10,7 +10,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/shea_util.ncl"
 
 begin
 
-   diri  = "./"
+   diri  = "$NCARG_ROOT/lib/ncarg/data/nug/"
    fili  = "rectilinear_grid_3D.nc"
 
    if (.not. fileexists(diri+fili)) then

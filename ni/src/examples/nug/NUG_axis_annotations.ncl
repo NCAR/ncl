@@ -9,7 +9,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 begin
 ;---- read the data and define variable reference var
 
-   diri  = "./"
+   diri  = "$NCARG_ROOT/lib/ncarg/data/nug/"
    fili  = "rectilinear_grid_3D.nc"
    
    if (fileexists(diri+fili)) then

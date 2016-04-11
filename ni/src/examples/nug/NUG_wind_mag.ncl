@@ -47,7 +47,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
 begin
 
-  diri = "./"
+  diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fil1 = "uas_rectilinear_grid_2D.nc"
   fil2 = "vas_rectilinear_grid_2D.nc"
 

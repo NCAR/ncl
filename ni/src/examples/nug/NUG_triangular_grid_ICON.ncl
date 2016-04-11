@@ -14,7 +14,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/shea_util.ncl"
 begin
   start_code_time = get_cpu_time()
   
-  diri = "./"
+  diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fili = "triangular_grid_ICON.nc"
 
   if (.not. fileexists(diri+fili)) then

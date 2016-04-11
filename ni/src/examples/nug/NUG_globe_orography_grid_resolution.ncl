@@ -22,7 +22,7 @@ begin
 end
 
 begin
-  diri = "./"
+  diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fil1 = "HSURF_regional_model_0.11deg.nc"
   fil2 = "FR-LAND_regional_model_0.11deg.nc"
   fil3 = "HSURF_regional_model_0.44deg.nc"

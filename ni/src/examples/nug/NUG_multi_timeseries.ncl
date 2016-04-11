@@ -30,7 +30,7 @@ end
 
 
 begin
-  diri  = "./"
+  diri  = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fil1  = "tas_mod1_hist_rectilin_grid_2D.nc"
   fil2  = "tas_mod1_rcp45_rectilin_grid_2D.nc"
   fil3  = "tas_mod1_rcp85_rectilin_grid_2D.nc"

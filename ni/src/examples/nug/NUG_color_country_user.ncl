@@ -7,7 +7,7 @@
 ;  KMF 
 ;-----------------------------------------------------------------
 begin
-  diri = "./"
+  diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fili = "data_country_user.txt"
 
   if (fileexists(diri+fili)) then

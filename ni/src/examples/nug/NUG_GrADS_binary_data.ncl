@@ -38,12 +38,9 @@ begin
 end
 
 begin
-
-  diri = "./"
-
 ;-- read file informations from GrADS descriptor file ctl
-  
-  ctl = "ps_grads_model.ctl" 
+  diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
+  ctl  = "ps_grads_model.ctl" 
   
   if (fileexists(diri+ctl)) then
      fin = systemfunc("cat "+diri+ctl+" | grep DSET | awk '{print $2}'| sed -e 's/\^//g'")

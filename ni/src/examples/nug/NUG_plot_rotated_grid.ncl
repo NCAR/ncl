@@ -135,7 +135,7 @@ end
 ;----------------
 begin
 ;-- open file and read variables
-  diri    = "./"
+  diri    = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fili    = "tas_rotated_grid_EUR11.nc"
   
   if (.not. fileexists(diri+fili)) then

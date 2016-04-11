@@ -34,7 +34,7 @@ begin
   border1 =  10.0
   border2 =  20.0
 
-  diri = "./"
+  diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fil1 = "orog_mod1_rectilinear_grid_2D.nc"
   fil2 = "orog_mod2_rectilinear_grid_2D.nc"
   fil3 = "orog_mod3_rectilinear_grid_2D.nc"

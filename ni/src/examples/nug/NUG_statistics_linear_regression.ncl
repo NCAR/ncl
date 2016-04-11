@@ -5,7 +5,7 @@
 ;-----------------------------------------------------------------
 begin
   
-  diri = "./"
+  diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fili = "tas_mod1_rcp85_rectilin_grid_2D.nc"
   
   if (fileexists(diri+fili)) then

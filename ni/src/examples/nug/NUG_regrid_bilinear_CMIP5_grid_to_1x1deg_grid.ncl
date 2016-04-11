@@ -28,7 +28,7 @@ begin
   
 ;-- read data
   diri  = "./"
-  fili  = "thetao_ocean_rectilinear_grid_2D.nc"
+  fili  = "thetao_curvilinear_ocean.nc"
 
   if (.not. fileexists(diri+fili)) then
      print("")
@@ -61,7 +61,7 @@ begin
   Opt@DstLLCorner     =  (/ -89.75d,   0.00d /)
   Opt@DstURCorner     =  (/  89.75d, 359.75d /)
 
-;-- interpolate data from CMIP5 to Worl 1x1 degree grid using ESMF
+;-- interpolate data from CMIP5 to World 1x1 degree grid using ESMF
   print("---------------------------------------------------------------------")
   print("Generating interpolation weights from CMIP5 to World 1x1 degree grid.")
   print("   Method:  bilinear")

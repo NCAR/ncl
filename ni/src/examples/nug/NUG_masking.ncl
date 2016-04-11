@@ -23,7 +23,7 @@ end
 
 begin
 ;---- read the data and define variable reference var
-  diri  = "./"
+  diri  = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fil1  = "tas_rectilinear_grid_2D.nc"
   fil2  = "sftlf_mod1_rectilinear_grid_2D.nc"
 

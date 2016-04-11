@@ -69,7 +69,9 @@ end
 ;-- main
 ;==================================
 begin
+  diri         = "$NCARG_ROOT/lib/ncarg/data/nug/"
   DataFileName = "atm_phy_mag0004_1985.nc"           ;-- data file
+  dirg         = "./"
   gridinfofile = "r2b4_amip.nc"                      ;-- grid info file
   VarName      = "clt"                               ;-- variable name       
 
@@ -88,13 +90,13 @@ begin
 ;-------------------------------------------------------------------
 ;-- add data and grid file
 ;-------------------------------------------------------------------
-  if (fileexists(DataFileName)) then
-     File = addfile(DataFileName, "r" )              ;-- add data file
+  if (fileexists(diri+DataFileName)) then
+     File = addfile(diri+DataFileName, "r" )              ;-- add data file
   else
      file_ERROR(DataFileName)
   end if
-  if (fileexists(gridinfofile)) then
-     GridInfoFile = addfile(gridinfofile, "r" )      ;-- add grid file (not contained in data file!!!)
+  if (fileexists(dirg+gridinfofile)) then
+     GridInfoFile = addfile(dirg+gridinfofile, "r" )      ;-- add grid file (not contained in data file!!!)
   else
      file_ERROR(gridinfofile)
   end if

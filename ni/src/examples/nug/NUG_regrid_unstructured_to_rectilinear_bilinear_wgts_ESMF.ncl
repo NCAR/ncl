@@ -16,7 +16,7 @@ begin
 
   rad2deg =  45./atan(1.)                              ;-- radians to degrees
 
-  diri = "./"
+  diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fili = "triangular_grid_ICON.nc"
   
   if (.not. fileexists(diri+fili)) then

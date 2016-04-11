@@ -11,7 +11,7 @@ begin
    high =  1.0
    n    = 12
 
-   x = fspan(0.5,  11.5,  n)
+   x  = fspan(0.5,  11.5,  n)
    y1 = random_uniform(low, high, n)
    y2 = random_uniform(low, high, n)
    y3 = random_uniform(low, high, n)

@@ -63,7 +63,7 @@ begin
 ;--------------------------------------------------------------------------------
 ;-- use function average_data()
 ;--------------------------------------------------------------------------------
-  diri = "./"
+  diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fili = "tas_rectilinear_grid_2D.nc"
   
   if (fileexists(diri+fili)) then
