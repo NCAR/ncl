@@ -1,0 +1,28 @@
+#
+#   $Id: yMakefile,v 1.26 2006-11-29 23:44:05 fred Exp $
+#
+#   Makefile for data files for NUG examples added in NCL V6.4.0
+#
+
+MYNAME = nug
+
+DATA = BYR-03 FR-LAND_regional_model_0.11deg.nc FR-LAND_regional_model_0.44deg.nc \
+	GMT-BYR-03.cpt HSURF_regional_model_0.11deg.nc HSURF_regional_model_0.44deg.nc \
+	Test_6h.csv asc1.txt asc2.txt asc3.txt atm_phy_mag0004_1985.nc \
+	camse_unstructured_grid.nc data_country_user.txt multiple_columns.csv \
+	orog_mod1_rectilinear_grid_2D.nc orog_mod2_rectilinear_grid_2D.nc \
+	orog_mod3_rectilinear_grid_2D.nc ps_grads_model.ctl ps_grads_model.dat \
+	rectilinear_grid_3D.nc sftlf_mod1_rectilinear_grid_2D.nc \
+	sftlf_mod2_rectilinear_grid_2D.nc sftlf_mod3_rectilinear_grid_2D.nc \
+	tas_mod1_hist_rectilin_grid_2D.nc tas_mod1_rcp45_rectilin_grid_2D.nc \
+	tas_mod1_rcp85_rectilin_grid_2D.nc tas_mod2_hist_rectilin_grid_2D.nc \
+	tas_mod2_rcp45_rectilin_grid_2D.nc tas_mod2_rcp85_rectilin_grid_2D.nc \
+	tas_mod3_hist_rectilin_grid_2D.nc tas_mod3_rcp45_rectilin_grid_2D.nc \
+	tas_mod3_rcp85_rectilin_grid_2D.nc tas_mod4_hist_rectilin_grid_2D.nc \
+	tas_mod4_rcp45_rectilin_grid_2D.nc tas_mod4_rcp85_rectilin_grid_2D.nc \
+	tas_rectilinear_grid_2D.nc tas_rotated_grid_EUR11.nc topo.bin \
+	tos_ocean_bipolar_grid.nc triangular_grid_ICON.nc \
+	uas_rectilinear_grid_2D.nc uv300.nc vas_rectilinear_grid_2D.nc  
+
+InstallTarget($(DATA),$(INSTALL_LIB),$(DATAROOT)/$(MYNAME))
+

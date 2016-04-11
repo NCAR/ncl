@@ -1,0 +1,12 @@
+DSET   ^ps_grads_model.dat
+OPTIONS little_endian
+UNDEF  -2.56E33
+TITLE 5 Days of Sample Model Output
+XDEF 73 LINEAR  0.0 5.0
+YDEF 46 LINEAR  -90.0 4.0
+*ZDEF 7 LEVELS 1000 850 700 500 300 200 100
+ZDEF 1 linear 1 1
+TDEF 5 LINEAR 02JAN1987 1DY
+VARS 1
+PS     0   99   Surface Pressure
+ENDVARS

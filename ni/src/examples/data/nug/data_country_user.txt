@@ -1,0 +1,73 @@
+Brazil;119
+Canada;222
+Italy;82
+Czech Republic;12
+Sudan;1
+South Korea;190
+Lithuania;2
+Costa Rica;4
+Luxembourg;2
+France;182
+Ethiopia;7
+Ireland;3
+Argentina;37
+Norway;114
+Nigeria;3
+Bangladesh;1
+Uzbekistan;1
+Saudi Arabia;9
+Australia;192
+Singapore;148
+Cameroon;5
+Kazakhstan;1
+Iran;3
+Senegal;8
+Slovenia;1
+China;1230
+Chile;17
+Russia;74
+Thailand;65
+Germany;951
+Hong Kong;48
+Philippines;1
+Spain;175
+Ukraine;5
+Netherlands;46
+Estonia;2
+Denmark;30
+Poland;18
+Indonesia;16
+Israel;9
+Turkey;5
+United States;2753
+Belgium;40
+Sweden;104
+Vietnam;3
+Croatia;2
+Mongolia;1
+Finland;27
+Kenya;7
+Switzerland;90
+Uruguay;7
+New Zealand;12
+Niger;2
+Bulgaria;6
+Pakistan;34
+Romania;4
+Myanmar;6
+Portugal;25
+Mexico;52
+United Arab Emirates;10
+South Africa;11
+India;198
+Peru;19
+United Kingdom;380
+Malaysia;16
+Austria;32
+Congo;1
+Colombia;38
+Greece;16
+Japan;239
+Taiwan;63
+Belarus;1
+Cyprus;3

@@ -21,4 +21,4 @@
 
 #define IHaveSubdirs
 
-SUBDIRS	= asc bin cdf grb hdf shp
+SUBDIRS	= asc bin cdf grb hdf shp nug
