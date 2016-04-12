@@ -406,7 +406,7 @@ NclQuark option /* if NULL set defaults for all options */
 #endif
 );
 
-extern NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
+extern NclFile _NclOpenFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
                               unsigned int obj_type_mask, NclStatus status,
                               NclQuark path, int rw_status);
 extern NclGroup *_NclCreateGroup(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,

@@ -444,7 +444,7 @@ extern NclObjClass nclFileClass;
 
 extern NclFileClassRec nclFileClassRec;
 
-extern NclFile _NclCreateFile(
+extern NclFile _NclOpenFile(
 #if	NhlNeedProto
 	NclObj	/* inst */,
 	NclObjClass /*theclass*/,

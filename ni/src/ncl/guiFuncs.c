@@ -62,7 +62,7 @@ NclAdvancedFile _NclCreateAdvancedFile(NclObj inst, NclObjClass theclass, NclObj
 NclFile NclCreateFile(const char *path)
 {
     NclQuark qpath = NrmStringToQuark(path);
-    return (_NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,qpath,1));
+    return (_NclOpenFile(NULL,NULL,Ncl_File,0,TEMPORARY,qpath,1));
 }
 
 #if 1

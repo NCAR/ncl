@@ -3702,29 +3702,8 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 		return file_ext_q;
 	}
 	else if(*end_of_name == NULL) {
-		/* no extension -- assume NetCDF for now 
-		   file_ext_q = NrmStringToQuark("nc");*/
 		return file_ext_q;  /* this is still -1 */
 	} else {
-		if (1 == rw_status)
-		{
-			if(stat(_NGResolvePath(the_path),&buf) == -1)
-			{
-				char *tmp_path = (char*) alloca(strlen(the_path) + 1);
-				char *tmp_name = (char*) alloca(strlen(*end_of_name) + 1);
-				strcpy(tmp_path, the_path);
-				strcpy(tmp_name, *end_of_name);
-				tmp_path[strlen(the_path) - strlen(tmp_name)] = '\0';
-
-				if(stat(_NGResolvePath(tmp_path),&buf) == -1)
-				{
-					NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-						"_NclFindFileExt: Requested file <%s> or <%s> does not exist\n", the_path, tmp_path));
-                                		return(-1);
-				}
-			}
-		}
-
 		*len_path = *end_of_name - the_path;
 		i = 0;
 		while(last_slash != *end_of_name) {
@@ -4048,7 +4027,7 @@ NclQuark _NclVerifyFile(NclQuark the_path, NclQuark pre_file_ext_q, short *use_a
 	return file_ext_q;
 }
 
-NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
+NclFile _NclOpenFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 			unsigned int obj_type_mask, NclStatus status,
 			NclQuark path, int rw_status)
 {
@@ -4070,13 +4049,6 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 	if(! is_http)
 	{
-/*
-		if(0 > file_ext_q)
-		{
-			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"(%s) has no file extension, can't determine type of file to open",NrmQuarkToString(path)));
-			return(NULL);
-		}
-*/
 		if (rw_status == -1) {   
 			/* file has not been created */
 			if(0 > file_ext_q)
@@ -4106,6 +4078,7 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 		{
 			NclQuark the_real_path = NrmStringToQuark(_NGResolvePath(NrmQuarkToString(path)));
 			NclQuark old_file_ext_q = file_ext_q;
+			int stat_ret;
 
 			file_ext_q = -1;
 
@@ -4120,29 +4093,28 @@ NclFile _NclCreateFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 				strcpy(tmp_path, NrmQuarkToString(the_real_path));
 
 				ext_name = strrchr(tmp_path, '.');
-				/*Use while loop will allow user to append multiple extensions.
-				*But it will be not consistent to addfile.
-				*So we comment out the while loop for NOW.
-				*Wei Huang, 05/21/2012
-				*/
-				/*while(NULL != ext_name)*/
 				if(NULL != ext_name)
 				{
 					tmp_path[strlen(tmp_path) - strlen(ext_name)] = '\0'; 
-				
-					if(! stat(_NGResolvePath(tmp_path), &file_stat))
-					{
-						file_ext_q = _NclVerifyFile(NrmStringToQuark(tmp_path), old_file_ext_q, &use_advanced_file_structure);
-						/*break;*/
-					}
-					/*ext_name = strrchr(tmp_path, '.');*/
 				}
+				
+				stat_ret = stat(_NGResolvePath(tmp_path), &file_stat);
+				if(! stat_ret)
+				{
+					file_ext_q = _NclVerifyFile(NrmStringToQuark(tmp_path), old_file_ext_q, &use_advanced_file_structure);
+				}
+				else {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclOpenFile: cannot open file <%s>; %s\n",
+						  NrmQuarkToString(the_real_path),strerror(errno));
+					return file_out;
+				}
+
 			}
 
 			if(0 > file_ext_q)
 			{
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
-					"_NclCreateFile: Can not open file: <%s> properly; possibly a non-supported file format",
+					"_NclOpenFile: Can not open file <%s>; file format not supported or file is corrupted",
 				 	NrmQuarkToString(the_real_path));
 				return file_out;
 			}

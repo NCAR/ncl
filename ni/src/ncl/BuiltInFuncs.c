@@ -1658,7 +1658,7 @@ NhlErrorTypes _NclIAddFile
 	} else {
 		rw_v = 0;
 	}
-	file = _NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,*(NclQuark*)p_md->multidval.val,rw_v);
+	file = _NclOpenFile(NULL,NULL,Ncl_File,0,TEMPORARY,*(NclQuark*)p_md->multidval.val,rw_v);
 	if(file != NULL) {
 		*id = file->obj.id;
 		out_md = _NclMultiDValnclfileDataCreate(NULL,NULL,Ncl_MultiDValnclfileData,0,id,NULL,1,&dim_size,TEMPORARY,NULL);
@@ -20135,7 +20135,7 @@ NhlErrorTypes _NclIAddFiles( void )
 
 	for (i = p_md->multidval.totalelements-1;i>=0; i--) {
 
-		file = _NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,((NclQuark*)p_md->multidval.val)[i],rw_v);
+		file = _NclOpenFile(NULL,NULL,Ncl_File,0,TEMPORARY,((NclQuark*)p_md->multidval.val)[i],rw_v);
 		if(file != NULL) {
 			id = (int*)NclMalloc((unsigned)sizeof(int));
 			*id = file->obj.id;
@@ -20901,7 +20901,7 @@ NhlErrorTypes _NclICreateFile(void)
 	ncclose(cdfid);
 
 
-        file = _NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,*(NclQuark*)path,0);
+        file = _NclOpenFile(NULL,NULL,Ncl_File,0,TEMPORARY,*(NclQuark*)path,0);
         if(file != NULL) {
                 *id = file->obj.id;
                 out_md = _NclMultiDValnclfileDataCreate(NULL,NULL,Ncl_MultiDValnclfileData,0,id,NULL,1,&dim_size,TEMPORARY,NULL);
@@ -21743,7 +21743,7 @@ NhlErrorTypes   _NclIFileIsPresent
                     tmp_path[strlen(tmp_path) - strlen(ext_name)] = '\0'; 
                     if(! stat(_NGResolvePath(tmp_path),&st))
                     {
-                        file = _NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,NrmStringToQuark(tmp_path),rw_v);
+                        file = _NclOpenFile(NULL,NULL,Ncl_File,0,TEMPORARY,NrmStringToQuark(tmp_path),rw_v);
                         if(NULL != file)
                         {
                             filemanuable[i] = 1;     /* true */
@@ -21776,7 +21776,7 @@ NhlErrorTypes   _NclIFileIsPresent
 
 		if((! S_ISDIR(st.st_mode)) && st.st_size)
 	        {
-	            file = _NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,files[i],rw_v);
+	            file = _NclOpenFile(NULL,NULL,Ncl_File,0,TEMPORARY,files[i],rw_v);
 	            if(NULL != file)
                     {
                         filemanuable[i] = 1;     /* true */
