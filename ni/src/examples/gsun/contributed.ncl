@@ -1196,40 +1196,68 @@ function wind_direction(u:numeric, v:numeric, opt:integer)
 ; meteorological wind direction. 
 
 ; This is *** over-kill ***. 
-; Only need: wdir=atan2(u,v)*radi + 180
+; Only need: wdir=atan2(u,v)*radi + 180  [or 270-atan2(v,u)*radii) ]
 
-local wdir, radi, con, wcrit, wmsg, zero, dimu
+local dimu, dimv, ranku, rankv, wdir, radi, con, wcrit, wmsg, zero, dimu, utype, uvtype
 begin
-  if (.not.(typeof(u).eq."double" .or. \
-            typeof(u).eq."float"  .or. \
-            typeof(u).eq."integer" )) then
-      print("wind_direction: illegal numeric type: "+typeof(u))
+
+  dimu  = dimsizes(u)
+  ranku = dimsizes(dimu)
+  dimv  = dimsizes(v)
+  rankv = dimsizes(dimv)
+
+  if (ranku.ne.ranku) then
+      print("wind_direction: FATAL: rank mismatch: ranku="+ranku+" rankv="+rankv)
       exit
   end if
 
-  dimu = dimsizes(u)
-
-  if (typeof(u).eq."double") then
-      zero = 0.0d
-      wmsg = 1d20
-      con  = 180.0d
-      wcrit= 360d0-0.00002d0
-      radi = get_r2d("double")            ; radi = 1.0d0/0.0174532925199433d0
-      wdir = new (dimu, typeof(u), wmsg) 
-  else
-      zero = 0.0
-      wmsg = 1e20
-      con  = 180.0
-      wcrit= 360-0.00002
-      radi = get_r2d("float")             ; radi = 1.0/0.01745329
-      wdir = new (dimu, "float", wmsg) 
+  if (.not.all(dimu.eq.dimv))
+      print("wind_direction: FATAL: array size mismatch")
+      print("          dimu="+dimu)
+      print("          dimv="+dimv)
+      exit
   end if
 
-  wdir = (/ atan2(u,v)*radi + con  /)
+  utype = typeof(u)
+  if (.not.(utype.eq."double" .or. utype.eq."float" .or. \
+            utype.eq."integer" )) then
+      print("wind_direction: illegal numeric type: "+utype)
+      exit
+  end if
+
+  if (utype.eq."double") then
+      uvtype = "double"
+      zero   = 0.0d
+    ;;con    = 270.0d
+      con    = 180.0d
+      wcrit  = 360d0
+  else
+      uvtype = "float"
+      zero   = 0.0
+    ;;con    = 270.0
+      con    = 180.0
+      wcrit  = 360.0
+  end if
+
+  if (isatt(u,"_FillValue")) then
+      uvmsg = getFillValue(u)
+  else 
+      if (isatt(v,"_FillValue")) then
+          uvmsg = getFillValue(v)
+      else
+          uvmsg = "No_FillValue"
+      end if
+  end if
+
+  radi  = get_r2d(uvtype)                 ; radians to degrees
+  wdir  = new (dimu, uvtype, uvmsg) 
+
+;;wdir = (/ mod((con - atan2(v,u)*radi),360)  /)
+  wdir = (/ con + atan2(u,v)*radi /)
   wdir = where(wdir.ge.wcrit, zero, wdir)  ; force 360 "north winds" to 0
                           
   if (typeof(opt).eq."integer" .and. opt.eq.0) then 
-      cdir = zero                          ; calm 0.0->_FillValue
+      cdir = zero                          ; calm 0.0
       wdir = where (u.eq.zero .and. v.eq.zero, cdir, wdir)
   end if
                           
@@ -1257,7 +1285,7 @@ end
 ; *****************************************************************
 undef ("wind_component")
 function wind_component(wspd:numeric, wdir:numeric, opt:integer)
-local rad, uvmsg, uveps, uvzero, dimw, rankw, dimd, rankd, dimuv, uv
+local rad, uvmsg, uveps, uvzero, dimw, rankw, dimd, rankd, dimuv, uv, uvtype
 begin
 
   dimw = dimsizes(wspd)
@@ -1277,47 +1305,81 @@ begin
       exit
   end if
 
-  if (typeof(wspd).eq."double" .or. typeof(wspd).eq."double") then
-      rad   = 0.0174532925199433d0
-      uvmsg = 1d20
+  if (typeof(wspd).eq."double" .or. typeof(wdir).eq."double" ) then  
+      uvtype= "double"
       uveps = 1.0d-5
       uvzero= 0.0d0
   else
-      rad   = 0.01745329
-      uvmsg = 1e20
+      uvtype= "float"
       uveps = 1.0e-5
       uvzero= 0.0
+  end if
+  rad   = get_d2r(uvtype)
+
+  if (isatt(wspd,"_FillValue")) then
+      uvmsg = getFillValue(wspd)
+  else 
+      if (isatt(wdir,"_FillValue")) then
+          uvmsg = getFillValue(wdir)
+      else
+          uvmsg = "No_FillValue"
+      end if
   end if
 
   dimuv= new ( rankw+1, "integer", "No_FillValue")
   dimuv(0)  = 2
   dimuv(1:) = dimw
-  uv        = new (dimuv, typeof(wspd), uvmsg) 
+  uv        = new (dimuv, uvtype, uvmsg) 
 
   if (rankw.eq.1 .and. dimw(0).eq.1) then
       uv(0,0) = -wspd*sin(wdir*rad)
       uv(1,0) = -wspd*cos(wdir*rad)
+      uv      = where(abs(uv).le.uveps, uvzero, uv) ; make near zero => 0
       copy_VarMeta(wspd, uv)
+      if (opt.ne.0) then
+          return([/uv(0,0), uv(1,0)/])
+      end if
   else if (rankw.eq.1) then
       uv(0,:) = -wspd*sin(wdir*rad)
       uv(1,:) = -wspd*cos(wdir*rad)
+      uv      = where(abs(uv).le.uveps, uvzero, uv) ; make near zero => 0
       copy_VarMeta(wspd, uv(0,:))
+      if (opt.ne.0) then
+          return([/uv(0,:), uv(1,:)/])
+      end if
   else if (rankw.eq.2) then
       uv(0,:,:) = -wspd*sin(wdir*rad)
       uv(1,:,:) = -wspd*cos(wdir*rad)
+      uv        = where(abs(uv).le.uveps, uvzero, uv) ; make near zero => 0
       copy_VarMeta(wspd, uv(0,:,:))
+      if (opt.ne.0) then
+          return([/uv(0,:,:), uv(1,:,:)/])
+      end if
   else if (rankw.eq.3) then
       uv(0,:,:,:) = -wspd*sin(wdir*rad)
       uv(1,:,:,:) = -wspd*cos(wdir*rad)
+      uv          = where(abs(uv).le.uveps, uvzero, uv) ; make near zero => 0
       copy_VarMeta(wspd, uv(0,:,:,:))
+      if (opt.ne.0) then
+          return([/uv(0,:,:,:), uv(1,:,:,:)/])
+      end if
   else if (rankw.eq.4) then
       uv(0,:,:,:,:) = -wspd*sin(wdir*rad)
       uv(1,:,:,:,:) = -wspd*cos(wdir*rad)
+      uv            = where(abs(uv).le.uveps, uvzero, uv) ; make near zero => 0
       copy_VarMeta(wspd, uv(0,:,:,:,:))
+      if (opt.ne.0) then
+          return([/uv(0,:,:,:,:), uv(1,:,:,:,:)/])
+      end if
   else if (rankw.eq.5) then
       uv(0,:,:,:,:,:) = -wspd*sin(wdir*rad)
       uv(1,:,:,:,:,:) = -wspd*cos(wdir*rad)
+      uv              = where(abs(uv).le.uveps, uvzero, uv) ; make near zero => 0
       copy_VarMeta(wspd, uv(0,:,:,:,:,:))
+      if (opt.ne.0) then
+          return([/uv(0,:,:,:,:,:), uv(1,:,:,:,:,:)/])
+      end if
+
   end if           ; 5
   end if           ; 4
   end if           ; 3
@@ -1325,17 +1387,103 @@ begin
   end if           ; 1
   end if           ; scalar
 
-  uv   = where(abs(uv).le.uveps, uvzero, uv) ; make near zero => 0
-
   uv!0 = "uv"
   uv@long_name = "zonal [0] and meridional [1] wind components"
-
- ;if (opt.eq.0) then
-      return(uv)
- ;end if
+  return(uv)
 end
+; *****************************************************************
+; Basic wind related quantities and statistics
+; *****************************************************************
+undef("wind_stats")
+function wind_stats(wspd:numeric, wdir:numeric, nDim[*]:integer, opt[1])
+;
+; Single pass *estimation* of the standard deviation of wind direction:
+; ... Wind speed is a scalar
+; ... Wind direction is circular quantity: [0..360); including 0 but excluding 360 and above
+;     Think discontinuity at 360.
+; ... Function 'wind_stats' uses Yamartino'a single-pass method. Yamartino's algorithm is 
+;     an approximation within 2% of the theoretical distribution.
+; ----
+; The standard deviation of wind direction is a measure of lateral turbulence, 
+; and can be used to estimate the Pasquill stability. 
+; ----
+; References:
+; Yamartino (1984): Journal of Climate and Applied Meteorology , 23, 1362-1366 
+; http://dx.doi.org/10.1175/1520-0450(1984)023<1362:ACOSPE>2.0.CO;2
+;
+; Turner, D.B. (1986): Comparison of Three Methods ...
+; http://journals.ametsoc.org/doi/pdf/10.1175/1520-0450%281986%29025%3C0703%3ACOTMFC%3E2.0.CO%3B2
 
+; Weber, R. (1997): Estimators for the Standard Deviation of Horizontal Wind Direction
+; http://journals.ametsoc.org/doi/pdf/10.1175/1520-0450%281997%29036%3C1403%3AEFTSDO%3E2.0.CO%3B2
+;
+; Wikipedia;
+; https://en.wikipedia.org/wiki/Yamartino_method
+;
+local wspd_avg, wspd_std, wdir_avg, wdir_std \
+    ,  d2r, wrad, wsin, wcos, e, wsrd, uv
+begin
 
+; wind speed average and standard deviation + meta data
+
+  wspd_avg = dim_avg_n_Wrap   (wspd, nDim) 
+  wspd_std = dim_stddev_n_Wrap(wspd, nDim) 
+
+  if (isatt(wspd,"long_name")) then                       ; add meta
+      wspd_avg@long_name = "average: "+wspd@long_name
+      wspd_avg@info_wspd = "average of wind speeds"
+      wspd_std@long_name = "std dev: "+wspd@long_name
+      wspd_std@info_wdir = "average of wind speeds"
+  else
+      wspd_avg@long_name = "average wind speed"
+      wspd_std@long_name = "standard deviation of wind speed"
+  end if
+
+; wind direction: intermediate quantities (see Ymartino)
+
+  d2r  = get_d2r(wdir)
+  wrad = wdir*d2r
+  wsin = dim_avg_n(sin(wrad), nDim)                ; avg sin(wdir) 
+  wcos = dim_avg_n(cos(wrad), nDim)                ;     cos
+  delete(wrad)                                     ; no longer needed
+
+;;mean wind direction: Turner method p707 based on Yamartino
+
+;;wdir_avg = atan2(wsin,wcos)*get_r2d(wspd)        ; average; Yamartino
+;;if (wdir_avg.lt.0) then
+;;    wdir_avg = wdir_avg + 360
+;;end if
+;;wdir_avg@long_name = "wind direction: mean"
+;;wdir_avg@info      = "Yamartino single-pass method"
+
+; mean wind via:  http://www.ndbc.noaa.gov/wndav.shtml
+; (a) compute mean U (avgU) and mean V (avgV)
+; (b) compute mean wind speed via mean components (a)
+; (c) compute mean wind direction via mean components (a)
+
+  uv   = wind_component(wspd, wdir, 1)             ; return list
+                                                   ; explicitly extract: clarity
+  u    = uv[0]                                     ; extract u
+  v    = uv[1]                                     ;         v
+  delete(uv)                                       ; no longer needed
+
+  avgU = dim_avg_n(u, 0)                           ; average u
+  avgV = dim_avg_n(v, 0)                           ;         v
+  avgW = sqrt(avgU^2 + avgV^2)                     ; NOAA
+  dirW = wind_direction(avgU, avgV, 0)             ; 'exact'
+
+; std dev of wind direction (~ within 2% ) ... Yamartino (1984)
+  
+  e    = sqrt(1-(wsin*wsin+wcos*wcos))
+  wdir_std = get_r2d(e)*asin(e)*(1+0.1547*e^3)
+  delete(e)                                        ; no longer needed
+
+  wdir_std@long_name = "wind direction: standard deviation"
+  wdir_std@info      = "Yamartino single-pass method"
+  copy_VarCoords(wspd_avg, wdir_std)
+
+  return ([/wspd_avg, wspd_std,     dirW, wdir_std, avgU, avgV/])  
+end
 ; **************************************************************
 ; D. Shea
 ; Loops thru a 1D variable [eg, time] and finds
