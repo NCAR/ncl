@@ -6,7 +6,7 @@
 
 MYNAME = nug
 
-NUG_SCRIPTS =	NUG_GrADS_binary_data.ncl NUG_ICON_triangles_colored.ncl		\
+NCL_SCRIPTS =	NUG_GrADS_binary_data.ncl NUG_ICON_triangles_colored.ncl		\
 		NUG_axis_annotations.ncl NUG_bar_chart.ncl				\
 		NUG_bar_chart_col_above_below.ncl NUG_bar_chart_multi.ncl		\
 		NUG_bipolar_grid_MPI-ESM.ncl NUG_bipolar_grid_MPI-ESM_subregion.ncl	\
@@ -52,5 +52,15 @@ NUG_SCRIPTS =	NUG_GrADS_binary_data.ncl NUG_ICON_triangles_colored.ncl		\
 		NUG_write_Binary_1.ncl NUG_write_Binary_2.ncl NUG_write_netCDF_1.ncl	\
 		NUG_write_netCDF_2.ncl NUG_xy_plot.ncl NUG_xy_plot_res.ncl		\
 		NUG_xy_plot_timeseries.ncl NUG_xy_plot_timeseries_2.ncl
+
+PYNGL_SCRIPTS = PyNGL_curvilinear_contour.py PyNGL_rectilinear_contour.py \
+		PyNGL_rectilinear_slice.py PyNGL_rectilinear_vector.py \
+		PyNGL_unstructured_ICON_triangles.py PyNGL_unstructured_contour_cellfill.py \
+		PyNGL_xy_plot_simple.py
+
+KSH_SCRIPTS =	NUG_cdo_remap_bilinear_CMIP5_grid_to_1x1deg_grid.ksh gmt2ncl_coltab.ksh \
+		grads2ncl_coltab.ksh
+
+NUG_SCRIPTS = $(NCL_SCRIPTS) $(PYNGL_SCRIPTS) $(KSH_SCRIPTS)
 
 InstallTarget($(NUG_SCRIPTS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclex/$(MYNAME))
