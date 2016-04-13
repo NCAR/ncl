@@ -1817,6 +1817,16 @@ lib/ncarg/nclex/nug/NUG_xy_plot.ncl
 lib/ncarg/nclex/nug/NUG_xy_plot_res.ncl
 lib/ncarg/nclex/nug/NUG_xy_plot_timeseries.ncl
 lib/ncarg/nclex/nug/NUG_xy_plot_timeseries_2.ncl
+lib/ncarg/nclex/nug/NUG_cdo_remap_bilinear_CMIP5_grid_to_1x1deg_grid.ksh
+lib/ncarg/nclex/nug/gmt2ncl_coltab.ksh
+lib/ncarg/nclex/nug/grads2ncl_coltab.ksh
+lib/ncarg/nclex/nug/PyNGL_curvilinear_contour.py
+lib/ncarg/nclex/nug/PyNGL_rectilinear_contour.py
+lib/ncarg/nclex/nug/PyNGL_rectilinear_slice.py
+lib/ncarg/nclex/nug/PyNGL_rectilinear_vector.py
+lib/ncarg/nclex/nug/PyNGL_unstructured_ICON_triangles.py
+lib/ncarg/nclex/nug/PyNGL_unstructured_contour_cellfill.py
+lib/ncarg/nclex/nug/PyNGL_xy_plot_simple.py
 lib/ncarg/nclex/primitives/pr01n.ncl
 lib/ncarg/nclex/primitives/pr02n.ncl
 lib/ncarg/nclex/primitives/pr03n.ncl
