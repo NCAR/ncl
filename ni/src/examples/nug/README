@@ -1,0 +1,20 @@
+
+These are the NCL, Python, and KSH scripts that Karin Meier-Fleischer
+of DKRZ developed for the NCL User Guide (NUG).
+
+They should be copied to the web via:
+
+  scp *.ncl *.ksh *.py webpub.ucar.edu:/web/ncl/Document/Manuals/NCL_User_Guide/Scripts/.
+
+  http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Scripts/
+
+The smaller data files are part of the NCL distribution in 
+
+   $NCARG/ni/src/examples/data/nug
+
+The larger data files were copied straight to the web:
+
+  http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/
+
+  webpub.ucar.edu:/web/ncl/Document/Manuals/NCL_User_Guide/Data/
+
