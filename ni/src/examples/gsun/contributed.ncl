@@ -11119,7 +11119,7 @@ begin
 
   errFlag = 0                      ; ERROR CHECKING
                                    ; ranks must be equal
-  if (rank_x1.ne.rank_x1) then
+  if (rank_x1.ne.rank_x2) then
       print("array_append_record: ranks not equal: rank_x1="+rank_x1+ \
                                                 "  rank_x2="+rank_x2)
       errFlag = errFlag + 1
