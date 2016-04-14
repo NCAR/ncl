@@ -5942,7 +5942,7 @@ begin
   nDim    = dimsizes(dim_uNew)                 ; number of dimensions [rank]
   nlat    = dim_uNew(nDim-2)                   ; number of latitudes  [fo grid]
   mlon    = dim_uNew(nDim-1)                   ; number of longitudes [fo grid]
-  nlat1= nlat-1                                ; fo has one less lat
+  nlat1= nlat
 
   if (typeof(u).eq."double") then
       nlat@double = True
@@ -5986,7 +5986,7 @@ begin
   nDim    = dimsizes(dim_uNew)                 ; number of dimensions [rank]
   nlat    = dim_uNew(nDim-2)                   ; number of latitudes  [fo grid]
   mlon    = dim_uNew(nDim-1)                   ; number of longitudes [fo grid]
-  nlat1   = nlat+1                             ; f has one more lat
+  nlat1   = nlat
 
   if (typeof(u).eq."double") then
       nlat@double = True
@@ -16428,7 +16428,8 @@ function epflux4(U[*][*][*][*]:numeric, V[*][*][*][*]:numeric \
 ; Reference:
 ; Edmon, H.J., B.J. Hoskins,and M.E. McIntyre,1980:
 ; Eliassen-Palm cross sections for the troposphere.
-; J. Atmos. Sci., 37:2600–2616
+; J.  
+Atmos. Sci., 37:2600–2616
 ;********************************************************
 ; local not required
 local PLVL, P0, LAT, a, PI, phi, cphi, acphi, asphi, omega, latfac   \
