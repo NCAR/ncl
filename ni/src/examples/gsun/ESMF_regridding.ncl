@@ -3720,8 +3720,8 @@ begin
   if(grid_type.eq."unknown") then
     if(lat_rank.eq.1.and.lon_rank.eq.1.and.lat_dims.eq.lon_dims) then
       print("get_dst_grid_info: Error: the lat/lon arrays are both 1D and the same length.")
-      print("   This could be a rectilinear or unstructured grid. Please set 'grid_type'")
-      print("   to 'rectilinear' or 'unstructured'.")
+      print("   This could be a rectilinear or unstructured grid.") 
+      print("   Set 'DstGridType' to 'rectilinear' or 'unstructured'.")
     else   
       print("get_dst_grid_info: " + grid_type_name + " and/or " + \
             grid_lat_name + "/" + grid_lon_name + " were not set.")
