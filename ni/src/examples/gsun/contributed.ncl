@@ -16429,7 +16429,7 @@ function epflux4(U[*][*][*][*]:numeric, V[*][*][*][*]:numeric \
 ; Edmon, H.J., B.J. Hoskins,and M.E. McIntyre,1980:
 ; Eliassen-Palm cross sections for the troposphere.
 ; J.  
-Atmos. Sci., 37:2600–2616
+; Atmos. Sci., 37:2600–2616
 ;********************************************************
 ; local not required
 local PLVL, P0, LAT, a, PI, phi, cphi, acphi, asphi, omega, latfac   \
