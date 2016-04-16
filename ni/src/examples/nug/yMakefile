@@ -53,10 +53,10 @@ NCL_SCRIPTS =	NUG_GrADS_binary_data.ncl NUG_ICON_triangles_colored.ncl		\
 		NUG_write_netCDF_2.ncl NUG_xy_plot.ncl NUG_xy_plot_res.ncl		\
 		NUG_xy_plot_timeseries.ncl NUG_xy_plot_timeseries_2.ncl
 
-PYNGL_SCRIPTS = PyNGL_curvilinear_contour.py PyNGL_rectilinear_contour.py \
-		PyNGL_rectilinear_slice.py PyNGL_rectilinear_vector.py \
-		PyNGL_unstructured_ICON_triangles.py PyNGL_unstructured_contour_cellfill.py \
-		PyNGL_xy_plot_simple.py
+PYNGL_SCRIPTS = NUG_curvilinear_contour_PyNGL.py NUG_rectilinear_contour_PyNGL.py \
+		NUG_rectilinear_slice_PyNGL.py NUG_rectilinear_vector_PyNGL.py \
+		NUG_unstructured_ICON_triangles_PyNGL.py NUG_unstructured_contour_cellfill_PyNGL.py \
+		NUG_xy_plot_simple_PyNGL.py
 
 KSH_SCRIPTS =	NUG_cdo_remap_bilinear_CMIP5_grid_to_1x1deg_grid.ksh gmt2ncl_coltab.ksh \
 		grads2ncl_coltab.ksh
