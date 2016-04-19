@@ -3405,13 +3405,14 @@ static NhlErrorTypes cnInitCellArray
                 cnp->cell_size = (bbox->r - bbox->l) / (float) *msize;
         }
 	
-	if (cnp->cws_id < 1) {
-		cnp->cws_id = 
-			_NhlNewWorkspace(NhlwsOTHER,NhlwsNONE,
-					 (*msize * *nsize) * sizeof(int));
-		if (cnp->cws_id < 1) 
-			return MIN(ret,(NhlErrorTypes)cnp->cws_id);
+	if (cnp->cws_id > 1) {
+		_NhlFreeWorkspace(cnp->cws_id);
 	}
+	cnp->cws_id = 
+		_NhlNewWorkspace(NhlwsOTHER,NhlwsNONE,
+					 (*msize * *nsize) * sizeof(int));
+	if (cnp->cws_id < 1) 
+		return MIN(ret,(NhlErrorTypes)cnp->cws_id);
 	if ((cnp->cws = _NhlUseWorkspace(cnp->cws_id)) == NULL) {
 		e_text = 
 			"%s: error reserving cell array workspace";
