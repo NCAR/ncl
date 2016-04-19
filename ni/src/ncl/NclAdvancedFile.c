@@ -8489,7 +8489,7 @@ static struct _NclMultiDValDataRec *AdvancedFileVarReadDim(NclFile infile, NclQu
         }
         else if ( dim_num > -1)
         {
-            dimnode = _getDimNodeFromNclFileGrpNodeWithID(thefile->advancedfile.grpnode, (int)dim_num);
+	    dimnode = &(varnode->dim_rec->dim_node[dim_num]);
             if(NULL != dimnode)
             {
                 tmpq = (NclQuark*)NclMalloc(sizeof(NclQuark));
