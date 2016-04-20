@@ -3948,12 +3948,12 @@ NhlErrorTypes _NclIfbinread
 	ng_size_t totalsize = 0;
 	ng_size_t n;
 	NclStackEntry data_out;
-	int fd;
+	FILE *fd;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 	char control_word[8];
 	int marker_size = 4;
-	long long ind1;
+	ng_size_t ind1;
 
 #ifdef ByteSwapped
 	if (NrmStringToQuark("bigendian") == *(NclQuark *)(fcp->options[Ncl_READ_BYTE_ORDER].value->multidval.val)) {
@@ -4012,8 +4012,8 @@ NhlErrorTypes _NclIfbinread
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: An error in the file path was detected could not resolve file path");
 		return(NhlFATAL);
 	}
-	fd = open(path_string,O_RDONLY);
-	if(fd == -1) {
+	fd = fopen(path_string, "r");
+	if(fd == NULL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  "fbinread: could not open (%s) check path and permissions, can't continue",path_string);
 		return(NhlFATAL);
@@ -4052,7 +4052,7 @@ NhlErrorTypes _NclIfbinread
 			size *= dimsizes[i];
 		}
 	}
-	if(read(fd,(void*)control_word,marker_size) != marker_size) {
+	if(fread((void*)control_word, 1, marker_size, fd) != marker_size) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: An error occurred while reading the file (%s), check path",
 			  _NGResolvePath(path_string));
 		return(NhlFATAL);
@@ -4092,12 +4092,12 @@ NhlErrorTypes _NclIfbinread
 	  NhlPError(NhlFATAL,ENOMEM,NULL);
 	  return( NhlFATAL);
 	}
-	lseek(fd,(off_t)marker_size,SEEK_SET); /* skip the control word */
-	n = (ng_size_t) read(fd,tmp_ptr,totalsize);
+	fseek(fd, (off_t)marker_size, SEEK_SET); /* skip the control word */
+	n = (ng_size_t) fread(tmp_ptr, 1, totalsize, fd);
 	if(n != totalsize)  {
 	  NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: an error occurred reading the FORTRAN binary file.");
 	  NclFree(tmp_ptr);
-	  close(fd);
+	  fclose(fd);
 	  return(NhlFATAL);
 	}
 #if 0
@@ -4124,7 +4124,7 @@ NhlErrorTypes _NclIfbinread
 	  return(NhlFATAL);
 	data_out.kind = NclStk_VAL;
 	data_out.u.data_obj = tmp_md;
-	close(fd);
+	fclose(fd);
 	NclFree(dimsizes);
 	_NclPlaceReturn(data_out);
 	return(ret);
@@ -5263,7 +5263,7 @@ NhlErrorTypes _NclIfbindirwrite
 	NclMultiDValData tmp_md= NULL;
 	Const char *path_string;
 	void *tmp_ptr;
-	int fd = -1;
+        FILE *fd;
 	ng_size_t totalsize = 0;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
@@ -5313,22 +5313,24 @@ NhlErrorTypes _NclIfbindirwrite
 		tmp_ptr = tmp_md->multidval.val;
 		thetype = tmp_md->multidval.type;
 		totalsize = tmp_md->multidval.totalelements * thetype->type_class.size;
-		fd = open(path_string,(O_CREAT | O_RDWR),0644);
-		if(fd >= 0) {
-			lseek(fd,0,SEEK_END);
+		fd = fopen(path_string, "a");
+		if(fd != NULL) {
+			char *outdata = NULL;
 			if (swap_bytes) {
-				char *outdata = NclMalloc(totalsize);
+				outdata = NclMalloc(totalsize);
 				if (!outdata)
 					return (NhlFATAL);
 				_NclSwapBytes(outdata,tmp_ptr,tmp_md->multidval.totalelements,thetype->type_class.size);
-				ret = write(fd, outdata,totalsize);
-				NclFree(outdata);
+                                tmp_ptr = outdata;
 			}
-			else {
-				ret = write(fd, tmp_ptr,totalsize);
-			}
-			close(fd);
-			return(ret);
+                        size_t numout = fwrite(tmp_ptr, 1, totalsize, fd);
+                        fclose(fd);
+                        if (outdata)
+                            NclFree(outdata);
+                        if (numout == totalsize)
+                            return(1);
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirwrite: attempted to write %ld bytes, wrote %ld", 
+                                totalsize, numout, NULL);
 		} else {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirwrite: Could not create file");
 		}
@@ -5443,9 +5445,8 @@ NhlErrorTypes _NclIfbinwrite
 	NclMultiDValData tmp_md= NULL;
 	Const char *path_string;
 	void *tmp_ptr;
-	int fd = -1;
+	FILE *fd;
 	ng_size_t  totalsize = 0;
-	int itotalsize;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
 	long long ll_total;
@@ -5486,8 +5487,8 @@ NhlErrorTypes _NclIfbinwrite
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinwrite: An error in the file path was detected could not resolve file path");
 		return(NhlFATAL);
 	}
-	fd = open(path_string,(O_CREAT | O_RDWR),0644);
-	if(fd == -1) {
+	fd = fopen(path_string,"w+");
+	if(fd == NULL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  "fbinwrite: could not open (%s) check path and permissions, can't continue",path_string);
 		return(NhlFATAL);
@@ -5511,52 +5512,43 @@ NhlErrorTypes _NclIfbinwrite
 	tmp_ptr = tmp_md->multidval.val;
 	thetype = tmp_md->multidval.type;
 	totalsize = tmp_md->multidval.totalelements * thetype->type_class.size;
-#if !defined(NG32BIT)
-	if(totalsize > INT_MAX) {
+
+	if(totalsize > INT_MAX && (marker_size != 8 || sizeof(ng_size_t) != 8)) {
 	  NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinwrite: cannot write more than 2 Gb values to a file.");
 	  return(NhlFATAL);
 	}
-#endif
-	itotalsize = (int)totalsize;
-	ll_total = totalsize;
-	if (swap_bytes) {
-		char *outdata = NclMalloc(totalsize);
-		int ltotal;
-		if (!outdata) {
-			NhlPError(NhlFATAL,ENOMEM,NULL);
-			return (NhlFATAL);
-		}
-		_NclSwapBytes(outdata,tmp_ptr,tmp_md->multidval.totalelements,thetype->type_class.size);
-		if (marker_size == 4) {
-			_NclSwapBytes(&ltotal,&itotalsize,1,4);
-			ret = write(fd,&ltotal,4);
-			ret = write(fd,outdata,itotalsize);
-			ret = write(fd,&ltotal,4);
-		}
-		else {
-			_NclSwapBytes(NULL,&ll_total,1,8);
-			ret = write(fd,&ll_total,8);
-			ret = write(fd,outdata,itotalsize);
-			ret = write(fd,&ll_total,8);
-		}
-		NclFree(outdata);
-	}
-	else if (marker_size == 4) {
-		ret = write(fd,&itotalsize,4);
-		ret = write(fd,tmp_ptr,itotalsize);
-		ret = write(fd,&itotalsize,4);
-		close(fd);
-		return(NhlNOERROR);
-	}
-	else {
-		ret = write(fd,&ll_total,8);
-		ret = write(fd,tmp_ptr,itotalsize);
-		ret = write(fd,&ll_total,8);
-		close(fd);
-		return(NhlNOERROR);
-	}
-	close(fd);
-	return(ret);
+
+        char *outdata = NULL;
+        ng_size_t marker_data = totalsize;         
+        int i_marker_data = (int) totalsize;
+        void *marker_rec = (marker_size == 4) ? &i_marker_data : &marker_data;
+
+        if (swap_bytes) {
+            outdata = NclMalloc(totalsize);           
+            if (!outdata) {
+                NhlPError(NhlFATAL,ENOMEM,"fbinwrite");
+		return(NhlFATAL);
+            }
+            _NclSwapBytes(outdata,tmp_ptr,tmp_md->multidval.totalelements,thetype->type_class.size);
+            tmp_ptr = outdata;
+            _NclSwapBytes(marker_rec, marker_rec, 1, marker_size);                
+        }
+        
+        ng_size_t numbytes = fwrite((void*)marker_rec, 1, marker_size, fd);
+        numbytes += fwrite(tmp_ptr, 1, totalsize, fd);
+        numbytes += fwrite((void*)marker_rec, 1, marker_size, fd);
+        fclose(fd);
+        if (outdata)
+            NclFree(outdata);
+        
+        ng_size_t expectedbytes = totalsize + 2*marker_size;
+        if (numbytes != expectedbytes) {
+            NhlPError(NhlFATAL, NhlEUNKNOWN, "fbinwrite: expected to write %ld bytes, wrote %ld", 
+                    totalsize, expectedbytes, NULL);
+            return(NhlFATAL);
+        }
+        
+	return(1);
 }
 NhlErrorTypes _NclIsleep
 #if	NhlNeedProto
