@@ -14687,6 +14687,14 @@ begin
        exit
    end if
 
+; check
+   if (all(x.eq.y)) then
+       print("regline_stats: x and y are exactly the same: will lead to division by 0")
+       rc = 1e10
+       rc@_FillValue = rc
+       return(rc)
+   end if
+
    if (any(ismissing(x)) .or. any(ismissing(y))) then
        MSG = True
       ;print("nmsg_x="+num(ismissing(x))+" nmsg_y="+num(ismissing(x)) )
