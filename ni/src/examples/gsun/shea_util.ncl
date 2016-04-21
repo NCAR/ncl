@@ -4854,3 +4854,127 @@ begin
   retVal    = data(uniqueInd) 
   return(retVal) 
 end ; remove_duplicates 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;; Generalization of algorithm posted 4/2016 by Dave Allured (NOAA Affiliate)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+undef("dim_minind")
+; ----- At this time (6.4.0) this function  is UNSUPPORTED ------
+function dim_minind(x, nDim[1]:integer)
+; Dennis Shea created this function
+; It is a modification of the original algorithmn posted to ncl-talk  
+; Dave Allured (NOAA Affilate): April, 2016
+local dimx, rankx, N, xmin, nmsgx, dim_xmin, tr, mask1
+begin
+  dimx  = dimsizes(x)
+  rankx = dimsizes(dimx)
+
+  if (rankx.eq.1) then
+      return(minind(x))
+  end if
+
+  N     = dimx(nDim)
+  nmsgx = 0
+;;if (isatt(x,"_FillValue")) then
+;;    nmsgx = num(ismissing(x))
+;;end if
+
+  xmin     = dim_min_n_Wrap (x, nDim)
+  dim_xmin = dimsizes(xmin)
+  ind_xmin = new (dim_xmin, integer, -99)
+
+  if (rankx.eq.2) then
+      do t = 1, N
+         tr = N-t
+         mask1    = (x(tr,:) .le. xmin)
+         mask1    = where (ismissing(mask1), False, mask1)
+         ind_xmin = where (mask1, tr, ind_xmin)
+      end do
+  end if
+
+  if (rankx.eq.3) then
+      do t = 1, N
+         tr = N-t
+         mask1    = (x(tr,:,:) .le. xmin)
+         mask1    = where (ismissing(mask1), False, mask1)
+         ind_xmin = where (mask1, tr, ind_xmin)
+      end do
+  end if
+
+  if (rankx.eq.4) then
+      do t = 1, N
+         tr = N-t
+         mask1    = (x(tr,:,:,:) .le. xmin)
+         mask1    = where (ismissing(mask1), False, mask1)
+         ind_xmin = where (mask1, tr, ind_xmin)
+      end do
+  end if
+
+  copy_VarCoords(xmin, ind_xmin)
+  ind_xmin@long_name = "1st index of min value"
+  ind_xmin@tag       = "dim_minind"
+
+  return(ind_xmin)
+end
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;; Generalization of algorithm posted 4/2016 by Dave Allured (NOAA Affiliate)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+undef("dim_maxind")
+undef("dim_maxind")
+; ----- This is UNTESTED and UNSUPPORTED ------
+function dim_maxind(x, nDim[1]:integer)
+; Dennis Shea created this function
+; It is a modification of the original algorithmn posted to ncl-talk  
+; Dave Allured (NOAA Affilate): April, 2016
+local dimx, rankx, N, xmax, nmsgx, dim_xmax, tr, mask1
+begin
+  dimx  = dimsizes(x)
+  rankx = dimsizes(dimx)
+
+  if (rankx.eq.1) then
+      return(maxind(x))
+  end if
+
+  N     = dimx(nDim)
+  nmsgx = 0
+;;if (isatt(x,"_FillValue")) then
+;;    nmsgx = num(ismissing(x))
+;;end if
+
+  xmax     = dim_max_n_Wrap (x, nDim)
+  dim_xmax = dimsizes(xmax)
+  ind_xmax = new (dim_xmax, integer, -99)
+
+  if (rankx.eq.2) then
+      do t = 1, N
+         tr = N-t
+         mask1    = (x(tr,:) .ge. xmax)
+         mask1    = where (ismissing(mask1), False, mask1)
+         ind_xmax = where (mask1, tr, ind_xmax)
+      end do
+  end if
+
+  if (rankx.eq.3) then
+      do t = 1, N
+         tr = N-t
+         mask1    = (x(tr,:,:) .ge. xmax)
+         mask1    = where (ismissing(mask1), False, mask1)
+         ind_xmax = where (mask1, tr, ind_xmax)
+      end do
+  end if
+
+  if (rankx.eq.4) then
+      do t = 1, N
+         tr = N-t
+         mask1    = (x(tr,:,:,:) .ge. xmax)
+         mask1    = where (ismissing(mask1), False, mask1)
+         ind_xmax = where (mask1, tr, ind_xmax)
+      end do
+  end if
+
+  copy_VarCoords(xmax, ind_xmax)
+  ind_xmax@long_name = "1st index of max value"
+  ind_xmax@tag       = "dim_maxind"
+
+  return(ind_xmax)
+end
