@@ -21681,6 +21681,8 @@ NhlErrorTypes   _NclIFileIsPresent
 
     NclFile file = NULL;
     int rw_v = 1;
+    int error_id;
+    NhlErrorTypes err_level;
 
     files = (NclQuark *) NclGetArgValue(
                 0, 
@@ -21703,6 +21705,14 @@ NhlErrorTypes   _NclIFileIsPresent
         NhlPError(NhlFATAL, errno, "isfilepresent: memory allocation error");
         return NhlFATAL;
     }
+    /*
+     * suppress warning messages from NCL for the duration of this routine
+     */
+    error_id = NhlGetErrorObjectId();
+    NhlVAGetValues(error_id,
+		   NhlNerrLevel,&err_level,NULL);
+    NhlVASetValues(error_id,
+		   NhlNerrLevel,NhlFATAL,NULL);
 
     for(i = 0; i < sz; i++)
     {
@@ -21778,6 +21788,9 @@ NhlErrorTypes   _NclIFileIsPresent
             }
         }
     }
+    /* restore previous error level setting */
+    NhlVASetValues(error_id,
+		   NhlNerrLevel,err_level,NULL);
 
     return NclReturnValue((void *) filemanuable, ndims, dimsz, NULL, NCL_logical, 0);
 }
