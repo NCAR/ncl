@@ -42,10 +42,18 @@ NhlErrorTypes trend_manken_W( void )
   ng_size_t *dsizes_tm;
   NclBasicDataTypes type_tm;
 /*
+ * Variables for retrieving attributes from "opt".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry stack_entry;
+  logical return_trend;
+
+/*
  * Various
  */
   int s, ncomp;
-  logical *tieflag, calculate_trend;
+  logical *tieflag;
   double z, prob, trend, eps, *slope;
   ng_size_t nslp, i, j, nrnx, total_nl, total_nr, total_elements, size_output;
   ng_size_t index_nrx, index_nr, index_x, index_tm;
@@ -83,9 +91,6 @@ NhlErrorTypes trend_manken_W( void )
            NULL,
            DONT_CARE);
 
-  if(*opt) calculate_trend = False;
-  else     calculate_trend = True;
-
 /*
  * Get argument # 2
  */
@@ -104,6 +109,58 @@ NhlErrorTypes trend_manken_W( void )
     }
   }
 
+/*
+ * Check for "return_trend" attribute attached to "opt".
+ *
+ * Before NCL Version 6.4.0, trend_manken always returned both
+ * probability and trend, regardless of what "opt" was set to. Some folks
+ * don't want the trend, so in NCL V6.4.0 an attribute was added,
+ * "return_trend" that allows you to turn off the trend calculation.
+ *
+ * Both opt = True AND opt@return_trend = False must be set in order to
+ * NOT calculate trend. This was to maintain backwards compatibility.
+ */
+  return_trend = True;
+  if(*opt) {
+    stack_entry = _NclGetArg(1, 3, DONT_CARE);
+    switch (stack_entry.kind) {
+    case NclStk_VAR:
+      if (stack_entry.u.data_var->var.att_id != -1) {
+        attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+        if (attr_obj == NULL) {
+          break;
+        }
+      }
+      else {
+/*
+ * att_id == -1 ==> no optional args given.
+ */
+        break;
+      }
+/* 
+ * Get optional arguments.
+ */
+      if (attr_obj->att.n_atts > 0) {
+/*
+ * Get list of attributes.
+ */
+        attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them.
+ */
+        while (attr_list != NULL) {
+          if(!strcasecmp(attr_list->attname, "return_trend")) {
+            return_trend = *(logical *) attr_list->attvalue->multidval.val;
+          }
+          attr_list = attr_list->next;
+        }
+      default:
+        break;
+      }
+    }
+  }
+
+
 /* 
  * Allocate space for output dimension sizes and set them.  We either
  * calculate both the prob and the trend (opt=False), or just prob
@@ -111,7 +168,7 @@ NhlErrorTypes trend_manken_W( void )
  * just 2 (if the input array is 1D).  Otherwise, hen the return array is
  * just M or a scalar ((if input array is 1D).
  */
-  if(calculate_trend) {
+  if(return_trend) {
     ndims_tm = ndims_x - ndims + 1;
   }
   else {
@@ -124,7 +181,7 @@ NhlErrorTypes trend_manken_W( void )
     return(NhlFATAL);
   }
 
-  if(calculate_trend) {
+  if(return_trend) {
     if(ndims_tm == 1) j = 0;
     else              j = 1;
     dsizes_tm[0] = 2;
@@ -172,8 +229,8 @@ NhlErrorTypes trend_manken_W( void )
  * Allocate space for output array.
  */
   total_elements = total_nr * total_nl;
-  if(calculate_trend) size_output    = 2 * total_elements;
-  else                size_output    = total_elements;
+  if(return_trend) size_output    = 2 * total_elements;
+  else             size_output    = total_elements;
   if(type_x != NCL_double) {
     type_tm = NCL_float;
     tm = (void *)calloc(size_output, sizeof(float));
@@ -234,7 +291,7 @@ NhlErrorTypes trend_manken_W( void )
   * returned in range [1 to n], not [0,n-1],so we have to 
   * subtract 1.
   */
-      if(calculate_trend) {
+      if(return_trend) {
         qsort((void*)slope,ncomp,sizeof(double),cmpdouble);
         if((ncomp % 2) == 0) {
           trend = 0.5*(slope[(ncomp-1)/2]+slope[(ncomp-1)/2+1]);
