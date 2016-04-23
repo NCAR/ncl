@@ -45,16 +45,18 @@ NhlErrorTypes thornthwaite_W( void )
  */
   void *pet;
   double *tmp_pet;
+  ng_size_t *dsizes_pet, size_pet;
   NclScalar missing_pet;
   NclBasicDataTypes type_pet;
 
 /*
  * Various
  */
-  int intim, ret, ier, num_rgt_dims;
+  int intim, ret, num_rgt_dims, ier;
   ng_size_t i, ilt, iln, iltln, ntim, nlat, nlon, nrnt, nlatlon;
-  ng_size_t index_temp, index_lat, index_nrt, size_temp, total_nr, total_nl;
+  ng_size_t index_temp, index_lat, index_nrt, total_nr, total_nl, nt;
   char grid_type[13];
+  logical propagate_t_in_time;
 /*
  * Retrieve parameters.
  *
@@ -128,11 +130,23 @@ NhlErrorTypes thornthwaite_W( void )
     return(NhlFATAL);
   }
 
-  if((ntim %12) != 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite: ntime must be a multiple of 12");
+/*
+ * The if test below was added in V6.4.0 as a way of checking if ntim=1 (the 
+ * Fortran expects ntim to be a multiple of 12). If ntim=1, then we will
+ * propagate the scalar time value to an array of twelve elements, and
+ * set nim=12.  See NCL-2336.
+ */
+  if( (ntim!=1) && (ntim%12) != 0) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite: ntime must be 1 or a multiple of 12");
     return(NhlFATAL);
   }
-
+  if(ntim == 1) {
+    propagate_t_in_time = True;
+    ntim = 12;
+  }
+  else {
+    propagate_t_in_time = False;
+  }
   intim = (int) ntim;
 
 /*
@@ -214,16 +228,24 @@ NhlErrorTypes thornthwaite_W( void )
   }
 
 /*
- * Calculate temp size (and hence output size).
+ * Calculate output size.
  */
-  size_temp = 1;
-  for(i = 0; i < ndims_temp; i++) size_temp *= dsizes_temp[i];
+  size_pet = 1;
+  dsizes_pet = (ng_size_t*)calloc(ndims_temp,sizeof(ng_size_t));
+  for(i = 0; i < ndims_temp; i++) {
+    dsizes_pet[i] = dsizes_temp[i];
+    size_pet *= dsizes_temp[i];
+  }
+  if(propagate_t_in_time) {
+    size_pet *= 12;
+    dsizes_pet[dim[0]] = 12;
+  }
 
 /*
  * Calculate size of rightmost and leftmost dimensions.
  */
   total_nr = nlat * nlon;
-  total_nl = size_temp / ntim / total_nr;
+  total_nl = size_pet / ntim / total_nr;
 
 /*
  * Allocate space for coercing temp and lat to double. We have to allocate space 
@@ -246,12 +268,12 @@ NhlErrorTypes thornthwaite_W( void )
     return(NhlFATAL);
   }
   if(type_temp != NCL_double) {
-    pet         = (void *)calloc(size_temp, sizeof(float));
+    pet         = (void *)calloc(size_pet, sizeof(float));
     type_pet    = NCL_float;
     missing_pet = missing_flt_temp;
   }
   else {
-    pet         = (void *)calloc(size_temp, sizeof(double));
+    pet         = (void *)calloc(size_pet, sizeof(double));
     type_pet    = NCL_double;
     missing_pet = missing_dbl_temp;
   }
@@ -290,8 +312,18 @@ NhlErrorTypes thornthwaite_W( void )
 /*
  * Coerce subsection of temp (tmp_temp) to double if necessary.
  */
-        coerce_subset_input_double_step(temp,tmp_temp,index_temp,nlatlon,type_temp,
-                                        ntim,0,NULL,NULL);
+        if(!propagate_t_in_time) {
+          coerce_subset_input_double_step(temp,tmp_temp,index_temp,nlatlon,type_temp,
+                                          ntim,0,NULL,NULL);
+        }
+        else {
+          /* Copy just the first value, then we'll propagate this to the other 11 array values. */
+          coerce_subset_input_double_step(temp,tmp_temp,index_temp,1,type_temp,
+                                          ntim,0,NULL,NULL);
+          for(nt = 1; nt < ntim; nt++) {
+            tmp_temp[nt] = tmp_temp[0];
+          }
+        }
 /*
  * For anything but a rectilinear grid (which we handled above), 
  * coerce subsection of lat (tmp_lat) to double if necessary.
@@ -328,9 +360,16 @@ NhlErrorTypes thornthwaite_W( void )
 /*
  * Return value back to NCL script.
  */
-  ret = NclReturnValue(pet,ndims_temp,dsizes_temp,&missing_pet,type_pet,0);
+  ret = NclReturnValue(pet,ndims_temp,dsizes_pet,&missing_pet,type_pet,0);
   return(ret);
 }
+
+/*
+ * This wrapper is an unadvertised one. The interface is the same as
+ * "thornthwaite", except instead of calling the Fortran thorn2, it
+ * calls a C version based on R's thornthwaite function. This C
+ * function is used by the speidx wrapper.
+ */
 
 NhlErrorTypes thornthwaite_r_W( void )
 {
@@ -372,6 +411,7 @@ NhlErrorTypes thornthwaite_r_W( void )
  */
   void *pet;
   double *tmp_pet;
+  ng_size_t *dsizes_pet, size_pet;
   NclScalar missing_pet;
   NclBasicDataTypes type_pet;
 
@@ -380,8 +420,9 @@ NhlErrorTypes thornthwaite_r_W( void )
  */
   int intim, ret, num_rgt_dims;
   ng_size_t i, ilt, iln, iltln, ntim, nlat, nlon, nrnt, nlatlon;
-  ng_size_t index_temp, index_lat, index_nrt, size_temp, total_nr, total_nl;
+  ng_size_t index_temp, index_lat, index_nrt, total_nr, total_nl, nt;
   char grid_type[13];
+  logical propagate_t_in_time;
 /*
  * Retrieve parameters.
  *
@@ -455,11 +496,23 @@ NhlErrorTypes thornthwaite_r_W( void )
     return(NhlFATAL);
   }
 
-  if((ntim %12) != 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite_r: ntime must be a multiple of 12");
+/*
+ * The if test below was added in V6.4.0 as a way of checking if ntim=1 (the 
+ * Fortran expects ntim to be a multiple of 12). If ntim=1, then we will
+ * propagate the scalar time value to an array of twelve elements, and
+ * set nim=12.  See NCL-2336.
+ */
+  if( (ntim!=1) && (ntim%12) != 0) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite_r: ntime must be 1 or a multiple of 12");
     return(NhlFATAL);
   }
-
+  if(ntim == 1) {
+    propagate_t_in_time = True;
+    ntim = 12;
+  }
+  else {
+    propagate_t_in_time = False;
+  }
   intim = (int) ntim;
 
 /*
@@ -541,16 +594,24 @@ NhlErrorTypes thornthwaite_r_W( void )
   }
 
 /*
- * Calculate temp size (and hence output size).
+ * Calculate output size.
  */
-  size_temp = 1;
-  for(i = 0; i < ndims_temp; i++) size_temp *= dsizes_temp[i];
+  size_pet = 1;
+  dsizes_pet = (ng_size_t*)calloc(ndims_temp,sizeof(ng_size_t));
+  for(i = 0; i < ndims_temp; i++) {
+    dsizes_pet[i] = dsizes_temp[i];
+    size_pet *= dsizes_temp[i];
+  }
+  if(propagate_t_in_time) {
+    size_pet *= 12;
+    dsizes_pet[dim[0]] = 12;
+  }
 
 /*
  * Calculate size of rightmost and leftmost dimensions.
  */
   total_nr = nlat * nlon;
-  total_nl = size_temp / ntim / total_nr;
+  total_nl = size_pet / ntim / total_nr;
 
 /*
  * Allocate space for coercing temp and lat to double. We have to allocate space 
@@ -573,12 +634,12 @@ NhlErrorTypes thornthwaite_r_W( void )
     return(NhlFATAL);
   }
   if(type_temp != NCL_double) {
-    pet         = (void *)calloc(size_temp, sizeof(float));
+    pet         = (void *)calloc(size_pet, sizeof(float));
     type_pet    = NCL_float;
     missing_pet = missing_flt_temp;
   }
   else {
-    pet         = (void *)calloc(size_temp, sizeof(double));
+    pet         = (void *)calloc(size_pet, sizeof(double));
     type_pet    = NCL_double;
     missing_pet = missing_dbl_temp;
   }
@@ -617,8 +678,18 @@ NhlErrorTypes thornthwaite_r_W( void )
 /*
  * Coerce subsection of temp (tmp_temp) to double if necessary.
  */
-        coerce_subset_input_double_step(temp,tmp_temp,index_temp,nlatlon,type_temp,
-                                        ntim,0,NULL,NULL);
+        if(!propagate_t_in_time) {
+          coerce_subset_input_double_step(temp,tmp_temp,index_temp,nlatlon,type_temp,
+                                          ntim,0,NULL,NULL);
+        }
+        else {
+          /* Copy just the first value, then we'll propagate this to the other 11 array values. */
+          coerce_subset_input_double_step(temp,tmp_temp,index_temp,1,type_temp,
+                                          ntim,0,NULL,NULL);
+          for(nt = 1; nt < ntim; nt++) {
+            tmp_temp[nt] = tmp_temp[0];
+          }
+        }
 /*
  * For anything but a rectilinear grid (which we handled above), 
  * coerce subsection of lat (tmp_lat) to double if necessary.
@@ -633,7 +704,7 @@ NhlErrorTypes thornthwaite_r_W( void )
           }
         }
 /*
- * Call the Fortran routine.
+ * Call the C version of "R" routine.
  */
         thornthwaite(tmp_temp, intim, missing_dbl_temp.doubleval,*tmp_lat, tmp_pet);
 /*
@@ -654,6 +725,6 @@ NhlErrorTypes thornthwaite_r_W( void )
 /*
  * Return value back to NCL script.
  */
-  ret = NclReturnValue(pet,ndims_temp,dsizes_temp,&missing_pet,type_pet,0);
+  ret = NclReturnValue(pet,ndims_temp,dsizes_pet,&missing_pet,type_pet,0);
   return(ret);
 }
