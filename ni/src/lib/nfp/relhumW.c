@@ -540,15 +540,11 @@ NhlErrorTypes relhum_water_W( void )
   if(type_rh   != NCL_double) NclFree(tmp_rh);
 
 /*
- * Return value back to NCL script.
+ * Return value back to NCL script.  Will return missing value no matter
+ * what, just to stay consistent with relhum_ice which does the same.
  */
-  if(has_missing_pres || has_missing_tk || has_missing_qw) {
-    ret = NclReturnValue(rh,ndims_pres,dsizes_pres,&missing_rh,
-                         type_rh,0);
-  }
-  else {
-    ret = NclReturnValue(rh,ndims_pres,dsizes_pres,NULL,type_rh,0);
-  }
+  ret = NclReturnValue(rh,ndims_pres,dsizes_pres,&missing_rh,
+                       type_rh,0);
   return(ret);
 }
 
@@ -804,7 +800,7 @@ NhlErrorTypes relhum_ice_W( void )
                                        missing_tk.doubleval);
     found_missing_qw = contains_missing(tmp_qw,1,has_missing_qw,
                                        missing_qw.doubleval);
-    if(found_missing_pres || found_missing_tk || found_missing_qw) {
+    if(found_missing_pres || found_missing_tk || found_missing_qw || *tmp_tk > 273.15 ) {
       *tmp_rh = missing_drh.doubleval;
     }
     else {
@@ -828,15 +824,13 @@ NhlErrorTypes relhum_ice_W( void )
   if(type_rh   != NCL_double) NclFree(tmp_rh);
 
 /*
- * Return value back to NCL script.
+ * Return value back to NCL script. Will attach a 
+ * missing value no matter what, becasuse missing
+ * values might be returned based on input values
+ * (i.e. temp > 0.0 degC).
  */
-  if(has_missing_pres || has_missing_tk || has_missing_qw) {
-    ret = NclReturnValue(rh,ndims_pres,dsizes_pres,&missing_rh,
-                         type_rh,0);
-  }
-  else {
-    ret = NclReturnValue(rh,ndims_pres,dsizes_pres,NULL,type_rh,0);
-  }
+  ret = NclReturnValue(rh,ndims_pres,dsizes_pres,&missing_rh,
+                       type_rh,0);
   return(ret);
 }
 
