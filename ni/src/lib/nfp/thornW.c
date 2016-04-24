@@ -16,7 +16,7 @@ NhlErrorTypes thornthwaite_W( void )
   void *temp;
   double *tmp_temp;
   int ndims_temp;
-  ng_size_t dsizes_temp[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_temp[NCL_MAX_DIMENSIONS], size_temp;
   int has_missing_temp;
   NclScalar missing_temp, missing_flt_temp, missing_dbl_temp;
   NclBasicDataTypes type_temp;
@@ -53,10 +53,9 @@ NhlErrorTypes thornthwaite_W( void )
  * Various
  */
   int intim, ret, num_rgt_dims, ier;
-  ng_size_t i, ilt, iln, iltln, ntim, nlat, nlon, nrnt, nlatlon;
-  ng_size_t index_temp, index_lat, index_nrt, total_nr, total_nl, nt;
+  ng_size_t i, ilt, iln, iltln, ntim, ntim_temp, nlat, nlon, nrnt, nrnp, nlatlon;
+  ng_size_t index_temp, index_pet, index_lat, index_nrt, index_nrp, total_nr, total_nl, nt;
   char grid_type[13];
-  logical propagate_t_in_time;
 /*
  * Retrieve parameters.
  *
@@ -124,9 +123,9 @@ NhlErrorTypes thornthwaite_W( void )
 /*
  * Check size of time dimension.
  */
-  ntim = dsizes_temp[dim[0]];
-  if(ntim > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite: ntime = %ld is greater than INT_MAX", ntim);
+  ntim_temp = dsizes_temp[dim[0]];
+  if(ntim_temp > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite: ntime = %ld is greater than INT_MAX", ntim_temp);
     return(NhlFATAL);
   }
 
@@ -136,16 +135,15 @@ NhlErrorTypes thornthwaite_W( void )
  * propagate the scalar time value to an array of twelve elements, and
  * set nim=12.  See NCL-2336.
  */
-  if( (ntim!=1) && (ntim%12) != 0) {
+  if( (ntim_temp!=1) && (ntim_temp%12) != 0) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite: ntime must be 1 or a multiple of 12");
     return(NhlFATAL);
   }
-  if(ntim == 1) {
-    propagate_t_in_time = True;
+  if(ntim_temp == 1) {
     ntim = 12;
   }
   else {
-    propagate_t_in_time = False;
+    ntim = ntim_temp;
   }
   intim = (int) ntim;
 
@@ -153,19 +151,19 @@ NhlErrorTypes thornthwaite_W( void )
  * Check dimension sizes. This code is a bit complicated given the possible
  * structure of the input temp and lat arrays.
  *
- * Note: anything to the left of the "ntim" dimension is
+ * Note: anything to the left of the "ntim_temp" dimension is
  * considered to be a leftmost dimension that we have to loop across. 
  *
  * What we care about for error checking are the dimensions to the *right* of
- * ntim, which will tell us what kind of lat/lon grid we have.
+ * ntim_temp, which will tell us what kind of lat/lon grid we have.
  *
- * t(...,ntim)           - lat is a scalar
+ * t(...,ntim_temp)           - lat is a scalar
  *
- * t(...,ntim,ncol)      - the grid is unstructured (eg: spectral element), then lat(ncol)
+ * t(...,ntim_temp,ncol)      - the grid is unstructured (eg: spectral element), then lat(ncol)
  *
- * t(...,ntim,nlat,mlon) - the grid is rectilinear, then lat(nlat)
+ * t(...,ntim_temp,nlat,mlon) - the grid is rectilinear, then lat(nlat)
  *
- * t(...,ntim,nlat,mlon) - the grid is curvilinear, then lat(nlat,mlon) 
+ * t(...,ntim_temp,nlat,mlon) - the grid is curvilinear, then lat(nlat,mlon) 
  */
   num_rgt_dims = ndims_temp-dim[0];
 /*
@@ -228,15 +226,16 @@ NhlErrorTypes thornthwaite_W( void )
   }
 
 /*
- * Calculate output size.
+ * Calculate size of temp and output. They will be the same if ntim_temp is divisible by 12.
  */
-  size_pet = 1;
+  size_pet = size_temp = 1;
   dsizes_pet = (ng_size_t*)calloc(ndims_temp,sizeof(ng_size_t));
   for(i = 0; i < ndims_temp; i++) {
     dsizes_pet[i] = dsizes_temp[i];
-    size_pet *= dsizes_temp[i];
+    size_pet  *= dsizes_temp[i];
+    size_temp *= dsizes_temp[i];
   }
-  if(propagate_t_in_time) {
+  if(ntim_temp==1) {
     size_pet *= 12;
     dsizes_pet[dim[0]] = 12;
   }
@@ -245,7 +244,7 @@ NhlErrorTypes thornthwaite_W( void )
  * Calculate size of rightmost and leftmost dimensions.
  */
   total_nr = nlat * nlon;
-  total_nl = size_pet / ntim / total_nr;
+  total_nl = size_temp / ntim_temp / total_nr;
 
 /*
  * Allocate space for coercing temp and lat to double. We have to allocate space 
@@ -283,14 +282,16 @@ NhlErrorTypes thornthwaite_W( void )
   }
 
 /*
- * Loop across nlat and nlon and pass in ntim subsections of temp
+ * Loop across nlat and nlon and pass in ntim_temp subsections of temp
  * and single latitude values to Fortran routine.
  */
   nlatlon    = nlat * nlon;
-  nrnt       = total_nr * ntim;
+  nrnt       = total_nr * ntim_temp;
+  nrnp       = total_nr * ntim;
 
   for(i = 0; i < total_nl; i++) {
     index_nrt = i*nrnt;
+    index_nrp = i*nrnp;
     for(ilt = 0; ilt < nlat; ilt++) {
 /* 
  * A rectilinear grid is a special case as it has
@@ -309,17 +310,14 @@ NhlErrorTypes thornthwaite_W( void )
       for(iln = 0; iln < nlon; iln++) {
         iltln      = (ilt*nlon)+iln;
         index_temp = index_nrt + iltln;
+        index_pet  = index_nrp + iltln;
 /*
  * Coerce subsection of temp (tmp_temp) to double if necessary.
  */
-        if(!propagate_t_in_time) {
-          coerce_subset_input_double_step(temp,tmp_temp,index_temp,nlatlon,type_temp,
-                                          ntim,0,NULL,NULL);
-        }
-        else {
+        coerce_subset_input_double_step(temp,tmp_temp,index_temp,nlatlon,type_temp,
+                                        ntim_temp,0,NULL,NULL);
+        if(ntim_temp==1) {
           /* Copy just the first value, then we'll propagate this to the other 11 array values. */
-          coerce_subset_input_double_step(temp,tmp_temp,index_temp,1,type_temp,
-                                          ntim,0,NULL,NULL);
           for(nt = 1; nt < ntim; nt++) {
             tmp_temp[nt] = tmp_temp[0];
           }
@@ -345,7 +343,7 @@ NhlErrorTypes thornthwaite_W( void )
 /*
  * Coerce output back to appropriate location.
  */
-        coerce_output_float_or_double_step(pet,tmp_pet,type_pet,ntim,index_temp,total_nr);
+        coerce_output_float_or_double_step(pet,tmp_pet,type_pet,ntim,index_pet,total_nr);
       }
     }
   }
@@ -382,7 +380,7 @@ NhlErrorTypes thornthwaite_r_W( void )
   void *temp;
   double *tmp_temp;
   int ndims_temp;
-  ng_size_t dsizes_temp[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_temp[NCL_MAX_DIMENSIONS], size_temp;
   int has_missing_temp;
   NclScalar missing_temp, missing_flt_temp, missing_dbl_temp;
   NclBasicDataTypes type_temp;
@@ -419,10 +417,9 @@ NhlErrorTypes thornthwaite_r_W( void )
  * Various
  */
   int intim, ret, num_rgt_dims;
-  ng_size_t i, ilt, iln, iltln, ntim, nlat, nlon, nrnt, nlatlon;
-  ng_size_t index_temp, index_lat, index_nrt, total_nr, total_nl, nt;
+  ng_size_t i, ilt, iln, iltln, ntim, ntim_temp, nlat, nlon, nrnt, nrnp, nlatlon;
+  ng_size_t index_temp, index_pet, index_lat, index_nrt, index_nrp, total_nr, total_nl, nt;
   char grid_type[13];
-  logical propagate_t_in_time;
 /*
  * Retrieve parameters.
  *
@@ -490,9 +487,9 @@ NhlErrorTypes thornthwaite_r_W( void )
 /*
  * Check size of time dimension.
  */
-  ntim = dsizes_temp[dim[0]];
-  if(ntim > INT_MAX) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite_r: ntim = %ld is greater than INT_MAX", ntim);
+  ntim_temp = dsizes_temp[dim[0]];
+  if(ntim_temp > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite_r: ntim = %ld is greater than INT_MAX", ntim_temp);
     return(NhlFATAL);
   }
 
@@ -502,16 +499,15 @@ NhlErrorTypes thornthwaite_r_W( void )
  * propagate the scalar time value to an array of twelve elements, and
  * set nim=12.  See NCL-2336.
  */
-  if( (ntim!=1) && (ntim%12) != 0) {
+  if( (ntim_temp!=1) && (ntim_temp%12) != 0) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"thornthwaite_r: ntime must be 1 or a multiple of 12");
     return(NhlFATAL);
   }
-  if(ntim == 1) {
-    propagate_t_in_time = True;
+  if(ntim_temp == 1) {
     ntim = 12;
   }
   else {
-    propagate_t_in_time = False;
+    ntim = ntim_temp;
   }
   intim = (int) ntim;
 
@@ -519,19 +515,19 @@ NhlErrorTypes thornthwaite_r_W( void )
  * Check dimension sizes. This code is a bit complicated given the possible
  * structure of the input temp and lat arrays.
  *
- * Note: anything to the left of the "ntim" dimension is
+ * Note: anything to the left of the "ntim_temp" dimension is
  * considered to be a leftmost dimension that we have to loop across. 
  *
  * What we care about for error checking are the dimensions to the *right* of
- * ntim, which will tell us what kind of lat/lon grid we have.
+ * ntim_temp, which will tell us what kind of lat/lon grid we have.
  *
- * t(...,ntim)           - lat is a scalar
+ * t(...,ntim_temp)           - lat is a scalar
  *
- * t(...,ntim,ncol)      - the grid is unstructured (eg: spectral element), then lat(ncol)
+ * t(...,ntim_temp,ncol)      - the grid is unstructured (eg: spectral element), then lat(ncol)
  *
- * t(...,ntim,nlat,mlon) - the grid is rectilinear, then lat(nlat)
+ * t(...,ntim_temp,nlat,mlon) - the grid is rectilinear, then lat(nlat)
  *
- * t(...,ntim,nlat,mlon) - the grid is curvilinear, then lat(nlat,mlon) 
+ * t(...,ntim_temp,nlat,mlon) - the grid is curvilinear, then lat(nlat,mlon) 
  */
   num_rgt_dims = ndims_temp-dim[0];
 /*
@@ -594,15 +590,16 @@ NhlErrorTypes thornthwaite_r_W( void )
   }
 
 /*
- * Calculate output size.
+ * Calculate size of temp and output. They will be the same if ntim_temp is divisible by 12.
  */
-  size_pet = 1;
+  size_pet = size_temp = 1;
   dsizes_pet = (ng_size_t*)calloc(ndims_temp,sizeof(ng_size_t));
   for(i = 0; i < ndims_temp; i++) {
     dsizes_pet[i] = dsizes_temp[i];
-    size_pet *= dsizes_temp[i];
+    size_pet  *= dsizes_temp[i];
+    size_temp *= dsizes_temp[i];
   }
-  if(propagate_t_in_time) {
+  if(ntim_temp==1) {
     size_pet *= 12;
     dsizes_pet[dim[0]] = 12;
   }
@@ -611,7 +608,7 @@ NhlErrorTypes thornthwaite_r_W( void )
  * Calculate size of rightmost and leftmost dimensions.
  */
   total_nr = nlat * nlon;
-  total_nl = size_pet / ntim / total_nr;
+  total_nl = size_temp / ntim_temp / total_nr;
 
 /*
  * Allocate space for coercing temp and lat to double. We have to allocate space 
@@ -649,14 +646,16 @@ NhlErrorTypes thornthwaite_r_W( void )
   }
 
 /*
- * Loop across nlat and nlon and pass in ntim subsections of temp
+ * Loop across nlat and nlon and pass in ntim_temp subsections of temp
  * and single latitude values to Fortran routine.
  */
   nlatlon    = nlat * nlon;
-  nrnt       = total_nr * ntim;
+  nrnt       = total_nr * ntim_temp;
+  nrnp       = total_nr * ntim;
 
   for(i = 0; i < total_nl; i++) {
     index_nrt = i*nrnt;
+    index_nrp = i*nrnp;
     for(ilt = 0; ilt < nlat; ilt++) {
 /* 
  * A rectilinear grid is a special case as it has
@@ -675,17 +674,14 @@ NhlErrorTypes thornthwaite_r_W( void )
       for(iln = 0; iln < nlon; iln++) {
         iltln      = (ilt*nlon)+iln;
         index_temp = index_nrt + iltln;
+        index_pet  = index_nrp + iltln;
 /*
  * Coerce subsection of temp (tmp_temp) to double if necessary.
  */
-        if(!propagate_t_in_time) {
-          coerce_subset_input_double_step(temp,tmp_temp,index_temp,nlatlon,type_temp,
-                                          ntim,0,NULL,NULL);
-        }
-        else {
+        coerce_subset_input_double_step(temp,tmp_temp,index_temp,nlatlon,type_temp,
+                                        ntim_temp,0,NULL,NULL);
+        if(ntim_temp==1) {
           /* Copy just the first value, then we'll propagate this to the other 11 array values. */
-          coerce_subset_input_double_step(temp,tmp_temp,index_temp,1,type_temp,
-                                          ntim,0,NULL,NULL);
           for(nt = 1; nt < ntim; nt++) {
             tmp_temp[nt] = tmp_temp[0];
           }
@@ -710,7 +706,7 @@ NhlErrorTypes thornthwaite_r_W( void )
 /*
  * Coerce output back to appropriate location.
  */
-        coerce_output_float_or_double_step(pet,tmp_pet,type_pet,ntim,index_temp,total_nr);
+        coerce_output_float_or_double_step(pet,tmp_pet,type_pet,ntim,index_pet,total_nr);
       }
     }
   }
