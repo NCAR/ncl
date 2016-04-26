@@ -7477,8 +7477,8 @@ begin
 
   do i=0,nplots-1
     setvalues plots(i)
-      "vpHeightF"               : new_scales * heights(i)
-      "vpWidthF"                : new_scales * widths(i)
+      "vpHeightF"               : new_scales(i) * heights(i)
+      "vpWidthF"                : new_scales(i) * widths(i)
     end setvalues
 
     if(found_plots(i)) then
