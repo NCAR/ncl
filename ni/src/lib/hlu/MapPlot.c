@@ -72,7 +72,7 @@ static NhlResource resources[] = {
 	{NhlNmpDataBaseVersion,NhlCmpDataBaseVersion,
 		NhlTMapDataBaseVersion,sizeof(NhlMapDataBaseVersion),
 	 	Oset(database_version),NhlTImmediate, 
-	 	_NhlUSET((NhlPointer)NhlNCARG4_0),0,NULL},
+	 	_NhlUSET((NhlPointer)NhlDYNAMIC_MAPS),0,NULL},
 	{NhlNmpDataSetName,NhlCmpDataSetName,NhlTString,
 		 sizeof(NhlString),Oset(data_set_name),NhlTImmediate,
 		 _NhlUSET((NhlPointer) NULL),0,NULL},
@@ -1075,6 +1075,7 @@ MapPlotClassInitialize
 	};
 
 	_NhlEnumVals mapdatabaseversionlist[] =  {
+        {NhlDYNAMIC_MAPS,       "Dynamic"},
 	{NhlNCARG4_0,		"LowRes"},
 	{NhlNCARG4_0,		"Ncarg4_0"},
 	{NhlNCARG4_1,		"MediumRes"},
@@ -3796,17 +3797,37 @@ static NhlErrorTypes mpSetUpDataHandler
 	if (! init && mpp->database_version != ompp->database_version) {
                 NhlDestroy(mpp->map_data_handler->base.id);
                 mpp->map_data_handler = NULL;
+        }        
+        else if (! init && mpp->database_version == NhlDYNAMIC_MAPS &&
+                mpp->map_data_handler->base.layer_class == NhlmapV40DataHandlerClass &&
+                (mpp->outline_boundaries != NhlGEOPHYSICAL || mpp->fill_boundaries != NhlGEOPHYSICAL))
+        {
+                /* "Dynamic" maps in effect, and we've previously defaulted to V40 database. But user 
+                 * has specified something other than geophysical features, so we need to switch to 
+                 * V41 database.
+                 */
+                NhlDestroy(mpp->map_data_handler->base.id);
+                mpp->map_data_handler = NULL;            
         }
+        
 	if (! mpp->map_data_handler) {
-
-                if (mpp->database_version == NhlNCARG4_0) {
+                if (mpp->database_version == NhlDYNAMIC_MAPS) {
+                    if (mpp->outline_boundaries == NhlGEOPHYSICAL && mpp->fill_boundaries == NhlGEOPHYSICAL)
+                        /* NCL-2126 */
                         mapdh_class = NhlmapV40DataHandlerClass;
-                }
-		else if (mpp->database_version == NhlNCARG4_1) {
+                    else {
 			mapdh_class = NhlmapV41DataHandlerClass;
 			if (mpp->data_set_name)
-				NhlSetSArg(&sargs[nargs++],
-					   NhlNmpDataSetName,mpp->data_set_name);
+				NhlSetSArg(&sargs[nargs++], NhlNmpDataSetName, mpp->data_set_name);
+                    }
+                }
+                else if (mpp->database_version == NhlNCARG4_0) {
+                    mapdh_class = NhlmapV40DataHandlerClass;
+                }
+		else if (mpp->database_version == NhlNCARG4_1) {
+                    mapdh_class = NhlmapV41DataHandlerClass;
+                    if (mpp->data_set_name)
+			NhlSetSArg(&sargs[nargs++], NhlNmpDataSetName, mpp->data_set_name);
                 }		
 		else if (mpp->database_version == NhlRANGS_GSHHS) {
 			mapdh_class = NhlmapRGDataHandlerClass;

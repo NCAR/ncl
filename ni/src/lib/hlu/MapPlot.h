@@ -64,7 +64,8 @@ typedef enum _NhlMapShapeMode {
 typedef enum _NhlMapDataBaseVersion {
 	NhlNCARG4_0 = 0,
 	NhlNCARG4_1,
-	NhlRANGS_GSHHS
+	NhlRANGS_GSHHS,
+        NhlDYNAMIC_MAPS
 } NhlMapDataBaseVersion;
 
 #define NhlTMapDataResolution "MapDataResolution"
