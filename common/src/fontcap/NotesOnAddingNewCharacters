@@ -1,0 +1,190 @@
+----------------------------------------------------------------------
+Notes created on April 28, 2016
+
+Some of this information is also included in JIRA ticket NCL-1168.
+----------------------------------------------------------------------
+
+In July 2011, Fred Clare and Mary Haley had an email exchange on
+what it takes to add new characters to NCL's font tables.
+
+Fred provided some detail write-ups on what it takes to add
+new characters to NCL's font tables.
+
+The email exchange is included below, including notes on adding
+an umlauted "a" to the Helvetica font (see below)
+======================================================================
+On Jul 21, 2011, at 8:46 AM, Mary Haley wrote:
+
+Fred,
+
+I know we've asked this before, but how hard would it be to add a new
+font table? We've gotten a trickle of requests to add accented
+characters like umlauts, and I think it's becoming a pressing issue
+given the globalization of our software.
+
+Is this something that you could do for one character, and somebody
+could watch over your shoulder and do the rest on their own?
+
+I thought you had written a document on this, but I don't remember
+where it is.
+
+A complete description of the character (fontcap) tables, including
+the character encodings, can be found at:
+
+  http://ncarg.ucar.edu/supplements/cgm_supp/cgm_supp.html
+
+If you were simply to add a character to an existing fontcap, the
+information is contained in the above (but see below).  Adding a whole
+new font would be beyond most people's patience, and could be beyond
+me at this point.  If I were to add a new filled font, I would need an
+interactive Bezier curve drawing application.  We do have a Bezier
+curve generation package in $NCARG/ncarg2d/src/libncarg/support/ (the
+bcxxxx routines), but of course that does not support the desired
+interactive input of the control points, allowing you to move them
+around to adjust the shape of a curve.  I used to use FrameMaker for
+this--it had a truly elegant application for it.
+
+As to adding characters with diacritical markings, there are several
+markings you might want to consider.
+
+For example:
+
+umlauts  (e.g. Ä)
+accent grave (e.g. É)
+accent acute (e.g. È)
+circumflex (e.g. Ĝ)
+tilde (e.g. Ũ)
+ring (e.g. Å)
+
+And there are others.  
+
+Taking the case of umlauts, in each of the Roman fonts you would have
+to add ten new characters, one each for the upper case and lower case
+characters a,e,i,o,u.  There are six filled Roman character fonts:
+helvetica, helvetica-bold, times-roman, times-bold, courier,
+courier-bold.  So, to add umlaut characters to the filled Roman fonts
+would require adding sixty new characters.  For consistency, you would
+probably want to add such characters to the stroked fonts as well:
+cartographic_roman, complex_roman, duplex_roman, gothic_roman,
+gothic_german.
+
+A factor to consider is that new characters would have to be contained
+in a new font table (or at least a different font table from the one
+where the characters would most appropriately land) of accented
+characters, since the current Roman fonts contain character entries
+for all of the printable ASCII characters.
+
+I see that the math-symbols font has nineteen places open for new
+characters, so I could go through adding an ä to that font and
+document what it took to do that.
+
+Any approach I can think of other than adding accented characters at
+the fontcap level has drawbacks.  For example, you could intercede at
+the Plotchar function code level and perhaps implement a subroutine
+such as umlaut(character).  Such a subroutine would have to inquire
+about sizes, orientations, etc.  And not all characters are drawn with
+Plotchar as some are ultimately drawn with the GKS GTX function.  You
+could consider doing something specifically for PostScript, but
+character functions specific to PostScript have run aground in the
+past since that would require some ad hoc mods to Plotchar (we do have
+some PostScript specific character functionality by way of GTX).
+
+Our filled fonts have problems when displayed at small sizes.
+Addressing such problems, and requests such as above, is one of the
+main reasons I wanted to provide access to the fonts available through
+cairo.
+
+======================================================================
+
+On Jul 21, 2011, at 8:46 AM, Mary Haley wrote: 
+
+I have produced an example for adding an umlauted "a" to the Helvetica
+font.  I have attached *detailed* notes on what is required.  This
+took me about 2.5 hours, but half of that time was spent in writing
+the notes.  If someone were to get underway with this, then I think an
+hour per character would be a reasonable time allotment.  Would get
+tedious.  Maybe a project for a student hungry for cash?  I also have
+attached a sample output. I can't think of an enticement that would
+get me to work on this, not even free beer for life.  I would be
+willing to consult, but I think the procedure is pretty
+straightforward.
+
+Before retiring I had modified Plotchar to produce a proof of concept
+for interfacing it to cairo fonts.  I recall some of the function
+codes were not behaving properly, but subscripts and superscripts
+were.  *Much* work (like a couple of months of dedicated time) would
+need to be done on both Plotchar and the cairo driver to get this to
+be a usable product where a user could plug in any TrueType font and
+use it with Plotchar.  The GKS GTX function does use cairo fonts and
+honors all of the GKS text attributes.  I spent untold hours getting
+that working and tested.
+
+======================================================================
+
+Notes on adding an umlauted "a" to the Helvetica font.  
+(see "umlaut_a.tiff" in this directory.)
+
+  1.)  I wrote an e-mail to myself with a single unmauted "a" in it.  I
+       looked at the e-mail and changed the font size of the "a" to 
+       max (this was 288 for the Lucida Grand font I was using).
+  2.)  In looking at the large "a", I measured on the screen the height of
+       the character (13/8"), the space between the character and the
+       umlaut (2/8") and the height of the umlaut (2/8").  The space
+       between the two dots in the umlaut is 5/16".  The width of each
+       dot in the umlaut is 2/8". The horizontal position of the
+       umlaut accent is centered over the horizontal coordinate
+       where the "a" achieves its maximum height.  I will use
+       these proportions for the new umlauted "a" in the Helvetica font.
+  3.)  The font encodings are described in the document:
+       http://ncarg.ucar.edu/supplements/cgm_supp/cgm_supp.html
+  4.)  I went to $NCARG/common/src/fontcap and looked at the ASCII
+       fontcap for the Helvetica font (font21.fc).  I went down and
+       looked at the encoding for the ASCII "a".
+  5.)  Following the encoding descriptions contained in 2.), it is 
+       seen that the final two numbers in the enumerated list for
+       the "a" are coordinates in the font coordinate system, the
+       coordinate system specified in the preamble to the fontcap.  
+       Looking at those coordinates it is seen that the maximum 
+       height of the "a" is 104 font coordinate units.  Note that  
+       the minimum is -4, since the "a" actually goes below the base 
+       line.  This is somewhat surprising, but accommodates for the 
+       way that the human eye perceives characters.
+  6.)  Using 104 for the height of the "a" and the proportions determined
+       in step 2., the space between the bottom of an umlaut and the
+       top of the "a" should be 16 coordinate units and the height of
+       the umlaut accent should also be 16 coordinate units.  The 
+       maximum height of the "a" occurs at horizontal coordinate 52.
+       The space between the two dots of the umlaut should be 20
+       font coordinate units.  
+  7.)  Summarizing the details in 6.) we need to define two dots
+       centered at horizontal coordinate 52 with height at the dot
+       bottom 120 (104+16), dot height and width 16, and the space
+       between the dots equal 20.
+  8.)  Editing the ASCII fontcap in accordance with 7.) amounts to
+       adding two new regions, one for each dot.  In the Helvetica
+       font dots are squares (look at the dot on a "j" for example).
+       In a font where a dot is not a square, it would be necessary to
+       add regions, the encodings of which could be obtained
+       by looking at the dot of a "j" in that font.  For diacritical
+       marks other than an umlaut, try to build the accent from
+       existing regions in other characters.
+  9.)  Finally, here is what we need to add to the Helvetica
+       fontcap.  Actually, since there is no space for a new
+       character in the Helvetica font, a new font, such as
+       Helvetica-accents will have to be created to hold the
+       accented characters.
+
+         BEGIN_REGION
+          26 120
+          42 120
+          42 136
+          26 136
+          26 120
+         END_REGION
+         BEGIN_REGION
+          62 120
+          78 120
+          78 136
+          62 136
+         END_REGION
+======================================================================
