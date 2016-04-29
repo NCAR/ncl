@@ -377,8 +377,8 @@ c CRUDE ....
 c .   At any level where the input "xx" has a missing value
 c .   set the corresponding "yy" level to missing.
 c
-c$omp parallel do default(shared) private(i,j,k,ii,jj)
       do k = 1,plev
+
          do j = 1,plat
             do i = 1,plon 
                if (xx(i,j,k).eq.xxmsg) then
@@ -387,10 +387,11 @@ c$omp parallel do default(shared) private(i,j,k,ii,jj)
                          yy(ii,jj,k) = xxmsg
                       end do
                    end do
+                   go to 100
                end if
-               go to 100
             end do
          end do
+
   100    continue
       end do
     
