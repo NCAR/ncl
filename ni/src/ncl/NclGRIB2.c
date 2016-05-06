@@ -8499,6 +8499,7 @@ static NhlErrorTypes Grib2ReadCodeTable
         ct->descrip = NULL;
         ct->shname = NULL;
         ct->units = NULL;
+	(void) fclose(fp);
         NclFree(ctf);
         return err = NhlWARNING;
     }

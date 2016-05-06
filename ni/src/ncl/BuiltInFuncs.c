@@ -17054,8 +17054,21 @@ NhlErrorTypes _NclIGetVarDims
 				{
 					names[0] = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
 					ndims = 1;
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"getvardims: file %s contains no dimensions readable by NCL",
-				  		NrmQuarkToString(thefile->file.fname));
+					if (grpnode->name == NrmStringToQuark("/")) {
+						if (grpnode->grp_rec && grpnode->grp_rec->n_grps > 0) {
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"getvardims: root group in file %s contains no dimensions readable by NCL",
+								  NrmQuarkToString(theadvancedfile->advancedfile.fname));
+						}
+						else {
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"getvardims: file %s contains no dimensions readable by NCL",
+								  NrmQuarkToString(theadvancedfile->advancedfile.fname));
+						}
+					}
+					else {
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"getvardims: group <%s> in file %s contains no dimensions readable by NCL",
+							  NrmQuarkToString(grpnode->name),
+							  NrmQuarkToString(theadvancedfile->advancedfile.fname));
+					}
 				}
 			}
 			else
@@ -21161,6 +21174,7 @@ NhlErrorTypes   _NclIGetFileVarTypes
     }
 
     for (i = 0; i < sz; i++) {
+	  NrmQuark fname;
 	  vartype = _NclFileVarRepValue(f, varnames[i]); 
 	  switch (vartype) {
 	    	case Ncl_Typedouble:
@@ -21230,14 +21244,24 @@ NhlErrorTypes   _NclIGetFileVarTypes
     		case Ncl_Typelist:
 	    		vartypes[i] = NrmStringToQuark("list");
 		    	break;
+    		case Ncl_Typecompound:
+	    		vartypes[i] = NrmStringToQuark("compound");
+			break;
+    		case Ncl_Typereference:
+	    		vartypes[i] = NrmStringToQuark("reference");
+		    	break;
+    		case Ncl_Typegroup:
+	    		vartypes[i] = NrmStringToQuark("group");
+		    	break;
 
             default:
                 has_missing = True;
                 vartypes[i] = NrmStringToQuark("missing");
+		fname = f->file.advanced_file_structure ? ((NclAdvancedFile) f)->advancedfile.fpath : f->file.fpath;
 
                 NhlPError(NhlWARNING, NhlEUNKNOWN,
-                    "getfilevartypes: variable (%s) does not exist in file (%s)",
-                    NrmQuarkToString(varnames[i]), NrmQuarkToString(f->file.fname));
+                    "getfilevartypes: unable to determine type of variable (%s) in file (%s)",
+                    NrmQuarkToString(varnames[i]), NrmQuarkToString(fname));
 
                 break;
         }
@@ -21462,9 +21486,9 @@ NhlErrorTypes   _NclIGetFileDimsizes
         NclAdvancedFile   theadvancedfile = (NclAdvancedFile) f;
         NclFileGrpNode *grpnode = theadvancedfile->advancedfile.grpnode;
 
-        if(NULL != grpnode->dim_rec)
+        if(NULL != grpnode)
         {
-	    ndims = grpnode->dim_rec->n_dims;
+	    ndims = grpnode->dim_rec ? grpnode->dim_rec->n_dims : 0;
 
 	    if (ndims == 0)
             {

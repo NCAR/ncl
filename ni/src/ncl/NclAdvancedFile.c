@@ -479,6 +479,12 @@ void _printNclTypeUtil(FILE *fp, NclBasicDataTypes type, void *val, size_t index
              nclfprintf(fp, "%c", v[index]);
              break;
         }
+        case NCL_reference:
+        {
+             NclFileReferenceNode *v = (NclFileReferenceNode *)val;
+             nclfprintf(fp, "reference to <%s>", NrmQuarkToString(v[index].obj_name));
+             break;
+        }
         default:
             fprintf(stderr, "\nIn file: %s, line: %d\n", __FILE__, __LINE__);
             fprintf(stderr, "\tUNKNOWN type: 0%o, val (in char): <%s>", type, (char *)val);
@@ -604,7 +610,8 @@ void _printNclFileAttRecord(FILE *fp, NclAdvancedFile thefile, NclFileAttRecord 
            */
 
             _printStringConst(fp, "\t", FALSE);
-            _printNclTypeVal(fp, NCL_string, &vlenrec->name, FALSE);
+	    if (vlenrec->name > NrmNULLQUARK)
+		    _printNclTypeVal(fp, NCL_string, &vlenrec->name, FALSE);
             _printStringConst(fp, " {{", FALSE);
 
             for(j = 0; j < vlenrec->n_vlens; j++)
@@ -894,6 +901,7 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
     float eval = 0.0;
     float* fptr;
     double* dptr;
+    int* iptr;
     char type_str[1024];
     int i;
     
@@ -975,6 +983,12 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
                         sval = (float) dptr[0];
                         eval = (float) dptr[dimnode->size - 1];
                     }
+                    else if(NCL_int == dimvarnode->type)
+                    {
+                        iptr = (int *) dimvarnode->value;
+                        sval = (float) iptr[0];
+                        eval = (float) iptr[dimnode->size - 1];
+                    }
                 }
                 else
                 {
@@ -999,6 +1013,12 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
                             sval = (float) dptr[0];
                             eval = (float) dptr[dimnode->size - 1];
                         }
+                        else if(NCL_int == tmp_md->multidval.data_type)
+                        {
+                            iptr = (int *) tmp_md->multidval.val;
+                            sval = (float) iptr[0];
+                            eval = (float) iptr[dimnode->size - 1];
+                        }
 
                         _NclDestroyObj((NclObj)tmp_md);
                     }
@@ -1011,6 +1031,7 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
                 _printStringConst(fp, "..", FALSE);
                 _printNclTypeVal(fp, NCL_float, &eval, FALSE);
                 _printStringConst(fp, "]", TRUE);
+		sval = eval = 0.0;
             }
             }
         }
@@ -5139,7 +5160,9 @@ void AdvancedLoadVarAtts(NclAdvancedFile thefile, NclQuark var)
             val = attnode->value;
 
         ne = attnode->n_elem;
-
+	if (attnode->type == NCL_reference ||
+	    (attnode->type == NCL_vlen && attnode->base_type == NCL_reference))
+	    continue;
         tmp_md = _NclCreateMultiDVal(
                       NULL, NULL,
                       Ncl_MultiDValData,

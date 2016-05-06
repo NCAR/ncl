@@ -72,7 +72,7 @@ typedef struct _NclFileAttNode
     ng_size_t         id;
     int               n_elem;
     void             *value;
-    nc_type           base_type;
+    NclBasicDataTypes base_type;
     nc_type           the_nc_type;
     int               is_virtual;
     int               is_compound;
@@ -172,6 +172,15 @@ typedef struct _NclFileVlenRecord
 
     void    *values;
 } NclFileVlenRecord;
+
+typedef struct _NclFileReferenceNode
+{
+    NclQuark obj_name;
+    int      obj_id;     /* cast to type hid_t */
+    int      obj_type;   /* cast to type H5O_type_t */
+    int      ref_type;   /* cast to type H5R_type_t  */
+    int      ref;
+} NclFileReferenceNode;
 
 typedef struct _NclFileVarNode
 {
