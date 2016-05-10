@@ -3800,6 +3800,8 @@ static NhlErrorTypes mpSetUpDataHandler
         }        
         else if (! init && mpp->database_version == NhlDYNAMIC_MAPS &&
                 mpp->map_data_handler->base.layer_class == NhlmapV40DataHandlerClass &&
+                mpp->outline_specs == NULL  && mpp->fill_area_specs == NULL && 
+                mpp->mask_outline_specs == NULL && mpp->mask_area_specs == NULL &&
                 (mpp->outline_boundaries != NhlGEOPHYSICAL || mpp->fill_boundaries != NhlGEOPHYSICAL))
         {
                 /* "Dynamic" maps in effect, and we've previously defaulted to V40 database. But user 
@@ -3812,7 +3814,9 @@ static NhlErrorTypes mpSetUpDataHandler
         
 	if (! mpp->map_data_handler) {
                 if (mpp->database_version == NhlDYNAMIC_MAPS) {
-                    if (mpp->outline_boundaries == NhlGEOPHYSICAL && mpp->fill_boundaries == NhlGEOPHYSICAL)
+                    if ((mpp->outline_boundaries == NhlGEOPHYSICAL && mpp->fill_boundaries == NhlGEOPHYSICAL) ||
+                        mpp->outline_specs != NULL || mpp->fill_area_specs != NULL || 
+                        mpp->mask_outline_specs != NULL || mpp->mask_area_specs != NULL)
                         /* NCL-2126 */
                         mapdh_class = NhlmapV40DataHandlerClass;
                     else {
