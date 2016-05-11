@@ -2980,9 +2980,11 @@ void NC4GetDimVals(int ncid, NclFileGrpNode *grpnode)
     for(i = 0; i < grpnode->dim_rec->n_dims; i++)
     {
         dimnode = &(grpnode->dim_rec->dim_node[i]);
+#if 0
 	if (dimnode->is_unlimited) { /* don't cache unlimited dimension values */
 		continue;
 	}
+#endif
         varnode = _getVarNodeFromNclFileGrpNode(grpnode, dimnode->name);
 
         if(NULL == varnode)
@@ -2991,7 +2993,7 @@ void NC4GetDimVals(int ncid, NclFileGrpNode *grpnode)
         if(varnode->dim_rec->n_dims > 1)
             continue;
 
-        if(NULL == varnode->value)
+        if(NULL == varnode->value && ! dimnode->is_unlimited)
         {
             varnode->value = NclCalloc(nctypelen(varnode->the_nc_type) * dimnode->size, 1);
 
@@ -3128,12 +3130,17 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
 	    if (varnode->dim_rec->n_dims == 1 && varnode->dim_rec->dim_node->name == NrmStringToQuark("ncl_scalar"))
 		    continue;
 
+	    if (! varnode->is_chunked)
+		    continue;
+
             if(NULL == varnode->chunk_dim_rec)
             {
                 for(i = 0; i < varnode->dim_rec->n_dims; i++)
                 {
                     chunkdimnode = _getChunkDimNodeFromNclFileGrpNode(grpnode,
                                        varnode->dim_rec->dim_node[i].name);
+		    if (! chunkdimnode)
+			    continue;
                     _addNclDimNode(&(varnode->chunk_dim_rec),
                                    varnode->dim_rec->dim_node[i].name,
                                    chunkdimnode->size, chunkdimnode->id,
@@ -3147,6 +3154,8 @@ static void _checking_nc4_chunking(NclFileGrpNode *grpnode, int id)
                 {
                     chunkdimnode = _getChunkDimNodeFromNclFileGrpNode(grpnode,
                                        varnode->dim_rec->dim_node[i].name);
+		    if (! chunkdimnode)
+			    continue;
                     var_chunk_dims[i] = (size_t)chunkdimnode->size;
                 }
 	    }
