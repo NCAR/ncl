@@ -18349,11 +18349,11 @@ begin
       exit
   end if
 
-  if (isatt(dp,"_FillValue") .and. any(ismissing(dp)) ) then  ; error check
-      print("wgt_vertical_n: No _FillValue allowed")
-      print("wgt_vertical_n: dp: nFill="+num(ismissing(dp)))
-      exit
-  end if
+;;if (isatt(dp,"_FillValue") .and. any(ismissing(dp)) ) then  ; error check
+;;    print("wgt_vertical_n: No _FillValue allowed")
+;;    print("wgt_vertical_n: dp: nFill="+num(ismissing(dp)))
+;;    exit
+;;end if
 
   Xdp  = X*dp                                ; [? kg/(m s2)]   (temporary variable)
   copy_VarCoords(X, Xdp)
