@@ -11963,7 +11963,8 @@ begin
 ;---Create array for fill, set all to transparent or white
    if(shade_type.eq."color") then
      colist      = new((/N+1,4/),double)
-     colist(:,3) = 0.
+     colist      = 1.d     ; initialize to all white so no missing values are used
+     colist(:,3) = 0.      ; now set all colors to transparent.
    else
      colist = new(N+1,integer)
      colist = -1
