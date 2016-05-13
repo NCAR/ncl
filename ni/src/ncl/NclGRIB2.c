@@ -5285,11 +5285,12 @@ Grib2RecordInqRec *grec;
 					     grec->time_period);
 		grec->time_offset = grec->time_offset + period;
 	}
+	/* the following does not seem to work for ARPEGE data at least -- not sure what the end of the overall time interval represents */
 	if (grec->overall_interval_seconds > 0) {
 		int end_time = _g2GetConvertedTime(g2plist->forecast_time_units,
 						   13, /* the time indicator for seconds */
 						   grec->overall_interval_seconds);
-		grec->time_offset = MIN(grec->time_offset, end_time);
+		/*grec->time_offset = MIN(grec->time_offset, end_time);*/
 		/*grec->time_offset = MAX(grec->time_offset,grec->forecast_time);*/
 	}
 }
