@@ -1,6 +1,3 @@
-;
-;      $Id: gsn_code.ncl,v 1.238.4.3 2010-05-06 17:13:26 haley Exp $
-;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
 ;                Copyright (C)  1998                                   ;
@@ -7969,7 +7966,7 @@ end
 ;  binvalues - the number of values in the corresponding bin            ;
 ;  barlocs   - the start of the first bar in each bin                   ;
 ;  width     - the width of the bar                                     ;
-;  colors    - array of colors to use (ints or color names)             ; 
+;  colors    - array of colors to use                                   ;
 ;  gsres     - optional primitive resources                             ;
 ;                                                                       ;
 ; This function creates the columns for a histogram plot. The Y axis    ;
@@ -8076,14 +8073,25 @@ begin
 ;
 ;  fillindex = min((/max((/max(fillindex),0/)),17/))
 
-  col_dims = dimsizes(colors)
+  rgba_arr = convert_color_to_rgba(wks,colors)
+  col_dims = dimsizes(rgba_arr)   ; better be 2D or 3D
   col_rank = dimsizes(col_dims)
-  ncolors = col_dims(0)
+  if(col_rank.gt.3.or.(col_rank.eq.3.and.col_dims(0).ne.nbarsinbin)) then
+    print("Error: hist_columns: Invalid dimensionality of array of colors passed in.")
+    print("   Was expecting a 1D or 2D array of colors")
+    exit
+  end if
+  if(col_rank.eq.3) then
+    ncolors = col_dims(1)
+  else
+    ncolors = col_dims(0)
+  end if
   do i = 0, nbars - 1
     if(col_rank.eq.1) then
-      gsres@gsFillColor = colors(i % ncolors)
-    else
-      gsres@gsFillColor = colors(i % ncolors,:)
+      gsres@gsFillColor = rgba_arr
+    else if(col_rank.eq.2) then
+      gsres@gsFillColor = rgba_arr(i % ncolors,:)
+    end if
     end if
     if(multibars) 
 ;
@@ -8092,6 +8100,9 @@ begin
 ; they are being stacked.
 ;
       do j=nbarsinbin-1,0,1
+        if(col_rank.eq.3) then
+          gsres@gsFillColor = rgba_arr(j,i % ncolors,:)
+        end if
         gsres@gsFillIndex = fillindex(j)
         if(binvalues@horizontal) then
           polygons(j,i) = gsn_add_polygon(wks,xy,ypoints(j,i,:), \
