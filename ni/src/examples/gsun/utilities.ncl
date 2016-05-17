@@ -1,8 +1,18 @@
-;--------------------------------------------------------------------------------
+;----------------------------------------------------------------------
+; This script contains a bunch of "utility" functions, both private
+; and public. It is loaded automatically by NCL.
+;
+; Some example public functions include:
+;   totype
+;   read_colormap_file
+;   span_color_indexes
+;----------------------------------------------------------------------
+
+;----------------------------------------------------------------------
 ; This function converts input variable x to type specified by type.
 ; Wei Huang
 ; May 21, 2012
-;--------------------------------------------------------------------------------
+;----------------------------------------------------------------------
 undef("totype")
 function totype( varin, type:string )
 local varout
@@ -1278,7 +1288,8 @@ begin
   rgba_cmap = rgb2rgba(rgb_cmap)
   rgba_2d = new((/dimsizes(color_indexes_1d),4/),typeof(rgba_cmap))
   do n=0,nindexes-1
-    if(color_indexes_1d(n).ge.0.and.color_indexes_1d(n).lt.ncolors)
+    if(.not.ismissing(color_indexes_1d(n)).and.\
+       (color_indexes_1d(n).ge.0.and.color_indexes_1d(n).lt.ncolors)) then
       rgba_2d(n,:) = rgba_cmap(color_indexes_1d(n),:)
     end if
   end do
