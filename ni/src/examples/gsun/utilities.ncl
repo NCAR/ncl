@@ -89,11 +89,9 @@ begin
          return(varout)
      end if
 
-     print("")
-     print("WARNING:")
-     print("CANNOT convert input variable type: <" + typeof(varin) + "> to type: <" + type + ">")
-     print("The original type: <" + typeof(varin) + "> is returned.")
-     print("")
+     print("totype: warning: cannot convert input variable type <" + \
+           typeof(varin) + "> to type: <" + type + ">")
+     print("   The original type: <" + typeof(varin) + "> will be returned.")
 
      varout = varin
      return(varout)
@@ -655,6 +653,30 @@ begin
 end
 
 ;***********************************************************************;
+; This function converts an nD array to a 2D array. This is for arrays  ;
+; like RGB/A arrays where you need to easily move between them.        ;
+;***********************************************************************;
+undef("ndtotwod")
+function ndtotwod(x)
+local dims, rank, left_dims, right_dim, dims2d
+begin
+  dims = dimsizes(x)
+  rank = dimsizes(dims)
+  if(rank.eq.1) then
+    print("ndtotwod: Error: can't convert a 1D array to a 2D array")
+    exit
+  end if
+  if(rank.eq.2) then
+    return(x)
+  end if
+
+  left_dims = dims(0:rank-2)
+  right_dim = dims(rank-1)
+  dims2d    = (/product(left_dims),right_dim/) 
+  return(reshape(x,dims2d))  
+end
+
+;***********************************************************************;
 ; Function : read_colormap_files                                        ;
 ;               colorMapNames : an array of names of an NCL-standard    ;
 ;                              colormap, or the filenames of            ;
@@ -802,12 +824,12 @@ begin
    dims = dimsizes(cmapt)
    if(dimsizes(dims).ne.2.or.dims(0).lt.3.or.dims(0).gt.256.or.\
        .not.any(dims(1).ne.(/3,4/))) then
-     print ("Error: get_color_index: cmap must be an n x 3 or n x 4 array of RGB or RGBA values, or a valid color map name")
+     print ("get_color_index: Error: cmap must be an n x 3 or n x 4 array of RGB or RGBA values, or a valid color map name")
      return(new(3,"float"))    ; return a missing value
    end if
    cmap = cmapt
  else
-   print ("Error: get_color_index: cmap must be an n x 3 or n x 4 array of RGB or RGBA values, or a valid color map name")
+   print ("get_color_index: Error: cmap must be an n x 3 or n x 4 array of RGB or RGBA values, or a valid color map name")
  end if
  end if
 
@@ -816,15 +838,15 @@ begin
  imsg = new(1,integer)          ; missing value
 
  if (nclr-2 .lt. ncn+1) then 
-   print ("Warning: get_color_index: Not enough colors in colormap for number of contour levels")
+   print ("get_color_index: Warning: Not enough colors in colormap for number of contour levels")
    print ("         Colors will be repeated")
  end if
  if (ismissing(value)) then
-   print ("Error: get_color_index: Input value is missing")
+   print ("get_color_index: Error: Input value is missing")
    return (imsg)
  end if
  if (any(ismissing(cnlvls))) then
-   print ("Error: get_color_index: One or more input contour levels are missing")
+   print ("get_color_index: Error: One or more input contour levels are missing")
    return (imsg)
  end if
 
@@ -900,18 +922,188 @@ begin
 end
 
 ;***********************************************************************;
-; This function returns True if the given color is a transparent
-; color, and False otherwise
+; This function checks the list of named colors to make sure they are
+; all valid.  It will return a logical array of the same size as the 
+; input array.
+;***********************************************************************;
+undef("is_valid_named_colors")
+function is_valid_named_colors(colors:string)
+local i, named_colors, valid_named_colors1d, ncolors, colors1d, dims
+begin
+  dims                 = dimsizes(colors)
+  named_colors         = str_lower(get_named_color_list())   ; list of valid colors
+  colors1d             = ndtooned(colors)
+  ncolors              = dimsizes(colors1d)
+  valid_named_colors1d = new(ncolors,logical)
+  valid_named_colors1d = False    ; initialize to False
+  do i=0,ncolors-1
+    valid_named_colors1d(i) = any(str_lower(colors1d(i)).eq.named_colors)
+  end do
+  return(reshape(valid_named_colors1d,dims))
+end
+
+;***********************************************************************;
+; This function checks the list of named colors to make sure they are
+; all valid or equal to "transparent".  It will return a logical array 
+; of the same size as the input array.
+;***********************************************************************;
+undef("is_valid_named_colors_or_transparent")
+function is_valid_named_colors_or_transparent(colors:string)
+local i, valid_named_colors, ncolors, colors1d, dims
+begin
+  dims                 = dimsizes(colors)
+  colors1d             = ndtooned(colors)
+  ncolors              = dimsizes(colors1d)
+  valid_named_colors1d = new(ncolors,logical)
+  valid_named_colors1d = False    ; initialize to False
+  do i=0,ncolors-1
+    valid_named_colors1d(i) = is_valid_named_colors(colors1d(i)).or.\
+                                                    colors1d(i).eq."transparent"
+  end do
+  return(reshape(valid_named_colors1d,dims))
+end
+
+;***********************************************************************;
+; This function returns the list of colormap names.
+; This can be used to test for valid colormap names.
+;***********************************************************************;
+undef("get_colormap_names")
+function get_colormap_names()
+local cmap_dirs, nfiles, ndirs, cmaps, i, j, tmp_files, tmp_names
+begin
+;---Get the list of color map directories
+  cmap_dirs = str_split(ncargpath("colormaps"),":")
+  ndirs     = dimsizes(cmap_dirs)
+
+  max_files = 500
+  cmaps = new(max_files,string)
+  nfiles = 0
+  do i=0,ndirs-1
+    tmp_files := systemfunc("ls -1 " + cmap_dirs(i))
+    nt = dimsizes(tmp_files)
+    do j=0,nt-1
+      tmp_names     := str_split(tmp_files(j),".")
+      cmaps(nfiles) = str_join(tmp_names(0:dimsizes(tmp_names)-2),".")
+      nfiles = nfiles + 1
+      if(nfiles.ge.max_files) then
+        print("get_colormap_names: warning: reached maximum limit of color maps")
+        print("Will only return " + max_files + " color map names.") 
+        break
+      end if
+    end do
+    if(nfiles.ge.max_files) then
+      break
+    end if 
+  end do
+  return(cmaps(0:nfiles-1))
+end
+
+;***********************************************************************;
+; This function checks the list of color map names to see if they are
+; all valid.  It will return a logical array of the same size as the 
+; input array.
+;***********************************************************************;
+undef("is_valid_colormap_names")
+function is_valid_colormap_names(colormap_names:string)
+local i, valid_colormaps, ncmaps
+begin
+  cmaps  = get_colormap_names()
+  colormap_names_1d = ndtooned(colormap_names)
+  ncmaps = dimsizes(colormap_names_1d)
+  valid_colormaps_1d = new(ncmaps,logical)
+  valid_colormaps_1d = False    ; initialize to False
+  do i=0,ncmaps-1
+    valid_colormaps_1d(i) = any(colormap_names_1d(i).eq.cmaps)
+  end do
+  return(reshape(valid_colormaps_1d,dimsizes(colormap_names)))
+end
+
+;***********************************************************************;
+; This function returns the type of color being used: 
+;
+;    color index     - values 0 to 255    "index"
+;    named color     - "blue"             "named"
+;    RGB triplet     - (/1,0,0.5/)        "rgb"
+;    RGBA quadruplet - (/1,0,0.5,0.5/)    "rgba"
+;    color map name  - "amwg"             "colormap"
+;
+;  Note, if the user enters something like (/1,0,0/) or (/1,0,0,0/), this
+;  will be seen as an rgb or rgba color type, and not an index color 
+;  type with just 0s and 1s.
+;
+; "unknown" is returned if no valid type is detected.
+;***********************************************************************;
+undef("get_color_type")
+function get_color_type(colors)
+local dims_color, rank_color
+begin
+  dims_color = dimsizes(colors)
+  rank_color = dimsizes(dims_color)
+
+  if(typeof(colors).eq."string".and.\
+     all(is_valid_colormap_names(colors))) then
+    return("colormap")
+  end if
+
+  if(typeof(colors).eq."string".and.\
+     all(is_valid_named_colors_or_transparent(colors))) then
+    return("named")
+  end if
+
+  if(dims_color(rank_color-1).eq.3.and.isnumeric(colors).and.\
+     all(colors.ge.0.and.colors.le.1.0)) then
+    return("rgb")
+  end if
+
+  if(dims_color(rank_color-1).eq.4.and.isnumeric(colors).and.\
+     all(colors.ge.0.and.colors.le.1.0)) then
+    return("rgba")
+  end if
+
+  if(any(typeof(colors).eq.(/"short","integer","long"/)).and.\
+     all(colors.ge.-1.and.colors.le.255)) then
+    return("index")
+  end if
+
+  return("unknown")
+end
+
+;***********************************************************************;
+; This function returns True for every element of the input array that  ;
+; represents a transparent color, and False otherwise.                  ;
+; It only works for named, index, or RGBA colors.                       ;
+;                                                                       ;
+; Note: if any of the input colors are named colors, but some of them   ;
+; are invalid, then Missing is returned for all of them.                ;
+; Since this is an internal function, we can change this behavior if    ;
+; desired.                                                              ;
 ;***********************************************************************;
 undef("is_color_transparent")
-function is_color_transparent(the_color[*])
+function is_color_transparent(colors)
+local dims, rank, istrans, colors2d
 begin
-  is_trans   = (isscalar(the_color).and.\
-               (isstring(the_color).and.str_lower(the_color).eq."transparent").or.\
-               (isint(the_color).and.the_color.eq.-1)).or.\
-               (dimsizes(the_color).eq.4.and.the_color(3).eq.0.0)
+  dims = dimsizes(colors)
+  rank = dimsizes(dims)
+  type = get_color_type(colors)
 
-  return(is_trans)
+  valid_types = (/"named","index","rgba"/)
+  if(.not.any(type.eq.valid_types)) then
+    print("is_color_transparent: Error: the input colors must be of type: " + \
+          str_join(valid_types,","))
+    print("   Will return all missing")
+    istrans = new(dims,logical)
+    return(istrans)
+  end if
+  if(type.eq."named") then
+    return(str_lower(colors).eq."transparent")
+  end if
+  if(type.eq."index") then
+    return(colors.eq.-1)
+  end if
+  if(type.eq."rgba") then
+    colors2d = ndtotwod(colors)
+    return(reshape(colors2d(:,3).eq.0.0,dims(0:rank-2)))
+  end if
 end
 
 ;***********************************************************************;
@@ -940,7 +1132,7 @@ end
 ; that color.
 ;***********************************************************************;
 undef("namedcolor2rgb")
-function namedcolor2rgb(names[*]:string)
+function namedcolor2rgb(names:string)
 local db_dir, lines, named_colors, i, ii, ncolors, \
 lnames, rgb_array
 begin
@@ -950,14 +1142,15 @@ begin
 ; Use str_sub_str to remove all tabs and spaces around
 ; and inside the color name.
 ;
-  lnames       = str_lower(names)
+  names1d      = ndtooned(names)
+  ncolors      = dimsizes(names1d)
+  lnames       = str_lower(names1d)
   lnames       = str_sub_str(lnames," ","")
   lnames       = str_sub_str(lnames,"	","")
   named_colors = str_sub_str(named_colors," ","")
   named_colors = str_sub_str(named_colors,"	","")
 
-  ncolors      = dimsizes(names)
-  rgb_array    = new((/ncolors,3/),float)
+  rgb_array_2d = new((/ncolors,3/),float)
 
 ;---Read the rgb.txt file.
   db_dir = ncargpath("database")
@@ -966,237 +1159,130 @@ begin
 ;---Loop through named colors and find the requested one(s).
   do i=0,ncolors-1
 ;---Get index into rgb.txt table. There can be more than one.
-    ii = ind(lnames(i).eq.named_colors)
+    ii := ind(lnames(i).eq.named_colors)
 
 ;---Get associated RGB triplet
     if(.not.any(ismissing(ii))) then
-      rgb_array(i,0) = tointeger(str_get_field(lines(ii(0)),1,\
-                                 " 	"))/255.
-      rgb_array(i,1) = tointeger(str_get_field(lines(ii(0)),2,\
-                                 " 	"))/255.
-      rgb_array(i,2) = tointeger(str_get_field(lines(ii(0)),3,\
-                                 " 	"))/255.
+      rgb_array_2d(i,0) = tointeger(str_get_field(lines(ii(0)),1,\
+                                   " 	"))/255.
+      rgb_array_2d(i,1) = tointeger(str_get_field(lines(ii(0)),2,\
+                                   " 	"))/255.
+      rgb_array_2d(i,2) = tointeger(str_get_field(lines(ii(0)),3,\
+                                   " 	"))/255.
     else
-      print("Warning: namedcolor2rgb: '" + names(i)  + "' is not a valid named color.")
+      print("namedcolor2rgb: Warning: '" + names1d(i)  + "' is not a valid named color.")
       print("Will return missing values for this color.")
     end if
-    delete(ii)
   end do
-  return(rgb_array)
-end
 
-;***********************************************************************;
-; This function returns the RGBA triplets associated with a 
-; given list of named colors.  The "A" value is always returned 
-; as the value of 1.0. This function basically calls namedcolor2rgb and
-; adds the "A" value.
-; 
-; A n x 4 array is returned, where "n" is the number of 
-; named colors input.
-;
-; If a color is not found, missing values are returned for 
-; that color.
-;***********************************************************************;
-undef("namedcolor2rgba")
-function namedcolor2rgba(names[*]:string)
-local rgb_array, rgba_array
-begin
-  rgb_array  = namedcolor2rgb(names)
-  ncolors    = dimsizes(rgb_array(:,0))
-  rgba_array = new((/ncolors,4/),typeof(rgb_array))
-  rgba_array(:,0:2) = rgb_array
-  rgba_array(:,3) = where(.not.ismissing(rgb_array(:,2)),1.0,\
-                           rgba_array@_FillValue)
-  return(rgba_array)
+  dims = dimsizes(names)
+  rank = dimsizes(dims)
+  new_dims = new(rank+1,typeof(dims))
+  new_dims(0:rank-1) = dims
+  new_dims(rank)     = 3
+  return(reshape(rgb_array_2d,new_dims))
 end
 
 ;***********************************************************************;
 ; This function returns the RGBA values given an RGB array. The
 ; "alpha" index is set to 1.0.
 ; 
-; A n x 4 array is returned, where "n" is the number of 
-; named colors input.
+; A N x 4 array is returned, where "N" represents the leftmost
+; dimesions of "rgb".
 ;***********************************************************************;
 undef("rgb2rgba")
-function rgb2rgba(rgb)
-local ncolors, rgba
+function rgb2rgba(rgb:numeric)
+local rggb_dims, rgb_rank, left_dims, rgba_dims, rgba2d, rgb2d
 begin
-  dims = dimsizes(rgb)
-  rank = dimsizes(dims)
+  rgb_dims = dimsizes(rgb)
+  rgb_rank = dimsizes(rgb_dims)
 
-  if((rank.eq.1.and.dims.ne.3).or.(rank.eq.2.and.dims(1).ne.3).or.\
-     rank.lt.1.or.rank.gt.2) then
-    print("rgb2rgba: The input must be an RGB array of length 3 or n x 3")
+  if(rgb_dims(rgb_rank-1).ne.3) then
+    print("rgb2rgba: Error: The input must be an RGB array with rightmost dimension of 3")
     print("   Returning missing.")
     return(new(4,float))
   end if
-  if(rank.eq.2) then
-    ncolors     = dimsizes(rgb(:,0))
-    rgba        = new((/ncolors,4/),typeof(rgb))
-    rgba(:,0:2) = rgb
-    rgba(:,3)   = 1
-  else
+
+  if(rgb_rank.eq.1) then
     rgba      = new(4,typeof(rgb))
     rgba(0:2) = rgb
     rgba(3)   = 1
+    return(rgba)
   end if
-  return(rgba)
+
+; rgb_rank >= 2
+  left_dims     = rgb_dims(0:rgb_rank-2)
+  rgba2d        = new((/product(left_dims),4/),typeof(rgb))
+  rgba2d(:,0:2) = ndtotwod(rgb)
+  rgba2d(:,3)   = 1
+  if(rgb_rank.eq.2) then
+    return(rgba2d)
+  else
+;---Reshape before we return
+    rgba_dims = new(rgb_rank,typeof(rgb_dims))
+    rgba_dims(0:rgb_rank-2) = rgb_dims(0:rgb_rank-2)
+    rgba_dims(rgb_rank-1)   = 4
+    return(reshape(rgba2d,rgba_dims))
+  end if
+end
+
+;***********************************************************************;
+; This function returns the RGBA triplets associated with a 
+; given array of named colors.  The "A" value is always returned 
+; as the value of 1.0. This function basically calls namedcolor2rgb and
+; rgb2rgba.
+;***********************************************************************;
+undef("namedcolor2rgba")
+function namedcolor2rgba(names:string)
+begin
+  return(rgb2rgba(namedcolor2rgb(names)))
 end
 
 ;***********************************************************************;
 ; This function returns the RGBA quadruplets associated with a 
 ; given list of index colors.
 ; 
-; A n x 4 array is returned, where "n" is the number of 
-; named colors input.
+; A N x 4 array is returned, where "N" represents the input dimensions.
 ;
-; If any input colors are invalid, then missing will be returned.
+; If any input colors are invalid, then missing will be returned for 
+; that single input.
 ;***********************************************************************;
 undef("indexcolor2rgba")
-function indexcolor2rgba(wks,color_indexes[*])
-local rgba_cmap, rgb_cmap, ncolors
+function indexcolor2rgba(wks,color_indexes)
+local dims, rank, msg,color_indexes_1d, rgba_cmap, rgb_cmap, ncolors, \
+new_dims, rgba_2d
 begin
   getvalues wks
       "wkColorMap" : rgb_cmap
   end getvalues
-
   ncolors = dimsizes(rgb_cmap(:,0))
+
   if(any(color_indexes.lt.0.or.color_indexes.ge.ncolors)) then
-    print("Error:indexcolor2rgba: one or more of the index colors")
-    print("are invalid. Will return missing values.")
-    msg = new(4,float)
-    return(msg)
-  else
-    rgba_cmap = rgb2rgba(rgb_cmap)
-    return(rgba_cmap(color_indexes,:))
+    print("indexcolor2rgba: Error: one or more of the index colors")
+    print("are invalid. Will return missing values for these values.")
   end if
-end
 
-;***********************************************************************;
-; This function returns the list of colormap names.
-; This can be used to test for valid colormap names.
-;***********************************************************************;
-undef("get_colormap_names")
-function get_colormap_names()
-local cmap_dirs, nfiles, ndirs, cmaps, i, j, tmp_files, tmp_names
-begin
-;---Get the list of color map directories
-  cmap_dirs = str_split(ncargpath("colormaps"),":")
-  ndirs     = dimsizes(cmap_dirs)
+  dims = dimsizes(color_indexes)
+  rank = dimsizes(dims)
+  new_dims           = new(rank+1,typeof(dims))
+  new_dims(0:rank-1) = dims
+  new_dims(rank)     = 4
 
-  max_files = 500
-  cmaps = new(max_files,string)
-  nfiles = 0
-  do i=0,ndirs-1
-    tmp_files := systemfunc("ls -1 " + cmap_dirs(i))
-    nt = dimsizes(tmp_files)
-    do j=0,nt-1
-      tmp_names     := str_split(tmp_files(j),".")
-      cmaps(nfiles) = str_join(tmp_names(0:dimsizes(tmp_names)-2),".")
-      nfiles = nfiles + 1
-      if(nfiles.ge.max_files) then
-        print("get_colormap_names: reached maximum limit of color maps")
-        print("Will only return " + max_files + " color map names.") 
-        break
-      end if
-    end do
-    if(nfiles.ge.max_files) then
-      break
-    end if 
-  end do
-  return(cmaps(0:nfiles-1))
-end
-
-;***********************************************************************;
-; This function checks the list of named colors to make sure they are
-; all valid.  It will return a logical array of the same size as the 
-; input array.
-;***********************************************************************;
-undef("is_valid_named_colors")
-function is_valid_named_colors(colors[*]:string)
-local i, valid_named_colors, ncolors
-begin
-  named_colors = str_lower(get_named_color_list())   ; list of valid colors
-  ncolors            = dimsizes(colors)
-  valid_named_colors = new(ncolors,logical)
-  valid_named_colors = False    ; initialize to False
-  do i=0,ncolors-1
-    if(any(str_lower(colors(i)).eq.named_colors)) then
-      valid_named_colors(i) = True
+  color_indexes_1d = ndtooned(color_indexes)
+;
+; We need to do things in 1D for indexing purposes, then
+; we'll convert back to the original array shape upon
+; return.
+;
+  nindexes = dimsizes(color_indexes_1d)
+  rgba_cmap = rgb2rgba(rgb_cmap)
+  rgba_2d = new((/dimsizes(color_indexes_1d),4/),typeof(rgba_cmap))
+  do n=0,nindexes-1
+    if(color_indexes_1d(n).ge.0.and.color_indexes_1d(n).lt.ncolors)
+      rgba_2d(n,:) = rgba_cmap(color_indexes_1d(n),:)
     end if
   end do
-  return(valid_named_colors)
-end
-
-;***********************************************************************;
-; This function checks the list of color map names to see if they are
-; all valid.  It will return a logical array of the same size as the 
-; input array.
-;***********************************************************************;
-undef("is_valid_colormap_names")
-function is_valid_colormap_names(colormap_names[*]:string)
-local i, valid_colormaps, ncmaps
-begin
-  cmaps  = get_colormap_names()
-  ncmaps = dimsizes(colormap_names)
-  valid_colormaps = new(ncmaps,logical)
-  valid_colormaps = False    ; initialize to False
-  do i=0,ncmaps-1
-    if(any(colormap_names(i).eq.cmaps)) then
-      valid_colormaps(i) = True
-    end if
-  end do
-  return(valid_colormaps)
-end
-
-;***********************************************************************;
-; This function returns the type of color being used: 
-;
-;    color index     - values 0 to 255    "index"
-;    named color     - "blue"             "named"
-;    RGB triplet     - (/1,0,0.5/)        "rgb"
-;    RGBA quadruplet - (/1,0,0.5,0.5/)    "rgba"
-;    color map name  - "amwg"             "colormap"
-;
-;  Note, if the user enters something like (/1,0,0/) or (/1,0,0,0/), this
-;  will be seen as an rgb or rgba color type, and not an index color 
-;  type with just 0s and 1s.
-;
-; A missing string is returned if no valid type is detected.
-;***********************************************************************;
-undef("get_color_type")
-function get_color_type(colors)
-local dims_color, rank_color
-begin
-  dims_color = dimsizes(colors)
-  rank_color = dimsizes(dims_color)
-
-  if(rank_color.eq.1.and.typeof(colors).eq."string".and.\
-     all(is_valid_colormap_names(colors))) then
-    return("colormap")
-  end if
-
-  if(rank_color.eq.1.and.typeof(colors).eq."string".and.\
-     all(is_valid_named_colors(colors))) then
-    return("named")
-  end if
-
-  if(dims_color(rank_color-1).eq.3.and.isnumeric(colors).and.\
-     all(colors.ge.0.and.colors.le.1.0)) then
-    return("rgb")
-  end if
-
-  if(dims_color(rank_color-1).eq.4.and.isnumeric(colors).and.\
-     all(colors.ge.0.and.colors.le.1.0)) then
-    return("rgba")
-  end if
-
-  if(any(typeof(colors).eq.(/"short","integer","long"/)).and.\
-     all(colors.ge.0.and.colors.le.255)) then
-    return("index")
-  end if
-
-  return(new(1,string))    ; otherwise return missing
+  return(reshape(rgba_2d,new_dims))
 end
 
 ;***********************************************************************;
@@ -1205,11 +1291,18 @@ end
 ;***********************************************************************;
 undef("convert_color_to_rgba")
 function convert_color_to_rgba(wks,colors)
+local color_type, dims, rank, new_dims
 begin
   color_type = get_color_type(colors)
   if(color_type.eq."unknown")
-    print("Error: convert_color_to_rgba: invalid color(s). Returning missing.")
-    return(new(4,float))
+    dims = dimsizes(colors)
+    rank = dimsizes(dims)
+    new_dims = new(rank+1,typeof(dims))
+    new_dims(0:rank-1) = dims
+    new_dims(rank)     = 4
+    print("convert_color_to_rgba: Error: unknown color type.")
+    print("   Returning all missing values.")
+    return(new(new_dims,float))
   end if
 
   if(color_type.eq."rgba") then
@@ -1217,7 +1310,7 @@ begin
   else if(color_type.eq."index") then
     rgba_colors = indexcolor2rgba(wks,colors)
   else if(color_type.eq."colormap") then
-    rgba_colors = read_colormap_file(colors)
+    rgba_colors = read_colormap_files(colors)
   else if(color_type.eq."named") then
     rgba_colors = namedcolor2rgba(colors)
   else if(color_type.eq."rgb") then
@@ -1228,7 +1321,9 @@ begin
   end if
   end if
 
-  if(all(dimsizes(rgba_colors).eq.(/1,4/))) then
+  dims = dimsizes(rgba_colors)
+  rank = dimsizes(dims)
+  if(rank.eq.2.and.all(dimsizes(rgba_colors).eq.(/1,4/))) then
     return(rgba_colors(0,:))
   else
     return(rgba_colors)
@@ -1255,7 +1350,7 @@ begin
   rgb = namedcolor2rgb((/named1,named2/))
   msg = new(3,float)
   if(any(ismissing(rgb))) then
-    print("Error:span_two_named_colors one or both of the named colors")
+    print("span_two_named_colors: Error: one or both of the named colors")
     print("are invalid. Returning missing.")
     return(msg)
   end if
@@ -1285,7 +1380,7 @@ begin
   end if
 
   if(ncolors.le.0.or.ncolors.gt.256) then
-    print("Error:span_two_named_colors: Invalid number of colors requested.")
+    print("span_two_named_colors: Error: Invalid number of colors requested.")
     print("Defaulting to 256.")
     ncolors = 256
   end if
@@ -1350,21 +1445,21 @@ begin
 ;---Get # of colors in color table.
   ncolt  = get_res_value_keep(opt2,"NumColorsInTable",256)
   if(ncolt.le.0) then
-    print("Error:span_named_colors: # of colors must be > 0")
+    print("span_named_colors: Error: # of colors must be > 0")
     return(new((/1,3/),float))
   end if
 
 ;---Background/foreground colors desired?
   skip_bf = get_res_value_keep(opt2,"SkipBackgroundForeground",False)
   if(ncolt.le.0) then
-    print("Error:span_named_colors: # of colors must be > 0")
+    print("span_named_colors: Error: # of colors must be > 0")
     return(new((/1,3/),float))
   end if
 
 ;---Check # of named colors.
   nnamed = dimsizes(named_colors)
   if(nnamed.le.1) then
-    print("Error:span_named_colors: You must specify more than one named color.")
+    print("span_named_colors: Error: You must specify more than one named color.")
     return(new((/1,3/),float))
   end if
 
@@ -1380,7 +1475,7 @@ begin
   if(opt2.and.isatt(opt2,"NumColorsInRange")) then
     ncols_per_rng = get_res_value_keep(opt2,"NumColorsInRange",-1)
     if(dimsizes(ncols_per_rng).ne.(nnamed-1)) then
-      print("span_named_colors: Invalid # of colors per range.")
+      print("span_named_colors: Error: Invalid # of colors per range.")
       print("Using equally spaced colors.")
       delete(ncols_per_rng)
       ncols_per_rng = def_ncols_per_rng
@@ -1409,7 +1504,7 @@ begin
   if(opt2.and.isatt(opt2,"BackgroundColor")) then
     rgbtmp = namedcolor2rgb(opt2@BackgroundColor)
     if(any(ismissing(rgbtmp))) then
-      print("span_named_colors: Invalid background color.")
+      print("span_named_colors: Error: Invalid background color.")
       print("Defaulting to white.")
     else
       rgb_array(0,:) = rgbtmp
@@ -1421,7 +1516,7 @@ begin
   if(opt2.and.isatt(opt2,"ForegroundColor")) then
     rgbtmp = namedcolor2rgb(opt2@ForegroundColor)
     if(any(ismissing(rgbtmp))) then
-      print("span_named_colors: Invalid foreground color.")
+      print("span_named_colors: Error: Invalid foreground color.")
       print("Defaulting to black.")
     else
       rgb_array(1,:) = rgbtmp
@@ -1493,7 +1588,7 @@ begin
   color_type = get_color_type(colors)
 
   if(ismissing(color_type).or.color_type.eq."unknown")
-    print("Error: draw_color_palette: invalid color specification.")
+    print("draw_color_palette: Error: invalid color specification.")
     return
   end if
 
@@ -1530,7 +1625,7 @@ begin
       label_strings = "" + ispan(0,ncolors-1,1)    
     else
       if(dimsizes(label_strings).ne.ncolors) then
-        print("Error: draw_color_palette: invalid number of labels for boxes")
+        print("draw_color_palette: Error: invalid number of labels for boxes")
         return
       end if
     end if
@@ -1700,7 +1795,7 @@ begin
     delete(indexs)
   end if
   if(any(ismissing(r_g_b)))
-    print("Warning: hsv2rgb: Some invalid HSV values were passed to hsv2rgb")
+    print("hsv2rgb: Warning: Some invalid HSV values were passed to hsv2rgb")
   end if
   return(r_g_b(cmap_len|:,rgb|:))
 end
