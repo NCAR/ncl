@@ -66,13 +66,15 @@ NhlErrorTypes wrf_vintrp_W( void )
   ng_size_t dsizes_ght[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_ght;
 
+
 /*
- * Argument # 5
- */
-  void *ter;
-  double *tmp_ter;
-  ng_size_t dsizes_ter[2];
-  NclBasicDataTypes type_ter;
+* Argument # 5
+*/
+void *ter;
+double *tmp_ter;
+int       ndims_ter;
+ng_size_t dsizes_ter[NCL_MAX_DIMENSIONS];
+NclBasicDataTypes type_ter;
 
 /*
  * Argument # 6
@@ -303,7 +305,7 @@ NhlErrorTypes wrf_vintrp_W( void )
   ter = (void*)NclGetArgValue(
            5,
            14,
-           NULL,
+		   &ndims_ter,
            dsizes_ter,
            NULL,
            NULL,
@@ -313,7 +315,7 @@ NhlErrorTypes wrf_vintrp_W( void )
  * Check dimension sizes for ter.  It can either be 2D, or one fewer
  * dimensions than field.
  */
-  if(dsizes_ter[0] != nlat || dsizes_ter[1] != nlon) {
+  if(dsizes_ter[ndims_ter-2] != nlat || dsizes_ter[ndims_ter-1] != nlon) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The dimensions of ter must be south_north x west_east");
     return(NhlFATAL);
   }
@@ -561,14 +563,16 @@ NhlErrorTypes wrf_vintrp_W( void )
     }
   }
 
-/*
- * Coerce ter to double, if necessary.
- */
-  tmp_ter = coerce_input_double(ter,type_ter,nlatlon,0,NULL,NULL);
-  if(tmp_ter == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to coerce ter to double precision");
-    return(NhlFATAL);
-  }
+  /*
+   * Allocate space for tmp_ter.
+   */
+    if(type_ter != NCL_double) {
+      tmp_ter = (double *)calloc(nlatlon,sizeof(double));
+      if(tmp_ter == NULL) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: Unable to allocate memory for coercing ter array to double");
+        return(NhlFATAL);
+      }
+    }
 
 /*
  * Allocate space for tmp_sfp.
@@ -727,6 +731,17 @@ NhlErrorTypes wrf_vintrp_W( void )
     }
 
 /*
+ * Coerce subsection of ter (tmp_ter) to double if necessary.
+ */
+	if(type_ter != NCL_double) {
+	  coerce_subset_input_double(ter,tmp_ter,index_sfp,type_ter,
+								 nlatlon,0,NULL,NULL);
+	}
+	else {
+	  tmp_ter = &((double*)ter)[index_sfp];
+	}
+
+/*
  * Coerce subsection of sfp (tmp_sfp) to double if necessary.
  */
     if(type_sfp != NCL_double) {
@@ -844,7 +859,9 @@ NhlErrorTypes wrf_monotonic_W( void )
  */
   void *cor;
   double *tmp_cor;
-  ng_size_t dsizes_cor[2];
+  /*ng_size_t dsizes_cor[2];*/
+  int       ndims_cor;
+  ng_size_t dsizes_cor[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_cor;
 
 /*
@@ -874,7 +891,7 @@ NhlErrorTypes wrf_monotonic_W( void )
  * Various
  */
   ng_size_t nlev, nlat, nlon, nlevlatlon, nlatlon;
-  ng_size_t i, index_x, size_leftmost, size_output;
+  ng_size_t i, index_x, index_cor, size_leftmost, size_output;
   int inlev, inlat, inlon, ret;
 /*
  * Retrieve parameters.
@@ -953,14 +970,14 @@ NhlErrorTypes wrf_monotonic_W( void )
   cor = (void*)NclGetArgValue(
            2,
            6,
-           NULL,
+		   &ndims_cor,
            dsizes_cor,
            NULL,
            NULL,
            &type_cor,
            DONT_CARE);
 
-  if(dsizes_cor[0] != nlat || dsizes_cor[1] != nlon) {
+  if(dsizes_cor[ndims_cor-2] != nlat || dsizes_cor[ndims_cor-1] != nlon) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_vintrp: The dimensions of cor must be south_north x west_east");
     return(NhlFATAL);
   }
@@ -1043,13 +1060,16 @@ NhlErrorTypes wrf_monotonic_W( void )
     }
   }
 /*
- * Coerce cor to double, if necessary.
+ * Allocate space for tmp_cor
  */
-  tmp_cor = coerce_input_double(cor,type_cor,nlatlon,0,NULL,NULL);
-  if(tmp_cor == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_monotonic: Unable to coerce cor to double precision");
-    return(NhlFATAL);
-  }
+  if(type_cor != NCL_double) {
+      tmp_cor = (double *)calloc(nlatlon,sizeof(double));
+      if(tmp_cor == NULL) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_monotonic: Unable to allocate memory for coercing input array to double");
+        return(NhlFATAL);
+      }
+    }
+
 
 /*
  * Allocate space for tmp_delta.
@@ -1089,6 +1109,7 @@ NhlErrorTypes wrf_monotonic_W( void )
  * subsection of the input arrays.
  */
   index_x = 0;
+  index_cor = 0;
   for(i = 0; i < size_leftmost; i++) {
 /*
  * Coerce subsection of x (tmp_x) to double if necessary.
@@ -1111,6 +1132,16 @@ NhlErrorTypes wrf_monotonic_W( void )
     }
 
 /*
+ * Coerce subsection of cor (tmp_cor) to double if necessary.
+ */
+	if(type_pres != NCL_double) {
+	  coerce_subset_input_double(cor,tmp_cor,index_cor,type_cor,nlatlon,0,NULL,NULL);
+	}
+	else {
+	  tmp_cor = &((double*)cor)[index_cor];
+	}
+
+/*
  * Point temporary output array to void output array if appropriate.
  */
     if(type_xout == NCL_double) tmp_xout = &((double*)xout)[index_x];
@@ -1128,6 +1159,7 @@ NhlErrorTypes wrf_monotonic_W( void )
       coerce_output_float_only(xout,tmp_xout,nlevlatlon,index_x);
     }
     index_x += nlevlatlon;
+    index_cor += nlatlon;
   }
 
 /*

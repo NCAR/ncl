@@ -2172,6 +2172,7 @@ begin
   field_type      = str_lower(get_res_value_keep(opts,"field_type","none"))
   log_of_Pressure = get_res_value_keep(opts,"logP",False)
   debug           = get_res_value_keep(opts,"debug",False)
+  timeidx         = get_res_value_keep(opts,"time",-1)
   
   valid_field_types = (/"none","pressure","pres","p","z","t","ght"/)
   if(.not.any(field_type.eq.valid_field_types)) then
@@ -2237,29 +2238,23 @@ begin
 ;We will need some basic fields for the interpolation
 ;regardless of the field requested. Get all time periods
 ;of the fields.
-  P     = _get_wrf_var(file_handle,"P",-1) + _get_wrf_var(file_handle,"PB",-1)
-  qvp   = _get_wrf_var(file_handle,"QVAPOR",-1)
-  terht = _get_wrf_var(file_handle,"HGT",-1)
-  sfp   = _get_wrf_var(file_handle,"PSFC",-1) * 0.01
+  P     = _get_wrf_var(file_handle,"P",timeidx) + _get_wrf_var(file_handle,"PB",timeidx)
+  qvp   = _get_wrf_var(file_handle,"QVAPOR",timeidx)
+  terht = _get_wrf_var(file_handle,"HGT",timeidx)
+  sfp   = _get_wrf_var(file_handle,"PSFC",timeidx) * 0.01
   Pdims = dimsizes(P)
-  if(ISFILE) then
-      ght   = wrf_user_getvar(nc_file,"height",-1)
-      tk    = wrf_user_getvar(nc_file,"tk",-1)
-    else
-      tmpz  = file_handle[:]->PH
-      PHB   = file_handle[:]->PHB
-      tmpz  = (tmpz + PHB)/9.81
-      ght   = wrf_user_unstagger(tmpz,"Z")
-      T     = file_handle[:]->T
-      T     = T + 300.
-      tk    = wrf_tk( P , T )
-    end if
-    smsfp = sfp
-    wrf_smooth_2d(smsfp,3)  
+  ght   = wrf_user_getvar(file_handle,"height",timeidx)
+  tk    = wrf_user_getvar(file_handle,"tk",timeidx)
+  smsfp = sfp
+  wrf_smooth_2d(smsfp,3)  
 
       
 ;Initialize an array for the vertical coordinate
-  ntimes  = Pdims(0)
+  if (timeidx .lt. 0) then
+      ntimes  = Pdims(0)
+  else
+      ntimes = 1
+  end if
 
 ;Get the vertical coordinate type
   vcor  = 0
@@ -2276,14 +2271,26 @@ begin
 
   if(vert_coordinate .eq. "ght_agl") then
     vcor = 3
-    rtemp       = new( (/nz,ns,ew/),float)
-    vcord_array = new((/ntimes,nz,ns,ew/),float)
-    do it = 0, ntimes - 1
-       do ilev = 0,nz-1
-          rtemp(ilev,:,:) = ght(it,ilev,:,:) - terht(0,:,:)
-       end do
-       vcord_array(it,:,:,:) = exp(-rtemp/sclht)
-    end do
+    
+    if (timeidx .lt. 0) then
+        rtemp       = new( (/nz,ns,ew/),float)
+        vcord_array = new((/ntimes,nz,ns,ew/),float)
+        do it = 0, ntimes - 1
+           do ilev = 0,nz-1
+              rtemp(ilev,:,:) = ght(it,ilev,:,:) - terht(it,:,:)
+           end do
+           vcord_array(it,:,:,:) = exp(-rtemp/sclht)
+        end do
+    else
+        rtemp = new((/nz,ns,ew/),float)
+        vcord_array = new((/nz,ns,ew/), float)
+        
+        do ilev = 0,nz-1
+            rtemp(ilev,:,:) = ght(ilev,:,:) - terht(:,:)
+        end do
+        vcord_array(:,:,:) = exp(-rtemp/sclht)
+    end if
+    
     delete(rtemp)
   end if
 
@@ -2291,14 +2298,9 @@ begin
      vcor = 4
      idir   = 1       
      icorsw = 0       
-     delta  = 0.01    
-     if(ISFILE) then        
-        coriolis   = nc_file->F(0,:,:)   
-        theta      = wrf_user_getvar(nc_file,"theta",-1)
-     else
-        coriolis   =  file_handle[0]->F(0,:,:)   
-        theta      = T
-     end if        
+     delta  = 0.01
+     coriolis   = _get_wrf_var(file_handle, "F", timeidx)
+     theta      = wrf_user_getvar(file_handle,"theta",timeidx)       
      preshPa    = P * 0.01
      vcord_array = wrf_monotonic(theta,preshPa,coriolis,idir,delta,icorsw)      
 ;
@@ -2313,13 +2315,8 @@ begin
      icorsw = 0
      idir   = 1 
      delta  = 0.01 
-     if(ISFILE) then  
-        coriolis = nc_file->F(0,:,:) 
-        eqpot    = wrf_user_getvar(nc_file,"eth",-1)
-     else 
-        coriolis =  file_handle[0]->F(0,:,:)
-        eqpot    = wrf_eth ( qvp, tk, P )
-     end if
+     coriolis = _get_wrf_var(file_handle, "F", timeidx)
+     eqpot    = wrf_user_getvar(file_handle,"eth",timeidx)
      preshPa    = P * 0.01
 
      vcord_array = wrf_monotonic(eqpot,preshPa,coriolis,idir,delta,icorsw)
@@ -2331,8 +2328,8 @@ begin
   if(debug) then
     print("icase = " + icase + " extrap = " + extrap + " vcor = " + vcor + " logP = " + logP)
   end if
-
-  field_out = wrf_vintrp(field,P,tk,qvp,ght,terht(0,:,:),sfp,smsfp,\
+    
+  field_out = wrf_vintrp(field,P,tk,qvp,ght,terht,sfp,smsfp,\
                          vcord_array,interp_levels,icase,extrap,vcor,logP)
 
 ; Add metadata to return array
@@ -2341,7 +2338,7 @@ begin
 ; Add new levels as a coordinate array
   lev_field           = num_field_dims-3
   field_out!lev_field = "interp_levels"
-  field_out&$field_out!lev_field$ = interp_levels(::-1)   
+  field_out&$field_out!lev_field$ = interp_levels(:)   
   field_out@vert_interp_type = vert_coordinate
 
   return(field_out)
