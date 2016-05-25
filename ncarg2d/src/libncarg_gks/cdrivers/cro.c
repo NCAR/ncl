@@ -1104,7 +1104,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
     pint = (int *) (gksc->i.list);
     psa->wks_type = *(pint + 1);
     psa->wks_id = orig_wks_id;
-
+    
     /*
      *  Initialize all transformations as well as the device coordinate
      *  space (store these in the device dependent data).
@@ -2355,8 +2355,8 @@ int cro_UpdateWorkstation(GKSC *gksc) {
  *        a given workstation type (i.e., postscript, pdf, png, etc.)
  */
 const char *getFileNameRoot(int wkid, const char *file_name, const char *envVar) {
-    static const int maxName = 256;
-    static char tname[257];
+    static const int maxName = 1024;
+    static char tname[1025];
     static char *tch;
     static const char* defaultName = "DEFAULT";
 
@@ -2375,10 +2375,18 @@ const char *getFileNameRoot(int wkid, const char *file_name, const char *envVar)
     if (file_name != NULL && strlen(file_name) > 0 && strncmp(file_name,
             defaultName, strlen(defaultName)) != 0)
     {
-    	char* space = strchr(file_name, ' ');
-    	if (!space)
-    		return file_name;
-        int len = (int)(space - file_name);
+        /* the given plotfile name is handed to us as a fixed length buffer, padded on the right with spaces. 
+         * Trim those. 
+         */
+        int i;
+        int len = 0;
+        for (i=strlen(file_name)-1; i>0; i--) {
+            if (file_name[i] != ' ') {
+                len = i + 1;
+                break;
+            }
+        }
+    
         len = (len > maxName) ? maxName : len;
         strncpy(tname, file_name, len);
         tname[len] = '\0';
@@ -2388,7 +2396,7 @@ const char *getFileNameRoot(int wkid, const char *file_name, const char *envVar)
     /*
      *  Default
      */
-    memset(tname, 0, 257);
+    memset(tname, 0, maxName);
     (void) sprintf(tname, "cairo%d", wkid);
     return (tname);
 }
