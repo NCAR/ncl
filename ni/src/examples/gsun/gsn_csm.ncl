@@ -1,6 +1,3 @@
-;
-;      $Id: gsn_csm.ncl,v 1.245 2010/05/06 22:15:21 haley Exp $
-;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
 ;                Copyright (C)  1998                                   ;
@@ -910,7 +907,7 @@ end
 ;                                                                       ;
 ; Checks for a valid lon2d or lat2d attribute. This special attribute is;
 ; used by the gsn_csm* scripts for cases where the data is represented  ;
-; by 2D  lat/lon arrays, instead of 1D coordinate arrays.               ;
+; by 2D lat/lon arrays, instead of 1D coordinate arrays.                ;
 ;                                                                       ;
 ; The lat2d/lon2d arrays can be one element larger in both dimensions.  ;
 ; This can mean that we are dealing with cell boundaries instead of cell;
@@ -926,12 +923,45 @@ begin
     if(all(ldims.eq.data_dims).or.all(ldims.eq.(data_dims+1))) then
       return(True)
     else
-      print("is_valid_latlon2d_attr: Warning: The '" + lstring + "' attribute must either be the same dimension sizes as the data, or one element larger in both directions.  Your data will most likely not be overlaid on the map correctly.")
+      print("is_valid_latlon2d_attr: Warning: The '" + lstring + \
+            "' attribute must either be")
+       print("the same dimension sizes as the data, or one element larger in both directions.")
+       print("Your data will most likely not be overlaid on the map correctly.")
     end if
   end if
   return(False)
 end 
 
+
+;***********************************************************************;
+; Function : is_valid_latlon1d_attr                                     ;
+;                                                                       ;
+; Checks for a valid lon1d or lat1d attribute. This special attribute is;
+; used by the gsn_csm* scripts for cases where the data is represented  ;
+; by 1D lat/lon arrays of the same length as the 1D data array.         ;
+;                                                                       ;
+; This was added in NCL V6.4.0. I'm not sure I like it, so it may stay  ;
+; unadvertised for a bit.                                               ;
+;***********************************************************************;
+undef("is_valid_latlon1d_attr")
+function is_valid_latlon1d_attr(data:numeric,lstring:string)
+local ldims, lrank, data_dims, data_rank
+begin
+  if(isatt(data,lstring)) then
+    ldims     = dimsizes(data@$lstring$)
+    data_dims = dimsizes(data)
+    lrank     = dimsizes(ldims)
+    data_rank = dimsizes(data_dims)
+    if(lrank.eq.1.and.data_rank.eq.1.and.all(ldims.eq.data_dims)) then
+      return(True)
+    else
+      print("is_valid_latlon1d_attr: Warning: The '" + lstring + \
+            "' attribute must be 1D and same length as the data")
+      print("Your data will most likely not be overlaid on the map correctly.")
+    end if
+  end if
+  return(False)
+end 
 
 ;***********************************************************************;
 ; Function : is_tm_obj_valid                                            ;
@@ -1078,20 +1108,16 @@ end
 ; resources to these values. These 2D coords only work if you plan to   ;
 ; overlay the vectors/contours on a map, however.                       ;
 ;                                                                       ;
+; In NCL V6.4.0, we added recognition of the special "lat1d"/"lon1d"    ;
+; attributes which behave similarly to lat2d/lon2d, except it's an      ;
+; indicator that we have 1D arrays of x,y,z data. These special attrs   ;
+; only work for contouring, and not vectors or streamlines.             ;
 ;***********************************************************************;
 undef("check_for_coord_arrays")
 procedure check_for_coord_arrays(data:numeric,res:logical,type:string)
 local prefix, xstart_name, xend_name, ystart_name, yend_name, \
 xarray_name, yarray_name, valid_2dcoord_types
-
 begin 
-;
-; If the data is 1D, no coord arrays should exist.
-;
-  if(dimsizes(dimsizes(data)).eq.1) then
-     return
-  end if
-
   if(type.eq."vector".or.type.eq."vector_map")
     prefix = "vf"
   else
@@ -1106,16 +1132,19 @@ begin
   yend_name   = prefix + "YCEndV"
   
 ;
-; I originally thought that Only plots over maps could have
+; I originally thought that only plots over maps could have
 ; 2D lat/lon coordinates, but I don't believe this is the case.
 ; So, I've commented out the valid_2dcoord_types stuff.
 ;
 ;  valid_2dcoord_types = (/"contour_map","vector_map"/)
 ;
-; First check if a valid "lon2d" attribute is set and whether we are 
-; drawing over a map. If both conditions are not met, then
-; check for a regular coordinate array.  One of these will be used for 
-; sf/vf/XArray.
+; We check for the following, in this order:
+;
+;   - special lat2d/lon2d attributes
+;   - special lat1d/lon1d attributes (contouring only)
+;   - coordinate arrays
+;
+; and then set vf/sfX/YArray accordingly.
 ;
   if(.not.((isatt(res,xstart_name).and.isatt(res,xend_name)).or.\
             isatt(res,xarray_name))) then
@@ -1123,28 +1152,27 @@ begin
 ;       is_valid_latlon2d_attr(data,"lon2d")) then
     if(is_valid_latlon2d_attr(data,"lon2d")) then
       res@$xarray_name$ = data@lon2d
-    else 
-      if(is_valid_coord(data,"x")) then
-        res@$xarray_name$ = data&$data!1$
-      end if
+    else if(prefix.eq."sf".and.is_valid_latlon1d_attr(data,"lon1d")) then
+      res@$xarray_name$ = data@lon1d
+    else if(is_valid_coord(data,"x")) then
+      res@$xarray_name$ = data&$data!1$
+    end if
+    end if
     end if
   end if
 
-;
-; First check if a valid "lat2d" attribute is set. If not set, then
-; check for a regular coordinate array.  One of these will be used for 
-; sf/vf/YArray.
-;
   if(.not.((isatt(res,ystart_name).and.isatt(res,yend_name)).or.\
             isatt(res,yarray_name))) then
 ;    if(any(type.eq.valid_2dcoord_types).and. \
 ;       is_valid_latlon2d_attr(data,"lat2d")) then
     if(is_valid_latlon2d_attr(data,"lat2d")) then
       res@$yarray_name$ = data@lat2d
-    else
-      if(is_valid_coord(data,"y")) then
-        res@$yarray_name$ = data&$data!0$
-     end if
+    else if(prefix.eq."sf".and.is_valid_latlon1d_attr(data,"lat1d")) then
+      res@$yarray_name$ = data@lat1d
+    else if(is_valid_coord(data,"y")) then
+      res@$yarray_name$ = data&$data!0$
+    end if
+    end if
     end if
   end if
 
@@ -1500,15 +1528,8 @@ end
 undef("check_for_y_lat_coord")
 procedure check_for_y_lat_coord(data:numeric,res:logical,type:string)
 local latname, char_latname, array_name, start_name, end_name, \
-valid_2dcoord_types
+valid_2dcoord_types, prefix
 begin 
-;
-; If the data is 1D, no coord arrays should exist.
-;
-  if(dimsizes(dimsizes(data)).eq.1) then
-     return
-  end if
-
 ;
 ;
 ; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
@@ -1524,14 +1545,13 @@ begin
 ; Determine what kind of plot we need to set the data field resources for.
 ; 
   if(type.eq."vector".or.type.eq."vector_map")
-    array_name = "vfYArray"
-    start_name = "vfYCStartV"
-    end_name   = "vfYCEndV"
+    prefix = "vf"
   else
-    array_name = "sfYArray"
-    start_name = "sfYCStartV"
-    end_name   = "sfYCEndV"
+    prefix = "sf"
   end if
+  array_name = prefix + "YArray"
+  start_name = prefix + "YCStartV"
+  end_name   = prefix + "YCEndV"
 
 ;
 ; I originally thought that Only plots over maps could have
@@ -1542,7 +1562,7 @@ begin
 ;
 ; Make sure user is not already setting own *Start* and *End*
 ; or *Array resources. Then check if a valid "lat2d" attribute
-; is set or if a valid coordinate array is set.
+; or "lat2d" attribute set or if a valid coordinate array exists.
 ;
   if(.not.((isatt(res,start_name).and.isatt(res,end_name)).or.\
             isatt(res,array_name))) then
@@ -1550,16 +1570,18 @@ begin
 ;       is_valid_latlon2d_attr(data,"lat2d")) then
     if(is_valid_latlon2d_attr(data,"lat2d")) then
       res@$array_name$ = data@lat2d
-      return
-    else 
-      if(is_valid_latlon_coord(data,"y","lat",res))
-        res@$array_name$ = data&$data!0$
-        return
-      else
-        print("check_for_y_lat_coord: Warning: Data either does not contain a valid latitude coordinate array or doesn't contain one at all.")
-        print("A valid latitude coordinate array should have a 'units' attribute equal to one of the following values: ")
-        print("    " + cat_strings(get_allowed_lat_units))
-      end if
+    else if(prefix.eq."sf".and.is_valid_latlon1d_attr(data,"lat1d")) then
+      res@$array_name$ = data@lat1d
+    else if(is_valid_latlon_coord(data,"y","lat",res))
+      res@$array_name$ = data&$data!0$
+    else
+      print("check_for_y_lat_coord: Warning: Data either does not contain")
+      print("a valid latitude coordinate array or doesn't contain one at all.")
+      print("A valid latitude coordinate array should have a 'units'")
+      print("attribute equal to one of the following values: ")
+      print("    " + cat_strings(get_allowed_lat_units))
+    end if
+    end if
     end if
   end if 
 
@@ -1582,15 +1604,8 @@ end
 undef("check_for_x_lat_coord")
 procedure check_for_x_lat_coord(data:numeric,res:logical,type:string)
 local latname, char_latname, array_name, start_name, end_name, \
-valid_2dcoord_types
+valid_2dcoord_types, prefx
 begin 
-;
-; If the data is 1D, no coord arrays should exist.
-;
-  if(dimsizes(dimsizes(data)).eq.1) then
-     return
-  end if
-
 ;
 ; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
 ; used in the first place.  It is up to the user to do the right thing
@@ -1605,14 +1620,13 @@ begin
 ; Determine what kind of plot we need to set the data field resources for.
 ; 
   if(type.eq."vector".or.type.eq."vector_map")
-    array_name = "vfXArray"
-    start_name = "vfXCStartV"
-    end_name   = "vfXCEndV"
+    prefix = "vf"
   else
-    array_name = "sfXArray"
-    start_name = "sfXCStartV"
-    end_name   = "sfXCEndV"
+    prefix = "sf"
   end if
+  array_name = prefix + "XArray"
+  start_name = prefix + "XCStartV"
+  end_name   = prefix + "XCEndV"
 
 ;
 ; I originally thought that Only plots over maps could have
@@ -1623,8 +1637,8 @@ begin
 
 ;
 ; Make sure user is not already setting own *Start* and *End*
-; or *Array resources. Then check if a valid "lat2d" attribute
-; is set or if a valid coordinate array is set.
+; or *Array resources. Then check if a valid "lat2d" or
+; "lat1d" attributes are set, or if a valid coordinate array exists.
 ;
   if(.not.((isatt(res,start_name).and.isatt(res,end_name)).or. \
             isatt(res,array_name))) then
@@ -1632,16 +1646,18 @@ begin
 ;       is_valid_latlon2d_attr(data,"lat2d")) then
     if(is_valid_latlon2d_attr(data,"lat2d")) then
       res@$array_name$ = data@lat2d
-      return
-    else 
-      if(is_valid_latlon_coord(data,"x","lat",res))
-        res@$array_name$ = data&$data!1$
-        return
-      else
-        print("check_for_x_lat_coord: Warning: Data either does not contain a valid latitude coordinate array or doesn't contain one at all.")
-        print("A valid latitude coordinate array should have a 'units' attribute equal to one of the following values: ")
-        print("    " + cat_strings(get_allowed_lat_units))
-      end if
+    else if(prefix.eq."sf".and.is_valid_latlon1d_attr(data,"lat1d")) then
+      res@$array_name$ = data@lat1d
+    else if(is_valid_latlon_coord(data,"x","lat",res))
+      res@$array_name$ = data&$data!1$
+    else
+      print("check_for_x_lat_coord: Warning: Data either does not contain")
+      print("a valid latitude coordinate array or doesn't contain one at all.")
+      print("A valid latitude coordinate array should have a 'units'")
+      print("attribute equal to one of the following values: ")
+      print("    " + cat_strings(get_allowed_lat_units))
+    end if
+    end if
     end if
   end if
 
@@ -1667,13 +1683,6 @@ local lonname, char_lonname, array_name, start_name, end_name, \
 valid_2dcoord_types
 begin 
 ;
-; If the data is 1D, no coord arrays should exist.
-;
-  if(dimsizes(dimsizes(data)).eq.1) then
-     return
-  end if
-
-;
 ; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
 ; used in the first place.  It is up to the user to do the right thing
 ; and *not* set coordinate arrays.  Here, we check for the setting
@@ -1688,14 +1697,13 @@ begin
 ; Determine what kind of plot we need to set the data field resources for.
 ; 
   if(type.eq."vector".or.type.eq."vector_map")
-    array_name = "vfXArray"
-    start_name = "vfXCStartV"
-    end_name   = "vfXCEndV"
+    prefix = "vf"
   else
-    array_name = "sfXArray"
-    start_name = "sfXCStartV"
-    end_name   = "sfXCEndV"
+    prefix = "sf"
   end if
+  array_name = prefix + "XArray"
+  start_name = prefix + "XCStartV"
+  end_name   = prefix + "XCEndV"
 
 ;
 ; I originally thought that Only plots over maps could have
@@ -1715,16 +1723,18 @@ begin
 ;       is_valid_latlon2d_attr(data,"lon2d")) then
     if(is_valid_latlon2d_attr(data,"lon2d")) then
       res@$array_name$ = data@lon2d
-      return
-    else 
-      if(is_valid_latlon_coord(data,"x","lon",res))
-        res@$array_name$ = data&$data!1$
-        return
-      else
-        print("check_for_lon_coord: Warning: Data either does not contain a valid longitude coordinate array or doesn't contain one at all.")
-        print("A valid longitude coordinate array should have a 'units' attribute equal to one of the following values: ")
-        print("    " + cat_strings(get_allowed_lon_units))
-      end if
+    else if(prefix.eq."sf".and.is_valid_latlon1d_attr(data,"lon1d")) then
+      res@$array_name$ = data@lon1d
+    else if(is_valid_latlon_coord(data,"x","lon",res))
+      res@$array_name$ = data&$data!1$
+    else
+      print("check_for_lon_coord: Warning: Data either does not contain")
+      print("a valid longitude coordinate array or doesn't contain one at all.")
+      print("A valid longitude coordinate array should have a 'units'")
+      print("attribute equal to one of the following values: ")
+      print("    " + cat_strings(get_allowed_lon_units))
+    end if
+    end if
     end if 
   end if
 
@@ -3671,6 +3681,73 @@ begin
     map@tickmarks = tickmark
 
     return
+end
+
+
+;***********************************************************************;
+; Function : get_lon_cyclic_point_default(data_list,res,ftype,keep)     ;
+;                                                                       ;
+; This function determines an appropriate default value for the special ;
+; gsnAddCyclic resource, based on the data input and options.           ;
+;                                                                       ;
+; If res@gsnAddCyclic=True, then True is returned regardless of anything;
+; else. If tfDoNDCOverlay is set to True, or if the calling function is ;
+; not one of the gsn_csm_xxx_map functions, then False is returned.     ;
+;                                                                       ;
+; Otherwise, this function checks the given list of data variables to   ;
+; see if they all have the *potential* for having a longitude cyclic    ;
+; point added.                                                          ;
+;                                                                       ;
+; If a data variable doesn't contain the special lat2d/lon2d or         ; 
+; lat1d/lon1d attributes, then it's assumed that this is a good         ;
+; candidate for adding a cyclic point.                                  ;
+;***********************************************************************;
+undef("get_lon_cyclic_point_default")
+function get_lon_cyclic_point_default(data,res,ftype[1]:string,keep[1]:logical)
+local set_cyclic, nitems, n
+begin
+;---If gsnAddCyclic is set, then just return this
+  if(res.and.isatt(res,"gsnAddCyclic"))
+    if(keep) then
+      return(get_res_value_keep(res,"gsnAddCyclic",False))
+    else
+      return(get_res_value(res,"gsnAddCyclic",False))
+    end if
+  end if
+
+;---If tfDoNDCOverlay is set to True, then gsnAddCyclic shouldn't be True.
+  if(get_res_value_keep(res,"tfDoNDCOverlay",False).or.ftype.ne."map") then
+    return(False)
+  end if
+  
+;
+; Otherwise, set gsnAddCyclic True if not using lat2d/lon2d OR lat1d/lon1d.
+; "data" can either be a single array, or a list of arrays.
+
+  if(isnumeric(data)) then
+    return(.not.(isatt(data,"lat2d").and.isatt(data,"lon2d")).or.\
+                (isatt(data,"lat1d").and.isatt(data,"lon1d")))
+  end if
+;
+; If *any* of the data items in the list have lat2d/lon2d or lat1d/lon1d 
+; attached, then return True.
+;
+  if(typeof(data).eq."list") then
+    nitems = ListCount(data)
+    do n=0,nitems-1
+      set_cyclic = .not.(isatt(data[n],"lat2d").and.isatt(data[n],"lon2d")).or.\
+                        (isatt(data[n],"lat1d").and.isatt(data[n],"lon1d"))
+      if(.not.set_cyclic) then
+        return(False)
+      end if
+    end do
+;
+; If we get through the whole loop w/o encountering the lat/lon1d/2d
+; attributes, then return True.
+;
+    return(True)
+  end if
+  return(False)
 end
 
 ;***********************************************************************;
@@ -6734,11 +6811,8 @@ begin
     lbar_zone     = 3         ; Zone for labelbar (may change later)
     mpres         = True      ; Will hold map resources
 
-; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes).
-
-    set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d"))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default(data,res2,"map",False)) then
       datanew = gsn_add_cyclic_point(data)
     else
       datanew = data
@@ -6951,11 +7025,8 @@ begin
 ; Default is no zonal mean plot.
     zonal_mean_plot = get_res_value(res2,"gsnZonalMean",False)
 
-; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes and data is not 1D).
-
-    set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d"))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default(data,res2,"map",False)) then
         datanew = gsn_add_cyclic_point(data)
     else
         datanew = data
@@ -7276,11 +7347,8 @@ begin
 ; Default is no zonal mean plot.
     zonal_mean_plot = get_res_value(res2,"gsnZonalMean",False)
 
-; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes).
-
-    set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d"))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default(data,res2,"map",False)) then
         datanew = gsn_add_cyclic_point(data)
     else
         datanew = data
@@ -7550,12 +7618,8 @@ begin
       user_set_ref_orth = False
     end if
 
-; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes).
-
-    set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default([/u,v/],res2,"map",False)) then
       unew = gsn_add_cyclic_point(u)
       vnew = gsn_add_cyclic_point(v)
     else
@@ -7792,12 +7856,8 @@ begin
       gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_vector_map_polar",res2,2)
     end if
 
-; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes).
-
-    set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default([/u,v/],res2,"map",False)) then
       unew = gsn_add_cyclic_point(u)
       vnew = gsn_add_cyclic_point(v)
     else
@@ -7984,12 +8044,8 @@ begin
       gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_vector_map_other",res2,2)
     end if
 
-; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes).
-
-    set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default([/u,v/],res2,"map",False)) then
       unew = gsn_add_cyclic_point(u)
       vnew = gsn_add_cyclic_point(v)
     else
@@ -8163,12 +8219,8 @@ begin
       gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_streamline_map_ce",res2,2)
     end if
 
-; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes).
-
-    set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default([/u,v/],res2,"map",False)) then
       unew = gsn_add_cyclic_point(u)
       vnew = gsn_add_cyclic_point(v)
     else
@@ -8354,12 +8406,8 @@ begin
       gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_streamline_map_polar",res2,2)
     end if
 
-; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes).
-
-    set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default([/u,v/],res2,"map",False)) then
       unew = gsn_add_cyclic_point(u)
       vnew = gsn_add_cyclic_point(v)
     else
@@ -8512,12 +8560,8 @@ begin
       gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_streamline_map_other",res2,2)
     end if
 
-; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes).
-
-    set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default([/u,v/],res2,"map",False)) then
       unew = gsn_add_cyclic_point(u)
       vnew = gsn_add_cyclic_point(v)
     else
@@ -8660,12 +8704,8 @@ begin
       gsnp_write_debug_info(u,v,data,"gsn_csm_streamline_contour_map_ce",res2,3)
     end if
 
-; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes). Check the vector and contour data separately.
-
-    set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
-    if(get_res_value_keep(res2,"gsnAddCyclic",set_cyclic)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default([/u,v/],res2,"map",True)) then
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
     else
@@ -8673,8 +8713,7 @@ begin
       vnew    = v
     end if
 
-    set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d"))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+    if(get_lon_cyclic_point_default(data,res2,"map",False)) then
       datanew = gsn_add_cyclic_point(data)
     else
       datanew = data
@@ -8913,12 +8952,8 @@ begin
 
     mpres = True
 
-; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes). Check the vector and contour data separately.
-
-    set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
-    if(get_res_value_keep(res2,"gsnAddCyclic",set_cyclic)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default([/u,v/],res2,"map",True)) then
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
     else
@@ -8926,8 +8961,7 @@ begin
       vnew    = v
     end if
 
-    set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d"))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+    if(get_lon_cyclic_point_default(data,res2,"map",False)) then
       datanew = gsn_add_cyclic_point(data)
     else
       datanew = data
@@ -9126,12 +9160,8 @@ begin
       gsnp_write_debug_info(u,v,data,"gsn_csm_streamline_contour_map_other",res2,3)
     end if
 
-; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes). Check the vector and contour data separately.
-
-    set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
-    if(get_res_value_keep(res2,"gsnAddCyclic",set_cyclic)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default([/u,v/],res2,"map",True)) then
       unew = gsn_add_cyclic_point(u)
       vnew = gsn_add_cyclic_point(v)
     else
@@ -9139,8 +9169,7 @@ begin
       vnew = v
     end if
 
-    set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d"))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+    if(get_lon_cyclic_point_default(data,res2,"map",False)) then
       datanew = gsn_add_cyclic_point(data)
     else
       datanew = data
@@ -9340,8 +9369,8 @@ begin
     tm_scale      = get_res_value_keep(res2,"gsnScale",True)
     point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
 
-; The default is to not add a cyclic point.
-    if(get_res_value_keep(res2,"gsnAddCyclic",False)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default([/u,v/],res2,"",True)) then
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
     else
@@ -9349,7 +9378,7 @@ begin
       vnew    = v
     end if
 
-    if(get_res_value(res2,"gsnAddCyclic",False)) then
+    if(get_lon_cyclic_point_default(data,res2,"",False)) then
       datanew = gsn_add_cyclic_point(data)
     else
       datanew = data
@@ -9675,12 +9704,8 @@ begin
       user_set_ref_orth = False
     end if
 
-; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes). Check the vector and contour data separately.
-
-    set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
-    if(get_res_value_keep(res2,"gsnAddCyclic",set_cyclic)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default([/u,v/],res2,"map",True)) then
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
     else
@@ -9688,8 +9713,7 @@ begin
       vnew    = v
     end if
 
-    set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d"))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+    if(get_lon_cyclic_point_default(data,res2,"map",False)) then
       datanew = gsn_add_cyclic_point(data)
     else
       datanew = data
@@ -10037,12 +10061,8 @@ begin
 
     mpres = True
 
-; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes). Check the vector and contour data separately.
-
-    set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
-    if(get_res_value_keep(res2,"gsnAddCyclic",set_cyclic)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default([/u,v/],res2,"map",True)) then
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
     else
@@ -10050,8 +10070,7 @@ begin
       vnew    = v
     end if
 
-    set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d"))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+    if(get_lon_cyclic_point_default(data,res2,"map",False)) then
       datanew = gsn_add_cyclic_point(data)
     else
       datanew = data
@@ -10346,12 +10365,8 @@ begin
       gsnp_write_debug_info(u,v,data,"gsn_csm_vector_scalar_map_other",res2,3)
     end if
 
-; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes). Check the vector and contour data separately.
-
-    set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
-    if(get_res_value_keep(res2,"gsnAddCyclic",set_cyclic)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default([/u,v/],res2,"map",True)) then
       unew = gsn_add_cyclic_point(u)
       vnew = gsn_add_cyclic_point(v)
     else
@@ -10359,8 +10374,7 @@ begin
       vnew = v
     end if
 
-    set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d"))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+    if(get_lon_cyclic_point_default(data,res2,"map",False)) then
       datanew = gsn_add_cyclic_point(data)
     else
       datanew = data
@@ -10864,8 +10878,8 @@ begin
     tm_scale      = get_res_value_keep(res2,"gsnScale",True)
     point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
 
-; The default is to not add a cyclic point.
-    if(get_res_value_keep(res2,"gsnAddCyclic",False)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default([/u,v/],res2,"",True)) then
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
     else
@@ -10873,7 +10887,7 @@ begin
       vnew    = v
     end if
 
-    if(get_res_value(res2,"gsnAddCyclic",False)) then
+    if(get_lon_cyclic_point_default(data,res2,"",False)) then
       datanew = gsn_add_cyclic_point(data)
     else
       datanew = data
@@ -11103,12 +11117,8 @@ begin
       gsnp_write_debug_info(u,v,data,"gsn_csm_streamline_scalar_map_ce",res2,3)
     end if
 
-; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes). Check the streamline and contour data separately.
-
-    set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
-    if(get_res_value_keep(res2,"gsnAddCyclic",set_cyclic)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default([/u,v/],res2,"map",True)) then
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
     else
@@ -11116,8 +11126,7 @@ begin
       vnew    = v
     end if
 
-    set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d"))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+    if(get_lon_cyclic_point_default(data,res2,"map",False)) then
       datanew = gsn_add_cyclic_point(data)
     else
       datanew = data
@@ -11334,12 +11343,8 @@ begin
 
     mpres = True
 
-; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes). Check the streamline and contour data separately.
-
-    set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
-    if(get_res_value_keep(res2,"gsnAddCyclic",set_cyclic)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default([/u,v/],res2,"map",True)) then
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
     else
@@ -11347,14 +11352,13 @@ begin
       vnew    = v
     end if
 
-    set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d"))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+    if(get_lon_cyclic_point_default(data,res2,"map",False)) then
       datanew = gsn_add_cyclic_point(data)
     else
       datanew = data
     end if
 
-; Check for coordinate variables. These values will determine where to
+; Check for coordinate variables. These values will determine where
 ; overlay streamlines on map.
 
     check_for_y_lat_coord(unew,res2,"vector_map")
@@ -11570,12 +11574,8 @@ begin
       gsnp_write_debug_info(u,v,data,"gsn_csm_streamline_scalar_map_other",res2,3)
     end if
 
-; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes). Check the streamline and contour data separately.
-
-    set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
-    if(get_res_value_keep(res2,"gsnAddCyclic",set_cyclic)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default([/u,v/],res2,"map",True)) then
       unew = gsn_add_cyclic_point(u)
       vnew = gsn_add_cyclic_point(v)
     else
@@ -11583,8 +11583,7 @@ begin
       vnew = v
     end if
 
-    set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d"))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+    if(get_lon_cyclic_point_default(data,res2,"map",False)) then
       datanew = gsn_add_cyclic_point(data)
     else
       datanew = data
@@ -11840,11 +11839,8 @@ begin
   res2_tmp@gsnDraw  = False
   res2_tmp@gsnFrame = False
 
-; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes).
-
-  set_cyclic = .not.(isatt(data2,"lat2d").and.isatt(data2,"lon2d"))
-  if(get_res_value(res2_tmp,"gsnAddCyclic",set_cyclic)) then
+; Check for whether a cyclic point might need to be added.
+  if(get_lon_cyclic_point_default(data2,res2_tmp,"map",False)) then
     datanew = gsn_add_cyclic_point(data2)
   else
     datanew = data2
@@ -12704,9 +12700,8 @@ begin
 ; This section tests for more special resources: those that start
 ; with "gsn."
 
-; The default is to not add a cyclic point.
-
-    if(get_res_value(res2,"gsnAddCyclic",False)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default(data,res2,"",False)) then
         datanew = gsn_add_cyclic_point(data)
     else
         datanew = data
@@ -12937,7 +12932,7 @@ begin
         "trXMaxF"   : max_lon
       end getvalues
 ;
-; We want different defaults for longitude spacing, so set them up here.
+; We want different defaults for longitude spacing, so set them up here
 ;
       lon_range        = (/ 20,  40,  60, 180, 360/)
       lon_spacing_arr  = (/ 10,  20,  30,  45,  60/)
@@ -13378,9 +13373,8 @@ begin
 ; This section tests for more special resources: those that start
 ; with "gsn."
 
-; The default is to not add a cyclic point.
-
-    if(get_res_value(res2,"gsnAddCyclic",False)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default([/u,v/],res2,"",False)) then
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
     else
@@ -13692,9 +13686,8 @@ begin
 ; This section tests for more special resources: those that start
 ; with "gsn."
 
-; The default is to not add a cyclic point.
-
-    if(get_res_value(res2,"gsnAddCyclic",False)) then
+; Check for whether a cyclic point might need to be added.
+    if(get_lon_cyclic_point_default([/u,v/],res2,"",False)) then
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
     else
