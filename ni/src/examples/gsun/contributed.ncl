@@ -11256,9 +11256,6 @@ function table_attach_rows (t1[*][*], t2[*][*], iopt:integer)
 local dim_t1, dim_t2, ncol1, ncol2, nrow1, nrow2    \
     , dimNames_t1, dimNames_t2, dimNames, n
 begin
-
-  printVarSummary(t1)
-  printVarSummary(t2)
                                    ; get array shape/sizes
   dim_t1  = dimsizes(t1)
   dim_t2  = dimsizes(t2)
@@ -11295,7 +11292,6 @@ begin
                                  ; insert values
   tNew(0:nrow1-1,:)   = (/ t1 /)
   tNew(nrow1:   ,:)   = (/ t2 /)
-  write_matrix(tNew, "10f7.2" , False)
                                  ; meta data
   tNew!0 = "row"                 ; *default* dim names
   tNew!1 = "col" 
