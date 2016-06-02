@@ -4854,127 +4854,80 @@ begin
   retVal    = data(uniqueInd) 
   return(retVal) 
 end ; remove_duplicates 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-;; Generalization of algorithm posted 4/2016 by Dave Allured (NOAA Affiliate)
+;; Add a marker to a histogram plot
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-undef("dim_minind")
-; ----- At this time (6.4.0) this function  is UNSUPPORTED ------
-function dim_minind(x, nDim[1]:integer)
-; Dennis Shea created this function
-; It is a modification of the original algorithmn posted to ncl-talk  
-; Dave Allured (NOAA Affilate): April, 2016
-local dimx, rankx, N, xmin, nmsgx, dim_xmin, tr, mask1
+undef("histogram_interp")
+function histogram_interp(MidBarLocs[*]:numeric, BinLocs[*]:numeric, xHstMarkVals[*]:numeric)
+local nMid, nBinLocs, MidBarVals, xHstBinLocs
 begin
-  dimx  = dimsizes(x)
-  rankx = dimsizes(dimx)
-
-  if (rankx.eq.1) then
-      return(minind(x))
+  nMid        = dimsizes(MidBarLocs)
+  nBinLocs    = dimsizes(BinLocs)
+  if (nBinLocs.ne.(nMid+1)) then
+      print("histogram_interp: size mismatch:  nMid="+nMid+" nBinLocs="+nBinLocs)
+      exit
   end if
+  MidBarVals  = 0.5*(BinLocs(0:nBinLocs-2)+BinLocs(1:nBinLocs-1))
 
-  N     = dimx(nDim)
-  nmsgx = 0
-;;if (isatt(x,"_FillValue")) then
-;;    nmsgx = num(ismissing(x))
-;;end if
+              ; simple linear interpoaltion
+  xHstLocs    = linint1(MidBarVals,MidBarLocs, False,xHstMarkVals , 0)
+  xHstLocs@long_name = "NDC coordinates of marker location(s)"
 
-  xmin     = dim_min_n_Wrap (x, nDim)
-  dim_xmin = dimsizes(xmin)
-  ind_xmin = new (dim_xmin, integer, -99)
-
-  if (rankx.eq.2) then
-      do t = 1, N
-         tr = N-t
-         mask1    = (x(tr,:) .le. xmin)
-         mask1    = where (ismissing(mask1), False, mask1)
-         ind_xmin = where (mask1, tr, ind_xmin)
-      end do
-  end if
-
-  if (rankx.eq.3) then
-      do t = 1, N
-         tr = N-t
-         mask1    = (x(tr,:,:) .le. xmin)
-         mask1    = where (ismissing(mask1), False, mask1)
-         ind_xmin = where (mask1, tr, ind_xmin)
-      end do
-  end if
-
-  if (rankx.eq.4) then
-      do t = 1, N
-         tr = N-t
-         mask1    = (x(tr,:,:,:) .le. xmin)
-         mask1    = where (ismissing(mask1), False, mask1)
-         ind_xmin = where (mask1, tr, ind_xmin)
-      end do
-  end if
-
-  copy_VarCoords(xmin, ind_xmin)
-  ind_xmin@long_name = "1st index of min value"
-  ind_xmin@tag       = "dim_minind"
-
-  return(ind_xmin)
+  return (xHstLocs)               
 end
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-;; Generalization of algorithm posted 4/2016 by Dave Allured (NOAA Affiliate)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-undef("dim_maxind")
-undef("dim_maxind")
-; ----- This is UNTESTED and UNSUPPORTED ------
-function dim_maxind(x, nDim[1]:integer)
-; Dennis Shea created this function
-; It is a modification of the original algorithmn posted to ncl-talk  
-; Dave Allured (NOAA Affilate): April, 2016
-local dimx, rankx, N, xmax, nmsgx, dim_xmax, tr, mask1
+;---
+               ; USER LEVEL FUNCTION; this could also be histogram_LINE or histogram_TICKMARK
+undef("histogram_mark")      
+procedure histogram_mark(wks[1]:graphic, hst[1]:graphic, xHstMarkLocs[*]:numeric, yHstMarkLocs[*]:numeric, pmHst[1]:logical)
+local xHstLocs, pnred, nMarkX, nMarkY
 begin
-  dimx  = dimsizes(x)
-  rankx = dimsizes(dimx)
+  nMarkX = dimsizes(xHstMarkLocs)
+  nMarkY = dimsizes(yHstMarkLocs)
+  if (nMarkX.ne.nMarkY) then
+      print("histogram_mark: nMarkX must equal nMarkY:  nMarkX="+nMarkX+" nMarkY="+nMarkY)
+      exit
+  end if
+           ; interpolate along the 'x' NDC coords
+  xHstLocs = histogram_interp(hst@MidBarLocs, hst@BinLocs, xHstMarkLocs)
 
-  if (rankx.eq.1) then
-      return(maxind(x))
+; local default resource settings
+
+  pmres                = True         ;-- local
+  pmres@gsClipOn       = False        ;-- allow to extend beyond the view port
+  pmres@gsMarkerColor  = "magenta"    ;-- default marker color
+  pmres@gsMarkerSizeF  =  0.0125      ;-- default; set size of marker
+  pmres@gsMarkerThicknessF = 3.0      ;-- default is 1.0
+ ;pmres@gsMarkerIndex  =   8          ;-- down triangle
+  pmres@gsMarkerIndex  =   0          ;-- default; asterisk
+
+; allow users to over-ride the local bootstrap
+            
+  if (pmHst .and. isatt(pmHst,"gsMarkerColor")) then
+      pmres@gsMarkerColor  = pmHst@gsMarkerColor
   end if
 
-  N     = dimx(nDim)
-  nmsgx = 0
-;;if (isatt(x,"_FillValue")) then
-;;    nmsgx = num(ismissing(x))
-;;end if
-
-  xmax     = dim_max_n_Wrap (x, nDim)
-  dim_xmax = dimsizes(xmax)
-  ind_xmax = new (dim_xmax, integer, -99)
-
-  if (rankx.eq.2) then
-      do t = 1, N
-         tr = N-t
-         mask1    = (x(tr,:) .ge. xmax)
-         mask1    = where (ismissing(mask1), False, mask1)
-         ind_xmax = where (mask1, tr, ind_xmax)
-      end do
+  if (pmHst .and. isatt(pmHst,"gsMarkerSizeF")) then
+      pmres@gsMarkerSizeF  = pmHst@gsMarkerSizeF
   end if
 
-  if (rankx.eq.3) then
-      do t = 1, N
-         tr = N-t
-         mask1    = (x(tr,:,:) .ge. xmax)
-         mask1    = where (ismissing(mask1), False, mask1)
-         ind_xmax = where (mask1, tr, ind_xmax)
-      end do
+  if (pmHst .and. isatt(pmHst,"gsMarkerIndex")) then
+      pmres@gsMarkerIndex  = pmHst@gsMarkerIndex
   end if
 
-  if (rankx.eq.4) then
-      do t = 1, N
-         tr = N-t
-         mask1    = (x(tr,:,:,:) .ge. xmax)
-         mask1    = where (ismissing(mask1), False, mask1)
-         ind_xmax = where (mask1, tr, ind_xmax)
-      end do
+  if (pmHst .and. isatt(pmHst,"gsMarkerThicknessF")) then
+      pmres@gsMarkerThicknessF  = pmHst@gsMarkerThicknessF
   end if
 
-  copy_VarCoords(xmax, ind_xmax)
-  ind_xmax@long_name = "1st index of max value"
-  ind_xmax@tag       = "dim_maxind"
+  if (pmHst .and. isatt(pmHst,"gsClipOn")) then   ; NCL default is True
+      pmres@gsClipOn = pmHst@gsClipOn
+  end if
 
-  return(ind_xmax)
+;-- Add the marker(s)
+  
+  do n=0,nMarkX-1
+     hst@$unique_string("hstMark_")$ = gsn_add_polymarker(wks, hst, xHstLocs(n), yHstMarkLocs(n) , pmres)  
+  end do
+
+;-- No return since this is a procedure
+
 end

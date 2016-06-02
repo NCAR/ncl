@@ -11329,7 +11329,6 @@ end
 ; appends table data: ie (row,column) arrays
 ; adds additional columns
 ;
-
 undef("table_attach_columns")
 function table_attach_columns (t1[*][*], t2[*][*], iopt:integer)
 local dim_t1, dim_t2, nrow1, nrow2, trows    \
@@ -19326,4 +19325,143 @@ begin
 ;;return([/diffBoot, diffBootAvg, diffBootStd /])
 
   return([/ finish[0], finish[1], finish[2] /]) 
+end
+;--------------------------------------------------------
+undef("dim_maxind")
+function dim_maxind(x, nDim[1]:integer)
+;
+; This is a modification of the original algorithmn posted to ncl-talk by
+; Dave Allured (NOAA Affilate): April, 2016
+;
+local dimx, rankx, N, xmax, nmsgx, dim_xmax, t, tr, mask1
+begin
+  dimx  = dimsizes(x)
+  rankx = dimsizes(dimx)
+
+  if (nDim.ne.0) then
+      print("dim_maxind: *** Currently nDim must be set to zero; nDim="+nDim)
+      return( new(dimx(1:), integer, -99) )
+  end if
+
+  if (rankx.gt.4) then
+      print("dim_maxind: *** Currently 1D, 2D, 3D, 4D are supported; rank="+rankx)
+      print("                This corresponds to the leftmost dimension.")
+      return( new(dimx(1:), integer, -99) )
+  end if
+
+  if (rankx.eq.1) then
+      ind_xmax           = maxind(x)
+      ind_xmax@long_name = "index of 1st  max value"
+      ind_xmax@tag       = "dim_maxind"
+      return(ind_xmax)
+  end if
+
+  N     = dimx(nDim)    ; size of the dimension corresponding to 'nDim'    
+
+  xmax     = dim_max_n_Wrap (x, nDim)
+  dim_xmax = dimsizes(xmax)
+  ind_xmax = new (dim_xmax, integer, -99 )
+
+
+  if (rankx.eq.2) then
+      do t = 1, N
+         tr = N-t
+         mask1    = (x(tr,:) .ge. xmax)
+         mask1    = where (ismissing(mask1), False, mask1)
+         ind_xmax = where (mask1, tr, ind_xmax)
+      end do
+  end if
+
+  if (rankx.eq.3) then
+      do t = 1, N
+         tr = N-t
+         mask1    = (x(tr,:,:) .ge. xmax)
+         mask1    = where (ismissing(mask1), False, mask1)
+         ind_xmax = where (mask1, tr, ind_xmax)
+      end do
+  end if
+
+  if (rankx.eq.4) then
+      do t = 1, N
+         tr = N-t
+         mask1    = (x(tr,:,:,:) .ge. xmax)
+         mask1    = where (ismissing(mask1), False, mask1)
+         ind_xmax = where (mask1, tr, ind_xmax)
+      end do
+  end if
+
+  copy_VarCoords(xmax, ind_xmax)
+  ind_xmax@long_name = "index of 1st  max value"
+  ind_xmax@tag       = "dim_maxind"
+
+  return(ind_xmax)
+end
+;--------------------------------------------------
+undef("dim_minind")
+function dim_minind(x, nDim[1]:integer)
+;
+; It is a modification of the original algorithmn posted to ncl-talk  
+; Dave Allured (NOAA Affilate): April, 2016
+;
+local dimx, rankx, N, xmin, dim_xmin, t, tr, mask1
+begin
+  dimx  = dimsizes(x)
+  rankx = dimsizes(dimx)
+
+  if (nDim.ne.0) then
+      print("dim_minind: *** Currently nDim must be set to zero; nDim="+nDim)
+      return( new(dimx(1:), integer, -99) )
+  end if
+
+  if (rankx.gt.4) then
+      print("dim_minind: *** Currently 1D, 2D, 3D, 4D are supported; rank="+rankx)
+      print("                This corresponds to the leftmost dimension.")
+      return( new(dimx(1:), integer, -99) )
+  end if
+
+  if (rankx.eq.1) then
+      ind_xmin           = minind(x)
+      ind_xmin@long_name = "index of 1st min value"
+      ind_xmin@tag       = "dim_minind"
+      return(ind_xmin)
+  end if
+
+  N     = dimx(nDim)    ; size of the dimension corresponding to 'nDim'    
+
+  xmin     = dim_min_n_Wrap (x, nDim)
+  dim_xmin = dimsizes(xmin)
+  ind_xmin = new (dim_xmin, integer, -99)
+
+  if (rankx.eq.2) then
+      do t = 1, N
+         tr = N-t
+         mask1    = (x(tr,:) .le. xmin)
+         mask1    = where (ismissing(mask1), False, mask1)
+         ind_xmin = where (mask1, tr, ind_xmin)
+      end do
+  end if
+
+  if (rankx.eq.3) then
+      do t = 1, N
+         tr = N-t
+         mask1    = (x(tr,:,:) .le. xmin)
+         mask1    = where (ismissing(mask1), False, mask1)
+         ind_xmin = where (mask1, tr, ind_xmin)
+      end do
+  end if
+
+  if (rankx.eq.4) then
+      do t = 1, N
+         tr = N-t
+         mask1    = (x(tr,:,:,:) .le. xmin)
+         mask1    = where (ismissing(mask1), False, mask1)
+         ind_xmin = where (mask1, tr, ind_xmin)
+      end do
+  end if
+
+  copy_VarCoords(xmin, ind_xmin)
+  ind_xmin@long_name = "index of 1st  min value"
+  ind_xmin@tag       = "dim_minind"
+
+  return(ind_xmin)
 end
