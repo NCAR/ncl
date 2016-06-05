@@ -3,9 +3,6 @@
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
-load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsn_code.ncl"
-load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsn_csm.ncl"
-
 begin
   diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fili = "Test_6h.csv"
@@ -42,24 +39,15 @@ begin
   wks = gsn_open_wks("png","plot_csv")
 
   res                        =  True
-  res@gsnDraw                =  False
-  res@gsnFrame               =  False
   res@tiMainString           = "NCL Doc Example: Read CSV data (delimiter = ;)"
   res@xyLineThicknessF       =   5
   res@trYMinF                =   0.0
   res@trYMaxF                =  12.0
   res@trXMinF                =   0
   res@trXMaxF                =  18
+  res@xyMonoDashPattern      = 0   ;-- make lines all solid
+  res@xyLineColors           = (/"blue", "red", "green", "black", "orange"/)
 
-  plot = new(nl,graphic)
-  color = (/"blue", "red", "green", "black", "orange"/)
-
-  do l=0,nl-1
-    y = val(l,:)
-    res@xyLineColor            =  color(l)
-    plot(l) = gsn_csm_xy(wks, x, y, res)
-  end do
-  draw(plot)
-  frame(wks)
+  plot = gsn_csm_xy(wks, x, val, res)
 end
 
