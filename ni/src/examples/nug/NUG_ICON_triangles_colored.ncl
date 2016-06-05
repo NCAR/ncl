@@ -17,9 +17,10 @@
 ;
 ;  KMF 30.10.14
 ;-------------------------------------------------------------------
-load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
-load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
-load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
+; Not required in NCL versions 6.2.0 and later.
+; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
+; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
+; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 
 undef("file_ERROR")
 procedure file_ERROR(name)

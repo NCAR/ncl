@@ -3,6 +3,7 @@
 ;
 ;  KMF
 ;-----------------------------------------------------------------
+; This load command is not required in NCL versions 6.2.0 and later.
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 
 begin

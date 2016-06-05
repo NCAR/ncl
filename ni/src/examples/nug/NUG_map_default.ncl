@@ -3,6 +3,10 @@
 ;
 ;  KMF
 ;-----------------------------------------------------------------
+; These load commands are not required in NCL versions 6.2.0 and later.
+load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
+load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl" 
+
 begin
 
   wks = gsn_open_wks("png","plot_map_default")   ;-- define the workstation

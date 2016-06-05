@@ -3,6 +3,7 @@
 ; 
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
+; These load commands are not required in NCL versions 6.2.0 and later.
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
@@ -37,6 +38,7 @@ begin
   res@lbLabelStride         =  2
   res@lbBoxMinorExtentF     =  0.15            ;-- decrease the height of the labelbar
   res@cnFillOn              =  True            ;-- turn ofncontour fill
+  res@cnFillPalette         = "BlueWhiteOrangeRed" ;--change color map
   res@cnLinesOn             =  False           ;-- turn off contour lines
   res@cnLineLabelsOn        =  False           ;-- turn off line labels
   res@cnLevelSelectionMode  = "ManualLevels"   ;-- set contour levels manually

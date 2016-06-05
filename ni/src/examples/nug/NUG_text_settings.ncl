@@ -3,6 +3,7 @@
 ; 
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
+; This load command is not required in NCL versions 6.2.0 and later.
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 
 begin
