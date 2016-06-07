@@ -30,7 +30,7 @@
 #include "NclCoordVar.h"
 
 #define NUM_OPTIONS  (1 + Ncl_RECORD_MARKER_SIZE)
-
+#define MAX_NCL_NAME_LENGTH    1024
 #if 0
 void copyAttributes(NclFileAttInfoList **out, NclFileAttInfoList *in)
 {
@@ -307,13 +307,11 @@ NclAdvancedFile _NclAdvancedGroupCreate(NclObj inst, NclObjClass theclass, NclOb
     grpnode = _getGrpNodeFromNclFileGrpNode(thefile->advancedfile.grpnode, group_name);
     if(NULL == grpnode)
     {
-      /*
-       *NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-       *    "_NclAdvancedGroupCreate: Unable to find group <%s> from file <%s>.\n",
-       *     NrmQuarkToString(group_name),
-       *     NrmQuarkToString(thefile->advancedfile.fname)));
-       */
 
+       NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+           "_NclAdvancedGroupCreate: group <%s> not found in file <%s>.",
+            NrmQuarkToString(group_name),
+            NrmQuarkToString(thefile->advancedfile.fname)));
         return NULL;
     }
 
@@ -342,7 +340,17 @@ NclAdvancedFile _NclAdvancedGroupCreate(NclObj inst, NclObjClass theclass, NclOb
     group_out->advancedfile.wr_status = thefile->advancedfile.wr_status;
     group_out->advancedfile.file_format = thefile->advancedfile.file_format;
 
-    group_out->advancedfile.gname = grpnode->real_name;
+    {
+	char tmpname[MAX_NCL_NAME_LENGTH];
+	strcpy(tmpname,NrmQuarkToString(grpnode->real_name));
+	if (tmpname[strlen(tmpname)-1] == '/') {
+	    tmpname[strlen(tmpname)-1] = '\0';	
+            group_out->advancedfile.gname = NrmStringToQuark(tmpname);
+	}
+        else {
+            group_out->advancedfile.gname = grpnode->real_name;
+        }
+    }
     group_out->advancedfile.type  = Ncl_FileGroup;
 
     group_out->advancedfile.format_funcs = _NclGetFormatFuncsWithAdvancedFileStructure(thefile->advancedfile.file_ext_q);

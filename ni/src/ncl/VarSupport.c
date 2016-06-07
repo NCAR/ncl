@@ -1450,9 +1450,9 @@ struct _NclVarRec* self;
 			break;
 		}
 		if(thevalue->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
-			ret = nclfprintf(fp,"Type: file\n");
 			if (thevalue->multidval.missing_value.has_missing && 
 			    *(obj*)thevalue->multidval.val == thevalue->multidval.missing_value.value.objval) {
+				ret = nclfprintf(fp,"Type: file or group\n");
 				nclfprintf(fp,"(0) File Missing Value : %d\n",*(obj*)thevalue->multidval.val);
 			}	
 			else {

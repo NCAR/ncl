@@ -73,7 +73,7 @@
 
 #include <sys/stat.h>
 
-NclQuark *GetGrpVarNames(void *therec, int *num_vars);
+extern NclQuark *GetGrpVarNames(void *therec, int *num_vars);
 NclQuark *GetGrpDimNames(void *therec, int *num_dims);
 NclQuark *GetGrpAttNames(void* therec, int *num_atts);
 NclQuark *GetVarAttNamesFromGrp(void *therec, NclQuark thevar, int *num_atts);

@@ -10,6 +10,7 @@
  */
 
 #include "NclAdvancedFile.h"
+#include "AdvancedFileSupport.h"
 
 static char blank_space[MAX_BLANK_SPACE_LENGTH];
 static int indentation_level;
@@ -320,7 +321,15 @@ NhlErrorTypes _NclAdvancedFilePrintSummary(NclObj self, FILE *fp)
     NclAdvancedFile thefile = (NclAdvancedFile)self;
     int ret = 0;
 
-    ret = nclfprintf(fp,"Type: file\n");
+    if(Ncl_FileVar == thefile->advancedfile.type) {
+        ret = nclfprintf(fp,"Type: file\n");
+	nclfprintf(fp, "filename:\t%s\n",NrmQuarkToString(thefile->advancedfile.fname));
+    }
+   else if(Ncl_FileGroup == thefile->advancedfile.type)
+    {
+        ret = nclfprintf(fp,"Type: group\n");
+        nclfprintf(fp, "groupname:\t%s\n",NrmQuarkToString(thefile->advancedfile.gname));
+    }
     ret = nclfprintf(fp,"File path\t:\t%s\n\n",NrmQuarkToString(thefile->advancedfile.fpath));
     if(ret < 0)
         return(NhlWARNING);
@@ -351,14 +360,24 @@ NhlErrorTypes _NclAdvancedFilePrintSummary(NclObj self, FILE *fp)
 
     if(NULL != thefile->advancedfile.grpnode->grp_rec)
     {
-        nclfprintf(fp,"Number of groups\t:\t %d\n",
-                   thefile->advancedfile.grpnode->grp_rec->n_grps);
+	    int n_grps;
+	    NrmQuark *grp_names;
+	    grp_names = _NclGetGrpNames((void *) thefile->advancedfile.grpnode,&n_grps);
+	    NclFree(grp_names);
+	    nclfprintf(fp,"Number of groups\t:\t %d (in this group only) %d (including all descendent groups)\n",
+		       thefile->advancedfile.grpnode->grp_rec->n_grps, n_grps);
     }
 
-    if(NULL != thefile->advancedfile.grpnode->var_rec)
     {
-        nclfprintf(fp,"Number of variables\t:\t %d\n",
-                   thefile->advancedfile.grpnode->var_rec->n_vars);
+	    int n_vars;
+	    NrmQuark *var_names;
+	    var_names = GetGrpVarNames((void *)thefile->advancedfile.grpnode, &n_vars);
+	    NclFree(var_names);
+	    if(n_vars)
+	    {
+		    nclfprintf(fp,"Number of variables\t:\t %d (in this group only) %d (including all descendent groups)\n",
+			       thefile->advancedfile.grpnode->var_rec ? thefile->advancedfile.grpnode->var_rec->n_vars : 0, n_vars);
+	    }
     }
 
     return ret;
@@ -1998,7 +2017,7 @@ NclFileGrpNode *_getGrpNodeFromNclFileGrpNode(NclFileGrpNode *ingrpnode,
    *fprintf(stderr, "\tgrpname: <%s>\n", NrmQuarkToString(grpname));
    */
 
-    if((grpname == ingrpnode->name) || (grpname == ingrpnode->real_name))
+    if((grpname == ingrpnode->name) || (grpname == ingrpnode->name_an) || (grpname == ingrpnode->real_name))
     {
        outgrpnode =  ingrpnode;
        goto done_getGrpNodeFromNclFileGrpNode;
@@ -2090,7 +2109,7 @@ NclFileGrpNode *_getGrpNodeFromNclFileGrpNode(NclFileGrpNode *ingrpnode,
                *                 NrmQuarkToString(outgrpnode->name),
                *                 NrmQuarkToString(new_grpname));
                */
-                if(new_grpname == outgrpnode->name)
+                if(new_grpname == outgrpnode->name || new_grpname == outgrpnode->name_an)
 		{
                   /*
                    *fprintf(stderr, "\tfile: %s, line:%d\n", __FILE__, __LINE__);
@@ -2112,7 +2131,7 @@ NclFileGrpNode *_getGrpNodeFromNclFileGrpNode(NclFileGrpNode *ingrpnode,
                *                 NrmQuarkToString(outgrpnode->name),
                *                 NrmQuarkToString(newroot_grpname));
                */
-                if(newroot_grpname == outgrpnode->name)
+                if(newroot_grpname == outgrpnode->name || newroot_grpname == outgrpnode->name_an)
                 {
                     outgrpnode = _getGrpNodeFromNclFileGrpNode(ingrpnode->grp_rec->grp_node[n], new_grpname);
                     if(NULL != outgrpnode)
@@ -2189,7 +2208,7 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode_asVar(NclFileGrpNode *grpnode,
             if(NULL == varnode)
                 continue;
 
-            if((varname == varnode->name) || (varname == varnode->real_name))
+            if((varname == varnode->name) || (varname == varnode->short_name) || (varname == varnode->real_name))
                 return varnode;
         }
     }
@@ -2204,7 +2223,7 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode_asVar(NclFileGrpNode *grpnode,
             if(NULL == varnode)
                 continue;
 
-            if((varname == varnode->name) || (varname == varnode->real_name))
+            if((varname == varnode->name) || (varname == varnode->short_name) || (varname == varnode->real_name))
                 return varnode;
         }
     }
@@ -2267,12 +2286,34 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode_asCompound(NclFileGrpNode *grpnode
 NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
                                               NclQuark varname)
 {
-    NclFileVarNode *varnode = _getVarNodeFromNclFileGrpNode_asVar(grpnode, varname);
-
+    NclFileVarNode *varnode;
+    int slash_count = 0;
+    char *cp, *last_cp;
+    int is_fully_qualified;
+    NclFileGrpNode *lgrpnode = grpnode;
+    char *vname = NrmQuarkToString(varname);
+    char *buf = alloca(strlen(vname) + 1);
+    NrmQuark lvarname = varname;
+    
+    buf[0] = '\0';
+    strcat(buf,vname);
+    last_cp = buf;
+    is_fully_qualified =  (last_cp[0] == '/') ? 1 : 0;
+    if (is_fully_qualified) last_cp++;
+/*if (! is_fully_qualified) {*/
+	    while ((cp = strchr(last_cp, '/')) != NULL) {
+		    *cp = '\0';
+		    lgrpnode = _getGrpNodeFromNclFileGrpNode(lgrpnode,NrmStringToQuark(last_cp));
+		    last_cp = cp + 1;
+	    }
+	    lvarname = NrmStringToQuark(last_cp);
+/*}*/
+    
+    varnode = _getVarNodeFromNclFileGrpNode_asVar(grpnode, lvarname);
     if(NULL != varnode)
         return varnode;
 
-    varnode = _getVarNodeFromNclFileGrpNode_asCompound(grpnode, varname);
+    varnode = _getVarNodeFromNclFileGrpNode_asCompound(grpnode, lvarname);
     return varnode;
 }
 

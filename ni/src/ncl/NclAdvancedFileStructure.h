@@ -244,6 +244,7 @@ struct _NclFileGrpNode
     ng_size_t            pid;
     
     NclQuark             name;
+    NclQuark             name_an;   /* alphanumeric only version of name */
     NclQuark             pname;
     NclQuark             real_name;
 
