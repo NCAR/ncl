@@ -24,6 +24,7 @@
 #include <sys/stat.h>
 #include <assert.h>
 #include <math.h>
+#include <alloca.h>
 #include "defs.h"
 #include "Symbol.h"
 #include "NclVar.h"
