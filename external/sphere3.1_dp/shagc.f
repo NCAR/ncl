@@ -594,7 +594,7 @@ c     set indices in temp work for double precision gaussian wts and pts
       DIMENSION WTS(NLAT),P0N(NLAT,LATE),P1N(NLAT,LATE),ABEL(1),BBEL(1),
      +          CBEL(1),WFFT(1)
 C*PT*WARNING* Already double-precision
-      DOUBLE PRECISION PB,DTHETA(NLAT),DWTS(NLAT),WORK(*)
+      DOUBLE PRECISION PB,DTHETA(NLAT),DWTS(NLAT),WORK(*),W
 c     compute the nlat  gaussian points and weights, the
 c     m=0,1 legendre polys for gaussian points and all n,
 c     and the legendre recursion coefficients
@@ -613,7 +613,7 @@ c     preset quantites for fourier transform
 c     compute double precision gaussian points and weights
 c     lw = 4*nlat*(nlat+1)+2
       LW = NLAT* (NLAT+2)
-      CALL DGAQD(NLAT,DTHETA,DWTS,WORK,LW,IER)
+      CALL DGAQD(NLAT,DTHETA,DWTS,W,LW,IER)
       IF (IER.NE.0) RETURN
 c     store gaussian weights single precision to save computation
 c     in inner loops in analysis
