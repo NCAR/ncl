@@ -2282,6 +2282,8 @@ C Declare all of the VASPACKT common blocks.
 C
 .CALL VTCOMN,/$SAVE-COMMON$/1/
 C
+      INTEGER ISHIFT      
+C
 C RLB 3/2010: Previously the integer parameter was converted to a float
 C   and the work was delegated off to VTSETR. This provided a sort
 C   of "automatic type conversion", allowing the user to set a real
@@ -2422,6 +2424,8 @@ C
 C Declare all of the VASPACKT common blocks.
 C
 .CALL VTCOMN,/$SAVE-COMMON$/1/
+C
+       INTEGER ISHIFT
 C
 C Check for an uncleared prior error.
 C
