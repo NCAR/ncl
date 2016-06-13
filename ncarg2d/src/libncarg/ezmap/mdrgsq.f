@@ -33,7 +33,7 @@ C
 C Declare local variables.
 C
         INTEGER          I,IBEG,IDIR,IEND,IFLG,IINT,ILEV,IPGB,IPID,IPOS,
-     +                   ISGB,ISTA,ITML,ITMP,ITYP,NCRA,NPTS
+     +                   ISGB,ISTA,ITML,ITMP,ITYP,NCRA,NPTS,ISHIFT
 C
         DOUBLE PRECISION DLAT,DLON,PLAT,PLON,QLAT,QLON,RLAT,RLON,XCRD,
      +                   XLAT,XLON,YCRD

@@ -44,7 +44,8 @@ C
 C Declare local variables.
 C
         INTEGER          I,IAAI(1),IAGI(1),ICWP,IFLG,ILEV,IPGB,IPID,
-     +                   IPOS,ISGB,ISTA,ITML,ITMP,ITYP,LNLG,NCRA,NPTS
+     +                   IPOS,ISGB,ISTA,ITML,ITMP,ITYP,LNLG,NCRA,NPTS,
+     +                   ISHIFT
 C
         REAL             XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT
 C
