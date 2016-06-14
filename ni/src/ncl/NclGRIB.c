@@ -3878,7 +3878,7 @@ static NhlErrorTypes _compute_dimensions(GribParamList *step)
 	Dim_Construct *dim_construct;
 
 	rstep = step->thelist;
-	dim_construct = (Dim_Construct *) NhlCalloc(1,sizeof(Dim_Construct));
+	dim_construct = (Dim_Construct *) NclCalloc(1,sizeof(Dim_Construct));
 	step->info = (void *) dim_construct;
 	
 	while (rstep) {

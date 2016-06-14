@@ -1498,6 +1498,11 @@ NclQuark *_NclFileReadGrpNames(NclFile thefile, int *num_grps)
 		if(thefile->file.format_funcs->get_grp_names != NULL)
 			return((*thefile->file.format_funcs->get_grp_names)
 				((void *)thefile->file.private_rec, num_grps));
+		else {
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+				   "_NclFileReadGrpNames: file format does not support groups"));
+			return NULL;
+		}
 	}
 	else if(0 == strcmp("NclAdvancedFileClass", class_name))
 	{

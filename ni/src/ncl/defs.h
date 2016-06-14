@@ -79,32 +79,6 @@ extern NclMemoryRecord ncl_memory_record;
 extern void _initializeNclMemoryRecord();
 extern void _finalizeNclMemoryRecord();
 extern short NCLdebug_on;
-#else
-extern void *NclMalloc(
-#if    NhlNeedProto
-ng_usize_t     /* size */
-#endif
-);
-
-extern void *NclCalloc(
-#if    NhlNeedProto
-ng_usize_t     /* num */,
-ng_usize_t     /* size */
-#endif
-);
-
-extern void *NclRealloc(
-#if    NhlNeedProto
-void   *       /* ptr */       ,
-ng_usize_t     /* size */
-#endif
-);
-
-extern NhlErrorTypes NclFree(
-#if    NhlNeedProto
-void * /* size */
-#endif
-);
 #endif
 
 typedef enum {	NORMAL = 0,

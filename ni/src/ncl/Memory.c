@@ -283,7 +283,7 @@ void *_underNclCalloc(int linenumb, const char *filename,
 	{
 		fprintf(stderr, "\nFailed to calloc <%ld> bytes of memory at line <%d> of file <%s>\n",
 				num * size, linenumb, filename);
-		NhlPError(NhlFATAL,errno,"NhlCalloc Failed");
+		NhlPError(NhlFATAL,errno,"NclCalloc Failed");
 	}
 
 	if(NCLdebug_on)
@@ -327,7 +327,7 @@ void *_underNclRealloc(int linenumb, const char *filename,
 		{
 			fprintf(stderr, "\nFailed to realloc <%ld> bytes of memory at line <%d> of file <%s>\n",
 					size, linenumb, filename);
-			NhlPError(NhlFATAL,errno,"NhlRealloc Failed");
+			NhlPError(NhlFATAL,errno,"NclRealloc Failed");
 		}
 
 	}
@@ -398,7 +398,7 @@ void *NclCalloc(ng_usize_t	num,	/* number of elements		*/
 	ptr = (void *)calloc(num, size);
 
 	if(ptr == NULL)
-		NhlPError(NhlFATAL,errno,"NhlCalloc Failed");
+		NhlPError(NhlFATAL,errno,"NclCalloc Failed");
 
 	return(ptr);
 }
@@ -432,7 +432,7 @@ void *NclRealloc(void	*ptr,	/* pointer to old memory	*/
 		tptr = (void *)realloc(ptr,size);
 
 		if(tptr == NULL)
-			NhlPError(NhlFATAL,errno,"NhlRealloc Failed");
+			NhlPError(NhlFATAL,errno,"NclRealloc Failed");
 
 		return(tptr);
 	}

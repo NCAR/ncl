@@ -3277,6 +3277,8 @@ herr_t _searchH5obj(char *name, H5O_info_t *oinfo,
     H5O_type_t obj_type = oinfo->type;          /* Type of the object */
     hid_t obj_id = -1;                          /* ID of object opened */
     hid_t id = grpnode->fid;
+    hid_t type_id;
+    H5T_class_t class;
     herr_t status = SUCCEED;
     int it_is_root = 0;
     char comment[1024];
@@ -3478,6 +3480,9 @@ herr_t _searchH5obj(char *name, H5O_info_t *oinfo,
             status = _get_status(id, obj_id, obj_type, name, __FILE__, __LINE__);
             if(FAILED == status)
                 return FAILED;
+	    type_id = H5Topen(id,name,0);
+	    class = H5Tget_class(type_id);
+	    
 
             fprintf(stderr, "\nin file: %s, line: %d\n", __FILE__, __LINE__);
             fprintf(stderr, "\tH5O_TYPE_NAMED_DATATYPE\n");

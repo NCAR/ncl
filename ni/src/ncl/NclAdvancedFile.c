@@ -5201,7 +5201,7 @@ void AdvancedLoadVarAtts(NclAdvancedFile thefile, NclQuark var)
             val = attnode->value;
 
         ne = attnode->n_elem;
-	if (attnode->type == NCL_reference ||
+	if (attnode->type == NCL_reference || attnode->type == NCL_compound ||
 	    (attnode->type == NCL_vlen && attnode->base_type == NCL_reference))
 	    continue;
         tmp_md = _NclCreateMultiDVal(
