@@ -26,8 +26,9 @@ extern NhlErrorTypes g2gshv_W(void);
 extern NhlErrorTypes f2gshv_W(void);
 extern NhlErrorTypes g2fshv_W(void);
 extern NhlErrorTypes f2fshv_W(void);
-extern NhlErrorTypes eof_W(void);
-extern NhlErrorTypes eof_ts_W(void);
+extern NhlErrorTypes eofunc_W(void);
+extern NhlErrorTypes eofunc_n_W(void);
+extern NhlErrorTypes eofunc_ts_W(void);
 extern NhlErrorTypes eofcov_W(void);
 extern NhlErrorTypes eofcor_W(void);
 extern NhlErrorTypes eofcov_tr_W(void);
@@ -933,7 +934,22 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
-    NclRegisterFunc(eof_W,args,"eofunc",nargs);
+    NclRegisterFunc(eofunc_W,args,"eofunc",nargs);
+
+/*
+ * Register "eofunc_n".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(eofunc_n_W,args,"eofunc_n",nargs);
 
 /*
  * Register "eofunc_ts".
@@ -947,7 +963,7 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
-    NclRegisterFunc(eof_ts_W,args,"eofunc_ts",nargs);
+    NclRegisterFunc(eofunc_ts_W,args,"eofunc_ts",nargs);
 /*
  * Register "eofcov".
  *
