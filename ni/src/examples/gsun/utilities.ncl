@@ -847,8 +847,8 @@ begin
  nclr = dimsizes (cmap(:,0))
  imsg = new(1,integer)          ; missing value
 
- if (nclr-2 .lt. ncn+1) then 
-   print ("get_color_index: Warning: Not enough colors in colormap for number of contour levels")
+ if (nclr .lt. ncn+1) then 
+   print ("get_color_index: Warning: Not enough colors in colormap for number of requested levels")
    print ("         Colors will be repeated")
  end if
  if (ismissing(value)) then
