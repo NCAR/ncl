@@ -3487,10 +3487,87 @@ struct _NclMultiDValDataRec *value;
 {
 	NclFileClass fc = NULL;
 	NhlErrorTypes ret;
-	int do_both = 0;
+	NrmQuark option_lower;
+	NrmQuark fs_quark = NrmStringToQuark("filestructure");
 
+	/* the file structure option is set in a non-standard way so do it here */
+
+        option_lower = _NclGetLower(option);
+
+	if(format > NrmNULLQUARK && fs_quark == option_lower && NCL_string == value->multidval.data_type)
+	{
+		NrmQuark filetype_lower;
+		NrmQuark ad_lower_quark = NrmStringToQuark("advanced");
+		NrmQuark all_quark = NrmStringToQuark("all");
+		NrmQuark  nc_quark = NrmStringToQuark("nc");
+		NrmQuark  h5_quark = NrmStringToQuark("h5");
+		NrmQuark he5_quark = NrmStringToQuark("he5");
+		NrmQuark shp_quark = NrmStringToQuark("shp");
+		NrmQuark fso;
+		int n;
+
+		filetype_lower = _NclGetLower(format);
+		fso = _NclGetLower(*(NrmQuark *)value->multidval.val);
+
+	 	if(all_quark == filetype_lower)
+		{
+			if(ad_lower_quark == fso)
+			{
+				for(n = 0; n < _NioNumberOfFileStructOptions; ++n)
+					NCLadvancedFileStructure[n] = 1;
+			}
+			else
+			{
+				for(n = 0; n < _NioNumberOfFileStructOptions; ++n)
+					NCLadvancedFileStructure[n] = 0;
+			}
+		}
+		else if(nc_quark == filetype_lower)
+		{
+			if(ad_lower_quark == fso)
+			{
+				NCLadvancedFileStructure[_Nio_Opt_NETCDF] = 1;
+			}
+			else
+			{
+				NCLadvancedFileStructure[_Nio_Opt_NETCDF] = 0;
+			}
+		}
+		else if(h5_quark == filetype_lower)
+		{
+			if(ad_lower_quark == fso)
+			{
+				NCLadvancedFileStructure[_Nio_Opt_HDF5] = 1;
+			}
+			else
+			{
+				NCLadvancedFileStructure[_Nio_Opt_HDF5] = 0;
+			}
+
+		}
+		else if(he5_quark == filetype_lower)
+		{
+			if(ad_lower_quark == fso)
+			{
+				NCLadvancedFileStructure[_Nio_Opt_HDFEOS5] = 1;
+			}
+			else
+			{
+				NCLadvancedFileStructure[_Nio_Opt_HDFEOS5] = 0;
+				
+			}
+		}
+		else if(shp_quark == filetype_lower)
+		{
+			if(ad_lower_quark == fso)
+				NCLadvancedFileStructure[_Nio_Opt_OGR] = 1;
+			else
+				NCLadvancedFileStructure[_Nio_Opt_OGR] = 0;
+		}
+	}
+	
 	if (thefile && thefile->file.advanced_file_structure)
-		fc = &nclAdvancedFileClassRec;
+		fc = (NclFileClass) &nclAdvancedFileClassRec;
 	else
 		fc = &nclFileClassRec;
 
@@ -4049,6 +4126,7 @@ NclFile _NclOpenFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	NrmQuark afs = NrmStringToQuark("advanced");
 	NrmQuark sfs = _NclGetLower(*(NrmQuark *)(fcp->options[Ncl_ADVANCED_FILE_STRUCTURE].value->multidval.val));
+	NclQuark the_real_path = path;
 
 	file_ext_q = _NclFindFileExt(path, &fname_q, &is_http, &end_of_name, &len_path, rw_status, &use_advanced_file_structure);
 
@@ -4081,7 +4159,7 @@ NclFile _NclOpenFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 		}
 		else if (rw_status > -1)
 		{
-			NclQuark the_real_path = NrmStringToQuark(_NGResolvePath(NrmQuarkToString(path)));
+			the_real_path = NrmStringToQuark(_NGResolvePath(NrmQuarkToString(path)));
 			NclQuark old_file_ext_q = file_ext_q;
 			int stat_ret;
 
@@ -4113,6 +4191,7 @@ NclFile _NclOpenFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 						  NrmQuarkToString(the_real_path),strerror(errno));
 					return file_out;
 				}
+				the_real_path = NrmStringToQuark(tmp_path);
 
 			}
 
@@ -4129,12 +4208,12 @@ NclFile _NclOpenFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	if (use_advanced_file_structure)
 	{
 		file_out = _NclAdvancedFileCreate(inst, theclass, obj_type, obj_type_mask, status,
-				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
+				the_real_path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
 	}					
 	else
 	{
 		file_out = _NclFileCreate(inst, theclass, obj_type, obj_type_mask, status,
-				path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
+				the_real_path, rw_status, file_ext_q, fname_q, is_http, end_of_name, len_path);
 	}		
 
 	return file_out;

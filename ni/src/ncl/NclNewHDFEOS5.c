@@ -786,6 +786,7 @@ static void getHE5SwathData(NclFileGrpNode *parentgrpnode, NclQuark path)
         grpnode->fid = HE5_SWid;
         grpnode->pname = -1;
         grpnode->name = sw_hdf_names[i];
+        grpnode->real_name = sw_hdf_names[i];
         grpnode->define_mode = SWATH;
 
       /*global attributes from file*/
@@ -1735,11 +1736,11 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
     {
         tmp_hdf_name = _make_proper_string_end(NrmQuarkToString(gd_hdf_names[i]));
         HE5_GDid = HE5_GDattach(HE5_GDfid,tmp_hdf_name);
-        free(tmp_hdf_name);
         if(0 >= HE5_GDid)
         {
             NHLPERROR((NhlFATAL,NhlEUNKNOWN, "NclNewHDFEOS5: An internal HDF error occurred while reading (%s) can't continue",
                   NrmQuarkToString(path)));
+	    free(tmp_hdf_name);
             return;
         }
 
@@ -1756,8 +1757,10 @@ static void getHE5GridData(NclFileGrpNode *parentgrpnode, NclQuark path)
         grpnode->fid = HE5_GDfid;
         grpnode->gid = HE5_GDid;
         grpnode->pname = -1;
-        grpnode->name = gd_hdf_names[i];
+        grpnode->name = NrmStringToQuark(tmp_hdf_name);
+        grpnode->real_name = NrmStringToQuark(tmp_hdf_name);
         grpnode->define_mode = GRID;
+        free(tmp_hdf_name);
 
         status = HE5_GDprojinfo(HE5_GDid,&projcode,&zonecode,&spherecode,projparm);
         if (status == FAIL)
@@ -2402,6 +2405,7 @@ typedef struct
         grpnode->gid = HE5_PTid;
         grpnode->pname = -1;
         grpnode->name = pt_hdf_names[pt];
+        grpnode->real_name = pt_hdf_names[pt];
         grpnode->define_mode = POINT;
 
         /* global attributes from file */
@@ -2840,6 +2844,7 @@ void getHE5ZonalAverageData(NclFileGrpNode *parentgrpnode, NclQuark path)
         grpnode->gid = HE5_ZAid;
         grpnode->pname = -1;
         grpnode->name = za_hdf_names[za];
+        grpnode->real_name = za_hdf_names[za];
         grpnode->define_mode = ZA;
 
         /* global attributes from file */
