@@ -2930,25 +2930,12 @@ int ps_Cellarray(gksc)
                         float tred, tgreen, tblue;
                         index2rgb(psa->color_map, color_index, &tred, &tgreen, &tblue);
                         if (psa->color == COLOR) {
-                            /* RLB 
-                           (void) fprintf(psa->file_pointer, "%02X", 
-                              (int)(255. * (psa->color_map[3*color_index  ])));
-                           (void) fprintf(psa->file_pointer, "%02X", 
-                              (int)(255. * (psa->color_map[3*color_index+1])));
-                           (void) fprintf(psa->file_pointer, "%02X", 
-                              (int)(255. * (psa->color_map[3*color_index+2])));
-                            *****/
                             fprintf(psa->file_pointer, "%02X%02X%02X",
                                     (int)(255. * tred),
                                     (int)(255. * tgreen), 
                                     (int)(255. * tblue));
                         }
                         else {
-                            /* RLB*
-                           ftmp  = 0.30 * (psa->color_map[3*color_index  ]) +
-                                   0.59 * (psa->color_map[3*color_index+1]) +
-                                   0.11 * (psa->color_map[3*color_index+2]);
-                             ****/
                             ftmp = 0.30*tred + 0.59*tgreen + 0.11*tblue;
                            intensity = (int) (255. * ftmp);
                            (void) fprintf(psa->file_pointer, "%02X", intensity);
@@ -3360,11 +3347,7 @@ int ps_GetColorRepresentation(gksc)
         PSColor *rgbptr = (PSColor *) gksc->rgb.list;
 
         int     index   = xptr[0];
-        /****
-        rgbptr[0].r = psa->color_map[3*index];
-        rgbptr[0].g = psa->color_map[3*index+1];
-        rgbptr[0].b = psa->color_map[3*index+2];
-        *****/
+
         index2rgb(psa->color_map, index, &rgbptr[0].r, &rgbptr[0].g, &rgbptr[0].b);
 
         return(0);
