@@ -1543,7 +1543,7 @@ NhlErrorTypes eofunc_n_W( void )
  * Make sure "dim" is a valid dimension.
  */
   if (*dim < 0 || *dim >= ndims_x) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_n: Invalid dimension index");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_n: Invalid dimension index for 'time'");
     return(NhlFATAL);
   }
 
@@ -1588,7 +1588,9 @@ NhlErrorTypes eofunc_n_W( void )
  */
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
 /*
- * Coerce x to double if necessary.
+ * Coerce x to double.
+ * Note: coerce_subset_input_double will force the coercion no matter 
+ * what, which we need for x because we may have to reorder it.
  */
 
   dx_orig = (double*)malloc(total_size_x*sizeof(double));
@@ -1616,7 +1618,7 @@ NhlErrorTypes eofunc_n_W( void )
       }
     }
   }
-  for(nc = 0; nc < ncol; nc++)
+
 /* 
  * If "opt" is True, then check if any attributes have been set.
  */
@@ -2901,7 +2903,7 @@ NhlErrorTypes eofunc_ts_W( void )
   msta = 1;
   for( i = 0; i <= ndims_x-2; i++ ) {
     if( dsizes_x[i] != dsizes_evec[i+1] ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts: All but the last dimension of the first input array must be the same as all but the first dimension of the second input array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts: All but the rightmost dimension of the first input array must be the same as all but the leftmost dimension of the second input array");
       return(NhlFATAL);
     }
     msta *= dsizes_x[i];
@@ -3073,6 +3075,516 @@ NhlErrorTypes eofunc_ts_W( void )
     revtsav  = (float *)calloc(neval,sizeof(float));
     if( revec_ts == NULL || revtsav == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts: Unable to allocate memory for output arrays");
+      return(NhlFATAL);
+    }
+    for( i = 0; i < ntime*neval; i++ ) revec_ts[i] = (float)evec_ts[i];
+    for( i = 0; i < neval; i++ )       revtsav[i]  = (float)evtsav[i];
+/*
+ * Free up double precision arrays.
+ */
+    NclFree(evec_ts);
+    NclFree(evtsav);
+/*
+ * Set up return value.
+ */
+    return_md = _NclCreateVal(
+                              NULL,
+                              NULL,
+                              Ncl_MultiDValData,
+                              0,
+                              (void*)revec_ts,
+                              &missing_rx,
+                              2,
+                              dsizes_evec_ts,
+                              TEMPORARY,
+                              NULL,
+                              (NclObjClass)nclTypefloatClass
+                              );
+/*
+ * Set up attributes to return.
+ */
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+/*
+ * Attribute "ts_mean".
+ */
+    dsizes[0] = neval;
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           (void*)revtsav,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypefloatClass
+                           );
+    _NclAddAtt(
+               att_id,
+               "ts_mean",
+               att_md,
+               NULL
+               );
+
+  }
+  else {
+/*
+ * Set up return value.
+ */
+    return_md = _NclCreateVal(
+                              NULL,
+                              NULL,
+                              Ncl_MultiDValData,
+                              0,
+                              (void*)evec_ts,
+                              &missing_dx,
+                              2,
+                              dsizes_evec_ts,
+                              TEMPORARY,
+                              NULL,
+                              (NclObjClass)nclTypedoubleClass
+                              );
+/*
+ * Set up attributes to return.
+ */
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+/*
+ * Attribute "ts_mean".
+ */
+    dsizes[0] = neval;
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           (void*)evtsav,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypedoubleClass
+                           );
+    _NclAddAtt(
+               att_id,
+               "ts_mean",
+               att_md,
+               NULL
+               );
+  }
+
+/*
+ * "matrix" indicates whether the covariance or correlation matrix
+ * was used.
+ */
+  if(jopt == 0) {
+    cmatrix = (char *)calloc(11,sizeof(char));
+    strcpy(cmatrix,"covariance");
+  }
+  else {
+    cmatrix = (char *)calloc(12,sizeof(char));
+    strcpy(cmatrix,"correlation");
+  }
+  matrix  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *matrix = NrmStringToQuark(cmatrix);
+  
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)matrix,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "matrix",
+             att_md,
+             NULL
+             );
+
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Free memory 
+ */
+  NclFree(cmatrix);
+
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
+}
+
+NhlErrorTypes eofunc_ts_n_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *x, *evec;
+  double *dx, *dx_orig, *devec;
+  logical *opt;
+  int *dim;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  int has_missing_x;
+  int ndims_evec;
+  ng_size_t dsizes_evec[NCL_MAX_DIMENSIONS];
+  int has_missing_evec;
+  NclScalar missing_x, missing_evec, missing_devec, missing_rx, missing_dx;
+  NclBasicDataTypes type_x, type_evec;
+  ng_size_t nrow, ncol, nobs, msta, neval, ntime, total_size_x, total_size_evec;
+  ng_size_t i, nr, nl, nm, counter, *iarray;
+  ng_size_t size_leftmost, size_middle, size_rightmost, size_middle_rightmost;
+  ng_size_t left_loc, mid_loc;
+  int inrow, incol, inobs, imsta, ineval;
+  int iflag = 0, jopt = 0;
+  int ier = 0;
+
+/*
+ * Work array variables.
+ */
+  double *wrk, *wx;
+  ng_size_t lwrk, lwx;
+/*
+ * Output array variables
+ */
+  double *evec_ts, *evtsav;
+  float *revec_ts, *revtsav;      
+  ng_size_t dsizes_evec_ts[2];
+/*
+ * Variables for retrieving attributes from "opt".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
+
+/*
+ * Attribute variables
+ */
+  int att_id;
+  ng_size_t dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+  char *cmatrix;
+  NclQuark *matrix;
+
+
+/*
+ * Retrieve parameters
+ */
+  x = (void*)NclGetArgValue(
+           0,
+           4,
+           &ndims_x, 
+           dsizes_x,
+           &missing_x,
+           &has_missing_x,
+           &type_x,
+           DONT_CARE);
+
+  evec = (void*)NclGetArgValue(
+           1,
+           4,
+           &ndims_evec, 
+           dsizes_evec,
+           &missing_evec,
+           &has_missing_evec,
+           &type_evec,
+           DONT_CARE);
+
+  opt = (logical*)NclGetArgValue(
+           2,
+           4,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           DONT_CARE);
+
+ /*
+  * Retrieve the dimension index for the "time" dimension.
+  */ 
+  dim = (int*)NclGetArgValue(
+          3,
+          4,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          DONT_CARE);
+
+/*
+ * Make sure "dim" is a valid dimension.
+ */
+  if (*dim < 0 || *dim >= ndims_x) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts_n: Invalid dimension index for 'time'");
+    return(NhlFATAL);
+  }
+
+
+/*
+ * Check the input grids.  They both must be at least two dimensional and
+ * have the same number of dimensions.  All but the last dimension of the
+ * first input array must be the same as all the but first dimension of
+ * the second input array.
+ */
+  if( ndims_x < 2 || ndims_x != ndims_evec ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts_n: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    return(NhlFATAL);
+  }
+  for( i = 0; i < *dim; i++ ) {
+    printf("here1\n");
+    if( dsizes_x[i] != dsizes_evec[i+1] ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts_n: All but the 'time' dimension of the first input array must be the same as all but the leftmost dimension of the second input array");
+      return(NhlFATAL);
+    }
+  }
+  for( i = *dim+1; i < ndims_x; i++ ) {
+    if( dsizes_x[i] != dsizes_evec[i] ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts_n: All but the 'time' dimension of the first input array must be the same as all but the leftmost dimension of the second input array");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Calculate the left, middle and right dimensions, so we
+ * can reorder array. The other ncol, ncor, nobs variables
+ * are a bit confusing, but they are used as various 
+ * arguments to the Fortran eof routine.
+ * 
+ * The important thing here is that size_leftmost * size_middle * size_rightmost
+ * should equal the total size of x (total_size_x). Also, size_middle
+ * is the "time" dimension that is specified by the "dim" argument 
+ * above.
+ * 
+ *
+ */
+  size_rightmost = size_leftmost = 1;
+  for( i = 0; i < *dim; i++ ) size_leftmost *= dsizes_x[i];
+  for( i = *dim+1; i < ndims_x; i++ ) size_rightmost *= dsizes_x[i];
+  ncol = msta = size_rightmost * size_leftmost;
+  size_middle = nobs = nrow = ntime = dsizes_x[*dim];
+  size_middle_rightmost = size_rightmost * size_middle;
+ 
+  neval           = dsizes_evec[0];
+  total_size_x    = ncol * nrow;
+  total_size_evec = ncol * neval;
+
+  if( msta < 1 || nobs < 1 ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts_n: The dimensions of the input array must both be at least 1");
+    return(NhlFATAL);
+  }
+
+  if((nrow > INT_MAX) || (ncol > INT_MAX) || (msta > INT_MAX) || 
+     (neval > INT_MAX) || (nobs > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts_n: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+
+  inrow  = (int) nrow;
+  incol  = (int) ncol;
+  imsta  = (int) msta;
+  inobs  = (int) nobs;
+  ineval = (int) neval;
+
+/*
+ * Coerce missing values, if any.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+  coerce_missing(type_evec,has_missing_evec,&missing_evec,
+                 &missing_devec,NULL);
+/*
+ * Coerce x/evec to double. Note:  coerce_input_double will return a pointer to
+ * the original data if it is already double, which is what we want for 
+ * devec.  coerce_subset_input_double will force the coercion no matter 
+ * what, which we need for x because we may have to reorder it.
+ */
+  dx_orig = (double*)malloc(total_size_x*sizeof(double));
+  dx      = (double*)malloc(total_size_x*sizeof(double));
+  devec   = coerce_input_double(evec,type_evec,total_size_evec,
+                                has_missing_evec,&missing_evec,&missing_devec);
+  if(dx_orig == NULL || dx == NULL || devec == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts_n: Unable to allocate memory for coercing input arrays to double precision");
+    return(NhlFATAL);
+  }
+  coerce_subset_input_double(x,dx_orig,0,type_x,total_size_x,0,NULL,NULL);
+
+/*
+ * Create a vector containing the reordered indices, and also
+ * copy reordered data into new array.
+ */
+  counter = 0;
+  iarray = (ng_size_t*)malloc(total_size_x*sizeof(ng_size_t));
+  for(nl = 0; nl < size_leftmost; nl++) {
+    left_loc = nl * size_middle_rightmost;
+    for(nr = 0; nr < size_rightmost; nr++) {
+      for(nm = 0; nm < size_middle; nm++) {
+        mid_loc = nm * size_rightmost;
+        iarray[counter] = left_loc + mid_loc + nr;
+          ((double*)dx)[counter] = ((double*)dx_orig)[iarray[counter]];
+        counter++;
+      }
+    }
+  }
+
+/*
+ * Allocate memory for return variables.
+ */
+  dsizes_evec_ts[0] = neval;
+  dsizes_evec_ts[1] = ntime;
+  evec_ts = (double *)calloc(ntime*neval,sizeof(double));
+  evtsav  = (double *)calloc(neval,sizeof(double));
+  if( evec_ts == NULL || evtsav == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts_n: Unable to allocate memory for output arrays");
+    return(NhlFATAL);
+  }
+
+/*
+ * Create a couple of work arrays.  This is necessary to avoid having
+ * these arrays created dynamically in the Fortran file (which makes
+ * it Fortran 90, and unportable to some systems. 
+ */
+  lwrk = nobs;
+  lwx  = nrow*ncol;
+  wrk  = (double *)calloc(lwrk,sizeof(double));
+  wx   = (double *)calloc(lwx,sizeof(double));
+  if( wrk == NULL || wx == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts_n: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
+
+/* 
+ * If "opt" is True, then check if any attributes have been set.
+ */
+  if(*opt) {
+    stack_entry = _NclGetArg(2, 4, DONT_CARE);
+    switch (stack_entry.kind) {
+    case NclStk_VAR:
+      if (stack_entry.u.data_var->var.att_id != -1) {
+        attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+        if (attr_obj == NULL) {
+          break;
+        }
+      }
+      else {
+/*
+ * att_id == -1 ==> no optional args given.
+ */
+        break;
+      }
+/* 
+ * Get optional arguments.
+ */
+      if (attr_obj->att.n_atts > 0) {
+/*
+ * Get list of attributes.
+ */
+        attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them. The current ones recognized are:
+ *
+ *   "jopt"
+ *
+ */
+        while (attr_list != NULL) {
+/*
+ * Check for "jopt".
+ */
+          if (!strcmp(attr_list->attname, "jopt")) {
+            if(attr_list->attvalue->multidval.data_type != NCL_int) {
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc_ts_n: The 'jopt' attribute must be an integer, defaulting to 0.");
+            }
+            else {
+              jopt = *(int*) attr_list->attvalue->multidval.val;
+              if(jopt != 0 && jopt != 1) {
+                NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc_ts_n: The 'jopt' attribute must be 0 or 1. Defaulting to 0.");
+                jopt = 0;
+              }
+            }
+          }
+          attr_list = attr_list->next;
+        }
+      }
+    default:
+      break;
+    }
+  }
+
+
+/*
+ * Call the appropriate Fortran 77 routine.
+ */
+  NGCALLF(deofts7,DEOFTS7)(dx,&inrow,&incol,&inobs,&imsta,
+                           &missing_dx.doubleval,&ineval,devec,&jopt,
+                           &iflag,wx,wrk,evec_ts,evtsav,&ier);
+
+/*
+ * Check various possible error messages.
+ */
+  if (ier != 0) {
+    if (ier == -1) { 
+       NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc_ts_n: cssm contains one or more missing values" );
+    }
+    else if (ier == -88) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc_ts_n: trace is equal to zero" );
+    }
+    else if (ier < 0) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc_ts_n: The %d-th argument had an illegal value", abs(ier) );
+    }
+    else {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc_ts_n: %d eigenvectors failed to converge",ier);
+    }
+  }
+/*
+ * Free unneeded memory.
+ */
+  NclFree(dx_orig);
+  NclFree(dx);
+  if((void*)devec != evec) NclFree(devec);
+  NclFree(wx);
+  NclFree(wrk);
+/*
+ * Return values. 
+ */
+  if(type_x != NCL_double && type_evec != NCL_double) {
+/*
+ * Neither input array is double, so return float values.
+ *
+ * First copy double values to float values.
+ */
+    revec_ts = (float *)calloc(ntime*neval,sizeof(float));
+    revtsav  = (float *)calloc(neval,sizeof(float));
+    if( revec_ts == NULL || revtsav == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts_n: Unable to allocate memory for output arrays");
       return(NhlFATAL);
     }
     for( i = 0; i < ntime*neval; i++ ) revec_ts[i] = (float)evec_ts[i];
