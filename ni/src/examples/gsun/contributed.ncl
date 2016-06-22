@@ -346,7 +346,7 @@ end
 ;    decided to combine them into one function called 
 ;    "copy_VarCoords_not_n".
 ;
-; This function *used* to make the  assumption that the
+; This function *used* to make the assumption that the
 ;    "dims_to_skip" dimensions were consecutive and 
 ;    increasing. This is no longer necessary.  The 
 ;    "dims_to_copy" must represent valid dimensions in 
@@ -6433,12 +6433,15 @@ begin
   return (x)
 end
 ;************************************************************************
-; D. Shea
-; called internally by eofcov_Wrap, eofcor_Wrap, eof_pcmsg_Wrap, eof_pcmsg_Wrap 
-; wrapper for NCL function "eofcov"  that copies coordiante variables
-
-undef ("eofMeta")
-procedure eofMeta (data:numeric, neval:integer, eof:numeric)
+; M. Haley
+; This procedure was copied from eofMeta in NCL V6.4.0 to handle 
+; metadata for the new eofunc_n function, with an added "dim"
+; argument to indicate the time dimension. 
+;
+; eofMeta (below) has been modified to call this routine with "dim"
+; set to the rightost argument.
+undef ("eofMeta_n")
+procedure eofMeta_n (data:numeric, neval:integer, eof:numeric,dim[1])
 local evn, dimd, dime, nDimd, nDime, i
 begin
   if (isatt(data,"long_name") .or. isatt(data,"description") .or. \
@@ -6463,7 +6466,9 @@ begin
   nDimd= dimsizes(dimsizes(data))               ; rank
   nDime= dimsizes(dimsizes(eof))                
 
-  do i=0,nDimd-2           ; do not use last dimension
+; Copy dimension names and coord arrays in two sections,
+; skipping over 'dim' dimension.
+  do i=0,dim-1           ; do not use 'dim' dimension, and skip the 0th dimension of eof
      if (.not.ismissing(data!i)) then
          eof!(i+1) = data!i
          if (iscoord(data,data!i) ) then
@@ -6471,6 +6476,33 @@ begin
          end if
      end if
   end  do
+
+  do i=dim+1,nDimd-1
+     if (.not.ismissing(data!i)) then
+         eof!i = data!i
+         if (iscoord(data,data!i) ) then
+	     eof&$eof!i$ = data&$data!i$
+         end if
+     end if
+  end  do
+end
+
+;************************************************************************
+; D. Shea
+; called internally by eofcov_Wrap, eofcor_Wrap, eof_pcmsg_Wrap, 
+; eof_pcmsg_Wrap, eofunc_Wrap. 
+; Wrapper for NCL "eofxxxx" functions that copies coordinate variables
+;
+; M. Haley copied eofMeta to eofMeta_n (above) and added a "dim" argument
+; in NCL V6.4.0. This procedure now just calls eofMeta_n with the 
+; appropriate "dim" argument.
+; 
+undef ("eofMeta")
+procedure eofMeta (data:numeric, neval:integer, eof:numeric)
+local dims, rank
+begin
+  rank = dimsizes(dimsizes(data))
+  eofMeta_n(data,neval,eof,rank-1)   ; pass the rgtmost dimension index
 end
 
 ; **********************************************************************
@@ -6527,13 +6559,16 @@ begin
 end
 
 ; **********************************************************************
-; D. Shea
-; called internally by eofcov_ts_Wrap and eofcor_ts_Wrap 
-; wrapper for NCL functions "eofcov_ts" "eofcor_ts"  
-; that copies coordiante variables
-  
-undef ("eofTsMeta")
-procedure eofTsMeta (data:numeric, eof:numeric, eofTs:numeric)
+; M. Haley
+; This procedure was copied from eofMeta in NCL V6.4.0 to handle 
+; metadata for the new eofunc_n function, with an added "dim"
+; argument to indicate the time dimension. 
+;
+; eofTsMeta (below) now calls this procedure with the last argument
+; set to the rightmost dimension index.
+
+undef ("eofTsMeta_n")
+procedure eofTsMeta_n (data:numeric, eof:numeric, eofTs:numeric, dim[1])
 local dimd, dime, nDimd, nDime, i, j
 begin
   dimd = dimsizes(data)
@@ -6553,7 +6588,7 @@ begin
       end if
   end if
 
-  i   = nDimd-1            ; rightmost dimension of data
+  i   = dim                ; 'dim'th dimension of data
   j   = nDime-1            ; rightmost dimension of eofTs
   if (.not.ismissing(data!i)) then
       eofTs!j = data!i
@@ -6562,6 +6597,25 @@ begin
       end if
   end if
   
+end
+
+; **********************************************************************
+; D. Shea
+; Called internally by eofcov_ts_Wrap, eofcor_ts_Wrap, eofunc_ts_Wrap.
+;
+; Wrappers for NCL functions "eofcov_ts" "eofcor_ts", "eofunc_ts" that
+; copies coordinate variables.
+;
+; M. Haley copied eofTsMeta to eofTsMeta_n (above) and added a "dim"
+; argument in NCL V6.4.0. This procedure now just calls eofTsMeta_n
+; with the appropriate "dim" argument.
+
+undef ("eofTsMeta")
+procedure eofTsMeta (data:numeric, eof:numeric, eofTs:numeric)
+local rank
+begin
+  rank = dimsizes(dimsizes(data))
+  eofTsMeta_n(data,eof,eofTs,rank-1)  
 end
 
 ; **********************************************************************
@@ -6678,12 +6732,33 @@ begin
   return  (eofx)                        ; return
 end
 
+undef ("eofunc_n_Wrap")
+function eofunc_n_Wrap (data:numeric, neval:integer, optEOF:logical, dim[1]) 
+; wrapper for NCL function "eofunc_n"  that copies attributes and coordinate vars
+local eofx
+begin
+  eofx = eofunc_n(data, neval, optEOF,dim)  ; invoke built-in function
+  eofMeta_n (data, neval, eofx, dim)        ; add meta information
+  return  (eofx)                            ; return
+end
+
 undef ("eofunc_ts_Wrap")
 function eofunc_ts_Wrap (data:numeric, eof:numeric, optETS:logical)
+; wrapper for NCL function "eofunc_ts"  that copies attributes and coordinate vars
 local eofTS 
 begin
   eofTs = eofunc_ts(data, eof, optETS) ; invoke built-in function
-  eofTsMeta (data, eof, eofTs)      ; add meta information
+  eofTsMeta(data, eof, eofTs)      ; add meta information
+  return  (eofTs)                   ; return
+end
+
+undef ("eofunc_ts_n_Wrap")
+function eofunc_ts_n_Wrap (data:numeric, eof:numeric, optETS:logical, dim[1])
+; wrapper for NCL function "eofunc_ts_n"  that copies attributes and coordinate vars
+local eofTS 
+begin
+  eofTs = eofunc_ts_n(data, eof, optETS,dim) ; invoke built-in function
+  eofTsMeta_n(data, eof, eofTs,dim)      ; add meta information
   return  (eofTs)                   ; return
 end
 
