@@ -1774,7 +1774,6 @@ lib/ncarg/nclex/nug/NUG_read_ASCII_3.ncl
 lib/ncarg/nclex/nug/NUG_read_Binary_1.ncl
 lib/ncarg/nclex/nug/NUG_read_Binary_GrADS.ncl
 lib/ncarg/nclex/nug/NUG_read_CSV_1.ncl
-lib/ncarg/nclex/nug/NUG_read_CSV_1_noloop.ncl
 lib/ncarg/nclex/nug/NUG_read_CSV_2.ncl
 lib/ncarg/nclex/nug/NUG_regrid_bilinear_CMIP5_grid_to_1x1deg_grid.ncl
 lib/ncarg/nclex/nug/NUG_regrid_curvilinear_to_rectilinear_bilinear_weights_ESMF.ncl
