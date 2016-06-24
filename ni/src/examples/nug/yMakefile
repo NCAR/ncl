@@ -30,8 +30,7 @@ NCL_SCRIPTS =	NUG_GrADS_binary_data.ncl NUG_ICON_triangles_colored.ncl		\
 		NUG_projections_mollweide.ncl NUG_projections_robinson.ncl		\
 		NUG_read_ASCII_1.ncl NUG_read_ASCII_2.ncl NUG_read_ASCII_3.ncl		\
 		NUG_read_Binary_1.ncl NUG_read_Binary_GrADS.ncl NUG_read_CSV_1.ncl	\
-		NUG_read_CSV_1_noloop.ncl NUG_read_CSV_2.ncl				\
-		NUG_regrid_bilinear_CMIP5_grid_to_1x1deg_grid.ncl			\
+		NUG_read_CSV_2.ncl NUG_regrid_bilinear_CMIP5_grid_to_1x1deg_grid.ncl	\
 		NUG_regrid_curvilinear_to_rectilinear_bilinear_weights_ESMF.ncl		\
 		NUG_regrid_curvilinear_to_rectilinear_bilinear_wgts_destgrid_ESMF.ncl	\
 		NUG_regrid_rectilinear_to_curvilinear_bilinear_wgts_destgrid_ESMF.ncl	\
