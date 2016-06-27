@@ -19540,3 +19540,54 @@ begin
 
   return(ind_xmin)
 end
+;--------------------------------------------------
+undef("cohsq_c2p")
+function cohsq_c2p(coher2:numeric, df:numeric)
+;
+; INPUT:
+; coher2 - coherence squared (0-1)
+; df     - degrees of freedom
+;
+; Dennis Hartmann
+; http://www.atmos.washington.edu/~dennis/552_Notes_6c.pdf
+;     See Table 6.2 , page 187 and the associated caption on page 186
+;
+; Paul Julian's paper
+; http://journals.ametsoc.org/doi/abs/10.1175/1520-0469%281975%29032%3C0836%3ACOTDOS%3E2.0.CO%3B2
+;
+begin
+                                                    ; df from FFT
+;;prob = 1.0-(1.0-coher2)^((df/2.0)-1.0)            ; Paul Julian 
+  prob = 1.0-(1.0-coher2)^( df     -1.0)            ; match Hartmann           
+
+  prob@long_name = "coherence squared probability"
+  prob@NCL_tag   = "cohsq_c2p: p=1-(1-coher_sq)^(df-1)"
+  copy_VarCoords(coher2, prob)
+  return(prob)
+end
+;--------------------------------------------------
+undef("cohsq_p2c")
+function cohsq_p2c(prob:numeric, df:numeric)
+; 
+; INPUT:
+; prob  - probability (0-1)
+; df    - degrees of freedom
+;
+; Dennis Hartmann
+; http://www.atmos.washington.edu/~dennis/552_Notes_6c.pdf
+;     See Table 6.2 , page 187 and the associated caption on page 186
+;
+; Paul Julian's paper
+; http://journals.ametsoc.org/doi/abs/10.1175/1520-0469%281975%29032%3C0836%3ACOTDOS%3E2.0.CO%3B2
+;
+begin
+                                                    ; df from FFT
+;;c2  =  1.-(1.-prob)^(1./((df/2.)-1.))             ; Paul Julian 
+  c2  =  1.-(1.-prob)^(1./( df    -1.))             ; match Hartmann
+
+  c2@long_name = "coherence-squared confidence level"
+  c2@NCL_tag   = "cohsq_p2c: coher_sq=1-(1-prob)^(1/(df-1))"
+  copy_VarCoords(prob, c2)
+  return(c2)
+end
+
