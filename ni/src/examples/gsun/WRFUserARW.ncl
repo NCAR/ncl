@@ -894,7 +894,7 @@ begin
            uvmet(1,:,:) = (/v(:,:)/)
          end if
          copy_VarAtts_except(u,uvmet,(/"description","units"/))
-         uvmet@description = " u,v met velocity"
+         uvmet@description = "u,v met velocity"
          uvmet!0 = "u_v"
          do n=0,dimsizes(dims)-1           ; Copy dimension names
            if(isdimnamed(u,n))
@@ -950,7 +950,7 @@ begin
        end if  
        
        if( (variable .eq. "uvmet10") )  then
-         uvmet@description = " u10,v10 met velocity"
+         uvmet@description = "u10,v10 met velocity"
        end if
 
        return(uvmet)
