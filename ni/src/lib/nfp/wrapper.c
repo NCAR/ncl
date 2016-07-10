@@ -41,6 +41,7 @@ extern NhlErrorTypes eofcor_ts_W(void);
 extern NhlErrorTypes eofcov_ts_pcmsg_W(void);
 extern NhlErrorTypes eofcor_ts_pcmsg_W(void);
 extern NhlErrorTypes eof2data_W(void);
+extern NhlErrorTypes eof2data_n_W(void);
 extern NhlErrorTypes eof_varimax_W(void);
 extern NhlErrorTypes eofunc_varimax_W(void);
 extern NhlErrorTypes eofunc_varimax_jl_W(void);
@@ -1148,6 +1149,19 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
     NclRegisterFunc(eof2data_W,args,"eof2data",nargs);
+
+/*
+ * Register "eof2data_n".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(eof2data_n_W,args,"eof2data_n",nargs);
 /*
  * Register "center_finite_diff".
  *

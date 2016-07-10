@@ -1441,7 +1441,7 @@ NhlErrorTypes eofunc_n_W( void )
   logical tr_setbyuser = False, anomalies = False, debug = False;
   logical use_new_transpose = False, use_old_transpose = False;
   logical return_eval = True, return_trace = False, return_pcrit = False;
-  ng_size_t nl, nm, counter, *iarray;
+  ng_size_t nl, nm, counter, ireordered;
   ng_size_t size_leftmost, size_middle, size_rightmost, size_middle_rightmost;
   ng_size_t left_loc, mid_loc;
 /*
@@ -1606,14 +1606,13 @@ NhlErrorTypes eofunc_n_W( void )
  * copy reordered data into new array.
  */
   counter = 0;
-  iarray = (ng_size_t*)malloc(total_size_x*sizeof(ng_size_t));
   for(nl = 0; nl < size_leftmost; nl++) {
     left_loc = nl * size_middle_rightmost;
     for(nr = 0; nr < size_rightmost; nr++) {
       for(nm = 0; nm < size_middle; nm++) {
         mid_loc = nm * size_rightmost;
-        iarray[counter] = left_loc + mid_loc + nr;
-          ((double*)dx)[counter] = ((double*)dx_orig)[iarray[counter]];
+        ireordered = left_loc + mid_loc + nr;
+        ((double*)dx)[counter] = ((double*)dx_orig)[ireordered];
         counter++;
       }
     }
@@ -3259,7 +3258,7 @@ NhlErrorTypes eofunc_ts_n_W( void )
   NclScalar missing_x, missing_evec, missing_devec, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_evec;
   ng_size_t nrow, ncol, nobs, msta, neval, ntime, total_size_x, total_size_evec;
-  ng_size_t i, nr, nl, nm, counter, *iarray;
+  ng_size_t i, nr, nl, nm, counter, ireordered;
   ng_size_t size_leftmost, size_middle, size_rightmost, size_middle_rightmost;
   ng_size_t left_loc, mid_loc;
   int inrow, incol, inobs, imsta, ineval;
@@ -3362,7 +3361,6 @@ NhlErrorTypes eofunc_ts_n_W( void )
     return(NhlFATAL);
   }
   for( i = 0; i < *dim; i++ ) {
-    printf("here1\n");
     if( dsizes_x[i] != dsizes_evec[i+1] ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts_n: All but the 'time' dimension of the first input array must be the same as all but the leftmost dimension of the second input array");
       return(NhlFATAL);
@@ -3443,14 +3441,13 @@ NhlErrorTypes eofunc_ts_n_W( void )
  * copy reordered data into new array.
  */
   counter = 0;
-  iarray = (ng_size_t*)malloc(total_size_x*sizeof(ng_size_t));
   for(nl = 0; nl < size_leftmost; nl++) {
     left_loc = nl * size_middle_rightmost;
     for(nr = 0; nr < size_rightmost; nr++) {
       for(nm = 0; nm < size_middle; nm++) {
         mid_loc = nm * size_rightmost;
-        iarray[counter] = left_loc + mid_loc + nr;
-          ((double*)dx)[counter] = ((double*)dx_orig)[iarray[counter]];
+        ireordered = left_loc + mid_loc + nr;
+        ((double*)dx)[counter] = ((double*)dx_orig)[ireordered];
         counter++;
       }
     }
@@ -9189,8 +9186,263 @@ NhlErrorTypes eof2data_W( void )
  * Coerce double values to float and free up double precision array.
  */
     coerce_output_float_only(x,dx,total_size_x,0);
-    NclFree(dx);
 
+    if(has_missing_evec) {
+      ret = NclReturnValue(x,ndims_evec,dsizes_x,&missing_revec,type_x,0);
+    }
+    else {
+      ret = NclReturnValue(x,ndims_evec,dsizes_x,NULL,type_x,0);
+    }
+    NclFree(dx);
+  }
+  else {
+/*
+ * Return double values. 
+ */
+    if(has_missing_evec) {
+      ret = NclReturnValue(x,ndims_evec,dsizes_x,&missing_devec,type_x,0);
+    }
+    else {
+      ret = NclReturnValue(x,ndims_evec,dsizes_x,NULL,type_x,0);
+    }
+  }
+  NclFree(dsizes_x);
+  return(ret);
+}
+
+
+/*
+ * This wrapper is basically identical to eof2data_W in how it is coded,
+ * but it potentially reorders the data at the very end to put the
+ * "time" dimension wherever the user requests via the "dim" argument.
+ *
+ * eof2data_W assumes time is always the rightmost dimension.
+ */
+NhlErrorTypes eof2data_n_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *evec, *evects;
+  double *devec, *devects;
+  int *dim;
+  int ndims_evec;
+  ng_size_t dsizes_evec[NCL_MAX_DIMENSIONS];
+  int has_missing_evec;
+  ng_size_t dsizes_evects[2];
+  NclScalar missing_evec, missing_devec, missing_revec;
+  NclBasicDataTypes type_evec, type_evects;
+  ng_size_t neval, npts, ntim, total_size_evec, total_size_evects;
+  int ineval, inpts, intim;
+  ng_size_t i;
+  int ret;
+/*
+ * Output array variables
+ */
+  void *x;
+  double *dx;
+  ng_size_t *dsizes_x;
+  ng_size_t total_size_x;
+  NclBasicDataTypes type_x;
+ /*
+  * Various
+  */
+  ng_size_t nr, nl, nm, counter, ireordered;
+  ng_size_t size_leftmost, size_middle, size_rightmost, size_middle_rightmost;
+  ng_size_t left_loc, mid_loc;
+  logical time_is_rightmost;
+
+/*
+ * Retrieve parameters
+ */
+  evec = (void*)NclGetArgValue(
+           0,
+           3,
+           &ndims_evec, 
+           dsizes_evec,
+           &missing_evec,
+           &has_missing_evec,
+           &type_evec,
+           DONT_CARE);
+  evects = (void*)NclGetArgValue(
+           1,
+           3,
+           NULL,
+           dsizes_evects,
+           NULL,
+           NULL,
+           &type_evects,
+           DONT_CARE);
+
+ /*
+  * Retrieve the dimension index for the "time" dimension.
+  */ 
+  dim = (int*)NclGetArgValue(
+          2,
+          3,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          DONT_CARE);
+
+/*
+ * Check the "dim" argument. It must not be greater than the number of
+ * dimensions of evec.
+ */
+  if(*dim < 0 || *dim > ndims_evec) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof2data_n: The 'dim' argument is invalid.");
+    return(NhlFATAL);
+  }
+  if(*dim == (ndims_evec-1)) {
+    time_is_rightmost = True;
+  }
+  else {
+    time_is_rightmost = False;
+  }
+
+/*
+ * Check the input grids. The first one can be any dimension, but it must
+ * be at least 2 dimensions.  The first dimension of both input arrays
+ * must be the same (neval).
+ */
+  if(ndims_evec < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof2data_n: The first input array must be at least 2-dimensional");
+    return(NhlFATAL);
+  }
+
+  if( dsizes_evec[0] != dsizes_evects[0] ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof2data_n: The leftmost dimension of both input arrays must be the same");
+    return(NhlFATAL);
+  }
+
+  neval = dsizes_evec[0];
+  ntim  = dsizes_evects[1];
+
+  npts  = 1;
+  for( i = 1; i < ndims_evec; i++ ) npts *= dsizes_evec[i];
+
+  if((neval > INT_MAX) || (npts > INT_MAX) || (npts > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof2data_n: one or more dimension sizes is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  ineval = (int) neval;
+  inpts  = (int) npts;
+  intim  = (int) ntim;
+
+  total_size_evec   = neval * npts;
+  total_size_evects = neval * ntim;
+  total_size_x      = npts  * ntim;
+
+/*
+ * Coerce missing values, if any.
+ */
+  coerce_missing(type_evec,has_missing_evec,&missing_evec,&missing_devec,
+                 &missing_revec);
+/*
+ * Coerce evec/evects to double if necessary.
+ */
+  devec = coerce_input_double(evec,type_evec,total_size_evec,
+                              has_missing_evec,&missing_evec,
+                              &missing_devec);
+  devects = coerce_input_double(evects,type_evects,total_size_evects,
+                                0,NULL,NULL);
+  if(devec == NULL || devects == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof2data_n: Unable to allocate memory for coercing input arrays to double precision");
+    return(NhlFATAL);
+  }
+/*
+ * Allocate memory for return variable.
+ */
+  dsizes_x = (ng_size_t *)calloc(ndims_evec, sizeof(ng_size_t));
+  
+  if(type_evec == NCL_double || type_evects == NCL_double) {
+    type_x = NCL_double;
+    x      = (double *)calloc(total_size_x,sizeof(double));
+    if(time_is_rightmost) {
+      dx   = (double*)x;
+    }
+    else {
+      dx   = (double *)calloc(total_size_x,sizeof(double));
+    }
+  }
+  else {
+    type_x = NCL_float;
+    x      = (float *)calloc(total_size_x,sizeof(float));
+    dx     = (double *)calloc(total_size_x,sizeof(double));
+  }
+  if(x == NULL || dx == NULL || dsizes_x == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof2data_n: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+
+/*
+ * Call the Fortran 77 version of 'deof2data' with the full argument list.
+ */
+  NGCALLF(deof2data,DEOF2DATA)(&ineval,&inpts,&intim,devec,devects,dx,
+                               &missing_devec.doubleval);
+/*
+ * Free unneeded memory.
+ */
+  if((void*)devec   != evec)   NclFree(devec);
+  if((void*)devects != evects) NclFree(devects);
+
+/*
+ * Here's where we need to reorder the data if the time
+ * dimension is not the rightmost dimension (the "else"
+ * part of this "if" statement).
+ *
+ * First create a vector containing the reordered indices, based
+ * on the 'dim' argument. Then use this to reorder the "dx" 
+ * array such that the time dimension is the "dim"-th dimension.
+ */
+  if(!time_is_rightmost) {
+    size_rightmost = size_leftmost = 1;
+    for( i = 0; i < *dim; i++ ) {
+      size_leftmost *= dsizes_evec[i+1];
+      dsizes_x[i] = dsizes_evec[i+1];
+    }
+    for( i = *dim+1; i < ndims_evec; i++ ) {
+      size_rightmost *= dsizes_evec[i];
+      dsizes_x[i] = dsizes_evec[i];
+    }
+    dsizes_x[*dim] = size_middle = ntim;
+    size_middle_rightmost = size_rightmost * size_middle;
+
+    counter = 0;
+    for(nl = 0; nl < size_leftmost; nl++) {
+      left_loc = nl * size_middle_rightmost;
+      for(nr = 0; nr < size_rightmost; nr++) {
+        for(nm = 0; nm < size_middle; nm++) {
+          mid_loc = nm * size_rightmost;
+          ireordered = left_loc + mid_loc + nr;
+          if(type_x == NCL_float) {
+            ((float*)x)[ireordered] = (float)dx[counter];
+          }
+          else {
+            ((double*)x)[ireordered] = dx[counter];
+          }
+          counter++;
+        }
+      }
+    }
+  }
+  else {
+    dsizes_x[ndims_evec-1] = ntim;
+    for(i=0; i <= ndims_evec-2; i++) dsizes_x[i] = dsizes_evec[i+1];
+
+/*
+ * Return values. 
+ */
+    if(type_x == NCL_float) {
+/*
+ * Coerce double values to float and free up double precision array.
+ */
+      coerce_output_float_only(x,dx,total_size_x,0);
+    }
+  }
+  if(type_x == NCL_float) {
     if(has_missing_evec) {
       ret = NclReturnValue(x,ndims_evec,dsizes_x,&missing_revec,type_x,0);
     }
@@ -9209,7 +9461,9 @@ NhlErrorTypes eof2data_W( void )
       ret = NclReturnValue(x,ndims_evec,dsizes_x,NULL,type_x,0);
     }
   }
+  if(type_x != NCL_double || !time_is_rightmost) {
+    NclFree(dx);
+  }
   NclFree(dsizes_x);
   return(ret);
 }
-
