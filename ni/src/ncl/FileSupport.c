@@ -4166,8 +4166,8 @@ NclFile _NclOpenFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 			file_ext_q = -1;
 
 			if ((0 == stat(NrmQuarkToString(the_real_path), &file_stat)) &&
-			    file_stat.st_size &&
-			    ((file_stat.st_mode & S_IFMT) == S_IFREG || (file_stat.st_mode & S_IFMT) == S_IFLNK))
+			    /*file_stat.st_size &&*/
+			    (S_ISREG(file_stat.st_mode) || S_ISLNK (file_stat.st_mode)))
 				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, &use_advanced_file_structure);
 			else
 			{

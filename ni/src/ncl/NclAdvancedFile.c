@@ -7549,18 +7549,17 @@ static NhlErrorTypes MyAdvancedFileWriteVar(NclFile infile, NclQuark var,
                 {
                     for(i = 0; i < value->multidval.n_dims; i++)
                     {
-			sprintf(buffer,"ncl_%3.3d",thefile->advancedfile.grpnode->dim_rec->n_dims);
-                        new_dim_quarks[i] = NrmStringToQuark(buffer);
-                        new_dim_sizes[i] = (long)value->multidval.dim_sizes[i];
+			if (thefile->advancedfile.grpnode->dim_rec != NULL)
+				sprintf(buffer,"ncl%d",thefile->advancedfile.grpnode->dim_rec->n_dims);
+			else
+				sprintf(buffer,"ncl%d",0);
+			ret = AdvancedFileAddDim(infile,NrmStringToQuark(buffer),value->multidval.dim_sizes[i],False);
+			new_dim_quarks[i] = NrmStringToQuark(buffer);
+			new_dim_sizes[i] = (long)value->multidval.dim_sizes[i];
                         start[i] = 0;
                         finish[i] = value->multidval.dim_sizes[i] -1;
                         stride[i] = 1;
 
-                        ret = (*thefile->advancedfile.format_funcs->add_dim)(
-                            thefile->advancedfile.grpnode,
-                            new_dim_quarks[i],
-                            new_dim_sizes[i],
-                            0);
                         if(ret < NhlWARNING) {
                                    goto done_MyAdvancedFileWriteVar;
                         }
@@ -7572,8 +7571,13 @@ static NhlErrorTypes MyAdvancedFileWriteVar(NclFile infile, NclQuark var,
                     {
                         if(dim_names[i] != -1) {
                             new_dim_quarks[i] = dim_names[i];
-                        } else {
-                            sprintf(buffer,"ncl%d",thefile->advancedfile.grpnode->dim_rec->n_dims);
+                        } 
+			else if (thefile->advancedfile.grpnode->dim_rec != NULL) {
+			    sprintf(buffer,"ncl%d",thefile->advancedfile.grpnode->dim_rec->n_dims);
+                            new_dim_quarks[i] = NrmStringToQuark(buffer);
+			}
+			else {
+			    sprintf(buffer,"ncl%d",0);
                             new_dim_quarks[i] = NrmStringToQuark(buffer);
                         }
                         new_dim_sizes[i] = value->multidval.dim_sizes[i];
@@ -7585,9 +7589,9 @@ static NhlErrorTypes MyAdvancedFileWriteVar(NclFile infile, NclQuark var,
                         {
                             ret = (*thefile->advancedfile.format_funcs->add_dim)
                                    (thefile->advancedfile.grpnode,
-                                new_dim_quarks[i],
-                                new_dim_sizes[i],
-                                0);
+				    new_dim_quarks[i],
+				    new_dim_sizes[i],
+				    0);
                             if(ret < NhlWARNING)
                                        goto done_MyAdvancedFileWriteVar;
 
