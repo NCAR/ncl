@@ -1,9 +1,9 @@
 C NCLFORTSTART
-      subroutine dmlegevi(x, nx, xmsg, vals, ierr)
+      subroutine dmlegevi(x, nx, xmsg, vals, xx, ierr)
       implicit none
 C                                               !  INPUT
       integer nx
-      double precision x(nx),  xmsg
+      double precision x(nx),  xx(nx), xmsg
 C                                               !  OUTPUT
       integer ierr
       double precision vals(6)
@@ -16,18 +16,18 @@ c     (2) return a selected subset of values
 c                                               ! LOCAL
       integer monit, nxn, n
       double precision para(3), vcov(6)         ! see subroutine
-      double precision euler, pi, six, zero, one! local variables  
-      double precision x1, x2, x3, temp, xvar, xstd, xavg
+      double precision euler, pi, six, zero     ! local variables  
+      double precision x1, x2, x3, xvar, xstd, xavg
 
 c c c double precision xx(nx)                   ! f90 auto array
-      double precision,allocatable::xx(:)       ! explicit allocation
+c c c double precision,allocatable::xx(:)       ! allocate in calling routine
       
       pi    = 3.141592653589793d0
       euler = 0.577215664901532d0        ! Euler–Mascheroni constant
       six   = 6.0d0
       zero  = 0.0d0
 c                                               ! strip msg
-      allocate(xx(nx))
+c     allocate(xx(nx))
       nxn = 0
       do n=1,nx
          if (x(n).ne.xmsg) then
@@ -70,7 +70,6 @@ c                                               ! std errors
           vals(5) = sqrt(vcov(3))               ! scale
           vals(6) = sqrt(vcov(6))               ! shape
       end if
-
       return
       end
 C-----------------------------------------------------------------
