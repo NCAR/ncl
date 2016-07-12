@@ -254,6 +254,24 @@ begin
 end
 
 ;***********************************************************************;
+; This procedure removes the internal resources set by WRFUserARW.ncl
+; These resources are used by the wrf_xxx plotting scripts, but are
+; not recognized by the gsn_csm plotting scripts.
+;***********************************************************************;
+undef("remove_internal_wrf_resources")
+procedure remove_internal_wrf_resources(res:logical)
+local wlist, atts_set
+begin
+  wlist = (/"start_lat","start_lon","end_lat","end_lon","mpNestTime"/)
+  atts_set = isatt(res,wlist)
+  if(all(atts_set)) then
+    do na=0,dimsizes(wlist)-1
+      delete(res@$wlist(na)$)
+    end do
+  end if
+end
+
+;***********************************************************************;
 ; Function : get_resources                                              ;
 ;                res:logical                                            ;
 ;                                                                       ;
@@ -273,7 +291,7 @@ begin
 ;
     res2 = True
   end if
-
+  remove_internal_wrf_resources(res2)
   return(res2)
 end
 
