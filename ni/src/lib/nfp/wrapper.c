@@ -122,6 +122,7 @@ extern NhlErrorTypes bin_avg_W(void);
 extern NhlErrorTypes trop_wmo_W(void);
 extern NhlErrorTypes moc_globe_atl_W(void);
 extern NhlErrorTypes wetbulb_W(void);
+extern NhlErrorTypes extval_mlegev_W(void);
 
 extern NhlErrorTypes rgbhsv_W(void);
 extern NhlErrorTypes hsvrgb_W(void);
@@ -1783,6 +1784,21 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
         NclRegisterFunc(wrf_wetbulb_W,args,"wrf_wetbulb",nargs);
+/*
+ * Register "extval_mlegev".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(3);
+
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+        NclRegisterFunc(extval_mlegev_W,args,"extval_mlegev",nargs);
+
 /*
  * Register "wrf_omega".
  *
