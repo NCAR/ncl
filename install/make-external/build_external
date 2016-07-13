@@ -218,21 +218,21 @@ echo "=================================================="
 # to be called exactly by these names, i.e. the netCDF software better
 # be in a directory called "netcdf-4.4.0".
 CAIRO_DIR="cairo-1.14.6"
-CURL_DIR="curl-7.47.0"
+CURL_DIR="curl-7.49.1"
 ESMF_DIR="esmf-6.3.0rp1"
-EXPAT_DIR="expat-2.1.0"
-FREETYPE_DIR="freetype-2.6.2"
+EXPAT_DIR="expat-2.2.0"
+FREETYPE_DIR="freetype-2.6.5"
 G2CLIB_DIR="g2clib-1.5.0-patch"
-GDAL_DIR="gdal-1.11.3"
-HDF4_DIR="hdf-4.2.11"
-HDF5_DIR="hdf5-1.8.14"
+GDAL_DIR="gdal-2.1.1"
+HDF4_DIR="hdf-4.2.12"
+HDF5_DIR="hdf5-1.8.17"
 HDFEOS_DIR="hdfeos-2.19"
 HDFEOS5_DIR="hdfeos5-1.15"
 JASPER_DIR="jasper-1.900.1"
-JPEG_DIR="jpeg-6b"
-NETCDF4_DIR="netcdf-4.4.0"
-NETCDF4_FORTRAN_DIR="netcdf-fortran-4.4.2"
-PIXMAN_DIR="pixman-0.32.8"
+JPEG_DIR="jpeg-9b"
+NETCDF4_DIR="netcdf-4.4.1"
+NETCDF4_FORTRAN_DIR="netcdf-fortran-4.4.4"
+PIXMAN_DIR="pixman-0.34.0"
 PKGCONFIG_DIR="pkg-config-0.29"
 PNG_DIR="libpng-1.2.56"
 PROJ4_DIR="proj-4.9.2"
@@ -477,6 +477,12 @@ if [ $INSTALL_PKGCONFIG ] ; then
 else
   echo "Not building pkgconfig..."
 fi
+
+echo "----------------------------------------------------------------------"
+echo "Version of pkg-config being used"
+which pkg-config
+pkg-config --version
+echo "----------------------------------------------------------------------"
 
 #--------------------------------------------------------------------
 # zlib
