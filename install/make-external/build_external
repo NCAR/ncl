@@ -141,11 +141,11 @@ fi
 
 ### Change to indicate what options you want for compilation.
 if [ "$os" = "Darwin" ] ; then
-  export CC=/usr/local/bin/gcc
-  export CXX=/usr/local/bin/g++
-  export FC=/usr/local/bin/gfortran
-  export F77=/usr/local/bin/gfortran
-  export F90=/usr/local/bin/gfortran
+  export CC=gcc
+  export CXX=g++
+  export FC=gfortran
+  export F77=gfortran
+  export F90=gfortran
 elif [ "$un" = "yellowstone_gnu483" ] ; then
   export CC=/glade/u/apps/opt/gnu/4.8.3/bin/gcc
   export CXX=/glade/u/apps/opt/gnu/4.8.3/bin/g++
@@ -207,6 +207,15 @@ echo "os is '$os'"
 echo "um is '$um'"
 echo "CC is $CC"
 echo "FC is $FC"
+echo "GNU compiler info"
+echo "which $CC is"
+which $CC
+echo "$CC --version is"
+$CC --version
+echo "which $FC is"
+which $FC
+echo "$FC --version is"
+$FC --version
 echo "=================================================="
 
 #--------------------------------------------------------------------
@@ -567,8 +576,8 @@ if [ $INSTALL_JPEG ] ; then
     ./configure --disable-shared --prefix\=$PREFIX
     make all install
 # Need this for jpeg-6b
-    make install-lib
-    make install-headers
+#    make install-lib
+#    make install-headers
     if [ $? ] ; then
       echo "$JPEG_DIR build successful."
       if [ $CLEAN_AFTER ] ; then
