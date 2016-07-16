@@ -487,7 +487,6 @@ NhlErrorTypes FixAggCoord(NclOneDValCoordData agg_coord_md, long *agg_dim_count,
 	ng_size_t agg_ix = 0;
 	NrmQuark qbase_unit;
 	/*NclBasicDataTypes coord_type;*/
-	/*int increasing;*/
 	void *val;
 	double dx,dx_out,dx_diff;
 	ng_size_t tsize;
@@ -502,22 +501,8 @@ NhlErrorTypes FixAggCoord(NclOneDValCoordData agg_coord_md, long *agg_dim_count,
 	/*coord_type = agg_coord_md->multidval.data_type;*/
 	diff = NclMalloc(tsize);
 
-	/*
-	switch (agg_coord_md->onedval.mono_type) {
-	case NclINCREASING:
-		increasing = 1;
-		break;
-	case NclDECREASING:
-		increasing = 0;
-		break;
-	default:
-		NhlPError(NhlWARNING, NhlEUNKNOWN,"non-monotonic coordinate in first aggregated file -- cannot be repaired automatically");
-		return NhlWARNING;
-	}
-	*/
-		
 	for (i = 0; i < nfiles; i++) {
-		if (agg_dim_count[i] == 0) /* indicates a bad files */
+		if (agg_dim_count[i] == 0) /* indicates a bad file */
 			continue;
 		if (calendar[i] == NrmNULLQUARK)
 			ctype = cdStandard;
@@ -557,12 +542,62 @@ NhlErrorTypes FixAggCoord(NclOneDValCoordData agg_coord_md, long *agg_dim_count,
 
 		agg_ix += agg_dim_count[i];
 	}
+
 	NclFree(diff);
 	/* check that array is now monotonic */
 	if (! _Nclis_mono(agg_coord_md->multidval.type, agg_coord_md->multidval.val, NULL, agg_coord_md->multidval.totalelements)) {
 		NhlPError(NhlWARNING, NhlEUNKNOWN,"error attempting to fix non-monotonic aggregation variable");
 		return NhlWARNING;
 	}
+
+	return NhlNOERROR;
+}
+
+NhlErrorTypes FixAggCoordValue(NclOneDValCoordData agg_coord_md, ng_size_t ref_ix, ng_size_t ix, NrmQuark *units, NrmQuark *calendar,ng_size_t offset, ng_size_t n_sub_elements)
+{
+	cdCalenType ctype, base_ctype;
+	cdUnitTime base_cdunit;
+	cdCompTime base_cdcomptime, cdcomptime;
+	NrmQuark qbase_unit;
+	/*NclBasicDataTypes coord_type;*/
+	void *val;
+	double dx,dx_out,dx_diff;
+	ng_size_t tsize;
+	void *diff;
+	
+	ref_ix = 0;
+
+	cuErrorOccurred = 0;
+	val = agg_coord_md->multidval.val;
+	
+	tsize = agg_coord_md->multidval.type->type_class.size;
+	diff = NclMalloc(tsize);
+
+	if (calendar[ref_ix] == NrmNULLQUARK)
+		ctype = cdStandard;
+	else
+		ctype = calendar_type(NrmQuarkToString(_NclGetLower(calendar[ref_ix])));
+
+	qbase_unit = units[ref_ix];
+	base_ctype = ctype;
+	if ((units[ix] == NrmNULLQUARK) || cdParseRelunits(ctype,NrmQuarkToString(units[ix]),&base_cdunit,&base_cdcomptime)) {
+		return NhlWARNING;
+	}
+	
+	_Nclcoerce((NclTypeClass)nclTypedoubleClass,
+		   (void*)(&dx),
+		   (char *)val + offset,
+		   1,
+		   NULL,
+		   NULL,
+		   agg_coord_md->multidval.type);
+
+	cdRel2Comp(ctype,NrmQuarkToString(units[ix]),dx,&cdcomptime);
+	cdComp2Rel(base_ctype,cdcomptime,NrmQuarkToString(qbase_unit),&dx_out);
+	dx_diff = dx_out - dx;
+	_NclScalarForcedCoerce((void*)&dx_diff,NCL_double,diff, agg_coord_md->multidval.data_type);
+	_Nclplus(agg_coord_md->multidval.type,(char *)val + offset,(char *)val + offset,diff,NULL,NULL,n_sub_elements,1);
+	NclFree(diff);
 
 	return NhlNOERROR;
 }
@@ -575,7 +610,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	NclQuark var;
  	NclList list;
 	NclList newlist = NULL;
-	int filevar_subs,subs,i;
+	int filevar_subs,subs;
 	NclSelection *sel_ptr=NULL, *fsel;
 	NclSelection sel;
 	NclSelectionRecord *filevar_sel_ptr = NULL;
@@ -599,13 +634,14 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	NclDimRec dim_info;
 	int first;
 	int dir;
-	ng_size_t ix_start, ix_end;
+	ng_size_t i,ix_start, ix_end;
 	ng_size_t var_offset;
 	ng_size_t var_dim_sizes[32];
 	ng_size_t agg_chunk_size;
         int var_ndims; /* non_aggregated natural var dim count */
 	int good_file_count, first_good_ix = 0;
 	long long max_var_size;
+	ng_size_t total_coord_offset = 0;
 
 
 	ptr++;lptr++;fptr++;
@@ -806,6 +842,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	units = NclCalloc(newlist->list.nelem, sizeof(NrmQuark));
 	calendar = NclCalloc(newlist->list.nelem, sizeof(NrmQuark));
 	files = NclCalloc(newlist->list.nelem, sizeof(NclFile));
+	total_agg_dim_size = newlist->list.nelem;
 	if (! (agg_dim_count && files && units && calendar)) {
 		NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
 		estatus = NhlFATAL;
@@ -818,14 +855,13 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	first = 1;
 	var_ndims = 0;
 	good_file_count = 0;
+	for (i = 0; i < total_agg_dim_size; i++) {
+		units[i] = NrmNULLQUARK;
+		calendar[i] = NrmNULLQUARK;
+	}
 	if (newlist->list.list_type & NCL_JOIN) {
 		total_agg_dim_size = newlist->list.nelem;
 		agg_dim_name = NrmStringToQuark("ncl_join");
-		for (i = 0; i < total_agg_dim_size; i++) {
-			agg_dim_count[i] = 1;
-			units[i] = NrmNULLQUARK;
-			calendar[i] = NrmNULLQUARK;
-		}
 		list_index = newlist->list.nelem - 1;
 		while ((the_obj_id = _NclListGetNext((NclObj)newlist)) != -1) {
 			NclMultiDValData file_md = NULL;
@@ -1425,6 +1461,8 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		long *vec = NULL;
 		long vcount,vstart;
 		int do_file = 0;
+		ng_size_t n_sub_elements;
+
 		agg_start_index = agg_end_index + dir;
 		agg_end_index += dir * agg_dim_count[i];
 		if (! files[i]) 
@@ -1670,9 +1708,11 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				estatus = NhlFATAL;
 				goto fatal_err;
 			}
+				
 			first = False;
 			/* expand md_array */
 			tmp_md = (NclMultiDValData)_NclGetObj(var1->var.thevalue_id);
+			n_sub_elements = tmp_md->multidval.totalelements;
 			if (newlist->list.list_type & NCL_JOIN) {
 				/* need to add a dimension to the variable */
 				agg_chunk_size = tmp_md->multidval.totalsize;
@@ -1791,13 +1831,24 @@ void CallLIST_READ_FILEVAR_OP(void) {
 						estatus = NhlFATAL;
 						goto fatal_err;
 					}
-					agg_coord_var_md->multidval.kind = MULTID;
-					agg_coord_var_md->multidval.totalelements = sub_agg_md->multidval.totalelements;
-					agg_coord_var_md->multidval.dim_sizes[0] = agg_sel_count;
-					agg_coord_var_md->multidval.totalsize = sub_agg_md->multidval.totalsize;
-					memcpy(agg_coord_var_md->multidval.val,sub_agg_md->multidval.val,sub_agg_md->multidval.totalsize);
-					agg_coord_var->var.dim_info[0].dim_size = agg_sel_count;
 				}
+				agg_coord_var_md->multidval.kind = MULTID;
+				agg_coord_var_md->multidval.totalelements = sub_agg_md->multidval.totalelements;
+				agg_coord_var_md->multidval.dim_sizes[0] = agg_sel_count;
+				agg_coord_var_md->multidval.totalsize = sub_agg_md->multidval.totalsize;
+				memcpy(agg_coord_var_md->multidval.val,sub_agg_md->multidval.val,sub_agg_md->multidval.totalsize);
+				if (HasTimeUnits(units[0]) && units[i] != units[0]) {
+					NclMultiDValData tmp_md = NULL,tmp_md2;
+					NrmQuark qval = units[0];
+					tmp_md = _NclReadAtt(var1,"units",NULL);
+					tmp_md2 = _NclCopyVal(tmp_md,NULL);
+					memcpy(tmp_md2->multidval.val,(void*)&qval,sizeof(NrmQuark));
+					_NclReplaceAtt(var1,"units",tmp_md2,NULL);
+					FixAggCoordValue((NclOneDValCoordData)agg_coord_var_md,0,i,units,calendar,total_coord_offset,n_sub_elements);
+					_NclDestroyObj((NclObj)tmp_md2);
+				}
+				total_coord_offset += n_sub_elements * agg_coord_var_md->multidval.type->type_class.size;
+				agg_coord_var->var.dim_info[0].dim_size = agg_sel_count;
 				_NclDestroyObj((NclObj)sub_agg_md);
 			}
 		}
@@ -1809,6 +1860,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				estatus = NhlFATAL;
 				goto fatal_err;
 			}
+			n_sub_elements = var_md->multidval.totalelements;
 			if (newlist->list.list_type & NCL_JOIN) {
 				if (var_md->multidval.totalsize != agg_chunk_size)
 					bad = 1;
@@ -1825,27 +1877,27 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			memcpy((char *)tmp_md->multidval.val + var_offset,var_md->multidval.val,var_md->multidval.totalsize);
 			var_offset += var_md->multidval.totalsize;
 			_NclDestroyObj((NclObj)var_md);
+			if (HasTimeUnits(units[0]) && units[i] != units[0]) {
+				FixAggCoordValue((NclOneDValCoordData)agg_coord_var_md,0,i,units,calendar,total_coord_offset,n_sub_elements);
+			}
+			total_coord_offset += n_sub_elements * agg_coord_var_md->multidval.type->type_class.size;
 		}
 		if (vec)  /* this is the aggregated dimension vector value passed to each file so it must be freed at each iteration */
 			NclFree(vec);
 	}
-
-	if (agg_coord_var && agg_coord_var_md &&
-	    (! _Nclis_mono(agg_coord_var_md->multidval.type, agg_coord_var_md->multidval.val, NULL, agg_coord_var_md->multidval.totalelements))) {
-		if (HasTimeUnits(units[0])) {
-			FixAggCoord((NclOneDValCoordData)agg_coord_var_md,agg_dim_count,units,calendar,newlist->list.nelem);
-			if (agg_coord_var->var.var_quark == var1->var.var_quark && var1->var.n_dims == 1) {  
-				NclMultiDValData tmd = (NclMultiDValData)_NclGetObj(var1->var.thevalue_id);
-				if (!tmd || tmd->multidval.data_type != agg_coord_var_md->multidval.data_type || tmd->multidval.totalsize != agg_coord_var_md->multidval.totalsize) {
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"Error attempting to conform coordinate variable data to initial file's time units");
-				}
-				else {
-					memcpy(tmd->multidval.val,agg_coord_var_md->multidval.val,agg_coord_var_md->multidval.totalsize);
-				}
-			}
+	
+	if (agg_coord_var && agg_coord_var_md) {
+		if (! _Nclis_mono(agg_coord_var_md->multidval.type, agg_coord_var_md->multidval.val, NULL, agg_coord_var_md->multidval.totalelements)) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"Aggregated dimension coordinate values are non-monotonic; check aggregated file ordering");
 		}
-		else {
-			NhlPError(NhlWARNING, NhlEUNKNOWN,"Non-monotonic coordinate array generated -- check validity of the aggregated (leftmost) dimension");
+		if (agg_coord_var->var.var_quark == var1->var.var_quark && var1->var.n_dims == 1) {  
+			NclMultiDValData tmd = (NclMultiDValData)_NclGetObj(var1->var.thevalue_id);
+			if (!tmd || tmd->multidval.data_type != agg_coord_var_md->multidval.data_type || tmd->multidval.totalsize != agg_coord_var_md->multidval.totalsize) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"Error attempting to conform coordinate variable data to initial file's time units");
+			}
+			else {
+				memcpy(tmd->multidval.val,agg_coord_var_md->multidval.val,agg_coord_var_md->multidval.totalsize);
+			}
 		}
 	}
 
