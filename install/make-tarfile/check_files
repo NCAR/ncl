@@ -1885,10 +1885,12 @@ lib/ncarg/nclscripts/contrib/nchoosek.ncl
 lib/ncarg/nclscripts/contrib/run_cor.ncl
 lib/ncarg/nclscripts/contrib/time_axis_labels.ncl
 lib/ncarg/nclscripts/contrib/ut_string.ncl
+lib/ncarg/nclscripts/csm/bootstrap.ncl
 lib/ncarg/nclscripts/csm/ccm_func.ncl
 lib/ncarg/nclscripts/csm/contributed.ncl
 lib/ncarg/nclscripts/csm/crop.ncl
 lib/ncarg/nclscripts/csm/diagnostics_cam.ncl
+lib/ncarg/nclscripts/csm/extval.ncl
 lib/ncarg/nclscripts/csm/gsn_code.ncl
 lib/ncarg/nclscripts/csm/gsn_csm.ncl
 lib/ncarg/nclscripts/csm/heat_stress.ncl

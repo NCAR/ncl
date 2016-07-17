@@ -167,8 +167,8 @@ else if ("$un" == "riley") then
   setenv NCARG_EXTERNAL /Users/haley/dev/external
   setenv NCARG_ROOT /Users/haley/dev
   setenv NCARG /Users/haley/src/ncarg
-  set dap_string   = "MacOS_10.9_64bit_gcc481"
-  set nodap_string = "MacOS_10.9_64bit_nodap_gcc481"
+  set dap_string   = "MacOS_10.9_64bit_gcc492"
+  set nodap_string = "MacOS_10.9_64bit_nodap_gcc492"
 else if ("$un" == "cordy") then
   setenv NCARGTEST /Users/haley/ncargtest
   setenv NCARG_EXTERNAL /Users/haley/dev/external
