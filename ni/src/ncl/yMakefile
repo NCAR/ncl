@@ -36,7 +36,7 @@ MYLIB_API	=	libnclapi
 YACC		=	$(NYACC)
 
 #if defined(Darwin)
- EXTRA_CCOPTIONS =
+ EXTRA_CCOPTIONS = -std=c99
 #EXTRA_CCOPTIONS = -framework OpenCL \
 #		  -F/Applications/Qt/Desktop/Qt/474/gcc/lib \
 #		  -framework QtOpenGL -framework QtGui -framework QtCore -framework OpenGL -framework AGL

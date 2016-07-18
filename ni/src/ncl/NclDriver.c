@@ -17,6 +17,8 @@ char *preload_scripts[5] = {"$NCARG_ROOT/lib/ncarg/nclscripts/utilities.ncl",
                             "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl",
                             "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl",
                             "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl",
+                            "$NCARG_ROOT/lib/ncarg/nclscripts/csm/bootstrap.ncl",
+                            "$NCARG_ROOT/lib/ncarg/nclscripts/csm/extval.ncl",
                             "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"};
 
 int NclDriver(int argc, char **argv)
