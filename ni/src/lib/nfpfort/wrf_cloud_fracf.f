@@ -1,5 +1,5 @@
 C NCLFORTSTART                                                                    
-      subroutine cloud_frac(pres,rh,lowc,midc,highc,nz,ns,ew)
+      subroutine cloudfrac(pres,rh,lowc,midc,highc,nz,ns,ew)
 
       implicit none
       integer  nz,ns,ew
