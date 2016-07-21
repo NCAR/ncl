@@ -922,7 +922,7 @@ begin
          iwz  = bootstrap_indices(NZ,NZ,opt)
          xAve = dim_avg_n(x(iwx,:),  nDim(0))
          zAve = dim_avg_n(z(iwz,:),  nDim(0))
-         iffBoot(nb,:) = xAve - zAve
+         diffBoot(nb,:) = xAve - zAve
       end do
   end if
 
