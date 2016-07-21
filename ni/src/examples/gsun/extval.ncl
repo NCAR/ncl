@@ -36,8 +36,13 @@ begin
    end if
    nx   = dimsizes(x)
 
-   pdf = new( (/nscl,nx/), typeof(x), getVarFillValue(x))
-   cdf = pdf
+   if (typeof(x).eq."double" .or. \
+       typeof(scale).eq."double" .or. typeof(center).eq."double") then
+       pdf  = new( (/nscl,nx/), "double", -9999d0  )
+   else
+       pdf  = new( (/nscl,nx/), "float", -9999.0 )
+   end if
+   cdf  = pdf
 
    ix  = dim_pqsort_n(x, 1, 0) ; for plot reasons it is better 'x' is ascending 
 
@@ -108,7 +113,12 @@ begin
    end if
 
    nx   = dimsizes(x)
-   pdf  = new( (/nscl,nx/), typeof(x), getVarFillValue(x))
+   if (typeof(x).eq."double" .or. \
+       typeof(shape).eq."double" .or. typeof(scale).eq."double" .or. typeof(center).eq."double") then
+       pdf  = new( (/nscl,nx/), "double", -9999d0  )
+   else
+       pdf  = new( (/nscl,nx/), "float", -9999.0 )
+   end if
    cdf  = pdf
 
    if (any(x.le.0))  then
@@ -175,8 +185,13 @@ begin
    end if
    nx   = dimsizes(x)
 
-   pdf = new( (/nscl,nx/), typeof(x), getVarFillValue(x))
-   cdf = pdf
+   if (typeof(x).eq."double" .or. \
+       typeof(shape).eq."double" .or. typeof(scale).eq."double" .or. typeof(center).eq."double") then
+       pdf  = new( (/nscl,nx/), "double", -9999d0  )
+   else
+       pdf  = new( (/nscl,nx/), "float", -9999.0 )
+   end if
+   cdf  = pdf
 
    do n=0,nscl-1
       if (scale(n).le.0 .or. shape(n).le.0) then
@@ -243,9 +258,13 @@ begin
    end if
    nx   = dimsizes(x)
 
-   pdf = new( (/nscl,nx/), typeof(x), getVarFillValue(x))
-   pdf = 0
-   cdf = pdf
+   if (typeof(x).eq."double" .or. \
+       typeof(shape).eq."double" .or. typeof(scale).eq."double" .or. typeof(center).eq."double") then
+       pdf  = new( (/nscl,nx/), "double", -9999d0  )
+   else
+       pdf  = new( (/nscl,nx/), "float", -9999.0 )
+   end if
+   cdf  = pdf
 
    do n=0,nscl-1
       if (scale(n).le.0) then
@@ -307,13 +326,18 @@ begin
    nscl = dimsizes(scale)
    nsft = dimsizes(center)    ; center
    if (nshp.ne.nscl .or. nshp.ne.nsft) then
-       print("extval_gev: shape, scale  and sfift arguments must be the same size")
+       print("extval_gev: shape, scale  and shift arguments must be the same size")
        print("extval_gev: nshp="+nshp+"  nscl="+nscl+"  nsft="+nsft)
        exit
    end if
 
    nx   = dimsizes(x)
-   pdf  = new( (/nscl,nx/), typeof(x), getVarFillValue(x))
+   if (typeof(x).eq."double" .or. \
+       typeof(shape).eq."double" .or. typeof(scale).eq."double" .or. typeof(center).eq."double") then
+       pdf  = new( (/nscl,nx/), "double", -9999d0  )
+   else
+       pdf  = new( (/nscl,nx/), "float", -9999.0 )
+   end if
    cdf  = pdf
 
  ;;if (any(x.le.0))  then
@@ -376,10 +400,10 @@ begin
    ix    = dim_pqsort_n(x, 1, dims)  
 
    nstat = 7
-   if (typeof(x).eq."float" .or. typeof(x).eq."double" ) then
-       table = new( (/N,nstat/), typeof(x), getVarFillValue(x))
+   if (typeof(x).eq."double" ) then
+       table = new( (/N,nstat/), "double", 9999d0)
    else
-       table = new( (/N,nstat/), "float", 1e10)
+       table = new( (/N,nstat/), "float", 9999.0)
    end if
 
    table(:,0) = totype(time, typeof(x))  
