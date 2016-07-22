@@ -17,7 +17,8 @@ DEFS=-DUSE_JPEG2000 -DUSE_PNG
 #     can be found (jasper/*.h and png.h pngconf.h zconf.h zlib.h)
 #
 
-INC=-I/nwprod/lib/include/
+#INC=-I/nwprod/lib/include/
+INC=-I/usr/local/include/
 
 #
 #   This "C" source code contains many uses of the C++
@@ -25,11 +26,11 @@ INC=-I/nwprod/lib/include/
 #   appropriate compiler flag to allow the use of "//" comment indicators.
 #
 
-CFLAGS= -O3 -g -m64 $(INC) $(DEFS) -D__64BIT__
+CFLAGS=  -g -m64 $(INC) $(DEFS) -D__64BIT__
 
 CC=gcc
 
-LIB=libg2c_v1.6.0.a
+LIB=libgrib2c.a
 ARFLAGS=
 
 all: $(LIB)
