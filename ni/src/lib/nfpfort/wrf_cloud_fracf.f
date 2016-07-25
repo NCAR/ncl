@@ -3,8 +3,8 @@ C NCLFORTSTART
 
       implicit none
       integer  nz,ns,ew
-      real     pres(ew,ns,nz),rh(ew,ns,nz)
-      real     lowc(ew,ns),midc(ew,ns),highc(ew,ns)
+      double precision pres(ew,ns,nz),rh(ew,ns,nz)
+      double precision lowc(ew,ns),midc(ew,ns),highc(ew,ns)
 C NCLEND
 
       integer i,j,k
@@ -29,9 +29,9 @@ c              kcmi = k
 c         else if (pres(i,j,k) .ge. 97000.) then 
 c              kclo = k
 c         end if
-          IF ( pres(i,j,k) .gt. 97000. ) kclo=k
-          IF ( pres(i,j,k) .gt. 80000. ) kcmi=k
-          IF ( pres(i,j,k) .gt. 45000. ) kchi=k
+          IF ( pres(i,j,k) .gt. 97000.d0 ) kclo=k
+          IF ( pres(i,j,k) .gt. 80000.d0 ) kcmi=k
+          IF ( pres(i,j,k) .gt. 45000.d0 ) kchi=k
    
         end do
 
@@ -46,16 +46,16 @@ c         end if
         END DO
 
 
-        lowc(i,j)  = 4.0 * lowc(i,j)/100.-3.0
-        midc(i,j)  = 4.0 * midc(i,j)/100.-3.0
-        highc(i,j) = 2.5 * highc(i,j)/100.-1.5
+        lowc(i,j)  = 4.d0 * lowc(i,j)/100.d0-3.d0
+        midc(i,j)  = 4.d0 * midc(i,j)/100.d0-3.d0
+        highc(i,j) = 2.5d0 * highc(i,j)/100.d0-1.5d0
 
-       lowc(i,j)  = amin1(lowc(i,j),1.0)
-       lowc(i,j)  = amax1(lowc(i,j),0.0)
-       midc(i,j)  = amin1(midc(i,j),1.0)
-       midc(i,j)  = amax1(midc(i,j),0.0)
-       highc(i,j) = amin1(highc(i,j),1.0)
-       highc(i,j) = amax1(highc(i,j),0.0)
+       lowc(i,j)  = amin1(lowc(i,j),1.d0)
+       lowc(i,j)  = amax1(lowc(i,j),0.d0)
+       midc(i,j)  = amin1(midc(i,j),1.d0)
+       midc(i,j)  = amax1(midc(i,j),0.d0)
+       highc(i,j) = amin1(highc(i,j),1.d0)
+       highc(i,j) = amax1(highc(i,j),0.d0)
 
        END DO
        END DO
