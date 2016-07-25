@@ -264,7 +264,7 @@ NhlErrorTypes wgt_runave_n_W( void )
   npts = dsizes_x[*dim];
   nwgt = dsizes_wgt[0];
   if( nwgt > npts ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave_n: The length of wgt must be less than or equal to the dim-th dimension of x");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave_n: The length of wgt must be less than or equal to the %d-th dimension of x",*dim);
     return(NhlFATAL);
   }
 /*
