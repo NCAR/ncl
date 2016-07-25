@@ -22,7 +22,10 @@
 #
 #   jpeg-xx                NCL:   required 
 #                          NCARG: optional (needed for HDF4)
-#      Note: jpeg-7 is being warned against by HDF4 folks
+#      Note: HDF4 folks used to warn against jpeg-7. We decided to
+#          move from jpeg-6b to jpeg-9 during the NCL 6.4. release.
+#          The HDF4 build page said they preferred people using their
+#          own JPEG libraries anyway.
 # 
 #   libpng-x.y.z           NCL:   optional (needed for GRIB2 or PNG support)
 #                          NCARG: optional (needed for PNG)
