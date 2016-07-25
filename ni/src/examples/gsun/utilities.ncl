@@ -954,21 +954,22 @@ end
 
 ;***********************************************************************;
 ; This function checks the list of named colors to make sure they are
-; all valid or equal to "transparent".  It will return a logical array 
-; of the same size as the input array.
+; all valid or equal to "transparent", "background", or "foreground". 
+; It will return a logical array of the same size as the input array.
 ;***********************************************************************;
-undef("is_valid_named_colors_or_transparent")
-function is_valid_named_colors_or_transparent(colors:string)
-local i, valid_named_colors, ncolors, colors1d, dims
+undef("is_valid_named_colors_or_special")
+function is_valid_named_colors_or_special(colors:string)
+local i, valid_named_colors, ncolors, colors1d, dims, special_names
 begin
   dims                 = dimsizes(colors)
   colors1d             = ndtooned(colors)
   ncolors              = dimsizes(colors1d)
+  special_names        = (/"transparent","foreground","background"/)
   valid_named_colors1d = new(ncolors,logical)
   valid_named_colors1d = False    ; initialize to False
   do i=0,ncolors-1
     valid_named_colors1d(i) = is_valid_named_colors(colors1d(i)).or.\
-                                                    colors1d(i).eq."transparent"
+                              any(colors1d(i).eq.special_names)
   end do
   return(reshape(valid_named_colors1d,dims))
 end
@@ -1056,7 +1057,7 @@ begin
   end if
 
   if(typeof(colors).eq."string".and.\
-     all(is_valid_named_colors_or_transparent(colors))) then
+     all(is_valid_named_colors_or_special(colors))) then
     return("named")
   end if
 
