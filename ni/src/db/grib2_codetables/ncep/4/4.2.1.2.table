@@ -12,6 +12,7 @@
 10:10:Shape factor with respect to temperature profile in thermocline:-:SFTMP
 11:11:Attenuation coefficient of water with respect to solar radiation:m-1:ACWSR
 12:12:Salinity:kg kg-1:SALTIL
-# 12-191:12-191:Reserved:-:
+13:13:Cross sectional area of flow in channel:m2:CSAFC
+# 13-191:13-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 255:255:Missing:-:

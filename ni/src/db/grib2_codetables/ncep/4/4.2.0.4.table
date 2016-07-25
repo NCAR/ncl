@@ -15,7 +15,9 @@
 #12-49:12-49:Reserved:-:
 50:50:UV index (under clear sky):Numeric:UVIUCS
 51:51:UV index:W m-2:UVI
-#52-191:52-191:Reserved:-:
+52:52:Downward short-wave radiation flux, clear sky:W m-2:DSWRFCS
+53:53:Upward short-wave radiation flux, clear sky:W m-2:USWRFCS
+#54-191:54-191:Reserved:-:
 192:192:Downward short-wave radiation flux:W m-2:DSWRF
 193:193:Upward short-wave radiation flux:W m-2:USWRF
 194:194:UV-B downward solar flux:W m-2:DUVB

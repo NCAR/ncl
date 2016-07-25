@@ -36,6 +36,8 @@
 108:108:Aerosol lidar backscatter from the ground:m-1 sr-1:ALBGRD
 109:109:Aerosol lidar extinction from satellite:m-1:ALESAT
 110:110:Aerosol lidar extinction from the ground:m-1:ALEGRD
+111:111:Angstrom exponent:Numeric:ANGSTEXP
+112:112:Scattering aerosol optical thickness:Numeric:SCTAOTK
 # 135 - 191:135 - 191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 255:255:Missing:-:

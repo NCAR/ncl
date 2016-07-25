@@ -15,7 +15,10 @@
 13:13:Showalter index:K:SHWINX
 #14:14:Reserved	
 15:15:Updraft helicity:m2 s-2:UPHL
-# 16-191:16-191:Reserved:-:
+16:16:Bulk richardson number:Numeric:BULKRN
+17:17:Gradient richardson number:Numeric:GRDRN
+18:18:Flux richardson number:Numeric:FLUXRN
+# 19-191:19-191:Reserved:-:
 192:192:Surface lifted index:K:LFTX
 193:193:Best (4 layer) lifted index:K:4LFTX
 194:194:Richardson number:Numeric:RI

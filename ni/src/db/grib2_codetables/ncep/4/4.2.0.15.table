@@ -14,6 +14,8 @@
 12:12:Reflectivity of rain:dB:RFRAIN
 13:13:Reflectivity of graupel:dB:RFGRPL
 14:14:Reflectivity of hail:dB:RFHAIL
-# 15-191:15-191:Reserved:-:
+15:15:Hybrid scan reflectivity:dB:HSR
+16:16:Hybrid scan reflectivity Height:m:HSRHT
+# 17-191:17-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 255:255:Missing:-:

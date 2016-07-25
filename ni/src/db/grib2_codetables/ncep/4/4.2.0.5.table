@@ -6,7 +6,9 @@
 4:4:Upward long-wave rad. flux:W m-2:ULWRF
 5:5:Net long-wave radiation flux:W m-2:NLWRF
 6:6:Net long-wave radiation flux, clear sky:W m-2:NLWRCS
-# 7-191:7-191:Reserved:-:
+7:7:Brightness temperature:K:BRTEMP
+8:8:Downward long-wave radiation flux, clear sky:W m-2:DLWRFCS
+# 9-191:9-191:Reserved:-:
 192:192:Downward long-wave radiation flux:W m-2:DLWRF
 193:193:Upward long-wave radiation flux:W m-2:ULWRF
 194:194:Long-wave radiative heating rate:K s-1:LWHR

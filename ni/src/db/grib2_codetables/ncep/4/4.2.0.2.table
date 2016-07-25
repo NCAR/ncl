@@ -38,7 +38,13 @@
 36:36:Amplitude function for rossby wave envelope for meridional wind:m s-1:AFRWE
 37:37:Northward turbulent surface stress:N m-2 s:NTSS
 38:38:Eastward turbulent surface stress:N m-2 s:ETSS
-# 39-191:34-191:Reserved:-:
+39:39:Eastward wind tendency due to parameterizations:m s-2:EWTPARM
+40:40:Northward wind tendency due to parameterizations:m s-2:NWTPARM
+41:41:U-component of geostrophic wind:m s-1:UGWIND
+42:42:V-component of geostrophic wind:m s-1:VGWIND
+43:43:Geostrophic wind direction:degree true:GEOWD
+44:44:Geostrophic wind speed:m s-1:GEOWS
+# 45-191:45-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:Vertical speed shear:s-1:VWSH
 193:193:Horizontal momentum flux:N m-2:MFLX

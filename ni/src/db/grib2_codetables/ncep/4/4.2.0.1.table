@@ -90,7 +90,32 @@
 90:90:Total kinematic moisture flux:kg kg-1 m s-1:TKMFLX
 91:91:U-component (zonal) kinematic moisture flux:kg kg-1 m s-1:UKMFLX
 92:92:V-component (meridional) kinematic moisture flux:kg kg-1 m s-1:VKMFLX
-# 93-191:93-191:Reserved:-:
+93:93:Relative humidity with respect to water:%:RHWATER
+94:94:Relative humidity with respect to ice:%:RHICE
+95:95:Freezing or frozen precipitation rate:kg m-2 s-1:FZPRATE
+96:96:Mass density of rain:kg m-3:MASSDR
+97:97:Mass density of snow:kg m-3:MASSDS
+98:98:Mass density of graupel:kg m-3:MASSDG
+99:99:Mass density of hail:kg m-3:MASSDH
+100:100:Specific number concentration of rain:kg-1:SPNCR
+101:101:Specific number concentration of snow:kg-1:SPNCS
+102:102:Specific number concentration of graupel:kg-1:SPNCG
+103:103:Specific number concentration of hail:kg-1:SPNCH
+104:104:Number density of rain:m-3:NUMDR
+105:105:Number density of snow:m-3:NUMDS
+106:106:Number density of graupel:m-3:NUMDG
+107:107:Number density of hail:m-3:NUMDH
+108:108:Specific humidity tendency due to parameterizations:kg kg-1 s-1:SHTPRM
+109:109:Mass density of liquid water coating on hail expressed as mass of liquid water per unit volume of air:kg m-3:MDLWHVA
+110:110:Specific mass of liquid water coating on hail expressed as mass of liquid water per unit mass of moist air:kg kg-1:SMLWHMA
+111:111:Mass mixing ratio of liquid water coating on hail expressed as mass of liquid water per unit mass of dry air:kg kg-1:MMLWHDA
+112:112:Mass density of liquid water coating on graupel expressed as mass of liquid water per unit volume of air:kg m-3:MDLWGVA
+113:113:Specific mass of liquid water coating on graupel expressed as mass of liquid water per unit mass of moist air:kg kg-1:SMLWGMA
+114:114:Mass mixing ratio of liquid water coating on graupel expressed as mass of liquid water per unit mass of dry air:kg kg-1:MMLWGDA
+115:115:Mass density of liquid water coating on snow expressed as mass of liquid water per unit volume of air:kg m-3:MDLWSVA
+116:116:Specific mass of liquid water coating on snow expressed as mass of liquid water per unit mass of moist air:kg kg-1:SMLWSMA
+117:117:Mass mixing ratio of liquid water coating on snow expressed as mass of liquid water per unit mass of dry air:kg kg-1:MMLWSDA
+# 117-191:117-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:Categorical rain (yes=1; no=0):non-dim:CRAIN
 193:193:Categorical freezing rain (yes=1; no=0):non-dim:CFRZR

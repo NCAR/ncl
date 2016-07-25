@@ -26,7 +26,11 @@
 24:24:Anisotropy of sub-grid scale orography:Numeric:ASGSO
 25:25:Natural logarithm of pressure in pa:Numeric:NLPRES
 26:26:Exner pressure:Numeric:EXPRES
-# 27-191:25-191:Reserved:-:
+27:27:Updraught mass flux:kg m-2 s-1:UMFLX
+28:28:Downdraught mass flux:kg m-2 s-1:DMFLX
+29:29:Updraught detrainment rate:kg m-3 s-1:UDRATE
+30:30:Downdraught detrainment rate:kg m-3 s-1:DDRATE
+# 31-191:31-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:MSLP (ETA model reduction):Pa:MSLET
 193:193:5-wave geopotential height:gpm:5WAVH

@@ -27,6 +27,7 @@
 25:25:Weather:Code Table 4.225:WIWW
 26:26:Convective outlook:Code Table 4.224:CONVO
 27:27:Icing scenario:Code Table 4.227:ICESC
+28:28:Mountain wave turbulence (eddy dissipation rate):m2/3 s-1:MWTURB
 # 27-191:27-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:Maximum snow albedo:%:MXSALB

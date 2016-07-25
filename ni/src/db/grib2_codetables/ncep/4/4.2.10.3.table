@@ -1,6 +1,7 @@
 # GRIBv2 - Table 4.2-10-3 Oceanographic - Surface Properties
 0:0:Water temperature:K:WTMP
 1:1:Deviation of sea level from mean:m:DSLM
+2:2:Heat exchange coefficient:non-dim:CH
 # 2-191:2-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:Hurricane storm surge:m:SURGE
@@ -14,6 +15,7 @@
 200:200:Surface salinity trend:psu per day:SSST
 201:201:Kinetic energy:J kg-1:KENG
 202:202:Salt flux:kg m-2s-1:SLTFL
+203:203:Heat exchange coefficient:non-dim:LCH
 242:242:20% tropical cyclone storm surge exceedance:m:TCSRG20
 243:243:30% tropical cyclone storm surge exceedance:m:TCSRG30
 244:244:40% tropical cyclone storm surge exceedance:m:TCSRG40

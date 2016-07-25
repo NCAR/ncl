@@ -23,9 +23,13 @@
 21:21:Aerosol optical thickness at 0.810 micrometer:non-dim:AOT08
 22:22:Aerosol optical thickness at 1.640 micrometer:non-dim:AOT16
 23:23:Angstrom coefficient:non-dim:ANGCOE
-# 24-191:24-191:Reserved:-:
+#24-26 Reserved
+27:27:Bidirectional reflectance factor:Numeric:BRFLF
+28:28:brightness temperture:K:SPBRT
+29:29:Scaled radiance:Numeric:SRAD
+# 30-191:30-191:Reserved:-:
 192:192:Scatterometer estimated u wind component:m s-1:USCT
 193:193:Scatterometer estimated v wind component:m s-1:VSCT
-194:194:Scatterometer wind quality:-:SWQI
+194:194:Scatterometer wind quality:non-dim:SWQI
 # 195-254:195-254:Reserved for Local Use:-:
 255:255:Missing:-:

@@ -16,4 +16,6 @@
 # 15-191 Reserved
 # 192-254  Reserved for local use
 192:192:Forecast confidence indicator
+193:193:Probability-matched mean
+194:194:Neighborhood probability
 255:255:Missing

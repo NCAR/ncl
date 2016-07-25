@@ -17,12 +17,17 @@
 15:15:Soil porosity:m3m-3:SOILP
 16:16:Volumetric saturation of soil moisture:m3m-3:VSOSM
 17:17:Saturation of soil moisture:kgm-3:SATOSM
-18:18:Soil temperature:K:
-19:19:Soil moisture:kg m-3:
-20:20:Column-integrated soil moisture:kg m-2:
-21:21:Soil ice:kg m-3:
-22:22:Column-integrated soil ice:kg m-2:
-# 22-191:22-191:Reserved:-:
+18:18:Soil temperature:K:SOILTMP
+19:19:Soil moisture:kg m-3:SOILMOI
+20:20:Column-integrated soil moisture:kg m-2:CISOILM
+21:21:Soil ice:kg m-3:SOILICE
+22:22:Column-integrated soil ice:kg m-2:CISICE
+23:23:Liquid water in snow pack:kg m-2:LWSNWP
+24:24:Frost index:kg day-1:FRSTINX
+25:25:Snow depth at elevation bands:kg m-2:SNWDEB
+26:26:Soil heat flux:W m-2:SHFLX
+27:27:Soil depth:m:SOILDEP
+# 28-191:28-191:Reserved:-:
 # 204-254:204-254:Reserved for Local Use:-:
 192:192:Liquid volumetric soil moisture (non frozen):Proportion:SOILL
 193:193:Number of soil layers in root zone:non-dim:RLYRS

@@ -1,6 +1,7 @@
 # GRIBv2 - Table 4.2-10-191 Oceanographic - Miscellaneous
 0:0:Seconds prior to initial reference time (defined in section 1):s:TSEC
 1:1:Meridional overturning stream function:m3 s-1:MOSF
+# 2 reserved
 3:3:Days since last observation:d:DSLOBSO
 # 4-191:4-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
