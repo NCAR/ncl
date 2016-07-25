@@ -312,15 +312,15 @@ begin
   xyOpts@tmXBLabelFontHeightF = 0.014
   xyOpts@tmYLLabelFontHeightF = xyOpts@tmXBLabelFontHeightF
   if (localOpts@DrawFahrenheit) then
-      xyOpts@tiXAxisString    = "Temperature (F)"
+      xyOpts@tiXAxisString    = get_res_value_keep(Opts,"tiXAxisString","Temperature (F)")
   else
-      xyOpts@tiXAxisString    = "Temperature (C)"
+      xyOpts@tiXAxisString    = get_res_value_keep(Opts,"tiXAxisString","Temperature (C)")
   end if
   xyOpts@tiXAxisFont          = localOpts@Font
   xyOpts@tiXAxisFontColor     = "Foreground"   ; colTan
   xyOpts@tiXAxisFontHeightF   = 0.0125
   xyOpts@tiYAxisFont          = localOpts@Font
-  xyOpts@tiYAxisString        = "P (hPa)"
+  xyOpts@tiYAxisString        = get_res_value_keep(Opts,"tiYAxisString","P (hPa)")
   xyOpts@tiYAxisOffsetXF      = 0.0200
   xyOpts@tiYAxisOffsetYF      = -0.0200
   xyOpts@tiYAxisFontColor     = "Foreground"   ; colTan
@@ -1312,15 +1312,15 @@ begin
   xyOpts@tmXBLabelFontHeightF = 0.014
   xyOpts@tmYLLabelFontHeightF = xyOpts@tmXBLabelFontHeightF
   if (localOpts@DrawFahrenheit) then
-      xyOpts@tiXAxisString    = "Temperature (F)"
+      xyOpts@tiXAxisString    = get_res_value_keep(Opts,"tiXAxisString","Temperature (F)")
   else
-      xyOpts@tiXAxisString    = "Temperature (C)"
+      xyOpts@tiXAxisString    = get_res_value_keep(Opts,"tiXAxisString","Temperature (C)")
   end if
   xyOpts@tiXAxisFont          = localOpts@Font
   xyOpts@tiXAxisFontColor     = "Foreground"   ; colTan
   xyOpts@tiXAxisFontHeightF   = 0.0125
   xyOpts@tiYAxisFont          = localOpts@Font
-  xyOpts@tiYAxisString        = "P (hPa)"
+  xyOpts@tiYAxisString        = get_res_value_keep(Opts,"tiYAxisString","P (hPa)")
   xyOpts@tiYAxisOffsetXF      = 0.0200
   xyOpts@tiYAxisOffsetYF      = -0.0200
   xyOpts@tiYAxisFontColor     = "Foreground"   ; colTan
