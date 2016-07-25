@@ -102,16 +102,17 @@ function extval_frechet(x[*]:numeric, shape[*]:numeric, scale[*]:numeric \
 ;
 ; The Frechet distribution requires lower bound.
 ;
-local nshp, nscl, nx, pdf, cdf, y, ix
+local nshp, nscl, nctr, nx, pdf, cdf, y, ix
 begin
    nshp = dimsizes(shape)
    nscl = dimsizes(scale)
-   if (nshp.ne.nscl) then
-       print("extval_frechet: shape and scale arguments must be the same size")
-       print("extval_frechet: nshp="+nshp+"  nscl="+nscl)
+   nctr = dimsizes(center)
+   if (nshp.ne.nscl .or. nshp.ne.nctr) then
+       print("extval_frechet: shape, scale and center arguments must be the same size")
+       print("extval_frechet: nshp="+nshp+"  nscl="+nctr+"  nscl="+nctr)
        exit
    end if
-
+   
    nx   = dimsizes(x)
    if (typeof(x).eq."double" .or. \
        typeof(shape).eq."double" .or. typeof(scale).eq."double" .or. typeof(center).eq."double") then
@@ -144,10 +145,12 @@ begin
    pdf@long_name = "PDF Frechet: Extreme Value Type II: Maxima"
    pdf@shape     = shape
    pdf@scale     = scale
+   pdf@center    = center
 
    cdf@long_name = "CDF: Frechet: Extreme Value Type II: Maxima"
    cdf@shape     = shape
    cdf@scale     = scale
+   cdf@center    = center
 
    if (nscl.eq.1) then
        return([/pdf(0,:), cdf(n,:)/])
@@ -168,7 +171,7 @@ function extval_weibull(x[*]:numeric, shape[*]:numeric, scale[*]:numeric, center
 ; GEV type III with ξ < 0 ( Weibull, bounded) Fits
 ; Fits found for temperature, wind speed, pollutants, sea level
 ;
-local y, pdf, cdf, nshp, nscl, nsft, nx, n, ix
+local y, pdf, cdf, nshp, nscl, nctr, nx, n, ix
 begin
   ;if (any(x.le.0))  then
   ;    print("extval_weibull: one or more x <= 0")
@@ -177,10 +180,10 @@ begin
 
    nshp = dimsizes(shape)
    nscl = dimsizes(scale)
-   nsft = dimsizes(center)
-   if (nshp.ne.nscl .or. nshp.ne.nsft) then
+   nctr = dimsizes(center)
+   if (nshp.ne.nscl .or. nshp.ne.nctr) then
        print("extval_weibull: shape, scale and center arguments must be the same size")
-       print("extval_weibull: nshp="+nshp+"  nscl="+nscl+"  nsft="+nsft)
+       print("extval_weibull: nshp="+nshp+"  nscl="+nscl+"  nctr="+nctr)
        exit
    end if
    nx   = dimsizes(x)
@@ -320,14 +323,14 @@ function extval_gev(x[*]:numeric, shape[*]:numeric, scale[*]:numeric, center[*]:
 ; The GEV distribution is often used as an approximation to model the maxima 
 ; of long (finite) sequences of random variables.
 ;;
-local nshp, nscl, nx, pdf, cdf, y
+local nshp, nscl, nctr, nx, pdf, cdf, y
 begin
    nshp = dimsizes(shape)
    nscl = dimsizes(scale)
-   nsft = dimsizes(center)    ; center
-   if (nshp.ne.nscl .or. nshp.ne.nsft) then
+   nctr = dimsizes(center)    ; center
+   if (nshp.ne.nscl .or. nshp.ne.nctr) then
        print("extval_gev: shape, scale  and shift arguments must be the same size")
-       print("extval_gev: nshp="+nshp+"  nscl="+nscl+"  nsft="+nsft)
+       print("extval_gev: nshp="+nshp+"  nscl="+nscl+"  nctr="+nctr)
        exit
    end if
 
