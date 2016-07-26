@@ -1328,6 +1328,7 @@ lib/ncarg/grib2_codetables/ncep/4/4.222.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.2.3.table
 lib/ncarg/grib2_codetables/ncep/4/4.223.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.2.4.table
+lib/ncarg/grib2_codetables/ncep/4/4.2.2.5.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.3.0.table
 lib/ncarg/grib2_codetables/ncep/4/4.230.table
 lib/ncarg/grib2_codetables/ncep/4/4.2.3.192.table
@@ -1756,7 +1757,7 @@ lib/ncarg/nclex/nug/NUG_map_settings.ncl
 lib/ncarg/nclex/nug/NUG_masking.ncl
 lib/ncarg/nclex/nug/NUG_multi_timeseries.ncl
 lib/ncarg/nclex/nug/NUG_multiple_plots_along_y.ncl
-lib/ncarg/nclex/nug/NUG_panel_3x2_plot.ncl
+lib/ncarg/nclex/nug/NUG_panel_plot_3x2.ncl
 lib/ncarg/nclex/nug/NUG_panel_control.ncl
 lib/ncarg/nclex/nug/NUG_panel_plot.ncl
 lib/ncarg/nclex/nug/NUG_panel_vp.ncl
