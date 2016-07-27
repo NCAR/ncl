@@ -8,10 +8,18 @@
   2015-06-04  kmf
 """
 import Ngl,Nio
+import os,sys
 
 #-- define variables
 diri   = "./"                                  #-- data directory
 fname  = "rectilinear_grid_2D.nc"              #-- data file name
+
+#---Test if file exists
+if(not os.path.exists(diri+fname)):
+  print("You do not have the necessary file (%s) to run this example." % (diri+fname))
+  print("You can get the files from the NCL website at:")
+  print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/")
+  sys.exit()
 
 minval =  250.                                 #-- minimum contour level
 maxval =  315                                  #-- maximum contour level

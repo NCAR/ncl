@@ -27,6 +27,13 @@ def nice_lon_labels(lons):
 diri   = "./"                             #-- data directory
 fname  = "rectilinear_grid_3D.nc"         #-- data file name
 
+#---Test if file exists
+if(not os.path.exists(diri+fname)):
+  print("You do not have the necessary file (%s) to run this example." % (diri+fname))
+  print("You can get the files from the NCL website at:")
+  print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/")
+  sys.exit()
+
 #--  open file and read variables
 f      =  Nio.open_file(diri + fname,"r") #-- open data file
 t      =  f.variables["t"]                #-- get whole "t" variable

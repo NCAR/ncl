@@ -21,6 +21,13 @@ fname        = 'ta_ps_850.nc'                       #-- data path and file name
 gname        = 'r2b4_amip.nc'                       #-- grid info file
 VarName      = 'ta'                                 #-- variable name       
  
+#---Test if files exist
+if(not os.path.exists(diri+fname) or not os.path.exists(diri+gname)):
+  print("You do not have the necessary files to run this example, '%s' and '%s'." % (diri+fname,diri+gname))
+  print("You can get the files from the NCL website at:")
+  print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/")
+  sys.exit()
+
 #--  open file and read variables 
 f = Nio.open_file(diri + fname,'r')                 #-- add data file
 g = Nio.open_file(diri + gname,'r')                 #-- add grid file (not contained in data file!!!)
