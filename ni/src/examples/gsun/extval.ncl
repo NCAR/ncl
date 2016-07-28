@@ -226,80 +226,107 @@ begin
        return([/pdf, cdf/])
    end if
 end
-;=======================================
+;================
 undef("extval_pareto")
-;---
-; Pareto: Not checked in any detail
-;---
-function extval_pareto(x[*]:numeric, shape[*]:numeric, scale[*]:numeric, center[*]:numeric, opt[1]:integer)
-;
-; Generalized Pareto Distribution
-; http://www.mathwave.com/help/easyfit/html/analyses/distributions/pareto.html
-; http://www.mathwave.com/articles/generalized_pareto_distribution.html
-;
-; The Generalized Pareto (GP) is a right-skewed distribution, 
-; parameterized with a shape parameter, k, and a scale parameter, sigma. 
-; k is also known as the "tail index" parameter, and can be positive, zero, or negative.k
-;
-; Like the exponential distribution, the generalized Pareto distribution is 
-; often used to model the tails of another distribution. 
-;
-local y, q, arg, pwr, pdf, cdf, nshp, nscl, nsft, nx, n
-begin
-  ;if (any(x.le.0))  then
-  ;    print("extval_pareto: x>0: xmin="+min(x))
-  ;    exit
-  ;end if
+function extval_pareto(x[*]:numeric, shape[*]:numeric, scale[*]:numeric, location[*]:numeric \
+                                   , ptype[1]:integer, opt[1]:integer)
 
-   nshp = dimsizes(shape)
+; Pareto Distributions:
+;   http://www.mathwave.com/help/easyfit/html/analyses/distributions/gen_pareto.html
+;   http://www.mathwave.com/help/easyfit/html/analyses/distributions/pareto.html
+;   http://www.mathwave.com/help/easyfit/html/analyses/distributions/pareto2.html
+;
+;   https://en.wikipedia.org/wiki/Pareto_distribution
+;
+local nscl, nshp, nloc, nx, pdf, cdf, n, con, conk, cons, shpy, pdf, cdf, y
+begin
    nscl = dimsizes(scale)
-   nsft = dimsizes(center)
-   if (nshp.ne.nscl) then
-       print("extval_pareto: shape, scale and center arguments must be the same size")
-       print("extval_pareto: nshp="+nshp+"  nscl="+nscl+"  nsft="+nsft)
-       exit
-   end if
+   nshp = dimsizes(shape)
+   nloc = dimsizes(location)
    nx   = dimsizes(x)
 
-   if (typeof(x).eq."double" .or. \
-       typeof(shape).eq."double" .or. typeof(scale).eq."double" .or. typeof(center).eq."double") then
-       pdf  = new( (/nscl,nx/), "double", -9999d0  )
-   else
-       pdf  = new( (/nscl,nx/), "float", -9999.0 )
+   pdf = new( (/nshp,nx/), typeof(x), getVarFillValue(x))
+   cdf = pdf
+
+   if (ptype.lt.0 .or. ptype.gt.2) then
+       print("extval_pareto: non-valid ptype="+ptype)
+       exit
    end if
-   cdf  = pdf
 
-   do n=0,nscl-1
-      if (scale(n).le.0) then
-          print("extval_pareto: shape <=0: shape="+shape(n)+"; scale="+scale(n) )
-          continue
-      end if
+   if (ptype.eq.0) then                       ; Generalized Pareto
+       do n=0,nscl-1
+          if (scale(n).le.0) then
+              print("extval_pareto: Generalized: scale <=0: scale="+scale(n) )
+              continue
+          end if
 
-      q = 1.0/scale(n)                          ; temporary variables for clarity                         
-      y = (x-center(n))/scale(n)
+          conk = 1.0/shape(n)                 ; convenience and clarity
+          cons = 1.0/scale(n)
+          y    = (x-location(n))/scale(n)    
+          shpy = shape(n)*y
 
-      if (shape(n).ne.0) then
-          pwr = (-1-(1/shape(n)))               ; clarity only; power
-          arg =  1+shape(n)*y                   ; clarity
-          pdf(n,:) = q*(arg^pwr)
+          if (shape(n).eq.0) then
+              pdf(n,:)  = cons*exp(-y)
+              cdf(n,:)  = 1-pdf(n,:)              
+          else
+              pdf(n,:)  = cons*(1+shpy)^(-1.0-conk)
+              cdf(n,:)  = 1-(1+shpy)^(-conk)
+          end if
+        end do
 
-          pwr = (-1/shape(n))
-          cdf(n,:) = 1-(arg^pwr)
-      else
-          pdf(n,:) = q*exp(-y) 
-          cdf(n,:) = 1-exp(-y)
-      end if
-   end do
+        pdf@long_name = "Pareto: Generalized: PDF"
+        pdf@shape     = shape
+        pdf@scale     = scale
+        pdf@location  = location
 
-   pdf@long_name = "Pareto: General: PDF"
-   pdf@shape     = shape
-   pdf@scale     = scale
-   pdf@center    = center
+        cdf@long_name = "Pareto: Generalized: CDF"
+        cdf@shape     = shape
+        cdf@scale     = scale
+        cdf@location  = location
+   end if                                      ; ptype=0  
 
-   cdf@long_name = "Pareto: General: CDF"
-   cdf@shape     = shape
-   cdf@scale     = scale
-   cdf@center    = center
+   if (ptype.eq.1) then                        ; Perato Type I
+       do n=0,nscl-1
+          if (shape(n).le.0 .or. scale(n).le.0) then
+              print("extval_pareto: Type I: shape or scale <=0: shape="+shape(n)+"; scale="+scale(n) )
+              continue
+          end if
+
+          xx       = where(x.le.0, pdf@_FillValue, x)      ; safety;  XX > 0
+          con      = shape(n)*(scale(n)^shape(n))          ; numerator
+          pdf(n,:) = where(xx.ge.scale(n), con/(xx^(shape(n)+1)), pdf@_FillValue) 
+          cdf(n,:) = where(xx.lt.scale(n), 1, (1-(scale(n)/xx)^shape(n)))
+        end do
+
+        pdf@long_name = "Pareto: Type I: PDF"
+        pdf@shape     = shape
+        pdf@scale     = scale
+
+        cdf@long_name = "Pareto: Type I: CDF"
+        cdf@shape     = shape
+        cdf@scale     = scale
+   end if                                      ; ptype=1
+
+   if (ptype.eq.2) then     ; Perato Type II; location ignored
+       do n=0,nscl-1
+          if (shape(n).le.0 .or. scale(n).le.0) then
+              print("extval_pareto: Type II: shape or scale <=0: shape="+shape(n)+"; scale="+scale(n) )
+              continue
+          end if
+
+          con       = shape(n) * (scale(n)^shape(n))    ; numerator
+          pdf(n,:)  = where(x.ge.0, con/((x+scale(n))^(shape(n)+1)), pdf@_FillValue) 
+          cdf(n,:)  = 1 - (scale(n)/(x+scale(n)))^shape(n)
+      end do
+
+      pdf@long_name = "Pareto: Type II: PDF"
+      pdf@shape     = shape
+      pdf@scale     = scale
+
+      cdf@long_name = "Pareto: Type II: CDF"
+      cdf@shape     = shape
+      cdf@scale     = scale
+   end if                                       ; ptype=2
 
    if (nscl.eq.1) then
        return([/pdf(0,:), cdf(0,:)/])
