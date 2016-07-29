@@ -13572,7 +13572,11 @@ begin
     lbar_orth = get_res_value(res2,"pmLabelBarOrthogonalPosF",0.0)
   end if
 
-  cnres = get_res_ne(res2,(/"vc","vf","pm"/))
+; V6.4.0: Changed this to not exclude the "pm" resources.
+; Since the contour plot is the base plot, I'm thinking that
+; it *should* pass through the "pm" resources.
+;  cnres = get_res_ne(res2,(/"vc","vf","pm"/))
+  cnres = get_res_ne(res2,(/"vc","vf"/))
   vcres = get_res_eq(res2,(/"vc","vf","tr"/))
 
 ;
