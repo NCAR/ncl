@@ -566,6 +566,7 @@ begin
 end 
 ;----
 undef("extval_recurrence_gev")
+; DO NOT USE!  This function has **NOT** been tested. DO NOT USE!
 function extval_recurrence_gev(time[*]:numeric, x[*]:numeric, dims[*]:integer \
                               ,shape[1]:numeric, scale[1]:numeric, location[1]:numeric\
                               ,opt[1]:logical)
@@ -578,26 +579,20 @@ function extval_recurrence_gev(time[*]:numeric, x[*]:numeric, dims[*]:integer \
 ; exceeded in any given year , i .  e .  the 푚 - year return level is 
 ; associated with a return period of 푚 years
 ;
-local N, N1, ix, n, rank, retval
+local N, N1, ix, n, rank, retval_gev
 begin
-   N     = dimsizes(x)
-   ix    = dim_pqsort_n(x, 1, 0)  
-               
-   if (typeof(x).eq."float" .or. typeof(x).eq."double" ) then
-       rank   = new( N, typeof(x), getVarFillValue(x))
-       retval = new( N, typeof(x), getVarFillValue(x))
-   else       ; integer, short, ...
-       rank   = new( N, "float", 1e10)
-       retval = new( N, "float", 1e10)
-   end if
+   print("extval_recurrence_gev: DO NOT USE")
+ ;;N     = dimsizes(x)
+ ;;ix    = dim_pqsort_n(x, 1, 0)  
+ ;;            
+ ;;do n=0,N-1
+ ;;   rank(n) = ind(ix.eq.n)+1      ; Rank
+ ;;end do
 
-   do n=0,N-1
-      rank(n) = ind(ix.eq.n)+1      ; Rank
-   end do
-
-   retval = location + (scale/shape)*((-log(1.0-rank))^(-shape)-1.0)
-   retval@long_name = "Return Level"
-   return(retval)
+ ;;retval_gev = location + (scale/shape)*((-log(1.0-rank))^(-shape)-1.0)
+ ;;retval_gev@long_name = "Return Level"
+   retval_gev = -999.9
+   return(retval_gev)
 end
 ;------
 undef("extval_return_prob")
@@ -673,9 +668,9 @@ function extval_return_period(Tr[*]:numeric, Pr[*]:numeric)
 ; Pr  - probability (0-1)
 ; ------
 ; Pr = 0.95                 ; user specified 
-; Ta = 1000                 ; years (days ... whatever)
+; Ta = 100                  ; years (days ... whatever)
 ; pp = 1.0/Ta               ; clarity
-; Nr = log(Pr)/log(1-pp)    ; Nr=51.27 years
+; Nr = log(Pr)/log(1-pp)    ; Nr=5.1 years
 
 ; ------
 local kTr, kPr, Nr, Nrf
@@ -716,6 +711,10 @@ begin
   end if
 
   Nr@long_name = "period of return event"  
+  if (isatt(Tr,"units")) then
+      Nr@units = Tr@units
+  end if
+
   if (typeof(Tr).eq."double" .or. typeof(Pr).eq."double") then
       return(Nr)
   else
