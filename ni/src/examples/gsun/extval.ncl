@@ -600,37 +600,127 @@ begin
    return(retval)
 end
 ;------
-undef("extval_prob_tresh")
-function extval_prob_tresh(T:numeric, n[1]:numeric)
+undef("extval_return_prob")
+function extval_return_prob(Tr[*]:numeric, Nr[*]:numeric)
 ;
 ; Probability Pe that one or more floods occurring during any period 
 ; will exceed a given 'event' (eg, flood) threshold can be determined, 
 ; using the binomial distribution. 
 ;
-; What is the probabili ty of having one or more occurrence 
+; https://en.wikipedia.org/wiki/Return_period
+; https://en.wikipedia.org/wiki/100-year_flood
+; http://water.usgs.gov/edu/100yearflood.html
+
+; The probability of at least one event that exceeds design limits during 
+; the expected life of the structure is the complement of the probability 
+; that no events occur which exceed design limits.
+;
+; What is the probability of having one or more occurrence 
 ;     of a 10-year event within the 10-year life of a projectt?
 ; Assume that you are considering buying a house just with
 ;      in the flood plain.  Flood plains are defined for return periods 
 ;      of 100 years.  What is the probability that one or more times 
 ;      you will be flooded within the 30-year life of a mortgage?
 ;
-; Risk Analysis: design risk
-;     https://wiki.umn.edu/pub/WilsonNotes/WebHome/risk.pdf
-;
-; Assumptions: values for 'T' are independent and stationary
-;
-; T  - event period
-; n  - period
-
+; Assumptions: values for 'Tr' are independent and stationary
+; Tr  - return (event) period
+; n   - period
+; ------
+; Let Tr  = 10  ... What is the probability one will occur for the next 8 (=n)
+;     pre = 0.57
+; ------
+local kTr, kNr, Pre, Pref
 begin
-;;pe = 1-(1-(1.0/T))^n
-  if (typeof(T).eq."double") then
-      pe = 1d0-(1d0-(1d0/T))^n
-  else
-      pe = 1.0-(1.0-(1.0/T))^n
+  kTr    = dimsizes(Tr)
+  kNr    = dimsizes(Nr)
+
+  if (kTr.eq.1 .or. kNr.eq.1) then    ;;if (isscalar(Tr) .and. isscaler(Nr)) then
+      Pre = 1d0-(1d0-(1d0/Tr))^Nr
+      if (kTr.eq.1) then
+          Pre!0  = "Nr"
+          Pre&Nr =  Nr
+      else
+          Pre!0  = "Tr"
+          Pre&Tr =  Tr
+      end if
+  else 
+      Pre = new( (/kTr,kNr/), "double")
+      do k=0,kTr-1
+         Pre(k,:) = 1d0-(1d0-(1d0/Tr(k)))^Nr
+      end do
+      Pre!0  = "Tr"
+      Pre!1  = "Nr"
+      Pre&Nr =  Nr
+      Pre&Tr =  Tr
   end if
 
-  pe@long_name = "probability of event exceedance"
-  pe@info      = "design risk"
-  return (pe)
+  Pre@long_name = "probability of return event"  ; exceedance
+  Pre@info      = "design risk"
+  if (typeof(Tr).eq."double" .or. typeof(Nr).eq."double") then
+      return(Pre)
+  else
+      Pref = tofloat(Pre)
+      copy_VarMeta(Pre, Pref)
+      return( Pref )
+  end if
+end
+;------
+undef("extval_return_period")
+function extval_return_period(Tr[*]:numeric, Pr[*]:numeric)
+;
+; Assumptions: values for 'Tr' are independent and stationary
+; Tr  - return (event) period
+; Pr  - probability (0-1)
+; ------
+; Pr = 0.95                 ; user specified 
+; Ta = 1000                 ; years (days ... whatever)
+; pp = 1.0/Ta               ; clarity
+; Nr = log(Pr)/log(1-pp)    ; Nr=51.27 years
+
+; ------
+local kTr, kPr, Nr, Nrf
+begin
+  kTr    = dimsizes(Tr)
+  kPr    = dimsizes(Pr)
+
+  if (any(Pr.le.0 .or. Pr.gt.1)) then
+      print("extval_return_period: Pr must be 0 < Pr < 1: Pr="+Pr)
+      exit
+  end if
+
+  if (any(Tr.le.0)) then
+      print("extval_return_period: Tr must be > 0: Tr="+Tr)
+      exit
+  end if
+
+  if (kTr.eq.1 .or. kPr.eq.1) then    ;;if (isscalar(Tr) .and. isscaler(Pr)) then
+      pp = 1d0/Tr
+      Nr = log(Pr)/log(1-pp)
+      if (kTr.eq.1) then
+          Nr!0  = "Pr"
+          Nr&Pr =  Pr
+      else
+          Nr!0  = "Tr"
+          Nr&Tr =  Tr
+      end if
+  else 
+      Nr = new( (/kTr,kPr/), "double")
+      do k=0,kTr-1
+         pp      = 1d0/Tr
+         Nr(k,:) = log(Pr)/log(1-pp)
+      end do
+      Nr!0  = "Pr"
+      Nr!1  = "Tr"
+      Nr&Pr =  Nr
+      Nr&Tr =  Tr
+  end if
+
+  Nr@long_name = "period of return event"  
+  if (typeof(Tr).eq."double" .or. typeof(Pr).eq."double") then
+      return(Nr)
+  else
+      Nrf = tofloat(Nr)
+      copy_VarMeta(Nr, Nrf)
+      return( Nrf )
+  end if
 end
