@@ -942,6 +942,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 						}
 						else
 						{
+							agg_dim_count[list_index] = 1;
 							files[list_index] = thefile;
 							good_file_count++;
 							list_index--;
@@ -983,6 +984,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 						}
 						else {
 							files[list_index] = thefile;
+							agg_dim_count[list_index] = 1;
 							good_file_count++;
 							list_index--;
 						}
@@ -1877,10 +1879,12 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			memcpy((char *)tmp_md->multidval.val + var_offset,var_md->multidval.val,var_md->multidval.totalsize);
 			var_offset += var_md->multidval.totalsize;
 			_NclDestroyObj((NclObj)var_md);
-			if (HasTimeUnits(units[0]) && units[i] != units[0]) {
-				FixAggCoordValue((NclOneDValCoordData)agg_coord_var_md,0,i,units,calendar,total_coord_offset,n_sub_elements);
+			if (agg_coord_var && agg_coord_var_md) {
+				if (HasTimeUnits(units[0]) && units[i] != units[0]) {
+					FixAggCoordValue((NclOneDValCoordData)agg_coord_var_md,0,i,units,calendar,total_coord_offset,n_sub_elements);
+				}
+				total_coord_offset += n_sub_elements * agg_coord_var_md->multidval.type->type_class.size;
 			}
-			total_coord_offset += n_sub_elements * agg_coord_var_md->multidval.type->type_class.size;
 		}
 		if (vec)  /* this is the aggregated dimension vector value passed to each file so it must be freed at each iteration */
 			NclFree(vec);
