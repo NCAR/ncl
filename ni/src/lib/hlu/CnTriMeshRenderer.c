@@ -3565,7 +3565,7 @@ static NhlErrorTypes UpdateMeshData
  	float *rlat,*rlon;
 	float *rdat;
 	int i;
-	int ret = NhlNOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 	double xtmp,ytmp,xt,yt;
 	int block_ix;
 	int pcount[256];
@@ -3759,6 +3759,21 @@ static NhlErrorTypes ContourLineRender (
 				      tbp->itri,tbp->ntri,Lotn,
 				      cnp->fws,cnp->iws,entry_name);
 		}
+#if 0
+                {
+			size_t j;
+			float max = -1e30;
+			float min = 1e30;
+			for (j = 0; j < tbp->npnt; j++) {
+				if (tbp->rpnt[j] > max) 
+					max = tbp->rpnt[j];
+				if (tbp->rpnt[j] < min)
+					min = tbp->rpnt[j];
+			}
+			printf ("rpnt min/max %f %f\n",min,max);
+		}
+#endif
+                
 		subret = _NhlCtcldr(tbp->rpnt,tbp->iedg,tbp->itri,
 				    cnp->fws,cnp->iws,entry_name);
 
@@ -4082,6 +4097,7 @@ static NhlErrorTypes CnTriMeshRender
         NhlCnTriMeshRendererLayer tml = (NhlCnTriMeshRendererLayer) instance;
 	NhlCnTriMeshRendererLayerPart	  *tmp = &tml->cntrimeshrenderer;
 	NhlContourPlotLayerPart 	  *cnp = &cnl->contourplot;
+	NhlTransformLayerPart   *tfp = &(cnl->trans);
 	NhlString e_text;
         NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
 	int mesh_inited = 0;
@@ -4122,6 +4138,12 @@ static NhlErrorTypes CnTriMeshRender
 			       NhlNtrOutOfRangeF, &cnp->out_of_range_val,
 			       NULL);
 		c_ctsetr("ORV",cnp->out_of_range_val);
+		/* make sure the contour plot's own trans obj has the 
+		   same out of range value */
+		NhlVASetValues(tfp->trans_obj->base.id, 
+			       NhlNtrOutOfRangeF,cnp->out_of_range_val, 
+			       NULL);
+
 #pragma omp parallel shared(nthreads) 
 		{
 #ifdef _OPENMP
@@ -6736,7 +6758,7 @@ void   (_NHLCALLF(hluctmxyz,HLUCTMXYZ))
 {
 	int status;
 	float xtmp,ytmp;
-	float rtod = 57.2957795130823;
+	double rtod = 57.2957795130823;
 
 	if (Cnp == NULL) {
 		_NHLCALLF(ctmxyz,CTMXYZ)(imap,xinp,yinp,zinp,xotp,yotp);
@@ -6753,9 +6775,21 @@ void   (_NHLCALLF(hluctmxyz,HLUCTMXYZ))
 	else if (Cnl->trans.overlay_status == _tfCurrentOverlayMember &&
 		 ! Cnl->trans.do_ndc_overlay) { 
 		if (*imap > 0) {
-			ytmp = rtod*asin(*zinp/
-					 sqrt(*xinp * *xinp + *yinp * *yinp +
-					      *zinp * *zinp));
+			double dtmp = (double)*zinp/
+				sqrt((double)*xinp * (double)*xinp + (double)*yinp * (double)*yinp +                                                                                        
+				     (double)*zinp * (double)*zinp);
+			if (dtmp >= 1.0) 
+				ytmp = 90.0;
+			else if (dtmp <= -1.0) 
+				ytmp = -90.0;
+			else {
+				ytmp = rtod*asin(dtmp);
+				if (isnan(ytmp)) {
+					*xotp = Cnp->out_of_range_val;
+					*yotp = Cnp->out_of_range_val;
+					return;
+				}
+			}
 			if (*xinp == 0 && *yinp == 0) {
 				xtmp = 0.0;
 			}
