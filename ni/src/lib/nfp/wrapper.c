@@ -107,6 +107,7 @@ extern NhlErrorTypes wrf_wps_read_int_W(void);
 extern NhlErrorTypes wrf_wps_write_int_W(void);
 extern NhlErrorTypes wrf_vintrp_W(void);
 extern NhlErrorTypes wrf_ctt_W(void);
+extern NhlErrorTypes wrf_cloud_frac_W(void);
 extern NhlErrorTypes wrf_monotonic_W(void);
 
 extern NhlErrorTypes cape_thermo_W(void);
@@ -1976,6 +1977,17 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
         NclRegisterFunc(wrf_ctt_W,args,"wrf_ctt",nargs);
+
+/*
+ * Register "wrf_cloud_fraction"
+ *
+ * Create private argument array
+ */
+	nargs = 0;
+	args = NewArgs(2);
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
+	SetArgTemplate(args,1,"numeric",0,NclANY);nargs++;
+	NclRegisterFunc(wrf_cloud_frac_W,args,"wrf_cloud_fraction",nargs);
 
 /*
  * Register "wrf_vintrp".
