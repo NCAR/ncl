@@ -1508,7 +1508,7 @@ void _NclPrintMachine
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++,fptr++;
 				fprintf(fp,"\t");
-				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				fprintf(fp,"%ld\n",(long)*ptr);
 				ptr++;lptr++,fptr++;
 				if(*(long*)ptr == 0 ) {
 					fprintf(fp,"No Subscripts");
