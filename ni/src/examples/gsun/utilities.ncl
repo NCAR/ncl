@@ -585,7 +585,7 @@ begin
       if (ismissing(strlen(lines(i))) .or. strlen(lines(i)).eq.0) then  
           lines(i) = "#"  ; zero-lengthed lines cause us grief...
       end if 
-      tokens = str_split(lines(i), " ")
+      tokens = str_split(lines(i), " ,")
       if (dimsizes(tokens).ge.3) then
           red = -1.0
           green = -1.0
