@@ -27,6 +27,7 @@ int NclDriver(int argc, char **argv)
     int appid;
     int i, k = 0;
     int reset = 1;
+    short echoUserScript = 0;
     DIR *d;
     struct dirent   *ent;
 #if defined(HPUX)
@@ -134,7 +135,7 @@ int NclDriver(int argc, char **argv)
                 break;
 
             case 'x':
-                NCLecho = 1;
+                echoUserScript = 1;
                 break;
 
 #ifdef NCLDEBUG
@@ -472,6 +473,7 @@ int NclDriver(int argc, char **argv)
 #endif
 
     /* Load any provided script */
+    NCLecho = echoUserScript;
     if (nclf != (char *) NULL) {
         (void) strcpy(buffer, _NGResolvePath(nclf));
         if (_NclPreLoadScript(buffer, 0) == NhlFATAL)
