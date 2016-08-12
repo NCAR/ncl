@@ -45,6 +45,8 @@ typedef struct _NhlXyDataSpecLayerPart{
 	NhlColorIndex		color;
 	NhlGenArray		colors;
 	NhlBoolean		mono_color;
+        float                   line_opacity;
+        NhlGenArray             line_opacities;
 
 	NhlColorIndex		label_color;
 	NhlGenArray		label_colors;
@@ -60,6 +62,8 @@ typedef struct _NhlXyDataSpecLayerPart{
 	NhlColorIndex		marker_color;
 	NhlGenArray		marker_colors;
 	NhlBoolean		mono_marker_color;
+        float                   marker_opacity;
+        NhlGenArray             marker_opacities;
 
 	NhlMarkerIndex		marker;
 	NhlGenArray		markers;
@@ -170,6 +174,7 @@ typedef struct _NhlXyPlotLayerPart {
 	NhlGenArray	item_types;
 	NhlGenArray	lg_label_strings;
 	NhlGenArray	line_colors;
+        NhlGenArray     line_opacities;
 	NhlGenArray	dash_seg_lens;
 	NhlGenArray	llabel_colors;
 	NhlGenArray	llabel_strings;
@@ -179,6 +184,7 @@ typedef struct _NhlXyPlotLayerPart {
 	NhlGenArray	marker_indexes;
 	NhlGenArray	marker_sizes;
 	NhlGenArray	marker_thicknesses;
+        NhlGenArray     marker_opacities;     
 	NhlGenArray	xvectors;
 	NhlGenArray	yvectors;
 	NhlGenArray	len_vectors;

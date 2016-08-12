@@ -55,6 +55,10 @@
 #define NhlCxyLineColors	"XyLineColors"
 #define	NhlNxyMonoLineColor	"xyMonoLineColor"
 #define	NhlCxyMonoLineColor	"XyMonoLineColor"
+#define NhlNxyLineOpacityF      "xyLineOpacityF"
+#define NhlCxyLineOpacityF      "XyLineOpacityF"
+#define NhlNxyLineOpacities     "xyLineOpacities"
+#define NhlCxyLineOpacities     "XyLineOpacities"
 
 #define NhlNxyLineLabelFontColor	"xyLineLabelFontColor"
 #define NhlNxyLineLabelFontColors	"xyLineLabelFontColors"
@@ -85,6 +89,10 @@
 #define NhlCxyMarkerColors	"XyMarkerColors"
 #define NhlNxyMonoMarkerColor	"xyMonoMarkerColor"
 #define NhlCxyMonoMarkerColor	"XyMonoMarkerColor"
+#define NhlNxyMarkerOpacityF    "xyMarkerOpacityF"
+#define NhlCxyMarkerOpacityF    "XyMarkerOpacityF"
+#define NhlNxyMarkerOpacities    "xyMarkerOpacities"
+#define NhlCxyMarkerOpacities    "XyMarkerOpacities"
 
 #define NhlNxyMarkerSizeF	"xyMarkerSizeF"
 #define NhlNxyMarkerSizes	"xyMarkerSizes"

@@ -92,6 +92,12 @@ static NhlResource data_resources[] = {
 	{NhlNxyMonoLineColor,NhlCxyMonoLineColor,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(mono_color),NhlTImmediate,_NhlUSET((NhlPointer)False),
 		_NhlRES_DEFAULT,NULL},
+	{NhlNxyLineOpacityF,NhlCxyLineOpacityF,NhlTFloat,
+		sizeof(float),Oset(line_opacity),NhlTString,
+		_NhlUSET((NhlPointer)"1.0"),_NhlRES_DEFAULT,NULL},
+	{NhlNxyLineOpacities,NhlCxyLineOpacities,NhlTFloatGenArray,
+		sizeof(NhlGenArray),Oset(line_opacities),NhlTImmediate,
+		_NhlUSET((NhlPointer)NULL),_NhlRES_DEFAULT,(NhlFreeFunc)NhlFreeGenArray},
 
 	{NhlNxyDashPattern,NhlCLineDashPattern,NhlTDashIndex,sizeof(NhlDashIndex),
 		Oset(dash),NhlTImmediate,_NhlUSET((NhlPointer)NhlSOLIDLINE),
@@ -141,6 +147,12 @@ static NhlResource data_resources[] = {
 	{NhlNxyMonoMarkerColor,NhlCxyMonoMarkerColor,NhlTBoolean,
 		sizeof(NhlBoolean),Oset(mono_marker_color),NhlTImmediate,
 		_NhlUSET((NhlPointer)False),_NhlRES_DEFAULT,NULL},
+	{NhlNxyMarkerOpacityF,NhlCxyMarkerOpacityF,NhlTFloat,
+		sizeof(float),Oset(marker_opacity),NhlTString,
+		_NhlUSET((NhlPointer)"1.0"),_NhlRES_DEFAULT,NULL},
+	{NhlNxyMarkerOpacities,NhlCxyMarkerOpacities,NhlTFloatGenArray,
+		sizeof(NhlGenArray),Oset(marker_opacities),NhlTImmediate,
+		_NhlUSET((NhlPointer)NULL),_NhlRES_DEFAULT,(NhlFreeFunc)NhlFreeGenArray},
 
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
          	Oset(marker_size_set),NhlTImmediate,
@@ -1216,10 +1228,12 @@ XyDataInitialize
 	dnp->marker_modes=_NhlCopyGenArray(dnp->marker_modes,True);
 	dnp->lg_label_strings=_NhlCopyGenArray(dnp->lg_label_strings,True);
 	dnp->colors=_NhlCopyGenArray(dnp->colors,True);
+        dnp->line_opacities = _NhlCopyGenArray(dnp->line_opacities, True);
 	dnp->label_colors=_NhlCopyGenArray(dnp->label_colors,True);
 	dnp->labels=_NhlCopyGenArray(dnp->labels,True);
 	dnp->line_thicknesses=_NhlCopyGenArray(dnp->line_thicknesses,True);
 	dnp->marker_colors=_NhlCopyGenArray(dnp->marker_colors,True);
+        dnp->marker_opacities = _NhlCopyGenArray(dnp->marker_opacities, True);
 	dnp->markers=_NhlCopyGenArray(dnp->markers,True);
 	dnp->marker_sizes=_NhlCopyGenArray(dnp->marker_sizes,True);
 	dnp->marker_thicknesses=_NhlCopyGenArray(dnp->marker_thicknesses,True);
@@ -1340,6 +1354,8 @@ XyPlotInitialize
 					sizeof(NhlString),0,NULL,True);
 	xp->line_colors = _NhlCreateGenArray(NULL,NhlTColorIndex,
 					sizeof(NhlColorIndex),0,NULL,True);
+	xp->line_opacities = _NhlCreateGenArray(NULL,NhlTFloat,
+					sizeof(float),0,NULL,True);
 	xp->dash_seg_lens = _NhlCreateGenArray(NULL,NhlTFloat,
 					sizeof(float),0,NULL,True);
 	xp->llabel_colors = _NhlCreateGenArray(NULL,NhlTColorIndex,
@@ -1352,6 +1368,8 @@ XyPlotInitialize
 					sizeof(float),0,NULL,True);
 	xp->marker_colors = _NhlCreateGenArray(NULL,NhlTColorIndex,
 					sizeof(NhlColorIndex),0,NULL,True);
+	xp->marker_opacities = _NhlCreateGenArray(NULL,NhlTFloat,
+					sizeof(float),0,NULL,True);
 	xp->marker_indexes = _NhlCreateGenArray(NULL,NhlTMarkerIndex,
 					sizeof(NhlMarkerIndex),0,NULL,True);
 	xp->marker_sizes = _NhlCreateGenArray(NULL,NhlTFloat,
@@ -1384,9 +1402,9 @@ XyPlotInitialize
 					sizeof(char),0,NULL,True);
 
 	if(!xp->dash_indexes || !xp->item_types || !xp->lg_label_strings ||
-		!xp->line_colors || !xp->dash_seg_lens || !xp->llabel_colors ||
+		!xp->line_colors || !xp->line_opacities || !xp->dash_seg_lens || !xp->llabel_colors ||
 		!xp->llabel_strings || !xp->llabel_fheights ||
-		!xp->line_thicknesses || !xp->marker_colors ||
+		!xp->line_thicknesses || !xp->marker_colors || !xp->marker_opacities ||
 		!xp->marker_indexes || !xp->marker_sizes ||
 		!xp->marker_thicknesses || !xp->xvectors || !xp->yvectors ||
 		!xp->len_vectors || !xp->missing_set || !xp->xmissing ||
@@ -1508,6 +1526,21 @@ XyDataSetValues
 		}
 	}
 
+	if(_NhlArgIsSet(args,num_args,NhlNxyLineOpacities)){
+		gen = xdnp->line_opacities;
+		xdnp->line_opacities = _NhlCopyGenArray(gen,True);
+		if(gen && !xdnp->line_opacities){
+			NhlPError(NhlWARNING,ENOMEM,
+				"%s:Resetting %s to previous value",
+				func,NhlNxyLineOpacities);
+			xdnp->line_opacities = xdop->line_opacities;
+		}
+		else{
+			NhlFreeGenArray(xdop->line_opacities);
+			status = True;
+		}
+	}
+
 	if(_NhlArgIsSet(args,num_args,NhlNxyLineLabelFontColors)){
 		gen = xdnp->label_colors;
 		xdnp->label_colors = _NhlCopyGenArray(gen,True);
@@ -1564,6 +1597,21 @@ XyDataSetValues
 		}
 		else{
 			NhlFreeGenArray(xdop->marker_colors);
+			status = True;
+		}
+	}
+
+	if(_NhlArgIsSet(args,num_args,NhlNxyMarkerOpacities)){
+		gen = xdnp->marker_opacities;
+		xdnp->marker_opacities = _NhlCopyGenArray(gen,True);
+		if(gen && !xdnp->marker_opacities){
+			NhlPError(NhlWARNING,ENOMEM,
+				"%s:Resetting %s to previous value",
+				func,NhlNxyMarkerOpacities);
+			xdnp->marker_opacities = xdop->marker_opacities;
+		}
+		else{
+			NhlFreeGenArray(xdop->marker_opacities);
 			status = True;
 		}
 	}
@@ -2047,12 +2095,14 @@ SetUpDataSpec
 	NhlMarkLineMode			*item_types;
 	NhlString			*lg_label_strings;
 	NhlColorIndex			*line_colors;
+        float                           *line_opacities;
 	float				*dash_seg_lens;
 	NhlColorIndex			*llabel_colors;
 	NhlString			*llabel_strings;
 	float				*llabel_fheights;
 	float				*line_thicknesses;
 	NhlColorIndex			*marker_colors;
+        float                           *marker_opacities;
 	NhlMarkerIndex			*marker_indexes;
 	float				*marker_sizes;
 	float				*marker_thicknesses;
@@ -2085,12 +2135,14 @@ SetUpDataSpec
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->item_types));
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->lg_label_strings));
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->line_colors));
+		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->line_opacities));
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->dash_seg_lens));
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->llabel_colors));
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->llabel_strings));
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->llabel_fheights));
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->line_thicknesses));
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->marker_colors));
+		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->marker_opacities));
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->marker_indexes));
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->marker_sizes));
 		ret = MIN(ret,GrowGen
@@ -2121,12 +2173,14 @@ SetUpDataSpec
 	item_types = xlp->item_types->data;
 	lg_label_strings = xlp->lg_label_strings->data;
 	line_colors = xlp->line_colors->data;
+        line_opacities = xlp->line_opacities->data;
 	dash_seg_lens = xlp->dash_seg_lens->data;
 	llabel_colors = xlp->llabel_colors->data;
 	llabel_strings = xlp->llabel_strings->data;
 	llabel_fheights = xlp->llabel_fheights->data;
 	line_thicknesses = xlp->line_thicknesses->data;
 	marker_colors = xlp->marker_colors->data;
+        marker_opacities = xlp->marker_opacities->data;
 	marker_indexes = xlp->marker_indexes->data;
 	marker_sizes = xlp->marker_sizes->data;
 	marker_thicknesses = xlp->marker_thicknesses->data;
@@ -2172,6 +2226,8 @@ SetUpDataSpec
 		int		len_lglabeltable=0;
 		int		*ctable=NULL;
 		int		len_ctable=0;
+                float           *opacities=NULL;
+                int             len_opacities=0;
 		int		*labelcolortable= NULL;
 		int		len_labelcolortable = 0;
 		NhlString	*labeltable=NULL;
@@ -2180,6 +2236,8 @@ SetUpDataSpec
 		int		len_linethicktable = 0;
 		int		*markercolortable= NULL;
 		int		len_markercolortable = 0;
+                float           *markeropacities=NULL;
+                int             len_markeropacities=0;
 		int		*markertable=NULL;
 		int		len_markertable= 0;
 		float		*markersizetable=NULL;
@@ -2271,7 +2329,7 @@ SetUpDataSpec
 			len_lglabeltable = 0;
 
 		/*
-		 * line colors
+		 * line colors and opacities
 		 */
 		if(dsp->colors != NULL && !dsp->mono_color){
 			ctable = (int*)dsp->colors->data;
@@ -2279,6 +2337,13 @@ SetUpDataSpec
 		}
 		else
 			len_ctable = 0;
+                
+		if(dsp->line_opacities != NULL){
+			opacities = (float*)dsp->line_opacities->data;
+			len_opacities = dsp->line_opacities->len_dimensions[0];
+		}
+		else
+			len_opacities = 0;
 
 		/*
 		 * Line Label Color
@@ -2314,7 +2379,7 @@ SetUpDataSpec
 			len_linethicktable = 0;
 
 		/*
-		 * Marker Color
+		 * Marker Colors and opacities
 		 */
 		if(dsp->marker_colors != NULL && !dsp->mono_marker_color){
 			markercolortable = (NhlColorIndex*)
@@ -2324,6 +2389,14 @@ SetUpDataSpec
 		}
 		else
 			len_markercolortable = 0;
+
+		if(dsp->marker_opacities != NULL){
+			markeropacities = (float*)dsp->marker_opacities->data;
+			len_markeropacities = dsp->marker_opacities->len_dimensions[0];
+		}
+		else
+			len_markeropacities = 0;
+
 
 		/*
 		 * Marker indexes
@@ -2401,6 +2474,11 @@ SetUpDataSpec
 				line_colors[index] = ctable[j];
 			else
 				line_colors[index] = dsp->color;
+
+			if(j < len_opacities)
+				line_opacities[index] = opacities[j];
+			else
+				line_opacities[index] = dsp->line_opacity;
 
 			dash_seg_lens[index] = 
 				dsp->dash_seg_len * xlp->vp_average;
@@ -2498,6 +2576,11 @@ SetUpDataSpec
 			else
 				marker_colors[index] = dsp->marker_color;
 	
+			if(j < len_markeropacities)
+				marker_opacities[index] = markeropacities[j];
+			else
+				marker_opacities[index] = dsp->marker_opacity;
+
 			if(j < len_markertable)
 				marker_indexes[index] = markertable[j];
 			else
@@ -2577,11 +2660,13 @@ DrawCurves
 	/*NhlString		*lg_label_strings = xlp->lg_label_strings->data;*/
 	float			*dash_seg_lens = xlp->dash_seg_lens->data;
 	int			*line_colors = xlp->line_colors->data;
+        float                   *line_opacities = xlp->line_opacities->data;
 	int			*llabel_colors = xlp->llabel_colors->data;
 	NhlString		*llabel_strings = xlp->llabel_strings->data;
 	float			*llabel_fheights = xlp->llabel_fheights->data;
 	float			*line_thicknesses = xlp->line_thicknesses->data;
 	int			*marker_colors = xlp->marker_colors->data;
+        float                   *marker_opacities = xlp->marker_opacities->data;
 	int			*marker_indexes = xlp->marker_indexes->data;
 	float			*marker_sizes = xlp->marker_sizes->data;
 	float			*marker_thicknesses =
@@ -2641,6 +2726,7 @@ DrawCurves
 			_NhlNwkLineLabelFontHeightF,llabel_fheights[i],
 			_NhlNwkDashPattern,	dash_indexes[i],
 			_NhlNwkLineColor,	line_colors[i],
+                        _NhlNwkLineOpacityF,    line_opacities[i],
 			_NhlNwkLineLabelFontColor,	llabel_colors[i],
 			_NhlNwkLineLabel,	llabel_strings[i],
 			_NhlNwkLineThicknessF,	line_thicknesses[i],
@@ -2651,6 +2737,7 @@ DrawCurves
 			_NhlNwkLineLabelConstantSpacingF, llabel_cspacings[i],
 			_NhlNwkLineLabelFuncCode, llabel_func_codes[i], 
 			_NhlNwkMarkerColor,	marker_colors[i],
+                        _NhlNwkMarkerOpacityF,  marker_opacities[i],
 			_NhlNwkMarkerIndex,	marker_indexes[i],
 			_NhlNwkMarkerSizeF,	marker_sizes[i],
 			_NhlNwkMarkerThicknessF,	marker_thicknesses[i],
@@ -3202,6 +3289,7 @@ NhlLayer inst;
 	NhlFreeGenArray(xp->item_types);
 	NhlFreeGenArray(xp->lg_label_strings);
 	NhlFreeGenArray(xp->line_colors);
+        NhlFreeGenArray(xp->line_opacities);
 	NhlFreeGenArray(xp->dash_seg_lens);
 	NhlFreeGenArray(xp->llabel_colors);
 	NhlFreeGenArray(xp->llabel_strings);
@@ -3214,6 +3302,7 @@ NhlLayer inst;
 	NhlFreeGenArray(xp->llabel_fonts);
 	NhlFreeGenArray(xp->line_thicknesses);
 	NhlFreeGenArray(xp->marker_colors);
+        NhlFreeGenArray(xp->marker_opacities);
 	NhlFreeGenArray(xp->marker_indexes);
 	NhlFreeGenArray(xp->marker_sizes);
 	NhlFreeGenArray(xp->marker_thicknesses);
