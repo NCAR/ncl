@@ -1645,7 +1645,7 @@ C  See jira ncl-2443. Similar changes have been made for Conpack
         IJMP=0
         IAIC=0
 C
-        IF (IAIA($NCP1$) .GT. 0) 
+        IF (IAIA($NCP1$) .EQ. 99) 
           LOOP
             CALL CTTREG (RPNT,IEDG,ITRI,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,
      +                                                         NRWK)
