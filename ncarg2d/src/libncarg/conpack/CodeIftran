@@ -1556,23 +1556,31 @@ C
 C
 C Add the edge of the grid.
 C
+C  2016-08-12:
+C  Modified such that the grid boundary is added only if the area
+C  outside the grid is to be filled. Otherwise this does not seem
+C  to be needed and causes problems;
+C  See jira ncl-2443. Similar changes have been made for Conpackt
+C
         IJMP=0
         IAIC=0
 C
-        LOOP
-          CALL CPTREG (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
-          IF (ICFELL('CPCLAM',20).NE.0) RETURN
-          EXIT IF (IJMP.EQ.0)
-          IF (MIRO.EQ.0)
-            CALL AREDAM (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,IGCL,
+	IF (IAIA($NCP1$) .GT. 0) 
+          LOOP
+            CALL CPTREG (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
+            IF (ICFELL('CPCLAM',20).NE.0) RETURN
+            EXIT IF (IJMP.EQ.0)
+            IF (MIRO.EQ.0)
+              CALL AREDAM (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,IGCL,
      +                                                IAIC,IAIA($NCP1$))
-            IF (ICFELL('CPCLAM',21).NE.0) RETURN
-          ELSE
-            CALL AREDAM (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,IGCL,
+              IF (ICFELL('CPCLAM',21).NE.0) RETURN
+            ELSE
+              CALL AREDAM (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,IGCL,
      +                                                IAIA($NCP1$),IAIC)
-            IF (ICFELL('CPCLAM',22).NE.0) RETURN
-          END IF
-        END LOOP
+              IF (ICFELL('CPCLAM',22).NE.0) RETURN
+            END IF
+          END LOOP
+	END IF
 C
 C Add edges of areas filled with special values.
 C
