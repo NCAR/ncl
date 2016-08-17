@@ -12477,6 +12477,41 @@ begin
   return( nor )
 end
 ; ------------
+undef("exner_pressure")
+function exner_pressure(p:numeric, punit[1]:integer)
+; Exner pressure - non-dimensional pressure
+local p0, exner_pres
+begin
+  if (punit.eq.0) then
+      p0 = 100000      ; Pa    
+  else
+      p0 = 1000        ; hPa
+  end if
+
+  exner_pres = (p/p0)^(287.05/1005.0)
+  exner_pres@long_name = "Exner Pressure"
+ ;exner_pres@units     = ""        ; dimensionless
+  copy_VarCoords(p, exner_pres)
+  return(exner_pres) 
+end
+; ============
+undef("exner_pressure_theta")
+function exner_pressure_theta(p:numeric, theta:numeric, punit[1]:integer)
+; Exner pressure - non-dimensional pressure
+; theta - potential temperature (K)
+local p0, exner_pres
+begin
+  if (punit.eq.0) then
+      exner_pres = theta/p           ; Pa
+  else
+      exner_pres = theta/(p*100)     ; hPa
+  end if
+  exner_pres@long_name = "Exner Pressure"
+ ;exner_pres@units     = ""        ; dimensionless
+  copy_VarCoords(p, exner_pres)
+  return(exner_pres) 
+end
+; ------------
 undef("relhum_ttd")
 function relhum_ttd (t:numeric, td:numeric, opt:integer)
 ;
@@ -17979,14 +18014,14 @@ end
 ; Now the UNION of A and B, written A union B = (1,2,3,4,5). 
 ; There is no need to list the 3 twice.
 ;---------------------------------------------------------------------
-undef("get_unique_union")
-function get_unique_union( a, b )
+undef("venn2_union")
+function venn2_union( a, b )
 local AB, ab, ranka, rankb
 begin
    if (typeof(a).ne.typeof(b)) then
-       print("get_unique_union: arguments a and b must be the same type")
-       print("                  typeof(a)="+typeof(a))
-       print("                  typeof(b)="+typeof(b))
+       print("venn2_union: arguments a and b must be the same type")
+       print("             typeof(a)="+typeof(a))
+       print("             typeof(b)="+typeof(b))
        exit
    end if
 
@@ -18009,7 +18044,7 @@ begin
 
    ab     = get_unique_values(AB)    ; 'get_unique_values' sorts the values
                                      ; into a one-dimenaional array
-   ab@tag = "NCL: get_unique_union has created the result"
+   ab@tag = "NCL: venn2_union"
    return(ab)
 end
 
@@ -18018,16 +18053,16 @@ end
 ; For example: let A = (1,2,3) and B = (3,4,5). 
 ; The INTERSECTION of A and B, written A intersection B = (3).
 ;---------------------------------------------------------------------
-undef("get_unique_intersection")   
-function get_unique_intersection( a, b )
+undef("venn2_intersection")   
+function venn2_intersection( a, b )
 local atype, btype, au, bu, nau, nbu, abi, k, n, m
 begin
    atype = typeof(a)
    btype = typeof(b)
    if (atype.ne.btype) then
-       print("get_unique_intersection: arguments a and b must be the same type")
-       print("                         typeof(a)="+atype)
-       print("                         typeof(b)="+btype)
+       print("venn2_intersection: arguments a and b must be the same type")
+       print("                    typeof(a)="+atype)
+       print("                    typeof(b)="+btype)
        exit
    end if
                                 ; 'get_unique_values' sorts the elements
@@ -18060,11 +18095,11 @@ begin
 
    if (k.eq.-1) then           
        abi    := new (1, typeof(a), default_fillvalue(atype))
-       abi@tag = "get_unique_intersection; NULL set; no intersection pairs"
+       abi@tag = "venn2_intersection; NULL set; no intersection pairs"
        return(abi)
    end if
 
-   abi@tag = "NCL: get_unique_intersection has created the result"
+   abi@tag = "NCL: venn2_intersection"
    return(abi(0:k))                   
 end
 ;
@@ -18073,21 +18108,21 @@ end
 ; For example: let A = (1,2,3) and B = (3,4,5). 
 ; The DIFFERENCE of A and B, written A difference B = (1,2,4,5).
 ;---------------------------------------------------------------------
-undef("get_unique_difference")   
-function get_unique_difference( a, b )
+undef("venn2_difference")   
+function venn2_difference( a, b )
 local atype, btype, abi, nabi, au, bu, abd, AB, nAB, n
 begin
    atype = typeof(a)
    btype = typeof(b)
    if (atype.ne.btype) then
-       print("get_unique_difference: arguments a and b must be the same type")
-       print("                       typeof(a)="+atype)
-       print("                       typeof(b)="+btype)
+       print("venn2_difference: arguments a and b must be the same type")
+       print("                  typeof(a)="+atype)
+       print("                  typeof(b)="+btype)
        exit
    end if
                                           ; 'get_unique_values' sorts the elements
                                           ;  and returns a one-dimensional arry
-   abi  = get_unique_intersection(a, b)   ; intersect (common) values
+   abi  = venn2_intersection(a, b)   ; intersect (common) values
    if (ismissing(abi(0))) then            ; NO intersect
                                           ; 'get_unique_values' sorts the elements
        au  = get_unique_values(a)         ; unique 'a' [au]
@@ -18099,7 +18134,7 @@ begin
        else
            qsort(abd)
        end if
-       abd@tag = "NCL: get_unique_difference; arrays are DISJOINT; no intersection"
+       abd@tag = "NCL: venn2_difference; arrays are DISJOINT; no intersection"
        return(abd)
    end if
    nabi = dimsizes(abi)
@@ -18128,10 +18163,9 @@ begin
    else
        qsort(abd(0:k))
    end if
-   abd@tag = "NCL: get_unique_difference has created the result"
+   abd@tag = "NCL: venn2_difference has created the result"
    return(abd(0:k))
 end
-
 ;------------------------------------------------------
 undef("satvpr_water_bolton")
 function satvpr_water_bolton(t:numeric, iounit[2]:integer)
@@ -18643,4 +18677,4 @@ begin
   copy_VarCoords(prob, c2)
   return(c2)
 end
-
+;--------------------------------------------------
