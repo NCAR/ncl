@@ -24,7 +24,9 @@
 ;;               at the top of your NCL script, before the begin statement.
 ;;
 
-; Global attribute for whether to use old-style (pre V6.1.0) labebar
+; Global attribute for whether to use old-style (pre V6.4.0) labebar. 
+; We are still in the process of making a decision whether to make this
+; the default for V6.4.0
 GSN_OLD_LABELBAR = True
 
 ;***********************************************************************;
