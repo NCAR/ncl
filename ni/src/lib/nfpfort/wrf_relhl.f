@@ -49,8 +49,8 @@ C
       integer i, j, k, k10, k3, ktop
       parameter (pi=3.14159265d0, dtr=pi/180.d0, dpr=180.d0/pi)
      
-      do 15 j = 1, mjx-1
-	do 15 i = 1, miy-1
+      do 15 j = 1, mjx
+	do 15 i = 1, miy
 	  sdh = 0.d0
 	  su = 0.d0
 	  sv = 0.d0
