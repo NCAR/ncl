@@ -2456,8 +2456,9 @@ NhlErrorTypes _NhlCpclam
 	c_entsr(&save_mode,1);
 
 	do {
-		c_cpclam(zdat,fwsrp->ws_ptr,iwsrp->ws_ptr,awsrp->ws_ptr);
-
+		/*c_cpclam(zdat,fwsrp->ws_ptr,iwsrp->ws_ptr,awsrp->ws_ptr);*/
+		/* now using an HLU modified version of this routine */
+		NGCALLF(hlucpclam,HLUCPCLAM)(zdat,fwsrp->ws_ptr,iwsrp->ws_ptr,awsrp->ws_ptr);
 		if (c_nerro(&err_num) == 0) {
 			done = True;
 		}

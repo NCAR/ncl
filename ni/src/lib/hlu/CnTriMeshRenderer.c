@@ -748,6 +748,43 @@ static NhlErrorTypes CreateTilePartitions2D
 	return NhlNOERROR;
 }
 
+static int IsCyclic;
+
+static void SetCyclicFlag(NhlContourPlotLayer cnl, ng_size_t ny, ng_size_t nx, float *tlat,float *tlon)
+{
+	float tlat1, tlon1, tlat2, tlon2;
+	int status = 1;
+	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
+	ng_size_t ix;
+
+	/* this checks to set if the first column of longitudes is the same as the last column.
+	   Actually only the first row that can project into the visible area is checked for now.
+	   This may need updating if it doesn't work. Avoid latitudes within 1 degree of the poles.
+	   A static variable is needed for the cyclic flag. */
+
+	IsCyclic = 0;
+
+	ix = 0;
+	while (ix < 2 + nx * (ny-1)) {
+
+		if (fabs(tlat[ix]) < 89 && fabs(tlat[ix + nx-1]) < 89) {
+			_NhlDataToWin(cnp->trans_obj,&(tlon[ix]),&(tlat[ix]),
+				      1,&tlon1,&tlat1,&status,
+				      NULL,NULL);
+			_NhlDataToWin(cnp->trans_obj,&(tlon[ix + nx-1]),&(tlat[ix + nx-1]),
+				      1,&tlon2,&tlat2,&status,
+				      NULL,NULL);
+			if (! status) {
+				if (_NhlCmpFAny2(tlon1,tlon2,6,1e-32) == 0.0) {
+					IsCyclic = 1;
+				}
+				return;
+			}
+		}
+		ix = ix + nx;
+	}
+}
+	
 
 /*
  * Function: rtmi_
@@ -787,9 +824,15 @@ static int (_NHLCALLF(rtmi,RTMI))
 {
 	/* assume simplest situation for now */
 
-	*jino = *jini;
-	*iino = *iini;
-
+	
+	if (IsCyclic && *iini == *idim) {
+		*iino = 1;
+		*jino = *jini;
+	}
+	else {
+		*jino = *jini;
+		*iino = *iini;
+	}
 	
 #if 0
 
@@ -1126,6 +1169,7 @@ static NhlErrorTypes BuildTriangularMesh
 		}
 
 		if (tmp->ezmap) {
+			SetCyclicFlag(cnl,blk_jdim,blk_idim,tlat,tlon);
 			c_cttmrg(blk_idim,blk_jdim,tlat,tlon,tdat,
 				 iscr,missing_val,
 				 _NHLCALLF(rtmi,RTMI),
@@ -2405,8 +2449,19 @@ static void SetRegionAttrs
 	else
 		c_ctseti("CLU",1);
 
-	if (cpix == -1)
-		c_ctseti("AIA",99);
+	/* Only set the grid bound identifier (99) if the GridBoundFill resources are set to allow the grid bound area to be visible;
+	   this is because the grid boundary needs to be calculated with more precision, potentially impacting performance */
+	if (cpix == -1 && reg_attrs->fill_color > NhlTRANSPARENT && reg_attrs->fill_pat > NhlHOLLOWFILL) {
+		if (reg_attrs == &cl->contourplot.grid_bound) {
+			c_ctseti("AIA",99);     
+			/*c_ctsetr("PIT",0.001); */ /* forced to the minimum recommended value, regardless of max_point_distance */
+		}
+		else {
+			c_ctseti("AIA",98);
+		}
+	}
+	else if (cpix == -1)
+                c_ctseti("AIA",0);
 	else if (cpix == -2)
 		c_ctseti("AIA",97);
 	else
@@ -2521,8 +2576,14 @@ static NhlErrorTypes UpdateLineAndLabelParams
                         _NhlGetGksCi(cl->base.wkptr,
                                      cnp->low_lbls.perim_lcolor);
 
-	SetRegionAttrs(cl,&cnp->grid_bound,-1); 
-	SetRegionAttrs(cl,&cnp->missing_val,-1);
+	if (cnp->missing_val.fill_color > NhlTRANSPARENT && cnp->missing_val.fill_pat > NhlHOLLOWFILL) {
+		SetRegionAttrs(cl,&cnp->grid_bound,-1);
+		SetRegionAttrs(cl,&cnp->missing_val,-1); 
+	}
+	else {
+		SetRegionAttrs(cl,&cnp->missing_val,-1); 
+		SetRegionAttrs(cl,&cnp->grid_bound,-1);
+	}
 	SetRegionAttrs(cl,&cnp->out_of_range,-2);
 
 	*do_lines = True;
@@ -3196,6 +3257,8 @@ static NhlErrorTypes AddDataBoundToAreamap
 	else {
 		char		cval[4];
 #if 0
+		float wb,wt,wl,wr;
+
 
 		/* apparently none of this stuff is necessary as long as you set the vertical strips correctly*/
 		if (! cnp->fix_fill_bleed)
@@ -3423,7 +3486,13 @@ static NhlErrorTypes cnInitCellArray
 		NhlWorkspaceRec *cwsrp = (NhlWorkspaceRec *) cnp->cws;
 		int *cell = cwsrp->ws_ptr;
 		int grid_fill_ix, i, j;
-		grid_fill_ix = MAX(Cnp->missing_val.gks_fcolor, Cnp->grid_bound.gks_fcolor);
+		if (Cnp->missing_val.gks_fcolor > NhlTRANSPARENT &&
+		    Cnp->missing_val.fill_pat > NhlHOLLOWFILL) {
+			grid_fill_ix =	Cnp->missing_val.gks_fcolor;
+		}
+		else {
+			grid_fill_ix =	Cnp->grid_bound.gks_fcolor;
+		}
 		grid_fill_ix = grid_fill_ix < 0 ? NhlTRANSPARENT_CI : grid_fill_ix;
 		/*grid_fill_ix = -9999;*/
 		for (j = 0; j < *nsize; j++) {
@@ -5910,10 +5979,17 @@ int (_NHLCALLF(hluctfill,HLUCTFILL))
 				switch (iai[i]) {
 				case 99:
 				case 98:
-					col_ix = MAX(Cnp->missing_val.fill_color,Cnp->grid_bound.fill_color);
-					pat_ix = MAX(Cnp->missing_val.fill_pat,Cnp->grid_bound.fill_pat);
-					fscale = Cnp->missing_val.fill_scale == 1.0 ? 
-						Cnp->grid_bound.fill_scale : Cnp->missing_val.fill_scale;
+					if (Cnp->missing_val.gks_fcolor > NhlTRANSPARENT &&
+					    Cnp->missing_val.fill_pat > NhlHOLLOWFILL) {
+						col_ix = Cnp->missing_val.fill_color;
+						pat_ix = Cnp->missing_val.fill_pat;
+						fscale = Cnp->missing_val.fill_scale;
+					}
+					else {
+						col_ix = Cnp->grid_bound.fill_color;
+						pat_ix = Cnp->grid_bound.fill_pat;
+						fscale = Cnp->grid_bound.fill_scale;
+					}
 					break;
 				case 97:
 					reg_attrs = &Cnp->out_of_range;
@@ -6020,7 +6096,7 @@ void  (_NHLCALLF(hluctscae,HLUCTSCAE))
 		col_ix = Cnp->gks_fill_colors[*iaid - 100];
 		if (col_ix < 0) col_ix = NhlTRANSPARENT_CI;
 	}
-	else if (*iaid == 99) {
+	else if (*iaid == 99 || *iaid == 98) {
 #if 0
 		printf("hluctscae iaid = %d\n",*iaid);
 #endif

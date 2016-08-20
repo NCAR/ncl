@@ -365,6 +365,124 @@ static NhlErrorTypes SetCpParams
 	return ret;
 }
 
+static NhlBoolean IsCyclic( NhlContourPlotLayer	cl) 
+{
+	float tlat1, tlon1, tlat2, tlon2;
+	float *tlat, *tlon;
+	int status = 1;
+	NhlContourPlotLayerPart	*cnp = &cl->contourplot;
+	ng_size_t ix;
+	ng_size_t nlat, nlon;
+	int ndims;
+	NhlProjection  proj;
+	float center_lat, center_rot;
+
+	/* actually this flag is used to decide whether to use the grid boundary introduced by CPCLAM; the only time it
+	   it not used is when the projection is one of the cylindrical types and not rotated and the center lat is 0 */
+
+	if (! (cnp->trans_obj->base.layer_class->base_class.class_name == NhlmapTransObjClass->base_class.class_name)) {
+		return False;
+	}
+	NhlVAGetValues(cnp->trans_obj->base.id,
+		       NhlNmpProjection,&proj,
+		       NhlNmpCenterLatF,&center_lat,
+		       NhlNmpCenterRotF,&center_rot,
+		       NULL);
+	switch (proj) {
+	default:
+		return False;
+	case NhlCYLINDRICALEQUIDISTANT:
+	case NhlCYLINDRICALEQUALAREA:
+	case NhlMERCATOR:
+	case NhlROTATEDMERCATOR:
+		if (center_lat != 0.0 && center_rot != 0.0)
+			return False;
+	}
+
+	if (cnp->sfp->y_arr && cnp->sfp->x_arr) {
+		ndims = cnp->sfp->y_arr->num_dimensions;
+		tlat = (float *)cnp->sfp->y_arr->data;
+		tlon = (float *)cnp->sfp->x_arr->data;
+
+		if (ndims == 2) {
+			nlat = cnp->sfp->y_arr->len_dimensions[0];
+			nlon = cnp->sfp->y_arr->len_dimensions[1];
+		}
+		else {
+			nlat = cnp->sfp->y_arr->len_dimensions[0];
+			nlon = cnp->sfp->x_arr->len_dimensions[0];
+		}
+	}
+	else {
+		float ystep = (cnp->sfp->y_end - cnp->sfp->y_start) / cnp->sfp->slow_len;
+		float ty;
+		ty = cnp->sfp->y_start;
+		while (ty < cnp->sfp->y_end) {
+			if (fabs(ty) < 89) {
+				_NhlDataToWin(cnp->trans_obj,&(cnp->sfp->x_start),&ty,
+					      1,&tlon1,&tlat1,&status,
+					      NULL,NULL);
+				_NhlDataToWin(cnp->trans_obj,&(cnp->sfp->x_end),&(ty),
+					      1,&tlon2,&tlat2,&status,
+					      NULL,NULL);
+				if (! status) {
+					if (_NhlCmpFAny2(tlon1,tlon2,6,1e-32) == 0.0) {
+						return True;
+					}
+					return False;
+				}
+			}
+			ty += ystep;
+		}
+		return False;
+	}
+			
+
+	if (ndims == 2) {
+		ix = 0;
+		while (ix < 2 + nlon * (nlat-1)) {
+
+			if (fabs(tlat[ix]) < 89 && fabs(tlat[ix + nlon -1]) < 89) {
+				_NhlDataToWin(cnp->trans_obj,&(tlon[ix]),&(tlat[ix]),
+					      1,&tlon1,&tlat1,&status,
+					      NULL,NULL);
+				_NhlDataToWin(cnp->trans_obj,&(tlon[ix + nlon-1]),&(tlat[ix + nlon-1]),
+					      1,&tlon2,&tlat2,&status,
+					      NULL,NULL);
+				if (! status) {
+					if (_NhlCmpFAny2(tlon1,tlon2,6,1e-32) == 0.0) {
+						return True;
+					}
+					return False;
+				}
+			}
+			ix = ix + nlon;
+		}
+		return False;
+	}
+	else {
+		for (ix = 0; ix < nlat; ix++) {
+			if (fabs(tlat[ix]) < 89) {
+				_NhlDataToWin(cnp->trans_obj,&(tlon[0]),&(tlat[ix]),
+					      1,&tlon1,&tlat1,&status,
+					      NULL,NULL);
+				_NhlDataToWin(cnp->trans_obj,&(tlon[nlon-1]),&(tlat[ix]),
+					      1,&tlon2,&tlat2,&status,
+					      NULL,NULL);
+				if (! status) {
+					if (_NhlCmpFAny2(tlon1,tlon2,6,1e-32) == 0.0) {
+						return True;
+					}
+					return False;
+				}
+			}
+		}
+		return False;
+	}
+			
+}
+
+
 /*
  * Function:	SetRegionAttrs
  *
@@ -410,14 +528,17 @@ static void SetRegionAttrs
 	else
 		c_cpseti("CLU",1);
 
-	/* Only set the grid bound identifier (99) if the GridBoundFill resources are set to allow the grid bound area to be visible;
-	   this is because the grid boundary needs to be calculated with more precision, potentially impacting performance */
 	if (cpix == -1 && reg_attrs->fill_color > NhlTRANSPARENT && reg_attrs->fill_pat > NhlHOLLOWFILL) {
 		c_cpseti("AIA",99);
-		c_cpsetr("PIT",0.001); /* forced to the minimum recommended value, regardless of max_point_distance */
+		/*c_cpsetr("PIT",0.001);*/ /* forced to the minimum recommended value, regardless of max_point_distance */
 	}
-	else if (cpix == -1)
-                c_cpseti("AIA",0);
+	else if (cpix == -1) {
+		if (IsCyclic(cl)) {   /* in the cyclic case don't draw the grid bounds into the area map */ 
+			c_cpseti("AIA",-1);   
+		} else {
+			c_cpseti("AIA",99);
+		}
+	}
 	else if (cpix == -2)
 		c_cpseti("AIA",98);
 	else if (cpix == -3)
@@ -1209,6 +1330,8 @@ static NhlErrorTypes AddDataBoundToAreamap
 		char		cval[4];
 
 #if 0
+		float wb,wt,wl,wr;
+
 		/* apparently none of this stuff is necessary as long as you set the vertical strips correctly*/
 		if (! cnp->fix_fill_bleed)
 			return NhlNOERROR;
@@ -3266,6 +3389,7 @@ void   (_NHLCALLF(hlucpmpxy,HLUCPMPXY))
 				       xinp,yinp,1,xotp,yotp,
 				       &status,NULL,NULL);
 	}
+	/*printf("hlucpmpxy: in %f %f out %f %f\n",*xinp, *yinp, *xotp, *yotp);*/
 	return;
 }
 
