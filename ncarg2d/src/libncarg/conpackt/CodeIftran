@@ -1635,33 +1635,24 @@ C
 C
 C Add the edge of the grid.
 C
-C
-C  2016-08-12:
-C  Modified such that the grid boundary is added only if the area
-C  outside the grid is to be filled. Otherwise this does not seem
-C  to be needed and causes problems;
-C  See jira ncl-2443. Similar changes have been made for Conpack
-
         IJMP=0
         IAIC=0
 C
-        IF (IAIA($NCP1$) .EQ. 99) 
-          LOOP
-            CALL CTTREG (RPNT,IEDG,ITRI,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,
+        LOOP
+          CALL CTTREG (RPNT,IEDG,ITRI,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,
      +                                                         NRWK)
-            IF (ICFELL('CTCLAM',20).NE.0) RETURN
-            EXIT IF (IJMP.EQ.0)
-            IF (MIRO.EQ.0)
-              CALL AREDAM (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,IGCL,
+          IF (ICFELL('CTCLAM',20).NE.0) RETURN
+          EXIT IF (IJMP.EQ.0)
+          IF (MIRO.EQ.0)
+            CALL AREDAM (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,IGCL,
      +                                                IAIC,IAIA($NCP1$))
-              IF (ICFELL('CTCLAM',21).NE.0) RETURN
-            ELSE
-              CALL AREDAM (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,IGCL,
+            IF (ICFELL('CTCLAM',21).NE.0) RETURN
+          ELSE
+            CALL AREDAM (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,IGCL,
      +                                                IAIA($NCP1$),IAIC)
-              IF (ICFELL('CTCLAM',22).NE.0) RETURN
-            END IF
-          END LOOP
-        END IF
+            IF (ICFELL('CTCLAM',22).NE.0) RETURN
+          END IF
+        END LOOP
 C
 C If the constant-field flag is not set, add the selected contour lines
 C to the area map.
