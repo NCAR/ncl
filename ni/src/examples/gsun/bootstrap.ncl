@@ -131,7 +131,8 @@ function bootstrap_finish(statName[1]:string, z:numeric, zBoot:numeric \
 ; ---Common end to all bootstrap functions
 ; ---Basic stats on 'zBoot' and add coordinate and units information (if present) 
 ; ----------------------------------------------------------
-local dimz, idz, dimBoot, zBootAvg, zBootStd, Z, ZAVG, ZSTD
+local dimz, idz, dimBoot, zBootAvg, zBootStd, Z, ZAVG, ZSTD \
+    , eps, zeps, zdenom, znumer 
 begin
 ;----------------------------------------------
 ;--- Retrieve some info from input arguments
@@ -143,13 +144,23 @@ begin
 ;--- Calculate mean and std, dev. of the input arguments 
 ;----------------------------------------------
   if (statName.eq."correl") then                ; special case
-      Z     = 0.5*log((1+zBoot)/(1-zBoot))      ; Fischer z-transform of all bootstrapped correlations
+ 
+      eps     = 1e-05
+      zeps    = totype(eps, typeof(zBoot))
+
+      zdenom  = 1.0-zBoot                       ; denominator of Z-transform
+      zdenom  = where(zdenom.eq.0, zeps, zdenom); prevent division by 0
+
+      znumer  = 1.0+zBoot
+      znumer  = where(znumer.eq.0, zeps, znumer); prevent log(0)
+
+      Z     = 0.5*log(znumer/zdenom)            ; Fischer z-transform of all bootstrapped correlations
       ZAVG  = dim_avg_n(Z, 0)                   ; avg Z
       ZSTD  = dim_stddev_n(Z, 0)                ; stddev Z
-    ;;ZSE  = 1.0/sqrt(nBoot-1)                  ; SE of boot strapped values
-    ;;NVAL = cdft_t(rankHi,9999)                ; 2-sided; use 'big' number for normal dist   
-    ;;ZLOW = Z-NVAL*ZSE                         ; normal low:  2.5% 
-    ;;ZHI  = Z+NVAL*ZSE                         ; normal hi ; 97.5%
+    ;;ZSE   = 1.0/sqrt(nBoot-1)                 ; SE of boot strapped values
+    ;;NVAL  = cdft_t(rankHi,9999)               ; 2-sided; use 'big' number for normal dist   
+    ;;ZLOW  = Z-NVAL*ZSE                        ; normal low:  2.5% 
+    ;;ZHI   = Z+NVAL*ZSE                        ; normal hi ; 97.5%
                                                 ; transform back to 'r' space
       zBootAvg = tanh(ZAVG)                     ; correlation
       zBootStd = tanh(ZSTD)                     ; not really correct ... place holder
