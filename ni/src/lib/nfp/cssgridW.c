@@ -817,16 +817,16 @@ NhlErrorTypes csvoro_W(void)
  *  except the vertex array.
  */
   callp = NclGetArgValue(3,10,ndims+3,&(dsizes[3][0]),missing+3,
-                             has_missing+3,atypes+3,0);
+                             has_missing+3,atypes+3,DONT_CARE);
   callv  = *((int *) callp);
   indexp = NclGetArgValue(2,10,ndims+2,&(dsizes[2][0]),missing+2,
-                             has_missing+2,atypes+2,0);
+                             has_missing+2,atypes+2,DONT_CARE);
   indexv = *((int *) indexp);
 
   if (callv == 1) {
     for (i = 0; i < 10; i++) {
       datav[i] = NclGetArgValue(i,10,ndims+i,&(dsizes[i][0]),missing+i,
-                                has_missing+i,atypes+i,0);
+                                has_missing+i,atypes+i,DONT_CARE);
     }
 
 /*

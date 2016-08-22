@@ -99,7 +99,7 @@ NhlErrorTypes weibull_W( void )
 /*
  * Get argument # 2
  */
-  dims = (int *)NclGetArgValue(2,3,NULL,&ndims,NULL,NULL,NULL,0);
+  dims = (int *)NclGetArgValue(2,3,NULL,&ndims,NULL,NULL,NULL,DONT_CARE);
 /*
  * Some error checking. Make sure input dimensions are valid.
  */

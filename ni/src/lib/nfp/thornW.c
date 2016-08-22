@@ -110,7 +110,7 @@ NhlErrorTypes thornthwaite_W( void )
 /*
  * Get argument # 3
  */
-  dim = (int *)NclGetArgValue(3,4,NULL,NULL,NULL,NULL,NULL,0);
+  dim = (int *)NclGetArgValue(3,4,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
 /*
  * Some error checking. Make sure input dimension is valid.
@@ -474,7 +474,7 @@ NhlErrorTypes thornthwaite_r_W( void )
 /*
  * Get argument # 3
  */
-  dim = (int *)NclGetArgValue(3,4,NULL,NULL,NULL,NULL,NULL,0);
+  dim = (int *)NclGetArgValue(3,4,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
 /*
  * Some error checking. Make sure input dimension is valid.

@@ -132,7 +132,7 @@ NhlErrorTypes bw_bandpass_filter_W( void )
 /*
  * Get argument # 4
  */
-  dims = (int *)NclGetArgValue(4,5,NULL,&ndims,NULL,NULL,NULL,0);
+  dims = (int *)NclGetArgValue(4,5,NULL,&ndims,NULL,NULL,NULL,DONT_CARE);
 
 /*
  * Some error checking. Make sure input dimension is valid.
