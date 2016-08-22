@@ -2328,7 +2328,7 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(thornthwaite_W,args,"thornthwaite_r",nargs);
 
 /*
- * Register "speidx"
+ * Register "spei_deprecated"
  *
  * Create private argument array
  */
@@ -2343,7 +2343,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
-    NclRegisterFunc(speidx_W,args,"speidx",nargs);
+    NclRegisterFunc(speidx_W,args,"spei_deprecated",nargs);
 
 /*
  * Register "kmeans_as136".
