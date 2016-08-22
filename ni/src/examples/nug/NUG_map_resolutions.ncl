@@ -50,7 +50,6 @@ begin
 ;-- set resources
   res                       =  True
   res@gsnMaximize           =  True
-  res@lbLabelStride         =  2
   res@lbBoxMinorExtentF     =  0.15            ;-- decrease the height of the labelbar
   res@cnFillOn              =  True            ;-- turn on contour fill
   res@cnFillPalette         =  "rainbow"       ;-- change color map

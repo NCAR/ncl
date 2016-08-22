@@ -34,9 +34,8 @@ begin
 
 ;-- set resources
   res                       =  True
-  res@gsnSpreadColors       =  True
   res@gsnMaximize           =  True
-  res@lbLabelStride         =  2
+  res@lbLabelStride         =  2               ;-- label every other box
   res@lbBoxMinorExtentF     =  0.15            ;-- decrease the height of the labelbar
   res@cnFillOn              =  True            ;-- turn on contour fill
   res@cnLinesOn             =  False           ;-- turn off contour lines

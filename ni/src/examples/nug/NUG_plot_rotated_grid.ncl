@@ -221,7 +221,6 @@ begin
   res@mpPerimOn             =  False                   ;-- don't draw the box around the plot
   
   res@lbOrientation         = "vertical"               ;-- vertical label bar
-  res@lbLabelStride         =  2
   res@lbLabelPosition       = "Left"                   ;-- labelbar labels on left side
   res@pmLabelBarOrthogonalPosF = -1.37                 ;-- labelbar on the left side
 

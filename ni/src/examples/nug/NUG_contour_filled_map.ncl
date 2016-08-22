@@ -46,7 +46,7 @@ begin
   res@cnMaxLevelValF        =  310.            ;-- maximum contour level
   res@cnLevelSpacingF       =  1               ;-- contour level spacing
 
-  res@lbLabelStride         =  4
+  res@lbLabelStride         =  4               ;-- label every 4th box
   res@lbBoxMinorExtentF     =  0.15            ;-- decrease the height of the labelbar
 
   res@tiMainString          = "NCL Doc Example: filled contour map"     ;-- title string

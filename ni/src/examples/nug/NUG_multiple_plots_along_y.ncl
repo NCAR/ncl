@@ -48,7 +48,6 @@ begin
    res@cnMinLevelValF           =  180.             ;-- minimum level
    res@cnMaxLevelValF           =  320.             ;-- maximum level
    res@cnLevelSpacingF          =    5.             ;-- contour spacing
-   res@gsnSpreadColors          =  True             ;-- use full range of colors
    res@pmLabelBarOrthogonalPosF = -0.05             ;-- position label bar
    res@tiMainString             = "NCL Doc Example: attach plot ~C~                     lat: 40~S~o~N~"
    res@trYReverse               =  True             ;-- reverese y-axis

@@ -46,6 +46,7 @@ begin
    res@cnMinLevelValF   =  250.
    res@cnMaxLevelValF   =  310.
    res@cnLevelSpacingF  =    5.
+   res@cnFillPalette    = "BlueWhiteOrangeRed"
 
    plot = new(6,graphic)
 
@@ -79,9 +80,11 @@ begin
    plot(3) = gsn_csm_contour_map(wks,var,res)
 
 ;-- lower left
+   cmap   = read_colormap_file("BlueWhiteOrangeRed")
+   cmap_r = cmap(::-1,:)
+
    res@tiMainString        = "Labelbar: reverse colors"
-   res@gsnSpreadColorStart =  -1
-   res@gsnSpreadColorEnd   =  2
+   res@cnFillPalette       := cmap_r
    delete(res@lbLabelAngleF)
    plot(4) = gsn_csm_contour_map(wks,var,res)
 
@@ -93,7 +96,7 @@ begin
 
    res@lbLabelStrings      =  sprintf("%3.2f",levels)
    res@lbLabelAngleF       =  90
-   delete([/res@gsnSpreadColorStart,res@gsnSpreadColorEnd/])
+   res@cnFillPalette       = cmap   ; Use non-reversed color map again
 
    res@tiMainString        = "Labelbar: format labels"
    plot(5) = gsn_csm_contour_map(wks,var,res)

@@ -113,7 +113,7 @@ begin
   cnres@gsnSpreadColorStart   =   2
   cnres@gsnSpreadColorEnd     = -26
   cnres@lbLabelBarOn          =  True
-  cnres@lbLabelStride         =  10
+  cnres@lbLabelStride         =  10             ; Label every 10th box
   cnres@lbOrientation         = "Vertical"
   cnres@tiMainOn              =  False
 

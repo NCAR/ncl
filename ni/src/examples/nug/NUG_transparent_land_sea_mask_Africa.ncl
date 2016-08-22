@@ -70,7 +70,7 @@ begin
    mres@mpGridAndLimbOn      =  True
    mres@mpGridMaskMode       = "MaskNotOcean"
    mres@cnFillOpacityF       =  0.5        ;-- 50% opaque
-   mres@lbLabelStride        =  10
+   mres@lbLabelStride        =  10         ;-- label every 10th box
    mres@lbBoxLinesOn         =  False
    mres@tiMainString         = "NCL Doc Example: transparent lsm"
 

@@ -74,7 +74,7 @@ begin
    res@gsnFrame            =  False                 ;-- don't advance frame yet
    res@gsnMaximize         =  True                  ;-- maximize plot in frame
    res@gsnSpreadColors     =  True                  ;-- full color map
-   res@gsnSpreadColorStart =  18                    ;-- start at color 14
+   res@gsnSpreadColorStart =  18                    ;-- start at color 18
    res@gsnSpreadColorEnd   =  -3
 
 
