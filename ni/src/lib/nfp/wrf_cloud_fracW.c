@@ -12,8 +12,6 @@
 #include <ncarg/ncl/NclBuiltIns.h>
 #include "wrapper.h"
 
-#define CFDEBUG 0
-
 extern void NGCALLF(cloudfrac,CLOUDFRAC)(double *, double *, double *,
                                          double *, double *, int *,
                                          int *, int *);
@@ -89,14 +87,6 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
     for( i = 0; i < ndims_pres-3; i++ ) size_leftmost *= dsizes_pres[i];
     size_pres = size_leftmost * nznsew;
 
-    if(CFDEBUG) {
-        printf("nc: %d\n", nc);
-        printf("nz: %d\n", nz);
-        printf("ns: %d\n", ns);
-        printf("ew: %d\n", ew);
-        printf("size_leftmost: %d\n", size_leftmost);
-    }
-
     /* 
      * Allocate space for coercing input arrays.  If any of the input
      * is already double, then we don't need to allocate space for
@@ -161,20 +151,6 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
             tmp_high = &tmp_output[2*nsew];
         }
 
-        if(CFDEBUG) {
-            printf("%d index_output:            %d  \n", i, index_output);
-            printf("%d output:                  %p  \n", i, output);
-            printf("%d tmp_low:                 %p  %f\n", i, tmp_low, tmp_low[0]);
-            printf("%d low(output):             %p  %f\n", i, &((float*)output)[index_output], ((float*)output)[index_output]);
-            printf("%d tmp_mid:                 %p  %f\n", i, tmp_mid, tmp_mid[0]);
-            printf("%d mid(output):             %p  %f\n", i, &((float*)output)[index_output +   size_leftmost*nsew], ((float*)output)[index_output +   size_leftmost*nsew]);
-            printf("%d tmp_high:                %p  %f\n", i, tmp_high, tmp_high[0]);
-            printf("%d high(output):            %p  %f\n", i, &((float*)output)[index_output + 2*size_leftmost*nsew], ((float*)output)[index_output + 2*size_leftmost*nsew]);
-            printf("%d tmp_pres:                %p  %f\n", i, tmp_pres, tmp_pres[0]);
-            printf("%d tmp_rh:                  %p  %f\n", i, tmp_rh, tmp_rh[0]);
-            printf("%d\n", i);
-        }
-
         /* Call the Fortran routine */
         NGCALLF(cloudfrac,CLOUDFRAC)(
             tmp_pres,
@@ -186,44 +162,16 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
             &ins,
             &iew);
 
-        if(CFDEBUG) {
-            printf("%d tmp_low:                 %p  %f\n", i, tmp_low, tmp_low[0]);
-            printf("%d low(output):             %p  %f\n", i, &((float*)output)[index_output], ((float*)output)[index_output]);
-            printf("%d tmp_mid:                 %p  %f\n", i, tmp_mid, tmp_mid[0]);
-            printf("%d mid(output):             %p  %f\n", i, &((float*)output)[index_output +   size_leftmost*nsew], ((float*)output)[index_output +   size_leftmost*nsew]);
-            printf("%d tmp_high:                %p  %f\n", i, tmp_high, tmp_high[0]);
-            printf("%d high(output):            %p  %f\n", i, &((float*)output)[index_output + 2*size_leftmost*nsew], ((float*)output)[index_output + 2*size_leftmost*nsew]);
-            printf("%d tmp_pres:                %p  %f\n", i, tmp_pres, tmp_pres[0]);
-            printf("%d tmp_rh:                  %p  %f\n", i, tmp_rh, tmp_rh[0]);
-            printf("%d\n", i);
-        }
-
         /* Coerce output as necessary */
         if(type_output == NCL_float) {
 	  /*            coerce_output_float_only(output,tmp_output,ncnsew,index_output);*/
             coerce_output_float_only(output,tmp_low, nsew,index_output);
             coerce_output_float_only(output,tmp_mid, nsew,index_output+(  size_leftmost*nsew));
             coerce_output_float_only(output,tmp_high,nsew,index_output+(2*size_leftmost*nsew));
-            if(CFDEBUG) {
-                printf("%d tmp_low[0]:              %p  %f\n", i, tmp_low, tmp_low[0]);
-                printf("%d low(output)[0]:          %p  %f\n", i, &((float*)output)[index_output], ((float*)output)[index_output]);
-                printf("%d tmp_mid:                 %p  %f\n", i, tmp_mid, tmp_mid[0]);
-                printf("%d mid(output):             %p  %f\n", i, &((float*)output)[index_output +   size_leftmost*nsew], ((float*)output)[index_output +   size_leftmost*nsew]);
-                printf("%d tmp_high:                %p  %f\n", i, tmp_high, tmp_high[0]);
-                printf("%d high(output):            %p  %f\n", i, &((float*)output)[index_output + 2*size_leftmost*nsew], ((float*)output)[index_output + 2*size_leftmost*nsew]);
-            }
         }
 
         index_presrh += nznsew;
         index_output += nsew;
-
-        if(CFDEBUG) {
-            printf("\n");
-            /*
-            free(tmp_output);
-            tmp_output = (double *)calloc(ncnsew,sizeof(double));
-            */
-        }
     }
 
     /* Free unneeded memory. */
@@ -240,13 +188,6 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
     for(i = 1; i <= ndims_pres-3; i++) output_dsizes[i] = dsizes_pres[i-1];
     output_dsizes[ndims_pres-2] = ns;    /* lat dimension */
     output_dsizes[ndims_pres-1] = ew;    /* lon dimension */
-
-    if(CFDEBUG) {
-        printf("output_ndims: %d\n", output_ndims);
-        for(i = 0; i < output_ndims; i++) {
-            printf("output_dsizes[%d]: %d\n", i, output_dsizes[i]);
-        }
-    }
 
     ret = NclReturnValue(output, output_ndims, output_dsizes, NULL,
                          type_output, 0);
