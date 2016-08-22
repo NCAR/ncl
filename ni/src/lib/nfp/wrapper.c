@@ -487,6 +487,7 @@ extern NhlErrorTypes pslhor_W(void);
 extern NhlErrorTypes dz_height_W(void);
 extern NhlErrorTypes gc_latlon_W(void);
 extern NhlErrorTypes testspan_W(void);
+extern NhlErrorTypes emd_num_imfs_W(void);
 
 extern NhlErrorTypes monthday_W(void);
 extern NhlErrorTypes day_of_year_W(void);
@@ -621,6 +622,7 @@ extern NhlErrorTypes ctwrap_W(void);
 extern NhlErrorTypes kron_product_W(void);
 
 extern NhlErrorTypes sparse_matrix_mult_W(void);
+extern NhlErrorTypes sparse_matrix_mult_trimesh_W(void);
 
 extern NhlErrorTypes dim_gamfit_n_W(void);
 extern NhlErrorTypes dim_spi_n_W(void);
@@ -7134,6 +7136,18 @@ void NclAddUserFuncs(void)
 
     NclRegisterFunc(testspan_W,args,"testspan",nargs);
 /*
+ * Register "emd_num_imfs".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(1);
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+
+    NclRegisterFunc(emd_num_imfs_W,args,"emd_num_imfs",nargs);
+/*
  * Register "monthday".
  */
     nargs = 0;
@@ -8383,6 +8397,22 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,3,"numeric",0,NclANY);nargs++;
         SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
         NclRegisterFunc(sparse_matrix_mult_W,args,"sparse_matrix_mult",nargs);
+
+/*
+ * Register "sparse_matrix_mult_trimesh".
+ *
+ * Create private argument array.
+ */
+ 
+        nargs = 0;
+        args = NewArgs(5);
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"integer",2,NclANY);nargs++;
+        SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
+        NclRegisterFunc(sparse_matrix_mult_trimesh_W,args,"sparse_matrix_mult_trimesh",nargs);
 
 /*
  *  Register ctwrap.
@@ -9943,7 +9973,7 @@ int *get_dims_for_n_funcs(int arg_num,  int num_args, NclStackEntry tmpdata,
   }
 
   dims_ptr = (void *)NclGetArgValue(arg_num,num_args,NULL,num_dims,NULL,
-                                    NULL,&type_dims,0);
+                                    NULL,&type_dims,DONT_CARE);
   if(type_dims != NCL_int && type_dims != NCL_string) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: The input dimensions must be integers representing dimension numbers, or strings representing dimension names",name);
     return(NULL);
@@ -9961,7 +9991,7 @@ int *get_dims_for_n_funcs(int arg_num,  int num_args, NclStackEntry tmpdata,
   }
   else {
     if(tmpvar != NULL) {
-      dim_names = (NrmQuark *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,0);
+      dim_names = (NrmQuark *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
     }
     else {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Can't determine dimension names from input array",name);
