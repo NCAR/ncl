@@ -416,6 +416,99 @@ begin
    end if
 end
 ;----
+undef("extval_gamma")
+function extval_gamma(X[*]:numeric, shape[*]:numeric, scale[*]:numeric, center[*]:numeric, opt[1]:integer)
+;
+; Gamma Distribution
+; The distribution is defined for x>center (location) ; scale>0 ; shape>0
+; http://www.mathwave.com/help/easyfit/html/analyses/distributions/gamma.html
+;
+local ix, x, nx, pdf, cdf, nshp, nscl, nctr, n, ca, cb, cc, cd, cf, cg \
+    , xc, numType, scl, shp, ctr
+begin
+   nshp = dimsizes(shape)
+   nscl = dimsizes(scale)
+   nctr = dimsizes(center)
+   if (nshp.ne.nscl .or. nshp.ne.nctr) then
+       print("extval_gamma: shape, scale and center arguments must be the same size")
+       print("extval_gamma: nshp="+nshp+"  nscl="+nscl+"  nctr="+nctr)
+       exit
+   end if
+
+;--- Force to highest numeric type
+
+   nx   = dimsizes(X)
+   if (typeof(X).eq."double" .or. \
+       typeof(shape).eq."double" .or. typeof(scale).eq."double" .or. typeof(center).eq."double") then
+       numType = "double"
+       pdf     = new( (/nscl,nx/), numType, -9999d0  )
+   else
+       numType = "float"
+       pdf     = new( (/nscl,nx/), numType, -9999.0 )
+   end if
+   cdf  = pdf
+
+;--- For plot reasons it is better 'x' is ascending
+
+   ix   = dim_pqsort_n(X, 1, 0)          ; indices of ascending values
+   x    = totype(X(ix), numType)         ; 'x' is local and is ascending (plotting)
+   x@_FillValue = pdf@_FillValue
+
+   do n=0,nscl-1
+      if (scale(n).le.0) then
+          print("extval_gamma: scale<=0 : scale="+scale(n))
+          continue
+      end if
+      if (shape(n).le.0) then
+          print("extval_gamma: shape<=0 : shape="+shape(n))
+          continue
+      end if
+
+      scl  = totype(scale(n) , numType) 
+      shp  = totype(shape(n) , numType) 
+      ctr  = totype(center(n), numType) 
+
+      xc   = where(x .gt.ctr, (x-ctr), pdf@_FillValue)
+      xc   = where(xc.gt.0  , xc,  xc@_FillValue)      ; avoid xc^(shp-1)  
+                                ; clarity
+      ca   = xc^(shp-1)         ; ca[*]
+      cb   = exp(-xc/scl)       ; cb[*]
+      cc   = gamma(shp)         ; cc[1]
+      cd   = scl^shp            ; cd[1]
+      cab  = ca*cb              ; cab[*]
+
+      pdf(n,:) = cab/(cc*cd)
+
+      cf   = conform(xc, shp, -1)                  ; [*] ... make scalar a [*]
+      cg   = gammainc((xc/scl), cf)                ; [*]
+   
+    ;;cgc  = cg/cc                                 ; <== This is correct but ...
+      cgc  = cg                                    ; Notn sure why this yields the CDF
+
+      cdf(n,:) = where(.not.ismissing(pdf(n,:)), cgc, pdf@_FillValue)
+
+    ;;print("=================")
+    ;;print("n="+n+"  shape="+shape(n)+"  scale="+scale(n)+"  center="+center(n)+" cc="+cc+"  cd="+cd)
+    ;;print("ca="+ca+"  cb="+cb+"  x="+x+"  pdf="+pdf(n,:)+"  cdf="+cdf(n,:))
+   end do
+
+   pdf@long_name = "Gamma: PDF"
+   pdf@shape     = shape
+   pdf@scale     = scale
+   pdf@center    = center
+
+   cdf@long_name = "Gamma:  CDF"
+   cdf@shape     = shape
+   cdf@scale     = scale
+   cdf@center    = center
+
+   if (nscl.eq.1) then
+       return([/pdf(0,:), cdf(0,:)/])
+   else
+       return([/pdf, cdf/])
+   end if
+end
+;----
 undef("extval_recurrence_table_1d")
 function extval_recurrence_table_1d(time[*]:numeric, x[*]:numeric, dims[*]:integer, opt[1]:logical)
 ;
@@ -722,4 +815,57 @@ begin
       copy_VarMeta(Nr, Nrf)
       return( Nrf )
   end if
+end
+;===========
+undef("extval_mlegam")
+function extval_mlegam(x:numeric, dims[*]:integer, opt[1]:logical)
+;
+; Gamma Distribution: Maximim Likelihood Estimation of 
+;     location, shape, scale parameters
+;
+; Reference:
+; Wilks: Statistical Methods in the Atmospheric Sciences (2006); pp 95-102
+;
+; Int. J. Climatol.  27 : 935 – 944 (2007) 
+; http://onlinelibrary.wiley.com/doi/10.1002/joc.1441/pdf
+; Equations: 4-7
+; pg: 938:
+; "x(i) is equal to all non-zero values in the rainfall history, 
+;  and the mean ( x) is the arithmetic mean of all non-zero values"
+;  ... later ...     
+; "the  gamma  distribution parameters are being estimated by 
+;  fewer than 18 samples  (out  of  36 years) and  the  parameter  
+;  reliability becomes quite suspect"
+
+local X, Xavg, D, alpha, beta, s2, con, gam_mlw
+begin
+  X = x
+  if (.not.isatt(x,"_FillValue")) then
+      X@_FillValue = default_fillvalue(typeof(X))
+  end if
+  X = where(X.eq.0, X@_FillValue, X)  
+
+  Xavg  = dim_avg_n(X, dims)                    ; average of non-zero values
+ ;Xnum  = dim_num_n(.not.(ismissing(X)), dims)  ; number of non-missing values
+
+  D     = log(Xavg) - dim_avg_n(log(X), dims)   ; eqn 4.40   ; Wilks Ref
+  con   = 1/(4*D)                               ; clarity                   
+  shape = con*(1+sqrt(1+(4*D/3)))               ; eqn 4.41
+  scale = Xavg/shape                            ; eqn 4.42 (alpha)
+  gam_mean  = shape*scale           
+  gam_var   = shape*scale^2        
+                                                ; gamma quantile function 
+  prob  = (/0.50/)                              ; default (median)
+  if (opt .and. isatt(opt,"prob")) then
+      prob := opt@prob
+  end if
+  gam_quant = gam_mean +(scale/shape)*((-log(prob))^shape -1) ; eqn 4.56  
+                                                              ; gam_mean ==> location 
+
+  gam_mle = (/gam_mean, scale, shape, gam_var, gam_quant/)
+  gam_mle@long_name = "gamma: maximum liklihood estimates"
+  gam_mle@info      = "location, shape, scale, gam_var, gam_quant"
+  gam_mle@NCL_tag   = "extval_mlegam"
+
+  return(gam_mle)
 end
