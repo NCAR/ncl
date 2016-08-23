@@ -487,7 +487,7 @@ extern NhlErrorTypes pslhor_W(void);
 extern NhlErrorTypes dz_height_W(void);
 extern NhlErrorTypes gc_latlon_W(void);
 extern NhlErrorTypes testspan_W(void);
-extern NhlErrorTypes emd_num_imfs_W(void);
+/*extern NhlErrorTypes emd_num_imfs_W(void);*/
 
 extern NhlErrorTypes monthday_W(void);
 extern NhlErrorTypes day_of_year_W(void);
@@ -7140,6 +7140,7 @@ void NclAddUserFuncs(void)
  *
  * Create private argument array
  */
+/*
     nargs = 0;
     args = NewArgs(1);
 
@@ -7147,6 +7148,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(emd_num_imfs_W,args,"emd_num_imfs",nargs);
+    */
 /*
  * Register "monthday".
  */

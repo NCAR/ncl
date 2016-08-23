@@ -205,7 +205,7 @@ NhlErrorTypes simpne_W( void )
   int ndims_y;
   ng_size_t dsizes_y[NCL_MAX_DIMENSIONS];
   int has_missing_y;
-  int nmiss, found_missing_x;
+  int nmiss, nvalid, found_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclScalar missing_y, missing_dy, missing_ry;
   NclBasicDataTypes type_x, type_y;
@@ -294,7 +294,7 @@ NhlErrorTypes simpne_W( void )
   if(ndims_simpne > 1) {
     for( i = 0; i < ndims_y-1; i++ ) {
       dsizes_simpne[i] = dsizes_y[i];
-      size_leftmost    *= dsizes_y[i];
+      size_leftmost *= dsizes_y[i];
     }
   }
   else {
@@ -424,7 +424,11 @@ NhlErrorTypes simpne_W( void )
     }
     index_y += npts;
   }
-
+  nvalid = size_leftmost - nmiss;
+  if(nvalid < 3) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"simpne: Must have three or more non-missing values.");
+    return(NhlFATAL);
+  }
 /*
  * Free memory.
  */
