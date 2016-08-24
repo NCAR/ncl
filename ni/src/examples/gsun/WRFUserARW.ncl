@@ -1379,7 +1379,7 @@ begin
 
     if( any( variable .eq. "cfrac" )) then
 
-        print("calculating wrf cloud fraction")
+        ;print("calculating wrf cloud fraction")
         if(typeof(file_handle).eq."file") then
             ISFILE = True
             nc_file = file_handle
