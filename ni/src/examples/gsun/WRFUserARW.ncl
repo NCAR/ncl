@@ -1435,7 +1435,7 @@ begin
         out_array = wrf_cloud_fraction(pres,rh)
 
         out_array@units = "%"
-        out_array@description = "Low, Med High Clouds"
+        out_array@description = "Low, Mid, High Clouds"
         return(out_array)
 
     end if ;variable is cfrac

@@ -16,6 +16,8 @@ extern void NGCALLF(cloudfrac,CLOUDFRAC)(double *, double *, double *,
                                          double *, double *, int *,
                                          int *, int *);
 
+extern NclDimRec *get_wrf_dim_info(int,int,int,ng_size_t*);
+
 NhlErrorTypes wrf_cloud_frac_W(void) {
     /* Input parameters */
     void *pres, *rh;
@@ -32,11 +34,28 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
     int output_ndims;
     long output_dsizes[NCL_MAX_DIMENSIONS];
     NclBasicDataTypes type_output;
+    NclObjClass type_obj_output;
     int ret;
 
     /* Various. */
     ng_size_t i, index_presrh, size_pres, index_output, size_leftmost;
     double *tmp_low, *tmp_mid, *tmp_high;
+    NclQuark *description, *units;
+    char *cdescription, *cunits;
+
+    /*
+     * Variable for getting/setting dimension name info.
+     */
+     NclDimRec *dim_info = NULL;
+     NclDimRec *dim_info_p;
+
+    /*
+     * Variables for returning the output array with attributes and/or
+     * dimension names attached.
+     */
+     NclMultiDValData return_md;
+     NclVar tmp_var;
+     NclStackEntry return_data;
 
 
     pres = (float*) NclGetArgValue(
@@ -67,6 +86,7 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
     nsew = ns * ew;
     nznsew = nz * nsew;
     ncnsew = nc * nsew;
+
 
     /* Some error checking for our input dimensions */
     if(nz != dsizes_rh[ndims_pres-3] || ns != dsizes_rh[ndims_pres-2] || ew != dsizes_rh[ndims_pres-1]) {
@@ -116,6 +136,7 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
             return(NhlFATAL);
         }
         type_output = NCL_double;
+        type_obj_output = nclTypedoubleClass;
     } else {
         output     = (void *)calloc(size_leftmost*ncnsew, sizeof(float));
         tmp_output = (double *)calloc(ncnsew,sizeof(double));
@@ -124,6 +145,7 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
             return(NhlFATAL);
         }
         type_output = NCL_float;
+        type_obj_output = nclTypefloatClass;
     }
 
     index_presrh = 0;
@@ -179,8 +201,23 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
     if(type_rh     != NCL_double) NclFree(tmp_rh);
     if(type_output != NCL_double) NclFree(tmp_output);
 
+	/*
+	* Set up some attributes ("description" and "units") to return.
+
+	*/
+	cdescription = (char *)calloc(22,sizeof(char));
+	strcpy(cdescription,"Low, Mid, High Clouds");
+	cunits       = (char *)calloc(2,sizeof(char));
+	strcpy(cunits,"%");
+	description = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*description = NrmStringToQuark(cdescription);
+	*units       = NrmStringToQuark(cunits);
+	free(cdescription);
+	free(cunits);
+
     /*
-     * Return the output array back to NCL. First define the output 
+     * Return the output array back to NCL. First define the output
      * dimension sizes and the type.
      */
     output_ndims     = ndims_pres;
@@ -189,9 +226,77 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
     output_dsizes[ndims_pres-2] = ns;    /* lat dimension */
     output_dsizes[ndims_pres-1] = ew;    /* lon dimension */
 
-    ret = NclReturnValue(output, output_ndims, output_dsizes, NULL,
+    /*
+	* Get dimension info to see if we have named dimensions.
+	* This will be used for return variable.
+	*/
+	dim_info_p = get_wrf_dim_info(0,2,ndims_pres,dsizes_pres);
+	if(dim_info_p != NULL) {
+	  dim_info = malloc(sizeof(NclDimRec)*output_ndims);
+	  if(dim_info == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cfrac: Unable to allocate memory for holding dimension information");
+		return(NhlFATAL);
+	  }
+	  for(i = 0; i < output_ndims; i++ ) {
+		dim_info[i].dim_num  = i;
+		dim_info[i].dim_size = output_dsizes[i];
+	  }
+	  dim_info[0].dim_quark = NrmStringToQuark("low_mid_high");
+	  for(i = 0; i < ndims_pres-3; i++) {
+		dim_info[i+1].dim_quark = dim_info_p[i].dim_quark;
+	  }
+	  dim_info[output_ndims-2].dim_quark = dim_info_p[ndims_pres-2].dim_quark;
+	  dim_info[output_ndims-1].dim_quark = dim_info_p[ndims_pres-1].dim_quark;
+
+	}
+
+	/*
+	 * Set up return value.
+	 */
+	  return_md = _NclCreateVal(
+	                            NULL,
+	                            NULL,
+	                            Ncl_MultiDValData,
+	                            0,
+	                            (void*)output,
+	                            NULL,
+	                            output_ndims,
+	                            output_dsizes,
+	                            TEMPORARY,
+	                            NULL,
+	                            type_obj_output
+	                            );
+	  tmp_var = _NclVarCreate(
+	                          NULL,
+	                          NULL,
+	                          Ncl_Var,
+	                          0,
+	                          NULL,
+	                          return_md,
+	                          dim_info,
+	                          -1,
+	                          NULL,
+	                          RETURNVAR,
+	                          NULL,
+	                          TEMPORARY
+	                          );
+
+	  if(dim_info   != NULL) NclFree(dim_info);
+	  NclFree(dim_info_p);
+
+	/*
+	 * Return output grid and attributes to NCL.
+	 */
+	  return_data.kind = NclStk_VAR;
+	  return_data.u.data_var = tmp_var;
+	  _NclPlaceReturn(return_data);
+
+	  return(NhlNOERROR);
+
+
+    /*ret = NclReturnValue(output, output_ndims, output_dsizes, NULL,
                          type_output, 0);
-    return(ret);
+    return(ret);*/
 }
 
 
