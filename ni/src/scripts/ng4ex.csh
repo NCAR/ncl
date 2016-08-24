@@ -435,7 +435,7 @@ set n_nug  = (NUG_GrADS_binary_data NUG_ICON_triangles_colored \
               NUG_map_land_ocean_settings NUG_map_resolutions \
               NUG_map_selected_countries NUG_map_settings \
               NUG_masking NUG_multi_timeseries \
-              NUG_multiple_plots_along_y NUG_panel_3x2_plot \
+              NUG_multiple_plots_along_y NUG_panel_plot_3x2 \
               NUG_panel_control NUG_panel_plot NUG_panel_vp \
               NUG_plot_in_5_steps NUG_plot_rotated_grid \
               NUG_polar_NH NUG_polyline_polygon_polymarker \
@@ -444,8 +444,7 @@ set n_nug  = (NUG_GrADS_binary_data NUG_ICON_triangles_colored \
               NUG_projections_robinson NUG_read_ASCII_1 \
               NUG_read_ASCII_2 NUG_read_ASCII_3 \
               NUG_read_Binary_1 NUG_read_Binary_GrADS \
-              NUG_read_CSV_1 NUG_read_CSV_1_noloop \
-              NUG_read_CSV_2 \
+              NUG_read_CSV_1 NUG_read_CSV_2 \
               NUG_regrid_bilinear_CMIP5_grid_to_1x1deg_grid \
               NUG_regrid_curvilinear_to_rectilinear_bilinear_weights_ESMF \
               NUG_regrid_curvilinear_to_rectilinear_bilinear_wgts_destgrid_ESMF \
