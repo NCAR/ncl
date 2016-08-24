@@ -344,6 +344,9 @@ const	char	*_NGGetNCARGEnv(name)
 	}
 
 	cs = _NGResolvePath(direct_val);
+
+	if(cs == NULL)
+		return NULL;
 /*
  * Check to see if we are prompting for URL path.  If so, then
  * later we will need to open a file to get the URL.
