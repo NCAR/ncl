@@ -35,10 +35,9 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
     long output_dsizes[NCL_MAX_DIMENSIONS];
     NclBasicDataTypes type_output;
     NclObjClass type_obj_output;
-    int ret;
 
     /* Various. */
-    ng_size_t i, index_presrh, size_pres, index_output, size_leftmost;
+    ng_size_t i, index_presrh, size_output, index_output, size_leftmost;
     double *tmp_low, *tmp_mid, *tmp_high;
     NclQuark *description, *units;
     char *cdescription, *cunits;
@@ -105,7 +104,7 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
     /* Compute size of leftmost dimensions. */
     size_leftmost = 1;
     for( i = 0; i < ndims_pres-3; i++ ) size_leftmost *= dsizes_pres[i];
-    size_pres = size_leftmost * nznsew;
+    size_output = size_leftmost * ncnsew;
 
     /* 
      * Allocate space for coercing input arrays.  If any of the input
@@ -130,7 +129,7 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
 
     /* Allocate space for output array. */
     if(type_pres == NCL_double || type_rh == NCL_double) {
-        output = (void *)calloc(size_leftmost*ncnsew, sizeof(double));
+        output = (void *)calloc(size_output, sizeof(double));
         if(output == NULL) {
             NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cloud_fraction: Unable to allocate memory for output array");
             return(NhlFATAL);
@@ -138,7 +137,7 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
         type_output = NCL_double;
         type_obj_output = nclTypedoubleClass;
     } else {
-        output     = (void *)calloc(size_leftmost*ncnsew, sizeof(float));
+        output     = (void *)calloc(size_output, sizeof(float));
         tmp_output = (double *)calloc(ncnsew,sizeof(double));
         if(output == NULL || tmp_output == NULL) {
             NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cloud_fraction: Unable to allocate memory for output array");
