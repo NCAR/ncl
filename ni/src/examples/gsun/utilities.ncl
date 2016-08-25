@@ -1032,11 +1032,13 @@ end
 ;***********************************************************************;
 ; This function returns the type of color being used: 
 ;
-;    color index     - values 0 to 255    "index"
-;    named color     - "blue"             "named"
-;    RGB triplet     - (/1,0,0.5/)        "rgb"
-;    RGBA quadruplet - (/1,0,0.5,0.5/)    "rgba"
-;    color map name  - "amwg"             "colormap"
+;    color index           - values 0 to 255               "index"
+;    absolute color index  - values 2^30 to (2^31)-1       "absolute"
+;                           (1073741824 to 2147483647) 
+;    named color           - "blue"                        "named"
+;    RGB triplet           - (/1,0,0.5/)                   "rgb"
+;    RGBA quadruplet       - (/1,0,0.5,0.5/)               "rgba"
+;    color map name        - "amwg"                        "colormap"
 ;
 ;  Note, if the user enters something like (/1,0,0/) or (/1,0,0,0/), this
 ;  will be seen as an rgb or rgba color type, and not an index color 
@@ -1071,9 +1073,13 @@ begin
     return("rgba")
   end if
 
-  if(any(typeof(colors).eq.(/"short","integer","long"/)).and.\
-     all(colors.ge.-1.and.colors.le.255)) then
-    return("index")
+  if(isnumeric(colors)) then
+    if(all(colors.ge.-1.and.colors.le.255)) then
+      return("index")
+    else if(all(colors.ge.(2^30).and.colors.le.((2^31)-1))) then
+      return("absolute")
+    end if
+    end if
   end if
 
   return("unknown")
@@ -1298,8 +1304,8 @@ begin
 end
 
 ;***********************************************************************;
-; Given a list of color maps, color indexes, named colors, RGB, or RGBA ;
-; colors, convert them to RGBA colors.                                  ;
+; Given a list of color maps, color indexes (workstation or absolute),  ;
+; named colors, RGB, or RGBA colors, convert them to RGBA colors.       ;
 ;***********************************************************************;
 undef("convert_color_to_rgba")
 function convert_color_to_rgba(wks,colors)
@@ -1321,12 +1327,15 @@ begin
     rgba_colors = colors
   else if(color_type.eq."index") then
     rgba_colors = indexcolor2rgba(wks,colors)
+  else if(color_type.eq."absolute") then
+    rgba_colors = color_index_to_rgba(colors)
   else if(color_type.eq."colormap") then
     rgba_colors = read_colormap_files(colors)
   else if(color_type.eq."named") then
     rgba_colors = namedcolor2rgba(colors)
   else if(color_type.eq."rgb") then
     rgba_colors = rgb2rgba(colors)
+  end if
   end if
   end if
   end if
