@@ -2138,7 +2138,6 @@ begin
       "cnLevels"              : levels
       "cnFillDotSizeF"        : dot_size
       "cnFillColors"          : tmp_colors
-      "cnFillOpacityF"        : fill_opacity
       "cnFillPatterns"        : tmp_fill_patterns
       "cnFillPattern"         : fill_pattern
       "cnFillScales"          : tmp_fill_scales
@@ -2151,18 +2150,13 @@ begin
       "cnLabelBarEndLabelsOn" : end_labels_on
       "lbLabelStrings"        : lbstrings
     end getvalues
-
-;---Fixed in V6.4.0: apply opacity to tmp_colors
-    tmp_colors_rgba      = color_index_to_rgba(tmp_colors)
-    tmp_colors_rgba(:,3) = fill_opacity
 ;
 ; As of V6.4.0, you can create labelbars with triangles via 
-; lbBoxEndCapStyle. The cap / end styles are:
+; lbBoxEndCapStyle. The cap styles are:
 ;
-;   cap styles            end styles
-; 0 - rectangle          0 - include outer boxes
-; 1 - triangle low       1 - include min/max labels
-; 2 - triangle high      2 - exclude outer boxes
+; 0 - rectangle 
+; 1 - triangle low 
+; 2 - triangle high
 ; 3 - triangle both
 ;
 ; You can't have end style = 2 and cap style != 0.
@@ -2202,11 +2196,11 @@ begin
 ; Don't use the first fill color, scale, or pattern.
       nc2 = dimsizes(tmp_colors)
       end_labels_on = True
-      colors        = tmp_colors_rgba(1:nc2-2,:)
+      colors        = tmp_colors(1:nc2-2)
       fill_scales   = tmp_fill_scales(1:nc2-2)
       fill_patterns = tmp_fill_patterns(1:nc2-2)
     else
-      colors        = tmp_colors_rgba
+      colors        = tmp_colors
       fill_scales   = tmp_fill_scales
       fill_patterns = tmp_fill_patterns
     end if
