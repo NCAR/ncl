@@ -1088,7 +1088,7 @@ end
 ;***********************************************************************;
 ; This function returns True for every element of the input array that  ;
 ; represents a transparent color, and False otherwise.                  ;
-; It only works for named, index, or RGBA colors.                       ;
+; It only works for named, index, absolute, or RGBA colors.             ;
 ;                                                                       ;
 ; Note: if any of the input colors are named colors, but some of them   ;
 ; are invalid, then Missing is returned for all of them.                ;
@@ -1103,7 +1103,7 @@ begin
   rank = dimsizes(dims)
   type = get_color_type(colors)
 
-  valid_types = (/"named","index","rgba"/)
+  valid_types = (/"named","index","rgba","absolute"/)
   if(.not.any(type.eq.valid_types)) then
     print("is_color_transparent: Error: the input colors must be of type: " + \
           str_join(valid_types,","))
@@ -1116,6 +1116,10 @@ begin
   end if
   if(type.eq."index") then
     return(colors.eq.-1)
+  end if
+  if(type.eq."absolute") then
+    colors_rgba = ndtotwod(color_index_to_rgba(colors))
+    return(reshape(colors_rgba(:,3).eq.0.0,dims))
   end if
   if(type.eq."rgba") then
     colors2d = ndtotwod(colors)
@@ -1618,6 +1622,9 @@ begin
   end if
   if(color_type.eq."index") then
     rgba_colors = indexcolor2rgba(wks,colors)
+  end if
+  if(color_type.eq."absolute") then
+    rgba_colors = color_index_to_rgba(colors)
   end if
   if(color_type.eq."colormap") then
     rgba_colors = read_colormap_files(colors)
