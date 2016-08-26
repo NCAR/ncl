@@ -6343,7 +6343,9 @@ static NhlErrorTypes ManageLabelBar
 	if (cnp->fill_dot_size != ocnp->fill_dot_size)
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbFillDotSizeF,cnp->fill_dot_size);
-        if (/*cnp->lbar_end_style != ocnp->lbar_end_style &&*/ cnp->lbar_end_style == NhlEXCLUDEOUTERBOXES)
+        if (cnp->fill_opacity != ocnp->fill_opacity)
+                NhlSetSArg(&sargs[(*nargs)++], NhlNlbFillOpacityF, cnp->fill_opacity);
+        if (cnp->lbar_end_style == NhlEXCLUDEOUTERBOXES)
                 NhlSetSArg(&sargs[(*nargs)++], NhlNlbBoxEndCapStyle, NhlRECTANGLE);
 
 	return ret;
@@ -12219,7 +12221,7 @@ NhlErrorTypes CellBoundsFill
 		NhlSetSArg(&sargs[(nargs)++],NhlNgsEdgeColor, cnp->cell_fill_edge_color);
 	}
 	NhlSetSArg(&sargs[(nargs)++],NhlNgsFillOpacityF, cnp->fill_opacity);
-		
+
 	sprintf(buffer,"%s",cnl->base.name);
 	strcat(buffer,".GraphicStyle");
 

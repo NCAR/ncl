@@ -135,6 +135,8 @@ typedef enum _NhllbBoxEndCapStyle {
 #define NhlNlbFillBackground		"lbFillBackground"
 #define NhlNlbFillLineThicknessF	"lbFillLineThicknessF"
 #define NhlNlbRasterFillOn		"lbRasterFillOn"
+#define NhlNlbFillOpacityF              "lbFillOpacityF"
+#define NhlNlbOverrideFillOpacity       "lbOverrideFillOpacity"
 
 /* Class resources */
 
@@ -184,6 +186,8 @@ typedef enum _NhllbBoxEndCapStyle {
 #define NhlClbRasterFillOn		"LbRasterFillOn"
 #define NhlClbBoxSeparatorLinesOn	"LbBoxSeparatorLinesOn"
 #define NhlClbBoxEndCapStyle            "LbBoxEndCapStyle"
+#define NhlClbFillOpacityF              "lbFillOpacityF"
+#define NhlClbOverrideFillOpacity       "lbOverrideFillOpacity"
 
 
 

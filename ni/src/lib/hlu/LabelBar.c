@@ -29,6 +29,7 @@
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/Transform.h>
+#include <ncarg/hlu/color.h>
 
 static char lbDefTitle[] = "NOTHING";
 
@@ -133,6 +134,13 @@ static NhlResource resources[] = {
 	{NhlNlbFillDotSizeF,NhlCFillDotSizeF,NhlTFloat,sizeof(float),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.fill_dot_size),
 	 NhlTString,_NhlUSET("0.0"),0,NULL},
+        {NhlNlbFillOpacityF, NhlClbFillOpacityF, NhlTFloat, sizeof(float),
+         NhlOffset(NhlLabelBarLayerRec, labelbar.fill_opacity),
+         NhlTString, _NhlUSET("1.0"), 0, NULL},
+	{NhlNlbOverrideFillOpacity, NhlClbOverrideFillOpacity, NhlTBoolean,
+	 sizeof(NhlBoolean), 
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.override_fill_opacity),
+	 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
 	{NhlNlbLabelStrings, NhlClbLabelStrings, NhlTStringGenArray,
 	 sizeof(NhlPointer), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.label_strings),
@@ -4217,6 +4225,7 @@ NhlBoolean edges_only;
 	int i;
 	int fill_color, fill_pattern;
 	float fill_scale, *fill_scales;
+        float fill_opacity;
 	float frac, dist;
         NhllbBoxEndCapStyle endcapStyle = lb_p->box_end_cap_style;
 		
@@ -4225,6 +4234,8 @@ NhlBoolean edges_only;
 	patterns = (int *)lb_p->fill_patterns->data;
 	fill_scales = (float *) lb_p->fill_scales->data;
 
+        fill_opacity = lb_p->override_fill_opacity ? 1.0 : lb_p->fill_opacity;
+        
 	if (lb_p->orient == NhlHORIZONTAL) {
 
 		for (i=0; i<lb_p->box_count; i++) {
@@ -4279,6 +4290,7 @@ NhlBoolean edges_only;
 				  _NhlNwkFillColor, fill_color,
 				  _NhlNwkFillScaleFactorF, fill_scale,
 				  _NhlNwkFillDotSizeF, lb_p->fill_dot_size,
+                                  _NhlNwkFillOpacityF, fill_opacity,
 				   NULL);
 			
                     _NhlSetFillInfo(lbl->base.wkptr, (NhlLayer) lbl);
@@ -4340,6 +4352,7 @@ NhlBoolean edges_only;
 				  _NhlNwkFillColor, fill_color,
 				  _NhlNwkFillScaleFactorF, fill_scale,
 				  _NhlNwkFillDotSizeF, lb_p->fill_dot_size,
+                                  _NhlNwkFillOpacityF, fill_opacity,
 				  NULL);
 			
                     _NhlSetFillInfo(lbl->base.wkptr, (NhlLayer) lbl);
@@ -4347,6 +4360,7 @@ NhlBoolean edges_only;
 			
 		}
 	}
+        
 	return ret;
 }
 
