@@ -2138,6 +2138,7 @@ begin
       "cnLevels"              : levels
       "cnFillDotSizeF"        : dot_size
       "cnFillColors"          : tmp_colors
+      "cnFillOpacityF"        : fill_opacity
       "cnFillPatterns"        : tmp_fill_patterns
       "cnFillPattern"         : fill_pattern
       "cnFillScales"          : tmp_fill_scales
@@ -2152,11 +2153,12 @@ begin
     end getvalues
 ;
 ; As of V6.4.0, you can create labelbars with triangles via 
-; lbBoxEndCapStyle. The cap styles are:
+; lbBoxEndCapStyle. The cap / end styles are:
 ;
-; 0 - rectangle 
-; 1 - triangle low 
-; 2 - triangle high
+;   cap styles            end styles
+; 0 - rectangle          0 - include outer boxes
+; 1 - triangle low       1 - include min/max labels
+; 2 - triangle high      2 - exclude outer boxes
 ; 3 - triangle both
 ;
 ; You can't have end style = 2 and cap style != 0.
@@ -2204,9 +2206,7 @@ begin
       fill_scales   = tmp_fill_scales
       fill_patterns = tmp_fill_patterns
     end if
-    delete(tmp_colors)
-    delete(tmp_fill_scales)
-    delete(tmp_fill_patterns)
+    delete([/tmp_colors,tmp_fill_scales,tmp_fill_patterns/])
 ;
 ; Check if the fill mode is "RasterFill". If so, be sure to 
 ; set lbRasterFillOn to True
@@ -2234,6 +2234,7 @@ begin
     else
       lbres@lbFillScaleF    = fill_scale
     end if
+    lbres@lbFillOpacityF = fill_opacity     ; Added in NCL V6.4.0
   else if(class_name.eq."vectorPlotClass") then
     getvalues the_plot
       "vcLevels"              : levels
@@ -2351,8 +2352,16 @@ begin
     height = get_res_value(res,"pmLabelBarHeightF",0.3*height)
     width  = get_res_value(res,"pmLabelBarWidthF",def_lvpwf*width)
   end if
-
+;
+; Don't understand why you have to set cnExplicitLabelBarLabelsOn to
+; True if lbLabelAlignment and/or lbLabelStrings are set. Can't it
+; detect that one of these resources is set, and turn it on by default?
+;
   lbres = True
+  lbres = get_res_eq(res,"lb")
+  if(res.and.any(isatt(res,(/"lbLabelAlignment","lbLabelStrings"/)))) then
+    lbres@cnExplicitLabelBarLabelsOn = get_res_value_keep(res,"cnExplicitLabelBarLabelsOn",True)
+  end if
   if(.not.res.or..not.isatt(res,"pmLabelBarHeightF"))
     lbres@pmLabelBarHeightF = height
   end if
