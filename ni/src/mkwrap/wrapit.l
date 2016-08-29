@@ -9,7 +9,7 @@ extern WWrapRec *current;
 %}
 let [_a-zA-Z]
 alnum [_a-zA-Z0-9]
-white [\t ]
+white [\t\r ]
 digit [0-9]
 %x wrapsec fortsec fortsec2
 %%
