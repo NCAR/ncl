@@ -43,3 +43,10 @@ Thumbs.db
 *.project
 *.pydevproject
 
+# NCL specific
+#####################
+*.a
+*.bak
+[Mm]akefile
+include/
+
