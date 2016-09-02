@@ -1464,6 +1464,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		long vcount,vstart;
 		int do_file = 0;
 		ng_size_t n_sub_elements;
+		ng_size_t sub_coord_elements;
 
 		agg_start_index = agg_end_index + dir;
 		agg_end_index += dir * agg_dim_count[i];
@@ -1815,6 +1816,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			}
 			memcpy(&(sel_rec.selection[0]),&sel,sizeof(NclSelection));
 			sel_rec.n_entries = 1;
+			/* also need to expand the aggregated coordinate variable if there is one */
 			if (agg_coord_var) {
 				sub_agg_coord_var = _NclReadCoordVar(agg_coord_var,NrmQuarkToString(agg_dim_name),NULL);
 				if (!sub_agg_coord_var) {
@@ -1826,6 +1828,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				_NclDestroyObj((NclObj)agg_coord_var);
 				agg_coord_var = (NclVar)_NclGetObj(var1->var.coord_vars[0]);
 				agg_coord_var_md = (NclMultiDValData)_NclGetObj(agg_coord_var->var.thevalue_id);
+				sub_coord_elements = agg_coord_var_md->multidval.totalelements;
 				if (sub_agg_md->multidval.totalelements > agg_coord_var_md->multidval.totalelements) {
 					agg_coord_var_md->multidval.val = NclRealloc(agg_coord_var_md->multidval.val,sub_agg_md->multidval.totalsize);
 					if (! agg_coord_var_md->multidval.val) {
@@ -1839,6 +1842,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				agg_coord_var_md->multidval.dim_sizes[0] = agg_sel_count;
 				agg_coord_var_md->multidval.totalsize = sub_agg_md->multidval.totalsize;
 				memcpy(agg_coord_var_md->multidval.val,sub_agg_md->multidval.val,sub_agg_md->multidval.totalsize);
+				/* make the units consistent */
 				if (HasTimeUnits(units[0]) && units[i] != units[0]) {
 					NclMultiDValData tmp_md = NULL,tmp_md2;
 					NrmQuark qval = units[0];
@@ -1846,10 +1850,10 @@ void CallLIST_READ_FILEVAR_OP(void) {
 					tmp_md2 = _NclCopyVal(tmp_md,NULL);
 					memcpy(tmp_md2->multidval.val,(void*)&qval,sizeof(NrmQuark));
 					_NclReplaceAtt(var1,"units",tmp_md2,NULL);
-					FixAggCoordValue((NclOneDValCoordData)agg_coord_var_md,0,i,units,calendar,total_coord_offset,n_sub_elements);
+					FixAggCoordValue((NclOneDValCoordData)agg_coord_var_md,0,i,units,calendar,total_coord_offset,sub_coord_elements);
 					_NclDestroyObj((NclObj)tmp_md2);
 				}
-				total_coord_offset += n_sub_elements * agg_coord_var_md->multidval.type->type_class.size;
+				total_coord_offset += sub_coord_elements * agg_coord_var_md->multidval.type->type_class.size;
 				agg_coord_var->var.dim_info[0].dim_size = agg_sel_count;
 				_NclDestroyObj((NclObj)sub_agg_md);
 			}
@@ -1880,10 +1884,15 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			var_offset += var_md->multidval.totalsize;
 			_NclDestroyObj((NclObj)var_md);
 			if (agg_coord_var && agg_coord_var_md) {
-				if (HasTimeUnits(units[0]) && units[i] != units[0]) {
-					FixAggCoordValue((NclOneDValCoordData)agg_coord_var_md,0,i,units,calendar,total_coord_offset,n_sub_elements);
+				/* note fewer elements in the coordinate var than in the full variable */
+				sub_coord_elements = n_sub_elements;
+				for (j = 1; j < var_md->multidval.n_dims; j++) {
+					sub_coord_elements /= var_md->multidval.dim_sizes[j];
 				}
-				total_coord_offset += n_sub_elements * agg_coord_var_md->multidval.type->type_class.size;
+				if (HasTimeUnits(units[0]) && units[i] != units[0]) {
+					FixAggCoordValue((NclOneDValCoordData)agg_coord_var_md,0,i,units,calendar,total_coord_offset,sub_coord_elements);
+				}
+				total_coord_offset += sub_coord_elements * agg_coord_var_md->multidval.type->type_class.size;
 			}
 		}
 		if (vec)  /* this is the aggregated dimension vector value passed to each file so it must be freed at each iteration */
