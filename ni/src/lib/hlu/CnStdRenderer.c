@@ -365,6 +365,7 @@ static NhlErrorTypes SetCpParams
 	return ret;
 }
 
+#if 0
 static NhlBoolean IsCyclic( NhlContourPlotLayer	cl) 
 {
 	float tlat1, tlon1, tlat2, tlon2;
@@ -376,6 +377,8 @@ static NhlBoolean IsCyclic( NhlContourPlotLayer	cl)
 	int ndims;
 	NhlProjection  proj;
 	float center_lat, center_rot;
+       
+        return False;
 
 	/* actually this flag is used to decide whether to use the grid boundary introduced by CPCLAM; the only time it
 	   it not used is when the projection is one of the cylindrical types and not rotated and the center lat is 0 */
@@ -481,7 +484,7 @@ static NhlBoolean IsCyclic( NhlContourPlotLayer	cl)
 	}
 			
 }
-
+#endif
 
 /*
  * Function:	SetRegionAttrs
@@ -528,17 +531,8 @@ static void SetRegionAttrs
 	else
 		c_cpseti("CLU",1);
 
-	if (cpix == -1 && reg_attrs->fill_color > NhlTRANSPARENT && reg_attrs->fill_pat > NhlHOLLOWFILL) {
+	if (cpix == -1)
 		c_cpseti("AIA",99);
-		/*c_cpsetr("PIT",0.001);*/ /* forced to the minimum recommended value, regardless of max_point_distance */
-	}
-	else if (cpix == -1) {
-		if (IsCyclic(cl)) {   /* in the cyclic case don't draw the grid bounds into the area map */ 
-			c_cpseti("AIA",-1);   
-		} else {
-			c_cpseti("AIA",99);
-		}
-	}
 	else if (cpix == -2)
 		c_cpseti("AIA",98);
 	else if (cpix == -3)
@@ -1902,8 +1896,15 @@ static NhlErrorTypes CnStdRender
 				return ret;
 			}
 
+
 			if (cnp->dump_area_map)
 				_NhlDumpAreaMap(cnp->aws,entry_name);
+
+			/* flag1 is set to 999 to indicate that the HLU version
+			   of ARPRAM should be called. It has special handling
+			   to fix a problem with the grid boundary */
+
+			_NhlArpram(cnp->aws,999,0,0,entry_name);
 
 			subret = _NhlArscam(cnp->aws,
 					    (_NHLCALLF(hlucpfill,HLUCPFILL)),
