@@ -1,10 +1,31 @@
+----------------------------------------------------------------------
 If having problems with the HLUs on the Cray, the first thing I try is
 compiling Convert.c with optimization turned off.
 
-If having troubles compiling Create.c on Cygwin because of an sa_handler
+If having trouble compiling Create.c on Cygwin because of an sa_handler
 error message, try compiling without -ansi.
 
-I had trouble compiling Workstation.c on an x86_64 Linux system using
-the Intel (icc) compiler. I got an internal error message. So, I
-used gcc to compile just this one file.
+If having trouble compiling Workstation.c on an x86_64 Linux system using
+the Intel (icc) compiler and getting an "internal" error message, try
+using gcc to compile just this one file.
+
+----------------------------------------------------------------------
+
+If triangle.c and triangle.h are missing and you need these files,
+get them from this website:
+
+http://www.cs.cmu.edu/~quake/triangle.html
+
+There should be a link to a ".zip file" which you can unzip with:
+
+unzip triangle.zip
+
+DO NOT UNZIP THIS FILE IN THIS DIRECTORY, because it may
+overwrite your "Makefile". Instead, download it somewhere
+temporary, and then copy over "triangle.c" and "triangle.h"
+to this directory.
+
+
+
+
 
