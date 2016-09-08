@@ -11861,9 +11861,14 @@ begin
 
  utcDate = ut_calendar( tempDate, -5 )
 
- retVal = ut_inv_calendar( utcDate(:,0), utcDate(:,1), utcDate(:,2), \\
-                           utcDate(:,3), utcDate(:,4), utcDate(:,5), \\
-                           unitsTo, 0 )
+ opt = 0
+ if(isatt(dateFrom,"calendar")) then
+   opt@calendar = dateFrom@calendar
+ end if
+
+ retVal = ut_inv_calendar( toint(utcDate(:,0)), toint(utcDate(:,1)), toint(utcDate(:,2)), \
+                           toint(utcDate(:,3)), toint(utcDate(:,4)), utcDate(:,5), \
+                           unitsTo, opt )
  return( retVal )
 end
 
@@ -11885,11 +11890,16 @@ begin
  tempDate       = dateFrom
  tempDate@units = dateFrom@units
 
- utcDate = cd_calendar( tempDate, -5 )
+ utcDate = cd_calendar( tempDate, 0 )
 
- retVal = cd_inv_calendar( utcDate(:,0), utcDate(:,1), utcDate(:,2), \\
-                           utcDate(:,3), utcDate(:,4), utcDate(:,5), \\
-                           unitsTo, 0 )
+ opt = 0
+ if(isatt(dateFrom,"calendar")) then
+   opt@calendar = dateFrom@calendar
+ end if
+
+ retVal = cd_inv_calendar( toint(utcDate(:,0)), toint(utcDate(:,1)), toint(utcDate(:,2)), \
+                           toint(utcDate(:,3)), toint(utcDate(:,4)), utcDate(:,5), \
+                           unitsTo, opt )
  return( retVal )
 end
 
