@@ -46,7 +46,7 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
      * Variable for getting/setting dimension name info.
      */
      NclDimRec *dim_info = NULL;
-     NclDimRec *dim_info_p;
+     NclDimRec *dim_info_rh = NULL;
 
     /*
      * Variables for returning the output array with attributes and/or
@@ -219,18 +219,18 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
      * Return the output array back to NCL. First define the output
      * dimension sizes and the type.
      */
-    output_ndims     = ndims_pres;
+    output_ndims     = ndims_rh;
     output_dsizes[0] = nc;
-    for(i = 1; i <= ndims_pres-3; i++) output_dsizes[i] = dsizes_pres[i-1];
-    output_dsizes[ndims_pres-2] = ns;    /* lat dimension */
-    output_dsizes[ndims_pres-1] = ew;    /* lon dimension */
+    for(i = 1; i <= ndims_rh-3; i++) output_dsizes[i] = dsizes_rh[i-1];
+    output_dsizes[ndims_rh-2] = ns;    /* lat dimension */
+    output_dsizes[ndims_rh-1] = ew;    /* lon dimension */
 
     /*
 	* Get dimension info to see if we have named dimensions.
 	* This will be used for return variable.
 	*/
-	dim_info_p = get_wrf_dim_info(0,2,ndims_pres,dsizes_pres);
-	if(dim_info_p != NULL) {
+	dim_info_rh = get_wrf_dim_info(1,2,ndims_rh,dsizes_rh);
+	if(dim_info_rh != NULL) {
 	  dim_info = malloc(sizeof(NclDimRec)*output_ndims);
 	  if(dim_info == NULL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cfrac: Unable to allocate memory for holding dimension information");
@@ -241,11 +241,11 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
 		dim_info[i].dim_size = output_dsizes[i];
 	  }
 	  dim_info[0].dim_quark = NrmStringToQuark("low_mid_high");
-	  for(i = 0; i < ndims_pres-3; i++) {
-		dim_info[i+1].dim_quark = dim_info_p[i].dim_quark;
+	  for(i = 0; i < ndims_rh-3; i++) {
+		dim_info[i+1].dim_quark = dim_info_rh[i].dim_quark;
 	  }
-	  dim_info[output_ndims-2].dim_quark = dim_info_p[ndims_pres-2].dim_quark;
-	  dim_info[output_ndims-1].dim_quark = dim_info_p[ndims_pres-1].dim_quark;
+	  dim_info[output_ndims-2].dim_quark = dim_info_rh[ndims_pres-2].dim_quark;
+	  dim_info[output_ndims-1].dim_quark = dim_info_rh[ndims_pres-1].dim_quark;
 
 	}
 
@@ -281,7 +281,7 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
 	                          );
 
 	  if(dim_info   != NULL) NclFree(dim_info);
-	  NclFree(dim_info_p);
+	  NclFree(dim_info_rh);
 
 	/*
 	 * Return output grid and attributes to NCL.
