@@ -319,18 +319,17 @@ end
 
 
 ;***********************************************************************;
-; Procedure : outlined_bars                                             ;
+; Function : outlined_bars                                              ;
 ;                  x: numeric                                           ;
 ;                  y: numeric                                           ;
-;            xinterp: numeric                                           ;
-;            yinterp: numeric                                           ;
 ;                                                                       ;
-; Given a set of points represented by x and y, represent the y values  ;
-; with bar outlines.                                                    ;
+; Given a set of points represented by x and y, return new arrays       ;
+; that represent bar outlines.                                          ;
 ;***********************************************************************;
 undef("outlined_bars")
-procedure outlined_bars(x,y,xinterp,yinterp)
-local ndimsx, ndimsy, ncurves, dims, npts, nyb, bar_width
+function outlined_bars(x,y)
+local nyb, npts, ncurves, ndimsx, ndimsy, ncurves, nyb, \
+bar_width, xnew, ynew
 begin
 ;
 ; Convert x and y into two dimensional arrays so we don't have to
@@ -356,10 +355,19 @@ begin
   end if
 ;
 ; For each old y point, we need two new y points to represent
-; the horizontal line. The new X values will be the width of the bars.
+; the horizontal line.
 ;
   nyb = 2 * (npts-1) + 1
 
+  yinterp = new((/ncurves,nyb/),double,1e36)
+  xinterp = new((/ncurves,nyb/),double,1e36)
+
+  copy_var_atts(x,xinterp,"")
+  copy_var_atts(y,yinterp,"")
+;
+; For each old y point, we need two new y points to represent
+; the horizontal line. The new X values will be the width of the bars.
+;
   yinterp(:,0:nyb-2:2) = ynew(:,:npts-2)
   yinterp(:,1:nyb-1:2) = ynew(:,:npts-2)
   yinterp(:,nyb-1)     = ynew(:,npts-1)   ; last point
@@ -369,8 +377,7 @@ begin
   xinterp(:,1:nyb-2:2) = xnew(:,:npts-2) + bar_widths
   xinterp(:,nyb-1)     = xnew(:,npts-1)     ; last point, no bar
 
-  delete(xnew)
-  delete(ynew)
+  return([/xinterp,yinterp/])
 end
 
 ;***********************************************************************;
@@ -2582,7 +2589,7 @@ begin
 
   anumgons = 0  ; Count the number of polygons
   bnumgons = 0
-  if(ref_line_above_color.ne.-1)
+  if(.not.is_color_transparent(ref_line_above_color)) then
     gsresa             = True
     gsresa@gsFillColor = ref_line_above_color
 ;
@@ -2618,7 +2625,7 @@ begin
     end do
   end if
 
-  if(ref_line_below_color.ne.-1)
+  if(.not.is_color_transparent(ref_line_below_color)) then
     gsresb             = True
     gsresb@gsFillColor = ref_line_below_color
 ;
@@ -2662,7 +2669,7 @@ begin
 ; Loop through and add above-ref-line polygons.
 ;
   ngons = 0
-  if(ref_line_above_color.ne.-1.and.anumgons.gt.0)
+  if(.not.is_color_transparent(ref_line_above_color).and.anumgons.gt.0)
     igon       = 0
     create_gon = False
     do i=0,npts-1
@@ -2728,7 +2735,7 @@ begin
 ;
 ; Loop through and add below-ref-line polygons.
 ;
-  if(ref_line_below_color.ne.-1.and.bnumgons.gt.0) then
+  if(.not.is_color_transparent(ref_line_below_color).and.bnumgons.gt.0) then
     igon       = 0
     create_gon = False
 
@@ -4394,7 +4401,7 @@ begin
 ; Outline the area we are looking at (optional).
 ;
    if(maskoutln) then
-     pres@gsLineColor      = "foreground"
+     pres@gsLineColor      = convert_color_to_rgba(wks,"foreground")
      pres@gsLineThicknessF = 3.0
      var_string         = unique_string("lamb_polyline")
      outline_lon        = (/ minlon, maxlon, maxlon, minlon, minlon /)
@@ -4518,6 +4525,229 @@ begin
   draw_and_frame(wks,canvas,calldraw,callframe,False,maxbb)
 
   return(canvas)
+end
+
+
+;**********************************************************************
+; This function sets a bunch of variables for determining how to
+; fill bars in an XY plot, when gsnXYBarChart has been set to True.
+;  The "bres" variable may have some attributes removed too.;
+;
+; Three resources can be used to specify fill colors, in this order:
+;
+;     1. gsnAbove/BelowYRefLineBarColors
+;     2. gsnXYBarChartColors
+;     3. gsnXYBarChartColors2
+;
+; 1. gsnAbove/BelowYRefLineBarColors
+;
+; If you specify either one of these resources, then the top bars 
+; will be colored in the gsnAboveYRefLineBarColors, and the
+; below bars in gsnBelowYRefLineBarColors. The colors will repeat
+; if you specify fewer colors than bars.
+;
+; For example, if you have 10 "up" bars and 3 "above" colors specified,
+; and 8 "below" bars and 3 "below" colors specified:
+;
+;   up bars #1-3:  above colors 1-3    down bars #1-3: below colors 1-3
+;   up bars #4-6:  above colors 1-3    down bars #4-6  below colors 1-3
+;   up bars #7-9:  above colors 1-3    down bars #7-8  below colors 1-2
+;   up bar  #10:   above color 1
+; 
+; 2. gsnXYBarChartColors
+;
+; If you specify this resource, then then up bars will cycle through
+; these colors independently of the down bars.
+;
+; 3. gsnXYBarChartColors2
+;
+; If you specify this resource, then the colors will be applied 
+; to each consecutive bar, regardless if it is up or down.
+;
+; By the way, the same logic applies to the gsnXYBarChart*Pattern* 
+; resources.
+;**********************************************************************
+undef("get_bar_colors")
+function get_bar_colors(wks,bres,nlines)
+local bac_rank, bbc_rank, mlt_abv_colors_set, mlt_blw_colors_set
+begin
+  mlt_abv_colors_set = False
+  mlt_blw_colors_set = False
+  colors2_set        = False
+
+;---Check for above reference line bar fill colors.
+  if(isatt(bres,"gsnAboveYRefLineBarColors")) then
+    mlt_abv_colors_set = True
+    mlt_abv_colors = convert_color_to_rgba(wks,get_res_value(bres,"gsnAboveYRefLineBarColors","foreground"))
+  end if  
+
+;---Check for below reference line bar fill colors.
+  if(isatt(bres,"gsnBelowYRefLineBarColors")) then
+    mlt_blw_colors_set = True
+    mlt_blw_colors = convert_color_to_rgba(wks,get_res_value(bres,"gsnBelowYRefLineBarColors","foreground"))
+  end if
+
+  if(mlt_abv_colors_set.or.mlt_blw_colors_set) then
+;
+; If gsnXYBarChartColors and/or gsnXYBarChartColors2 are set,
+; then delete them.
+;
+    if(isatt(bres,"gsnXYBarChartColors")) then
+      delete(bres@gsnXYBarChartColors)
+    end if
+    if(isatt(bres,"gsnXYBarChartColors2")) then
+      delete(bres@gsnXYBarChartColors2)
+    end if
+  end if  
+;
+; If neither gsnBelow/AboveYRefLineBarColors were set, then the
+; second choice is to check for gsnXYBarChartColors.
+;
+  if(isatt(bres,"gsnXYBarChartColors")) then
+    mlt_abv_colors_set = True
+    mlt_blw_colors_set = True
+    mlt_abv_colors = convert_color_to_rgba(wks,get_res_value(bres,"gsnXYBarChartColors","foreground"))
+    mlt_blw_colors = mlt_abv_colors
+
+    if(isatt(bres,"gsnXYBarChartColors2")) then
+      delete(bres@gsnXYBarChartColors2)
+    end if
+  end if
+
+;
+; If none of gsnBelow/AboveYRefLineBarColors/gsnXYBarChartColors were
+; set, then the third choice is gsnXYBarChartColors2.
+;
+  if(isatt(bres,"gsnXYBarChartColors2")) then
+    colors2_set        = True
+    mlt_abv_colors_set = True
+    mlt_blw_colors_set = True
+    mlt_abv_colors = convert_color_to_rgba(wks,get_res_value(bres,"gsnXYBarChartColors2","foreground"))
+    mlt_blw_colors = mlt_abv_colors
+  end if
+;
+; Now that we've exhausted all the possible ways that bar colors can be
+; set for the above ref line, check that the color arrays are valid sizes.
+;
+  if(mlt_abv_colors_set) then
+    bac_rank = dimsizes(dimsizes(mlt_abv_colors))
+    if(bac_rank.gt.3.or.\
+      (bac_rank.eq.3.and.dimsizes(mlt_abv_colors(:,0,0)).ne.nlines)) then
+      print("get_bar_colors: Warning:The leftmost dimension of the resource for specifying bar")
+      print("            colors must be equal to the number of Y reference lines or curves.")
+      print("Will not fill your bar chart.")
+    end if            
+  else
+    mlt_abv_colors = new(1,integer)   ; set to missing
+  end if
+  if(mlt_blw_colors_set) then
+    bbc_rank = dimsizes(dimsizes(mlt_blw_colors))
+    if(bbc_rank.gt.3.or.\
+      (bbc_rank.eq.3.and.dimsizes(mlt_blw_colors(:,0,0)).ne.nlines)) then
+      print("get_bar_colors: Warning: The leftmost dimension of the resource for specifying bar")
+      print("            colors must be equal to the number of Y reference lines or curves.")
+      print("Will not fill your bar chart.")
+    end if            
+  else
+    mlt_blw_colors = new(1,integer)   ; set to missing
+  end if
+  return([/mlt_abv_colors,mlt_blw_colors,colors2_set/])
+end
+
+;**********************************************************************
+; See description above for get_bar_colors
+
+; This function sets a bunch of variables for determining how to
+; pattern fill bars in an XY plot, when gsnXYBarChart has been set 
+; to True. The "bres" variable may have some attributes removed too.
+;
+; Three resources can be used to specify fill colors, in this order:
+;
+;     1. gsnAbove/BelowYRefLineBarPatterns
+;     2. gsnXYBarChartPatterns
+;     3. gsnXYBarChartPatterns2
+;**********************************************************************
+undef("get_bar_patterns")
+function get_bar_patterns(wks,bres,nlines)
+local bap_rank, bbp_rank, mlt_abv_patterns_set, mlt_blw_patterns_set
+begin
+  mlt_abv_patterns_set = False
+  mlt_blw_patterns_set = False
+  patterns2_set        = False
+
+;---Check for above reference line fill patterns.
+  if(isatt(bres,"gsnAboveYRefLineBarPatterns")) then
+    mlt_abv_patterns_set = True
+    mlt_abv_patterns = get_res_value(bres,"gsnAboveYRefLineBarPatterns",1)
+  end if
+
+;---Check for below reference line fill patterns.
+  if(isatt(bres,"gsnBelowYRefLineBarPatterns")) then
+    mlt_blw_patterns_set = True
+    mlt_blw_patterns = get_res_value(bres,"gsnBelowYRefLineBarPatterns",1)
+  end if
+;
+; If gsnXYBarChartPatterns or gsnXYBarChartPatterns2 are set,
+; then delete them.
+;
+  if(mlt_abv_patterns_set.or.mlt_blw_patterns_set) then
+    if(isatt(bres,"gsnXYBarChartPatterns")) then
+      delete(bres@gsnXYBarChartPatterns)
+    end if
+    if(isatt(bres,"gsnXYBarChartPatterns2")) then
+      delete(bres@gsnXYBarChartPatterns2)
+    end if
+  end if  
+;
+; If the gsnAbove/BelowYRefLineBarPatterns resources are not set, then
+; the second choice is to use gsnXYBarChartPatterns.
+;
+  if(isatt(bres,"gsnXYBarChartPatterns")) then
+    mlt_abv_patterns_set = True
+    mlt_blw_patterns_set = True
+    mlt_abv_patterns = get_res_value(bres,"gsnXYBarChartPatterns",1)
+    mlt_blw_patterns = mlt_abv_patterns
+
+    if(isatt(bres,"gsnXYBarChartPatterns2")) then
+      delete(bres@gsnXYBarChartPatterns2)
+    end if
+  end if  
+;
+; If gsnAbove/BelowYRefLineBarPatterns and gsnXYBarChartPatterns are
+; not set, then the third choice is to use gsnXYBarChartPatterns2.
+;
+  if(isatt(bres,"gsnXYBarChartPatterns2")) then
+    patterns2_set        = True
+    mlt_abv_patterns_set = True
+    mlt_blw_patterns_set = True
+    mlt_abv_patterns = get_res_value(bres,"gsnXYBarChartPatterns2",1)
+    mlt_blw_patterns = mlt_abv_patterns
+  end if  
+;
+; Now that we've exhausted all the possible ways that bar patterns can
+; be set for the above ref line, check that the array is a valid size.
+;
+  if(mlt_abv_patterns_set) then
+    bap_rank = dimsizes(dimsizes(mlt_abv_patterns))
+    if(bap_rank.gt.2.or. \
+      (bap_rank.eq.2.and.dimsizes(mlt_abv_patterns(:,0)).ne.nlines)) then
+      print("get_bar_patterns: Fatal: The resource for specifying bar patterns must either be 1D, or 2D where the first dimension is equal to the number of Y reference lines or curves.")
+      print("Will not fill your bar chart.")
+    end if            
+  else 
+    mlt_abv_patterns = new(1,integer)   ; set to missing
+  end if
+  if(mlt_blw_patterns_set) then
+    bbp_rank = dimsizes(dimsizes(mlt_blw_patterns))
+    if(bbp_rank.gt.2.or. \
+      (bbp_rank.eq.2.and.dimsizes(mlt_blw_patterns(:,0)).ne.nlines)) then
+      print("get_bar_patterns: Fatal: The resource for specifying bar patterns must either be 1D, or 2D where the first dimension is equal to the number of Y reference lines or curves.")
+      print("Will not fill your bar chart.")
+    end if            
+  else
+    mlt_blw_patterns = new(1,integer)   ; set to missing
+  end if
+  return([/mlt_abv_patterns,mlt_blw_patterns,patterns2_set/])
 end
 
 
@@ -4693,41 +4923,42 @@ begin
 ; Determine color of fill above reference line(s).
 ;
         if(isatt(res2,"gsnAboveYRefLineColor"))
-          if(.not.(dimsizes(res2@gsnAboveYRefLineColor).eq.nyref.or.\
-                   dimsizes(res2@gsnAboveYRefLineColor).eq.1))
+          yref_line_above_color = convert_color_to_rgba(wks,res2@gsnAboveYRefLineColor)
+          tmpdims := dimsizes(yref_line_above_color)
+          if(.not.(tmpdims(0).eq.1.or.tmpdims(0).eq.nyref)) then
             print("gsn_csm_xy: Fatal: there must either be an above-line fill color for every reference line, or one global above-line fill color specified")
             return
           end if
-          yref_line_above = res2@gsnAboveYRefLineColor
-          yref_fill_on    = True
+          yref_fill_on = True
           delete(res2@gsnAboveYRefLineColor)
         else
           if(any(isatt(res2,(/"gsnXYBarChartPatterns", \
                               "gsnXYBarChartPatterns2", \
                               "gsnAboveYRefLineBarPatterns"/)))) then
-            yref_line_above = 1    ; defaults to foreground.
+            yref_line_above_color = convert_color_to_rgba(wks,"foreground")
           else
-            yref_line_above = -1    ; defaults to no fill.
+            yref_line_above_color = convert_color_to_rgba(wks,"transparent")
           end if
         end if
 ;
 ; Determine color of fill below reference line(s).
 ;
         if(isatt(res2,"gsnBelowYRefLineColor"))
-          if(.not.(dimsizes(res2@gsnBelowYRefLineColor).eq.nyref.or.\
-                   dimsizes(res2@gsnBelowYRefLineColor).eq.1))
+          yref_line_below_color = convert_color_to_rgba(wks,res2@gsnBelowYRefLineColor)
+          tmpdims := dimsizes(yref_line_below_color)
+          if(.not.(tmpdims(0).eq.1.or.tmpdims(0).eq.nyref)) then
             print("gsn_csm_xy: Fatal: there must either be an below-line fill color for every reference line, or one global below-line fill color specified ")
             return
           end if
-          yref_line_below = get_res_value(res2,"gsnBelowYRefLineColor",1)
-          yref_fill_on    = True
+          yref_fill_on = True
+          delete(res2@gsnBelowYRefLineColor)
         else
           if(any(isatt(res2,(/"gsnXYBarChartPatterns", \
                               "gsnXYBarChartPatterns2", \
                               "gsnBelowYRefLineBarPatterns"/)))) then
-            yref_line_below = 1    ; defaults to foreground.
+            yref_line_below_color = convert_color_to_rgba(wks,"foreground")
           else
-            yref_line_below = -1    ; defaults to no fill.
+            yref_line_below_color = convert_color_to_rgba(wks,"transparent")
           end if
         end if
 ;
@@ -4744,23 +4975,23 @@ begin
 ;
         set_yref_line_color = False
         if(isatt(res2,"gsnYRefLineColors"))
-          yref_line_color = get_res_value(res2,"gsnYRefLineColors","foreground")
+          yref_line_color = convert_color_to_rgba(wks,get_res_value(res2,"gsnYRefLineColors","foreground"))
           set_yref_line_color = True
         else
           if(isatt(res2,"gsnYRefLineColor"))
-            yref_line_color = get_res_value(res2,"gsnYRefLineColor","foreground")
+            yref_line_color = convert_color_to_rgba(wks,get_res_value(res2,"gsnYRefLineColor","foreground"))
             set_yref_line_color = True
           else
-            yref_line_color = "foreground"
+            yref_line_color = convert_color_to_rgba(wks,"foreground")
           end if
         end if
         if(set_yref_line_color) then
-          if(.not.(dimsizes(yref_line_color).eq.nyref.or.\
-                   dimsizes(yref_line_color).eq.1))
+          if(.not.(dimsizes(yref_line_color(:,0)).eq.nyref.or.\
+                   dimsizes(yref_line_color(:,0)).eq.1))
             print("gsn_csm_xy: Warning: you must specify either one Y reference line color")
             print("or the same number of colors as there are reference lines.")
             print("Will use the foreground color.") 
-            yref_line_color = "foreground"
+            yref_line_color = convert_color_to_rgba(wks,"foreground")
           end if
         end if
 ;
@@ -4821,7 +5052,7 @@ begin
           yref_line           = get_res_value_keep(res2,"trYMinF",min(y))
           nyref               = 1 
           yref_line_on        = True
-          yref_line_color     = "foreground"
+          yref_line_color     = convert_color_to_rgba(wks,"foreground")
           yref_line_pattern   = 0
           yref_line_thickness = 1.
         else
@@ -4842,7 +5073,7 @@ begin
         xref_line    = get_res_value(res2,"gsnXRefLine",0.)
         nxref        = dimsizes(xref_line)
 
-        xref_line_color     = get_res_value(res2,"gsnXRefLineColor","foreground")
+        xref_line_color     = convert_color_to_rgba(wks,get_res_value(res2,"gsnXRefLineColor","foreground"))
         xref_line_pattern   = get_res_value(res2,"gsnXRefLineDashPattern",0)
         xref_line_thickness = get_res_value(res2,"gsnXRefLineThicknessF",1.)
       end if
@@ -4888,47 +5119,45 @@ begin
 ; The following code is going to create new X,Y arrays, depending
 ; on whether the user wants:
 ;
-;   - a regular XY plot
-;   - a regular XY plot with curves above and below a given reference
-;     line filled in
-;   - a bar plot without any fill
-;   - a bar plot with filling above and below a given Y reference value.
+;   1. A regular XY plot with curves above and below a given reference
+;      line filled in.
+;   2. A bar plot without any fill.
+;   3. A bar plot with filling above and below a given Y reference value.
+;   4. A regular XY plot.
 
-;
-; This is the regular XY plot with the curve above and below a given
+;----------------------------------------------------------------------
+; 1. A regular XY plot with the curve above and below a given
 ; reference line filled in with some color.
-;
+;----------------------------------------------------------------------
     if(yref_fill_on.and..not.bar_chart) then
       interp_list = ref_line_interp(x,y,yref_line)
       xinterp  = interp_list[0]
       yinterp  = interp_list[1]
       new_yref_line = interp_list[2]
       new_npts = interp_list[3]
+      delete(interp_list)
     else
       if(bar_chart) then
-;
-; This is the bar XY plot with outlined bars only.
-;
+;----------------------------------------------------------------------
+; 2. A bar XY plot with outlined bars only.
+;----------------------------------------------------------------------
         if(bar_outline_only)
-;
-; For each old y point, we need two new y points to represent
-; the horizontal line.
-;
-          nyb = 2 * (npts-1) + 1
-
-          yinterp = new((/ncurves,nyb/),double,1e36)
-          xinterp = new((/ncurves,nyb/),double,1e36)
-
-          copy_var_atts(x,xinterp,"")
-          copy_var_atts(y,yinterp,"")
-
-          outlined_bars(x,y,xinterp,yinterp)
+          interp_list = outlined_bars(x,y)
+          xinterp  = interp_list[0]
+          yinterp  = interp_list[1]
+          delete(interp_list)
         else
+;----------------------------------------------------------------------
+; 3. A bar XY plot with filled bars.
 ;
-; This is the bar XY plot with filled bars.
+; THIS IS MESSY CODE! It's complicated because there are two way
+; you can specify the fill colors, and this also depends on whether
+; you have a reference line or not.  
+;----------------------------------------------------------------------
+
 ;
 ; Get bar widths.  They are either set by user via a resource, or 
-; from the smallest dx.
+; from the smallest delta-x.
 ;
           bar_widths = get_bar_widths(x,ncurves,res2)
           if(any(ismissing(bar_widths)).or.any(bar_widths.le.0))
@@ -4937,226 +5166,55 @@ begin
             return
           end if
 ;---Special test for just one point.
-        if(npts.eq.1) then
-          if(isatt(y,"_FillValue")) then
-            ybarmsg = y@_FillValue
-          else
-            ybarmsg = 1e20
-          end if
+          if(npts.eq.1) then
+            if(isatt(y,"_FillValue")) then
+              ybarmsg = y@_FillValue
+            else
+              ybarmsg = 1e20
+            end if
 ;---If just one point, add some dummy missing vals before and after.
-          xbar = (/x-bar_widths,x,x+bar_widths/)
-          ybar = (/ybarmsg,y,ybarmsg/)
-          nptsbar = 3
-          ybar@_FillValue = ybarmsg
-         else
-           xbar = x
-           ybar = y
-           nptsbar = npts
-        end if
-;
-; Figure out if we want to fill bars.  Three resources can be used to
-; specify fill colors, in this order:
-;
-;     gsnAbove/BelowYRefLineBarColors     gsnAbove/BelowYRefLineBarPatterns
-;     gsnXYBarChartColors                 gsnXYBarChartPatterns
-;     gsnXYBarChartColors2                gsnXYBarChartPatterns2
-;
-          mlt_above_bar_colors = False
-          mlt_below_bar_colors = False
-          mlt_above_bar_pttrns = False
-          mlt_below_bar_pttrns = False
-          mlt_above_bar_scales = False
-          mlt_below_bar_scales = False
-          colors2              = False      ; Flag to indicate whether the
-          pttrns2              = False      ; 3rd resource is being used.
-;
-; First check for above reference line bar fill colors.
-;
-          if(isatt(res2,"gsnAboveYRefLineBarColors")) then
-            yref_fill_on         = True
-            mlt_above_bar_colors = True
-            bar_colors_above = get_res_value(res2,"gsnAboveYRefLineBarColors",1)
-;
-; If gsnXYBarChartColors or gsnXYBarChartColors2 are set, then
-; delete them.
-;
-            if(isatt(res2,"gsnXYBarChartColors")) then
-              delete(res2@gsnXYBarChartColors)
-            end if
-            if(isatt(res2,"gsnXYBarChartColors2")) then
-              delete(res2@gsnXYBarChartColors2)
-            end if
-          end if  
-;
-; Now check for below reference line bar fill colors.
-;
-          if(isatt(res2,"gsnBelowYRefLineBarColors")) then
-            yref_fill_on         = True
-            mlt_below_bar_colors = True
-            bar_colors_below = get_res_value(res2,"gsnBelowYRefLineBarColors",1)
-;
-; If gsnXYBarChartColors and/or gsnXYBarChartColors2 are set,
-; then delete them.
-;
-            if(isatt(res2,"gsnXYBarChartColors")) then
-              delete(res2@gsnXYBarChartColors)
-            end if
-            if(isatt(res2,"gsnXYBarChartColors2")) then
-              delete(res2@gsnXYBarChartColors2)
-            end if
-          end if  
-;
-; If neither gsnBelow/AboveYRefLineBarColors were set, then the
-; second choice is to check for gsnXYBarChartColors.
-;
-          if(isatt(res2,"gsnXYBarChartColors")) then
-            yref_fill_on         = True
-            mlt_above_bar_colors = True
-            mlt_below_bar_colors = True
-            bar_colors_above = get_res_value(res2,"gsnXYBarChartColors",1)
-            bar_colors_below = bar_colors_above
-;
-; If gsnXYBarChartColors2 is set, then delete it.
-;
-            if(isatt(res2,"gsnXYBarChartColors2")) then
-              delete(res2@gsnXYBarChartColors2)
-            end if
+            xbar = (/x-bar_widths,x,x+bar_widths/)
+            ybar = (/ybarmsg,y,ybarmsg/)
+            nptsbar = 3
+            ybar@_FillValue = ybarmsg
+           else
+             xbar = x
+             ybar = y
+             nptsbar = npts
           end if
 
-;
-; If none of gsnBelow/AboveYRefLineBarColors/gsnXYBarChartColors were
-; set, then the third choice is to use gsnXYBarChartColors2.
-;
-          if(isatt(res2,"gsnXYBarChartColors2")) then
-            colors2              = True
-            yref_fill_on         = True
-            mlt_above_bar_colors = True
-            mlt_below_bar_colors = True
-            bar_colors_above = get_res_value(res2,"gsnXYBarChartColors2",1)
-            bar_colors_below = bar_colors_above
-          end if
-;
-; Now that we've exhausted all the possible ways that bar colors can
-; be set for the above ref line, check that the array is a valid size.
-;
-          if(mlt_above_bar_colors) then
-            bac_rank = dimsizes(dimsizes(bar_colors_above))
-            if(bac_rank.gt.2.or. \
-              (bac_rank.eq.2.and.dimsizes(bar_colors_above(:,0)).ne.nyref)) then
-              print("gsn_csm_xy: Fatal: The resource for specifying bar colors must either be 1D, or 2D where the first dimension is equal to the number of Y reference lines or curves.")
-              print("Will not fill your bar chart.")
-              mlt_above_bar_colors = False
-            end if            
-          end if
-          if(mlt_below_bar_colors) then
-            bbc_rank = dimsizes(dimsizes(bar_colors_below))
-            if(bbc_rank.gt.2.or. \
-              (bbc_rank.eq.2.and.dimsizes(bar_colors_below(:,0)).ne.nyref)) then
-              print("gsn_csm_xy: Fatal: The resource for specifying bar colors must either be 1D, or 2D where the first dimension is equal to the number of Y reference lines or curves.")
-              print("Will not fill your bar chart.")
-              mlt_below_bar_colors = False
-            end if            
-          end if
-;
-; Check for above reference line fill patterns.
-;
-          if(isatt(res2,"gsnAboveYRefLineBarPatterns")) then
-            yref_fill_on         = True
-            mlt_above_bar_pttrns = True
-            bar_pttrns_above = get_res_value(res2,"gsnAboveYRefLineBarPatterns",1)
-;
-; If gsnXYBarChartPatterns or gsnXYBarChartPatterns2 are set,
-; then delete them.
-;
-            if(isatt(res2,"gsnXYBarChartPatterns")) then
-              delete(res2@gsnXYBarChartPatterns)
-            end if
-            if(isatt(res2,"gsnXYBarChartPatterns2")) then
-              delete(res2@gsnXYBarChartPatterns2)
-            end if
-          end if  
-;
-; Now check for below reference line fill patterns.
-;
-          if(isatt(res2,"gsnBelowYRefLineBarPatterns")) then
-            yref_fill_on         = True
-            mlt_below_bar_pttrns = True
-            bar_pttrns_below = get_res_value(res2,"gsnBelowYRefLineBarPatterns",1)
-;
-; If gsnXYBarChartPatterns or gsnXYBarChartPatterns2 are set,
-; then delete them.
-;
-            if(isatt(res2,"gsnXYBarChartPatterns")) then
-              delete(res2@gsnXYBarChartPatterns)
-            end if
-            if(isatt(res2,"gsnXYBarChartPatterns2")) then
-              delete(res2@gsnXYBarChartPatterns2)
-            end if
-          end if  
+;--Set bar filling variables
+          bar_color_list   = get_bar_colors(wks,res2,nyref)
+          bar_pattern_list = get_bar_patterns(wks,res2,nyref)
 
-;
-; If the gsnAbove/BelowYRefLineBarPatterns resources are not set, then
-; the second choice is to use gsnXYBarChartPatterns.
-;
-          if(isatt(res2,"gsnXYBarChartPatterns")) then
-            yref_fill_on         = True
-            mlt_above_bar_pttrns = True
-            mlt_below_bar_pttrns = True
-            bar_pttrns_above = get_res_value(res2,"gsnXYBarChartPatterns",1)
-            bar_pttrns_below = bar_pttrns_above
-;
-; If gsnXYBarChartPatterns2 is set, then delete it.
-;
-            if(isatt(res2,"gsnXYBarChartPatterns2")) then
-              delete(res2@gsnXYBarChartPatterns2)
-            end if
-          end if  
-;
-; If gsnAbove/BelowYRefLineBarPatterns and gsnXYBarChartPatterns are
-; not set, then the third choice is to use gsnXYBarChartPatterns2.
-;
-          if(isatt(res2,"gsnXYBarChartPatterns2")) then
-            pttrns2              = True
-            yref_fill_on         = True
-            mlt_above_bar_pttrns = True
-            mlt_below_bar_pttrns = True
-            bar_pttrns_above = get_res_value(res2,"gsnXYBarChartPatterns2",1)
-            bar_pttrns_below = bar_pttrns_above
-          end if  
-;
-; Now that we've exhausted all the possible ways that bar patterns can
-; be set for the above ref line, check that the array is a valid size.
-;
-          if(mlt_above_bar_pttrns) then
-            bap_rank = dimsizes(dimsizes(bar_pttrns_above))
-            if(bap_rank.gt.2.or. \
-              (bap_rank.eq.2.and.dimsizes(bar_pttrns_above(:,0)).ne.nyref)) then
-              print("gsn_csm_xy: Fatal: The resource for specifying bar patterns must either be 1D, or 2D where the first dimension is equal to the number of Y reference lines or curves.")
-              print("Will not fill your bar chart.")
-              mlt_above_bar_pttrns = False
-            end if            
-          end if
-          if(mlt_below_bar_pttrns) then
-            bbp_rank = dimsizes(dimsizes(bar_pttrns_below))
-            if(bbp_rank.gt.2.or. \
-              (bbp_rank.eq.2.and.dimsizes(bar_pttrns_below(:,0)).ne.nyref)) then
-              print("gsn_csm_xy: Fatal: The resource for specifying bar patterns must either be 1D, or 2D where the first dimension is equal to the number of Y reference lines or curves.")
-              print("Will not fill your bar chart.")
-              mlt_below_bar_pttrns = False
-            end if            
-          end if
-;
-; Check for fill scales above and below.
-;
+          bar_colors_above     = bar_color_list[0]
+          bar_colors_below     = bar_color_list[1]
+          colors2_set          = bar_color_list[2]
+
+          bar_patterns_above   = bar_pattern_list[0]
+          bar_patterns_below   = bar_pattern_list[1]
+          patterns2_set        = bar_pattern_list[2]
+
+          bar_colors_above_set = .not.all(ismissing(bar_colors_above))
+          bar_colors_below_set = .not.all(ismissing(bar_colors_below))
+          bar_patterns_above_set = .not.all(ismissing(bar_patterns_above))
+          bar_patterns_below_set = .not.all(ismissing(bar_patterns_below))
+          yref_fill_on = yref_fill_on.or.bar_colors_above_set.or.bar_colors_below_set.or.\
+                                         bar_patterns_above_set.or.bar_patterns_below_set
+     
+;---Check for fill scales above and below.
           if(isatt(res2,"gsnAboveYRefLineBarFillScales")) then
-            mlt_above_bar_scales = True
+            bar_scales_above_set = True
             bar_scales_above = get_res_value(res2,"gsnAboveYRefLineBarFillScales",1)
+          else
+            bar_scales_above_set = False
           end if  
           if(isatt(res2,"gsnBelowYRefLineBarFillScales")) then
-            mlt_below_bar_scales = True
+            below_bar_scales_set = True
             bar_scales_below = get_res_value(res2,"gsnBelowYRefLineBarFillScales",1)
+          else
+            below_bar_scales_set = False
           end if  
-
 ;
 ; Loop across curves and figure out which points are above, below,
 ; and equal to the references lines.  First create arrays to hold points
@@ -5231,9 +5289,9 @@ begin
           end if
         end if
       else
-;
-; This is just a regular XY plot.
-;
+;----------------------------------------------------------------------
+;  4. A regular XY plot
+;----------------------------------------------------------------------
         xinterp = x
         yinterp = y
       end if
@@ -5291,15 +5349,15 @@ begin
       attsetvalues_check(xy_object,xyres_tmp)
       delete(xyres_tmp)
 
-      fill_above = yref_line_above(0)
-      fill_below = yref_line_below(0)
+      fill_above = yref_line_above_color(0,:)
+      fill_below = yref_line_below_color(0,:)
 
       do i=0,max((/ncurves,nyref/))-1
-        if(dimsizes(yref_line_above).gt.1)
-          fill_above = yref_line_above(i)
+        if(dimsizes(yref_line_above_color(:,0)).gt.1)
+          fill_above = yref_line_above_color(i,:)
         end if
-        if(dimsizes(yref_line_below).gt.1)
-          fill_below = yref_line_below(i)
+        if(dimsizes(yref_line_below_color(:,0)).gt.1)
+          fill_below = yref_line_below_color(i,:)
         end if
         var_string = unique_string("polygons"+i)
         xy_object@$var_string$=fill_xy_ref(wks,xy_object, \
@@ -5331,65 +5389,67 @@ begin
 ;
 ; Single bar color for each above and below bars.
 ;
-          if(.not.mlt_above_bar_colors)
-            gsres@gsFillColor = yref_line_above(0)
-            if(dimsizes(yref_line_above).gt.1)
-              gsres@gsFillColor = yref_line_above(i)
+          if(.not.bar_colors_above_set)
+            gsres@gsFillColor = yref_line_above_color(0,:)
+            if(dimsizes(yref_line_above_color(:,0)).gt.1) then
+              gsres@gsFillColor = yref_line_above_color(i,:)
             end if
           end if
 ;
 ; Single bar fill scale for each above and below bars.
 ;
-          if(mlt_above_bar_scales) then
+          if(bar_scales_above_set) then
             gsres@gsFillScaleF = bar_scales_above(0)
-            if(dimsizes(yref_line_above).gt.1)
+            if(dimsizes(bar_scales_above).gt.1) then
               gsres@gsFillScaleF = bar_scales_above(i)
             end if
           end if
 ;
 ; Multiple bar colors and/or patterns.
 ;
-          if(mlt_above_bar_colors.or.mlt_above_bar_pttrns) then
-            if(mlt_above_bar_colors) then
-              if(bac_rank.eq.1) then
-                nca = dimsizes(bar_colors_above)
+          if(bar_colors_above_set.or.bar_patterns_above_set) then
+            if(bar_colors_above_set) then
+              bac_rank = dimsizes(dimsizes(bar_colors_above))
+              if(bac_rank.eq.2) then
+                nca = dimsizes(bar_colors_above(:,0))       ; # colors x 4 (RGBA)
               else
-                nca = dimsizes(bar_colors_above(0,:))
+                nca = dimsizes(bar_colors_above(0,:,0))     ; # ref lines x # colors x 4 (RGBA)
               end if
             end if
-            if(mlt_above_bar_pttrns) then
+            if(bar_patterns_above_set) then
+              bap_rank = dimsizes(dimsizes(bar_patterns_above))
               if(bap_rank.eq.1) then
-                npa = dimsizes(bar_pttrns_above)
+                npa = dimsizes(bar_patterns_above)
               else
-                npa = dimsizes(bar_pttrns_above(0,:))
+                npa = dimsizes(bar_patterns_above(0,:))
               end if
             end if
             do ii = 0,nabove(i)/5-1
-              var_string2 = var_string + "above" + ii
-              if(mlt_above_bar_colors) then
-                if(colors2) then 
+              if(bar_colors_above_set) then
+                if(colors2_set) then 
                   ci = indabove(i,ii) % nca
                 else
                   ci = ii % nca
                 end if
-                if(bac_rank.eq.1) then
-                  gsres@gsFillColor = bar_colors_above(ci)
+                if(bac_rank.eq.2) then
+                  gsres@gsFillColor = bar_colors_above(ci,:)
                 else
-                  gsres@gsFillColor = bar_colors_above(i,ci)
+                  gsres@gsFillColor = bar_colors_above(i,ci,:)
                 end if
               end if
-              if(mlt_above_bar_pttrns) then
-                if(pttrns2) then 
+              if(bar_patterns_above_set) then
+                if(patterns2_set) then 
                   pi = indabove(i,ii) % npa
                 else
                   pi = ii % npa
                 end if
                 if(bap_rank.eq.1) then
-                  gsres@gsFillIndex = bar_pttrns_above(pi)
+                  gsres@gsFillIndex = bar_patterns_above(pi)
                 else
-                  gsres@gsFillIndex = bar_pttrns_above(i,pi)
+                  gsres@gsFillIndex = bar_patterns_above(i,pi)
                 end if
               end if
+              var_string2 = var_string + "above" + ii
               xy_object@$var_string2$ = gsn_add_polygon(wks,xy_object, \
                                                      xabove(i,ii*5:ii*5+4), \
                                                      yabove(i,ii*5:ii*5+4), \
@@ -5406,63 +5466,65 @@ begin
 ; Fill below reference line.
 ;
         if(nbelow(i).gt.0)
-          if(.not.mlt_below_bar_colors) then
-            gsres@gsFillColor := yref_line_below(0)
-            if(dimsizes(yref_line_below).gt.1)
-              gsres@gsFillColor := yref_line_below(i)
+          if(.not.bar_colors_below_set) then
+            gsres@gsFillColor := yref_line_below_color(0,:)
+            if(dimsizes(yref_line_below_color(:,0)).gt.1) then
+              gsres@gsFillColor := yref_line_below_color(i,:)
             end if
           end if
 ;
 ; Single bar fill scale for each above and below bars.
 ;
-          if(mlt_below_bar_scales) then
+          if(below_bar_scales_set) then
             gsres@gsFillScaleF = bar_scales_below(0)
-            if(dimsizes(yref_line_below).gt.1)
+            if(dimsizes(bar_scales_below).gt.1)
               gsres@gsFillScaleF = bar_scales_below(i)
             end if
           end if
 ;
 ; Multiple bar colors and/or patterns.
 ;
-         if(mlt_below_bar_colors.or.mlt_below_bar_pttrns) then
-            if(mlt_below_bar_colors) then
-              if(bbc_rank.eq.1) then
-                ncb = dimsizes(bar_colors_below)
+         if(bar_colors_below_set.or.bar_patterns_below_set) then
+            if(bar_colors_below_set) then
+              bbc_rank = dimsizes(dimsizes(bar_colors_below))
+              if(bbc_rank.eq.2) then
+                ncb = dimsizes(bar_colors_below(:,0))       ; # colors x 4 (RGBA)
               else
-                ncb = dimsizes(bar_colors_below(0,:))
+                ncb = dimsizes(bar_colors_below(0,:,0))     ; # ref lines x # colors x 4 (RGBA)
               end if
             end if
-            if(mlt_below_bar_pttrns) then
+            if(bar_patterns_below_set) then
+              bbp_rank = dimsizes(dimsizes(bar_patterns_below))
               if(bbp_rank.eq.1) then
-                npb = dimsizes(bar_pttrns_below)
+                npb = dimsizes(bar_patterns_below)
               else
-                npb = dimsizes(bar_pttrns_below(0,:))
+                npb = dimsizes(bar_patterns_below(0,:))
               end if
             end if
             do ii = 0,nbelow(i)/5-1
               var_string2 = var_string + "below" + ii
-              if(mlt_below_bar_colors) then
-                if(colors2) then 
+              if(bar_colors_below_set) then
+                if(colors2_set) then 
                   ci = indbelow(i,ii) % ncb
                 else
                   ci = ii % ncb
                 end if
-                if(bbc_rank.eq.1) then
-                  gsres@gsFillColor = bar_colors_below(ci)
+                if(bbc_rank.eq.2) then
+                  gsres@gsFillColor = bar_colors_below(ci,:)
                 else
-                  gsres@gsFillColor = bar_colors_below(i,ci)
+                  gsres@gsFillColor = bar_colors_below(i,ci,:)
                 end if
               end if
-              if(mlt_below_bar_pttrns) then
-                if(pttrns2) then 
+              if(bar_patterns_below_set) then
+                if(patterns2_set) then 
                   pi = indbelow(i,ii) % npb
                 else
                   pi = ii % npb
                 end if
                 if(bbp_rank.eq.1) then
-                  gsres@gsFillIndex = bar_pttrns_below(pi)
+                  gsres@gsFillIndex = bar_patterns_below(pi)
                 else
-                  gsres@gsFillIndex = bar_pttrns_below(i,pi)
+                  gsres@gsFillIndex = bar_patterns_below(i,pi)
                 end if
               end if
               xy_object@$var_string2$ = gsn_add_polygon(wks,xy_object, \
@@ -5500,13 +5562,13 @@ begin
 
       yline = (/ymin,ymax/)
 
-      gsres@gsLineColor       = xref_line_color(0)
+      gsres@gsLineColor       = xref_line_color(0,:)
       gsres@gsLineDashPattern = xref_line_pattern(0)
       gsres@gsLineThicknessF  = xref_line_thickness(0)
 
       do i=0,nxref-1
-        if(dimsizes(xref_line_color).gt.1)
-          gsres@gsLineColor = xref_line_color(i)
+        if(dimsizes(xref_line_color(:,0)).gt.1) then
+          gsres@gsLineColor = xref_line_color(i,:)
         end if
         xline = fspan(xref_line(i),xref_line(i),2)
         var_string = unique_string("xpolyline"+i)
@@ -5529,13 +5591,13 @@ begin
 
       xline = (/xmin,xmax/)
 
-      gsres@gsLineColor       = yref_line_color(0)
+      gsres@gsLineColor       := yref_line_color(0,:)
       gsres@gsLineDashPattern = yref_line_pattern(0)
       gsres@gsLineThicknessF  = yref_line_thickness(0)
 
       do i=0,nyref-1
-        if(dimsizes(yref_line_color).gt.1)
-          gsres@gsLineColor = yref_line_color(i)
+        if(dimsizes(yref_line_color(:,0)).gt.2)
+          gsres@gsLineColor = yref_line_color(i,:)
         end if
         if(dimsizes(yref_line_pattern).gt.1)
           gsres@gsLineDashPattern = yref_line_pattern(i)
