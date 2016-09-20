@@ -3028,21 +3028,24 @@ static NhlErrorTypes AddDataBoundToAreamap
 	NhlString	entry_name;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR;
-	char			*e_text;
 	NhlContourPlotLayerPart	*cnp = 
 		(NhlContourPlotLayerPart *) &cl->contourplot;
-	int			status;
 	NhlBoolean		ezmap = False;
+#if 0
+	int			status;
+	NhlErrorTypes		ret = NhlNOERROR;
+	char			*e_text;
 	int			xrev,yrev;
 	float			xa[5],ya[5];
 	float		        xeps,yeps;
-
+#endif
+	char		cval[4];
 #define _cnBBOXGID 3
 #if 0
 #define _cnMAPBOUNDINC	3700
 #endif
 #define _cnMAPBOUNDINC	100
+
 
 	if (cnp->trans_obj->base.layer_class->base_class.class_name ==
 	    NhlmapTransObjClass->base_class.class_name) {
@@ -3056,6 +3059,8 @@ static NhlErrorTypes AddDataBoundToAreamap
 	c_arseti("RC(3)",2);
 #endif
 	c_arseti("RC",1);
+#if 0
+
 	if (! ezmap) {
 		float twlx,twrx,twby,twuy;
 		float gwlx,gwrx,gwby,gwuy;
@@ -3255,8 +3260,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 		}
 	}
 	else {
-		char		cval[4];
-#if 0
+
 		float wb,wt,wl,wr;
 
 
@@ -3300,62 +3304,10 @@ static NhlErrorTypes AddDataBoundToAreamap
 		c_mpseti("VS",1);
 		_NhlMapbla(cnp->aws,entry_name);
 		c_mpsetc("OU",cval);
-	}
-	return NhlNOERROR;
-}
-
-/*
- * Function:	cnInitAreamap
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlErrorTypes cnInitAreamap
-#if	NhlNeedProto
-(
-	NhlContourPlotLayer	cnl,
-	NhlString	entry_name
-)
-#else
-(cnl,entry_name)
-        NhlContourPlotLayer cnl;
-	NhlString	entry_name;
-#endif
-{
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*e_text;
-	NhlContourPlotLayerPart	*cnp = &(cnl->contourplot);
-
-	if (cnp->aws_id < 1) {
-		cnp->aws_id = 
-			_NhlNewWorkspace(NhlwsAREAMAP,
-					 NhlwsNONE,1000000*sizeof(int));
-		if (cnp->aws_id < 1) 
-			return MIN(ret,(NhlErrorTypes)cnp->aws_id);
-	}
-	if ((cnp->aws = _NhlUseWorkspace(cnp->aws_id)) == NULL) {
-		e_text = 
-			"%s: error reserving label area map workspace";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-
 #if 0
-	c_arseti("lc",(int) (cnp->amap_crange * 
-		 MIN(cnl->view.width,cnl->view.height)));
+	}
 #endif
-	subret = _NhlArinam(cnp->aws,entry_name);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-	return ret;
+	return NhlNOERROR;
 }
 
 static float Xsoff,Xeoff,Ysoff,Yeoff;
@@ -4288,11 +4240,12 @@ static NhlErrorTypes CnTriMeshRender
 		gset_clip_ind(clip_ind_rect.clip_ind);
 		return ret;
 	}
-
+#if 0
 	if (cnp->fill_mode == NhlAREAFILL && (almost_const || (cnp->const_field  && cnp->do_constf_fill))) {
 		DoConstFillHack(cnp, True);
 		do_const_fill_hack = 1;
 	}
+#endif
 
 
 /* Retrieve workspace pointers */
@@ -4428,6 +4381,13 @@ static NhlErrorTypes CnTriMeshRender
 				return ret;
 			}
 
+			/* flag1 is set to 999 to indicate that the HLU version
+			   of ARPRAM should be called. It has special handling
+			   to fix a problem with the grid boundary */
+
+			_NhlArpram(cnp->aws,999,0,0,entry_name);
+			_NhlArpram(cnp->aws,999,0,0,entry_name);
+
 			if (cnp->dump_area_map)
 				_NhlDumpAreaMap(cnp->aws,entry_name);
 
@@ -4442,10 +4402,12 @@ static NhlErrorTypes CnTriMeshRender
 			subret = _NhlIdleWorkspace(cnp->aws);
 			ret = MIN(subret,ret);
 			cnp->aws = NULL;
+#if 0
 			if (do_const_fill_hack) {
 				DoConstFillHack(cnp, False);
 				do_const_fill_hack = 0;
 			}
+#endif
 		}
 		else if (fill_mode == NhlCELLFILL) {
 			if (cnp->sfp->x_arr->num_dimensions == 1 &&
