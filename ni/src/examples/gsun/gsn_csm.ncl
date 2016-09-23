@@ -4883,6 +4883,52 @@ begin
   return([/xb,yb,bw,nptsbar/])
 end
 
+;**********************************************************************
+; This function is to be called by gsn_csm_xy. It fills between
+; two X/Y curves if certain resources are set and conditions are
+; met.
+;**********************************************************************
+undef("fill_between_curves")
+function fill_between_curves(wks,xyobj,x2,y2,xyres2)
+local fill_atts, ndy, ndx
+begin
+;
+; Check if filling between curves is desired. This can be
+; specified via gsnXYFillColors, gsnXYAboveFillColors,  
+; gsnXYBelowFillColors, gsnXYLeftFillColors, gsnXYRightFillColors.
+;
+  fill_atts = (/"gsnXYFillColors", "gsnXYAboveFillColors", \
+                "gsnXYBelowFillColors","gsnXYLeftFillColors", \
+                "gsnXYRightFillColors","gsnXYFillOpacities", \
+                "gsnXYFillOpacityF"/)
+  if(any(isatt(xyres2,fill_atts))) then
+;
+; Make sure you collect the appropriate resources to pass
+; to fill_bw_xy later.
+;
+    fill_xy_res = True
+    do na = 0,dimsizes(fill_atts)-1
+      if(isatt(xyres2,fill_atts(na))) then
+        fill_xy_res@$fill_atts(na)$ = get_res_value(xyres2,fill_atts(na),1)
+      end if
+   end do
+  else
+    return(xyobj)
+  end if
+  ndy = dimsizes(dimsizes(y2))
+  ndx = dimsizes(dimsizes(x2))
+;
+; This next requirement is mostly out of laziness. It wouldn't be that 
+; hard to let both X and Y be multi-dimensional. Or would it?
+;
+  if(ndx.ne.1.and.ndy.ne.1) then
+    print("fill_between_curves: Warning: to fill between curves, either X or Y must be 1D.")
+    return(xyobj)
+  end if
+  xyobj = fill_bw_xy(wks,xyobj,x2,y2,fill_xy_res)
+  return(xyobj)
+end
+
 ;***********************************************************************;
 ; Function : gsn_csm_xy                                                 ;
 ;                     wks: workstation object                           ;
@@ -4954,7 +5000,6 @@ begin
     yref_curve_fill_on = False     ; Whether to fill curves above/below Y ref line.
     yref_bar_fill_on  = False ; Whether to fill bars above/below Y ref line
     bar_chart     = False     ; Whether we want bars
-    fill_xy_res   = False     ; Whether we want to fill b/w curves
     res2          = get_resources(resources)
 ;
 ; Write data and plot resource information to a file so we can 
@@ -5014,35 +5059,6 @@ begin
 ;
       if(isatt(res2,"gsnShape").and.res2@gsnShape)
         main_zone     = main_zone+1 ; Zone for main title
-      end if
-
-; Check if filling between curves is desired. This can be
-; specified via gsnXYFillColors, gsnXYAboveFillColors,  
-; gsnXYBelowFillColors, gsnXYLeftFillColors, gsnXYRightFillColors.
-
-      fill_atts = (/"gsnXYFillColors", "gsnXYAboveFillColors", \
-                    "gsnXYBelowFillColors","gsnXYLeftFillColors", \
-                    "gsnXYRightFillColors","gsnXYFillOpacities", \
-                    "gsnXYFillOpacityF"/)
-      if(any(isatt(res2,fill_atts))) then
-;
-; Make sure you collect the appropriate resources to pass
-; to fill_bw_xy later.
-;
-        fill_xy_res = True
-        do na = 0,dimsizes(fill_atts)-1
-          if(isatt(res2,fill_atts(na))) then
-            fill_xy_res@$fill_atts(na)$ = get_res_value(res2,fill_atts(na),1)
-          end if
-        end do
-;
-; This next requirement is mostly out of laziness. It wouldn't be that 
-; hard to let both X and Y be multi-dimensional. Or would it?
-;
-        if(ndimsx.ne.1.and.ndimsy.ne.1) then
-          print("gsn_csm_xy: Warning: to fill between curves, either X or Y must be 1D.")
-          fill_xy_res = False
-        end if
       end if
 
 ;---Check if gsnYRefLine set.
@@ -5311,13 +5327,11 @@ begin
     end if
 
 ; Create XY plot
-    xyres = get_res_ne(res2,(/"tx"/))
+    xyres = get_res_ne(res2,(/"tx","gsnXY"/))
     xy_object = gsn_xy(wks,xinterp,yinterp,xyres)
    
 ; Fill between two curves if desired
-    if(fill_xy_res) then
-      xy_object = fill_bw_xy(wks,xy_object,xinterp,yinterp,fill_xy_res)
-    end if
+    xy_object = fill_between_curves(wks,xy_object,x,y,res2)
 
 ; Add lat/lon labels to X/Y axes if appropriate units exist.
 
