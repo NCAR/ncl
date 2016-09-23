@@ -2802,336 +2802,6 @@ begin
 end
 
 ;***********************************************************************;
-; Function : fill_bw_xy                                                 ;
-;                                                                       ;
-; This function takes "n" Y or X curves, defined on the same set of X   ;
-; or Y points, and fills the area between each adjacent curves with     ;
-; some given color. Depending on options set by the user, the areas     ;
-; between curves can be filled differently if one is greater than       ;
-; another.                                                              ;
-;                                                                       ;
-;***********************************************************************;
-undef("fill_bw_xy")
-function fill_bw_xy(wks,plot,xx:numeric,yy:numeric,res:logical)
-local y1_gt_y2, y1, y2, i, ab, bpt, ept, x, y, color, first, last, \
-dsizes_y, rank_y, ncurves, npts, ppts, ppts2, res2, above_fill_colors, \
-below_fill_colors, gsres, dum, fill_x, xi, yi, rgbArrayA, rgbArrayB, tmp
-begin
-;
-; Determine whether we're filling between Y curves or X curves.
-;
-  ndimsx = dimsizes(xx)
-  ndimsy = dimsizes(yy)
-  rankx  = dimsizes(ndimsx)
-  ranky  = dimsizes(ndimsy)
-
-  if(rankx.eq.1.and.ranky.eq.2) then
-    fill_x = False
-    xi = xx
-    yi = yy
-  else
-    if(rankx.eq.2.and.ranky.eq.1) then
-      fill_x = True
-      xi = yy
-      yi = xx
-    else
-      print("fill_bw_xy: Error: If filling between two curves, one set must be 2D, and the other 1D.")
-      return(plot)
-    end if
-  end if
-
-;---Check length of arrays.
-  dsizes_y = dimsizes(yi)
-  npts     = dimsizes(xi)
-  ncurves  = dsizes_y(0)
-
-  if(dsizes_y(1).ne.npts) then
-    print("fill_bw_xy: Error: The rightmost dimension of both arrays must be the same.")
-    return(plot)
-  end if
-
-  if(ncurves.le.1) then
-    print("fill_bw_xy: Error: The leftmost dimension of input array must be at least 2.")
-    return(plot)
-  end if
-
-  if(any(ismissing(xi)))
-    print("fill_bw_xy: Error: The input array cannot contain any missing values")
-    return(plot)
-  end if
-
-  if(.not.res) then
-    return(plot)     ; No resources set, so just return.
-  end if
-
-  if(.not.isatt(res,"gsnXYFillColors").and. \
-     .not.isatt(res,"gsnXYAboveFillColors").and. \
-     .not.isatt(res,"gsnXYBelowFillColors").and. \
-     .not.isatt(res,"gsnXYRightFillColors").and. \
-     .not.isatt(res,"gsnXYLeftFillColors")) then
-    return(plot)     ; No resources set, so just return.
-  end if
-;
-; Check resources. There are five possible resources:
-;    gsnXYFillColors
-;    gsnXYAboveFillColors
-;    gsnXYBelowFillColors
-;    gsnXYRightFillColors
-;    gsnXYLeftFillColors
-;    gsnXYFillOpacities
-;
-; If the first one is set, it overwrites the others. If
-; none of them are set, then no fill color will be used.
-;
-; To make things a little easier (or harder?): 
-;      above==right and below==left
-;
-  res2 = res       ; Make a copy
-  if(isatt(res2,"gsnXYFillColors")) then
-    above_fill_colors = convert_color_to_rgba(wks,get_res_value(res2,"gsnXYFillColors",-1))
-    below_fill_colors = above_fill_colors
-    dum               = get_res_value(res2,"gsnXYAboveFillColors",-1)
-    dum               = get_res_value(res2,"gsnXYBelowFillColors",-1)
-    dum               = get_res_value(res2,"gsnXYRightFillColors",-1)
-    dum               = get_res_value(res2,"gsnXYLeftFillColors",-1)
-  else
-    if(fill_x) then
-      above_fill_colors = convert_color_to_rgba(wks,get_res_value(res2,"gsnXYRightFillColors",-1))
-      below_fill_colors = convert_color_to_rgba(wks,get_res_value(res2,"gsnXYLeftFillColors",-1))
-    else
-      above_fill_colors = convert_color_to_rgba(wks,get_res_value(res2,"gsnXYAboveFillColors",-1))
-      below_fill_colors = convert_color_to_rgba(wks,get_res_value(res2,"gsnXYBelowFillColors",-1))
-    end if
-  end if
-
-  nacol = dimsizes(above_fill_colors(:,0))
-  nbcol = dimsizes(below_fill_colors(:,0))
-
-;---Check for a fill opacity array. If none, then make colors fully opaque (1.0)
-  nfopacs = max((/nacol,nbcol/))
-  if(isatt(res2,"gsnXYFillOpacityF")) then
-    fill_opacs = conform_dims(nfopacs,get_res_value(res2,"gsnXYFillOpacityF",1.0),-1)
-  else if(isatt(res2,"gsnXYFillOpacities")) then
-    fill_opacs = get_res_value(res2,"gsnXYFillOpacities",1.0)
-  else
-    fill_opacs = conform_dims(nfopacs,1.0,-1)
-  end if
-  end if
-;
-; Convert input arrays to double.
-;
-  x  = new(npts,double)
-  y  = new(dsizes_y,double,1.e36)
-  x  = (/xi/)
-  y  = (/yi/)
-
-;
-; Create arrays for storing polygon points.
-;
-  first     = new(2,double)
-  last      = new(2,double)
-  polygon_x = new(2*npts+3,double)
-  polygon_y = new(2*npts+3,double)
-
-;
-; Loop through each set of two curves, filling them as we go.
-;
-  gsres = True
-  do n=0,ncurves-2
-    y1 = yi(n,:)    ; Grab the current curve
-    y2 = yi(n+1,:)  ; and the next curve.
-  
-    iacol = n % nacol
-    ibcol = n % nbcol
-;
-; Compute a delta that will be used to determine if two points are
-; actually the same point. 
-;
-    range_y1 = max(y1) - min(y1)
-    range_y2 = max(y2) - min(y2)
-
-    delta_y1 = 0.01 * range_y1
-    delta_y2 = 0.01 * range_y2
-    if(delta_y1.eq.0)
-      delta = delta_y2
-    else
-      if(delta_y2.eq.0)
-        delta = delta_y1
-      else
-        delta = min((/delta_y1,delta_y2/))
-      end if
-    end if
-
-    npoly = 0     ; Number of polygons
-;
-; First fill in polygons where y1 is above y2, and then fill in
-; polygons where y2 is above y1.
-;
-    do ab = 0,1
-      gsres@gsFillColor    = above_fill_colors(iacol,:)
-      gsres@gsFillOpacityF = fill_opacs(iacol)
-      if(ab.eq.1)
-        y1 = (/yi(n+1,:)/)
-        y2 = (/yi(n,:)/)
-; Color for when first curve is > second curve
-        gsres@gsFillColor    := below_fill_colors(ibcol,:)
-        gsres@gsFillOpacityF = fill_opacs(ibcol)
-      end if
-;
-; Get areas where y1 > y2.
-;
-      y1_gt_y2 = y1.gt.y2
-
-      bpt = -1    ; Index of first point of polygon.
-      ept = -1    ; Index of last point of polygon.
-;
-; Loop through points.
-;
-      do i=0,npts-1
-        if(bpt.lt.0)
-          if(.not.ismissing(y1_gt_y2(i)).and.y1_gt_y2(i))
-            bpt = i
-            ept = i
-          end if
-        else
-          if(.not.ismissing(y1_gt_y2(i)).and.y1_gt_y2(i))
-            ept = i
-          end if
-          if(ismissing(y1_gt_y2(i)).or..not.y1_gt_y2(i).or.ept.eq.(npts-1))
-;
-; Draw polygon. If bpt is the very first point or ept is the
-; very last point, then these are special cases we have to
-; handle separately.
-;
-            if(bpt.eq.0.or.(bpt.gt.0.and.(ismissing(y1(bpt-1)).or.\
-                                          ismissing(y2(bpt-1)).or.\
-                                          ismissing(x(bpt-1)))))
-              first(0) = (/ x(bpt) /)
-              first(1) = (/ y2(bpt)/)
-            else
-              if(fabs(y1(bpt-1)-y2(bpt-1)).le.delta)
-;
-; If the two points are within delta of each other, then we'll
-; consider them to be the same point.
-;
-                first(0) = (/  x(bpt-1) /)
-                first(1) = (/ y1(bpt-1) /)
-              else
-;
-; Otherwise, find the intersection where the two curves cross.
-;
-                first = find_cross_xy(x(bpt-1),x(bpt),y1(bpt-1), \
-                                      y1(bpt),y2(bpt-1),y2(bpt))
-              end if
-            end if
-            if(ept.eq.(npts-1).or.(ept.lt.(npts-1).and.(ismissing(y1(ept+1)).or.\
-                                                    ismissing(y2(ept+1)).or.\
-                                                    ismissing(x(ept+1)))))
-              last(0) = (/  x(ept) /)
-              last(1) = (/ y2(ept) /)
-            else
-              if(fabs(y1(ept+1)-y2(ept+1)).le.delta)
-;
-; If the two points are within delta of each other, then we'll
-; consider them to be the same point.
-;
-                last(0) = (/  x(ept+1) /)
-                last(1) = (/ y1(ept+1) /)
-              else
-;
-; Otherwise, find the intersection where the two curves cross.
-;
-                last = find_cross_xy(x(ept),x(ept+1),y1(ept),y1(ept+1), \
-                                     y2(ept),y2(ept+1))
-              end if
-            end if
-;
-; Initialize polygon.
-;
-            ppts  = ept - bpt + 1
-            ppts2 = ppts * 2
-            polygon_x(0)              = (/first(0)/)
-            polygon_y(0)              = (/first(1)/)
-            polygon_x(1:ppts)         = x(bpt:ept)
-            polygon_y(1:ppts)         = y1(bpt:ept)
-            polygon_x(ppts+1)         = (/last(0)/)
-            polygon_y(ppts+1)         = (/last(1)/)
-            polygon_x(ppts+2:ppts2+1) = x(ept:bpt)
-            polygon_y(ppts+2:ppts2+1) = y2(ept:bpt)
-            polygon_x(ppts2+2)        = (/first(0)/)
-            polygon_y(ppts2+2)        = (/first(1)/)
-;
-; Make sure polygons get drawn *after* the plot gets drawn.
-;
-            if(npoly.eq.0)
-              setvalues plot
-                "tfPolyDrawOrder" : "Predraw"
-              end setvalues
-            end if
-;
-; Add polygon to XY plot.
-;
-            var_string = unique_string("fill_polygon"+npoly)
-
-            if(fill_x) then
-              plot@$var_string$ = gsn_add_polygon(wks,plot, \
-                                                  polygon_y(0:ppts2+2), \
-                                                  polygon_x(0:ppts2+2),gsres)
-            else
-              plot@$var_string$ = gsn_add_polygon(wks,plot, \
-                                                  polygon_x(0:ppts2+2), \
-                                                  polygon_y(0:ppts2+2),gsres)
-            end if
-;
-; Advance polygon counter.
-;
-            npoly = npoly + 1
-            bpt = -1            ; Reinitialize
-            ept = -1
-          end if
-        end if
-      end do
-    end do
-  end do
-  return(plot)
-end
-
-;***********************************************************************;
-; Function : fill_xy2                                                   ;
-;                                                                       ;
-; This function is obsolete. Use resources gsnXYFillColors,             ;
-;    gsnXYAboveFillColors, gsnXYBelowFillColors, gsnXYLeftFillColors,   ;
-;    gsnXYRightFillColors.                                              ;
-;                                                                       ;
-; This function takes as input two Y curves, defined on the same set    ;
-; of X points, and fills the area between the two curves with two       ;
-; different colors, depending on which curve is above the other one.    ;
-;                                                                       ;
-;***********************************************************************;
-undef("fill_xy2")
-function fill_xy2(wks,plot,xi[*]:numeric,yi1[*]:numeric,yi2[*]:numeric, \
-                  colora,colorb)
-local res, nx, ny1, ny2
-begin
-;
-; Check length of arrays.
-;
-  nx  = dimsizes(xi)
-  ny1 = dimsizes(yi1)
-  ny2 = dimsizes(yi2)
-
-  if(nx.ne.ny1.or.nx.ne.ny2.or.nx.lt.2) 
-    print("fill_xy2: Error: x and y arrays must be the same length and at least two elements")
-    return 
-  end if
-
-  res = True
-  res@gsnXYAboveFillColors = colora
-  res@gsnXYBelowFillColors = colorb
-  return(fill_bw_xy(wks,plot,xi,(/yi1,yi2/),res))
-end
-
-;***********************************************************************;
 ; Function : get_lon_values                                             ;
 ;             min_lon: numeric                                          ;
 ;             max_lon: numeric                                          ;
@@ -4884,13 +4554,15 @@ begin
 end
 
 ;**********************************************************************
-; This function is to be called by gsn_csm_xy. It fills between
-; two X/Y curves if certain resources are set and conditions are
-; met.
+; This function takes "n" Y or X curves, defined on the same set of X  ;
+; or Y points, and fills the area between each adjacent curves with    ;
+; some given color. Depending on options set by the user, the areas    ;
+; between curves can be filled differently if one is greater than      ;
+; another.                                                             ;
 ;**********************************************************************
 undef("fill_between_curves")
-function fill_between_curves(wks,xyobj,x2,y2,xyres2)
-local fill_atts, ndy, ndx
+function fill_between_curves(wks,xyobj,xx,yy,xyres2)
+local fill_atts 
 begin
 ;
 ; Check if filling between curves is desired. This can be
@@ -4901,32 +4573,309 @@ begin
                 "gsnXYBelowFillColors","gsnXYLeftFillColors", \
                 "gsnXYRightFillColors","gsnXYFillOpacities", \
                 "gsnXYFillOpacityF"/)
-  if(any(isatt(xyres2,fill_atts))) then
-;
-; Make sure you collect the appropriate resources to pass
-; to fill_bw_xy later.
-;
-    fill_xy_res = True
-    do na = 0,dimsizes(fill_atts)-1
-      if(isatt(xyres2,fill_atts(na))) then
-        fill_xy_res@$fill_atts(na)$ = get_res_value(xyres2,fill_atts(na),1)
-      end if
-   end do
-  else
+  if(.not.xyres2.or..not.any(isatt(xyres2,fill_atts))) then
     return(xyobj)
   end if
-  ndy = dimsizes(dimsizes(y2))
-  ndx = dimsizes(dimsizes(x2))
+  ndimsx = dimsizes(xx)
+  ndimsy = dimsizes(yy)
+  rankx  = dimsizes(ndimsx)
+  ranky  = dimsizes(ndimsy)
+
 ;
 ; This next requirement is mostly out of laziness. It wouldn't be that 
 ; hard to let both X and Y be multi-dimensional. Or would it?
 ;
-  if(ndx.ne.1.and.ndy.ne.1) then
+  if(rankx.ne.1.and.ranky.ne.1) then
     print("fill_between_curves: Warning: to fill between curves, either X or Y must be 1D.")
     return(xyobj)
   end if
-  xyobj = fill_bw_xy(wks,xyobj,x2,y2,fill_xy_res)
+
+;---Determine whether we're filling between Y curves or X curves.
+  if(rankx.eq.1.and.ranky.eq.2) then
+    fill_x = False
+    xi = xx
+    yi = yy
+  else
+    if(rankx.eq.2.and.ranky.eq.1) then
+      fill_x = True
+      xi = yy
+      yi = xx
+    else
+      print("fill_between_curves: Error: If filling between two curves, one set must be 2D, and the other 1D.")
+      return(xyobj)
+    end if
+  end if
+
+;---Check length of arrays.
+  dsizes_y = dimsizes(yi)
+  npts     = dimsizes(xi)
+  ncurves  = dsizes_y(0)
+
+  if(dsizes_y(1).ne.npts) then
+    print("fill_between_curves: Error: The rightmost dimension of both arrays must be the same.")
+    return(xyobj)
+  end if
+
+  if(ncurves.le.1) then
+    print("fill_between_curves: Error: The leftmost dimension of input array must be at least 2.")
+    return(xyobj)
+  end if
+
+  if(any(ismissing(xi)))
+    print("fill_between_curves: Error: The input array cannot contain any missing values")
+    return(xyobj)
+  end if
+
+;
+; Check resources. There are several possible resources:
+;    gsnXYFillColors
+;    gsnXYAboveFillColors
+;    gsnXYBelowFillColors
+;    gsnXYRightFillColors
+;    gsnXYLeftFillColors
+;    gsnXYFillOpacities
+;
+; If the first one is set, it overwrites the others. If
+; none of them are set, then no fill color will be used.
+;
+; To make things a little easier (or harder?): 
+;      above==right and below==left
+;
+  res2 = xyres2       ; Make a copy
+  if(isatt(res2,"gsnXYFillColors")) then
+    above_fill_colors = convert_color_to_rgba(wks,get_res_value(res2,"gsnXYFillColors",-1))
+    below_fill_colors = above_fill_colors
+    dum               = get_res_value(res2,"gsnXYAboveFillColors",-1)
+    dum               = get_res_value(res2,"gsnXYBelowFillColors",-1)
+    dum               = get_res_value(res2,"gsnXYRightFillColors",-1)
+    dum               = get_res_value(res2,"gsnXYLeftFillColors",-1)
+  else
+    if(fill_x) then
+      above_fill_colors = convert_color_to_rgba(wks,get_res_value(res2,"gsnXYRightFillColors",-1))
+      below_fill_colors = convert_color_to_rgba(wks,get_res_value(res2,"gsnXYLeftFillColors",-1))
+    else
+      above_fill_colors = convert_color_to_rgba(wks,get_res_value(res2,"gsnXYAboveFillColors",-1))
+      below_fill_colors = convert_color_to_rgba(wks,get_res_value(res2,"gsnXYBelowFillColors",-1))
+    end if
+  end if
+
+  nacol = dimsizes(above_fill_colors(:,0))
+  nbcol = dimsizes(below_fill_colors(:,0))
+
+;---Check for a fill opacity array. If none, then make colors fully opaque (1.0)
+  nfopacs = max((/nacol,nbcol/))
+  if(isatt(res2,"gsnXYFillOpacityF")) then
+    fill_opacs = conform_dims(nfopacs,get_res_value(res2,"gsnXYFillOpacityF",1.0),-1)
+  else if(isatt(res2,"gsnXYFillOpacities")) then
+    fill_opacs = get_res_value(res2,"gsnXYFillOpacities",1.0)
+  else
+    fill_opacs = conform_dims(nfopacs,1.0,-1)
+  end if
+  end if
+;
+; Convert input arrays to double.
+;
+  x  = new(npts,double)
+  y  = new(dsizes_y,double,1.e36)
+  x  = (/xi/)
+  y  = (/yi/)
+
+;
+; Create arrays for storing polygon points.
+;
+  first     = new(2,double)
+  last      = new(2,double)
+  polygon_x = new(2*npts+3,double)
+  polygon_y = new(2*npts+3,double)
+
+;
+; Loop through each set of two curves, filling them as we go.
+;
+  gsres = True
+  do n=0,ncurves-2
+    y1 = yi(n,:)    ; Grab the current curve
+    y2 = yi(n+1,:)  ; and the next curve.
+  
+    iacol = n % nacol
+    ibcol = n % nbcol
+;
+; Compute a delta that will be used to determine if two points are
+; actually the same point. 
+;
+    range_y1 = max(y1) - min(y1)
+    range_y2 = max(y2) - min(y2)
+
+    delta_y1 = 0.01 * range_y1
+    delta_y2 = 0.01 * range_y2
+    if(delta_y1.eq.0)
+      delta = delta_y2
+    else
+      if(delta_y2.eq.0)
+        delta = delta_y1
+      else
+        delta = min((/delta_y1,delta_y2/))
+      end if
+    end if
+
+    npoly = 0     ; Number of polygons
+;
+; First fill in polygons where y1 is above y2, and then fill in
+; polygons where y2 is above y1.
+;
+    do ab = 0,1
+      if(ab.eq.0) then
+        gsres@gsFillColor    = above_fill_colors(iacol,:)
+        gsres@gsFillOpacityF = fill_opacs(iacol)
+      else
+        y1 = (/yi(n+1,:)/)
+        y2 = (/yi(n,:)/)
+        gsres@gsFillColor    := below_fill_colors(ibcol,:)
+        gsres@gsFillOpacityF = fill_opacs(ibcol)
+      end if
+
+;---Get areas where y1 > y2.
+      y1_gt_y2 = y1.gt.y2
+
+      bpt = -1    ; Index of first point of polygon.
+      ept = -1    ; Index of last point of polygon.
+
+;---Loop through points.
+      do i=0,npts-1
+        if(bpt.lt.0)
+          if(.not.ismissing(y1_gt_y2(i)).and.y1_gt_y2(i))
+            bpt = i
+            ept = i
+          end if
+        else
+          if(.not.ismissing(y1_gt_y2(i)).and.y1_gt_y2(i))
+            ept = i
+          end if
+          if(ismissing(y1_gt_y2(i)).or..not.y1_gt_y2(i).or.ept.eq.(npts-1))
+;
+; Draw polygon. If bpt is the very first point or ept is the
+; very last point, then these are special cases we have to
+; handle separately.
+;
+            if(bpt.eq.0.or.(bpt.gt.0.and.(ismissing(y1(bpt-1)).or.\
+                                          ismissing(y2(bpt-1)).or.\
+                                          ismissing(x(bpt-1)))))
+              first(0) = (/ x(bpt) /)
+              first(1) = (/ y2(bpt)/)
+            else
+              if(fabs(y1(bpt-1)-y2(bpt-1)).le.delta)
+;
+; If the two points are within delta of each other, then we'll
+; consider them to be the same point.
+;
+                first(0) = (/  x(bpt-1) /)
+                first(1) = (/ y1(bpt-1) /)
+              else
+
+;---Otherwise, find the intersection where the two curves cross.
+                first = find_cross_xy(x(bpt-1),x(bpt),y1(bpt-1), \
+                                      y1(bpt),y2(bpt-1),y2(bpt))
+              end if
+            end if
+            if(ept.eq.(npts-1).or.(ept.lt.(npts-1).and.\ 
+                 (ismissing(y1(ept+1)).or.\
+                  ismissing(y2(ept+1)).or.\
+                  ismissing(x(ept+1)))))
+              last(0) = (/  x(ept) /)
+              last(1) = (/ y2(ept) /)
+            else
+              if(fabs(y1(ept+1)-y2(ept+1)).le.delta)
+;
+; If the two points are within delta of each other, then we'll
+; consider them to be the same point.
+;
+                last(0) = (/  x(ept+1) /)
+                last(1) = (/ y1(ept+1) /)
+              else
+;---Otherwise, find the intersection where the two curves cross.
+                last = find_cross_xy(x(ept),x(ept+1),y1(ept),y1(ept+1), \
+                                     y2(ept),y2(ept+1))
+              end if
+            end if
+;---Initialize polygon.
+            ppts  = ept - bpt + 1
+            ppts2 = ppts * 2
+            polygon_x(0)              = (/first(0)/)
+            polygon_y(0)              = (/first(1)/)
+            polygon_x(1:ppts)         = x(bpt:ept)
+            polygon_y(1:ppts)         = y1(bpt:ept)
+            polygon_x(ppts+1)         = (/last(0)/)
+            polygon_y(ppts+1)         = (/last(1)/)
+            polygon_x(ppts+2:ppts2+1) = x(ept:bpt)
+            polygon_y(ppts+2:ppts2+1) = y2(ept:bpt)
+            polygon_x(ppts2+2)        = (/first(0)/)
+            polygon_y(ppts2+2)        = (/first(1)/)
+
+;---Make sure polygons get drawn *after* the plot gets drawn.
+            if(npoly.eq.0)
+              setvalues xyobj
+                "tfPolyDrawOrder" : "Predraw"
+              end setvalues
+            end if
+;---Add polygon to XY plot.
+            var_string = unique_string("fill_polygon"+npoly)
+
+            if(fill_x) then
+              xyobj@$var_string$ = gsn_add_polygon(wks,xyobj, \
+                                                  polygon_y(0:ppts2+2), \
+                                                  polygon_x(0:ppts2+2),gsres)
+            else
+              xyobj@$var_string$ = gsn_add_polygon(wks,xyobj, \
+                                                  polygon_x(0:ppts2+2), \
+                                                  polygon_y(0:ppts2+2),gsres)
+            end if
+;---Advance polygon counter.
+            npoly = npoly + 1
+            bpt = -1            ; Reinitialize
+            ept = -1
+          end if
+        end if
+      end do
+    end do
+  end do
+
   return(xyobj)
+end
+
+
+;***********************************************************************;
+; Function : fill_xy2                                                   ;
+;                                                                       ;
+; This function is obsolete. Use resources gsnXYFillColors,             ;
+;    gsnXYAboveFillColors, gsnXYBelowFillColors, gsnXYLeftFillColors,   ;
+;    gsnXYRightFillColors.                                              ;
+;                                                                       ;
+; This function takes as input two Y curves, defined on the same set    ;
+; of X points, and fills the area between the two curves with two       ;
+; different colors, depending on which curve is above the other one.    ;
+;                                                                       ;
+;***********************************************************************;
+undef("fill_xy2")
+function fill_xy2(wks,plot,xi[*]:numeric,yi1[*]:numeric,yi2[*]:numeric, \
+                  colora,colorb)
+local res, nx, ny1, ny2
+begin
+;
+; Check length of arrays.
+;
+  nx  = dimsizes(xi)
+  ny1 = dimsizes(yi1)
+  ny2 = dimsizes(yi2)
+
+  if(nx.ne.ny1.or.nx.ne.ny2.or.nx.lt.2) 
+    print("fill_xy2: Error: x and y arrays must be the same length and at least two elements")
+    return 
+  end if
+
+  res = True
+  res@gsnXYAboveFillColors = colora
+  res@gsnXYBelowFillColors = colorb
+
+  return(fill_between_curves(wks,plot,xi,(/yi1,yi2/),res))
 end
 
 ;***********************************************************************;
