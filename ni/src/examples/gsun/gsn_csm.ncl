@@ -2888,7 +2888,7 @@ begin
 ;
   res2 = res       ; Make a copy
   if(isatt(res2,"gsnXYFillColors")) then
-    above_fill_colors = get_res_value(res2,"gsnXYFillColors",-1)
+    above_fill_colors = convert_color_to_rgba(wks,get_res_value(res2,"gsnXYFillColors",-1))
     below_fill_colors = above_fill_colors
     dum               = get_res_value(res2,"gsnXYAboveFillColors",-1)
     dum               = get_res_value(res2,"gsnXYBelowFillColors",-1)
@@ -2896,62 +2896,16 @@ begin
     dum               = get_res_value(res2,"gsnXYLeftFillColors",-1)
   else
     if(fill_x) then
-      above_fill_colors = get_res_value(res2,"gsnXYRightFillColors",-1)
-      below_fill_colors = get_res_value(res2,"gsnXYLeftFillColors",-1)
+      above_fill_colors = convert_color_to_rgba(wks,get_res_value(res2,"gsnXYRightFillColors",-1))
+      below_fill_colors = convert_color_to_rgba(wks,get_res_value(res2,"gsnXYLeftFillColors",-1))
     else
-      above_fill_colors = get_res_value(res2,"gsnXYAboveFillColors",-1)
-      below_fill_colors = get_res_value(res2,"gsnXYBelowFillColors",-1)
+      above_fill_colors = convert_color_to_rgba(wks,get_res_value(res2,"gsnXYAboveFillColors",-1))
+      below_fill_colors = convert_color_to_rgba(wks,get_res_value(res2,"gsnXYBelowFillColors",-1))
     end if
   end if
 
-  nacol = dimsizes(above_fill_colors)
-  nbcol = dimsizes(below_fill_colors)
-
-;
-; This function originally assumed that if [above|below]_fill_colors were arrays,
-; then they were arrays of color indices, and were indexed accordingly. 
-; In the 32bit color scheme, an individual RGBa color is also an array (of floats), but should
-; be treated as one logical entity. When we get a singular RGBa color, we'll convert it
-; to a 1xN doubly dimensioned array, and we'll therefore always have 2D arrays when
-; dealing with RGBa colors (either a 1xN or a MxN array of RGBa). Lastly, the original
-; indexing scheme below will work as before if applied only to the first dimension of these
-; 2D RGBa arrays. 
-;
-  rgbArrayA = False
-  if (dimsizes(nacol).eq.1 .and. typeof(above_fill_colors).eq."float") then
-    tmp = above_fill_colors
-    delete(above_fill_colors)
-    above_fill_colors = new((/1, nacol /), float)
-    above_fill_colors(0,:) = tmp
-    delete(tmp)
-    delete(nacol)
-    nacol = dimsizes(above_fill_colors)
-  end if
-  if (dimsizes(nacol).eq.2) then
-    rgbArrayA = True    
-    tmp = nacol(0) 
-    delete(nacol)
-    nacol = tmp
-    delete(tmp)
-  end if
-
-  rgbArrayB = False
-  if (dimsizes(nbcol).eq.1 .and. typeof(below_fill_colors).eq."float") then
-    tmp = below_fill_colors
-    delete(below_fill_colors)
-    below_fill_colors = new((/1, nbcol /), float)
-    below_fill_colors(0,:) = tmp
-    delete(tmp)
-    delete(nbcol)
-    nbcol = dimsizes(below_fill_colors)
-  end if 
-  if (dimsizes(nbcol).eq.2) then
-    rgbArrayB = True    
-    tmp = nbcol(0) 
-    delete(nbcol)
-    nbcol = tmp
-    delete(tmp)
-  end if 
+  nacol = dimsizes(above_fill_colors(:,0))
+  nbcol = dimsizes(below_fill_colors(:,0))
 
 ;---Check for a fill opacity array. If none, then make colors fully opaque (1.0)
   nfopacs = max((/nacol,nbcol/))
@@ -3014,26 +2968,14 @@ begin
 ; polygons where y2 is above y1.
 ;
     do ab = 0,1
-      if (rgbArrayA.eq.True) then
-        gsres@gsFillColor    = above_fill_colors(iacol,:)
-        gsres@gsFillOpacityF = fill_opacs(iacol,:)
-      else
-        gsres@gsFillColor    = above_fill_colors(iacol)
-        gsres@gsFillOpacityF = fill_opacs(iacol)
-      end if
+      gsres@gsFillColor    = above_fill_colors(iacol,:)
+      gsres@gsFillOpacityF = fill_opacs(iacol)
       if(ab.eq.1)
         y1 = (/yi(n+1,:)/)
         y2 = (/yi(n,:)/)
 ; Color for when first curve is > second curve
-        delete(gsres@gsFillColor)    ; just in case
-        delete(gsres@gsFillOpacityF)
-        if (rgbArrayB.eq.True) then
-          gsres@gsFillColor    = below_fill_colors(ibcol,:)
-          gsres@gsFillOpacityF = fill_opacs(ibcol,:)
-        else
-          gsres@gsFillColor    = below_fill_colors(ibcol)
-          gsres@gsFillOpacityF = fill_opacs(ibcol)
-        end if
+        gsres@gsFillColor    := below_fill_colors(ibcol,:)
+        gsres@gsFillOpacityF = fill_opacs(ibcol)
       end if
 ;
 ; Get areas where y1 > y2.
@@ -4527,6 +4469,132 @@ begin
   return(canvas)
 end
 
+;**********************************************************************
+; This function sets a bunch of variables for drawing a Y reference
+; line and/or filling curves above and below a reference line.
+;**********************************************************************
+undef("get_yref_line_options")
+function get_yref_line_options(wks,ncurves,yrfres)
+local nyref, imsg, fmsg, tmpdims, nyref, set_yref_line_color
+begin
+  imsg = new(1,integer)
+  fmsg = new(1,float)
+  yref_line                   = fmsg
+  yref_line_on                = False
+  yref_line_color             = imsg
+  yref_line_pattern           = imsg
+  yref_line_thickness         = fmsg
+  yref_curve_fill_on          = False
+  yref_curve_fill_above_color = imsg
+  yref_curve_fill_below_color = imsg
+
+  if(.not.isatt(yrfres,"gsnYRefLine")) then
+    return([/yref_line,yref_line_on,yref_line_color,yref_line_pattern,\
+             yref_line_thickness,yref_curve_fill_on,\
+             yref_curve_fill_above_color,yref_curve_fill_below_color/])
+  end if
+
+  yref_line_on = True
+  yref_line    := get_res_value(yrfres,"gsnYRefLine",0)
+  nyref        = dimsizes(yref_line)
+
+;---Determine color of fill above reference line(s).
+  if(isatt(yrfres,"gsnAboveYRefLineColor"))
+    yref_curve_fill_above_color := convert_color_to_rgba(wks,get_res_value(yrfres,"gsnAboveYRefLineColor",1)) 
+    tmpdims = dimsizes(yref_curve_fill_above_color)
+    if(.not.(tmpdims(0).eq.1.or.tmpdims(0).eq.nyref)) then
+      print("get_yref_line_options: Fatal: there must either be an above line fill color for every")
+      print("      reference line, or one global above line fill color specified")
+      print("      No fill will be done.")
+      yref_curve_fill_above_color := imsg
+     end if
+  end if
+;---Determine color of fill below reference line(s).
+  if(isatt(yrfres,"gsnBelowYRefLineColor"))
+    yref_curve_fill_below_color := convert_color_to_rgba(wks,get_res_value(yrfres,"gsnBelowYRefLineColor",1))
+    tmpdims := dimsizes(yref_curve_fill_below_color)
+    if(.not.(tmpdims(0).eq.1.or.tmpdims(0).eq.nyref)) then
+      print("get_yref_line_options: Fatal: there must either be a below line fill color for every")
+      print("      reference line, or one global below line fill color specified")
+      print("      No fill will be done.")
+      yref_curve_fill_below_color := imsg
+    end if
+  end if
+  yref_curve_fill_on = .not.(any(ismissing(yref_curve_fill_above_color)).or.any(ismissing(yref_curve_fill_below_color)))
+;
+; If yref_curve_fill_on is True, and we have more than one curve, then there
+; should be the same number of reference lines as curves.
+;
+  if(yref_curve_fill_on.and.ncurves.gt.1.and.ncurves.ne.nyref.and.nyref.ne.1)
+    print("get_yref_line_options: Fatal: if you plan to fill above and/or below reference lines,")
+    print("      then the number of reference lines must either equal the number")
+    print("      of curves or be a scalar.")
+    print("      No fill will be done.")
+    yref_curve_fill_on = False
+  end if
+
+;---Determine color of Y reference line(s)
+  if(isatt(yrfres,"gsnYRefLineColors"))
+    yref_line_color := convert_color_to_rgba(wks,get_res_value(yrfres,"gsnYRefLineColors","foreground"))
+    set_yref_line_color = True
+  else if(isatt(yrfres,"gsnYRefLineColor"))
+    yref_line_color := convert_color_to_rgba(wks,get_res_value(yrfres,"gsnYRefLineColor","foreground"))
+    set_yref_line_color = True
+  else
+    yref_line_color := convert_color_to_rgba(wks,"foreground")
+    set_yref_line_color = False
+  end if
+  end if
+  if(set_yref_line_color) then
+    if(.not.(dimsizes(yref_line_color(:,0)).eq.nyref.or.\
+             dimsizes(yref_line_color(:,0)).eq.1))
+      print("get_yref_line_options: Warning: you must specify either one Y reference line color")
+      print("      or the same number of colors as there are reference lines.")
+      print("      Will use the foreground color.") 
+      yref_line_color := convert_color_to_rgba(wks,"foreground")
+    end if
+  end if
+
+;---Determine dash pattern of Y reference line(s).
+  if(isatt(yrfres,"gsnYRefLineDashPattern"))
+    yref_line_pattern := yrfres@gsnYRefLineDashPattern(0)    ; not sure why subscripting with (0). To get around possible user error?
+    delete(yrfres@gsnYRefLineDashPattern)
+  else if(isatt(yrfres,"gsnYRefLineDashPatterns"))
+    yref_line_pattern := get_res_value(yrfres,"gsnYRefLineDashPatterns",0)
+    if(.not.(dimsizes(yref_line_pattern).eq.nyref.or.\
+             dimsizes(yref_line_pattern).eq.1))
+      print("get_yref_line_options: Warning: you must specify either one Y reference line dash pattern")
+      print("      or the same number of dash patterns as there are reference lines.")
+      print("      Will use a solid line.") 
+      yref_line_pattern := 0  ; defaults to solid
+    end if
+  else
+    yref_line_pattern := 0  ; defaults to solid
+  end if
+  end if
+
+;---Determine thickness of Y reference line(s).
+  if(isatt(yrfres,"gsnYRefLineThicknessF"))
+    yref_line_thickness := yrfres@gsnYRefLineThicknessF(0)    ; not sure why subscripting with (0). To get around possible user error?
+    delete(yrfres@gsnYRefLineThicknessF)
+  else if(isatt(yrfres,"gsnYRefLineThicknesses"))
+    yref_line_thickness := get_res_value(yrfres,"gsnYRefLineThicknesses",1)
+    if(.not.(dimsizes(yref_line_thickness).eq.nyref.or.\
+             dimsizes(yref_line_thickness).eq.1))
+      print("get_yref_line_options: Warning: you must specify either one Y reference line thickness")
+      print("      or the same number of line thicknesses as there are reference lines.")
+      print("      Will use a thickness of 1.") 
+      yref_line_thickness := 1.0
+    end if
+  else
+    yref_line_thickness := 1.0
+  end if
+  end if
+
+  return([/yref_line,yref_line_on,yref_line_color,yref_line_pattern,\
+           yref_line_thickness,yref_curve_fill_on,yref_curve_fill_above_color,\
+           yref_curve_fill_below_color/])
+end
 
 ;**********************************************************************
 ; This function sets a bunch of variables for determining how to
@@ -4883,7 +4951,7 @@ begin
     main_zone     = 2         ; Zone for main title (may change later)
     xref_line_on  = False     ; X reference line flag
     yref_line_on  = False     ; Y reference line flag
-    yref_fill_on  = False     ; Whether to fill curves above/below Y ref line.
+    yref_curve_fill_on = False     ; Whether to fill curves above/below Y ref line.
     yref_bar_fill_on  = False ; Whether to fill bars above/below Y ref line
     bar_chart     = False     ; Whether we want bars
     fill_xy_res   = False     ; Whether we want to fill b/w curves
@@ -4978,107 +5046,17 @@ begin
       end if
 
 ;---Check if gsnYRefLine set.
-      if(isatt(res2,"gsnYRefLine"))
-        yref_line_on = True
-        yref_line    = get_res_value(res2,"gsnYRefLine",0)
-        nyref        = dimsizes(yref_line)
-      end if
-
-;---Determine color of fill above reference line(s).
-      if(yref_line_on) then
-        if(isatt(res2,"gsnAboveYRefLineColor"))
-          yref_line_above_color = convert_color_to_rgba(wks,get_res_value(res2,"gsnAboveYRefLineColor",1))
-          tmpdims := dimsizes(yref_line_above_color)
-          if(.not.(tmpdims(0).eq.1.or.tmpdims(0).eq.nyref)) then
-            print("gsn_csm_xy: Fatal: there must either be an above line fill color for every")
-            print("            reference line, or one global above line fill color specified")
-            return
-          end if
-          yref_fill_on = True
-        end if
-
-;---Determine color of fill below reference line(s).
-        if(isatt(res2,"gsnBelowYRefLineColor"))
-          yref_line_below_color = convert_color_to_rgba(wks,get_res_value(res2,"gsnBelowYRefLineColor",1))
-          tmpdims := dimsizes(yref_line_below_color)
-          if(.not.(tmpdims(0).eq.1.or.tmpdims(0).eq.nyref)) then
-            print("gsn_csm_xy: Fatal: there must either be a below line fill color for every")
-            print("            reference line, or one global below line fill color specified")
-            return
-          end if
-          yref_fill_on = True
-        end if
-;
-; If yref_fill_on is True, and we have more than one curve, then there
-; should be the same number of reference lines as curves.
-;
-        if(yref_fill_on.and.ncurves.gt.1.and.ncurves.ne.nyref.and.nyref.ne.1)
-          print("gsn_csm_xy: Fatal: if you plan to fill above and/or below reference lines,")
-          print("            then the number of reference lines must either equal the number")
-          print("             of curves or be a scalar.")
-          return
-        end if
-
-;---Determine color of Y reference line(s)
-        if(isatt(res2,"gsnYRefLineColors"))
-          yref_line_color = convert_color_to_rgba(wks,get_res_value(res2,"gsnYRefLineColors","foreground"))
-          set_yref_line_color = True
-        else if(isatt(res2,"gsnYRefLineColor"))
-          yref_line_color = convert_color_to_rgba(wks,get_res_value(res2,"gsnYRefLineColor","foreground"))
-          set_yref_line_color = True
-        else
-          yref_line_color = convert_color_to_rgba(wks,"foreground")
-          set_yref_line_color = False
-        end if
-        end if
-        if(set_yref_line_color) then
-          if(.not.(dimsizes(yref_line_color(:,0)).eq.nyref.or.\
-                   dimsizes(yref_line_color(:,0)).eq.1))
-            print("gsn_csm_xy: Warning: you must specify either one Y reference line color")
-            print("or the same number of colors as there are reference lines.")
-            print("Will use the foreground color.") 
-            yref_line_color := convert_color_to_rgba(wks,"foreground")
-          end if
-        end if
-
-;---Determine dash pattern of Y reference line(s).
-        if(isatt(res2,"gsnYRefLineDashPattern"))
-          yref_line_pattern = res2@gsnYRefLineDashPattern(0)
-          delete(res2@gsnYRefLineDashPattern)
-        else if(isatt(res2,"gsnYRefLineDashPatterns"))
-          yref_line_pattern = res2@gsnYRefLineDashPatterns
-          delete(res2@gsnYRefLineDashPatterns)
-          if(.not.(dimsizes(yref_line_pattern).eq.nyref.or.\
-                   dimsizes(yref_line_pattern).eq.1))
-            print("gsn_csm_xy: Warning: you must specify either one Y reference line dash pattern")
-            print("or the same number of dash patterns as there are reference lines.")
-            print("Will use a solid line.") 
-            yref_line_pattern = 0  ; defaults to solid
-          end if
-        else
-          yref_line_pattern = 0  ; defaults to solid
-        end if
-        end if
-
-;---Determine thickness of Y reference line(s).
-        if(isatt(res2,"gsnYRefLineThicknessF"))
-          yref_line_thickness = res2@gsnYRefLineThicknessF(0)
-          delete(res2@gsnYRefLineThicknessF)
-        else if(isatt(res2,"gsnYRefLineThicknesses"))
-          yref_line_thickness = res2@gsnYRefLineThicknesses
-          delete(res2@gsnYRefLineThicknesses)
-          if(.not.(dimsizes(yref_line_thickness).eq.nyref.or.\
-                   dimsizes(yref_line_thickness).eq.1))
-            print("gsn_csm_xy: Warning: you must specify either one Y reference line thickness")
-            print("or the same number of line thicknesses as there are reference lines.")
-            print("Will use a thickness of 1.") 
-            yref_line_thickness = 1.0
-          end if
-        else
-          yref_line_thickness = 1.0
-        end if
-        end if
-      end if             ; if yref_line_on
+      yref_line_list = get_yref_line_options(wks,ncurves,res2)
+      yref_line = yref_line_list[0]
+      yref_line_on = yref_line_list[1]
+      yref_line_color = yref_line_list[2]
+      yref_line_pattern = yref_line_list[3]
+      yref_line_thickness = yref_line_list[4]
+      yref_curve_fill_on = yref_line_list[5]
+      yref_fill_above_color = yref_line_list[6]
+      yref_fill_below_color = yref_line_list[7]
+      nyref = dimsizes(yref_line)
+      delete(yref_line_list)
 
 ;---Check if we want a bar chart.
       bar_chart        = get_res_value(res2,"gsnXYBarChart",False)
@@ -5090,12 +5068,12 @@ begin
 ; If no ref line specified, but bar fill is on, then set the reference
 ; line to the minimum y value.
 ;
-          yref_line           = get_res_value_keep(res2,"trYMinF",min(y))
+          yref_line           := get_res_value_keep(res2,"trYMinF",min(y))
           nyref               = 1 
           yref_line_on        = True
-          yref_line_color     = convert_color_to_rgba(wks,"foreground")
-          yref_line_pattern   = 0
-          yref_line_thickness = 1.
+          yref_line_color     := convert_color_to_rgba(wks,"foreground")
+          yref_line_pattern   := 0
+          yref_line_thickness := 1.
         else
           if((ncurves.gt.1.and.nyref.gt.1.and.ncurves.ne.nyref).or. \
              (ncurves.eq.1.and.nyref.ne.1))
@@ -5170,7 +5148,7 @@ begin
 ; 1. A regular XY plot with the curve above and below a given
 ; reference line filled in with some color.
 ;----------------------------------------------------------------------
-    if(yref_fill_on.and..not.bar_chart) then
+    if(yref_curve_fill_on.and..not.bar_chart) then
       interp_list = ref_line_interp(x,y,yref_line)
       xinterp  = interp_list[0]
       yinterp  = interp_list[1]
@@ -5206,15 +5184,15 @@ begin
 ;--Set bar filling variables
           bar_color_list   = get_bar_colors(wks,res2,nyref)
           bar_pattern_list = get_bar_patterns(res2,nyref)
-          bar_scales_list = get_bar_scales(wks,res2)
+          bar_scales_list  = get_bar_scales(wks,res2)
 
           bar_colors_above   = bar_color_list[0]
           bar_colors_below   = bar_color_list[1]
-          colors2_set        = bar_color_list[2]
+          bar_colors2_set    = bar_color_list[2]
 
           bar_patterns_above = bar_pattern_list[0]
           bar_patterns_below = bar_pattern_list[1]
-          patterns2_set      = bar_pattern_list[2]
+          bar_patterns2_set  = bar_pattern_list[2]
 
           bar_scales_above = bar_scales_list[0]
           bar_scales_below = bar_scales_list[1]
@@ -5355,7 +5333,7 @@ begin
 
 ; Fill above/below Y reference line.
 
-    if(yref_fill_on.and..not.bar_chart)
+    if(yref_curve_fill_on.and..not.bar_chart)
 ;
 ; Make sure polygons get filled before xy plot is drawn. This way,
 ; any lines will be drawn *after* the fill. This makes the filled 
@@ -5366,15 +5344,15 @@ begin
       attsetvalues_check(xy_object,xyres_tmp)
       delete(xyres_tmp)
 
-      fill_above = yref_line_above_color(0,:)
-      fill_below = yref_line_below_color(0,:)
+      fill_above = yref_fill_above_color(0,:)
+      fill_below = yref_fill_below_color(0,:)
 
       do i=0,max((/ncurves,nyref/))-1
-        if(dimsizes(yref_line_above_color(:,0)).gt.1)
-          fill_above = yref_line_above_color(i,:)
+        if(dimsizes(yref_fill_above_color(:,0)).gt.1)
+          fill_above = yref_fill_above_color(i,:)
         end if
-        if(dimsizes(yref_line_below_color(:,0)).gt.1)
-          fill_below = yref_line_below_color(i,:)
+        if(dimsizes(yref_fill_below_color(:,0)).gt.1)
+          fill_below = yref_fill_below_color(i,:)
         end if
         var_string = unique_string("polygons"+i)
         xy_object@$var_string$=fill_xy_ref(wks,xy_object, \
@@ -5401,10 +5379,10 @@ begin
         var_string = unique_string("polygons"+i)
 ;---Fill above reference line.
         if(nabove(i).gt.0)
-          if(.not.bar_colors_above_set.and.yref_fill_on) then
-            gsres@gsFillColor := yref_line_above_color(0,:)
-            if(dimsizes(yref_line_above_color(:,0)).gt.1) then
-              gsres@gsFillColor := yref_line_above_color(i,:)
+          if(.not.bar_colors_above_set.and.yref_curve_fill_on) then
+            gsres@gsFillColor := yref_fill_above_color(0,:)
+            if(dimsizes(yref_fill_above_color(:,0)).gt.1) then
+              gsres@gsFillColor := yref_fill_above_color(i,:)
             end if
           end if
 ;---Single bar fill scale for each above and below bars.
@@ -5434,7 +5412,7 @@ begin
             end if
             do ii = 0,nabove(i)/5-1
               if(bar_colors_above_set) then
-                if(colors2_set) then 
+                if(bar_colors2_set) then 
                   ci = indabove(i,ii) % nca
                 else
                   ci = ii % nca
@@ -5446,7 +5424,7 @@ begin
                 end if
               end if
               if(bar_patterns_above_set) then
-                if(patterns2_set) then 
+                if(bar_patterns2_set) then 
                   pi = indabove(i,ii) % npa
                 else
                   pi = ii % npa
@@ -5474,10 +5452,10 @@ begin
 ; Fill below reference line.
 ;
         if(nbelow(i).gt.0)
-          if(.not.bar_colors_below_set.and.yref_fill_on) then
-            gsres@gsFillColor := yref_line_below_color(0,:)
-            if(dimsizes(yref_line_below_color(:,0)).gt.1) then
-              gsres@gsFillColor := yref_line_below_color(i,:)
+          if(.not.bar_colors_below_set.and.yref_curve_fill_on) then
+            gsres@gsFillColor := yref_fill_below_color(0,:)
+            if(dimsizes(yref_fill_below_color(:,0)).gt.1) then
+              gsres@gsFillColor := yref_fill_below_color(i,:)
             end if
           end if
 ;
@@ -5512,7 +5490,7 @@ begin
             do ii = 0,nbelow(i)/5-1
               var_string2 = var_string + "below" + ii
               if(bar_colors_below_set) then
-                if(colors2_set) then 
+                if(bar_colors2_set) then 
                   ci = indbelow(i,ii) % ncb
                 else
                   ci = ii % ncb
@@ -5524,7 +5502,7 @@ begin
                 end if
               end if
               if(bar_patterns_below_set) then
-                if(patterns2_set) then 
+                if(bar_patterns2_set) then 
                   pi = indbelow(i,ii) % npb
                 else
                   pi = ii % npb
