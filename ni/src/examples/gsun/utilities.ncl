@@ -1311,7 +1311,7 @@ begin
   end getvalues
   ncolors = dimsizes(rgb_cmap(:,0))
 
-  if(any(color_indexes.lt.0.or.color_indexes.ge.ncolors)) then
+  if(any(color_indexes.lt.-1.or.color_indexes.ge.ncolors)) then
     print("indexcolor2rgba: Error: one or more of the index colors")
     print("are invalid. Will return missing values for these values.")
   end if
@@ -1332,9 +1332,13 @@ begin
   rgba_cmap = rgb2rgba(rgb_cmap)
   rgba_2d = new((/dimsizes(color_indexes_1d),4/),typeof(rgba_cmap))
   do n=0,nindexes-1
-    if(.not.ismissing(color_indexes_1d(n)).and.\
-       (color_indexes_1d(n).ge.0.and.color_indexes_1d(n).lt.ncolors)) then
-      rgba_2d(n,:) = rgba_cmap(color_indexes_1d(n),:)
+    if(.not.ismissing(color_indexes_1d(n))) then
+      if(color_indexes_1d(n).ge.0.and.color_indexes_1d(n).lt.ncolors) then
+        rgba_2d(n,:) = rgba_cmap(color_indexes_1d(n),:)
+      else if(color_indexes_1d(n).eq.-1) then
+        rgba_2d(n,:) = (/0.,0.,0.,0./)
+      end if
+      end if
     end if
   end do
   return(reshape(rgba_2d,new_dims))
