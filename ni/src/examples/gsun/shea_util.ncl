@@ -4955,9 +4955,9 @@ begin
   xrange = xmax - xmin
 
   if (.not.isatt(genres,"ItemSpacePercent")) then
-     genres@ItemSpacePercent = 0.05
+     genres@ItemSpacePercent = 5.
   end if
-  incr = genres@ItemSpacePercent*yrange*-1.
+  incr = (genres@ItemSpacePercent/100.)*yrange*-1.
 
   if (.not.isatt(genres,"Position")) then   ; set default
      genres@Position = "Top"
@@ -4971,15 +4971,15 @@ begin
   end if
 
   if (isatt(genres,"XPosPercent")) then
-     XPos = genres@XPosPercent
+     XPos = genres@XPosPercent/100.
   else
      XPos = 0.05     ; set default
   end if
 
   if (isatt(genres,"YPosPercent")) then
-     YPos = genres@YPosPercent
+     YPos = genres@YPosPercent/100.
      if (genres@Position.eq."Bottom") then  ; modify YPosPercent when doing bottom label so that first label is on top
-        YPos = YPos+((numItems-1)*genres@ItemSpacePercent)
+        YPos = YPos+((numItems-1)*(genres@ItemSpacePercent/100.))
      end if
   else
      if (genres@Position.eq."Bottom") then
@@ -5004,13 +5004,12 @@ begin
      end if
      x_line_start = xmin+(XPos*xrange)   ; position of start of legend line
      if (isatt(lineres,"LineLengthPercent")) then
-        x_line_end = x_line_start+(xrange*lineres@LineLengthPercent)
+        x_line_end = x_line_start+(xrange*(lineres@LineLengthPercent/100.))
      else
         x_line_end = x_line_start+(xrange*.07)    ; set default
      end if
-;     print(x_line_start+" "+x_line_end+" "+y_pos)
      if (isatt(genres,"LineLabelWhiteSpacePercent")) then
-        x_text_start = x_line_end+(xrange*genres@LineLabelWhiteSpacePercent)
+        x_text_start = x_line_end+(xrange*(genres@LineLabelWhiteSpacePercent/100.))
      else
         x_text_start = x_line_end+(xrange*0.03)    ; set default
      end if
@@ -5071,5 +5070,4 @@ begin
   end do
   return(xyplot)
 end
-
 
