@@ -532,11 +532,11 @@ static void SetRegionAttrs
 		c_cpseti("CLU",1);
 
 	if (cpix == -1)
-		c_cpseti("AIA",99);
+		c_cpseti("AIA",-1);
 	else if (cpix == -2)
 		c_cpseti("AIA",98);
 	else if (cpix == -3)
-		c_cpseti("AIA",97);
+		c_cpseti("AIA",-3);
 	else
 		c_cpseti("AIA",-1);
 
@@ -1109,7 +1109,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 #endif
 #define _cnMAPBOUNDINC	100
 
-	return NhlNOERROR;
+	/*return NhlNOERROR; */
 	if (cnp->trans_obj->base.layer_class->base_class.class_name ==
 	    NhlmapTransObjClass->base_class.class_name) {
 		ezmap = True;
@@ -1182,8 +1182,8 @@ static NhlErrorTypes AddDataBoundToAreamap
 			return ret;
 		}
 
-		xrev = twlx > twrx;
-		yrev = twby > twuy;
+		xrev = cl->trans.x_reverse;
+		yrev = cl->trans.y_reverse;
 /*
  * added a hack to prevent fill dropout in certain cases, where because
  * of floating point precision issues in the mapping routines, contour
@@ -1364,7 +1364,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 #endif
 		c_mpgetc("OU",cval,3);
 		c_mpsetc("OU","NO");
-		c_mpseti("G2",3);
+		c_mpseti("G2",2);
 		c_mpseti("VS",1);
 		_NhlMapbla(cnp->aws,entry_name);
 		c_mpsetc("OU",cval);
@@ -1830,6 +1830,7 @@ static NhlErrorTypes CnStdRender
 				gset_clip_ind(clip_ind_rect.clip_ind);
 				return NhlFATAL;
 			}
+
 			subret = AddDataBoundToAreamap(cnl,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				ContourAbortDraw(cnl);
@@ -1845,17 +1846,23 @@ static NhlErrorTypes CnStdRender
 				return ret;
 			}
 
-
+			if (cnp->dump_area_map)
+				_NhlDumpAreaMap(cnp->aws,entry_name);
 
 			/* flag1 is set to 999 to indicate that the HLU version
 			   of ARPRAM should be called. It has special handling
 			   to fix a problem with the grid boundary */
 
 			_NhlArpram(cnp->aws,999,0,0,entry_name);
+
+			/* Call this twice because the areamap will have changed if there
+			   is a constant fill situation (because the first call will invoke
+			   the HLU routine fixareamap_ after finishing). 
+			   This will not impact performance because if the areamap 
+			   has not changed, arpram will know that and not do anything */
+
 			_NhlArpram(cnp->aws,999,0,0,entry_name);
 
-			if (cnp->dump_area_map)
-				_NhlDumpAreaMap(cnp->aws,entry_name);
 
 			subret = _NhlArscam(cnp->aws,
 					    (_NHLCALLF(hlucpfill,HLUCPFILL)),

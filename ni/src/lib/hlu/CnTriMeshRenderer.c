@@ -2453,15 +2453,15 @@ static void SetRegionAttrs
 	   this is because the grid boundary needs to be calculated with more precision, potentially impacting performance */
 	if (cpix == -1 && reg_attrs->fill_color > NhlTRANSPARENT && reg_attrs->fill_pat > NhlHOLLOWFILL) {
 		if (reg_attrs == &cl->contourplot.grid_bound) {
-			c_ctseti("AIA",99);     
+			c_ctseti("AIA",-1);     
 			/*c_ctsetr("PIT",0.001); */ /* forced to the minimum recommended value, regardless of max_point_distance */
 		}
 		else {
-			c_ctseti("AIA",98);
+			c_ctseti("AIA",-1);
 		}
 	}
 	else if (cpix == -1)
-                c_ctseti("AIA",0);
+                c_ctseti("AIA",-1);
 	else if (cpix == -2)
 		c_ctseti("AIA",97);
 	else
@@ -3031,14 +3031,12 @@ static NhlErrorTypes AddDataBoundToAreamap
 	NhlContourPlotLayerPart	*cnp = 
 		(NhlContourPlotLayerPart *) &cl->contourplot;
 	NhlBoolean		ezmap = False;
-#if 0
 	int			status;
 	NhlErrorTypes		ret = NhlNOERROR;
 	char			*e_text;
 	int			xrev,yrev;
 	float			xa[5],ya[5];
 	float		        xeps,yeps;
-#endif
 	char		cval[4];
 #define _cnBBOXGID 3
 #if 0
@@ -3059,7 +3057,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 	c_arseti("RC(3)",2);
 #endif
 	c_arseti("RC",1);
-#if 0
+
 
 	if (! ezmap) {
 		float twlx,twrx,twby,twuy;
@@ -3260,7 +3258,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 		}
 	}
 	else {
-
+#if 0
 		float wb,wt,wl,wr;
 
 
@@ -3304,9 +3302,9 @@ static NhlErrorTypes AddDataBoundToAreamap
 		c_mpseti("VS",1);
 		_NhlMapbla(cnp->aws,entry_name);
 		c_mpsetc("OU",cval);
-#if 0
+
 	}
-#endif
+
 	return NhlNOERROR;
 }
 
