@@ -2674,8 +2674,8 @@ begin
     end if
   end if
 
-
-  if(.not.isatt(opts,"cnFillColors")) then
+;---Recognition of cnFillPalette was added in V6.4.0
+  if(.not.(isatt(opts,"cnFillColors").or.isatt(opts,"cnFillPalette"))) then
     opts@gsnSpreadColors = get_res_value_keep(opts, "gsnSpreadColors", True)
   end if
   opts@cnInfoLabelOn   = get_res_value_keep(opts,"cnInfoLabelOn", False)
