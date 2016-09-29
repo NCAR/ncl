@@ -4184,7 +4184,7 @@ begin
           map_args@mpRightCornerLonF  = map_args@mpRightCornerLonF + 360.0
         end if 
         
-        if ( map_args@mpRightCornerLonF .le. map_args@mpRightCornerLonF ) then
+        if ( map_args@mpRightCornerLonF .le. map_args@mpLeftCornerLonF ) then
           map_args@mpRightCornerLonF  = map_args@mpRightCornerLonF + 360.0
         end if
 
