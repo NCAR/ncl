@@ -4140,59 +4140,135 @@ begin
 end
 
 ;----------------------------------------------------------------------
-; Returns the color(s) of Y reference line(s). For use by gsn_csm_xy.
+; Returns the color(s) of X or Y reference line(s). If just one color
+; is given and there are multiple reference lines, then propagate
+; the value for each reference line.
 ;----------------------------------------------------------------------
-undef("get_yref_line_color")
-function get_yref_line_color(wks,nyref,yrfres)
-local set_yref_line_color
+undef("get_ref_line_color")
+function get_ref_line_color(wks,reftype,nref,rfres)
+local dims, rank, color_res1, color_res2
 begin
-  if(isatt(yrfres,"gsnYRefLineColors"))
-    yref_line_color := convert_color_to_rgba(wks,get_res_value(yrfres,"gsnYRefLineColors","foreground"))
-    set_yref_line_color = True
-  else if(isatt(yrfres,"gsnYRefLineColor"))
-    yref_line_color := convert_color_to_rgba(wks,get_res_value(yrfres,"gsnYRefLineColor","foreground"))
-    set_yref_line_color = True
+  if(reftype.eq."y") then
+    color_res1 = "gsnYRefLineColor"
+    color_res2 = "gsnYRefLineColors"
+  else if(reftype.eq."x") then
+    color_res1 = "gsnXRefLineColor"
+    color_res2 = "gsnXRefLineColors"
   else
-    yref_line_color := convert_color_to_rgba(wks,"foreground")
-    set_yref_line_color = False
+    print("get_ref_line_color: fatal, invalid type for reference line color.")
+    return
   end if
   end if
-  if(set_yref_line_color) then
-    if(.not.(dimsizes(yref_line_color(:,0)).eq.nyref.or.\
-             dimsizes(yref_line_color(:,0)).eq.1))
-      print("get_yref_line_color: Warning: you must specify either one Y reference line color")
-      print("      or the same number of colors as there are reference lines.")
-      print("      Will use the foreground color.") 
-      yref_line_color := convert_color_to_rgba(wks,"foreground")
-    end if
+  if(isatt(rfres,color_res2))
+    ref_line_color = convert_color_to_rgba(wks,rfres@$color_res2$)
+  else if(isatt(rfres,color_res1))
+    ref_line_color = convert_color_to_rgba(wks,rfres@$color_res1$)
+  else
+    ref_line_color = convert_color_to_rgba(wks,"foreground")
   end if
-  return(yref_line_color)
+  end if
+  dims = dimsizes(ref_line_color)
+  rank = dimsizes(dims)
+  if(rank.ne.2.or.(dims(0).ne.nref.and.dims(0).ne.1)) then
+    print("get_ref_line_color: Warning: you must specify either one reference line color")
+    print("      or the same number of colors as there are reference lines.")
+    print("      Will use the foreground color.") 
+    ref_line_color := convert_color_to_rgba(wks,"foreground")
+  end if
+
+  if(dims(0).eq.1.and.nref.gt.1) then
+    return(conform_dims((/nref,4/),ref_line_color(0,:),1))
+  else
+    return(ref_line_color)
+  end if
 end
 
 ;----------------------------------------------------------------------
-; Returns the pattern(s) of Y reference line(s). For use by gsn_csm_xy.
+; Returns the pattern(s) of X or Y reference line(s). If just one
+; pattern is given and there are multiple reference lines, then 
+; propagate the value for each reference line.
+; For use by gsn_csm_xy.
 ;----------------------------------------------------------------------
-undef("get_yref_line_pattern")
-function get_yref_line_pattern(wks,nyref,yrfres)
+undef("get_ref_line_pattern")
+function get_ref_line_pattern(wks,reftype,nref,rfres)
 begin
-  yref_line_pattern = 0            ; defaults to solid
-
-  if(isatt(yrfres,"gsnYRefLineDashPattern")) then
-; not sure why subscripting with (0). To get around possible user error?
-    yref_line_pattern := yrfres@gsnYRefLineDashPattern(0)
-    delete(yrfres@gsnYRefLineDashPattern)
-  else if(isatt(yrfres,"gsnYRefLineDashPatterns"))
-    yref_line_pattern := get_res_value(yrfres,"gsnYRefLineDashPatterns",0)
-    if(.not.(dimsizes(yref_line_pattern).eq.nyref.or.\
-             dimsizes(yref_line_pattern).eq.1))
-      print("get_yref_line_pattern: Warning: you must specify either one Y reference line dash pattern")
-      print("      or the same number of dash patterns as there are reference lines.")
-      print("      Will use a solid line.") 
-      yref_line_pattern := 0  ; defaults to solid
+  if(reftype.eq."y") then
+    pattern_res1 = "gsnYRefLineDashPattern"
+    pattern_res2 = "gsnYRefLineDashPatterns"
+  else if(reftype.eq."x") then
+    pattern_res1 = "gsnXRefLineDashPattern"
+    pattern_res2 = "gsnXRefLineDashPatterns"
+  else
+    print("get_ref_line_pattern: fatal, invalid type for reference line pattern.")
+    return
+  end if
+  end if
+  if(isatt(rfres,pattern_res1)) then
+    if(dimsizes(rfres@$pattern_res1$).gt.1) then
+      print("get_ref_line_pattern: Warning: only one pattern should be specified with " + pattern_res1)
+      print("                      Use " + pattern_res2 + " if multiple patterns desired.")
     end if
+    ref_line_pattern := rfres@$pattern_res1$(0)
+  else if(isatt(rfres,pattern_res2))
+    ref_line_pattern := rfres@$pattern_res2$
+  else  
+    ref_line_pattern = 0
   end if
   end if
-  return(yref_line_pattern)
+
+  dims = dimsizes(ref_line_pattern)
+  rank = dimsizes(dims)
+  if(.not.isscalar(ref_line_pattern).and.rank.ne.1.and.dimsizes(ref_line_pattern).ne.nref) then
+    print("get_ref_line_pattern: Warning: you must specify either one reference line dash pattern")
+    print("      or the same number of dash patterns as there are reference lines.")
+    print("      Will use a solid line.") 
+    ref_line_pattern := 0
+  end if
+  return(conform_dims(nref,ref_line_pattern,-1))
+end
+
+;----------------------------------------------------------------------
+; Returns a thickness or list of thicknesses for a reference line.
+; If just one thickness is given and there are multiple reference 
+; lines, then propagate the value for each reference line.
+; For use by gsn_csm_xy.
+;----------------------------------------------------------------------
+undef("get_ref_line_thickness")
+function get_ref_line_thickness(wks,reftype,nref,rfres)
+local dims, rank
+begin
+  if(reftype.eq."y") then
+    thickness_res1 = "gsnYRefLineThicknessF"
+    thickness_res2 = "gsnYRefLineThicknesses"
+  else if(reftype.eq."x") then
+    thickness_res1 = "gsnXRefLineThicknessF"
+    thickness_res2 = "gsnXRefLineThicknesses"
+  else
+    print("get_ref_line_thickness: fatal, invalid type for reference line thickness.")
+    return
+  end if
+  end if
+  if(isatt(rfres,thickness_res1)) then
+    if(dimsizes(rfres@$thickness_res1$).gt.1) then
+      print("get_ref_line_thickness: Warning: only one thickness should be specified with " + thickness_res1)
+      print("                        Use " + thickness_res2 + " if multiple thicknesses desired.")
+    end if
+    ref_line_thickness = rfres@$thickness_res1$(0)
+  else if(isatt(rfres,thickness_res2)) then
+    ref_line_thickness = rfres@$thickness_res2$
+  else
+    ref_line_thickness = 1.0
+  end if
+  end if
+  dims = dimsizes(ref_line_thickness)
+  rank = dimsizes(dims)
+  if(.not.isscalar(ref_line_thickness).and.rank.ne.1.and.dimsizes(ref_line_thickness).ne.nref) then
+    print("get_ref_line_thickness: Warning: you must specify either one reference line thickness")
+    print("      or the same number of dash thicknesss as there are reference lines.")
+    print("      Will use a solid line.") 
+    ref_line_thickness := 1.0
+  end if
+  return(conform_dims(nref,ref_line_thickness,-1))
 end
 
 ;----------------------------------------------------------------------
@@ -4200,19 +4276,19 @@ end
 ; above a given ref line or series of lines.
 ;----------------------------------------------------------------------
 undef("get_yref_line_above_fill_color")
-function get_yref_line_above_fill_color(wks,nyref,yrfres)
+function get_yref_line_above_fill_color(wks,nyref,rfres)
 local tmpdims
 begin
 ;---Determine color of fill above reference line(s).
-  if(any(isatt(yrfres,(/"gsnXYBarChartPatterns", \
+  if(any(isatt(rfres,(/"gsnXYBarChartPatterns", \
                         "gsnXYBarChartPatterns2", \
                         "gsnBelowYRefLineBarPatterns"/)))) then
     yref_curve_above_fill_color = convert_color_to_rgba(wks,"foreground")
   else
     yref_curve_above_fill_color = convert_color_to_rgba(wks,"transparent")
   end if
-  if(isatt(yrfres,"gsnAboveYRefLineColor"))
-    yref_curve_above_fill_color := convert_color_to_rgba(wks,get_res_value_keep(yrfres,"gsnAboveYRefLineColor",1)) 
+  if(isatt(rfres,"gsnAboveYRefLineColor"))
+    yref_curve_above_fill_color := convert_color_to_rgba(wks,get_res_value_keep(rfres,"gsnAboveYRefLineColor",1)) 
     tmpdims = dimsizes(yref_curve_above_fill_color)
     if(.not.(tmpdims(0).eq.1.or.tmpdims(0).eq.nyref)) then
       print("get_yref_line_above_fill_color: Fatal: there must either be an above line fill color for every")
@@ -4229,10 +4305,10 @@ end
 ; below a given ref line or series of lines.
 ;----------------------------------------------------------------------
 undef("get_yref_line_below_fill_color")
-function get_yref_line_below_fill_color(wks,nyref,yrfres)
+function get_yref_line_below_fill_color(wks,nyref,rfres)
 local tmpdims
 begin
-  if(any(isatt(yrfres,(/"gsnXYBarChartPatterns", \
+  if(any(isatt(rfres,(/"gsnXYBarChartPatterns", \
                         "gsnXYBarChartPatterns2", \
                         "gsnBelowYRefLineBarPatterns"/)))) then
     yref_curve_below_fill_color = convert_color_to_rgba(wks,"foreground")
@@ -4240,8 +4316,8 @@ begin
     yref_curve_below_fill_color = convert_color_to_rgba(wks,"transparent")
   end if
 ;---Determine color of fill below reference line(s).
-  if(isatt(yrfres,"gsnBelowYRefLineColor"))
-    yref_curve_below_fill_color := convert_color_to_rgba(wks,get_res_value_keep(yrfres,"gsnBelowYRefLineColor",1)) 
+  if(isatt(rfres,"gsnBelowYRefLineColor"))
+    yref_curve_below_fill_color := convert_color_to_rgba(wks,get_res_value_keep(rfres,"gsnBelowYRefLineColor",1)) 
     tmpdims = dimsizes(yref_curve_below_fill_color)
     if(.not.(tmpdims(0).eq.1.or.tmpdims(0).eq.nyref)) then
       print("get_yref_line_below_fill_color: Fatal: there must either be an below line fill color for every")
@@ -4251,30 +4327,6 @@ begin
      end if
   end if
   return(yref_curve_below_fill_color)
-end
-
-;----------------------------------------------------------------------
-; Returns a thickness or list of thicknesses for a y reference line.
-;----------------------------------------------------------------------
-undef("get_yref_line_thickness")
-function get_yref_line_thickness(wks,nyref,yrfres)
-begin
-  yref_line_thickness = 1.0
-  if(isatt(yrfres,"gsnYRefLineThicknessF"))
-    ; not sure why subscripting with (0). To get around possible user error?
-    yref_line_thickness = yrfres@gsnYRefLineThicknessF(0)
-    delete(yrfres@gsnYRefLineThicknessF)
-  else if(isatt(yrfres,"gsnYRefLineThicknesses"))
-    if(.not.(dimsizes(yref_line_thickness).eq.nyref.or.\
-             dimsizes(yref_line_thickness).eq.1))
-      print("get_yref_line_thickness: Warning: you must specify either one Y reference line thickness")
-      print("      or the same number of line thicknesses as there are reference lines.")
-      print("      Will use a thickness of 1.") 
-      yref_line_thickness := 1.0
-    end if
-  end if
-  end if
-  return(yref_line_thickness)
 end
 
 ;**********************************************************************
@@ -4306,9 +4358,9 @@ begin
   yref_line    := get_res_value(yrfres,"gsnYRefLine",0)
   nyref        = dimsizes(yref_line)
 
-  yref_line_color       := get_yref_line_color(wks,nyref,yrfres)
-  yref_line_pattern     := get_yref_line_pattern(wks,nyref,yrfres)
-  yref_line_thickness   := get_yref_line_thickness(wks,nyref,yrfres)
+  yref_line_color       := get_ref_line_color(wks,"y",nyref,yrfres)
+  yref_line_pattern     := get_ref_line_pattern(wks,"y",nyref,yrfres)
+  yref_line_thickness   := get_ref_line_thickness(wks,"y",nyref,yrfres)
   yref_above_fill_color := get_yref_line_above_fill_color(wks,nyref,yrfres)
   yref_below_fill_color := get_yref_line_below_fill_color(wks,nyref,yrfres)
   yref_curve_fill_on = .not.(any(ismissing(yref_above_fill_color)).or.\
@@ -4932,6 +4984,46 @@ begin
 end
 
 ;**********************************************************************
+; This procedure adds X or Y reference lines to an existing plot.
+;**********************************************************************
+undef("add_ref_line")
+procedure add_ref_line(wks,xyobj,axis,lines,color,pattern,thickness)
+local i, dmin, dmax, gsres, xline, yline, var_string
+begin
+  if(axis.ne."y".and.axis.ne."x") then
+    print("add_ref_line: warning, invalid type for adding reference line.")
+    return
+  end if
+  if(axis.eq."y") then
+    getvalues xyobj
+      "trXMinF"  : dmin
+      "trXMaxF"  : dmax
+    end getvalues
+    xline = (/dmin,dmax/)
+  else
+    getvalues xyobj
+      "trYMinF"  : dmin
+      "trYMaxF"  : dmax
+    end getvalues
+    yline = (/dmin,dmax/)
+  end if
+
+  gsres = True
+  do i=0,dimsizes(lines)-1
+    gsres@gsLineColor = color(i,:)
+    gsres@gsLineDashPattern = pattern(i)
+    gsres@gsLineThicknessF  = thickness(i)
+    if(axis.eq."y") then
+      yline = fspan(tofloat(lines(i)),tofloat(lines(i)),2)
+    else
+      xline = fspan(tofloat(lines(i)),tofloat(lines(i)),2)
+    end if
+    var_string = unique_string(axis+"polyline"+i)
+    xyobj@$var_string$ = gsn_add_polyline(wks,xyobj,xline,yline,gsres)
+  end do
+end
+
+;**********************************************************************
 ; This procedure adds special "30N", "20E", "EQ" type of labels
 ; to the X and/or Y axis if it detects that xx or yy are valid
 ; latitude or longitude arrays.
@@ -5132,9 +5224,9 @@ begin
         xref_line    = get_res_value(res2,"gsnXRefLine",0.)
         nxref        = dimsizes(xref_line)
 
-        xref_line_color     = convert_color_to_rgba(wks,get_res_value(res2,"gsnXRefLineColor","foreground"))
-        xref_line_pattern   = get_res_value(res2,"gsnXRefLineDashPattern",0)
-        xref_line_thickness = get_res_value(res2,"gsnXRefLineThicknessF",1.)
+        xref_line_color     = get_ref_line_color(wks,"x",nxref,res2)
+        xref_line_pattern   = get_ref_line_pattern(wks,"x",nxref,res2)
+        xref_line_thickness = get_ref_line_thickness(wks,"x",nxref,res2)
       end if
 
 ; Check for existence of the left, center, and right subtitles.
@@ -5566,70 +5658,12 @@ begin
       delete(gsres)    
     end if
 
-; Draw X reference line.
-
-    if(xref_line_on)
-      getvalues xy_object
-        "trYMinF"  : ymin
-        "trYMaxF"  : ymax
-      end getvalues
-
-      gsres             = True
-
-      yline = (/ymin,ymax/)
-
-      gsres@gsLineColor       = xref_line_color(0,:)
-      gsres@gsLineDashPattern = xref_line_pattern(0)
-      gsres@gsLineThicknessF  = xref_line_thickness(0)
-
-      do i=0,nxref-1
-        if(dimsizes(xref_line_color(:,0)).gt.1) then
-          gsres@gsLineColor = xref_line_color(i,:)
-        end if
-        xline = fspan(xref_line(i),xref_line(i),2)
-        var_string = unique_string("xpolyline"+i)
-        xy_object@$var_string$ = gsn_add_polyline(wks,xy_object,xline,yline, \
-                                                  gsres)
-      end do
-      delete(xline)
-      delete(yline)
+;---Add X/Y reference lines.
+    if(xref_line_on) then
+      add_ref_line(wks,xy_object,"x",xref_line,xref_line_color,xref_line_pattern,xref_line_thickness)
     end if
-
-; Draw Y reference line.
-
-    if(yref_line_on)
-      getvalues xy_object
-        "trXMinF"  : xmin
-        "trXMaxF"  : xmax
-      end getvalues
-
-      gsres             = True
-
-      xline = (/xmin,xmax/)
-
-      gsres@gsLineColor       := yref_line_color(0,:)
-      gsres@gsLineDashPattern = yref_line_pattern(0)
-      gsres@gsLineThicknessF  = yref_line_thickness(0)
-
-      do i=0,nyref-1
-        if(dimsizes(yref_line_color(:,0)).gt.2)
-          gsres@gsLineColor = yref_line_color(i,:)
-        end if
-        if(dimsizes(yref_line_pattern).gt.1)
-          gsres@gsLineDashPattern = yref_line_pattern(i)
-        end if
-        if(dimsizes(yref_line_thickness).gt.1)
-          gsres@gsLineThicknessF = yref_line_thickness(i)
-        end if
-        yline = fspan(tofloat(yref_line(i)),tofloat(yref_line(i)),2)
-        var_string = unique_string("ypolyline"+i)
-
-        xy_object@$var_string$ = gsn_add_polyline(wks,xy_object,xline, \
-                                                  yline,gsres)
-      end do
-
-      delete(xline)
-      delete(yline)
+    if(yref_line_on) then
+      add_ref_line(wks,xy_object,"y",yref_line,yref_line_color,yref_line_pattern,yref_line_thickness)
     end if
 
 ; Get title label sizes and tickmark lengths.
