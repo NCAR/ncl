@@ -4512,7 +4512,7 @@ void *_getH5compoundAsList(hid_t fid, NclFileVarNode *varnode)
     hid_t datatype_id = -1;
     hid_t component_datasize = 1;
     hid_t str_type = 0;
-    hid_t comp_type;
+    hid_t comp_type, n_type;
 
     int n = 0;
     int i = 0;
@@ -4629,14 +4629,17 @@ void *_getH5compoundAsList(hid_t fid, NclFileVarNode *varnode)
         }
         else
         {
+	    hsize_t t_size;
             component_datasize = compnode->nvals*_NclSizeOf(compnode->type);
             compvalues = (void *)NclCalloc(size, component_datasize);
             assert(compvalues);
 
-	    comp_type = H5Tcopy(Ncltype2HDF5type(compnode->type));
-	    H5Tset_size(comp_type,component_datasize);
-            datatype_id = H5Tcreate(H5T_COMPOUND, component_datasize);
-            H5Tinsert(datatype_id, component_name, 0,comp_type);
+	    /*comp_type = H5Tcopy(Ncltype2HDF5type(compnode->type));*/
+	    comp_type = H5Tget_member_type(datatype,compnode->rank);
+	    n_type = _get_native_type(comp_type);
+	    t_size = H5Tget_size(n_type);
+            datatype_id = H5Tcreate(H5T_COMPOUND, t_size);
+            H5Tinsert(datatype_id, component_name, 0,n_type);
 
             status += H5Dread(did, datatype_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, compvalues);
 
@@ -4706,7 +4709,7 @@ static void *_getH5CompoundData(hid_t fid, NclFileVarNode *varnode,
     hid_t did;
     hid_t datatype_id = -1;
     hid_t component_datasize = 1;
-    hid_t d_type, m_type;
+    hid_t d_type, m_type, n_type;
     hid_t str_type = 0;
     hid_t               d_space;                  /* data space */
     hsize_t ndims;
@@ -4884,11 +4887,13 @@ static void *_getH5CompoundData(hid_t fid, NclFileVarNode *varnode,
     else
     {
 	hsize_t t_size;
+	
 	m_type = H5Tget_member_type(d_type,compnode->rank);
-	t_size = H5Tget_size(m_type);
+	n_type = _get_native_type(m_type);
+	t_size = H5Tget_size(n_type);
 	component_datasize = _NclSizeOf(compnode->type);
         datatype_id = H5Tcreate( H5T_COMPOUND, t_size);
-        H5Tinsert(datatype_id, component_name, 0, m_type);
+        H5Tinsert(datatype_id, component_name, 0, n_type);
 
 
       /*

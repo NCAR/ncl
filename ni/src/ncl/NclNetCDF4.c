@@ -1205,6 +1205,7 @@ NclFileCompoundRecord *get_nc4_compoundrec(int ncid, nc_type xtype, NrmQuark **c
        *fprintf(stderr, "\tftype = %d, NC_CHAR = %d, NC_STRING = %d\n", ftype, NC_CHAR, NC_STRING);
        */
 
+		
         if(rank > 0)
         {
             sides = (int *) NclCalloc(rank, sizeof(int));
@@ -1212,6 +1213,11 @@ NclFileCompoundRecord *get_nc4_compoundrec(int ncid, nc_type xtype, NrmQuark **c
             nc_inq_compound_field(ncid, xtype, fidx, NULL,
                                   NULL, NULL, NULL, sides);
         }
+	else if (rank == 0) {  /* scalar value */
+		if (ftype == NC_CHAR) {   /* promote scalar char variables to strings (length unknown until data is read) */
+			ftype = NC_STRING;
+		}
+	}
 
         compnode->the_nc_type = ftype;
         compnode->type = NC4MapToNcl(&ftype);
@@ -3472,13 +3478,22 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
               *fprintf(stderr, "\tnumval = %d, size = %d\n", numval, size);
               */
 
-               for(i = 0; i < numval; i++)
-               {
-                   memcpy(out_data + i * complength, values + i * size + offset, complength);
-               }
+	       if (compnode->type == NCL_string) {
+		       for (i = 0; i < numval; i++) {
+			       NrmQuark tq;
+			       int len = strlen((char*)(values + i * size + offset));
+			       tq = NrmStringToQuark((char*)(values + i * size + offset));
+			       memcpy(out_data + i * complength,&tq,complength);
+		       }
+	       }
+	       else {
+		       for(i = 0; i < numval; i++) {
+			       memcpy(out_data + i * complength, values + i * size + offset, complength);
+		       }
+	       }
+	       free(values);
+	       ret = NhlNOERROR;
 
-               free(values);
-               ret = NhlNOERROR;
             }
             else
             {
