@@ -115,12 +115,13 @@ int NclDriver(int argc, char **argv)
      *  -m      turns on memory debug
      *  -o      old behavior: retain former behavior for backwards incompatible changes
      *  -h      help: output options and exit
+     *  -s      disable pre-loading of default script files
      *
      *  -X      override: echo every stmt regardless (unannounced option)
      *  -Q      override: don't echo copyright notice (unannounced option)
      */
     opterr = 0;     /* turn off getopt() msgs */
-    while ((c = getopt (argc, argv, "fhnodgmxVXQp")) != -1) {
+    while ((c = getopt (argc, argv, "fhnodgmxVXQps")) != -1) {
         switch (c) {
             case 'p':
                 NCLnoSysPager = 1;
@@ -138,6 +139,10 @@ int NclDriver(int argc, char **argv)
                 echoUserScript = 1;
                 break;
 
+            case 's':
+		NCLnoPreload = 1;
+                break;
+
 #ifdef NCLDEBUG
             case 'm':
                 NCLdebug_on = 1;
@@ -150,6 +155,7 @@ int NclDriver(int argc, char **argv)
             case 'g':
                 NCLdebug_on = 3;
                 break;
+
 #endif
             /* NOT ADVERTISED!  Will override "no echo" and print EVERYTHING! */
             case 'X':
@@ -178,6 +184,7 @@ int NclDriver(int argc, char **argv)
                 (void) fprintf(stdout, "\t -o: retain former behavior for certain backwards-incompatible changes\n");
                 (void) fprintf(stdout, "\t -p: don't page output from the system() command\n");
                 (void) fprintf(stdout, "\t -x: echo NCL commands\n");
+                (void) fprintf(stdout, "\t -s: disable pre-loading of default script files\n");
                 (void) fprintf(stdout, "\t -Q: turn off echo of NCL version and copyright info\n");
                 (void) fprintf(stdout, "\t -V: print NCL version and exit\n");
 #ifdef NCLDEBUG
@@ -206,6 +213,10 @@ int NclDriver(int argc, char **argv)
     if (!NCLnoCopyright) 
         (void) fprintf(stdout,
             " Copyright (C) 1995-2016 - All Rights Reserved\n University Corporation for Atmospheric Research\n NCAR Command Language Version %s\n The use of this software is governed by a License Agreement.\n See http://www.ncl.ucar.edu/ for more details.\n", GetNCLVersion());
+
+    if (NCLnoPreload) {
+	    numberOfPreloadedScripts = 0;
+    }
 
     /* Process any user-defined arguments */
     for (i = optind; i < argc; i++) {

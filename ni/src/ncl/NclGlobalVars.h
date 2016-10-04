@@ -1,6 +1,7 @@
 #ifndef _NclGlobalVars_H
 #define _NclGlobalVars_H
 /* Command line option variables */
+short   NCLnoPreload = 0;       /* disable pre-loading of default script files */
 short   NCLverbose = 1;
 short   NCLecho = 0;            /* echo typed commands, off by default */
 short   NCLoverrideEcho = 0;    /* override echo; non-advertised option */

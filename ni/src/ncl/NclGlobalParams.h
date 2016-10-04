@@ -9,6 +9,7 @@ extern short   NCLnoSysPager;
 extern short   NCLoldBehavior;
 extern short   NCLuseAFS;
 extern short   NCLdebug_on;
+extern short   NCLnoPreload;
 
 #ifdef NCLDEBUG
 extern NclMemoryRecord ncl_memory_record;
