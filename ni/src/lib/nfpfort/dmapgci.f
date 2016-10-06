@@ -221,8 +221,13 @@ c special test if RLAT1=RLAT2 and RLON1=RLON2
       DLONR = DMIN1(ABS(RLON1-RLON2),ABS(360.D0-RLON1+RLON2),
      +        ABS(360.D0-RLON2+RLON1))*RAD
 
-      DGCDIST = ACOS(SIN(RLAT1R)*SIN(RLAT2R)+
-     +          COS(RLAT1R)*COS(RLAT2R)*COS(DLONR))*UNITS(IU)
+      DGCDIST = ATAN2(SQRT((COS(RLAT2R) * SIN(DLONR)) ** 2 +
+     +                     (COS(RLAT1R) * SIN(RLAT2R) -
+     +                      SIN(RLAT1R) * COS(RLAT2R) * COS(DLONR)) ** 2
+     +                    ),
+     +                SIN(RLAT1R)*SIN(RLAT2R)+
+     +                COS(RLAT1R)*COS(RLAT2R)*COS(DLONR)
+     +               ) * UNITS(IU)
 
       RETURN
       END
