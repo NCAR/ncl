@@ -547,7 +547,7 @@ NhlErrorTypes _NclPutLevel1Var
 			return(NhlFATAL);
 		}
 		level_1_vars = tl1vars;
-		stack_entry = (NclStackEntry *)NclCalloc(NCL_LEVEL_1_SIZE,sizeof(NclStackEntry));
+		stack_entry = (NclStackEntry *)NclCalloc(current_level_1_size,sizeof(NclStackEntry));
 		if(! stack_entry) {
 			NhlPError(NhlFATAL,errno,"_NclInitMachine: Can't allocate space for machine");
 			return(NhlFATAL);
@@ -591,7 +591,7 @@ NclStackEntry *_NclGetLevel1Var
 			return(NULL);
 		}
 		level_1_vars = tl1vars;
-		stack_entry = (NclStackEntry *)NclCalloc(NCL_LEVEL_1_SIZE,sizeof(NclStackEntry));
+		stack_entry = (NclStackEntry *)NclCalloc(current_level_1_size,sizeof(NclStackEntry));
 		if(! stack_entry) {
 			NhlPError(NhlFATAL,errno,"_NclInitMachine: Can't allocate space for machine");
 			return(NULL);
