@@ -20,7 +20,7 @@ NhlErrorTypes betainc_W( void )
   ng_size_t dsizes_a[NCL_MAX_DIMENSIONS];
   int ndims_b;
   ng_size_t dsizes_b[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_x, type_a, type_b;
+  NclBasicDataTypes type_x, type_a, type_b, type_output;
   NclScalar missing_x, missing_dx;
 /*
  * output variable 
@@ -71,13 +71,6 @@ NhlErrorTypes betainc_W( void )
           NULL,
           &type_b,
           DONT_CARE);
-/*
- * Check type of x, which must be float or double.
- */
-  if(type_x != NCL_float && type_x != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"betainc: x must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * Check dimensions.
  */
@@ -138,6 +131,7 @@ NhlErrorTypes betainc_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"betainc: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
+    type_output = NCL_double;
   }
   else {
     alpha     = (float*)calloc(size_alpha,sizeof(float));
@@ -147,6 +141,7 @@ NhlErrorTypes betainc_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"betainc: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
+    type_output = NCL_float;
   }
 
 /*
@@ -213,10 +208,10 @@ NhlErrorTypes betainc_W( void )
  * Return. 
  */
   if(has_missing_x) {
-    ret = NclReturnValue(alpha,ndims_x,dsizes_x,&missing_x,type_x,0);
+    ret = NclReturnValue(alpha,ndims_x,dsizes_x,&missing_x,type_output,0);
   }
   else {
-    ret = NclReturnValue(alpha,ndims_x,dsizes_x,NULL,type_x,0);
+    ret = NclReturnValue(alpha,ndims_x,dsizes_x,NULL,type_output,0);
   }
   return(ret);
 }
@@ -234,7 +229,7 @@ NhlErrorTypes gammainc_W( void )
   ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   int ndims_a;
   ng_size_t dsizes_a[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_x, type_a;
+  NclBasicDataTypes type_x, type_a, type_output;
 /*
  * output variable 
  */
@@ -279,13 +274,6 @@ NhlErrorTypes gammainc_W( void )
 
 
 /*
- * Check type of x, which must be float or double.
- */
-  if(type_x != NCL_float && type_x != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"gammainc: x must be float or double");
-    return(NhlFATAL);
-  }
-/*
  * Check dimensions.
  */
   if (ndims_x != ndims_a) {
@@ -316,6 +304,7 @@ NhlErrorTypes gammainc_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"gammainc: Unable to allocate memory for input/output arrays");
       return(NhlFATAL);
     }
+    type_output = NCL_float;
   }
   else {
     cum = (double*)calloc(size_cum,sizeof(double));
@@ -323,6 +312,7 @@ NhlErrorTypes gammainc_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"gammainc: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
+    type_output = NCL_double;
   }
 
   if(type_a != NCL_double) {
@@ -378,7 +368,7 @@ NhlErrorTypes gammainc_W( void )
 /*
  * Return.
  */
-  ret = NclReturnValue(cum,ndims_x,dsizes_x,NULL,type_x,0);
+  ret = NclReturnValue(cum,ndims_x,dsizes_x,NULL,type_output,0);
   return(ret);
 
 }
