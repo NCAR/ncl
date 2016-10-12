@@ -2482,7 +2482,7 @@ begin
      numbox = dimquery(0)
      boxWidths = new((/numbox/),float)
      if (numbox.ne.dimsizes(x)) then
-        print("boxplot: Fatal: X must be one-dimensional and both X and Y must have the same rightmost dimension")
+        print("boxplot: Fatal: X must be one-dimensional and both X and Y must have the same leftmost dimension")
         exit
      end if
      if (any(ismissing(x))) then
