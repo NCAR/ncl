@@ -4739,9 +4739,19 @@ static void _g2AddGenProcAtt(Grib2ParamList *step)
 	att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
 	att_list_ptr->att_inq->name = NrmStringToQuark("generating_process_type");
 
-	if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, "4.3.table", step->traits.gen_process_type,-1,ct) < NhlWARNING) {
-		return;
+	{
+		int error_id;
+		NhlErrorTypes err_level;
+		error_id = NhlGetErrorObjectId();
+		NhlVAGetValues(error_id, NhlNerrLevel,&err_level,NULL);
+		NhlVASetValues(error_id, NhlNerrLevel,NhlFATAL,NULL);
+		if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, "4.3.table", 
+				       step->traits.gen_process_type,-1,ct) < NhlWARNING) {
+			return;
+		}
+		NhlVASetValues(error_id, NhlNerrLevel,err_level,NULL);
 	}
+		
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	if (ct->descrip) {
 		*tmp_string = NrmStringToQuark(ct->descrip);
@@ -7465,6 +7475,12 @@ static void _g2SetFileDimsAndCoordVars
 			
 			if (n_dims_lat == 0) {
 				is_err = NhlFATAL;
+			}
+			else if (step->grid_number == 204) {
+				/* this is the curvilinear orthogonal grid -- in NCL-speak this requires 2D coordinates, but there is no specific projection 
+				   that allows coordinates to be calculated. A user either needs to get the coordinates from some external source or they must
+				   be present in the file as variables in their own right. So there is no error here. */
+				break;
 			}
 			else {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
