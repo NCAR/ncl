@@ -583,9 +583,9 @@ cat << 'EOF_NCL' >! $tmp_nclfile
 # Construct the command line.
 #
 if ($?vars) then
-    eval ncl $noCN -n filename=\\\"$file\\\" nvars=$nvars coords=$coords vars=$vars ftype=\\\"$ftype\\\" singleElemDims=$singleElemDims 'timePeriodSuffix=$tps' $tmp_nclfile
+    eval ncl $noCN -n 'filename=\"$file\"' nvars=$nvars coords=$coords vars=$vars 'ftype=\"$ftype\"' singleElemDims=$singleElemDims 'timePeriodSuffix=$tps' $tmp_nclfile
 else
-    eval ncl $noCN -n filename=\\\"$file\\\" nvars=$nvars coords=$coords ftype=\\\"$ftype\\\" singleElemDims=$singleElemDims 'timePeriodSuffix=$tps' $tmp_nclfile
+    eval ncl $noCN -n 'filename=\"$file\"' nvars=$nvars coords=$coords 'ftype=\"$ftype\"' singleElemDims=$singleElemDims 'timePeriodSuffix=$tps' $tmp_nclfile
 endif
 
 #
