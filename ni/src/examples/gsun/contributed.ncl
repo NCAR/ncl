@@ -3323,20 +3323,22 @@ begin
        exit 
  end if
 end
+
 ; ******************************************************************
 ; D. Shea
 ; error check: called internally by a number of functions
 ; sample:   rankCheck ("routine_name", x, 3)   ; rank check
 
 undef("rankCheck")
-procedure rankCheck (name:string, x, n:integer)
+procedure rankCheck (name[1]:string, x, n[1]:integer)
+local rank
 begin
   rank = dimsizes(dimsizes(x))
   if (rank.ne.n) then
-      print("contributed.ncl: "+name+":: rank +n+ required: rank="+rank)
+      print("contributed.ncl: rankCheck: "+name+": rank "+n+" required: rank="+rank)
       exit
   end if
-end  
+end
 
 ; ******************************************************************
 ; D. Shea
@@ -17009,7 +17011,7 @@ end     ; latent_heat_water
 ;----------------------------------------------------------
 undef("calculate_monthly_values")
 function calculate_monthly_values (x:numeric, arith:string, nDim[1]:integer, opt[1]:logical)
-
+;
 ; calculate monthly values [avg, sum, min, max]
 ; x: numeric array of 5D or less [eg: time,lev,lat,lon]
 ;    *must* have time coordinate recognized by cd_calendar
@@ -17040,7 +17042,7 @@ function calculate_monthly_values (x:numeric, arith:string, nDim[1]:integer, opt
 ;                  ************
 ;
 local dnamx, TNAME, TIME, dimx, rankx, NTIM, utc_date, year, month, ntim, work
-     ,yyyy, mm, nt, it, nmos, xStat, nval_crit
+     ,yyyy, mm, nt, it, nmos, xStat, nval_crit, yrStrt, yrLast
 begin
     if (.not.(arith.eq."ave" .or. arith.eq."avg" .or. arith.eq."sum"  \
                              .or. arith.eq."min" .or. arith.eq."max"  \     
@@ -17051,10 +17053,9 @@ begin
 
 ; a monthly mean will be calculated only if the # of values is >= nval_crit
 
-    if (opt .and. isatt(opt,"nval_crit") .and. typeof(opt@nval_crit).eq."integer") then
-        nval_crit = opt@nval_crit
-    else
-        nval_crit = 1
+    nval_crit = 1                                  ; default
+    if (opt .and. isatt(opt,"nval_crit")) then
+        nval_crit = toint(opt@nval_crit)
     end if
 
     dnamx    = getvardims(x)                       ; dimension names
@@ -17082,18 +17083,34 @@ begin
 ;    An example might be a field program.
 
     nt       =  -1                                 ; number of individual days
-    work     = new (ntim, typeof(x&$TNAME$), getFillValue(x&$TNAME$)) 
-    do yyyy=min(year),max(year)
+    work     = new (ntim, typeof(x&$TNAME$), getVarFillValue(x&$TNAME$)) 
+
+    yrStrt   = min(year)
+    yrLast   = max(year)
+
+    do yyyy=yrStrt,yrLast
       do mm=min(month),max(month)
-         it  := ind(yyyy.eq.year .and. mm.eq.month) 
-         nit  = dimsizes(it)
-         if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
-             nt = nt+1
-             work(nt) = (/ x&$TNAME$(it(0)) /)     ; use 1st time of current month  
-         end if
+         it := ind(yyyy.eq.year .and. mm.eq.month)
+         if (.not.all(ismissing(it))) then
+             nt   = nt+1
+             work(nt) = (/ x&$TNAME$(it(0)) /)     ; use 1st encountered time  
+             nit  = dimsizes(it)                   ; for print only
+           ;;print("yyyy="+yyyy+"  mm="+mm +"  nit="+nit+"  it(0)="+it(0)+" nt="+nt)
+         end if    ; .not.all(ismissing(it))
       end do       ; mm
     end do         ; yyyy
-    NTIM = nt+1
+
+    if (nt.lt.0) then
+        print("WARNING: calculate_monthly_values: no values for period: "+ \
+               yrStrt+"-"+yrLast)
+        xStat      = getVarFillValue(x)
+        xStat!0    = "time"
+        xStat&time = getVarFillValue(x)
+        xStat@long_name = "All Missing Values"
+        return(xStat)
+    end if
+    NTIM = nt+1           ; number of months
+  ;;print("NTIM="+NTIM)
 
     TIME   = work(0:nt)
     TIME!0 = "TIME"
@@ -17101,6 +17118,8 @@ begin
         TIME@long_name = x&$TNAME$@long_name 
     else
         TIME@long_name = "time corresponding to 1st time of current month"
+       TIME@long_name = "time corresponding to 1st encountered time of current month"
+ 
     end if
     if (isatt(x&$TNAME$,"units")) then
         TIME@units     = x&$TNAME$@units 
@@ -17116,13 +17135,13 @@ begin
     nmos = 12
 
     if (rankx.eq.1) then
-        xStat  = new ( (/NTIM/), typeof(x), getFillValue(x))
+        xStat  = new ( (/NTIM/), typeof(x), getVarFillValue(x))
 
-        do yyyy=min(year),max(year)
+        do yyyy=yrStrt,yrLast
           do mm=min(month),max(month)
              it  := ind(yyyy.eq.year .and. mm.eq.month) 
-             nit  = dimsizes(it)
-             if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
+             if (.not.all(ismissing(it))) then
+                 nit  = dimsizes(it)
                  nt = nt+1
                  if (arith.eq."avg" .or. arith.eq."ave") then
                      if (nit.gt.1) then ; work around for NCL's dimension reduction
@@ -17166,22 +17185,28 @@ begin
                          xStat(nt)  = 0.0       
                      end if
                  end if
-             end if    ; .not.ismissing(it(0))
-          end do       ; mm
-        end do         ; yyyy
+                         
+                 if (nval_crit.gt.1) then
+                     nit_valid = dim_num_n(.not.ismissing(x(it)),0)
+                     xStat(nt) = where(nit_valid.ge.nval_crit,  xStat(nt),  xStat@_FillValue)
+                 end if ; nval_crit
+
+             end if     ; .not.all(ismissing(it))
+          end do        ; mm
+        end do          ; yyyy
 
         copy_VarAtts(x, xStat)
-    end if             ; rankx.eq.1 
+    end if              ; rankx.eq.1 
 
     if (rankx.eq.2) then
-        xStat  = new ( (/NTIM,dimx(1)/), typeof(x), getFillValue(x))
+        xStat  = new ( (/NTIM,dimx(1)/), typeof(x), getVarFillValue(x))
 
-        do yyyy=min(year),max(year)
+        do yyyy=yrStrt,yrLast
           do mm=min(month),max(month)
              it  := ind(yyyy.eq.year .and. mm.eq.month) 
-             nit  = dimsizes(it)
-             if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
-                 nt = nt+1
+             if (.not.all(ismissing(it))) then
+                 nit = dimsizes(it)
+                 nt  = nt+1
                  if (arith.eq."avg" .or. arith.eq."ave") then
                      if (nit.gt.1) then ; work around for NCL's dimension reduction
                          xStat(nt,:)  = dim_avg_n( x(it,:), nDim)
@@ -17224,7 +17249,13 @@ begin
                          xStat(nt,:)  = 0.0       
                      end if
                  end if
-             end if    ; .not.ismissing(it(0))
+                         
+                 if (nval_crit.gt.1) then
+                     nit_valid   = dim_num_n(.not.ismissing(x(it,:)),0)
+                     xStat(nt,:) = where( nit_valid.ge.nval_crit,  xStat(nt,:),  xStat@_FillValue)
+                 end if  ; nval_crit
+
+             end if    ; .not.all(ismissing(it))
           end do       ; mm
         end do         ; yyyy
 
@@ -17232,14 +17263,14 @@ begin
     end if             ; rankx.eq.2 
 
     if (rankx.eq.3) then
-        xStat  = new ( (/NTIM,dimx(1),dimx(2)/), typeof(x), getFillValue(x))
+        xStat  = new ( (/NTIM,dimx(1),dimx(2)/), typeof(x), getVarFillValue(x))
 
-        do yyyy=min(year),max(year)
+        do yyyy=yrStrt,yrLast
           do mm=min(month),max(month)
              it  := ind(yyyy.eq.year .and. mm.eq.month) 
-             nit  = dimsizes(it)
-             if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
-                 nt = nt+1
+             if (.not.all(ismissing(it))) then
+                 nt  = nt+1
+                 nit = dimsizes(it)
                  if (arith.eq."avg" .or. arith.eq."ave") then
                      if (nit.gt.1) then ; work around for NCL's dimension reduction
                          xStat(nt,:,:)  = dim_avg_n( x(it,:,:), nDim)
@@ -17282,7 +17313,13 @@ begin
                          xStat(nt,:,:)  = 0.0       
                      end if
                  end if
-             end if    ; .not.ismissing(it(0))
+                         
+                 if (nval_crit.gt.1) then
+                     nit_valid     = dim_num_n(.not.ismissing(x(it,:,:)),0)
+                     xStat(nt,:,:) = where( nit_valid.ge.nval_crit,  xStat(nt,:,:),  xStat@_FillValue)
+                 end if  ; nval_crit
+
+             end if    ; .not.all(ismissing(it))
           end do       ; mm
         end do         ; yyyy
 
@@ -17290,14 +17327,14 @@ begin
     end if             ; rankx.eq.3 
 
     if (rankx.eq.4) then
-        xStat  = new ( (/NTIM,dimx(1),dimx(2),dimx(3)/), typeof(x), getFillValue(x))
+        xStat  = new ( (/NTIM,dimx(1),dimx(2),dimx(3)/), typeof(x), getVarFillValue(x))
 
-        do yyyy=min(year),max(year)
+        do yyyy=yrStrt,yrLast
           do mm=min(month),max(month)
              it  := ind(yyyy.eq.year .and. mm.eq.month) 
-             nit  = dimsizes(it)
-             if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
-                 nt = nt+1
+             if (.not.all(ismissing(it))) then
+                 nit = dimsizes(it)
+                 nt  = nt+1
                  if (arith.eq."avg" .or. arith.eq."ave") then
                      if (nit.gt.1) then ; work around for NCL's dimension reduction
                          xStat(nt,:,:,:)  = dim_avg_n( x(it,:,:,:), nDim)
@@ -17340,7 +17377,13 @@ begin
                          xStat(nt,:,:,:)  = 0.0       
                      end if
                  end if
-             end if    ; .not.ismissing(it(0))
+                         
+                 if (nval_crit.gt.1) then
+                     nit_valid       = dim_num_n(.not.ismissing(x(it,:,:,:)),0)
+                     xStat(nt,:,:,:) = where( nit_valid.ge.nval_crit,  xStat(nt,:,:,:),  xStat@_FillValue)
+                 end if  ; nval_crit
+
+             end if    ; .not.all(ismissing(it))
           end do       ; mm
         end do         ; yyyy
 
@@ -17348,13 +17391,13 @@ begin
     end if             ; rankx.eq.4 
 
     if (rankx.eq.5) then
-        xStat  = new ( (/dimx(0),NTIM,dimx(2),dimx(3),dimx(4)/), typeof(x), getFillValue(x))
+        xStat  = new ( (/dimx(0),NTIM,dimx(2),dimx(3),dimx(4)/), typeof(x), getVarFillValue(x))
 
-        do yyyy=min(year),max(year)
+        do yyyy=yrStrt,yrLast
           do mm=min(month),max(month)
              it  := ind(yyyy.eq.year .and. mm.eq.month) 
-             nit  = dimsizes(it)
-             if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
+             if (.not.all(ismissing(it))) then
+                 nit  = dimsizes(it)
                  nt = nt+1
                  if (arith.eq."avg" .or. arith.eq."ave") then
                      if (nit.gt.1) then ; work around for NCL's dimension reduction
@@ -17398,7 +17441,13 @@ begin
                          xStat(:,nt,:,:,:)  = 0.0
                      end if
                  end if
-             end if    ; .not.ismissing(it(0))
+                         
+                 if (nval_crit.gt.1) then
+                     nit_valid         = dim_num_n(.not.ismissing(x(it,:,:,:,:)),0)
+                     xStat(nt,:,:,:,:) = where( nit_valid.ge.nval_crit,  xStat(nt,:,:,:,:),  xStat@_FillValue)
+                 end if  ; nval_crit
+
+             end if    ; .not.all(ismissing(it))
           end do       ; mm
         end do         ; yyyy
     end if             ; rankx.eq.5 
@@ -17423,7 +17472,7 @@ function calculate_daily_values (x:numeric, arith:string, nDim[1]:integer, opt[1
 ;      cdo daysum  foo_hourly.nc  foo_daily_sum.nc
 ;                  ************
 local dnamx, TIME, TNAME, dimx, rankx, NTIM, utc_date, year, month, day \
-     ,ntim, work, yyyy, mm, dd, dymon, it, nt, nmos, xSta, nval_crit
+     ,ntim, work, yyyy, mm, dd, dymon, it, nt, nmos, xSta, nval_crit, yrStrt, yrLast
 begin
     if (.not.(arith.eq."ave" .or. arith.eq."avg" .or. arith.eq."sum"  \
                              .or. arith.eq."min" .or. arith.eq."max") ) then
@@ -17459,13 +17508,16 @@ begin
    ;minute   = floattointeger(utc_date(:,4))
    ;second   = utc_date(:,5)
 
+    yrStrt   = min(year)
+    yrLast   = max(year)
+
 ;--- Create daily coordinate variable. Size must be determined because
 ;    each day *may* have different number of time steps. 
 ;    An example might be a field program.
 
     nt       =  -1                                 ; number of individual days
-    work     = new (ntim, typeof(x&$TNAME$), getFillValue(x&$TNAME$)) 
-    do yyyy=min(year),max(year)
+    work     = new (ntim, typeof(x&$TNAME$), getVarFillValue(x&$TNAME$)) 
+    do yyyy=yrStrt,yrLast
       do mm=min(month),max(month)
          dymon  = days_in_month ( yyyy, mm) 
         do dd=1,dymon          
@@ -17501,7 +17553,7 @@ begin
     nmos = 12
 
     if (rankx.eq.1) then
-        xStat  = new ( (/NTIM/), typeof(x), getFillValue(x))
+        xStat  = new ( (/NTIM/), typeof(x), getVarFillValue(x))
 
         do yyyy=min(year),max(year)
           do mm=min(month),max(month)
@@ -17539,6 +17591,12 @@ begin
                            xStat(nt)  = x(it(0))
                        end if
                    end if
+                         
+                   if (nval_crit.gt.1) then
+                       nit_valid  = dim_num_n(.not.ismissing(x(it)),0)
+                       xStat(nt)  = where( nit_valid.ge.nval_crit,  xStat(nt),  xStat@_FillValue)
+                   end if  ; nval_crit
+
                end if  ; .not.ismissing(it(0))
             end do     ; dd
           end do       ; mm
@@ -17548,7 +17606,7 @@ begin
     end if             ; rankx.eq.1 
 
     if (rankx.eq.2) then
-        xStat  = new ( (/NTIM,dimx(1)/), typeof(x), getFillValue(x))
+        xStat  = new ( (/NTIM,dimx(1)/), typeof(x), getVarFillValue(x))
 
         do yyyy=min(year),max(year)
           do mm=min(month),max(month)
@@ -17586,6 +17644,12 @@ begin
                            xStat(nt,:)  = x(it(0),:)
                        end if
                    end if
+                        
+                   if (nval_crit.gt.1) then
+                       nit_valid   = dim_num_n(.not.ismissing(x(it,:)),0)
+                       xStat(nt,:) = where( nit_valid.ge.nval_crit,  xStat(nt,:),  xStat@_FillValue)
+                   end if  ; nval_crit
+
                end if  ; .not.ismissing(it(0))
             end do     ; dd
           end do       ; mm
@@ -17595,7 +17659,7 @@ begin
     end if             ; rankx.eq.2 
 
     if (rankx.eq.3) then
-        xStat  = new ( (/NTIM,dimx(1),dimx(2)/), typeof(x), getFillValue(x))
+        xStat  = new ( (/NTIM,dimx(1),dimx(2)/), typeof(x), getVarFillValue(x))
 
         do yyyy=min(year),max(year)
           do mm=min(month),max(month)
@@ -17633,6 +17697,12 @@ begin
                            xStat(nt,:,:)  = x(it(0),:,:)
                        end if
                    end if
+                         
+                   if (nval_crit.gt.1) then
+                       nit_valid     = dim_num_n(.not.ismissing(x(it,:,:)),0)
+                       xStat(nt,:,:) = where( nit_valid.ge.nval_crit,  xStat(nt,:,:),  xStat@_FillValue)
+                   end if  ; nval_crit
+
                end if  ; .not.ismissing(it(0))
             end do     ; dd
           end do       ; mm
@@ -17642,7 +17712,7 @@ begin
     end if             ; rankx.eq.3 
 
     if (rankx.eq.4) then
-        xStat  = new ( (/NTIM,dimx(1),dimx(2),dimx(3)/), typeof(x), getFillValue(x))
+        xStat  = new ( (/NTIM,dimx(1),dimx(2),dimx(3)/), typeof(x), getVarFillValue(x))
 
         do yyyy=min(year),max(year)
           do mm=min(month),max(month)
@@ -17680,6 +17750,13 @@ begin
                            xStat(nt,:,:,:)  = x(it(0),:,:,:)
                        end if
                    end if
+                        
+                   if (nval_crit.gt.1) then
+                       nit_valid       = dim_num_n(.not.ismissing(x(it,:,:,:)),0)
+                       xStat(nt,:,:,:) = where( nit_valid.ge.nval_crit,  xStat(nt,:,:,:),  xStat@_FillValue)
+                   end if  ; nval_crit
+
+
                end if  ; .not.ismissing(it(0))
             end do     ; dd
           end do       ; mm
@@ -17689,7 +17766,7 @@ begin
     end if             ; rankx.eq.4 
 
     if (rankx.eq.5) then
-        xStat  = new ( (/dimx(0),NTIM,dimx(2),dimx(3),dimx(4)/), typeof(x), getFillValue(x))
+        xStat  = new ( (/dimx(0),NTIM,dimx(2),dimx(3),dimx(4)/), typeof(x), getVarFillValue(x))
         do yyyy=min(year),max(year)
           do mm=min(month),max(month)
              dymon = days_in_month ( yyyy, mm) 
@@ -17726,6 +17803,12 @@ begin
                            xStat(:,nt,:,:,:)  = x(:,it(0),:,:,:)
                        end if
                    end if
+                         
+                   if (nval_crit.gt.1) then
+                       nit_valid         = dim_num_n(.not.ismissing(x(it,:,:,:,:)),0)
+                       xStat(nt,:,:,:,:) = where( nit_valid.ge.nval_crit,  xStat(nt,:,:,:,:),  xStat@_FillValue)
+                   end if  ; nval_crit
+
                end if  ; .not.ismissing(it(0))
             end do     ; dd
           end do       ; mm
@@ -17759,18 +17842,17 @@ begin
 
 ; define segment length in terms of 'day length' ... default is 7
 
-    lseg = 7                                        ; week [7 days]
-    if (opt .and. isatt(opt,"segment_length") .and. typeof(opt@segment_length).eq."integer") then
-        lseg = opt@segment_length
+    lseg = 7                                       ; default [7 days]
+    if (opt .and. isatt(opt,"segment_length")) then
+        lseg = toint(opt@segment_length)
     end if
     lseg1 = lseg-1
 
 ; a segment mean will be calculated only if the # of values is >= nval_crit
 
-    if (opt .and. isatt(opt,"nval_crit") .and. typeof(opt@nval_crit).eq."integer") then
-        nval_crit = opt@nval_crit
-    else
-        nval_crit = 1
+    nval_crit = 1                                  ; default [1 day]
+    if (opt .and. isatt(opt,"nval_crit")) then
+        nval_crit = toint(opt@nval_crit)
     end if
 
     dnamx    = getvardims(x)                       ; dimension names
@@ -17820,45 +17902,52 @@ begin
    ;print("rankx="+rankx+"  ndyStrt="+ndyStrt+"  ndyLast="+ndyLast)
 
     if (rankx.eq.1) then
-        xStat  = new ( (/nseg/), typeof(x), getFillValue(x))
+        xStat  = new ( (/nseg/), typeof(x), getVarFillValue(x))
 
         do ns=0,nseg-1
            it := ind(timeDay.ge.ndyStrt .and. timeDay.le.ndyLast)
-           nit = dimsizes(it)
-           nt  = nt+1
+           if (.not.all(ismissing(it))) then
+               nit = dimsizes(it)
+               nt  = nt+1
 
-           if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
-               timeSeg(nt) = timeDay(it(0))
+               if (.not.ismissing(it(0))) then
+                   timeSeg(nt) = timeDay(it(0))
+    
+                   if (arith.eq."avg" .or. arith.eq."ave") then
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt)  = dim_avg_n( x(it), nDim)
+                       else               ; one 'it'
+                           xStat(nt)  = x(it(0))
+                       end if
+                   end if
+                   if (arith.eq."sum") then
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt)  = dim_sum_n( x(it), nDim)
+                       else               ; one 'it'
+                           xStat(nt)  = x(it(0))
+                       end if
+                   end if
+                   if (arith.eq."min") then
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt)  = dim_min_n( x(it), nDim)
+                       else               ; one 'it'
+                           xStat(nt)  = x(it(0))
+                       end if
+                   end if
+                   if (arith.eq."max") then
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt)  = dim_max_n( x(it), nDim)
+                       else               ; one 'it'
+                           xStat(nt)  = x(it(0))
+                       end if
+                   end if
 
-               if (arith.eq."avg" .or. arith.eq."ave") then
-                   if (nit.gt.1) then ; work around for NCL's dimension reduction
-                       xStat(nt)  = dim_avg_n( x(it), nDim)
-                   else               ; one 'it'
-                       xStat(nt)  = x(it(0))
-                   end if
-               end if
-               if (arith.eq."sum") then
-                   if (nit.gt.1) then ; work around for NCL's dimension reduction
-                       xStat(nt)  = dim_sum_n( x(it), nDim)
-                   else               ; one 'it'
-                       xStat(nt)  = x(it(0))
-                   end if
-               end if
-               if (arith.eq."min") then
-                   if (nit.gt.1) then ; work around for NCL's dimension reduction
-                       xStat(nt)  = dim_min_n( x(it), nDim)
-                   else               ; one 'it'
-                       xStat(nt)  = x(it(0))
-                   end if
-               end if
-               if (arith.eq."max") then
-                   if (nit.gt.1) then ; work around for NCL's dimension reduction
-                       xStat(nt)  = dim_max_n( x(it), nDim)
-                   else               ; one 'it'
-                       xStat(nt)  = x(it(0))
-                   end if
-               end if
-           end if      ; .not.ismissing(it(0))
+                   if (nval_crit.gt.1) then
+                       nit_valid = dim_num_n(.not.ismissing(x(it)),0)   
+                       xStat(nt) = where(nit_valid.ge.nval_crit,  xStat(nt),  xStat@_FillValue)
+                   end if             ;  nval_crit
+               end if                 ; .not.ismissing(it(0))
+           end if                     ; .not.all(ismissing(it))
 
            ndyStrt = ndyLast+1          ; update segment bounds
            ndyLast = ndyStrt+lseg1
@@ -17868,142 +17957,163 @@ begin
     end if             ; rankx.eq.1 
 
     if (rankx.eq.2) then
-        xStat  = new ( (/nseg,dimx(1)/), typeof(x), getFillValue(x))
+        xStat  = new ( (/nseg,dimx(1)/), typeof(x), getVarFillValue(x))
 
         do ns=0,nseg-1
            it  := ind(timeDay.ge.ndyStrt .and. timeDay.le.ndyLast)
-           nit  = dimsizes(it)
-           nt   = nt+1
+           if (.not.all(ismissing(it))) then
+               nit  = dimsizes(it)
+               nt   = nt+1
 
-           if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
-               timeSeg(nt) = timeDay(it(0))
+               if (.not.ismissing(it(0))) then
+                   timeSeg(nt) = timeDay(it(0))
+    
+                   if (arith.eq."avg" .or. arith.eq."ave") then
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:)  = dim_avg_n( x(it,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:)  = x(it(0),:)
+                       end if
+                   end if
+                   if (arith.eq."sum") then
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:)  = dim_sum_n( x(it,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:)  = x(it(0),:)
+                       end if
+                   end if
+                   if (arith.eq."min") then
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:)  = dim_min_n( x(it,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:)  = x(it(0),:)
+                       end if
+                   end if
+                   if (arith.eq."max") then
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:)  = dim_max_n( x(it,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:)  = x(it(0),:)
+                       end if
+                   end if
+    
+                            
+                   if (nval_crit.gt.1) then
+                       nit_valid   = dim_num_n(.not.ismissing(x(it,:)),0)
+                       xStat(nt,:) = where( nit_valid.ge.nval_crit,  xStat(nt,:),  xStat@_FillValue)
+                   end if                 ; nval_crit
+               end if                     ; .not.ismissing(it(0))
+           end if                         ; .not.all(ismissing(it))
 
-               if (arith.eq."avg" .or. arith.eq."ave") then
-                   if (nit.gt.1) then ; work around for NCL's dimension reduction
-                       xStat(nt,:)  = dim_avg_n( x(it,:), nDim)
-                   else               ; one 'it'
-                       xStat(nt,:)  = x(it(0),:)
-                   end if
-               end if
-               if (arith.eq."sum") then
-                   if (nit.gt.1) then ; work around for NCL's dimension reduction
-                       xStat(nt,:)  = dim_sum_n( x(it,:), nDim)
-                   else               ; one 'it'
-                       xStat(nt,:)  = x(it(0),:)
-                   end if
-               end if
-               if (arith.eq."min") then
-                   if (nit.gt.1) then ; work around for NCL's dimension reduction
-                       xStat(nt,:)  = dim_min_n( x(it,:), nDim)
-                   else               ; one 'it'
-                       xStat(nt,:)  = x(it(0),:)
-                   end if
-               end if
-               if (arith.eq."max") then
-                   if (nit.gt.1) then ; work around for NCL's dimension reduction
-                       xStat(nt,:)  = dim_max_n( x(it,:), nDim)
-                   else               ; one 'it'
-                       xStat(nt,:)  = x(it(0),:)
-                   end if
-               end if
-           end if                     ; .not.ismissing(it(0))
-
-           ndyStrt = ndyLast+1          ; update segment bounds
+           ndyStrt = ndyLast+1            ; update segment bounds
            ndyLast = ndyStrt+lseg1
-        end do         ; ns (segment loop)         
+        end do                            ; ns (segment loop)         
 
         copy_VarMeta(x(0,:), xStat(0,:))
     end if             ; rankx.eq.2 
 
     if (rankx.eq.3) then
-        xStat  = new ( (/nseg,dimx(1),dimx(2)/), typeof(x), getFillValue(x))
+        xStat  = new ( (/nseg,dimx(1),dimx(2)/), typeof(x), getVarFillValue(x))
 
         do ns=0,nseg-1
            it  := ind(timeDay.ge.ndyStrt .and. timeDay.le.ndyLast)
-           nit  = dimsizes(it)
-           nt   = nt+1
+           if (.not.all(ismissing(it))) then
+                nit  = dimsizes(it)
+                nt   = nt+1
 
-           if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
-               timeSeg(nt) = timeDay(it(0))
-
-               if (arith.eq."avg" .or. arith.eq."ave") then
-                   if (nit.gt.1) then ; work around for NCL's dimension reduction
-                       xStat(nt,:,:)  = dim_avg_n( x(it,:,:), nDim)
-                   else               ; one 'it'
-                       xStat(nt,:,:)  = x(it(0),:,:)
+               if (.not.ismissing(it(0))) then
+                   timeSeg(nt) = timeDay(it(0))
+ 
+                   if (arith.eq."avg" .or. arith.eq."ave") then
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:,:)  = dim_avg_n( x(it,:,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:,:)  = x(it(0),:,:)
+                       end if
                    end if
-               end if
-               if (arith.eq."sum") then
-                   if (nit.gt.1) then ; work around for NCL's dimension reduction
-                       xStat(nt,:,:)  = dim_sum_n( x(it,:,:), nDim)
-                   else               ; one 'it'
-                       xStat(nt,:,:)  = x(it(0),:,:)
+                   if (arith.eq."sum") then
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:,:)  = dim_sum_n( x(it,:,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:,:)  = x(it(0),:,:)
+                       end if
                    end if
-               end if
-               if (arith.eq."min") then
-                   if (nit.gt.1) then ; work around for NCL's dimension reduction
-                       xStat(nt,:,:)  = dim_min_n( x(it,:,:), nDim)
-                   else               ; one 'it'
-                       xStat(nt,:,:)  = x(it(0),:,:)
+                   if (arith.eq."min") then
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:,:)  = dim_min_n( x(it,:,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:,:)  = x(it(0),:,:)
+                       end if
                    end if
-               end if
-               if (arith.eq."max") then
-                   if (nit.gt.1) then ; work around for NCL's dimension reduction
-                       xStat(nt,:,:)  = dim_max_n( x(it,:,:), nDim)
-                   else               ; one 'it'
-                       xStat(nt,:,:)  = x(it(0),:,:)
+                   if (arith.eq."max") then
+                       if (nit.gt.1) then ; work around for NCL's dimension reduction
+                           xStat(nt,:,:)  = dim_max_n( x(it,:,:), nDim)
+                       else               ; one 'it'
+                           xStat(nt,:,:)  = x(it(0),:,:)
+                       end if
                    end if
-               end if
-           end if                     ; .not.ismissing(it(0))
+                             
+                   if (nval_crit.gt.1) then
+                       nit_valid     = dim_num_n(.not.ismissing(x(it,:,:)),0)
+                       xStat(nt,:,:) = where( nit_valid.ge.nval_crit,  xStat(nt,:,:),  xStat@_FillValue)
+                   end if               ; nval_crit
+               end if                   ; .not.ismissing(it(0)))
+           end if                       ; .not.all(ismissing(it))
 
            ndyStrt = ndyLast+1          ; update segment bounds
            ndyLast = ndyStrt+lseg1
         end do         ; ns (segment loop)         
 
-
         copy_VarMeta(x(0,:,:), xStat(0,:,:))
     end if             ; rankx.eq.3 
 
     if (rankx.eq.4) then
-        xStat  = new ( (/nseg,dimx(1),dimx(2),dimx(3)/), typeof(x), getFillValue(x))
+        xStat  = new ( (/nseg,dimx(1),dimx(2),dimx(3)/), typeof(x), getVarFillValue(x))
 
         do ns=0,nseg-1
            it  := ind(timeDay.ge.ndyStrt .and. timeDay.le.ndyLast)
-           nit  = dimsizes(it)
-           nt   = nt+1
+           if (.not.all(ismissing(it))) then
+                nit  = dimsizes(it)
+                nt   = nt+1
 
-           if (.not.ismissing(it(0)) .and. nit.ge.nval_crit) then
-               timeSeg(nt) = timeDay(it(0))
-
-               if (arith.eq."avg" .or. arith.eq."ave") then
-                   if (nit.gt.1) then ; work around for NCL's dimension reduction
-                       xStat(nt,:,:,:)  = dim_avg_n( x(it,:,:,:), nDim)
-                   else               ; one 'it'
-                       xStat(nt,:,:,:)  = x(it(0),:,:,:)
-                   end if
-               end if
-               if (arith.eq."sum") then
-                   if (nit.gt.1) then ; work around for NCL's dimension reduction
-                       xStat(nt,:,:,:)  = dim_sum_n( x(it,:,:,:), nDim)
-                   else               ; one 'it'
-                       xStat(nt,:,:,:)  = x(it(0),:,:,:)
-                   end if
-               end if
-               if (arith.eq."min") then
-                   if (nit.gt.1) then ; work around for NCL's dimension reduction
-                       xStat(nt,:,:,:)  = dim_min_n( x(it,:,:,:), nDim)
-                   else               ; one 'it'
-                       xStat(nt,:,:,:)  = x(it(0),:,:,:)
-                   end if
-               end if
-               if (arith.eq."max") then
-                   if (nit.gt.1) then ; work around for NCL's dimension reduction
-                       xStat(nt,:,:,:)  = dim_max_n( x(it,:,:,:), nDim)
-                   else               ; one 'it'
-                       xStat(nt,:,:,:)  = x(it(0),:,:,:)
-                   end if
-               end if
-           end if                     ; .not.ismissing(it(0))
+                if (.not.ismissing(it(0))) then
+                    timeSeg(nt) = timeDay(it(0))
+     
+                    if (arith.eq."avg" .or. arith.eq."ave") then
+                        if (nit.gt.1) then ; work around for NCL's dimension reduction
+                            xStat(nt,:,:,:)  = dim_avg_n( x(it,:,:,:), nDim)
+                        else               ; one 'it'
+                            xStat(nt,:,:,:)  = x(it(0),:,:,:)
+                        end if
+                    end if
+                    if (arith.eq."sum") then
+                        if (nit.gt.1) then ; work around for NCL's dimension reduction
+                            xStat(nt,:,:,:)  = dim_sum_n( x(it,:,:,:), nDim)
+                        else               ; one 'it'
+                            xStat(nt,:,:,:)  = x(it(0),:,:,:)
+                        end if
+                    end if
+                    if (arith.eq."min") then
+                        if (nit.gt.1) then ; work around for NCL's dimension reduction
+                            xStat(nt,:,:,:)  = dim_min_n( x(it,:,:,:), nDim)
+                        else               ; one 'it'
+                            xStat(nt,:,:,:)  = x(it(0),:,:,:)
+                        end if
+                    end if
+                    if (arith.eq."max") then
+                        if (nit.gt.1) then ; work around for NCL's dimension reduction
+                            xStat(nt,:,:,:)  = dim_max_n( x(it,:,:,:), nDim)
+                        else               ; one 'it'
+                            xStat(nt,:,:,:)  = x(it(0),:,:,:)
+                        end if
+                    end if
+     
+                    if (nval_crit.gt.1) then
+                        nit_valid       = dim_num_n(.not.ismissing(x(it,:,:,:)),0)
+                        xStat(nt,:,:,:) = where( nit_valid.ge.nval_crit,  xStat(nt,:,:,:),  xStat@_FillValue)
+                    end if              ; nval_crit
+                end if                  ; .not.ismissing(it(0))
+           end if                       ; .not.all(ismissing(it))
 
            ndyStrt = ndyLast+1          ; update segment bounds
            ndyLast = ndyStrt+lseg1
