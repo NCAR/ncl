@@ -35,19 +35,21 @@ GSN_OLD_LABELBAR = True
 ;                  x2: numeric                                          ;
 ;                  y1: numeric                                          ;
 ;                  y2: numeric                                          ;
+;            reftype[1]:string                                          ;
 ;                                                                       ;
 ; Given two points, (x1,y1) and (x2,y1) and a reference value (ref),    ;
-; this function interpolates where on the X axis the line from the 1st  ;
-; point to the 2nd point crosses the line y=ref.                        ;
-; plot to the workstation "wks" (the variable returned from a previous  ;
-; call to "gsn_open_wks").  "resources" is an optional list of          ;
-; resources. The Id of the map plot is returned.                        ;
+; this function interpolates where on the X or Y axis the line from the ;
+; 1st point to the 2nd point crosses the line y=ref or x=ref.           ;
 ;***********************************************************************;
 undef("xy_ref_interp")
 function xy_ref_interp(x1:numeric,x2:numeric,y1:numeric,y2:numeric, \
-                       ref:numeric)
+                       ref:numeric,reftype[1]:string)
 begin
- return(x2-((y2-ref)*(x2-x1))/(y2-y1))
+ if(reftype.eq."y") then
+   return(x2-((y2-ref)*(x2-x1))/(y2-y1))
+ else
+   return(y2-((x2-ref)*(y2-y1))/(x2-x1))
+ end if
 end
 
 ;***********************************************************************;
@@ -55,10 +57,11 @@ end
 ;                  x: numeric                                           ;
 ;                  y: numeric                                           ;
 ;           ref_line: numeric                                           ;
+;           reftype[1]: string                                          ;
 ;                                                                       ;
 ; Given a two arrays X and Y and a set of reference point values,       ;
 ; return new X and Y arrays that contain extra interpolated points where;
-; values where Y crosses the reference point values.                    ;
+; values where Y (or X) crosses the reference point values.             ;
 ;                                                                       ;
 ; This function was updated in NCL V6.4.0 to allow different            ;
 ; dimensionalities for x, y, and ref_line. The different cases that     ;
@@ -74,10 +77,12 @@ end
 ;  - X and Y are 1D arrays of length npts, and ref_line is a scalar or  ;
 ;    a 1D array of values                                               ;
 ;                                                                       ;
-; The dimension size of each interpolated set of points is returned.    ;
+; The dimension size of each interpolated set of points is also         ;
+; returned.                                                             ;
 ;***********************************************************************;
 undef("ref_line_interp")
-function ref_line_interp(x:numeric,y:numeric,ref_lines[*]:numeric)
+function ref_line_interp(x:numeric,y:numeric,ref_lines[*]:numeric,\
+                         reftype[1]:string)
 local dimsx, dimsy, rankx, ranky, nlines, ncurvesxy, ncurves, \
 nref_lines, nlines, i, j, location, xnew, ynew, npts,x1d,y1d
 begin
@@ -189,18 +194,29 @@ begin
     do i=1, npts-1
       xinterp(j,i+num_crosses) = x2d(j,i)
       yinterp(j,i+num_crosses) = y2d(j,i)
-
       if(.not.ismissing(y2d(j,i)).and..not.ismissing(x2d(j,i)).and.\
          .not.ismissing(y2d(j,i-1)).and..not.ismissing(x2d(j,i-1)))
-        if((y2d(j,i-1).lt.ref1d(j).and.y2d(j,i).gt.ref1d(j)).or.\
-           (y2d(j,i-1).gt.ref1d(j).and.y2d(j,i).lt.ref1d(j)))
-          xinterp(j,i+num_crosses)   = xy_ref_interp(x2d(j,i-1),x2d(j,i),\
-                                                     y2d(j,i-1),y2d(j,i),\
-                                                     ref1d(j))
+        if((reftype.eq."y").and.\
+           ((y2d(j,i-1).lt.ref1d(j).and.y2d(j,i).gt.ref1d(j)).or.\
+            (y2d(j,i-1).gt.ref1d(j).and.y2d(j,i).lt.ref1d(j)))) then
+          xinterp(j,i+num_crosses) = xy_ref_interp(x2d(j,i-1),x2d(j,i),\
+                                                   y2d(j,i-1),y2d(j,i),\
+                                                   ref1d(j),reftype)
           xinterp(j,i+num_crosses+1) = x2d(j,i)
           yinterp(j,i+num_crosses)   = ref1d(j)
           yinterp(j,i+num_crosses+1) = y2d(j,i)
           num_crosses = num_crosses + 1
+        else if((reftype.eq."x").and.\
+                ((x2d(j,i-1).lt.ref1d(j).and.x2d(j,i).gt.ref1d(j)).or.\
+                 (x2d(j,i-1).gt.ref1d(j).and.x2d(j,i).lt.ref1d(j)))) then
+          yinterp(j,i+num_crosses) = xy_ref_interp(x2d(j,i-1),x2d(j,i),\
+                                                   y2d(j,i-1),y2d(j,i),\
+                                                   ref1d(j),reftype)
+          yinterp(j,i+num_crosses+1) = y2d(j,i)
+          xinterp(j,i+num_crosses)   = ref1d(j)
+          xinterp(j,i+num_crosses+1) = x2d(j,i)
+          num_crosses = num_crosses + 1
+        end if
         end if
       end if
     end do
@@ -873,15 +889,9 @@ begin
       delete(res@gsnRightString)
     end if
   end if
-  if(isatt(res,"gsnStringFontHeightF")) then
-    delete(res@gsnStringFontHeightF)
-  end if
-  if(isatt(res,"gsnStringFuncCode")) then
-    delete(res@gsnStringFuncCode)
-  end if
-  if(isatt(res,"gsnStringFontColor")) then
-    delete(res@gsnStringFontColor)
-  end if
+  delete_attr(res,"gsnStringFontHeightF")
+  delete_attr(res,"gsnStringFuncCode")
+  delete_attr(res,"gsnStringFontColor")
   return
 end
 
@@ -2009,12 +2019,8 @@ begin
 ; Remove the text font height and txString, so they don't get
 ; applied at the end.
 ;
-  if(isatt(txres,"txFontHeightF")) then
-    delete(txres@txFontHeightF)
-  end if
-  if(isatt(txres,"txString")) then
-    delete(txres@txString)
-  end if
+  delete_attr(txres,"txFontHeightF")
+  delete_attr(txres,"txString")
 
   ablank = stringtocharacter(" ")
   do i=0,2
@@ -2566,45 +2572,48 @@ end
 ; Function : fill_xy_ref                                                ;
 ;                    wks: graphic                                       ;
 ;                     xy: graphic                                       ;
+;             reftype[1]: string
 ;                 xin[*]: numeric                                       ;
 ;                 yin[*]: numeric                                       ;
 ;                    ref: numeric                                       ;
-;   ref_line_above_color: integer or string or RGB value                ;
-;   ref_line_below_color: integer or string or RGB value                ;
+;   ref_line_greater_color: integer or string or RGB value              ;
+;   ref_line_less_color:    integer or string or RGB value              ;
 ;                                                                       ;
-; Take a set of X and Y points, and fill the Y points in one color if   ;
-; they are above the ref line, and in another color if they are below   ;
-; the ref line.                                                         ;
+; Given a set of X and Y points, fill the Y (or X) points in one color  ;
+; if they are greater than the Y (X) ref line, and in another color if  ;
+; they are less than the Y (X) ref line.                                ;
 ;***********************************************************************;
 undef("fill_xy_ref")
-function fill_xy_ref(wks:graphic,xy:graphic,xin[*]:numeric,yin[*]:numeric,\
-                     ref:numeric,ref_line_above_color,ref_line_below_color)
-local npts, yabove_gon, ybelow_gon, i, gsresa, gsresb, gsresr, \
-fill_above, fill_below
+function fill_xy_ref(wks:graphic,xy:graphic,reftype[1]:string,\   
+                     xin[*]:numeric,yin[*]:numeric,ref:numeric,\  
+                     ref_line_greater_color,ref_line_less_color)
+local npts, greater_gon, less_gon, i, gsresg, gsresl, gsresr, \
+fill_greater, fill_less, npts, gnumgons, lnumgons
 begin
-
   npts = dimsizes(yin)
 
-  anumgons = 0  ; Count the number of polygons
-  bnumgons = 0
-  if(.not.is_color_transparent(ref_line_above_color)) then
-    gsresa             = True
-    gsresa@gsFillColor = ref_line_above_color
+  fill_greater = .not.any(ismissing(ref_line_greater_color)).and.\
+                 .not.is_color_transparent(ref_line_greater_color)  
+  fill_less    = .not.any(ismissing(ref_line_less_color)).and.\
+                 .not.is_color_transparent(ref_line_less_color)
+
+  gnumgons = 0  ; Count the number of polygons
+  lnumgons = 0
+  if(fill_greater) then
+    gsresg             = True
+    gsresg@gsFillColor = ref_line_greater_color
 ;
-; First count the number of the above-the-y-reference-line polygons we
+; First count the number of the greater-than-reference-line polygons we
 ; need to create.
 ;
     igon       = 0
     create_gon = False
     do i=0,npts-1
       if(.not.ismissing(yin(i)).and..not.ismissing(xin(i)))
-        if(yin(i).ge.ref)
-          if(igon.eq.0)
-            igon = 1
-          else
-            igon = igon + 1
-          end if
-          if(i.eq.npts-1)      ; On the last point.
+        if((reftype.eq."y".and.yin(i).ge.ref).or.\
+           (reftype.eq."x".and.xin(i).ge.ref)) then
+          igon = igon + 1
+          if(i.eq.(npts-1))      ; On the last point.
             create_gon = True
           end if
         else
@@ -2615,7 +2624,7 @@ begin
       end if   ; not ismissing
       if(create_gon)
         if(igon.gt.1)
-          anumgons = anumgons + 1 
+          gnumgons = gnumgons + 1 
         end if
         igon       = 0
         create_gon = False
@@ -2623,24 +2632,21 @@ begin
     end do
   end if
 
-  if(.not.is_color_transparent(ref_line_below_color)) then
-    gsresb             = True
-    gsresb@gsFillColor = ref_line_below_color
+  if(fill_less) then
+    gsresl             = True
+    gsresl@gsFillColor = ref_line_less_color
 ;
-; First count the number of the above-the-y-reference-line polygons we
+; Count the number of the less-than-reference-line polygons we
 ; need to create.
 ;
     igon       = 0
     create_gon = False
     do i=0,npts-1
       if(.not.ismissing(yin(i)).and..not.ismissing(xin(i)))
-        if(yin(i).le.ref)
-          if(igon.eq.0)
-            igon = 1
-          else
-            igon = igon + 1
-          end if
-          if(i.eq.npts-1)      ; On the last point.
+        if((reftype.eq."y".and.yin(i).le.ref).or.\
+           (reftype.eq."x".and.xin(i).le.ref)) then
+          igon = igon + 1
+          if(i.eq.(npts-1))      ; On the last point.
             create_gon = True
           end if
         else
@@ -2651,40 +2657,41 @@ begin
       end if   ; not ismissing
       if(create_gon)
         if(igon.gt.1)
-          bnumgons = bnumgons + 1 
+          lnumgons = lnumgons + 1 
         end if
         igon       = 0
         create_gon = False
       end if
     end do
   end if
-  if(anumgons.gt.0.or.bnumgons.gt.0) then
-    polygons = new(anumgons+bnumgons,graphic) 
+  if(gnumgons.gt.0.or.lnumgons.gt.0) then
+    polygons = new(gnumgons+lnumgons,graphic) 
   else
     polygons = new(1,graphic) 
   end if
 ;
-; Loop through and add above-ref-line polygons.
+; Loop through and add greater-ref-line polygons.
 ;
   ngons = 0
-  if(.not.is_color_transparent(ref_line_above_color).and.anumgons.gt.0)
+  if(fill_greater.and.gnumgons.gt.0)
     igon       = 0
     create_gon = False
     do i=0,npts-1
       if(.not.ismissing(yin(i)).and..not.ismissing(xin(i)))
-        if(yin(i).ge.ref)
+        if((reftype.eq."y".and.yin(i).ge.ref).or.\
+           (reftype.eq."x".and.xin(i).ge.ref)) then
           if(igon.eq.0)
-            xabove_line = new(npts+2,typeof(xin))
-            yabove_line = new(npts+2,typeof(yin))
-            yabove_line(0) = yin(i)
-            xabove_line(0) = xin(i)
+            xgreater_line = new(npts+2,typeof(xin))
+            ygreater_line = new(npts+2,typeof(yin))
+            ygreater_line(0) = yin(i)
+            xgreater_line(0) = xin(i)
             igon = 1
           else
-            xabove_line(igon) = xin(i) 
-            yabove_line(igon) = yin(i) 
+            xgreater_line(igon) = xin(i) 
+            ygreater_line(igon) = yin(i) 
             igon = igon + 1
           end if
-          if(i.eq.npts-1)      ; On the last point.
+          if(i.eq.(npts-1))      ; On the last point.
             create_gon = True
           end if
         else
@@ -2695,63 +2702,70 @@ begin
       end if   ; not ismissing
       if(create_gon)
         if(igon.gt.1)
-          yabove_gon = new((/igon+3/),typeof(yin))
-          xabove_gon = new((/igon+3/),typeof(xin))
+          ygreater_gon = new((/igon+3/),typeof(yin))
+          xgreater_gon = new((/igon+3/),typeof(xin))
 ; Close up and draw polygon
-          if(yabove_line(0).ne.ref)
-            xabove_gon(0) = xabove_line(0)
-            yabove_gon(0) = ref
-            xabove_gon(1:igon) = xabove_line(0:igon-1)
-            yabove_gon(1:igon) = yabove_line(0:igon-1)
+          if(reftype.eq."y".and.ygreater_line(0).ne.ref) then
+            xgreater_gon(0) = xgreater_line(0)
+            ygreater_gon(0) = ref
+            xgreater_gon(1:igon) = xgreater_line(0:igon-1)
+            ygreater_gon(1:igon) = ygreater_line(0:igon-1)
+            newgon = igon + 1
+          else if(reftype.eq."x".and.xgreater_line(0).ne.ref) then
+            ygreater_gon(0) = ygreater_line(0)
+            xgreater_gon(0) = ref
+            ygreater_gon(1:igon) = ygreater_line(0:igon-1)
+            xgreater_gon(1:igon) = xgreater_line(0:igon-1)
             newgon = igon + 1
           else
-            xabove_gon(0:igon-1) = xabove_line(0:igon-1)
-            yabove_gon(0:igon-1) = yabove_line(0:igon-1)
+            xgreater_gon(0:igon-1) = xgreater_line(0:igon-1)
+            ygreater_gon(0:igon-1) = ygreater_line(0:igon-1)
             newgon = igon
           end if
-          if(yabove_line(igon-1).ne.ref)
-            xabove_gon(newgon) = xabove_line(igon-1)
-            yabove_gon(newgon) = ref
+          end if
+          if(reftype.eq."y".and.ygreater_line(igon-1).ne.ref) then
+            xgreater_gon(newgon) = xgreater_line(igon-1)
+            ygreater_gon(newgon) = ref
+            newgon = newgon + 1
+          else if(reftype.eq."x".and.xgreater_line(igon-1).ne.ref) then
+            ygreater_gon(newgon) = ygreater_line(igon-1)
+            xgreater_gon(newgon) = ref
             newgon = newgon + 1
           end if
+          end if
 
-          polygons(ngons) = gsn_add_polygon(wks,xy,xabove_gon(0:newgon-1),\
-                                            yabove_gon(0:newgon-1),gsresa)
+          polygons(ngons) = gsn_add_polygon(wks,xy,xgreater_gon(0:newgon-1),\
+                                            ygreater_gon(0:newgon-1),gsresg)
           ngons = ngons + 1 
 ; Delete temporary arrays so we can recreate them.
-          delete(xabove_line)
-          delete(yabove_line)
-          delete(xabove_gon)
-          delete(yabove_gon)
+          delete([/xgreater_line,ygreater_line,xgreater_gon,ygreater_gon/])
         end if
         igon       = 0
         create_gon = False
       end if
     end do
   end if
-
-;
-; Loop through and add below-ref-line polygons.
-;
-  if(.not.is_color_transparent(ref_line_below_color).and.bnumgons.gt.0) then
+;---Loop through and add less-ref-line polygons.
+  if(fill_less.and.lnumgons.gt.0) then
     igon       = 0
     create_gon = False
 
     do i=0,npts-1
       if(.not.ismissing(yin(i)).and..not.ismissing(xin(i)))
-        if(yin(i).le.ref)
+        if((reftype.eq."y".and.yin(i).le.ref).or.\
+           (reftype.eq."x".and.xin(i).le.ref)) then
           if(igon.eq.0)
-            xbelow_line = new(npts+2,typeof(xin))
-            ybelow_line = new(npts+2,typeof(yin))
-            ybelow_line(0) = yin(i)
-            xbelow_line(0) = xin(i)
+            xless_line = new(npts+2,typeof(xin))
+            yless_line = new(npts+2,typeof(yin))
+            yless_line(0) = yin(i)
+            xless_line(0) = xin(i)
             igon = 1
           else
-            xbelow_line(igon) = xin(i) 
-            ybelow_line(igon) = yin(i) 
+            xless_line(igon) = xin(i) 
+            yless_line(igon) = yin(i) 
             igon = igon + 1
           end if
-          if(i.eq.npts-1)      ; On the last point.
+          if(i.eq.(npts-1))      ; On the last point.
             create_gon = True
           end if
         else
@@ -2762,34 +2776,43 @@ begin
       end if   ; not ismissing
       if(create_gon)
         if(igon.gt.1)
-          ybelow_gon = new((/igon+3/),typeof(yin))
-          xbelow_gon = new((/igon+3/),typeof(xin))
+          yless_gon = new((/igon+3/),typeof(yin))
+          xless_gon = new((/igon+3/),typeof(xin))
 ; Close up and draw polygon
-          if(ybelow_line(0).ne.ref)
-            xbelow_gon(0) = xbelow_line(0)
-            ybelow_gon(0) = ref
-            xbelow_gon(1:igon) = xbelow_line(0:igon-1)
-            ybelow_gon(1:igon) = ybelow_line(0:igon-1)
+          if(reftype.eq."y".and.yless_line(0).ne.ref) then
+            xless_gon(0) = xless_line(0)
+            yless_gon(0) = ref
+            xless_gon(1:igon) = xless_line(0:igon-1)
+            yless_gon(1:igon) = yless_line(0:igon-1)
+            newgon = igon + 1
+          else if(reftype.eq."x".and.xless_line(0).ne.ref) then
+            yless_gon(0) = yless_line(0)
+            xless_gon(0) = ref
+            yless_gon(1:igon) = yless_line(0:igon-1)
+            xless_gon(1:igon) = xless_line(0:igon-1)
             newgon = igon + 1
           else
-            xbelow_gon(0:igon-1) = xbelow_line(0:igon-1)
-            ybelow_gon(0:igon-1) = ybelow_line(0:igon-1)
+            xless_gon(0:igon-1) = xless_line(0:igon-1)
+            yless_gon(0:igon-1) = yless_line(0:igon-1)
             newgon = igon
           end if
-          if(ybelow_line(igon-1).ne.ref)
-            xbelow_gon(newgon) = xbelow_line(igon-1)
-            ybelow_gon(newgon) = ref
+          end if
+          if(reftype.eq."y".and.yless_line(igon-1).ne.ref) then
+            xless_gon(newgon) = xless_line(igon-1)
+            yless_gon(newgon) = ref
+            newgon = newgon + 1
+          else if(reftype.eq."x".and.xless_line(igon-1).ne.ref) then
+            yless_gon(newgon) = yless_line(igon-1)
+            xless_gon(newgon) = ref
             newgon = newgon + 1
           end if
+          end if
 
-          polygons(ngons) = gsn_add_polygon(wks,xy,xbelow_gon(0:newgon-1), \
-                                            ybelow_gon(0:newgon-1),gsresb)
+          polygons(ngons) = gsn_add_polygon(wks,xy,xless_gon(0:newgon-1), \
+                                            yless_gon(0:newgon-1),gsresl)
           ngons = ngons + 1 
 ; Delete temporary arrays so we can recreate them.
-          delete(xbelow_line)
-          delete(ybelow_line)
-          delete(xbelow_gon)
-          delete(ybelow_gon)
+          delete([/xless_line,yless_line,xless_gon,yless_gon/])
         end if
         igon       = 0
         create_gon = False
@@ -4272,11 +4295,12 @@ end
 ;----------------------------------------------------------------------
 ; Returns a color or list of colors for filling curves or bars
 ; above (to the right) or below (to the left) a given ref line or 
-; series of lines.
+; series of lines. If there are a series of lines, but only single
+; colors, then the single color will be propagated to all lines.
 ;----------------------------------------------------------------------
 undef("get_ref_line_fill_color")
 function get_ref_line_fill_color(wks,location[1]:string,ncurves,nref,rfres)
-local tmpdims, color_res
+local tmpdims, color_res, msg_color
 begin
   if(location.eq."above") then
     color_res = "gsnAboveYRefLineColor"
@@ -4294,7 +4318,8 @@ begin
   end if
   end if
 
-;---Determine color of fill above reference line(s).
+  msg_color = new((/1,4/),float)
+
   if(any(isatt(rfres,(/"gsnXYBarChartPatterns", \
                        "gsnXYBarChartPatterns2", \
                        "gsnAboveYRefLineBarPatterns", \
@@ -4303,6 +4328,10 @@ begin
                        "gsnLeftXRefLineBarPatterns"/)))) then
     ref_curve_fill_color = convert_color_to_rgba(wks,"foreground")
   else
+;
+; You need transparent here because the NCL default for polygon
+; fill is the foreground color.
+;
     ref_curve_fill_color = convert_color_to_rgba(wks,"transparent")
   end if
   if(isatt(rfres,color_res))
@@ -4312,23 +4341,39 @@ begin
       print("get_ref_line_fill_color: Fatal: there must either be an above/below/right/left fill color")
       print("      for every reference line, or one global fill color specified.")
       print("      No fill will be done.")
-      ref_curve_fill_color := new(1,integer)  ; return missing
+      ref_curve_fill_color := msg_color
     end if
   end if
 ;
 ; If ref_curve_fill_on is True, and we have more than one curve, then
 ; there should be the same number of reference lines as curves.
 ;
-  if(.not.any(ismissing(ref_curve_fill_color)).and.ncurves.gt.1.and.\
-      ncurves.ne.nref.and.nref.ne.1)
-    print("get_ref_line_fill_color: Fatal: if you plan to fill above/below/right/left reference lines,")
-    print("      then the number of reference lines must either equal the number")
-    print("      of curves or be a scalar.")
-    print("      No fill will be done.")
-    ref_curve_fill_color := new(1,integer)  ; return missing
+  if(isvar("ref_curve_fill_color")) then
+    if(.not.any(ismissing(ref_curve_fill_color)).and.ncurves.gt.1.and.\
+       ncurves.ne.nref.and.nref.ne.1)
+      print("get_ref_line_fill_color: Fatal: if you plan to fill above/below/right/left reference lines,")
+      print("      then the number of reference lines must either equal the number")
+      print("      of curves or be a scalar.")
+      print("      No fill will be done.")
+      ref_curve_fill_color := msg_color
+    end if
+  else
+    ref_curve_fill_color := msg_color
+  end if
+  dims := dimsizes(ref_curve_fill_color)
+  rank = dimsizes(dims)
+  if(rank.ne.2.or.(dims(0).ne.nref.and.dims(0).ne.1)) then
+    print("get_ref_line_fill_color: Warning: you must specify either one above/below/right/left fill color")
+    print("      or the same number of colors as there are reference lines.")
+    print("      Will use the foreground color.") 
+    ref_curve_fill_color := convert_color_to_rgba(wks,"foreground")
   end if
 
-  return(ref_curve_fill_color)
+  if(dims(0).eq.1.and.any((/ncurves,nref/).gt.1)) then
+    return(conform_dims((/max((/ncurves,nref/)),4/),ref_curve_fill_color(0,:),1))
+  else
+    return(ref_curve_fill_color)
+  end if
 end
 
 ;**********************************************************************
@@ -4342,29 +4387,31 @@ local nref, imsg, fmsg, tmpdims, nref, set_ref_line_color
 begin
   imsg = new(1,integer)
   fmsg = new(1,float)
-  ref_line             = fmsg
-  ref_line_on          = False
-  ref_line_color       = imsg
-  ref_line_pattern     = imsg
-  ref_line_thickness   = fmsg
-  ref_curve_fill_on    = False
-  ref_fill_color_1     = imsg
-  ref_fill_color_2     = imsg
+  cmsg = new(4,float)
+  ref_line               = fmsg
+  ref_line_on            = False
+  ref_line_color         = cmsg
+  ref_line_pattern       = imsg
+  ref_line_thickness     = fmsg
+  ref_grtr_curve_fill_on = False
+  ref_less_curve_fill_on = False
+  ref_fill_color_g       = cmsg   ; greater than
+  ref_fill_color_l       = cmsg   ; less than
 
   if(reftype.ne."x".and.reftype.ne."y".or.\
-     (.not.isatt(rfres,"gsnYRefLine").and.\
-      .not.isatt(rfres,"gsnXRefLine"))) then
+     (reftype.eq."y".and..not.isatt(rfres,"gsnYRefLine").or.\
+     (reftype.eq."x".and..not.isatt(rfres,"gsnXRefLine")))) then
     return([/ref_line,ref_line_on,ref_line_color,ref_line_pattern,\
-             ref_line_thickness,ref_curve_fill_on,\
-             ref_fill_color_1,ref_fill_color_2/])
+             ref_line_thickness,ref_grtr_curve_fill_on,\
+             ref_less_curve_fill_on,ref_fill_color_g,ref_fill_color_l/])
   end if
 
   if(reftype.eq."y") then
-    fill_string_1 = "above"
-    fill_string_2 = "below"
+    fill_string_g = "above"
+    fill_string_l = "below"
   else
-    fill_string_1 = "right"
-    fill_string_2 = "left"
+    fill_string_g = "right"
+    fill_string_l = "left"
   end if
   ref_line_on = True
   ref_line    := get_res_value(rfres,"gsn" + str_upper(reftype)+"RefLine",0)
@@ -4372,16 +4419,17 @@ begin
   ref_line_color       := get_ref_line_color(wks,reftype,nref,rfres)
   ref_line_pattern     := get_ref_line_pattern(wks,reftype,nref,rfres)
   ref_line_thickness   := get_ref_line_thickness(wks,reftype,nref,rfres)
-  ref_fill_color_1     := get_ref_line_fill_color(wks,fill_string_1,ncurves,\
+  ref_fill_color_g     := get_ref_line_fill_color(wks,fill_string_g,ncurves,\
                            nref,rfres)
-  ref_fill_color_2     := get_ref_line_fill_color(wks,fill_string_2,ncurves,\
+  ref_fill_color_l     := get_ref_line_fill_color(wks,fill_string_l,ncurves,\
                            nref,rfres)
-  ref_curve_fill_on = .not.(any(ismissing(ref_fill_color_1)).or.\
-                            any(ismissing(ref_fill_color_2)))
+  ref_grtr_curve_fill_on = .not.any(ismissing(ref_fill_color_g))
+  ref_less_curve_fill_on = .not.any(ismissing(ref_fill_color_l))
 
   return([/ref_line,ref_line_on,ref_line_color,ref_line_pattern,\
-           ref_line_thickness,ref_curve_fill_on,ref_fill_color_1,\
-           ref_fill_color_2/])
+           ref_line_thickness,ref_grtr_curve_fill_on,\
+           ref_less_curve_fill_on,ref_fill_color_g,\
+           ref_fill_color_l/])
 end
 
 ;**********************************************************************
@@ -4430,8 +4478,9 @@ end
 ;;**********************************************************************
 undef("get_bar_colors")
 function get_bar_colors(wks,bres,nlines)
-local bac_rank, bbc_rank, mlt_abv_colors_set, mlt_blw_colors_set
+local bac_rank, bbc_rank, mlt_abv_colors_set, mlt_blw_colors_set, msg_color
 begin
+  msg_color          = new((/1,4/),float)
   mlt_abv_colors_set = False
   mlt_blw_colors_set = False
   colors2_set        = False
@@ -4484,7 +4533,7 @@ begin
       print("Will not fill your bar chart.")
     end if            
   else
-    mlt_abv_colors = new(1,integer)   ; set to missing
+    mlt_abv_colors = msg_color
   end if
   if(mlt_blw_colors_set) then
     bbc_rank = dimsizes(dimsizes(mlt_blw_colors))
@@ -4495,7 +4544,7 @@ begin
       print("Will not fill your bar chart.")
     end if            
   else
-    mlt_blw_colors = new(1,integer)   ; set to missing
+    mlt_blw_colors = msg_color
   end if
   return([/mlt_abv_colors,mlt_blw_colors,colors2_set/])
 end
@@ -4537,12 +4586,8 @@ begin
 ; then delete them.
 ;
   if(mlt_abv_patterns_set.or.mlt_blw_patterns_set) then
-    if(isatt(bres,"gsnXYBarChartPatterns")) then
-      delete(bres@gsnXYBarChartPatterns)
-    end if
-    if(isatt(bres,"gsnXYBarChartPatterns2")) then
-      delete(bres@gsnXYBarChartPatterns2)
-    end if
+    delete_attr(bres,"gsnXYBarChartPatterns")
+    delete_attr(bres,"gsnXYBarChartPatterns2")
   end if  
 ;
 ; If the gsnAbove/BelowYRefLineBarPatterns resources are not set, then
@@ -4553,9 +4598,7 @@ begin
     mlt_blw_patterns_set = True
     mlt_abv_patterns = get_res_value(bres,"gsnXYBarChartPatterns",1)
     mlt_blw_patterns = mlt_abv_patterns
-    if(isatt(bres,"gsnXYBarChartPatterns2")) then
-      delete(bres@gsnXYBarChartPatterns2)
-    end if
+    delete_attr(bres,"gsnXYBarChartPatterns2")
   end if  
 ;
 ; If gsnAbove/BelowYRefLineBarPatterns and gsnXYBarChartPatterns are
@@ -5026,6 +5069,45 @@ begin
 end
 
 ;**********************************************************************
+; This procedure adds filled curves based on X/Y reference lines and
+; fill colors. The X/Y arrays have already been interpolated based
+; on where they intersect with the reference line(s).
+;**********************************************************************
+undef("fill_xy_ref_curves")
+procedure fill_xy_ref_curves(wks,xyobj,reftype,xin,yin,ncurves,nref,\
+                             npts_array,ref_line_array,\
+                             ref_greater_fill_colors,\
+                             ref_less_fill_colors)
+local xyres_tmp, i, fill_greater, fill_less, var_string
+begin
+;
+; Make sure polygons get filled before xy plot is drawn. This way,
+; any lines will be drawn *after* the fill. This makes the filled 
+; polygons look better if the lines are drawn thicker.
+;
+  xyres_tmp = True
+  xyres_tmp@tfPolyDrawOrder = "Predraw"
+  attsetvalues_check(xyobj,xyres_tmp)
+
+  fill_greater = ref_greater_fill_colors(0,:)
+  fill_less    = ref_less_fill_colors(0,:)
+  do i=0,max((/ncurves,nref/))-1
+    if(dimsizes(ref_greater_fill_colors(:,0)).gt.1)
+      fill_greater = ref_greater_fill_colors(i,:)
+    end if
+    if(dimsizes(ref_less_fill_colors(:,0)).gt.1)
+      fill_less = ref_less_fill_colors(i,:)
+    end if
+    var_string = unique_string("polygons"+i)
+    xyobj@$var_string$=fill_xy_ref(wks,xyobj,reftype, \
+                                   xin(i,0:npts_array(i)-1), \
+                                   yin(i,0:npts_array(i)-1),\
+                                   ref_line_array(i),fill_greater,\
+                                   fill_less)
+  end do
+end
+
+;**********************************************************************
 ; This procedure adds special "30N", "20E", "EQ" type of labels
 ; to the X and/or Y axis if it detects that xx or yy are valid
 ; latitude or longitude arrays.
@@ -5113,11 +5195,21 @@ begin
 
 ; Initialize.
     main_zone     = 2         ; Zone for main title (may change later)
-    xref_line_on  = False     ; X reference line flag
-    yref_line_on  = False     ; Y reference line flag
-    yref_curve_fill_on = False     ; Whether to fill curves above/below Y ref line.
-    yref_bar_fill_on  = False ; Whether to fill bars above/below Y ref line
-    bar_chart     = False     ; Whether we want bars
+; Whether an X or Y reference line is desired
+    xref_line_on  = False
+    yref_line_on  = False
+; Whether to fill curves around a reference line
+    yref_fill_on       = False
+    yref_above_fill_on = False
+    yref_below_fill_on = False
+    xref_fill_on       = False
+    xref_right_fill_on = False
+    xref_left_fill_on  = False
+; Whether to fill bars around a reference line
+    yref_bar_fill_on  = False
+    xref_bar_fill_on  = False
+    bar_chart     = False     ; Whether we want bars or curves
+
     res2          = get_resources(resources)
 ;
 ; Write data and plot resource information to a file so we can 
@@ -5186,38 +5278,13 @@ begin
       yref_line_color = yref_line_list[2]
       yref_line_pattern = yref_line_list[3]
       yref_line_thickness = yref_line_list[4]
-      yref_curve_fill_on = yref_line_list[5]
-      yref_above_fill_color = yref_line_list[6]
-      yref_below_fill_color = yref_line_list[7]
+      yref_above_fill_on = yref_line_list[5]
+      yref_below_fill_on = yref_line_list[6]
+      yref_above_fill_color = yref_line_list[7]
+      yref_below_fill_color = yref_line_list[8]
       nyref = dimsizes(yref_line)
+      yref_fill_on = yref_above_fill_on.or.yref_below_fill_on
       delete(yref_line_list)
-
-;---Check if we want a bar chart.
-      bar_chart        = get_res_value(res2,"gsnXYBarChart",False)
-      bar_outline_only = get_res_value(res2,"gsnXYBarChartOutlineOnly",False)
-
-      if(bar_chart.and..not.bar_outline_only)
-        if(.not.yref_line_on) then
-;
-; If no ref line specified, but bar fill is on, then set the reference
-; line to the minimum y value.
-;
-          yref_line           := get_res_value_keep(res2,"trYMinF",min(y))
-          nyref               = 1 
-          yref_line_on        = True
-          yref_line_color     := convert_color_to_rgba(wks,"foreground")
-          yref_line_pattern   := 0
-          yref_line_thickness := 1.
-        else
-          if((ncurves.gt.1.and.nyref.gt.1.and.ncurves.ne.nyref).or. \
-             (ncurves.eq.1.and.nyref.ne.1))
-            print("gsn_csm_xy: Fatal: if you plan to draw a bar chart with values above")
-            print("and/or below reference lines, then the number of reference lines")
-            print("must either equal the number of curves, or be one.")
-            return
-          end if
-        end if          ; Check for Y ref line.
-      end if            ; Check for bar chart settage.
 
 ;---Check if gsnXRefLine set.
       xref_line_list = get_ref_line_options(wks,"x",ncurves,res2)
@@ -5226,11 +5293,49 @@ begin
       xref_line_color = xref_line_list[2]
       xref_line_pattern = xref_line_list[3]
       xref_line_thickness = xref_line_list[4]
-      xref_curve_fill_on = xref_line_list[5]
-      xref_left_fill_color = xref_line_list[6]
+      xref_right_fill_on = xref_line_list[5]
+      xref_left_fill_on = xref_line_list[6]
       xref_right_fill_color = xref_line_list[7]
+      xref_left_fill_color = xref_line_list[8]
       nxref = dimsizes(xref_line)
+      xref_fill_on = xref_right_fill_on.or.xref_left_fill_on
       delete(xref_line_list)
+
+;---Check if we want a bar chart.
+      bar_chart        = get_res_value(res2,"gsnXYBarChart",False)
+      bar_outline_only = get_res_value(res2,"gsnXYBarChartOutlineOnly",False)
+
+      if(bar_chart.and..not.bar_outline_only)
+;
+; In NCL 6.3.0 and earlier, only Y reference lines were recognized.
+; It is possible to turn on a bar chart (gsnXYBarChart=True) but
+; not set a Y ref line. If that was the case, then the Y ref line 
+; was just set to the Y minimum value. In NCL V6.4.0, since you can
+; now have both X and Y reference lines, we will assume that if neither
+; X or Y reference lines are set, then *only* provide a default for
+; the Y reference line, since this makes the most sense. If the user
+; wants an X reference line and bar charts, then gsnXRefLine must
+; be set.
+        if(.not.yref_line_on.and..not.xref_line_on) then
+;
+; If no x/y ref line specified, but bar fill is on, then set
+; the reference line to the minimum x or y value.
+;
+          yref_line           := get_res_value_keep(res2,"trYMinF",min(y))
+          nyref               = 1 
+          yref_line_on        = True
+          yref_line_color     := convert_color_to_rgba(wks,"foreground")
+          yref_line_pattern   := 0
+          yref_line_thickness := 1.
+        end if
+        if((ncurves.gt.1.and.nyref.gt.1.and.ncurves.ne.nyref).or. \
+           (ncurves.eq.1.and.nyref.ne.1))
+          print("gsn_csm_xy: Fatal: if you plan to draw a bar chart with values above")
+          print("and/or below reference lines, then the number of reference lines")
+          print("must either equal the number of curves, or be one.")
+          return
+        end if
+      end if            ; Check for bar chart settage.
 
 ; Check for existence of the left, center, and right subtitles.
 
@@ -5268,39 +5373,52 @@ begin
        check_attr(res2,"tmYLMode",2,True))
       set_attr(res2,"tiYAxisString","")
     end if
-
 ;
 ; The following code is going to create new X,Y arrays, depending
 ; on whether the user wants:
 ;
-;   1. A regular XY plot with curves above and below a given reference
-;      line filled in.
-;   2. A bar plot without any fill.
-;   3. A bar plot with filling above and below a given Y reference value.
-;   4. A regular XY plot.
+;   1a. A regular XY plot with curves above/below a given
+;       reference line filled in.
+;   1b. A regular XY plot with curves left/right a given
+;       reference line filled in.
+;   2.  A bar plot without any fill.
+;   3.  A bar plot with filling above/below a given Y reference value.
+;   4.  A regular XY plot.
 
 ;----------------------------------------------------------------------
-; 1. A regular XY plot with the curve above and below a given
+; 1a. A regular XY plot with the curve above and below a given
 ; reference line filled in with some color.
 ;----------------------------------------------------------------------
-    if(yref_curve_fill_on.and..not.bar_chart) then
-      interp_list = ref_line_interp(x,y,yref_line)
+    if(.not.bar_chart.and.yref_fill_on) then
+      interp_list = ref_line_interp(x,y,yref_line,"y")
       xinterp  = interp_list[0]
       yinterp  = interp_list[1]
       new_yref_line = interp_list[2]
       new_npts = interp_list[3]
       delete(interp_list)
-    else
-      if(bar_chart) then
+    end if
+;----------------------------------------------------------------------
+; 1b. A regular XY plot with the curve to the right and left of a
+; given reference line filled in with some color.
+;----------------------------------------------------------------------
+    if(.not.bar_chart.and.xref_fill_on) then
+      interp_list = ref_line_interp(x,y,xref_line,"x")
+      xinterp  = interp_list[0]
+      yinterp  = interp_list[1]
+      new_xref_line = interp_list[2]
+      new_npts = interp_list[3]
+      delete(interp_list)
+    end if
+    if(bar_chart.and.bar_outline_only) then
 ;----------------------------------------------------------------------
 ; 2. A bar XY plot with outlined bars only.
 ;----------------------------------------------------------------------
-        if(bar_outline_only)
-          interp_list = outlined_bars(x,y)
-          xinterp  = interp_list[0]
-          yinterp  = interp_list[1]
-          delete(interp_list)
-        else
+      interp_list = outlined_bars(x,y)
+      xinterp  = interp_list[0]
+      yinterp  = interp_list[1]
+      delete(interp_list)
+    end if
+    if(bar_chart.and..not.bar_outline_only)
 ;----------------------------------------------------------------------
 ; 3. A bar XY plot with filled bars.
 ;
@@ -5310,129 +5428,127 @@ begin
 ;----------------------------------------------------------------------
 
 ;---Get arrays needed to fill in locations for bars later.
-          bar_array_list = get_bar_arrays(x,y,res2)
-          xbar = bar_array_list[0]
-          ybar = bar_array_list[1]
-          bar_widths = bar_array_list[2]
-          nptsbar = bar_array_list[3]
+      bar_array_list = get_bar_arrays(x,y,res2)
+      xbar = bar_array_list[0]
+      ybar = bar_array_list[1]
+      bar_widths = bar_array_list[2]
+      nptsbar = bar_array_list[3]
 
 ;--Set bar filling variables
-          bar_color_list   = get_bar_colors(wks,res2,nyref)
-          bar_pattern_list = get_bar_patterns(res2,nyref)
-          bar_scales_list  = get_bar_scales(wks,res2)
+      bar_color_list   = get_bar_colors(wks,res2,nyref)
+      bar_pattern_list = get_bar_patterns(res2,nyref)
+      bar_scales_list  = get_bar_scales(wks,res2)
 
-          bar_colors_above   = bar_color_list[0]
-          bar_colors_below   = bar_color_list[1]
-          bar_colors2_set    = bar_color_list[2]
+      bar_colors_above   = bar_color_list[0]
+      bar_colors_below   = bar_color_list[1]
+      bar_colors2_set    = bar_color_list[2]
 
-          bar_patterns_above = bar_pattern_list[0]
-          bar_patterns_below = bar_pattern_list[1]
-          bar_patterns2_set  = bar_pattern_list[2]
+      bar_patterns_above = bar_pattern_list[0]
+      bar_patterns_below = bar_pattern_list[1]
+      bar_patterns2_set  = bar_pattern_list[2]
 
-          bar_scales_above = bar_scales_list[0]
-          bar_scales_below = bar_scales_list[1]
+      bar_scales_above = bar_scales_list[0]
+      bar_scales_below = bar_scales_list[1]
 
-          bar_colors_above_set = .not.all(ismissing(bar_colors_above))
-          bar_colors_below_set = .not.all(ismissing(bar_colors_below))
-          bar_patterns_above_set = .not.all(ismissing(bar_patterns_above))
-          bar_patterns_below_set = .not.all(ismissing(bar_patterns_below))
-          bar_scales_above_set = .not.all(ismissing(bar_scales_above))
-          bar_scales_below_set = .not.all(ismissing(bar_scales_below))
+      bar_colors_above_set = .not.all(ismissing(bar_colors_above))
+      bar_colors_below_set = .not.all(ismissing(bar_colors_below))
+      bar_patterns_above_set = .not.all(ismissing(bar_patterns_above))
+      bar_patterns_below_set = .not.all(ismissing(bar_patterns_below))
+      bar_scales_above_set = .not.all(ismissing(bar_scales_above))
+      bar_scales_below_set = .not.all(ismissing(bar_scales_below))
 
-          yref_bar_fill_on = bar_colors_above_set.or.bar_colors_below_set.or.\
-                             bar_patterns_above_set.or.bar_patterns_below_set
-     
+      yref_bar_fill_on = bar_colors_above_set.or.bar_colors_below_set.or.\
+                         bar_patterns_above_set.or.bar_patterns_below_set
 ;---Delete unneeded lists
-          delete([/bar_array_list,bar_color_list,bar_pattern_list,bar_scales_list/])
-
+      delete([/bar_array_list,bar_color_list,bar_pattern_list,bar_scales_list/])
 ;
 ; Loop across curves and figure out which points are above, below,
 ; and equal to the references lines.  First create arrays to hold points
 ; above, below, and equal to reference lines.
 ;
-          xabove = new((/ncurves,5*nptsbar/),double,1e36)
-          yabove = new((/ncurves,5*nptsbar/),double,1e36)
-          xbelow = new((/ncurves,5*nptsbar/),double,1e36)
-          ybelow = new((/ncurves,5*nptsbar/),double,1e36)
-          xequal = new((/ncurves,5*nptsbar/),double,1e36)
-          yequal = new((/ncurves,5*nptsbar/),double,1e36)
+      xabove = new((/ncurves,5*nptsbar/),double,1e36)
+      yabove = new((/ncurves,5*nptsbar/),double,1e36)
+      xbelow = new((/ncurves,5*nptsbar/),double,1e36)
+      ybelow = new((/ncurves,5*nptsbar/),double,1e36)
+      xequal = new((/ncurves,5*nptsbar/),double,1e36)
+      yequal = new((/ncurves,5*nptsbar/),double,1e36)
 ;
 ; Arrays to hold number of points in each set of above/below points,
 ; and the index values where points fall above, below, and equal
 ; to the Y ref value.
 ;
-          nabove   = new(ncurves,integer)
-          nbelow   = new(ncurves,integer)
-          nequal   = new(ncurves,integer)
-          indabove = new((/ncurves,nptsbar/),integer)
-          indbelow = new((/ncurves,nptsbar/),integer)
-          indequal = new((/ncurves,nptsbar/),integer)
+      nabove   = new(ncurves,integer)
+      nbelow   = new(ncurves,integer)
+      nequal   = new(ncurves,integer)
+      indabove = new((/ncurves,nptsbar/),integer)
+      indbelow = new((/ncurves,nptsbar/),integer)
+      indequal = new((/ncurves,nptsbar/),integer)
 ;
 ; Fill in values for filled bars (that will be filled later).
 ;
-          filled_bars(xbar,ybar,xabove,yabove,xbelow,ybelow,xequal,yequal, \
-                      nabove,nbelow,nequal,indabove,indbelow,indequal, \
-                      yref_line,bar_widths)
+      filled_bars(xbar,ybar,xabove,yabove,xbelow,ybelow,xequal,yequal, \
+                  nabove,nbelow,nequal,indabove,indbelow,indequal, \
+                  yref_line,bar_widths)
 ;
 ; Combine the above/below/equal arrays into one X/Y array so that we can
 ; pass to gsn_xy routine. Make the 5th point missing, since the 5th point
 ; closes the polygon, and we only want an outline here.
 ;
-          na_max   = max(nabove)
-          nb_max   = max(nbelow)
-          ne_max   = max(nequal)
-          nabe_max = na_max + nb_max + ne_max
+      na_max   = max(nabove)
+      nb_max   = max(nbelow)
+      ne_max   = max(nequal)
+      nabe_max = na_max + nb_max + ne_max
 
-          if(na_max.le.0.and.nb_max.le.0)
-            print("gsn_csm_xy: Fatal: There are no values above or below the chosen reference line.")
-            print("Cannot draw a bar chart.")
-            xinterp = x
-            yinterp = y
-          else
-            ncurves3 = 3*ncurves
-            xinterp  = new((/ncurves3,nabe_max/),double,xabove@_FillValue)
-            yinterp  = new((/ncurves3,nabe_max/),double,yabove@_FillValue)
+      if(na_max.le.0.and.nb_max.le.0) then
+        print("gsn_csm_xy: Fatal: There are no values above or below the chosen reference line.")
+        print("Cannot draw a bar chart.")
+        xinterp = x
+        yinterp = y
+      else
+        ncurves3 = 3*ncurves
+        xinterp  = new((/ncurves3,nabe_max/),double,xabove@_FillValue)
+        yinterp  = new((/ncurves3,nabe_max/),double,yabove@_FillValue)
 
-            copy_var_atts(xbar,xinterp,"")
-            copy_var_atts(ybar,yinterp,"")
-
-            if(na_max.gt.0)
-              xinterp(0:ncurves3-1:3,0:na_max-1)   = xabove(:,0:na_max-1)
-              yinterp(0:ncurves3-1:3,0:na_max-1)   = yabove(:,0:na_max-1)
-              yinterp(0:ncurves3-1:3,4:na_max-1:5) = yinterp@_FillValue
-            end if
-            if(nb_max.gt.0)
-              xinterp(1:ncurves3-1:3,0:nb_max-1)   = xbelow(:,0:nb_max-1)
-              yinterp(1:ncurves3-1:3,0:nb_max-1)   = ybelow(:,0:nb_max-1)
-              yinterp(1:ncurves3-1:3,4:nb_max-1:5) = yinterp@_FillValue
-            end if
-            if(ne_max.gt.0)
-              xinterp(2:ncurves3-1:3,0:ne_max-1)   = xequal(:,0:ne_max-1)
-              yinterp(2:ncurves3-1:3,0:ne_max-1)   = yequal(:,0:ne_max-1)
-              yinterp(2:ncurves3-1:3,4:ne_max-1:5) = yinterp@_FillValue
-            end if
+        copy_var_atts(xbar,xinterp,"")
+        copy_var_atts(ybar,yinterp,"")
+       if(na_max.gt.0)
+          xinterp(0:ncurves3-1:3,0:na_max-1)   = xabove(:,0:na_max-1)
+          yinterp(0:ncurves3-1:3,0:na_max-1)   = yabove(:,0:na_max-1)
+          yinterp(0:ncurves3-1:3,4:na_max-1:5) = yinterp@_FillValue
+        end if
+        if(nb_max.gt.0)
+          xinterp(1:ncurves3-1:3,0:nb_max-1)   = xbelow(:,0:nb_max-1)
+          yinterp(1:ncurves3-1:3,0:nb_max-1)   = ybelow(:,0:nb_max-1)
+          yinterp(1:ncurves3-1:3,4:nb_max-1:5) = yinterp@_FillValue
+        end if
+        if(ne_max.gt.0)
+          xinterp(2:ncurves3-1:3,0:ne_max-1)   = xequal(:,0:ne_max-1)
+          yinterp(2:ncurves3-1:3,0:ne_max-1)   = yequal(:,0:ne_max-1)
+          yinterp(2:ncurves3-1:3,4:ne_max-1:5) = yinterp@_FillValue
+        end if
 ;
 ; Make sure all lines are solid, and not dashed as is the default
 ; with the second curve drawn.
 ; 
-            res2@xyDashPatterns = get_res_value(res2,"xyDashPatterns",0)
-          end if
-        end if
-      else
+        res2@xyDashPatterns = get_res_value(res2,"xyDashPatterns",0)
+      end if  ;  if(na_max.le.0.and.nb_max.le.0)
+    end if
+    if(.not.any((/yref_fill_on,xref_fill_on,bar_chart/))) then
 ;----------------------------------------------------------------------
 ;  4. A regular XY plot
 ;----------------------------------------------------------------------
-        xinterp = x
-        yinterp = y
-      end if
-    end if
-
-    if(xref_line_on)
+      xinterp = x
+      yinterp = y
+    end if    ; if bar_chart
+;
+; Force the X or Y min/max values to be that of the data,
+; if a reference line is drawn.
+;
+    if(xref_line_on) then
       set_attr(res2,"trYMinF",min(yinterp))
       set_attr(res2,"trYMaxF",max(yinterp))
     end if
-
-    if(yref_line_on)
+    if(yref_line_on) then
       set_attr(res2,"trXMinF",min(xinterp))
       set_attr(res2,"trXMaxF",max(xinterp))
     end if
@@ -5447,48 +5563,30 @@ begin
 
 ;---Create XY plot
     xyres = get_res_ne(res2,(/"tx","gsnXY","gsnYRef","gsnXRef","gsnAbove","gsnBelow","gsnRight","gsnLeft"/))
+
     xy_object = gsn_xy(wks,xinterp,yinterp,xyres)
-   
 ;---Fill between two curves if desired
     xy_object = fill_between_curves(wks,xy_object,x,y,res2)
 
 ;---Add lat/lon labels to X/Y axes if appropriate units exist.
     add_latlon_labels_xy_plot(xy_object,x,y,res2)
 
-;---Fill above/below Y reference line. 
-   if(yref_curve_fill_on.and..not.bar_chart)
-;
-; Make sure polygons get filled before xy plot is drawn. This way,
-; any lines will be drawn *after* the fill. This makes the filled 
-; polygons look better if the lines are drawn thicker.
-;
-      xyres_tmp = True
-      xyres_tmp@tfPolyDrawOrder =  "Predraw"
-      attsetvalues_check(xy_object,xyres_tmp)
-      delete(xyres_tmp)
-
-      fill_above = yref_above_fill_color(0,:)
-      fill_below = yref_below_fill_color(0,:)
-
-      do i=0,max((/ncurves,nyref/))-1
-        if(dimsizes(yref_above_fill_color(:,0)).gt.1)
-          fill_above = yref_above_fill_color(i,:)
-        end if
-        if(dimsizes(yref_below_fill_color(:,0)).gt.1)
-          fill_below = yref_below_fill_color(i,:)
-        end if
-        var_string = unique_string("polygons"+i)
-        xy_object@$var_string$=fill_xy_ref(wks,xy_object, \
-                                     xinterp(i,0:new_npts(i)-1), \
-                                     yinterp(i,0:new_npts(i)-1),\
-                                     new_yref_line(i),fill_above,fill_below)
-      end do
+;---Fill above/below/left/right Y/X reference line. 
+    if(yref_fill_on.and..not.bar_chart) then
+      fill_xy_ref_curves(wks,xy_object,"y",xinterp,yinterp,ncurves,\
+                         nyref,new_npts,new_yref_line,\
+                         yref_above_fill_color,yref_below_fill_color)
+    end if
+    if(xref_fill_on.and..not.bar_chart) then
+      fill_xy_ref_curves(wks,xy_object,"x",xinterp,yinterp,ncurves,\
+                         nxref,new_npts,new_xref_line,\
+                         xref_right_fill_color,xref_left_fill_color)
     end if
 
 ; Fill bars with either a single color for above and below, or with
 ; individual colors.
 
-    if(bar_chart.and.(yref_curve_fill_on.or.yref_bar_fill_on).and.\
+    if(bar_chart.and.(yref_fill_on.or.yref_bar_fill_on).and.\
        .not.bar_outline_only)
       gsres = True
       if(bar_outline_thickness.gt.0.and.bar_outline_thickness.ne.1) then
@@ -5504,11 +5602,8 @@ begin
 
 ;---Fill above reference line.
         if(nabove(i).gt.0)
-          if(.not.bar_colors_above_set.and.yref_curve_fill_on) then
-            gsres@gsFillColor := yref_above_fill_color(0,:)
-            if(dimsizes(yref_above_fill_color(:,0)).gt.1) then
-              gsres@gsFillColor := yref_above_fill_color(i,:)
-            end if
+          if(.not.bar_colors_above_set.and.yref_above_fill_on) then
+            gsres@gsFillColor := yref_above_fill_color(i,:)
           end if
 ;---Single bar fill scale for each above and below bars.
           if(bar_scales_above_set) then
@@ -5574,14 +5669,13 @@ begin
           end if
         end if
 ;
-; Fill below reference line.
+; Fill below reference line. Don't carry over fill color 
+; from above the reference line!
 ;
+        delete_attr(gsres,"gsFillColor")   
         if(nbelow(i).gt.0)
-          if(.not.bar_colors_below_set.and.yref_curve_fill_on) then
-            gsres@gsFillColor := yref_below_fill_color(0,:)
-            if(dimsizes(yref_below_fill_color(:,0)).gt.1) then
-              gsres@gsFillColor := yref_below_fill_color(i,:)
-            end if
+          if(.not.bar_colors_below_set.and.yref_below_fill_on) then
+            gsres@gsFillColor := yref_below_fill_color(i,:)
           end if
 ;
 ; Single bar fill scale for each above and below bars.
@@ -8497,9 +8591,7 @@ begin
         set_labelbar_res(stres,"ce")
       end if
     end if
-    if(isatt(stres,"lbLabelBarOn"))
-      delete(stres@lbLabelBarOn)
-    end if
+    delete_attr(stres,"lbLabelBarOn")
 
 ; Before we create the objects, turn off draw and frame for them.
     stres = True
@@ -8655,9 +8747,7 @@ begin
         set_labelbar_res(stres,"polar")
       end if
     end if
-    if(isatt(stres,"lbLabelBarOn"))
-      delete(stres@lbLabelBarOn)
-    end if
+    delete_attr(stres,"lbLabelBarOn")
 
 ; Before we create the objects, turn off draw and frame for them.
     stres = True
@@ -8805,9 +8895,7 @@ begin
         set_labelbar_res(stres,"other")
       end if
     end if
-    if(isatt(stres,"lbLabelBarOn"))
-      delete(stres@lbLabelBarOn)
-    end if
+    delete_attr(stres,"lbLabelBarOn")
 
 ; Before we create the objects, turn off draw and frame for them.
     stres           = True
@@ -10358,9 +10446,7 @@ begin
       end if
     end if
 
-    if(isatt(res2,"lbLabelBarOn"))
-      delete(res2@lbLabelBarOn)
-    end if
+    delete_attr(res2,"lbLabelBarOn")
 
     lbar_orient  = lower_case(get_res_value_keep(res2,"lbOrientation", \
                               "horizontal"))
@@ -10659,9 +10745,7 @@ begin
       end if
     end if
 
-    if(isatt(res2,"lbLabelBarOn"))
-      delete(res2@lbLabelBarOn)
-    end if
+    delete_attr(res2,"lbLabelBarOn")
 
     lbar_orient  = lower_case(get_res_value_keep(res2,"lbOrientation", \
                               "horizontal"))
@@ -11602,9 +11686,7 @@ begin
         end if
       end if
 
-    if(isatt(res2,"lbLabelBarOn"))
-      delete(res2@lbLabelBarOn)
-    end if
+    delete_attr(res2,"lbLabelBarOn")
 
     lbar_orient  = lower_case(get_res_value_keep(res2,"lbOrientation", \
                               "horizontal"))
@@ -11823,9 +11905,7 @@ begin
         end if
       end if
 
-    if(isatt(res2,"lbLabelBarOn"))
-      delete(res2@lbLabelBarOn)
-    end if
+    delete_attr(res2,"lbLabelBarOn")
 
     lbar_orient  = lower_case(get_res_value_keep(res2,"lbOrientation", \
                               "horizontal"))
@@ -12961,9 +13041,7 @@ begin
       set_attr(res2,"cnLineLabelsOn",False)
       set_attr(res2,"cnInfoLabelOn",False)
     end if
-    if(isatt(res2,"lbLabelBarOn"))
-      delete(res2@lbLabelBarOn)
-    end if
+    delete_attr(res2,"lbLabelBarOn")
 
     res2          = True
     res2@gsnDraw  = False   ; Internally, don't draw plot or advance
@@ -13491,9 +13569,7 @@ begin
                   "trYInterPoints","trYTensionF","trYSamples"/)
 
     do i = 0, dimsizes(irreg_res)-1
-      if(isatt(trres,irreg_res(i))) then
-        delete(trres@$irreg_res(i)$)        ; Remove irreg trans resource.
-      end if
+      delete_attr(trres,irreg_res(i))
     end do
 
     attsetvalues_check(loglin_object,trres)
@@ -13622,9 +13698,7 @@ begin
         set_labelbar_res(res2,"vector")
      end if
     end if
-    if(isatt(res2,"lbLabelBarOn"))
-      delete(res2@lbLabelBarOn)
-    end if
+    delete_attr(res2,"lbLabelBarOn")
 
     res2          = True
     res2@gsnDraw  = False     ; Internally, don't draw plot or advance
@@ -13937,9 +14011,7 @@ begin
         set_labelbar_res(res2,"streamline")
      end if
     end if
-    if(isatt(res2,"lbLabelBarOn"))
-      delete(res2@lbLabelBarOn)
-    end if
+    delete_attr(res2,"lbLabelBarOn")
 
     res2          = True
     res2@gsnDraw  = False     ; Internally, don't draw plot or advance
