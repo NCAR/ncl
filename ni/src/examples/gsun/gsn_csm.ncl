@@ -398,18 +398,6 @@ end
 ; procedure : filled_bars                                               ;
 ;                  x: numeric                                           ;
 ;                  y: numeric                                           ;
-;             xabove: numeric                                           ;
-;             yabove: numeric                                           ;
-;             xbelow: numeric                                           ;
-;             ybelow: numeric                                           ;
-;             xequal: numeric                                           ;
-;             yequal: numeric                                           ;
-;                nya: integer                                           ;
-;                nyb: integer                                           ;
-;                nye: integer                                           ;
-;                iya: integer                                           ;
-;                iyb: integer                                           ;
-;                iye: integer                                           ;
 ;          yref_line: numeric                                           ;
 ;         bar_widths: numeric                                           ;
 ;                                                                       ;
@@ -421,9 +409,8 @@ end
 ; of polygons: those above, below, and equal to the reference lines.    ;
 ;***********************************************************************;
 undef("filled_bars")
-procedure filled_bars(x,y,xabove,yabove,xbelow,ybelow,xequal,yequal,\
-                      nya,nyb,nye,iya,iyb,iye,yref_line,bar_widths)
-local ndimsx, ndimsy, ncurves, dims, npts
+function filled_bars(x,y,nptsbar,yref_line,bar_widths)
+local ndimsx, ndimsy, dims, ncurves, npts, xnew, ynew
 begin
 ;
 ; Convert x and y into two dimensional arrays so we don't have to
@@ -451,81 +438,98 @@ begin
     xnew = new(dimsizes(x),double)
     xnew = x
   end if
+
+;---Create arrays to hold points above, below, and equal to reference lines.
+  xabove = new((/ncurves,5*nptsbar/),double,1e36)
+  yabove = new((/ncurves,5*nptsbar/),double,1e36)
+  xbelow = new((/ncurves,5*nptsbar/),double,1e36)
+  ybelow = new((/ncurves,5*nptsbar/),double,1e36)
+  xequal = new((/ncurves,5*nptsbar/),double,1e36)
+  yequal = new((/ncurves,5*nptsbar/),double,1e36)
+;
+; Arrays to hold number of points in each set of above/below points,
+; and the index values where points fall above, below, and equal
+; to the Y ref value.
+;
+  nabove   = new(ncurves,integer)
+  nbelow   = new(ncurves,integer)
+  nequal   = new(ncurves,integer)
+  indabove = new((/ncurves,nptsbar/),integer)
+  indbelow = new((/ncurves,nptsbar/),integer)
+  indequal = new((/ncurves,nptsbar/),integer)
 ;
 ; Make yref_line a 1D double array of length ncurves.
 ;
   yref_lines = new(ncurves,double)
   yref_lines = yref_line
 ;
-; Loop across ncurves.
+; Loop across curves and figure out which points are above, below,
+; and equal to the references lines.
 ;
   do i=0,ncurves-1
-;
-; Get the indices where the y curve is above, below, equal to the ref line.
-;
-    ya_ind = ind(ynew(i,:).gt.yref_lines(i))
-    yb_ind = ind(ynew(i,:).lt.yref_lines(i))
-    ye_ind = ind(ynew(i,:).eq.yref_lines(i))
+;---Get the indices where the y curve is above, below, equal to the ref line.
+    ya_ind := ind(ynew(i,:).gt.yref_lines(i))
+    yb_ind := ind(ynew(i,:).lt.yref_lines(i))
+    ye_ind := ind(ynew(i,:).eq.yref_lines(i))
 ;
 ; Create new array to hold bar charts.  For each old y point, we need
 ; five new y points to represent the closed rectangle.
 ;
     if(.not.any(ismissing(ya_ind)))
-      nya(i) = 5*dimsizes(ya_ind)              ; # values above ref line
-      iya(i,0:dimsizes(ya_ind)-1) = ya_ind     ; indexes above ref line
-      yabove(i,0:nya(i)-5:5)  = yref_lines(i)
-      yabove(i,1:nya(i)-4:5)  = ynew(i,ya_ind)
-      yabove(i,2:nya(i)-3:5)  = ynew(i,ya_ind)
-      yabove(i,3:nya(i)-2:5)  = yref_lines(i)
-      yabove(i,4:nya(i)-1:5)  = yref_lines(i)
+      nabove(i) = 5*dimsizes(ya_ind)              ; # values above ref line
+      indabove(i,0:dimsizes(ya_ind)-1) = ya_ind     ; indexes above ref line
+      yabove(i,0:nabove(i)-5:5)  = yref_lines(i)
+      yabove(i,1:nabove(i)-4:5)  = ynew(i,ya_ind)
+      yabove(i,2:nabove(i)-3:5)  = ynew(i,ya_ind)
+      yabove(i,3:nabove(i)-2:5)  = yref_lines(i)
+      yabove(i,4:nabove(i)-1:5)  = yref_lines(i)
 
-      xabove(i,0:nya(i)-5:5) = xnew(i,ya_ind) - bar_widths(i)/2.
-      xabove(i,1:nya(i)-4:5) = xnew(i,ya_ind) - bar_widths(i)/2.
-      xabove(i,2:nya(i)-3:5) = xnew(i,ya_ind) + bar_widths(i)/2.
-      xabove(i,3:nya(i)-2:5) = xnew(i,ya_ind) + bar_widths(i)/2.
-      xabove(i,4:nya(i)-1:5) = xnew(i,ya_ind) - bar_widths(i)/2.
+      xabove(i,0:nabove(i)-5:5) = xnew(i,ya_ind) - bar_widths(i)/2.
+      xabove(i,1:nabove(i)-4:5) = xnew(i,ya_ind) - bar_widths(i)/2.
+      xabove(i,2:nabove(i)-3:5) = xnew(i,ya_ind) + bar_widths(i)/2.
+      xabove(i,3:nabove(i)-2:5) = xnew(i,ya_ind) + bar_widths(i)/2.
+      xabove(i,4:nabove(i)-1:5) = xnew(i,ya_ind) - bar_widths(i)/2.
     else
-      nya(i) = 0
+      nabove(i) = 0
     end if  
     if(.not.any(ismissing(yb_ind))) 
-      nyb(i) = 5*dimsizes(yb_ind)              ; # values below ref line
-      iyb(i,0:dimsizes(yb_ind)-1) = yb_ind     ; indexes below ref line
+      nbelow(i) = 5*dimsizes(yb_ind)              ; # values below ref line
+      indbelow(i,0:dimsizes(yb_ind)-1) = yb_ind     ; indexes below ref line
 
-      ybelow(i,0:nyb(i)-5:5) = yref_lines(i)
-      ybelow(i,1:nyb(i)-4:5) = ynew(i,yb_ind)
-      ybelow(i,2:nyb(i)-3:5) = ynew(i,yb_ind)
-      ybelow(i,3:nyb(i)-2:5) = yref_lines(i)
-      ybelow(i,4:nyb(i)-1:5) = yref_lines(i)
+      ybelow(i,0:nbelow(i)-5:5) = yref_lines(i)
+      ybelow(i,1:nbelow(i)-4:5) = ynew(i,yb_ind)
+      ybelow(i,2:nbelow(i)-3:5) = ynew(i,yb_ind)
+      ybelow(i,3:nbelow(i)-2:5) = yref_lines(i)
+      ybelow(i,4:nbelow(i)-1:5) = yref_lines(i)
 
-      xbelow(i,0:nyb(i)-5:5) = xnew(i,yb_ind) - bar_widths(i)/2.
-      xbelow(i,1:nyb(i)-4:5) = xnew(i,yb_ind) - bar_widths(i)/2.
-      xbelow(i,2:nyb(i)-3:5) = xnew(i,yb_ind) + bar_widths(i)/2.
-      xbelow(i,3:nyb(i)-2:5) = xnew(i,yb_ind) + bar_widths(i)/2.
-      xbelow(i,4:nyb(i)-1:5) = xnew(i,yb_ind) - bar_widths(i)/2.
+      xbelow(i,0:nbelow(i)-5:5) = xnew(i,yb_ind) - bar_widths(i)/2.
+      xbelow(i,1:nbelow(i)-4:5) = xnew(i,yb_ind) - bar_widths(i)/2.
+      xbelow(i,2:nbelow(i)-3:5) = xnew(i,yb_ind) + bar_widths(i)/2.
+      xbelow(i,3:nbelow(i)-2:5) = xnew(i,yb_ind) + bar_widths(i)/2.
+      xbelow(i,4:nbelow(i)-1:5) = xnew(i,yb_ind) - bar_widths(i)/2.
     else
-      nyb(i) = 0
+      nbelow(i) = 0
     end if  
     if(.not.any(ismissing(ye_ind))) 
-      nye(i) = 5*dimsizes(ye_ind)              ; # values equal ref line
-      iye(i,0:dimsizes(ye_ind)-1) = ye_ind     ; indexes equal ref line
+      nequal(i) = 5*dimsizes(ye_ind)              ; # values equal ref line
+      indequal(i,0:dimsizes(ye_ind)-1) = ye_ind     ; indexes equal ref line
 
-      yequal(i,0:nye(i)-1:5) = yref_lines(i)
+      yequal(i,0:nequal(i)-1:5) = yref_lines(i)
 
-      xequal(i,0:nye(i)-5:5) = xnew(i,ye_ind) - bar_widths(i)/2.
-      xequal(i,1:nye(i)-4:5) = xnew(i,ye_ind) - bar_widths(i)/2.
-      xequal(i,2:nye(i)-3:5) = xnew(i,ye_ind) + bar_widths(i)/2.
-      xequal(i,3:nye(i)-2:5) = xnew(i,ye_ind) + bar_widths(i)/2.
-      xequal(i,4:nye(i)-1:5) = xnew(i,ye_ind) - bar_widths(i)/2.
+      xequal(i,0:nequal(i)-5:5) = xnew(i,ye_ind) - bar_widths(i)/2.
+      xequal(i,1:nequal(i)-4:5) = xnew(i,ye_ind) - bar_widths(i)/2.
+      xequal(i,2:nequal(i)-3:5) = xnew(i,ye_ind) + bar_widths(i)/2.
+      xequal(i,3:nequal(i)-2:5) = xnew(i,ye_ind) + bar_widths(i)/2.
+      xequal(i,4:nequal(i)-1:5) = xnew(i,ye_ind) - bar_widths(i)/2.
     else
-      nye(i) = 0
+      nequal(i) = 0
     end if  
-    delete(ya_ind)
-    delete(yb_ind)
-    delete(ye_ind)
   end do
 
-  delete(xnew)
-  delete(ynew)  
+  delete([/xnew,ynew/])
+
+  return([/xabove,yabove,xbelow,ybelow,xequal,yequal,\
+           nabove,nbelow,nequal,indabove,indbelow,indequal/])
 end
 
 
@@ -5462,33 +5466,21 @@ begin
 ;---Delete unneeded lists
       delete([/bar_array_list,bar_color_list,bar_pattern_list,bar_scales_list/])
 ;
-; Loop across curves and figure out which points are above, below,
-; and equal to the references lines.  First create arrays to hold points
-; above, below, and equal to reference lines.
-;
-      xabove = new((/ncurves,5*nptsbar/),double,1e36)
-      yabove = new((/ncurves,5*nptsbar/),double,1e36)
-      xbelow = new((/ncurves,5*nptsbar/),double,1e36)
-      ybelow = new((/ncurves,5*nptsbar/),double,1e36)
-      xequal = new((/ncurves,5*nptsbar/),double,1e36)
-      yequal = new((/ncurves,5*nptsbar/),double,1e36)
-;
-; Arrays to hold number of points in each set of above/below points,
-; and the index values where points fall above, below, and equal
-; to the Y ref value.
-;
-      nabove   = new(ncurves,integer)
-      nbelow   = new(ncurves,integer)
-      nequal   = new(ncurves,integer)
-      indabove = new((/ncurves,nptsbar/),integer)
-      indbelow = new((/ncurves,nptsbar/),integer)
-      indequal = new((/ncurves,nptsbar/),integer)
-;
 ; Fill in values for filled bars (that will be filled later).
 ;
-      filled_bars(xbar,ybar,xabove,yabove,xbelow,ybelow,xequal,yequal, \
-                  nabove,nbelow,nequal,indabove,indbelow,indequal, \
-                  yref_line,bar_widths)
+      filled_bar_list = filled_bars(xbar,ybar,nptsbar,yref_line,bar_widths)
+      xabove = filled_bar_list[0]
+      yabove = filled_bar_list[1]
+      xbelow = filled_bar_list[2]
+      ybelow = filled_bar_list[3]
+      xequal = filled_bar_list[4]
+      yequal = filled_bar_list[5]
+      nabove = filled_bar_list[6]
+      nbelow = filled_bar_list[7]
+      nequal = filled_bar_list[8]
+      indabove = filled_bar_list[9]
+      indbelow = filled_bar_list[10]
+      indequal = filled_bar_list[11]
 ;
 ; Combine the above/below/equal arrays into one X/Y array so that we can
 ; pass to gsn_xy routine. Make the 5th point missing, since the 5th point
@@ -5511,7 +5503,7 @@ begin
 
         copy_var_atts(xbar,xinterp,"")
         copy_var_atts(ybar,yinterp,"")
-       if(na_max.gt.0)
+        if(na_max.gt.0)
           xinterp(0:ncurves3-1:3,0:na_max-1)   = xabove(:,0:na_max-1)
           yinterp(0:ncurves3-1:3,0:na_max-1)   = yabove(:,0:na_max-1)
           yinterp(0:ncurves3-1:3,4:na_max-1:5) = yinterp@_FillValue
