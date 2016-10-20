@@ -184,7 +184,7 @@ NhlErrorTypes betainc_W( void )
  */
       tmp_b = &((double*)b)[i];
     }
-    if(type_x == NCL_double) tmp_alpha = &((double*)alpha)[i];
+    if(type_output == NCL_double) tmp_alpha = &((double*)alpha)[i];
 
     if(contains_missing(tmp_x,1,has_missing_x,missing_dx.doubleval)) {
       *tmp_alpha = missing_dx.doubleval;
@@ -192,7 +192,7 @@ NhlErrorTypes betainc_W( void )
     else {
       NGCALLF(betainc,BETAINC)(tmp_x,tmp_a,tmp_b,tmp_alpha);
     }
-    if(type_x != NCL_double) ((float*)alpha)[i] = (float)*tmp_alpha;
+    if(type_output != NCL_double) ((float*)alpha)[i] = (float)*tmp_alpha;
   }
 /*
  * Free memory.
@@ -352,9 +352,9 @@ NhlErrorTypes gammainc_W( void )
       tmp_a = &((double*)a)[i];
     }
 
-    if(type_x == NCL_double) tmp_cum = &((double*)cum)[i];
+    if(type_output == NCL_double) tmp_cum = &((double*)cum)[i];
     NGCALLF(cumgam,CUMGAM)(tmp_x,tmp_a,tmp_cum,&tmp_ccum);
-    if(type_x != NCL_double) ((float*)cum)[i] = (float)*tmp_cum;
+    if(type_output != NCL_double) ((float*)cum)[i] = (float)*tmp_cum;
   }
 /*
  * Free memory.
