@@ -60,7 +60,7 @@ set noCN = ""
 #
 
 while ($#argv > 0)
-    switch ($1)
+    switch ("$1")
         case "-v":
             shift
 
@@ -171,7 +171,7 @@ while ($#argv > 0)
             breaksw
 
         default:
-            set file = $1
+            set file = "$1"
             shift
     endsw
 end
@@ -206,7 +206,7 @@ endif
 #
 # check for http prefix and if so assume opendap
 #
-set ishttp = `echo $file | sed -e'/^http/s/http.*/http/'`
+set ishttp = `echo "$file" | sed -e'/^http/s/http.*/http/'`
 
 if ( "$ishttp" == "http") then
     set ftype = "HTTP" 
@@ -223,7 +223,7 @@ endif
 # so that NCL knows how to open it with addfile().  Check for the
 # existence of the file both with and without the suffix.
 # 
-if ("$ishttp" != "http" && ! -e $file && ! -e $prefix) then
+if ("$ishttp" != "http" && ! -e "$file" && ! -e "$prefix") then
     echo
     echo "  ${progname}: error: neither '$file' nor '$prefix' exists."
     echo
@@ -583,9 +583,9 @@ cat << 'EOF_NCL' >! $tmp_nclfile
 # Construct the command line.
 #
 if ($?vars) then
-    eval ncl $noCN -n 'filename=\"$file\"' nvars=$nvars coords=$coords vars=$vars 'ftype=\"$ftype\"' singleElemDims=$singleElemDims 'timePeriodSuffix=$tps' $tmp_nclfile
+    eval ncl $noCN -n 'filename=\""$file"\"' nvars=$nvars coords=$coords vars=$vars 'ftype=\"$ftype\"' singleElemDims=$singleElemDims 'timePeriodSuffix=$tps' $tmp_nclfile
 else
-    eval ncl $noCN -n 'filename=\"$file\"' nvars=$nvars coords=$coords 'ftype=\"$ftype\"' singleElemDims=$singleElemDims 'timePeriodSuffix=$tps' $tmp_nclfile
+    eval ncl $noCN -n 'filename=\""$file"\"' nvars=$nvars coords=$coords 'ftype=\"$ftype\"' singleElemDims=$singleElemDims 'timePeriodSuffix=$tps' $tmp_nclfile
 endif
 
 #
