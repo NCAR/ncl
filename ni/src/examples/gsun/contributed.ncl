@@ -1166,6 +1166,52 @@ begin
   return (x)
 end
 
+;********************************************************************
+; D. Shea
+; set a _FillValue "automatically" 
+; If a variable has a "_FillValue" use it, if not "missing_value" etc.
+; if none on file, then return "No_FillValue"  
+; This function should be used within the "new" statement.
+; example of inline use: var = new(dimsizes(x),typeof(x),getFillValue(x))
+
+undef("getFillValue")
+function getFillValue (x)
+local FillValue
+begin
+  if (isatt(x,"_FillValue")) then
+      FillValue = x@_FillValue
+  else
+      if (isatt(x,"missing_value")) then
+           FillValue = x@missing_value
+      else
+           FillValue = "No_FillValue"
+      end if
+  end if
+
+   return (FillValue)
+end
+;********************************************************************
+; D. Shea
+; set a numeric _FillValue "automatically" 
+; If a variable has a "_FillValue" use it, if not "missing_value" etc.
+; if none on file, then set default by variable type 
+; example of inline use: var = new(dimsizes(x),typeof(x),getFillValue(x))
+
+undef("getVarFillValue")
+function getVarFillValue (x)
+local FillValue
+begin
+  if (isatt(x,"_FillValue")) then
+      return( x@_FillValue )
+  else
+      if (isatt(x,"missing_value")) then
+           return( x@missing_value )
+      else
+           return( default_fillvalue(typeof(x)) )
+      end if
+  end if
+end
+
 ; *****************************************************************
 ; Calculate wind speed
 ; *****************************************************************
@@ -1559,52 +1605,6 @@ begin
     qsort(y)
     y_ind = get1Dindex(y_old, y)
     x = x(y_ind)
-  end if
-end
-
-;********************************************************************
-; D. Shea
-; set a _FillValue "automatically" 
-; If a variable has a "_FillValue" use it, if not "missing_value" etc.
-; if none on file, then return "No_FillValue"  
-; This function should be used within the "new" statement.
-; example of inline use: var = new(dimsizes(x),typeof(x),getFillValue(x))
-
-undef("getFillValue")
-function getFillValue (x)
-local FillValue
-begin
-  if (isatt(x,"_FillValue")) then
-      FillValue = x@_FillValue
-  else
-      if (isatt(x,"missing_value")) then
-           FillValue = x@missing_value
-      else
-           FillValue = "No_FillValue"
-      end if
-  end if
-
-   return (FillValue)
-end
-;********************************************************************
-; D. Shea
-; set a numeric _FillValue "automatically" 
-; If a variable has a "_FillValue" use it, if not "missing_value" etc.
-; if none on file, then set default by variable type 
-; example of inline use: var = new(dimsizes(x),typeof(x),getFillValue(x))
-
-undef("getVarFillValue")
-function getVarFillValue (x)
-local FillValue
-begin
-  if (isatt(x,"_FillValue")) then
-      return( x@_FillValue )
-  else
-      if (isatt(x,"missing_value")) then
-           return( x@missing_value )
-      else
-           return( default_fillvalue(typeof(x)) )
-      end if
   end if
 end
 ; **************************************************************
