@@ -3849,6 +3849,30 @@ Grib2FileRecord *therec;
 			continue;
 
 		/* Handle coordinate attributes,  level, initial_time, forecast_time */
+		if (step->traits.aerosol_type != 65535) {
+			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("aerosol_type");
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
+					       "4.233.table",step->traits.aerosol_type,-1,ct) < NhlWARNING) {
+				return;
+			}
+			if (ct->descrip) {
+				*tmp_string = NrmStringToQuark(ct->descrip);
+			}
+			else {
+				sprintf(buf,"%d",step->traits.aerosol_type);
+				*tmp_string = NrmStringToQuark(buf);
+			}
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+				_NclCreateVal(NULL, NULL,
+					      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
+					      PERMANENT, NULL, nclTypestringClass);
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+		}
 		if (step->yymmddhh_isatt) {
 			att_list_ptr = (Grib2AttInqRecList *) NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
 			att_list_ptr->next = step->theatts;
@@ -3861,7 +3885,6 @@ Grib2FileRecord *therec;
 			step->theatts = att_list_ptr;
 			step->n_atts++;
 		}
-
 		/* 
 		 * don't create this att for observational data -- pds_templates 20 and 30 (as far as I can tell)
 		 */
@@ -3903,6 +3926,7 @@ Grib2FileRecord *therec;
 						       "4.15.table",grib_rec->spatial_proc,-1,ct) < NhlWARNING) {
 					return;
 				}
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 				if (ct->descrip) {
 					*tmp_string = NrmStringToQuark(ct->descrip);
 				}
@@ -5411,19 +5435,21 @@ Grib2FileRecord *g2frec;
 {
     int n_lvs = 1;
     int i;
-    Grib2RecordInqRecList   *strt,
-                            *tmp;
+    Grib2RecordInqRecList   *strt, *tmp;
+    int warn = 0;
 
     *lv_vals1 = NULL;
     strt = lstep;
     while(strt->next != NULL) {
         if (!g2LVNotEqual(strt, strt->next)) {
-		if ((int)(g2frec->options[GRIB_PRINT_RECORD_INFO_OPT].values) != 0) {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB2: %s contains possibly duplicated records %d and %d. Record %d will be ignored.",
-				  NrmQuarkToString(thevar->var_info.var_name_quark),strt->rec_inq->rec_num, 
-				  strt->next->rec_inq->rec_num,
-				  strt->next->rec_inq->rec_num);
-		}
+		/*if ((int)(g2frec->options[GRIB_PRINT_RECORD_INFO_OPT].values) != 0) {*/
+			if (! warn)
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB2: %s contains records that NCL cannot currently differentiate. One or more records will be ignored.",
+					  NrmQuarkToString(thevar->var_info.var_name_quark),strt->rec_inq->rec_num, 
+					  strt->next->rec_inq->rec_num,
+					  strt->rec_inq->rec_num);
+			warn = 1;
+		/*}*/
 		tmp = strt->next;
 		strt->next = strt->next->next;
 		thevar->n_entries--;
@@ -10234,6 +10260,9 @@ static void *Grib2OpenFile
                     NhlFree(g2rec);
                     return NULL;
             }
+	    g2rec[nrecs]->sec4[i]->prod_params->aerosol_type = 65535;
+	    g2rec[nrecs]->sec4[i]->prod_params->size_interval_type = 255;
+	    g2rec[nrecs]->sec4[i]->prod_params->wavelength_interval_type = 255;
 
             switch (g2rec[nrecs]->sec4[i]->pds_num) {
 		    int offset;
@@ -10933,6 +10962,23 @@ static void *Grib2OpenFile
 		    }
                     break;
 
+                case 48:
+			/* aerosols -- leave the interval_type params set to missing (255)
+			   until we can implement size and wavelength dimensions */
+
+			g2rec[nrecs]->sec4[i]->prod_params->aerosol_type = g2fld->ipdtmpl[2];
+			/*g2rec[nrecs]->sec4[i]->prod_params->size_interval_type = g2fld->ipdtmpl[3];*/
+			g2rec[nrecs]->sec4[i]->prod_params->size_first_scale_factor = g2fld->ipdtmpl[4];
+			g2rec[nrecs]->sec4[i]->prod_params->size_first_scale_value = g2fld->ipdtmpl[5];
+			g2rec[nrecs]->sec4[i]->prod_params->size_second_scale_factor = g2fld->ipdtmpl[6];
+			g2rec[nrecs]->sec4[i]->prod_params->size_second_scale_value = g2fld->ipdtmpl[7];
+			/*g2rec[nrecs]->sec4[i]->prod_params->wavelength_interval_type = g2fld->ipdtmpl[8];*/
+			g2rec[nrecs]->sec4[i]->prod_params->wavelength_first_scale_factor = g2fld->ipdtmpl[9];
+			g2rec[nrecs]->sec4[i]->prod_params->wavelength_first_scale_value = g2fld->ipdtmpl[10];
+			g2rec[nrecs]->sec4[i]->prod_params->wavelength_second_scale_factor = g2fld->ipdtmpl[11];
+			g2rec[nrecs]->sec4[i]->prod_params->wavelength_second_scale_value = g2fld->ipdtmpl[12];
+
+		    break;
                 case 254:
                     /*
                      * CCITT IA5 character string.
@@ -11282,6 +11328,9 @@ static void *Grib2OpenFile
 	    g2inqrec->traits.stat_proc_type = g2rec[i]->sec4[j]->prod_params->typeof_stat_proc;
 	    g2inqrec->traits.first_level_type = g2rec[i]->sec4[j]->prod_params->typeof_first_fixed_sfc;
 	    g2inqrec->traits.second_level_type =  g2rec[i]->sec4[j]->prod_params->typeof_second_fixed_sfc;
+	    g2inqrec->traits.aerosol_type =  g2rec[i]->sec4[j]->prod_params->aerosol_type;
+	    g2inqrec->traits.aerosol_size_interval_type = g2rec[i]->sec4[j]->prod_params->size_interval_type;
+            g2inqrec->traits.aerosol_wavelength_interval_type = g2rec[i]->sec4[j]->prod_params->wavelength_interval_type;
 
 	    g2inqrec->qcenter_name = NrmStringToQuark(g2rec[i]->sec1.center_name);
 
