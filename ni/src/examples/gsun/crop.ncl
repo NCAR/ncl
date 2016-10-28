@@ -1962,8 +1962,8 @@ begin
    return(evt)
 end
 ;-----
-undef("aerores_full_fao56)")
-function areores_full_fao56(zm:numeric, zom:numeric, zh:numeric, zoh:numeric \
+undef("aerores_full_fao56")
+function aerores_full_fao56(zm:numeric, zom:numeric, zh:numeric, zoh:numeric \
                            ,d:numeric, uz:numeric, uzopt[1]:integer)
 ;
 ; Aerodynamic Resistance: http://agsys.cra-cin.it/tools/EvapoTranspiration/help/
@@ -2012,7 +2012,7 @@ begin
 end
 ;-----
 undef("aerores_grass_fao56")
-function areores_grass_fao56(ch:numeric, u2:numeric, aeopt[1]:integer)
+function aerores_grass_fao56(ch:numeric, u2:numeric, aeopt[1]:integer)
 ;
 ; Technically: Aerodynamic resistance for a grass reference surface
 ; In practice: For a wide range of crops 
