@@ -22,7 +22,7 @@
 MYNAME          =       libnfp
 
 EXTRA_INCLUDES  = -I../../ncl
-EXTRA_CDEFINES  = $(UDUNITS_DEFS) $(V5D_DEFS) $(GRIDSPEC_DEFS) $(ESMF_DEFS) $(KML_DEFS)
+EXTRA_CDEFINES  = $(UDUNITS_DEFS) $(V5D_DEFS) $(GRIDSPEC_DEFS) $(ESMF_DEFS) $(KML_DEFS) $(EEMD_DEFS)
 
 HDRS = wrapper.h nctime.h
 
@@ -33,6 +33,15 @@ UDUNITS_OBJS = udunitsW.o utCalendar2_cal.o
 #else
 #define UDUNITS_SRCS
 #define UDUNITS_OBJS
+#endif
+
+#ifdef BuildEEMD
+EEMD_DEFS = -DBuildEEMD
+EEMD_SRCS = eemd.c eemdW.c
+EEMD_OBJS = eemd.o eemdW.o
+#else
+#define EEMD_SRCS
+#define EEMD_OBJS
 #endif
 
 # ifdef BuildV5D
@@ -89,7 +98,7 @@ CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cancorW.c cdf_dpW.c chiinvW.c 
 	gammaW.c gamfitW.c spiW.c oceanW.c dgeevxW.c areapolyW.c kolsm2W.c              \
 	kmeansW.c thornW.c wrf_vinterpW.c wrf_cloud_topW.c wrfwpsW.c speiW.c spei_func.c \
 	auxiliary.c lmoments.c pdfs.c  thornthwaite.c  wetbulbW.c mlegevW.c 		\
-	wrf_cloud_fracW.c eemdW.c
+	wrf_cloud_fracW.c
 
 COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o         \
         conformW.o csagridW.o cssgridW.o ctwrapW.o cz2ccmW.o datesW.o                   \
@@ -114,10 +123,7 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o 
 	bfilterW.o weibullW.o trendmankenW.o determinantW.o fftshiftW.o thornW.o	\
 	kmeansW.o wrf_vinterpW.o wrf_cloud_topW.o wrfwpsW.o speiW.o spei_func.o		\
 	auxiliary.o lmoments.o pdfs.o  thornthwaite.o  wetbulbW.o mlegevW.o 		\
-	wrf_cloud_fracW.o eemdW.o
-
-EEMD_SRCS = eemd.c
-EEMD_OBJS = eemd.o
+	wrf_cloud_fracW.o
 
 OBJS = $(COBJS) $(UDUNITS_OBJS) $(V5D_OBJS) $(ESMF_OBJS) $(KML_OBJS) $(EEMD_OBJS)
 SRCS = $(CSRCS) $(UDUNITS_SRCS) $(V5D_SRCS) $(ESMF_SRCS) $(KML_SRCS) $(EEMD_SRCS)

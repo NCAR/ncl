@@ -65,7 +65,9 @@ extern NhlErrorTypes thornthwaite_r_W(void);
 extern NhlErrorTypes speidx_W(void);
 extern NhlErrorTypes kmeans_as136_W(void);
 extern NhlErrorTypes snindex_yrmo_W(void);
+#ifdef BuildEEMD
 extern NhlErrorTypes ceemdan_W(void);
+#endif
 extern NhlErrorTypes x_skewt_W(void);
 extern NhlErrorTypes y_skewt_W(void);
 extern NhlErrorTypes tmr_skewt_W(void);
@@ -1358,8 +1360,10 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
 
     NclRegisterFunc(snindex_yrmo_W,args,"snindex_yrmo",nargs);
+
+#ifdef BuildEEMD
 /*
- * Register "snindex_yrmo".
+ * Register "ceemdan"
  *
  * Create private argument array.
  */
@@ -1374,6 +1378,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(ceemdan_W,args,"ceemdan",nargs);
+#endif
 
 /*
  * Register "x_skewt".
