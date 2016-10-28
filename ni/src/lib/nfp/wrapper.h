@@ -64,6 +64,12 @@ extern void coerce_output_step(void *,double *,NclBasicDataTypes,
 extern float *coerce_input_float(void*,NclBasicDataTypes,ng_size_t,int,
                                    NclScalar*,NclScalar*);
 
+extern unsigned int *coerce_input_uint(void*,NclBasicDataTypes,ng_size_t,int,
+				      NclScalar*,NclScalar*);
+
+extern unsigned long *coerce_input_ulong(void*,NclBasicDataTypes,ng_size_t,int,
+					 NclScalar*,NclScalar*);
+
 extern void coerce_subset_input_float(void *,float *,ng_size_t,NclBasicDataTypes,
                                        ng_size_t,int,NclScalar*,NclScalar*);
 

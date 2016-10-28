@@ -114,7 +114,7 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o 
 	bfilterW.o weibullW.o trendmankenW.o determinantW.o fftshiftW.o thornW.o	\
 	kmeansW.o wrf_vinterpW.o wrf_cloud_topW.o wrfwpsW.o speiW.o spei_func.o		\
 	auxiliary.o lmoments.o pdfs.o  thornthwaite.o  wetbulbW.o mlegevW.o 		\
-	wrf_cloud_fracW.o
+	wrf_cloud_fracW.o eemdW.o
 
 EEMD_SRCS = eemd.c
 EEMD_OBJS = eemd.o

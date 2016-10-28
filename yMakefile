@@ -260,6 +260,14 @@ GRIB2STUFF:
 	@echo "n"
 #endif
 
+#ifdef BuildEEMD
+EEMDSTUFF:
+	@echo "y"
+#else
+EEMDSTUFF:
+	@echo "n"
+#endif
+
 #ifdef	BuildV5D
 V5DSTUFF:
 	@echo "y"
