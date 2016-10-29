@@ -67,9 +67,9 @@ NhlErrorTypes ceemdan_W( void )
 /*
  * Various
  */
-  ng_size_t nlon, nlat, ntim; 
-  size_t ntnltnln, nimntnltnln;
-  ng_size_t size_eemd, index_input, index_eemd;
+  ng_size_t i, nlon, nlat, ntim; 
+  size_t nltnln, ntnltnln, nimnt, nimntnltnln;
+  ng_size_t index_input, index_output;
   size_t num_imfs;
   libeemd_error_code error_code;
   int ret;
@@ -102,13 +102,18 @@ NhlErrorTypes ceemdan_W( void )
   }
   nlat = dsizes_input[ndims_input-3];
   nlon = dsizes_input[ndims_input-2];
-  ntim = dsizes_input[ndims_input-1];
-  ntnltnln = ntim * nlat * nlon;
-  num_imfs = emd_num_imfs((size_t)ntnltnln);
+  ntim = dsizes_input[ndims_input-1];      /* This is "N" in the C function */
+  num_imfs = emd_num_imfs((size_t)ntim);   /* This is "M" in the C function  */
   if(num_imfs == 0 || num_imfs == 1) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: the input spatial domain must contain at least 3 values.");
     return(NhlFATAL);
   }
+/*
+ * These are needed for various array sizes.
+ */ 
+  nltnln      = nlat * nlon;
+  ntnltnln    = ntim * nltnln;
+  nimnt       = num_imfs * ntim;
   nimntnltnln = num_imfs * ntnltnln;
 /*
  * Get argument # 1
@@ -203,7 +208,7 @@ NhlErrorTypes ceemdan_W( void )
  */
   if(type_input != NCL_double) {
     type_eemd = NCL_float;
-    tmp_input = (double *)calloc(ntnltnln,sizeof(double));
+    tmp_input = (double *)calloc(ntim,sizeof(double));
     if(tmp_input == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
@@ -280,17 +285,16 @@ NhlErrorTypes ceemdan_W( void )
  * Allocate space for eemd array.  For now, because we are not handling 
  * leftmost dimensions, the eemd size is the input size * num_imfs.
  */  
-  size_eemd = nimntnltnln;
   if(type_eemd != NCL_double) {
-    eemd = (void *)calloc(size_eemd, sizeof(float));
-    tmp_eemd = (double *)calloc(nimntnltnln,sizeof(double));
+    eemd = (void *)calloc(nimntnltnln, sizeof(float));
+    tmp_eemd = (double *)calloc(nimnt,sizeof(double));
     if(tmp_eemd == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for temporary eemd array");
       return(NhlFATAL);
     }
   }
   else {
-    eemd = (void *)calloc(size_eemd, sizeof(double));
+    eemd = (void *)calloc(nimntnltnln, sizeof(double));
   }
   if(eemd == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for eemd array");
@@ -298,35 +302,32 @@ NhlErrorTypes ceemdan_W( void )
   }
 
 /*
- * Coerce subsection of input (tmp_input) to double if necessary. Normally
- * we would just use coerce_input_double here, but in case we add 
- * leftmost dimensions later, we're using coerce_subset_input_double
- * for now.
+ * Loop across each lat/lon point and call C function.
  */
-  index_input  = index_eemd = 0;
-  if(type_input != NCL_double) {
-    coerce_subset_input_double(input,tmp_input,index_input,type_input,ntnltnln,0,NULL,NULL);
-  }
-  else {
-    tmp_input = &((double*)input)[index_input];
-  }
-  if(type_eemd == NCL_double) tmp_eemd = &((double*)eemd)[index_eemd];
+  for(i = 0; i < nltnln; i++) {
+    index_input  = i*ntim;
+    index_output = i*nimnt;
+    if(type_input != NCL_double) {
+      coerce_subset_input_double(input,tmp_input,index_input,type_input,ntim,0,NULL,NULL);
+    }
+    else {
+      tmp_input = &((double*)input)[index_input];
+    }
+    if(type_eemd == NCL_double) tmp_eemd = &((double*)eemd)[index_output];
 
-/*
- * Call the C routine.
- */
-  error_code = ceemdan(tmp_input, ntnltnln, tmp_eemd, num_imfs, *tmp_ensemble_size, 
-		       *tmp_noise_strength, *tmp_S_number, *tmp_num_siftings, 
-		       *tmp_rng_seed);
-  if(error_code) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: EEMD decomposition routine failed\n");
-    return(NhlFATAL);
+    error_code = ceemdan(tmp_input, ntim, tmp_eemd, num_imfs, *tmp_ensemble_size, 
+			 *tmp_noise_strength, *tmp_S_number, *tmp_num_siftings, 
+			 *tmp_rng_seed);
+    if(error_code) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: EEMD decomposition routine failed\n");
+      return(NhlFATAL);
+    }
   }
 /*
  * Coerce eemd back to float if necessary.
  */
   if(type_eemd == NCL_float) {
-    coerce_output_float_only(eemd,tmp_eemd,nimntnltnln,index_eemd);
+    coerce_output_float_only(eemd,tmp_eemd,nimnt,index_output);
   }
 
 /*
