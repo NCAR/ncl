@@ -67,6 +67,9 @@ extern NhlErrorTypes kmeans_as136_W(void);
 extern NhlErrorTypes snindex_yrmo_W(void);
 #ifdef BuildEEMD
 extern NhlErrorTypes ceemdan_W(void);
+extern NhlErrorTypes ceemdan_opt_W(void);
+extern NhlErrorTypes eemd_opt_W(void);
+extern NhlErrorTypes emd_num_imfs_W(void);
 #endif
 extern NhlErrorTypes x_skewt_W(void);
 extern NhlErrorTypes y_skewt_W(void);
@@ -490,7 +493,6 @@ extern NhlErrorTypes pslhor_W(void);
 extern NhlErrorTypes dz_height_W(void);
 extern NhlErrorTypes gc_latlon_W(void);
 extern NhlErrorTypes testspan_W(void);
-/*extern NhlErrorTypes emd_num_imfs_W(void);*/
 
 extern NhlErrorTypes monthday_W(void);
 extern NhlErrorTypes day_of_year_W(void);
@@ -1368,7 +1370,7 @@ void NclAddUserFuncs(void)
  * Create private argument array.
  */
     nargs = 0;
-    args = NewArgs(6);
+    args = NewArgs(7);
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"numeric",3,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
@@ -1376,8 +1378,40 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     NclRegisterFunc(ceemdan_W,args,"ceemdan",nargs);
+/*
+ * Register "ceemdan_opt"
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",3,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    NclRegisterFunc(ceemdan_opt_W,args,"ceemdan_opt",nargs);
+/*
+ * Register "eemd_opt"
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",3,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    NclRegisterFunc(eemd_opt_W,args,"eemd_opt",nargs);
+/*
+ * Register "emd_num_imfs".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    NclRegisterFunc(emd_num_imfs_W,args,"emd_num_imfs",nargs);
 #endif
 
 /*
@@ -2008,11 +2042,11 @@ void NclAddUserFuncs(void)
  *
  * Create private argument array
  */
-	nargs = 0;
-	args = NewArgs(2);
-	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
-	SetArgTemplate(args,1,"numeric",0,NclANY);nargs++;
-	NclRegisterFunc(wrf_cloud_frac_W,args,"wrf_cloud_fraction",nargs);
+        nargs = 0;
+        args = NewArgs(2);
+        SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,1,"numeric",0,NclANY);nargs++;
+        NclRegisterFunc(wrf_cloud_frac_W,args,"wrf_cloud_fraction",nargs);
 
 /*
  * Register "wrf_vintrp".
@@ -7159,20 +7193,6 @@ void NclAddUserFuncs(void)
 
     NclRegisterFunc(testspan_W,args,"testspan",nargs);
 /*
- * Register "emd_num_imfs".
- *
- * Create private argument array
- */
-/*
-    nargs = 0;
-    args = NewArgs(1);
-
-    dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-
-    NclRegisterFunc(emd_num_imfs_W,args,"emd_num_imfs",nargs);
-    */
-/*
  * Register "monthday".
  */
     nargs = 0;
@@ -9906,7 +9926,6 @@ NclScalar         *missing_uix)
   return(uix);
 }
 
-
 /*
  * Coerce data to unsigned long or just return a pointer to it if it is already ulong. 
  */
@@ -9952,7 +9971,6 @@ NclScalar         *missing_ulx)
   }
   return(ulx);
 }
-
 
 /*
  * Coerce a contiguous subset of the data to float.
