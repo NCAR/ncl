@@ -58,83 +58,158 @@ end
 ;            yinterp: numeric                                           ;
 ;           ref_line: numeric                                           ;
 ;                                                                       ;
-; Given a set of points represented by x and y, add interpolated values ;
-; where the line crosses at y = ref_line. x and y must be the same      ;
-; length, and ref_line must either be a scalar or the same length as x  ;
-; and y. ref_line can be an array of reference values, as long as there ;
-; is only one X/Y curve.                                                ;
+; Given a two arrays X and Y and a set of reference point values,       ;
+; return new X and Y arrays that contain extra interpolated points where;
+; values where Y crosses the reference point values.                    ;
+;                                                                       ;
+; This function was updated in NCL V6.4.0 to allow different            ;
+; dimensionalities for x, y, and ref_line. The different cases that     ;
+; it can handle are:
+;                                                                       ;
+;  - X and Y are 1D arrays of length npts, and ref_line is a scalar or  ;
+;    a 1D array of values                                               ;
+;  - X and Y are 2D arrays of length ncurves x npts, and ref_line is    ;
+;    a scalar or an array of length ncurves                             ;
+;  - One of X or Y is a 1D array of length npts, and the other is       ;
+;    length ncurves x npts, and ref_line is a scalar or an array of     ;
+;    length ncurves                                                     ;
+;  - X and Y are 1D arrays of length npts, and ref_line is a scalar or  ;
+;    a 1D array of values                                               ;
 ;                                                                       ;
 ; The dimension size of each interpolated set of points is returned.    ;
 ;***********************************************************************;
 undef("ref_line_interp")
-function ref_line_interp(x,y,xinterp,yinterp,ref_line)
-local ncurves, nref_lines, nlines, i, j, location, xnew, ynew, npts
+function ref_line_interp(x:numeric,y:numeric,ref_lines[*]:numeric)
+local dimsx, dimsy, rankx, ranky, nlines, ncurvesxy, ncurves, \
+nref_lines, nlines, i, j, location, xnew, ynew, npts,x1d,y1d
 begin
-;
-; Convert x and y into two dimensional arrays so we don't have to
-; test for whether we have one line or multiple lines.  Convert
-; ref_line to a 1-d array (if it isn't already).
-;
-  ndimsy = dimsizes(dimsizes(y))
-  ndimsx = dimsizes(dimsizes(x))
-  nref_lines = dimsizes(ref_line)
+;---Lots of error checking here
+  dimsx  = dimsizes(x)
+  dimsy  = dimsizes(y)
+  rankx  = dimsizes(dimsx)
+  ranky  = dimsizes(dimsy)
+  nlines = dimsizes(ref_lines)
 
-  if(ndimsy.eq.1)
-    ncurves = 1
-    nptsy   = dimsizes(y)
-    ynew    = onedtond(y,(/nref_lines,nptsy/))
+  if(any((/rankx,ranky/).gt.2)) then
+    print("ref_line_interp: error: X and Y must either be 1D or 2D arrays.")
+    exit
+  end if
+;---Check X and Y array sizes
+  if(rankx.eq.2) then
+    ncurvesxy = dimsx(0)
+    npts    = dimsx(1)
+    if(ranky.eq.1) then                                   ; Y is 1D, X is 2D
+      if(dimsy(0).ne.npts) then 
+        print("ref_line_interp: error: X and Y must have the same rightmost dimension.")
+        exit
+      end if        
+    else
+      if(dimsy(0).ne.ncurvesxy.or.dimsy(1).ne.npts) then    ; Y is 2D, X is 2D
+        print("ref_line_interp: error: If X and Y are 2D, they must the same dimensionality")
+        exit
+      end if        
+    end if
   else
-    ncurves = dimsizes(y(:,0))
-    nptsy   = dimsizes(y(0,:))
-    ynew    = y
+    if(ranky.eq.2) then                                   ; Y is 2D, X is 1D
+      ncurvesxy = dimsy(0)
+      npts    = dimsy(1)
+      if(dimsx(0).ne.npts) then 
+        print("ref_line_interp: error: X and Y must have the same rightmost dimension.")
+        exit
+      end if        
+      y2d = y
+    else                                                  ; Y is 1D, X is 1D
+      ncurvesxy = 1
+      npts    = dimsy(0)
+    end if
   end if
 
-  nlines = max((/ncurves,nref_lines/))
-
-  if(ndimsx.eq.1)
-    xnew = onedtond(x,(/nlines,nptsy/))
+;---Effor checking on ref_lines 
+  if(.not.(nlines.eq.1.or.nlines.eq.ncurvesxy.or.\
+          (nlines.gt.1.and.ncurvesxy.eq.1))) then
+    print("ref_line_interp: error: gsnYRefLine must be a scalar or an array of length ncurves")
+    exit
+  end if        
+;
+; Special case where X/Y are 1D, but we have multiple reference lines.
+; We will simply propagate X and Y to have nlines copies.
+;
+  if(nlines.gt.1.and.ncurvesxy.eq.1)
+    ncurves = nlines
   else
-    xnew = x
+    ncurves = ncurvesxy
   end if
 
-  refnew  = new((/nlines/),typeof(ref_line))
-  refnew  = ref_line
+;---Propagate X and Y to 2D if necessary.
+  if(rankx.eq.1) then
+    x2d = conform_dims((/ncurves,npts/),x,1)
+  else if(rankx.eq.2.and.nlines.ne.ncurvesxy) then    
+    x2d = reshape(x,(/ncurves,npts/))
+  else
+    x2d = x
+  end if
+  end if
 
-  xinterp(:,0) = xnew(:,0)
-  yinterp(:,0) = ynew(:,0)
-  npts         = new((/nlines/),integer)
+  if(ranky.eq.1) then
+    y2d = conform_dims((/ncurves,npts/),y,1)
+  else if(ranky.eq.2.and.nlines.ne.ncurvesxy) then    
+    y2d = reshape(y,(/ncurves,npts/))
+  else
+    y2d = y
+  end if
+  end if
 
+;---Propagate ref_lines to 1D array if necessary
+  if(nlines.gt.1) then
+    ref1d = ref_lines
+  else
+    ref1d = conform_dims(ncurves,ref_lines,-1)
+  end if
+
+;
+; Create new X and Y arrays to hold new data values.  Wherever the curve
+; crosses the reference line, an interpolation needs to be done to create 
+; a point *on* that reference line.
+;
+  xinterp = new((/ncurves,2*npts/),double,1e36)
+  yinterp = new((/ncurves,2*npts/),double,1e36)
+
+  copy_var_atts(x,xinterp,"")
+  copy_var_atts(y,yinterp,"")
+
+  xinterp(:,0) = x2d(:,0)
+  yinterp(:,0) = y2d(:,0)
+  num_interp_pts= new(ncurves,integer)
+;
 ; Loop through the rest of the points and find out where the curve crosses
 ; the reference line.  If it does, then do an interpolation.
 ; Store the location of the previous point (-1 if it is below the reference
 ; line, 0 if it is on the reference line, and 1 if it is above).
-
-  do j=0, nlines-1
+;
+  do j=0, ncurves-1
     num_crosses = 0
-    do i=1, nptsy-1
-      xinterp(j,i+num_crosses) = xnew(j,i)
-      yinterp(j,i+num_crosses) = ynew(j,i)
+    do i=1, npts-1
+      xinterp(j,i+num_crosses) = x2d(j,i)
+      yinterp(j,i+num_crosses) = y2d(j,i)
 
-      if(.not.ismissing(ynew(j,i)).and..not.ismissing(xnew(j,i)).and.\
-         .not.ismissing(ynew(j,i-1)).and..not.ismissing(xnew(j,i-1)))
-        if((ynew(j,i-1).lt.refnew(j).and.ynew(j,i).gt.refnew(j)).or.\
-           (ynew(j,i-1).gt.refnew(j).and.ynew(j,i).lt.refnew(j)))
-          xinterp(j,i+num_crosses)   = xy_ref_interp(xnew(j,i-1),xnew(j,i),\
-                                                     ynew(j,i-1),ynew(j,i),\
-                                                     refnew(j))
-          xinterp(j,i+num_crosses+1) = xnew(j,i)
-          yinterp(j,i+num_crosses)   = refnew(j)
-          yinterp(j,i+num_crosses+1) = ynew(j,i)
+      if(.not.ismissing(y2d(j,i)).and..not.ismissing(x2d(j,i)).and.\
+         .not.ismissing(y2d(j,i-1)).and..not.ismissing(x2d(j,i-1)))
+        if((y2d(j,i-1).lt.ref1d(j).and.y2d(j,i).gt.ref1d(j)).or.\
+           (y2d(j,i-1).gt.ref1d(j).and.y2d(j,i).lt.ref1d(j)))
+          xinterp(j,i+num_crosses)   = xy_ref_interp(x2d(j,i-1),x2d(j,i),\
+                                                     y2d(j,i-1),y2d(j,i),\
+                                                     ref1d(j))
+          xinterp(j,i+num_crosses+1) = x2d(j,i)
+          yinterp(j,i+num_crosses)   = ref1d(j)
+          yinterp(j,i+num_crosses+1) = y2d(j,i)
           num_crosses = num_crosses + 1
         end if
       end if
     end do
-    npts(j) = nptsy + num_crosses
+    num_interp_pts(j) = npts + num_crosses
   end do
-  delete(xnew)
-  delete(ynew)
-  delete(refnew)
-  return(npts)
+  delete([/x2d,y2d/])
+  return([/xinterp,yinterp,ref1d,num_interp_pts/])
 end
 
 ;***********************************************************************;
@@ -4824,18 +4899,11 @@ begin
 ; reference line filled in with some color.
 ;
     if(yref_fill_on.and..not.bar_chart) then
-;
-; Create new X and Y arrays to hold new data values.  Wherever the curve
-; crosses the reference line, an interpolation needs to be done to create 
-; a point *on* that reference line.
-;
-      xinterp = new((/nyref,2*npts/),double,1e36)
-      yinterp = new((/nyref,2*npts/),double,1e36)
-
-      copy_var_atts(x,xinterp,"")
-      copy_var_atts(y,yinterp,"")
-
-      new_npts = ref_line_interp(x,y,xinterp,yinterp,yref_line)
+      interp_list = ref_line_interp(x,y,yref_line)
+      xinterp  = interp_list[0]
+      yinterp  = interp_list[1]
+      new_yref_line = interp_list[2]
+      new_npts = interp_list[3]
     else
       if(bar_chart) then
 ;
@@ -5237,7 +5305,7 @@ begin
         xy_object@$var_string$=fill_xy_ref(wks,xy_object, \
                                      xinterp(i,0:new_npts(i)-1), \
                                      yinterp(i,0:new_npts(i)-1),\
-                                     yref_line(i),fill_above,fill_below)
+                                     new_yref_line(i),fill_above,fill_below)
       end do
     end if
 
@@ -5339,9 +5407,9 @@ begin
 ;
         if(nbelow(i).gt.0)
           if(.not.mlt_below_bar_colors) then
-            gsres@gsFillColor = yref_line_below(0)
+            gsres@gsFillColor := yref_line_below(0)
             if(dimsizes(yref_line_below).gt.1)
-              gsres@gsFillColor = yref_line_below(i)
+              gsres@gsFillColor := yref_line_below(i)
             end if
           end if
 ;

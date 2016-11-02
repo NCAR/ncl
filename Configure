@@ -169,6 +169,8 @@ set buildhdf5=`$makecmd HDF5STUFF`
 echo -n "..."
 set buildgrib2=`$makecmd GRIB2STUFF`
 echo -n "..."
+set buildeemd=`$makecmd EEMDSTUFF`
+echo -n "..."
 set buildv5d=`$makecmd V5DSTUFF`
 echo -n "..."
 # set buildpyngl=`$makecmd PYNGLSTUFF`
@@ -696,6 +698,34 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
   if (("$answer" != "") && ("$answer" != "$buildgdal")) then
       set buildgdal = $answer
       set newbuildgdal
+      set altered
+  endif
+
+#
+# EEMD
+#
+  if ($?verbose_option) then
+    cat <<"EOF"
+======================================================================
+
+	If you want to use the EEMD routine, you must download
+	and install the GSL library.
+
+	THIS LIBRARY IS NOT NEEDED FOR BUILDING NCAR GRAPHICS.
+
+======================================================================
+"EOF"
+  endif
+
+  echo ""
+  echo "Build EEMD support (optional) into NCL? ($buildeemd)"
+  echo "(Requires GSL ftp://ftp.gnu.org/gnu/gsl/"
+  echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+  set answer="$<"
+  if ("$answer" == "q") goto cleanup
+  if (("$answer" != "") && ("$answer" != "$buildeemd")) then
+      set buildeemd = $answer
+      set newbuildeemd
       set altered
   endif
 
@@ -1361,6 +1391,15 @@ if ($?newbuildgrib2) then
 	else
 		echo "#define BuildGRIB2 0" >> Site.local
 		echo "#define GRIB2lib" >> Site.local
+	endif
+endif
+
+if ($?newbuildeemd) then
+	if ("$buildeemd" == "y") then
+		echo "#define BuildEEMD 1" >> Site.local
+	else
+		echo "#define BuildEEMD 0" >> Site.local
+		echo "#define EEMDlib" >> Site.local
 	endif
 endif
 

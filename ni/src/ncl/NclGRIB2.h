@@ -410,6 +410,18 @@ typedef struct _g2prodParams {
     int scaled_value_lower_limit;
     int scale_factor_upper_limit;
     int scaled_value_upper_limit;
+    /* aerosols */
+    int aerosol_type;
+    int size_interval_type;
+    int size_first_scale_factor;
+    int size_first_scale_value;
+    int size_second_scale_factor;
+    int size_second_scale_value;
+    int wavelength_interval_type;
+    int wavelength_first_scale_factor;
+    int wavelength_first_scale_value;
+    int wavelength_second_scale_factor;
+    int wavelength_second_scale_value;
 } G2prodParams;
 
 /* Product Def Template (PDS) */
@@ -572,6 +584,9 @@ typedef struct _Grib2VarTraits {
 	int stat_proc_type;
 	int first_level_type;
 	int second_level_type;
+	int aerosol_type;
+	int aerosol_size_interval_type;
+	int aerosol_wavelength_interval_type;
 } Grib2VarTraits;
 
 struct _Grib2ParamList {

@@ -2674,8 +2674,8 @@ begin
     end if
   end if
 
-
-  if(.not.isatt(opts,"cnFillColors")) then
+;---Recognition of cnFillPalette was added in V6.4.0
+  if(.not.(isatt(opts,"cnFillColors").or.isatt(opts,"cnFillPalette"))) then
     opts@gsnSpreadColors = get_res_value_keep(opts, "gsnSpreadColors", True)
   end if
   opts@cnInfoLabelOn   = get_res_value_keep(opts,"cnInfoLabelOn", False)
@@ -4184,7 +4184,7 @@ begin
           map_args@mpRightCornerLonF  = map_args@mpRightCornerLonF + 360.0
         end if 
         
-        if ( map_args@mpRightCornerLonF .le. map_args@mpRightCornerLonF ) then
+        if ( map_args@mpRightCornerLonF .le. map_args@mpLeftCornerLonF ) then
           map_args@mpRightCornerLonF  = map_args@mpRightCornerLonF + 360.0
         end if
 

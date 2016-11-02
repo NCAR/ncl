@@ -159,9 +159,13 @@ endif
 set nfiles = 0
 set ifiles_t = ()
 while ($#argv > 0)
-    set hasdash = `echo $1 | awk '{print substr($0, 1, 1)}'`
+    set hasdash = `echo "$1" | awk '{print substr($0, 1, 1)}'`
     if ("$hasdash" != "-") then
-        set ifiles_t = ( $ifiles_t $1 )
+        if ( x"$ifiles_t"x == "xx") then
+	    set ifiles_t = ( "$1" )
+	else
+	    set ifiles_t = ( "$ifiles_t" "$1" )
+        endif
         @ nfiles += 1
         shift
     else
@@ -173,13 +177,13 @@ end
 # Parse options/arguments
 #
 while ($#argv > 0)
-    switch ($1)
+    switch ("$1")
         case "-i":
         case "-in":
         case "-input":
             shift
-            set dirin = $1
-            set len = `echo $dirin | awk '{print length($0)}'`
+            set dirin = "$1"
+            set len = `echo "$dirin" | awk '{print length($0)}'`
             if ($len > 0) then
                 shift
                 set hasdirin = 1
@@ -192,8 +196,8 @@ while ($#argv > 0)
         case "-out":
         case "-output":
             shift
-            set dirout = $1
-            set len = `echo $dirout | awk '{print length($0)}'`
+            set dirout = "$1"
+            set len = `echo "$dirout" | awk '{print length($0)}'`
             if ($len > 0) then
                 shift
             else
@@ -412,7 +416,7 @@ while ($#argv > 0)
                 set redirect = 1
                 breaksw
             else
-                set hasdash = `echo $1 | awk '{print substr($0, 1, 1)}'`
+                set hasdash = `echo "$1" | awk '{print substr($0, 1, 1)}'`
                 if ("$hasdash" != "-") then
                     set fout = "$1"
                     set std_rd = ">& $fout &"
@@ -517,63 +521,91 @@ while ($n <= $nfiles)
     # Was a URL provided?  This requires an OPeNDAP-enabled NCL.  If
     # it's a URL, don't bother verifying the file suffix.
     #
-    set http = `echo $ifiles_t[$n] | awk '{print index($0, "http")}'`
+    set http = `echo "$ifiles_t[$n]" | awk '{print index($0, "http")}'`
     if ($http > 0) then
-        set dir = `dirname $ifiles_t[$n]`
+        set dir = `dirname "$ifiles_t[$n]"`
         #set $if = `echo $ifiles_t[$n] | awk -F\/ '{print $NF}'`
-        set if = `basename $ifiles_t[$n]`
-        set of = $if:r
+        set if = `basename "$ifiles_t[$n]"`
+        set of = "$if:r"
 
-        set idirs = ( $idirs $dir )
-        set ifiles = ( $ifiles $if )
-        set ofiles = ( $ofiles $of )
+        if ( x"$idirs"x == "xx") then
+            set idirs = ( "$dir" )
+	else
+	    set idirs = ( "$idirs" "$dir" )
+        endif
+        if ( x"$ifiles"x == "xx") then
+	    set ifiles = ( "$if" )
+	else
+	    set ifiles = ( "$ifiles" "$if" )
+        endif
+        if ( x"$ofiles"x == "xx") then
+	    set ofiles = ( "$of" )
+	else
+	    set ofiles = ( "$ofiles" "$of" )
+        endif
         # No definitive way to verify file type
         set ftypes = ( $ftypes "OPeNDAP" )
 
         # Keep the name of the file actually specified on the command line
-        set ifiles_r = ( $ifiles_r $ifiles_t[$n] )
+        if (x"$ifiles_r"x == "xx") then
+	    set ifiles_r = ( "$ifiles_t[$n]" )
+	else
+	    set ifiles_r = ( "$ifiles_r" "$ifiles_t[$n]" )
+        endif
         @ n += 1
 
         continue
     endif
 
     set valid_file = 0
-    set fil = `basename $ifiles_t[$n]`
+    set t = "$ifiles_t[$n]"
+    set fil = `basename "$t"`
+
     if ($hasdirin == 1) then
-        set dir = $dirin
+        set dir = "$dirin"
     else
-        set dir = `dirname $ifiles_t[$n]`
+        set dir = `dirname "$ifiles_t[$n]"`
     endif
 
-    set relpath = `echo $dir | grep -c '.'`
-    set haspath = `echo $dir | grep -c '/'`
+    set relpath = `echo "$dir" | grep -c '.'`
+    set haspath = `echo "$dir" | grep -c '/'`
 
     # Does the file exist, and is it readble, as named?
     # Must account for different data directory if specified
     # If an input file already has an extension, ignore "-e"
     # for that file.
-    set sfxlen = `echo $fil:e | awk '{print length($0)}'`
-    if (((-e $ifiles_t[$n]) && (-r $ifiles_t[$n])) \
-            || ((-e $dirin/$ifiles_t[$n]) && (-r $dirin/$ifiles_t[$n]))) then
+    set sfx = "$fil"
+    if ( "$sfx" !~ *\.* ) then
+        set sfx = ""
+    else
+        while ("$sfx" =~ *\.*)
+            set sfx = "$sfx:e"
+        end
+    endif
+
+    set sfxlen = `echo "$sfx" | awk '{print length($0)}'`
+
+    if (((-e "$ifiles_t[$n]") && (-r "$ifiles_t[$n]")) \
+            || ((-e "$dirin/$ifiles_t[$n]") && (-r "$dirin/$ifiles_t[$n]"))) then
         if ($have_esfx == 1) then
-            set psfx = $esfx
-            set fil = $fil.$psfx
+            set psfx = "$esfx"
+            set fil = "$fil"."$psfx"
         endif
 
         if ($sfxlen == 0) then
             if ($have_esfx == 1) then
-                set psfx = $esfx
+                set psfx = "$esfx"
             else
                 goto VALID_FILE
             endif
         else
-            set psfx = "$fil:e"
+	    set psfx = "$sfx"
         endif
 
         # Does the file have a suffix (delineated by a ".") or
         # was a suffix specified via command-line options? If
         # yes, does the suffix indicate requested data type?
-        set lsfx = `echo $psfx | tr '[A-Z]' '[a-z]'`
+        set lsfx = `echo "$psfx" | tr '[A-Z]' '[a-z]'`
         switch ($lsfx)
 	   case nc:
 	   case cdf:
@@ -581,8 +613,8 @@ while ($n <= $nfiles)
 	   case nc4:
 	   case netcdf:
                 set ftype = "NETCDF"
-                set if = $fil
-                set of = $fil:r
+                set if = "$fil"
+                set of = "$if:r"
 
                 set valid_file = 1
                 goto VALID_FILE
@@ -597,8 +629,8 @@ while ($n <= $nfiles)
             case grb2:
             case grib2:
                 set ftype = "GRIB"
-                set if = $fil
-                set of = $fil:r
+                set if = "$fil"
+                set of = "$if:r"
 
                 set valid_file = 1
                 goto VALID_FILE
@@ -607,8 +639,8 @@ while ($n <= $nfiles)
             case hdf:
             case h4:
                 set ftype = "HDF"
-                set if = $fil
-                set of = $fil:r
+                set if = "$fil"
+                set of = "$if:r"
 
                 set valid_file = 1
                 goto VALID_FILE
@@ -618,8 +650,8 @@ while ($n <= $nfiles)
             case he2:
             case he4:
                 set ftype = "HDFEOS"
-                set if = $fil
-                set of = $fil:r
+                set if = "$fil"
+                set of = "$if:r"
 
                 set valid_file = 1
                 goto VALID_FILE
@@ -628,8 +660,8 @@ while ($n <= $nfiles)
             case hdf5:
             case h5:
                 set ftype = "HDF5"
-                set if = $fil
-                set of = $fil:r
+                set if = "$fil"
+                set of = "$if:r"
 
                 set valid_file = 1
                 goto VALID_FILE
@@ -638,8 +670,8 @@ while ($n <= $nfiles)
             case hdfeos5:
             case he5:
                 set ftype = "HDFEOS5"
-                set if = $fil
-                set of = $fil:r
+                set if = "$fil"
+                set of = "$if:r"
 
                 set valid_file = 1
                 goto VALID_FILE
@@ -680,8 +712,8 @@ while ($n <= $nfiles)
             case rtu:
             case rtz:
                 set ftype = "OGR"
-                set if = $fil
-                set of = $fil:r
+                set if = "$fil"
+                set of = "$if:r"
 
                 set valid_file = 1
                 goto VALID_FILE
@@ -701,16 +733,17 @@ while ($n <= $nfiles)
         # (ex.: 'ruc.grb' ==> 'ruc' exists).  This emulates NCL's
         # 'addfile()' functionality.  If found, keep it as input.
 
+        set tf = "$ifiles_t[$n]"
         if ($have_esfx == 1) then
-            if (( (-e $ifiles_t[$n]:r.$esfx) && (-r $ifiles_t[$n]:r.$esfx)) \
-                    || ( (-e $dirin/$ifiles_t[$n]:r.$esfx) && (-r $dirin/$ifiles_t[$n]:r.$esfx))) then
-                set psfx = $esfx
-                set if = $ifiles_t[$n]
-                set of = $ifiles_t[$n]:r
+            if (( (-e "$tf:r"."$esfx") && (-r "$tf:r"."$esfx")) \
+                    || ( (-e "$dirin/$tf:r"."$esfx") && (-r "$dirin/$tf:r"."$esfx"))) then
+                set psfx = "$esfx"
+                set if = "$tf"
+                set of = "$tf":r
             endif
         else
-	    if ( !( ((-e $ifiles_t[$n]:r) && (-r $ifiles_t[$n]:r))  \
-                    || ((-e $dirin/$ifiles_t[$n]:r) && (-r $dirin/$ifiles_t[$n]:r)) ) ) then
+	    if ( !( ((-e "$tf:r") && (-r "$tf:r"))  \
+                    || ((-e "$dirin/$tf:r") && (-r "$dirin/$tf:r")) ) ) then
             goto VALID_FILE
             endif
         endif
@@ -718,11 +751,12 @@ while ($n <= $nfiles)
         if ($sfxlen == 0) then
             goto VALID_FILE
         else
-            set psfx = $ifiles_t[$n]:e
+	    set psfx = "$sfx"
         endif
 
         set lsfx = `echo $psfx | tr '[A-Z]' '[a-z]'`
 
+	set tf = "$fil"
         switch ($lsfx)
 	   case nc:
 	   case cdf:
@@ -730,8 +764,8 @@ while ($n <= $nfiles)
 	   case nc4:
 	   case netcdf:
                 set ftype = "NETCDF"
-                set if = $fil
-                set of = $fil:r
+                set if = "$tf"
+                set of = "$if:r"
 
                 set valid_file = 1
                 goto VALID_FILE
@@ -746,8 +780,9 @@ while ($n <= $nfiles)
             case grb2:
             case grib2:
                 set ftype = "GRIB"
-                set if = $fil:r.$lsfx
-                set of = $fil:r
+                set if = "$tf:r".$lsfx
+                set of = "$tf:r"
+		echo if " " of
                 set valid_file = 1
                 goto VALID_FILE
                 breaksw
@@ -755,8 +790,8 @@ while ($n <= $nfiles)
             case hdf:
             case h4:
                 set ftype = "HDF"
-                set if = $fil:r.$lsfx
-                set of = $fil:r
+                set if = "$tf:r".$lsfx
+                set of = "$tf:r"
                 set valid_file = 1
                 goto VALID_FILE
                 breaksw
@@ -764,8 +799,8 @@ while ($n <= $nfiles)
             case hdf5:
             case h5:
                 set ftype = "HDF5"
-                set if = $fil:r.$lsfx
-                set of = $fil:r
+                set if = "$tf:r".$lsfx
+                set of = "$tf:r"
                 set valid_file = 1
                 goto VALID_FILE
                 breaksw
@@ -774,8 +809,8 @@ while ($n <= $nfiles)
             case he2:
             case he4:
                 set ftype = "HDFEOS"
-                set if = $fil:r.$lsfx
-                set of = $fil:r
+                set if = "$tf:r".$lsfx
+                set of = "$tf:r"
                 set valid_file = 1
                 goto VALID_FILE
                 breaksw
@@ -783,8 +818,8 @@ while ($n <= $nfiles)
             case hdfeos5:
             case he5:
                 set ftype = "HDFEOS5"
-                set if = $fil:r.$lsfx
-                set of = $fil:r
+                set if = "$tf:r".$lsfx
+                set of = "$tf:r"
                 set valid_file = 1
                 goto VALID_FILE
                 breaksw
@@ -824,8 +859,8 @@ while ($n <= $nfiles)
             case rtu:
             case rtz:
                 set ftype = "OGR"
-                set if = $fil:r.$lsfx
-                set of = $fil:r
+                set if = "$tf:r".$lsfx
+                set of = "$tf:r"
                 set valid_file = 1
                 goto VALID_FILE
                 breaksw
@@ -839,27 +874,45 @@ while ($n <= $nfiles)
 VALID_FILE:
 #    if ($?valid_file) then
     if ($valid_file == 0) then
-        echo "${progname}: file '$fil' not readable, does not contain recognized data, or doesn't exist, skipping."
+        echo "${progname}: file '$tf' not readable, does not contain recognized data, or doesn't exist, skipping."
         echo
         @ nbadf += 1
         @ n += 1
         continue
     else
         if (($haspath == 1) || ($relpath == 1)) then
-            set idirs = ( $idirs $dir )
-            set ifiles = ( $ifiles $if )
-            set ofiles = ( $ofiles $of )
-            set ftypes = ( $ftypes $ftype )
+            if ( x"$idirs"x == "xx") then
+	        set idirs = ( "$dir" )
+	    else
+	        set idirs = ( "$idirs" "$dir" )
+            endif
         else
-            set idirs = ( $idirs $dirin )
-            set ifiles = ( $ifiles $if )
-            set ofiles = ( $ofiles $of )
-            set ftypes = ( $ftypes $ftype )
+            if ( x"$idirs"x == "xx") then
+	        set idirs = ( "$dirin" )
+	    else
+	        set idirs = ( "$idirs" "$dir" )
+            endif
+	endif
+        if ( x"$ifiles"x == "xx") then
+	    set ifiles = ( "$if" )
+	else
+	    set ifiles = ( "$ifiles" "$if" )
         endif
+        if ( x"$ofiles"x == "xx") then
+	    set ofiles = ( "$of" )
+	else
+	    set ofiles = ( "$ofiles" "$of" )
+        endif
+        set ftypes = ( $ftypes $ftype )
     endif
 
     # Keep the name of the file actually specified on the command line
-    set ifiles_r = ( $ifiles_r $fil )
+    if (x"$ifiles_r"x == "xx") then
+	set ifiles_r = ( "$ifiles_t[$n]" )
+    else
+        set ifiles_r = ( "$ifiles_r" "$ifiles_t[$n]" )
+    endif
+
     @ n += 1
 end
 
@@ -1152,7 +1205,7 @@ begin
 	ncFileName = ncFileName + ".nc"
     end if
 
-    system("/bin/rm -f " + ncFileName)  ; remove pre-existing file (if any)
+    system("/bin/rm -f '" + ncFileName + "'")  ; remove pre-existing file (if any)
     fnc = addfile(ncFileName, "c")      ; "c"reate the netCDF file
 
 ;***************************************************
@@ -1636,17 +1689,17 @@ while ($n <= $nfiles)
     if ("$redirect" == 0) then
         echo "Processing file: $ifiles_r[$n]..."
         if ($?vars) then
-            eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' dynamic_unlim_name=$dynamic_unlim_name 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf
+            eval ncl $noCN -n 'pname=\"$progname\"' 'ftype=\"$ftypes[$n]\"' 'fili=\""$ifiles[$n]"\"' 'diri=\"'$idirs[$n]'\"' 'diro=\""$dirout"\"' 'filo=\""$ofiles[$n]"\"' nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' dynamic_unlim_name=$dynamic_unlim_name 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf
         else
-            eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' dynamic_unlim_name=$dynamic_unlim_name 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf
+            eval ncl $noCN -n 'pname=\"$progname\"' 'ftype=\"$ftypes[$n]\"' 'fili=\""$ifiles[$n]"\"' 'diri=\""$idirs[$n]"\"' 'diro=\""$dirout"\"' 'filo=\""$ofiles[$n]"\"' 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' dynamic_unlim_name=$dynamic_unlim_name 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf
         endif
     else
         # redirection requested
         (echo "Processing file: $ifiles_r[$n]..." >&! $f_rdir)
         if ($?vars) then
-            (eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' dynamic_unlim_name=$dynamic_unlim_name 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf >! $fout) >&! $f_rdir
+            (eval ncl $noCN -n 'pname=\"$progname\"' 'ftype=\"$ftypes[$n]\"' 'fili=\""$ifiles[$n]"\"' 'diri=\""$idirs[$n]"\"' 'diro=\""$dirout"\"' 'filo=\""$ofiles[$n]"\"' nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' dynamic_unlim_name=$dynamic_unlim_name 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf >! $fout) >&! $f_rdir
         else
-            (eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' dynamic_unlim_name=$dynamic_unlim_name 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf >! $fout) >&! $f_rdir
+            (eval ncl $noCN -n 'pname=\"$progname\"' 'ftype=\"$ftypes[$n]\"' 'fili=\""$ifiles[$n]"\"' 'diri=\""$idirs[$n]"\"' 'diro=\""$dirout"\"' 'filo=\""$ofiles[$n]"\"' 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level unsigned_to_signed=$unsigned_to_signed int64_to_double=$int64_to_double string_to_char=$string_to_char add_attribute=$add_attribute singleElemDims=$seds 'timePeriodSuffix=$tps' dynamic_unlim_name=$dynamic_unlim_name 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf >! $fout) >&! $f_rdir
         endif
     endif
 

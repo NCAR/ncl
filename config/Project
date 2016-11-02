@@ -93,6 +93,14 @@
 #endif
 #endif	/* BuildGRIB2 */
 
+#ifndef	BuildEEMD
+#define	BuildEEMD
+#else
+#if	!BuildEEMD
+#undef	BuildEEMD
+#endif
+#endif	/* BuildEEMD */
+
 #ifndef	BuildTRIANGLE
 #define	BuildTRIANGLE
 #else
@@ -238,12 +246,12 @@
 #endif	/* PNGlib */
 
 #ifndef CAIROlib
-#define CAIROlib -lcairo -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -lpthread -lXrender -lbz2
+#define CAIROlib -lcairo -lXrender -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -liconv -lbz2
 #endif
 
 /* This should be same as CAIROlib except with no explicit paths */
 #ifndef CAIROlibuser
-#define CAIROlibuser  -lcairo -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -lpthread -lXrender -lbz2
+#define CAIROlibuser -lcairo -lXrender -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -liconv -lbz2
 #endif
 
 #ifdef	BuildHDFEOS
@@ -297,6 +305,10 @@
 #ifndef	GRIB2lib
 #define       GRIB2lib   -lgrib2c -ljasper -lpng -lz -ljpeg
 #endif	/* GRIB2lib */
+
+#ifndef	EEMDlib
+#define       EEMDlib   -lgsl
+#endif	/* EEMDlib */
 
 #ifndef	NetCDFlib
 #define	NetCDFlib	-lnetcdf -lcurl
@@ -666,6 +678,7 @@ HDFEOS5LIB	= HDFEOS5lib
 HDF5LIB		= HDF5lib
 GDALLIB		= GDALlib
 GRIB2LIB	= GRIB2lib
+EEMDLIB		= EEMDlib
 UDUNITSLIB	= UdUnitslib
 V5DLIB      	= V5Dlib
 OpenCLLIB	= OpenCLlib

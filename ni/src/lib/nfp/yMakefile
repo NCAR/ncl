@@ -22,7 +22,7 @@
 MYNAME          =       libnfp
 
 EXTRA_INCLUDES  = -I../../ncl
-EXTRA_CDEFINES  = $(UDUNITS_DEFS) $(V5D_DEFS) $(GRIDSPEC_DEFS) $(ESMF_DEFS) $(KML_DEFS)
+EXTRA_CDEFINES  = $(UDUNITS_DEFS) $(V5D_DEFS) $(GRIDSPEC_DEFS) $(ESMF_DEFS) $(KML_DEFS) $(EEMD_DEFS)
 
 HDRS = wrapper.h nctime.h
 
@@ -33,6 +33,15 @@ UDUNITS_OBJS = udunitsW.o utCalendar2_cal.o
 #else
 #define UDUNITS_SRCS
 #define UDUNITS_OBJS
+#endif
+
+#ifdef BuildEEMD
+EEMD_DEFS = -DBuildEEMD
+EEMD_SRCS = eemd.c eemdW.c
+EEMD_OBJS = eemd.o eemdW.o
+#else
+#define EEMD_SRCS
+#define EEMD_OBJS
 #endif
 
 # ifdef BuildV5D
@@ -116,8 +125,8 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o 
 	auxiliary.o lmoments.o pdfs.o  thornthwaite.o  wetbulbW.o mlegevW.o 		\
 	wrf_cloud_fracW.o
 
-OBJS = $(COBJS) $(UDUNITS_OBJS) $(V5D_OBJS) $(ESMF_OBJS) $(KML_OBJS)
-SRCS = $(CSRCS) $(UDUNITS_SRCS) $(V5D_SRCS) $(ESMF_SRCS) $(KML_SRCS)
+OBJS = $(COBJS) $(UDUNITS_OBJS) $(V5D_OBJS) $(ESMF_OBJS) $(KML_OBJS) $(EEMD_OBJS)
+SRCS = $(CSRCS) $(UDUNITS_SRCS) $(V5D_SRCS) $(ESMF_SRCS) $(KML_SRCS) $(EEMD_SRCS)
 
 BuildSharedLibTarget(libNGnfp,$(OBJS),1,0,$(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
 LibraryTarget($(MYNAME),$(OBJS))
@@ -128,3 +137,4 @@ DependTarget($(SRCS))
 wrfW.o: wrfW.c
         $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c wrfW.c
 #endif
+

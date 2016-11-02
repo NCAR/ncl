@@ -202,6 +202,7 @@
 ;
 ;----------------------------------------------------------------------------
 
+undef("parse_date_ymd")
 function parse_date_ymd (instr:character, delim_str:string)
 
 local chr, d, delim, i, id, lengths, m, out, p, p1, p2, valid
@@ -318,6 +319,7 @@ end		; end function parse_date_ymd
 ;
 ;----------------------------------------------------------------------------
 
+undef("cal_proleptic")
 function cal_proleptic (time:numeric, option:integer, base_year:integer)
 
 local blocks_needed, dash, deficit, greg_offset, min_coord_year, \
@@ -432,6 +434,7 @@ end			; end function cal_proleptic
 ; Main function calendar_decode2.
 ;----------------------------------------------------------------------------
 
+undef("calendar_decode2")
 function calendar_decode2 (time:numeric, option:integer)
 
 local base_time_coord, base_time_days, bases, cal, cal_flag, chr, \

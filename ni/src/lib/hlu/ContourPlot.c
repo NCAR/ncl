@@ -12293,3 +12293,279 @@ NhlErrorTypes _NhlCellFill
 	c_sfseti("ty",save_ty);
 	return ret;
 }
+
+
+/*
+ * Function:	cnInitAreamap
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+NhlErrorTypes cnInitAreamap
+#if	NhlNeedProto
+(
+	NhlContourPlotLayer	cnl,
+	NhlString	entry_name
+)
+#else
+(cnl,entry_name)
+        NhlContourPlotLayer cnl;
+	NhlString	entry_name;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	NhlContourPlotLayerPart	*cnp = &(cnl->contourplot);
+
+	if (cnp->aws_id < 1) {
+		cnp->aws_id = 
+			_NhlNewWorkspace(NhlwsAREAMAP,
+					 NhlwsNONE,1000000*sizeof(int));
+		if (cnp->aws_id < 1) 
+			return MIN(ret,(NhlErrorTypes)cnp->aws_id);
+	}
+	if ((cnp->aws = _NhlUseWorkspace(cnp->aws_id)) == NULL) {
+		e_text = 
+			"%s: error reserving label area map workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(ret);
+	}
+
+#if 0
+	c_arseti("lc",(int) (cnp->amap_crange * 
+		 MIN(cnl->view.width,cnl->view.height)));
+#endif
+	subret = _NhlArinam(cnp->aws,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+
+	return ret;
+}
+
+typedef struct amap_node {
+	int flag;
+	int xcoord;
+	int ycoord;
+	int draw_next;
+	int draw_prev;
+	int coord_next;
+	int coord_prev;
+	int group_id;
+	int left_id;
+	int right_id;
+} Amap_Node;
+
+void _NHLCALLF(fixareamap,FIXAREAMAP)(int *amap) 
+{
+	int i,j,k;
+	/* find a point that maps into the visible area, 
+	   get the data value for this point, and figure out
+	   its area id. Then destroy the original areamap and create a new one
+	   that only draws a single fill area for the whole viewport.
+	   Color this area based on the area id. */
+
+	float wb,wt,wl,wr;
+	float xp[5],yp[5];
+	float out_of_range = 1e30;
+	int mystatus;
+	NhlErrorTypes subret;
+	float im, jm;
+	float data_val;
+	float *tlat, *tlon;
+	float txw, tyw;
+	int aid = -999;
+	float *levels;
+
+	if (Cnp->const_field  && ! Cnp->do_constf_fill) {
+		return;
+	}
+	if (Cnp->trans_obj->base.layer_class->base_class.class_name == NhlmapTransObjClass->base_class.class_name) {
+		subret = NhlVAGetValues(Cnp->trans_obj->base.id,
+					NhlNmpBottomWindowF,&wb,
+					NhlNmpTopWindowF,&wt,
+					NhlNmpLeftWindowF,&wl,
+					NhlNmpRightWindowF,&wr,
+					NULL);
+	}
+	else {
+		float x,y, width, height;
+		subret = NhlVAGetValues(Cnl->base.id,
+					NhlNvpXF,&x,
+					NhlNvpYF,&y,
+					NhlNvpWidthF,&width,
+					NhlNvpHeightF,&height,
+					NULL);
+		/*subret = _NhlNDCToWin(top,x,y,n,xout,yout,
+		  &mystatus,xmissing,ymissing)*/
+		subret = _NhlNDCToWin(Cnp->trans_obj,&x,&y,1,&wl,&wt,&mystatus,&out_of_range,&out_of_range); 
+		wb = y - height;
+		wr = x + width;
+		subret = _NhlNDCToWin(Cnp->trans_obj,&wr,&wb,1,&wr,&wb,&mystatus,&out_of_range,&out_of_range);
+	}
+
+	/* find a valid data value within the field */
+	if (Cnp->sfp->x_arr && Cnp->sfp->y_arr) {
+		float *ty,*tx, *td;
+
+		if (Cnp->sfp->d_arr->num_dimensions == 1) {    /* a triangular mesh */
+			ty = (float*)Cnp->sfp->y_arr->data;
+			tx = (float*)Cnp->sfp->x_arr->data;
+			td = (float*)Cnp->sfp->x_arr->data;
+			for (i = 0; i < Cnp->sfp->d_arr->num_elements; i++) {
+				subret =  _NhlDataToWin(Cnp->trans_obj,&(tx[i]),&(ty[i]),1,&txw,&tyw,
+							&mystatus,&out_of_range,&out_of_range);
+				if (mystatus) 
+					continue;
+				data_val = td[i];
+				if (data_val == Cnp->sfp->missing_value) 
+					continue;
+				aid = -1;
+				levels = (float*) Cnp->levels->data;
+				for (k=0; k < Cnp->level_count; k++) {
+					if (data_val < levels[k]) {
+						aid = NhlcnAREAID_OFFSET+k;
+						break;
+					}
+				}
+				if (aid == -1) {
+					aid = NhlcnAREAID_OFFSET +
+						Cnp->level_count;
+				}
+				if (aid != -999) 
+					break;
+			}
+		}
+		else if (Cnp->sfp->x_arr->num_dimensions == 1) {
+			float *ty,*tx;
+			ty = (float*)Cnp->sfp->y_arr->data;
+			tx = (float*)Cnp->sfp->x_arr->data;
+			for (j = 0; j < Cnp->sfp->y_arr->num_elements; j++) {
+				int offset = j * Cnp->sfp->x_arr->num_elements;
+				for (i = 0; i < Cnp->sfp->x_arr->num_elements; i++) {
+					subret =  _NhlDataToWin(Cnp->trans_obj,&(tx[i]),&(ty[j]),1,&txw,&tyw,
+								&mystatus,&out_of_range,&out_of_range);
+					if (mystatus) 
+						continue;
+					data_val = ((float*)Cnp->sfp->d_arr->data)[offset + i];
+					if (data_val == Cnp->sfp->missing_value) 
+						continue;
+					aid = -1;
+					levels = (float*) Cnp->levels->data;
+					for (k=0; k < Cnp->level_count; k++) {
+						if (data_val < levels[k]) {
+							aid = NhlcnAREAID_OFFSET+k;
+							break;
+						}
+					}
+					if (aid == -1) {
+						aid = NhlcnAREAID_OFFSET +
+							Cnp->level_count;
+					}
+					if (aid != -999)
+						break;
+				}
+				if (aid != -999)
+					break;
+			}
+		}
+		else {
+			float *ty,*tx;
+			ty = (float*)Cnp->sfp->y_arr->data;
+			tx = (float*)Cnp->sfp->x_arr->data;
+			for (j = 0; j < Cnp->sfp->y_arr->num_elements; j++) {
+				int offset = j * Cnp->sfp->x_arr->num_elements;
+				for (i = 0; i < Cnp->sfp->x_arr->num_elements; i++) {
+					subret =  _NhlDataToWin(Cnp->trans_obj,&(tx[offset+i]),&(ty[offset+i]),1,&txw,&tyw,
+								&mystatus,&out_of_range,&out_of_range);
+					if (mystatus) 
+						continue;
+					data_val = ((float*)Cnp->sfp->d_arr->data)[offset + i];
+					if (data_val == Cnp->sfp->missing_value) 
+						continue;
+					aid = -1;
+					levels = (float*) Cnp->levels->data;
+					for (k=0; k < Cnp->level_count; k++) {
+						if (data_val < levels[k]) {
+							aid = NhlcnAREAID_OFFSET+k;
+							break;
+						}
+					}
+					if (aid == -1) {
+						aid = NhlcnAREAID_OFFSET +
+							Cnp->level_count;
+					}
+					if (aid != -999)
+						break;
+				}
+				if (aid != -999)
+					break;
+			}
+		}
+	}
+	else {
+		double ystep = (Cnp->sfp->y_end - Cnp->sfp->y_start) / Cnp->sfp->slow_len;
+		double xstep = (Cnp->sfp->y_end - Cnp->sfp->y_start) / Cnp->sfp->fast_len;
+		float tx,ty;
+
+		ty = Cnp->sfp->y_start;
+		for (j = 0; j < Cnp->sfp->slow_len; j++) {
+			ty = Cnp->sfp->y_start  + j * ystep;
+			for (i = 0; i < Cnp->sfp->fast_len; i++) {
+				tx = Cnp->sfp->x_start * i * xstep;
+				_NhlDataToWin(Cnp->trans_obj,&tx,&ty,
+					      1,&txw,&tyw,&mystatus,
+					      NULL,NULL);
+				if (mystatus) 
+					continue;
+				data_val = ((float*)Cnp->sfp->d_arr->data)[j * Cnp->sfp->fast_len + i];
+				if (data_val == Cnp->sfp->missing_value) 
+					continue;
+				aid = -1;
+				levels = (float*) Cnp->levels->data;
+				for (k=0; k < Cnp->level_count; k++) {
+					if (data_val < levels[k]) {
+						aid = NhlcnAREAID_OFFSET+k;
+						break;
+					}
+				}
+				if (aid == -1) {
+					aid = NhlcnAREAID_OFFSET +
+						Cnp->level_count;
+				}
+				if (aid != -999)
+					break;
+			}
+			if (aid != -999)
+				break;
+		}
+	}
+
+	if (aid > -999) {
+		/* reinit the areamap */
+		subret = _NhlIdleWorkspace(Cnp->aws);
+		Cnp->aws = NULL;
+		subret = cnInitAreamap(Cnl,"FixAreaMap");
+/* add the boundary to the areamap */
+		xp[0] = wl;
+		yp[0] = wb;
+		xp[1] = wr;
+		yp[1] = wb;
+		xp[2] = wr;
+		yp[2] = wt;
+		xp[3] = wl;
+		yp[3] = wt;
+		xp[4] = wl;
+		yp[4] = wb;
+		_NhlAredam(Cnp->aws,xp,yp,5,3,aid,-1,"FixAreaMap");
+	}
+
+	return;
+}
+

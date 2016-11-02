@@ -65,6 +65,9 @@ extern NhlErrorTypes thornthwaite_r_W(void);
 extern NhlErrorTypes speidx_W(void);
 extern NhlErrorTypes kmeans_as136_W(void);
 extern NhlErrorTypes snindex_yrmo_W(void);
+#ifdef BuildEEMD
+extern NhlErrorTypes ceemdan_W(void);
+#endif
 extern NhlErrorTypes x_skewt_W(void);
 extern NhlErrorTypes y_skewt_W(void);
 extern NhlErrorTypes tmr_skewt_W(void);
@@ -1357,6 +1360,26 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
 
     NclRegisterFunc(snindex_yrmo_W,args,"snindex_yrmo",nargs);
+
+#ifdef BuildEEMD
+/*
+ * Register "ceemdan"
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(6);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",3,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+
+    NclRegisterFunc(ceemdan_W,args,"ceemdan",nargs);
+#endif
+
 /*
  * Register "x_skewt".
  *
@@ -9835,6 +9858,101 @@ NclScalar         *missing_fx)
   }
   return(fx);
 }
+
+/*
+ * Coerce data to unsigned int, or just return a pointer to it if
+ * it is already uint.
+ */
+unsigned int *coerce_input_uint(
+void              *x,
+NclBasicDataTypes type_x,
+ng_size_t         size_x,
+int               has_missing_x,
+NclScalar         *missing_x,
+NclScalar         *missing_uix)
+{
+  uint *uix;
+/*
+ * Coerce x to unsigned int if necessary.
+ */
+  if(type_x != NCL_uint) {
+    uix = (unsigned int*)calloc(size_x,sizeof(unsigned int));
+    if( uix == NULL ) return(NULL);
+    if(has_missing_x) {
+      _Nclcoerce((NclTypeClass)nclTypeuintClass,
+                 (void*)uix,
+                 x,
+                 size_x,
+                 missing_x,
+                 missing_uix,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+    else {
+      _Nclcoerce((NclTypeClass)nclTypeuintClass,
+                 (void*)uix,
+                 x,
+                 size_x,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+  }
+  else {
+/*
+ * x is already uint.
+ */
+    uix = (unsigned int*)x;
+  }
+  return(uix);
+}
+
+
+/*
+ * Coerce data to unsigned long or just return a pointer to it if it is already ulong. 
+ */
+unsigned long *coerce_input_ulong(
+void              *x,
+NclBasicDataTypes type_x,
+ng_size_t         size_x,
+int               has_missing_x,
+NclScalar         *missing_x,
+NclScalar         *missing_ulx)
+{
+  unsigned long *ulx;
+/*
+ * Coerce x to unsigned long if necessary.
+ */
+  if(type_x != NCL_ulong) {
+    ulx = (unsigned long *)calloc(size_x,sizeof(unsigned long));
+    if( ulx == NULL ) return(NULL);
+    if(has_missing_x) {
+      _Nclcoerce((NclTypeClass)nclTypeulongClass,
+                 (void*)ulx,
+                 x,
+                 size_x,
+                 missing_x,
+                 missing_ulx,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+    else {
+      _Nclcoerce((NclTypeClass)nclTypeulongClass,
+                 (void*)ulx,
+                 x,
+                 size_x,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+  }
+  else {
+/*
+ * x is already ulong.
+ */
+    ulx = (unsigned long*)x;
+  }
+  return(ulx);
+}
+
 
 /*
  * Coerce a contiguous subset of the data to float.

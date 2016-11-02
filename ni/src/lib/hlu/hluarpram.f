@@ -2046,6 +2046,21 @@ C
 C
 C Done.
 C
+      IF (IAM(1) - IAM(6) .EQ. IAM(7)) THEN
+         CALL FIXAREAMAP(IAM)
+      ELSE
+         do i = IAM(6), IAM(1) - IAM(7) - 1
+            if (IAM(i) .gt. 200 .and. iam(i) .lt. 513) then
+               do j = 16, IAM(5), 10
+                  if (i.eq.IAM(j) .or. i.eq.IAM(j+1)) then
+                     return
+                  end if
+               end do
+            end if
+         end do
+         CALL FIXAREAMAP(IAM)
+      END IF
+
       RETURN
 C
 C This internal procedure adds a new point in the existing part of the
