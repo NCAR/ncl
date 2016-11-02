@@ -118,7 +118,7 @@ static NhlResource resources[] = {
 	{NhlNcnExplicitLabelBarLabelsOn,NhlCcnExplicitLabelBarLabelsOn,
 		 NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(explicit_lbar_labels_on),
-		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(lbar_end_labels_on_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
@@ -2324,11 +2324,7 @@ ContourPlotInitialize
 	cnp->raster_mode_on_set = False;
 	cnp->fill_mode_set = False;
 	cnp->fill_on_set = False;
-	/* 
-	 * once set, lbar_alignment_set stays set until 
-	 * explcit label bar labels is turned off 
-	 */
-	if (! cnp->explicit_lbar_labels_on) cnp->lbar_alignment_set = False;
+        cnp->lbar_alignment_set = False;
 
         cnew->trans.x_reverse_set = cnew->trans.y_reverse_set = False;
         cnew->trans.x_log_set = cnew->trans.y_log_set = False;
@@ -2731,11 +2727,7 @@ static NhlErrorTypes ContourPlotSetValues
 	cnp->raster_mode_on_set = False;
 	cnp->fill_mode_set = False;
 	cnp->fill_on_set = False;
-	/* 
-	 * once set, lbar_alignment_set stays set until 
-	 * explcit label bar labels is turned off 
-	 */
-	if (! cnp->explicit_lbar_labels_on) cnp->lbar_alignment_set = False;
+	cnp->lbar_alignment_set = False;
 
         cnew->trans.x_reverse_set = cnew->trans.y_reverse_set = False;
         cnew->trans.x_log_set = cnew->trans.y_log_set = False;
