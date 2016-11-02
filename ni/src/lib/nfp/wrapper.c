@@ -1386,10 +1386,11 @@ void NclAddUserFuncs(void)
  * Create private argument array.
  */
     nargs = 0;
-    args = NewArgs(2);
+    args = NewArgs(3);
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"numeric",3,NclANY);nargs++;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
     NclRegisterFunc(ceemdan_opt_W,args,"ceemdan_opt",nargs);
 /*
  * Register "eemd_opt"
