@@ -2141,6 +2141,14 @@ static NhlErrorTypes BuildDelaunayMesh
 /*
   printf("triangulation completed\n");
 */
+                    /* The call to triangulate() above has allocated 4 blocks of memory, 
+                     * but we only need vout.edgelist.  Go ahead and free up the others.
+                     * We'll free up vout.edgelist later when we're done with it.
+                     * Jira ncl-2516.
+                     */
+                    free(vout.pointlist);
+                    free(vout.pointattributelist);
+                    free(vout.normlist);
 
 		    stris = (Stri *) out.trianglelist;
 		    sedges = (Sedge *) out.edgelist;
@@ -2211,7 +2219,7 @@ static NhlErrorTypes BuildDelaunayMesh
 
 		    free(stris);
 		    free(sedges);
-		    free(vedges);
+		    free(vedges);   /* AKA, vout.edgelist */
 
 		    tbp->npnt = npnt * Lopn;
 		    tbp->nedg = nedg * Loen;
