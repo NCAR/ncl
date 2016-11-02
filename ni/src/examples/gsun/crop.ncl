@@ -286,10 +286,12 @@ begin
    copy_VarCoords(z, prs)
 
    if (iounit(1).eq.0) then 
-       prs = (/ prs*10.0 /)                           ; kPa -> hPa
+       prs       = (/ prs*10.0 /)                     ; kPa -> hPa
+       prs@units = "hPa"       
    else 
        if (iounit(1).eq.1) then         
-           prs = (/ prs*1000.0 /)                     ; kPa ->  Pa
+           prs       = (/ prs*1000.0 /)              ; kPa ->  Pa
+           prs@units = "Pa"       
        end if
    end if
 
@@ -342,10 +344,12 @@ begin
    copy_VarCoords(t, prs)
 
    if (iounit(2).eq.0) then 
-       prs = (/ prs*10.0 /)                           ; kPa -> hPa
+       prs       = (/ prs*10.0 /)                     ; kPa -> hPa
+       prs@units = "hPa"       
    else 
        if (iounit(2).eq.1) then         
-           prs = (/ prs*1000.0 /)                     ; kPa ->  Pa
+           prs       = (/ prs*1000.0 /)               ; kPa ->  Pa
+           prs@units = "Pa"       
        end if
    end if
 
@@ -1962,8 +1966,8 @@ begin
    return(evt)
 end
 ;-----
-undef("aerores_full_fao56")
-function aerores_full_fao56(zm:numeric, zom:numeric, zh:numeric, zoh:numeric \
+undef("areores_full_fao56")
+function areores_full_fao56(zm:numeric, zom:numeric, zh:numeric, zoh:numeric \
                            ,d:numeric, uz:numeric, uzopt[1]:integer)
 ;
 ; Aerodynamic Resistance: http://agsys.cra-cin.it/tools/EvapoTranspiration/help/
@@ -2011,8 +2015,8 @@ begin
   return(ra)
 end
 ;-----
-undef("aerores_grass_fao56")
-function aerores_grass_fao56(ch:numeric, u2:numeric, aeopt[1]:integer)
+undef("areores_grass_fao56")
+function areores_grass_fao56(ch:numeric, u2:numeric, aeopt[1]:integer)
 ;
 ; Technically: Aerodynamic resistance for a grass reference surface
 ; In practice: For a wide range of crops 
