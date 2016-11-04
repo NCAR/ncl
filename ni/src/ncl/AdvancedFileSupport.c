@@ -21,6 +21,7 @@
  */
 
 #include <string.h>
+#include <ctype.h>
 #include "AdvancedFileSupport.h"
 
 NclQuark *GetGrpVarNames(void *therec, int *num_vars)
@@ -646,15 +647,13 @@ void _Ncl_add_udt(NclFileUDTRecord **rootudtrec,
     udtnode->max_fields = nfields;
     udtnode->n_fields = nfields;
 
-    udtnode->mem_name = (NclQuark *)NclCalloc(nfields, sizeof(NclQuark));
-    assert(udtnode->mem_name);
-    udtnode->mem_type = (NclBasicDataTypes *)NclCalloc(nfields, sizeof(NclBasicDataTypes));
-    assert(udtnode->mem_type);
-
+    udtnode->fields = (NclFileUDTField *) NclCalloc(nfields, sizeof(NclFileUDTField));
+    assert(udtnode->fields);
+						    
     for(n = 0; n < nfields; n++)
     {
-        udtnode->mem_name[n] = mem_name[n];
-        udtnode->mem_type[n] = mem_type[n];
+        udtnode->fields[n].field_name = mem_name[n];
+        udtnode->fields[n].field_type = mem_type[n];
     }
 
     udtrec->n_udts ++;
