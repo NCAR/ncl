@@ -67,7 +67,6 @@ extern NhlErrorTypes kmeans_as136_W(void);
 extern NhlErrorTypes snindex_yrmo_W(void);
 #ifdef BuildEEMD
 extern NhlErrorTypes ceemdan_W(void);
-extern NhlErrorTypes ceemdan_opt_W(void);
 extern NhlErrorTypes eemd_opt_W(void);
 extern NhlErrorTypes emd_num_imfs_W(void);
 #endif
@@ -1364,34 +1363,23 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(snindex_yrmo_W,args,"snindex_yrmo",nargs);
 
 #ifdef BuildEEMD
+
 /*
  * Register "ceemdan"
  *
  * Create private argument array.
  */
     nargs = 0;
-    args = NewArgs(7);
+    args = NewArgs(6);
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"numeric",3,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-    NclRegisterFunc(ceemdan_W,args,"ceemdan",nargs);
-/*
- * Register "ceemdan_opt"
- *
- * Create private argument array.
- */
-    nargs = 0;
-    args = NewArgs(3);
-    dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"numeric",3,NclANY);nargs++;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
-    NclRegisterFunc(ceemdan_opt_W,args,"ceemdan_opt",nargs);
+    NclRegisterFunc(ceemdan_W,args,"ceemdan",nargs);
+
 /*
  * Register "eemd_opt"
  *

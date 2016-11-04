@@ -4,7 +4,6 @@
 
 NhlErrorTypes ceemdan_W( void )
 {
-
 /*
  * Input variables
  */
@@ -20,16 +19,16 @@ NhlErrorTypes ceemdan_W( void )
 /*
  * Argument # 1
  */
-  void *num_imfs;
-  ng_size_t tmp_num_imfs;
-  NclBasicDataTypes type_num_imfs;
+  void *ensemble_size;
+  unsigned int *tmp_ensemble_size = NULL;
+  NclBasicDataTypes type_ensemble_size;
 
 /*
  * Argument # 2
  */
-  void *ensemble_size;
-  unsigned int *tmp_ensemble_size = NULL;
-  NclBasicDataTypes type_ensemble_size;
+  void *num_imfs;
+  ng_size_t tmp_num_imfs;
+  NclBasicDataTypes type_num_imfs;
 
 /*
  * Argument # 3
@@ -42,379 +41,10 @@ NhlErrorTypes ceemdan_W( void )
 /*
  * Argument # 4
  */
-  void *S_number;
-  unsigned int *tmp_S_number = NULL;
-  NclBasicDataTypes type_S_number;
-
-/*
- * Argument # 5
- */
-  void *num_siftings;
-  unsigned int *tmp_num_siftings = NULL;
-  NclBasicDataTypes type_num_siftings;
-
-/*
- * Argument # 6
- */
-  void *rng_seed;
-  unsigned long int *tmp_rng_seed = NULL;
-  NclBasicDataTypes type_rng_seed;
-
-/*
- * Return variable
- */
-  void *eemd;
-  double *tmp_eemd = NULL;
-  int ndims_eemd;
-  ng_size_t *dsizes_eemd;
-  NclBasicDataTypes type_eemd;
-
-/*
- * Various
- */
-  ng_size_t i, nlon, nlat, ntim; 
-  size_t nltnln, nimnt, nimntnltnln;
-  ng_size_t index_input, index_output;
-  libeemd_error_code error_code;
-  int ret;
-/*
- * Retrieve parameters.
- *
- * Note any of the pointer parameters can be set to NULL, which
- * implies you don't care about its value.
- */
-/*
- * Get argument # 0
- */
-  input = (void*)NclGetArgValue(
-           0,
-           7,
-           &ndims_input,
-           dsizes_input,
-           NULL,
-           NULL,
-           &type_input,
-           DONT_CARE);
-
-/*
- * Get argument # 1
- */
-  num_imfs = (void*)NclGetArgValue(
-           1,
-           7,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_num_imfs,
-           DONT_CARE);
-
-  /* The type is prototyped as "numeric", but it must be an int or long */
-  if(type_num_imfs != NCL_int && type_num_imfs != NCL_long) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: num_imfs must be an integer or a long");
-    return(NhlFATAL);
-  }
-
-/*
- * Get argument # 1
- */
-  ensemble_size = (void*)NclGetArgValue(
-           2,
-           7,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_ensemble_size,
-           DONT_CARE);
-
-  /* The type is prototyped as "numeric", but float and double are not allowed here */
-  if(type_ensemble_size == NCL_float || type_ensemble_size == NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: ensemble_size must be an integral value");
-    return(NhlFATAL);
-  }
-
-/*
- * Get argument # 2
- */
-  noise_strength = (void*)NclGetArgValue(
-           3,
-           7,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_noise_strength,
-           DONT_CARE);
-/*
- * Get argument # 3
- */
-  S_number = (void*)NclGetArgValue(
-           4,
-           7,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_S_number,
-           DONT_CARE);
-
-  /* The type is prototyped as "numeric", but float and double are not allowed here */
-  if(type_S_number == NCL_float || type_S_number == NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: S_number must be an integral value");
-    return(NhlFATAL);
-  }
-
-/*
- * Get argument # 4
- */
-  num_siftings = (void*)NclGetArgValue(
-           5,
-           7,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_num_siftings,
-           DONT_CARE);
-
-  /* The type is prototyped as "numeric", but float and double are not allowed here */
-  if(type_num_siftings == NCL_float || type_num_siftings == NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: num_siftings must be an integral value");
-    return(NhlFATAL);
-  }
-/*
- * Get argument # 5
- */
-  rng_seed = (void*)NclGetArgValue(
-           6,
-           7,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_rng_seed,
-           DONT_CARE);
-
-  /* The type is prototyped as "numeric", but float and double are not allowed here */
-  if(type_rng_seed == NCL_float || type_rng_seed == NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: rng_seed must be an integral value");
-    return(NhlFATAL);
-  }
-
-  nlat = dsizes_input[ndims_input-3];
-  nlon = dsizes_input[ndims_input-2];
-  ntim = dsizes_input[ndims_input-1];
-
-/*
- * If num_imfs is 0, then calculate it.
- */
-  if(type_num_imfs == NCL_int) {
-    tmp_num_imfs = (size_t)(*(int*)num_imfs);
-  }
-  else {
-    tmp_num_imfs = (size_t)(*(long*)num_imfs);
-  }
-  if(tmp_num_imfs == 0) {
-    tmp_num_imfs = emd_num_imfs((size_t)ntim);
-  }
-  if(tmp_num_imfs < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: the input spatial domain must contain at least 3 values.");
-    return(NhlFATAL);
-  }
-/*
- * These are needed for various array sizes.
- */ 
-  nltnln      = nlat * nlon;
-  nimnt       = tmp_num_imfs * ntim;
-  nimntnltnln = nimnt * nltnln;
-
-/*
- * Allocate space for tmp_input.
- */
-  if(type_input != NCL_double) {
-    type_eemd = NCL_float;
-    tmp_input = (double *)calloc(ntim,sizeof(double));
-    if(tmp_input == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for coercing input array to double");
-      return(NhlFATAL);
-    }
-  }
-  else {
-    type_eemd = NCL_double;
-  }
-/*
- * Coerce various input parameters to their appropriate types
- */
-  tmp_ensemble_size = coerce_input_uint(ensemble_size,type_ensemble_size,1,0,NULL,NULL);
-  if(tmp_ensemble_size == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for coercing ensemble_size array to uint");
-    return(NhlFATAL);
-  }
-/*
- * Allocate space for tmp_noise_strength.
- */
-  tmp_noise_strength = coerce_input_double(noise_strength,type_noise_strength,1,0,NULL,NULL);
-  if(tmp_noise_strength == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for coercing noise_strength array to double");
-    return(NhlFATAL);
-  }
-/*
- * Allocate space for tmp_S_number.
- */
-  tmp_S_number = coerce_input_uint(S_number,type_S_number,1,0,NULL,NULL);
-  if(tmp_S_number == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for coercing S_number array to uint");
-    return(NhlFATAL);
-  }
-/*
- * Allocate space for tmp_num_siftings.
- */
-  tmp_num_siftings = coerce_input_uint(num_siftings,type_num_siftings,1,0,NULL,NULL);
-  if(tmp_num_siftings == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for coercing input num_siftings to unsigned int");
-    return(NhlFATAL);
-  }
-/*
- * Allocate space for tmp_rng_seed.
- */
-  tmp_rng_seed = coerce_input_ulong(rng_seed,type_rng_seed,1,0,NULL,NULL);
-  if(tmp_rng_seed == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for coercing input rng_seed to unsigned long");
-    return(NhlFATAL);
-  }
-
-/*
- * Error check input parameter values.
- */
-  if (*tmp_ensemble_size < 1) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: ensemble_size must be >= 1");
-    return(NhlFATAL);
-  }
-  if (*tmp_S_number < 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: S_number must be non-negative");
-    return(NhlFATAL);
-  }
-  if (*tmp_num_siftings < 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: num_siftings must be non-negative");
-    return(NhlFATAL);
-  }
-  if (*tmp_S_number == 0 && *tmp_num_siftings == 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: one of S_number or num_siftings must be positive");
-    return(NhlFATAL);
-  }
-  if (*tmp_noise_strength < 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: noise_strength must be non-negative");
-    return(NhlFATAL);
-  }
-  if (*tmp_num_siftings == 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: if S-number !=0 and num_siftings=0, then routine might never finish if stuck in some obscure numerical corner case");
-    return(NhlFATAL);
-  }    
-
-/*
- * Compute size of output dimensions.
- */
-  ndims_eemd = ndims_input + 1;
-  dsizes_eemd = (ng_size_t*)calloc(ndims_eemd,sizeof(ng_size_t));  
-  if( dsizes_eemd == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for holding dimension sizes");
-    return(NhlFATAL);
-  }
-  dsizes_eemd[ndims_eemd-4] = nlat;
-  dsizes_eemd[ndims_eemd-3] = nlon;
-  dsizes_eemd[ndims_eemd-2] = tmp_num_imfs;
-  dsizes_eemd[ndims_eemd-1] = ntim;
-/* 
- * Allocate space for eemd array.
- */  
-  if(type_eemd != NCL_double) {
-    eemd = (void *)calloc(nimntnltnln, sizeof(float));
-    tmp_eemd = (double *)calloc(nimnt,sizeof(double));
-    if(tmp_eemd == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for temporary eemd array");
-      return(NhlFATAL);
-    }
-  }
-  else {
-    eemd = (void *)calloc(nimntnltnln, sizeof(double));
-  }
-  if(eemd == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for eemd array");
-    return(NhlFATAL);
-  }
-
-/*
- * Loop across each lat/lon point and call C function.
- */
-  for(i = 0; i < nltnln; i++) {
-    index_input  = i*ntim;
-    index_output = i*nimnt;
-    if(type_input != NCL_double) {
-      coerce_subset_input_double(input,tmp_input,index_input,
-                                 type_input,ntim,0,NULL,NULL);
-    }
-    else {
-      tmp_input = &((double*)input)[index_input];
-    }
-    if(type_eemd == NCL_double) {
-      tmp_eemd = &((double*)eemd)[index_output];
-    }
-
-    error_code = ceemdan(tmp_input, ntim, tmp_eemd, tmp_num_imfs,
-                         *tmp_ensemble_size, *tmp_noise_strength, 
-                         *tmp_S_number, *tmp_num_siftings, 
-                         *tmp_rng_seed);
-    if(error_code) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: EEMD decomposition routine failed\n");
-      return(NhlFATAL);
-    }
-    if(type_eemd == NCL_float) {
-      coerce_output_float_only(eemd,tmp_eemd,nimnt,index_output);
-    }
-  }
-
-/*
- * Free unneeded memory.
- */
-  if(type_input != NCL_double)          NclFree(tmp_input);
-  if(type_ensemble_size != NCL_uint)    NclFree(tmp_ensemble_size);
-  if(type_noise_strength != NCL_double) NclFree(tmp_noise_strength);
-  if(type_S_number != NCL_uint)         NclFree(tmp_S_number);
-  if(type_num_siftings != NCL_uint)     NclFree(tmp_num_siftings);
-  if(type_rng_seed != NCL_ulong)        NclFree(tmp_rng_seed);
-  if(type_eemd != NCL_double)           NclFree(tmp_eemd);
-
-/*
- * Return value back to NCL script.
- */
-  ret = NclReturnValue(eemd,ndims_eemd,dsizes_eemd,NULL,type_eemd,0);
-  NclFree(dsizes_eemd);
-  return(ret);
-}
-
-NhlErrorTypes ceemdan_opt_W( void )
-{
-
-/*
- * Input variables
- */
-/*
- * Argument # 0
- */
-  void *input;
-  double *tmp_input = NULL;
-  int ndims_input;
-  ng_size_t dsizes_input[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_input;
-
-/*
- * Argument # 1
- */
   logical *opt;
 
 /*
- * Argument # 2
+ * Argument # 5
  */
   int *dims;
   ng_size_t ndims;
@@ -422,15 +52,11 @@ NhlErrorTypes ceemdan_opt_W( void )
 /*
  * Attributes
  */
-  size_t tmp_num_imfs;
-  unsigned int *tmp_ensemble_size=NULL, *tmp_S_number=NULL, *tmp_num_siftings=NULL;
-  unsigned int def_ensemble_size=250, def_S_number=0, def_num_siftings=0;;
+  unsigned int *tmp_S_number=NULL, *tmp_num_siftings=NULL;
+  unsigned int def_S_number=0, def_num_siftings=0;
   unsigned long int *tmp_rng_seed=NULL, def_rng_seed=0;
-  double *tmp_noise_strength=NULL, def_noise_strength=0.2;
-  logical set_num_imfs=False, set_ensemble_size=False, set_S_number=False;
-  logical set_num_siftings=False, set_rng_seed=False, set_noise_strength=False;
-  NclBasicDataTypes type_ensemble_size, type_noise_strength, type_S_number;
-  NclBasicDataTypes type_num_siftings, type_rng_seed;
+  logical set_S_number=False, set_num_siftings=False, set_rng_seed=False;
+  NclBasicDataTypes type_S_number, type_num_siftings, type_rng_seed;
 
 /*
  * Variables for retrieving attributes from "opt".
@@ -467,7 +93,7 @@ NhlErrorTypes ceemdan_opt_W( void )
  */
   input = (void*)NclGetArgValue(
            0,
-           3,
+           6,
            &ndims_input,
            dsizes_input,
            NULL,
@@ -478,9 +104,60 @@ NhlErrorTypes ceemdan_opt_W( void )
 /*
  * Get argument # 1
  */
+  num_imfs = (void*)NclGetArgValue(
+           1,
+           6,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_num_imfs,
+           DONT_CARE);
+
+  /* The type is prototyped as "numeric", but it must be an int or long */
+  if(type_num_imfs != NCL_int && type_num_imfs != NCL_long) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: num_imfs must be an integer or a long");
+    return(NhlFATAL);
+  }
+
+/*
+ * Get argument # 2
+ */
+  ensemble_size = (void*)NclGetArgValue(
+           2,
+           6,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_ensemble_size,
+           DONT_CARE);
+
+  /* The type is prototyped as "numeric", but float and double are not allowed here */
+  if(type_ensemble_size == NCL_float || type_ensemble_size == NCL_double) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: ensemble_size must be an integral value");
+    return(NhlFATAL);
+  }
+
+/*
+ * Get argument # 3
+ */
+  noise_strength = (void*)NclGetArgValue(
+           3,
+           6,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_noise_strength,
+           DONT_CARE);
+
+/*
+ * Get argument # 4
+ */
   opt = (logical *)NclGetArgValue(
-            1,
-            3, 
+            4,
+            6, 
             NULL,
             NULL,
             NULL,
@@ -489,24 +166,24 @@ NhlErrorTypes ceemdan_opt_W( void )
             DONT_CARE);
 
 /*
- * Get argument # 2
+ * Get argument # 5
  */
-  dims = (int *)NclGetArgValue(2,3,NULL,&ndims,NULL,NULL,NULL,DONT_CARE);
+  dims = (int *)NclGetArgValue(5,6,NULL,&ndims,NULL,NULL,NULL,DONT_CARE);
 
 /*
  * Some error checking. Make sure input dimensions are valid.
  */
   if(ndims > ndims_input) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: too many dimensions in dimension argument, can't continue");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: too many dimensions in dimension argument, can't continue");
     return(NhlFATAL);
   }
   for(i = 0; i < ndims; i++ ) {
     if(dims[i] < 0 || dims[i] >= ndims_input) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: Invalid dimension argument, can't continue");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Invalid dimension argument, can't continue");
       return(NhlFATAL);
     }
     if(i > 0 && dims[i] != (dims[i-1]+1)) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: Input dimension sizes must be monotonically increasing, can't continue");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Input dimension sizes must be monotonically increasing, can't continue");
       return(NhlFATAL);
     }
   }
@@ -523,11 +200,55 @@ NhlErrorTypes ceemdan_opt_W( void )
   for(i = dims[ndims-1]+1; i < ndims_input; i++) total_nr *= dsizes_input[i];
   npts = total_nl * total_nr;   /* This is usually the lat x lon dimensions */
 
+/*
+ * Deal with num_imfs. If it is 0, then calculate it.
+ */
+  if(type_num_imfs == NCL_int) {
+    tmp_num_imfs = (size_t)(*(int*)num_imfs);
+  }
+  else {
+    tmp_num_imfs = (size_t)(*(long*)num_imfs);
+  }
+  if(tmp_num_imfs == 0) {
+    tmp_num_imfs = emd_num_imfs((size_t)ntim);
+  }
+  if(tmp_num_imfs < 1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: num_imfs must be >= 1");
+    return(NhlFATAL);
+  }
+
+  printf("num_imfs = %ld\n", tmp_num_imfs);
+
+/*
+ * Coerce various input parameters to their appropriate types
+ */
+  tmp_ensemble_size = coerce_input_uint(ensemble_size,type_ensemble_size,1,0,NULL,NULL);
+  if(tmp_ensemble_size == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for coercing ensemble_size array to uint");
+    return(NhlFATAL);
+  }
+  if (*tmp_ensemble_size < 1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: ensemble_size must be >= 1");
+    return(NhlFATAL);
+  }
+/*
+ * Allocate space for tmp_noise_strength.
+ */
+  tmp_noise_strength = coerce_input_double(noise_strength,type_noise_strength,1,0,NULL,NULL);
+  if(tmp_noise_strength == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for coercing noise_strength array to double");
+    return(NhlFATAL);
+  }
+  if (*tmp_noise_strength < 0) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: noise_strength must be non-negative");
+    return(NhlFATAL);
+  }
+
 /* 
  * If "opt" is True, then check if any attributes have been set.
  */
   if(*opt) {
-    stack_entry = _NclGetArg(1, 3, DONT_CARE);
+    stack_entry = _NclGetArg(4, 6, DONT_CARE);
     switch (stack_entry.kind) {
     case NclStk_VAR:
       if (stack_entry.u.data_var->var.att_id != -1) {
@@ -554,47 +275,11 @@ NhlErrorTypes ceemdan_opt_W( void )
  * Loop through attributes and check them. The current ones 
  * recognized are:
  *
- *   "num_imfs"
- *   "ensemble_size"
  *   "S_number"
  *   "num_siftings"
  *   "rng_seed"
- *   "noise_strength"
  */
         while (attr_list != NULL) {
-/* num_imfs */
-          if (!strcmp(attr_list->attname, "num_imfs")) {
-            if(attr_list->attvalue->multidval.data_type != NCL_int && 
-               attr_list->attvalue->multidval.data_type != NCL_long) {
-              NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: The 'num_imfs' attribute must be an integer or long value");
-              return(NhlFATAL);
-            }
-            else {
-              if(attr_list->attvalue->multidval.data_type == NCL_int) {
-                tmp_num_imfs = (size_t)(*(int*)attr_list->attvalue->multidval.val);
-              }
-              else {
-                tmp_num_imfs = (size_t)(*(long*)attr_list->attvalue->multidval.val);
-              }
-              set_num_imfs = True;
-            }
-          }
-/* ensemble_size */
-          if (!strcmp(attr_list->attname, "ensemble_size")) {
-            type_ensemble_size = attr_list->attvalue->multidval.data_type;
-            if(type_ensemble_size != NCL_byte  && type_ensemble_size == NCL_ubyte &&
-               type_ensemble_size != NCL_short && type_ensemble_size == NCL_ushort &&
-               type_ensemble_size != NCL_int   && type_ensemble_size == NCL_uint &&
-               type_ensemble_size != NCL_long  && type_ensemble_size == NCL_ulong) {
-              NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: The 'ensemble_size' attribute must be an integral value");
-              return(NhlFATAL);
-            }
-            else {
-              tmp_ensemble_size = coerce_input_uint(attr_list->attvalue->multidval.val,
-                                                    type_ensemble_size,1,0,NULL,NULL);
-              set_ensemble_size = True;
-            }
-          }
 /* S_number */
           if (!strcmp(attr_list->attname, "S_number")) {
             type_S_number = attr_list->attvalue->multidval.data_type;
@@ -602,7 +287,7 @@ NhlErrorTypes ceemdan_opt_W( void )
                type_S_number != NCL_short && type_S_number == NCL_ushort &&
                type_S_number != NCL_int   && type_S_number == NCL_uint &&
                type_S_number != NCL_long  && type_S_number == NCL_ulong) {
-              NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: The 'S_number' attribute must be an integral value");
+              NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: The 'S_number' attribute must be an integral value");
               return(NhlFATAL);
             }
             else {
@@ -618,7 +303,7 @@ NhlErrorTypes ceemdan_opt_W( void )
                type_num_siftings != NCL_short && type_num_siftings == NCL_ushort &&
                type_num_siftings != NCL_int   && type_num_siftings == NCL_uint &&
                type_num_siftings != NCL_long  && type_num_siftings == NCL_ulong) {
-              NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: The 'num_siftings' attribute must be an integral value");
+              NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: The 'num_siftings' attribute must be an integral value");
               return(NhlFATAL);
             }
             else {
@@ -634,7 +319,7 @@ NhlErrorTypes ceemdan_opt_W( void )
                type_rng_seed != NCL_short && type_rng_seed == NCL_ushort &&
                type_rng_seed != NCL_int   && type_rng_seed == NCL_uint &&
                type_rng_seed != NCL_long  && type_rng_seed == NCL_ulong) {
-              NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: The 'rng_seed' attribute must be an integral value");
+              NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: The 'rng_seed' attribute must be an integral value");
               return(NhlFATAL);
             }
             else {
@@ -643,17 +328,8 @@ NhlErrorTypes ceemdan_opt_W( void )
               set_rng_seed = True;
             }
           }
-/*
- * "noise_strength
- */
-          if (!strcmp(attr_list->attname, "noise_strength")) {
-            type_noise_strength = attr_list->attvalue->multidval.data_type;
-            tmp_noise_strength = coerce_input_double(attr_list->attvalue->multidval.val,
-                                                       type_noise_strength,1,0,NULL,NULL);
-            set_noise_strength = True;
-          }
           attr_list = attr_list->next;
-        }
+	}
       }
     default:
       break;
@@ -663,13 +339,6 @@ NhlErrorTypes ceemdan_opt_W( void )
 /*
  * Set default values for various parameters, if not set by user.
  */
-  if(!set_num_imfs) {
-    tmp_num_imfs = emd_num_imfs((size_t)ntim);
-  }
-  if(!set_ensemble_size) {
-    tmp_ensemble_size = (unsigned int *)malloc(sizeof(unsigned int));
-    *tmp_ensemble_size = def_ensemble_size;
-  }
   if(!set_S_number) {
     tmp_S_number = (unsigned int *)malloc(sizeof(unsigned int));
     *tmp_S_number = def_S_number;
@@ -682,51 +351,34 @@ NhlErrorTypes ceemdan_opt_W( void )
     tmp_rng_seed = (unsigned long *)malloc(sizeof(unsigned long));
     *tmp_rng_seed = def_rng_seed;
   }
-  if(!set_noise_strength) {
-    tmp_noise_strength = (double *)malloc(sizeof(double));
-    *tmp_noise_strength = def_noise_strength;
-  }
-  if(tmp_ensemble_size == NULL || tmp_noise_strength == NULL || tmp_S_number == NULL || 
-     tmp_num_siftings == NULL || tmp_rng_seed == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: Unable to allocate memory for various input parameters");
+  if(tmp_S_number == NULL || tmp_num_siftings == NULL || tmp_rng_seed == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for various input parameters");
     return(NhlFATAL);
   }
 
 /*
- * Error check input parameter values.
+ * Error check attribute parameter values.
  */
-  if(tmp_num_imfs < 1) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: num_imfs must be >= 1");
-    return(NhlFATAL);
-  }
-  if (*tmp_ensemble_size < 1) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: ensemble_size must be >= 1");
-    return(NhlFATAL);
-  }
   if (*tmp_S_number < 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: S_number must be non-negative");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: S_number must be non-negative");
     return(NhlFATAL);
   }
   if (*tmp_num_siftings < 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: num_siftings must be non-negative");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: num_siftings must be non-negative");
     return(NhlFATAL);
   }
   if (*tmp_S_number == 0 && *tmp_num_siftings == 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: one of S_number or num_siftings must be positive");
-    return(NhlFATAL);
-  }
-  if (*tmp_noise_strength < 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: noise_strength must be non-negative");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: one of S_number or num_siftings must be positive");
     return(NhlFATAL);
   }
   if (*tmp_num_siftings == 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: if S-number !=0 and num_siftings=0, then routine might never finish if stuck in some obscure numerical corner case");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: if S-number !=0 and num_siftings=0, then routine might never finish if stuck in some obscure numerical corner case");
     return(NhlFATAL);
   }    
 
 /*
- * These are needed for various array sizes.
- */ 
+ * Some of these are needed for various array sizes.
+ */
   ntnpts    = ntim * npts;
   nimnt     = tmp_num_imfs * ntim;
   nimntnpts = tmp_num_imfs * ntnpts;
@@ -737,7 +389,7 @@ NhlErrorTypes ceemdan_opt_W( void )
  */
   tmp_input = (double *)calloc(ntim,sizeof(double));
   if(tmp_input == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: Unable to allocate memory for coercing input array to double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for coercing input array to double");
     return(NhlFATAL);
   }
   if(type_input != NCL_double) type_eemd = NCL_float;
@@ -749,7 +401,7 @@ NhlErrorTypes ceemdan_opt_W( void )
   ndims_eemd = ndims_input + 1;
   dsizes_eemd = (ng_size_t*)calloc(ndims_eemd,sizeof(ng_size_t));  
   if( dsizes_eemd == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: Unable to allocate memory for holding dimension sizes");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
   }
   dsizes_eemd[0] = tmp_num_imfs;
@@ -760,15 +412,20 @@ NhlErrorTypes ceemdan_opt_W( void )
  */  
   tmp_eemd = (double *)calloc(nimnt,sizeof(double));
   if(tmp_eemd == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: Unable to allocate memory for temporary eemd array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for temporary eemd array");
     return(NhlFATAL);
   }
   if(type_eemd != NCL_double) eemd = (void *)calloc(nimntnpts, sizeof(float));
   else                        eemd = (void *)calloc(nimntnpts, sizeof(double));
   if(eemd == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: Unable to allocate memory for eemd array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for eemd array");
     return(NhlFATAL);
   }
+
+  printf("ntim = %ld\n", ntim);  
+  printf("npts = %ld\n", npts);
+  printf("nimfs = %ld\n", tmp_num_imfs);
+  printf("noise = %g\n", *tmp_noise_strength);
 
 /*
  * Loop across leftmost/rightmost dimensions and call the
@@ -789,7 +446,7 @@ NhlErrorTypes ceemdan_opt_W( void )
                            *tmp_S_number, *tmp_num_siftings, 
                            *tmp_rng_seed);
       if(error_code) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan_opt: EEMD decomposition routine failed\n");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: EEMD decomposition routine failed\n");
         return(NhlFATAL);
       }
       /* Coerce (num_imfs x ntim) subsection of output back to appropriate type.
@@ -807,8 +464,8 @@ NhlErrorTypes ceemdan_opt_W( void )
  */
   NclFree(tmp_input);
   NclFree(tmp_eemd);
-  if(!set_ensemble_size  || type_ensemble_size  != NCL_uint)   NclFree(tmp_ensemble_size);
-  if(!set_noise_strength || type_noise_strength != NCL_double) NclFree(tmp_noise_strength);
+  if(type_ensemble_size  != NCL_uint)                          NclFree(tmp_ensemble_size);
+  if(type_noise_strength != NCL_double)                        NclFree(tmp_noise_strength);
   if(!set_S_number       || type_S_number       != NCL_uint)   NclFree(tmp_S_number);
   if(!set_num_siftings   || type_num_siftings   != NCL_uint)   NclFree(tmp_num_siftings);
   if(!set_rng_seed       || type_rng_seed       != NCL_ulong)  NclFree(tmp_rng_seed);
