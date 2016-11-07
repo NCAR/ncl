@@ -663,8 +663,14 @@ begin
 end
 
 ;***********************************************************************;
-; This function converts an nD array to a 2D array. This is for arrays  ;
-; like RGB/A arrays where you need to easily move between them.        ;
+; This function converts an nD array to a 2D array. For example:        ;
+;   - 4 x 5 x 3 becomes 20 x 3                                          ;
+;   - 10 x 20 x 30 x 40 becomes 6000 x 40                               ;
+;                                                                       ;
+; Special case: a 1D array is converted to a 1 x N array.               ;
+;                                                                       ;
+; This function is useful if you need to treat all the leftmost         ;
+; dimensions as a single dimension.                                     ;
 ;***********************************************************************;
 undef("ndtotwod")
 function ndtotwod(x)
@@ -673,8 +679,7 @@ begin
   dims = dimsizes(x)
   rank = dimsizes(dims)
   if(rank.eq.1) then
-    print("ndtotwod: Error: can't convert a 1D array to a 2D array")
-    exit
+    return(reshape(x,(/1,dims/)))
   end if
   if(rank.eq.2) then
     return(x)
@@ -953,25 +958,24 @@ begin
 end
 
 ;***********************************************************************;
-; This function checks the list of named colors to make sure they are
-; all valid or equal to "transparent", "background", or "foreground". 
-; It will return a logical array of the same size as the input array.
+; This function checks the list of strings to see if they are any of    ;
+; the the special "foreground", "background" or "transparent" strings.  ;
+; It will return a logical array of the same size as the input array.   ;
 ;***********************************************************************;
-undef("is_valid_named_colors_or_special")
-function is_valid_named_colors_or_special(colors:string)
-local i, valid_named_colors, ncolors, colors1d, dims, special_names
+undef("is_valid_special_colors")
+function is_valid_special_colors(colors:string)
+local i, special_names, dims, colors1d, ncolors
 begin
-  dims                 = dimsizes(colors)
-  colors1d             = ndtooned(colors)
-  ncolors              = dimsizes(colors1d)
-  special_names        = (/"transparent","foreground","background"/)
-  valid_named_colors1d = new(ncolors,logical)
-  valid_named_colors1d = False    ; initialize to False
+  special_names     = (/"transparent","foreground","background"/)
+  dims              = dimsizes(colors)
+  colors1d          = ndtooned(colors)
+  ncolors           = dimsizes(colors1d)
+  special_colors_1d = new(ncolors,logical)
+  special_colors_1d = False    ; initialize to False
   do i=0,ncolors-1
-    valid_named_colors1d(i) = is_valid_named_colors(colors1d(i)).or.\
-                              any(colors1d(i).eq.special_names)
+    special_colors_1d(i) = any(str_lower(colors1d(i)).eq.special_names)
   end do
-  return(reshape(valid_named_colors1d,dims))
+  return(reshape(special_colors_1d,dims))
 end
 
 ;***********************************************************************;
@@ -1036,6 +1040,9 @@ end
 ;    absolute color index  - values 2^30 to (2^31)-1       "absolute"
 ;                           (1073741824 to 2147483647) 
 ;    named color           - "blue"                        "named"
+;    special color         - "transparent","foreground"    "special"
+;    named & special color - contains both named and 
+;                            special colors                "mixed"
 ;    RGB triplet           - (/1,0,0.5/)                   "rgb"
 ;    RGBA quadruplet       - (/1,0,0.5,0.5/)               "rgba"
 ;    color map name        - "amwg"                        "colormap"
@@ -1059,8 +1066,25 @@ begin
   end if
 
   if(typeof(colors).eq."string".and.\
-     all(is_valid_named_colors_or_special(colors))) then
+     all(is_valid_named_colors(colors))) then
     return("named")
+  end if
+
+  if(typeof(colors).eq."string".and.\
+     all(is_valid_special_colors(colors))) then
+    return("special")
+  end if
+
+;
+; This test is different, because we have to make sure all
+; of the colors are either a named color or a special color.
+; If you have one bad one in the bunch, then we can't 
+; claim it is "mixed".
+;
+  if(typeof(colors).eq."string".and.\
+     (num(is_valid_named_colors(colors))+\
+      num(is_valid_special_colors(colors))).eq.product(dims_color))
+    return("mixed")
   end if
 
   if(dims_color(rank_color-1).eq.3.and.isnumeric(colors).and.\
@@ -1103,7 +1127,7 @@ begin
   rank = dimsizes(dims)
   type = get_color_type(colors)
 
-  valid_types = (/"named","index","rgba","absolute"/)
+  valid_types = (/"named","special","mixed","index","rgb","rgba","absolute"/)
   if(.not.any(type.eq.valid_types)) then
     print("is_color_transparent: Error: the input colors must be of type: " + \
           str_join(valid_types,","))
@@ -1111,7 +1135,7 @@ begin
     istrans = new(dims,logical)
     return(istrans)
   end if
-  if(type.eq."named") then
+  if(type.eq."special".or.type.eq."mixed") then
     return(str_lower(colors).eq."transparent")
   end if
   if(type.eq."index") then
@@ -1122,8 +1146,17 @@ begin
     return(reshape(colors_rgba(:,3).eq.0.0,dims))
   end if
   if(type.eq."rgba") then
-    colors2d = ndtotwod(colors)
-    return(reshape(colors2d(:,3).eq.0.0,dims(0:rank-2)))
+    if(rank.eq.1) then
+      return(colors(3).eq.0.0)
+    else
+      colors2d = ndtotwod(colors)
+      return(reshape(colors2d(:,3).eq.0.0,dims(0:rank-2)))
+    end if
+  end if
+  if(any(type.eq.(/"named","rgb"/))) then
+    istrans = new(dims,logical)
+    istrans = False
+    return(istrans)
   end if
 end
 
@@ -1278,7 +1311,7 @@ begin
   end getvalues
   ncolors = dimsizes(rgb_cmap(:,0))
 
-  if(any(color_indexes.lt.0.or.color_indexes.ge.ncolors)) then
+  if(any(color_indexes.lt.-1.or.color_indexes.ge.ncolors)) then
     print("indexcolor2rgba: Error: one or more of the index colors")
     print("are invalid. Will return missing values for these values.")
   end if
@@ -1299,11 +1332,120 @@ begin
   rgba_cmap = rgb2rgba(rgb_cmap)
   rgba_2d = new((/dimsizes(color_indexes_1d),4/),typeof(rgba_cmap))
   do n=0,nindexes-1
-    if(.not.ismissing(color_indexes_1d(n)).and.\
-       (color_indexes_1d(n).ge.0.and.color_indexes_1d(n).lt.ncolors)) then
-      rgba_2d(n,:) = rgba_cmap(color_indexes_1d(n),:)
+    if(.not.ismissing(color_indexes_1d(n))) then
+      if(color_indexes_1d(n).ge.0.and.color_indexes_1d(n).lt.ncolors) then
+        rgba_2d(n,:) = rgba_cmap(color_indexes_1d(n),:)
+      else if(color_indexes_1d(n).eq.-1) then
+        rgba_2d(n,:) = (/0.,0.,0.,0./)
+      end if
+      end if
     end if
   end do
+  return(reshape(rgba_2d,new_dims))
+end
+
+;***********************************************************************;
+; This function returns the RGBA quadruplets associated with the 
+; special colors: "background", "foreground", "transparent"
+; 
+; A N x 4 array is returned, where "N" represents the input dimensions.
+;
+; If any input colors are invalid, then missing will be returned for 
+; that single input.
+;***********************************************************************;
+undef("specialcolor2rgba")
+function specialcolor2rgba(wks,special_colors)
+local special_names,rgb_cmap,ncolors,valid_special_colors,dims,rank,new_dims,\
+foreground_rgb,foreground_rgba,background_rgb,background_rgba
+begin
+  getvalues wks
+      "wkBackgroundColor" : background_rgb
+      "wkForegroundColor" : foreground_rgb
+  end getvalues
+  background_rgba  = rgb2rgba(background_rgb)
+  foreground_rgba  = rgb2rgba(foreground_rgb)
+  transparent_rgba = (/0.,0.,0.,0./)
+
+  special_colors_1d    = ndtooned(str_lower(special_colors))
+  valid_special_colors = is_valid_special_colors(special_colors_1d)
+  if(.not.all(valid_special_colors)) then
+    print("specialcolor2rgba: Error: one or more of the special colors")
+    print("are invalid. Will return missing values for these values.")
+  end if
+
+  dims = dimsizes(special_colors)
+  rank = dimsizes(dims)
+  new_dims           = new(rank+1,typeof(dims))
+  new_dims(0:rank-1) = dims
+  new_dims(rank)     = 4
+;
+; We need to do things in 1D for indexing purposes, then
+; we'll convert back to the original array shape upon
+; return.
+;
+  ncolors = dimsizes(special_colors_1d)
+  rgba_2d = new((/dimsizes(special_colors_1d),4/),float)
+  idxb = ind(special_colors_1d.eq."background")
+  idxf = ind(special_colors_1d.eq."foreground")
+  idxt = ind(special_colors_1d.eq."transparent")
+  if(.not.any(ismissing(idxf))) then
+    rgba_2d(idxf,:) = conform_dims((/dimsizes(idxf),4/),foreground_rgba,1)
+  end if
+  if(.not.any(ismissing(idxb))) then
+    rgba_2d(idxb,:) = conform_dims((/dimsizes(idxb),4/),background_rgba,1)
+  end if
+  if(.not.any(ismissing(idxt))) then
+    rgba_2d(idxt,:) = conform_dims((/dimsizes(idxt),4/),transparent_rgba,1)
+  end if
+  return(reshape(rgba_2d,new_dims))
+end
+
+;***********************************************************************;
+; This function returns the RGBA quadruplets associated with either
+; named colors or special colors "background", "foreground", and
+; "transparent". If you know you have only named colors, use 
+; "namedcolor2rgba". If you know you have only special colors, use 
+; "specialcolor2rgba".
+;
+; While named colors and special colors seem similar, they are not.
+; In order to retrieve the RGBA value for "background" and "foreground",
+; you need to pass in "wks" so you can retrieve the wkForegroundColor
+; and wkBackgroundColor resource values.
+; 
+; A N x 4 array is returned, where "N" represents the input dimensions.
+;
+; If any input colors are invalid, then missing will be returned for 
+; that single input.
+;***********************************************************************;
+undef("mixedcolor2rgba")
+function mixedcolor2rgba(wks,colors:string)
+local special_names,rgb_cmap,ncolors,valid_special_colors,valid_named_colors,\
+dims,rank,new_dims, idxn, idxs
+begin
+  colors_1d = ndtooned(str_lower(colors))
+  valid_special_colors = is_valid_special_colors(colors_1d)
+  valid_named_colors   = is_valid_named_colors(colors_1d)
+
+  dims = dimsizes(colors)
+  rank = dimsizes(dims)
+  new_dims           = new(rank+1,typeof(dims))
+  new_dims(0:rank-1) = dims
+  new_dims(rank)     = 4
+;
+; We need to do things in 1D for indexing purposes, then
+; we'll convert back to the original array shape upon
+; return.
+;
+  ncolors = dimsizes(colors_1d)
+  rgba_2d = new((/dimsizes(colors_1d),4/),float)
+  idxn = ind(valid_named_colors)
+  idxs = ind(valid_special_colors)
+  if(.not.any(ismissing(idxn))) then
+    rgba_2d(idxn,:) = namedcolor2rgba(colors_1d(idxn))
+  end if
+  if(.not.any(ismissing(idxs))) then
+    rgba_2d(idxs,:) = specialcolor2rgba(wks,colors_1d(idxs))
+  end if
   return(reshape(rgba_2d,new_dims))
 end
 
@@ -1347,6 +1489,10 @@ begin
     rgba_colors = read_colormap_files(colors)
   else if(color_type.eq."named") then
     rgba_colors = namedcolor2rgba(colors)
+  else if(color_type.eq."special") then
+    rgba_colors = specialcolor2rgba(wks,colors)
+  else if(color_type.eq."mixed") then
+    rgba_colors = mixedcolor2rgba(wks,colors)
   else if(color_type.eq."rgb") then
     rgba_colors = rgb2rgba(colors)
   end if
@@ -1355,13 +1501,15 @@ begin
   end if
   end if
   end if
+  end if
+  end if
 
-  dims = dimsizes(rgba_colors)
-  rank = dimsizes(dims)
-;;  if(rank.eq.2.and.all(dimsizes(rgba_colors).eq.(/1,4/))) then
-;;    return(rgba_colors(0,:))
-;;  else
-  return(rgba_colors)
+  rank = dimsizes(dimsizes(rgba_colors))
+  if(rank.eq.1.and.all(dimsizes(rgba_colors).eq.(/4/))) then
+    return(reshape(rgba_colors,(/1,4/)))
+  else
+    return(rgba_colors)
+  end if
 end
 
 
