@@ -420,6 +420,14 @@ end
 ;**********************************************************************
 ; Function to return the arrays needed for filling in bars for a
 ; bar chart plot (rather than an XY plot).
+;
+; Note: there are several if-else statements to check whether this
+; is a vertical (type_ref="y") or horizontal (type_ref="x") plot.
+; Instead of doing if-else statements, since the "else" parts are
+; identical with the xb and yb arrays being swapped, we could have
+; made temporary copies of the xb and yb arrays and swapped them for
+; the type_ref="x" case. However, this could cause a memory hit if 
+; the arrays are large. So, keeping the if-else statements for now.
 ;**********************************************************************
 undef("get_bar_arrays")
 function get_bar_arrays(xb,yb,type_ref[1]:string,bres)
@@ -531,19 +539,28 @@ begin
       xnew = todouble(xb)
     end if
   else
+;
+; Note: we are treating the "X" values here as "Y"
+; values and vice versa, so we don't have to duplicate
+; the code below when you check if values are > or <
+; ref line value.
+;
+; When we're all done, we'll need to switch the arrays
+; back.
+;
     if(ndimsx.eq.1)
       ncurves = 1
       npts    = dimsizes(xb)
-      xnew    = onedtond(todouble(xb),(/ncurves,npts/))
+      ynew    = onedtond(todouble(xb),(/ncurves,npts/))
     else
       ncurves = dimsizes(xb(:,0))
       npts    = dimsizes(xb(0,:))
-      xnew    = todouble(xb)
+      ynew    = todouble(xb)
     end if
     if(ndimsy.eq.1)
-      ynew = onedtond(todouble(yb),(/ncurves,npts/))
+      xnew = onedtond(todouble(yb),(/ncurves,npts/))
     else
-      ynew = todouble(yb)
+      xnew = todouble(yb)
     end if
   end if
 
@@ -559,11 +576,11 @@ begin
 ; and the index values where points fall greater, less, and equal
 ; to the Y ref value.
 ;
-  ngrtr   = new(ncurves,integer)
-  nless   = new(ncurves,integer)
+  ngrtr    = new(ncurves,integer)
+  nless    = new(ncurves,integer)
   nequal   = new(ncurves,integer)
-  indgrtr = new((/ncurves,nptsbar/),integer)
-  indless = new((/ncurves,nptsbar/),integer)
+  indgrtr  = new((/ncurves,nptsbar/),integer)
+  indless  = new((/ncurves,nptsbar/),integer)
   indequal = new((/ncurves,nptsbar/),integer)
 
 ;--Make ref_line a 1D double array of length ncurves.
@@ -574,15 +591,9 @@ begin
 ;
   do i=0,ncurves-1
 ;---Get the indices where the y curve is greater, less, equal to the ref line.
-    if(type_ref.eq."y") then
-      gt_ind := ind(ynew(i,:).gt.ref_lines(i))
-      ls_ind := ind(ynew(i,:).lt.ref_lines(i))
-      eq_ind := ind(ynew(i,:).eq.ref_lines(i))
-    else
-      gt_ind := ind(xnew(i,:).gt.ref_lines(i))
-      ls_ind := ind(xnew(i,:).lt.ref_lines(i))
-      eq_ind := ind(xnew(i,:).eq.ref_lines(i))
-    end if
+    gt_ind := ind(ynew(i,:).gt.ref_lines(i))
+    ls_ind := ind(ynew(i,:).lt.ref_lines(i))
+    eq_ind := ind(ynew(i,:).eq.ref_lines(i))
 ;
 ; Create new array to hold bar charts.  For each old y point, we need
 ; five new y points to represent the closed rectangle.
@@ -590,83 +601,46 @@ begin
     if(.not.any(ismissing(gt_ind)))
       ngrtr(i) = 5*dimsizes(gt_ind)                ; # values > ref line
       indgrtr(i,0:dimsizes(gt_ind)-1) = gt_ind     ; indexes > ref line
-      if(type_ref.eq."y") then
-        ygrtr(i,0:ngrtr(i)-5:5)  = ref_lines(i)
-        ygrtr(i,1:ngrtr(i)-4:5)  = ynew(i,gt_ind)
-        ygrtr(i,2:ngrtr(i)-3:5)  = ynew(i,gt_ind)
-        ygrtr(i,3:ngrtr(i)-2:5)  = ref_lines(i)
-        ygrtr(i,4:ngrtr(i)-1:5)  = ref_lines(i)
+      ygrtr(i,0:ngrtr(i)-5:5)  = ref_lines(i)
+      ygrtr(i,1:ngrtr(i)-4:5)  = ynew(i,gt_ind)
+      ygrtr(i,2:ngrtr(i)-3:5)  = ynew(i,gt_ind)
+      ygrtr(i,3:ngrtr(i)-2:5)  = ref_lines(i)
+      ygrtr(i,4:ngrtr(i)-1:5)  = ref_lines(i)
   
-        xgrtr(i,0:ngrtr(i)-5:5) = xnew(i,gt_ind) - bar_widths(i)/2.
-        xgrtr(i,1:ngrtr(i)-4:5) = xnew(i,gt_ind) - bar_widths(i)/2.
-        xgrtr(i,2:ngrtr(i)-3:5) = xnew(i,gt_ind) + bar_widths(i)/2.
-        xgrtr(i,3:ngrtr(i)-2:5) = xnew(i,gt_ind) + bar_widths(i)/2.
-        xgrtr(i,4:ngrtr(i)-1:5) = xnew(i,gt_ind) - bar_widths(i)/2.
-      else
-        xgrtr(i,0:ngrtr(i)-5:5)  = ref_lines(i)
-        xgrtr(i,1:ngrtr(i)-4:5)  = xnew(i,gt_ind)
-        xgrtr(i,2:ngrtr(i)-3:5)  = xnew(i,gt_ind)
-        xgrtr(i,3:ngrtr(i)-2:5)  = ref_lines(i)
-        xgrtr(i,4:ngrtr(i)-1:5)  = ref_lines(i)
-  
-        ygrtr(i,0:ngrtr(i)-5:5) = ynew(i,gt_ind) - bar_widths(i)/2.
-        ygrtr(i,1:ngrtr(i)-4:5) = ynew(i,gt_ind) - bar_widths(i)/2.
-        ygrtr(i,2:ngrtr(i)-3:5) = ynew(i,gt_ind) + bar_widths(i)/2.
-        ygrtr(i,3:ngrtr(i)-2:5) = ynew(i,gt_ind) + bar_widths(i)/2.
-        ygrtr(i,4:ngrtr(i)-1:5) = ynew(i,gt_ind) - bar_widths(i)/2.
-      end if
+      xgrtr(i,0:ngrtr(i)-5:5) = xnew(i,gt_ind) - bar_widths(i)/2.
+      xgrtr(i,1:ngrtr(i)-4:5) = xnew(i,gt_ind) - bar_widths(i)/2.
+      xgrtr(i,2:ngrtr(i)-3:5) = xnew(i,gt_ind) + bar_widths(i)/2.
+      xgrtr(i,3:ngrtr(i)-2:5) = xnew(i,gt_ind) + bar_widths(i)/2.
+      xgrtr(i,4:ngrtr(i)-1:5) = xnew(i,gt_ind) - bar_widths(i)/2.
     else
       ngrtr(i) = 0
     end if  
     if(.not.any(ismissing(ls_ind))) 
       nless(i) = 5*dimsizes(ls_ind)                ; # values < ref line
       indless(i,0:dimsizes(ls_ind)-1) = ls_ind     ; indexes < ref line
-      if(type_ref.eq."y") then
-        yless(i,0:nless(i)-5:5) = ref_lines(i)
-        yless(i,1:nless(i)-4:5) = ynew(i,ls_ind)
-        yless(i,2:nless(i)-3:5) = ynew(i,ls_ind)
-        yless(i,3:nless(i)-2:5) = ref_lines(i)
-        yless(i,4:nless(i)-1:5) = ref_lines(i)
+      yless(i,0:nless(i)-5:5) = ref_lines(i)
+      yless(i,1:nless(i)-4:5) = ynew(i,ls_ind)
+      yless(i,2:nless(i)-3:5) = ynew(i,ls_ind)
+      yless(i,3:nless(i)-2:5) = ref_lines(i)
+      yless(i,4:nless(i)-1:5) = ref_lines(i)
   
-        xless(i,0:nless(i)-5:5) = xnew(i,ls_ind) - bar_widths(i)/2.
-        xless(i,1:nless(i)-4:5) = xnew(i,ls_ind) - bar_widths(i)/2.
-        xless(i,2:nless(i)-3:5) = xnew(i,ls_ind) + bar_widths(i)/2.
-        xless(i,3:nless(i)-2:5) = xnew(i,ls_ind) + bar_widths(i)/2.
-        xless(i,4:nless(i)-1:5) = xnew(i,ls_ind) - bar_widths(i)/2.
-      else
-        xless(i,0:nless(i)-5:5) = ref_lines(i)
-        xless(i,1:nless(i)-4:5) = xnew(i,ls_ind)
-        xless(i,2:nless(i)-3:5) = xnew(i,ls_ind)
-        xless(i,3:nless(i)-2:5) = ref_lines(i)
-        xless(i,4:nless(i)-1:5) = ref_lines(i)
-  
-        yless(i,0:nless(i)-5:5) = ynew(i,ls_ind) - bar_widths(i)/2.
-        yless(i,1:nless(i)-4:5) = ynew(i,ls_ind) - bar_widths(i)/2.
-        yless(i,2:nless(i)-3:5) = ynew(i,ls_ind) + bar_widths(i)/2.
-        yless(i,3:nless(i)-2:5) = ynew(i,ls_ind) + bar_widths(i)/2.
-        yless(i,4:nless(i)-1:5) = ynew(i,ls_ind) - bar_widths(i)/2.
-      end if
+      xless(i,0:nless(i)-5:5) = xnew(i,ls_ind) - bar_widths(i)/2.
+      xless(i,1:nless(i)-4:5) = xnew(i,ls_ind) - bar_widths(i)/2.
+      xless(i,2:nless(i)-3:5) = xnew(i,ls_ind) + bar_widths(i)/2.
+      xless(i,3:nless(i)-2:5) = xnew(i,ls_ind) + bar_widths(i)/2.
+      xless(i,4:nless(i)-1:5) = xnew(i,ls_ind) - bar_widths(i)/2.
     else
       nless(i) = 0
     end if  
     if(.not.any(ismissing(eq_ind))) 
       nequal(i) = 5*dimsizes(eq_ind)              ; # values equal ref line
       indequal(i,0:dimsizes(eq_ind)-1) = eq_ind     ; indexes equal ref line
-      if(type_ref.eq."y") then
-        yequal(i,0:nequal(i)-1:5) = ref_lines(i)
-        xequal(i,0:nequal(i)-5:5) = xnew(i,eq_ind) - bar_widths(i)/2.
-        xequal(i,1:nequal(i)-4:5) = xnew(i,eq_ind) - bar_widths(i)/2.
-        xequal(i,2:nequal(i)-3:5) = xnew(i,eq_ind) + bar_widths(i)/2.
-        xequal(i,3:nequal(i)-2:5) = xnew(i,eq_ind) + bar_widths(i)/2.
-        xequal(i,4:nequal(i)-1:5) = xnew(i,eq_ind) - bar_widths(i)/2.
-      else
-        xequal(i,0:nequal(i)-1:5) = ref_lines(i)
-        yequal(i,0:nequal(i)-5:5) = ynew(i,eq_ind) - bar_widths(i)/2.
-        yequal(i,1:nequal(i)-4:5) = ynew(i,eq_ind) - bar_widths(i)/2.
-        yequal(i,2:nequal(i)-3:5) = ynew(i,eq_ind) + bar_widths(i)/2.
-        yequal(i,3:nequal(i)-2:5) = ynew(i,eq_ind) + bar_widths(i)/2.
-        yequal(i,4:nequal(i)-1:5) = ynew(i,eq_ind) - bar_widths(i)/2.
-      end if
+      yequal(i,0:nequal(i)-1:5) = ref_lines(i)
+      xequal(i,0:nequal(i)-5:5) = xnew(i,eq_ind) - bar_widths(i)/2.
+      xequal(i,1:nequal(i)-4:5) = xnew(i,eq_ind) - bar_widths(i)/2.
+      xequal(i,2:nequal(i)-3:5) = xnew(i,eq_ind) + bar_widths(i)/2.
+      xequal(i,3:nequal(i)-2:5) = xnew(i,eq_ind) + bar_widths(i)/2.
+      xequal(i,4:nequal(i)-1:5) = xnew(i,eq_ind) - bar_widths(i)/2.
     else
       nequal(i) = 0
     end if  
@@ -694,44 +668,40 @@ begin
     xinterp  = new((/ncurves3,ngle_max/),double,xgrtr@_FillValue)
     yinterp  = new((/ncurves3,ngle_max/),double,ygrtr@_FillValue)
 
-    copy_var_atts(xb,xinterp,"")
-    copy_var_atts(yb,yinterp,"")
+    if(type_ref.eq."y") then
+      copy_var_atts(xb,xinterp,"")
+      copy_var_atts(yb,yinterp,"")
+    else
+      copy_var_atts(xb,yinterp,"")    ; remember we have to swap them if dealing
+      copy_var_atts(yb,yinterp,"")    ; with the x reference line case
+    end if
     if(ng_max.gt.0)
-      if(type_ref.eq."y") then
-        xinterp(0:ncurves3-1:3,0:ng_max-1)   = xgrtr(:,0:ng_max-1)
-        yinterp(0:ncurves3-1:3,0:ng_max-1)   = ygrtr(:,0:ng_max-1)
-        yinterp(0:ncurves3-1:3,4:ng_max-1:5) = yinterp@_FillValue
-      else
-        yinterp(0:ncurves3-1:3,0:ng_max-1)   = ygrtr(:,0:ng_max-1)
-        xinterp(0:ncurves3-1:3,0:ng_max-1)   = xgrtr(:,0:ng_max-1)
-        xinterp(0:ncurves3-1:3,4:ng_max-1:5) = xinterp@_FillValue
-      end if
+      xinterp(0:ncurves3-1:3,0:ng_max-1)   = xgrtr(:,0:ng_max-1)
+      yinterp(0:ncurves3-1:3,0:ng_max-1)   = ygrtr(:,0:ng_max-1)
+      yinterp(0:ncurves3-1:3,4:ng_max-1:5) = yinterp@_FillValue
     end if
     if(nl_max.gt.0)
-      if(type_ref.eq."y") then
-        xinterp(1:ncurves3-1:3,0:nl_max-1)   = xless(:,0:nl_max-1)
-        yinterp(1:ncurves3-1:3,0:nl_max-1)   = yless(:,0:nl_max-1)
-        yinterp(1:ncurves3-1:3,4:nl_max-1:5) = yinterp@_FillValue
-      else
-        yinterp(1:ncurves3-1:3,0:nl_max-1)   = yless(:,0:nl_max-1)
-        xinterp(1:ncurves3-1:3,0:nl_max-1)   = xless(:,0:nl_max-1)
-        xinterp(1:ncurves3-1:3,4:nl_max-1:5) = xinterp@_FillValue
-      end if
+      xinterp(1:ncurves3-1:3,0:nl_max-1)   = xless(:,0:nl_max-1)
+      yinterp(1:ncurves3-1:3,0:nl_max-1)   = yless(:,0:nl_max-1)
+      yinterp(1:ncurves3-1:3,4:nl_max-1:5) = yinterp@_FillValue
     end if
     if(ne_max.gt.0)
-      if(type_ref.eq."y") then
-        xinterp(2:ncurves3-1:3,0:ne_max-1)   = xequal(:,0:ne_max-1)
-        yinterp(2:ncurves3-1:3,0:ne_max-1)   = yequal(:,0:ne_max-1)
-        yinterp(2:ncurves3-1:3,4:ne_max-1:5) = yinterp@_FillValue
-      else
-        yinterp(2:ncurves3-1:3,0:ne_max-1)   = yequal(:,0:ne_max-1)
-        xinterp(2:ncurves3-1:3,0:ne_max-1)   = xequal(:,0:ne_max-1)
-        xinterp(2:ncurves3-1:3,4:ne_max-1:5) = xinterp@_FillValue
-      end if
+      xinterp(2:ncurves3-1:3,0:ne_max-1)   = xequal(:,0:ne_max-1)
+      yinterp(2:ncurves3-1:3,0:ne_max-1)   = yequal(:,0:ne_max-1)
+      yinterp(2:ncurves3-1:3,4:ne_max-1:5) = yinterp@_FillValue
     end if
   end if
-  return([/xinterp,yinterp,xgrtr,ygrtr,xless,yless,ngrtr,nless,\
-           indgrtr,indless/])
+;
+; Here's where we switch the X and Y values back
+; for the type_ref="x" case.
+;
+  if(type_ref.eq."y") then
+    return([/xinterp,yinterp,xgrtr,ygrtr,xless,yless,ngrtr,nless,\
+             indgrtr,indless/])  
+  else
+    return([/yinterp,xinterp,ygrtr,xgrtr,yless,xless,ngrtr,nless,\
+             indgrtr,indless/])  
+  end if
 end
 
 ;***********************************************************************;
@@ -4631,6 +4601,15 @@ begin
   end if
   if(bar_outline_only.or.(reftype.eq."x".and..not.isatt(rfres,"gsnXRefLine").or.\
                           reftype.eq."y".and..not.isatt(rfres,"gsnYRefLine"))) then
+    if( (reftype.eq."y".and.isatt(rfres,"gsnYRefLine")).or.\
+        (reftype.eq."x".and.isatt(rfres,"gsnXRefLine"))) then
+      ref_line_on        = True
+      ref_line           := get_res_value_keep(rfres,"gsn" + str_upper(reftype)+"RefLine",0)
+      nref               = dimsizes(ref_line)
+      ref_line_color     := get_ref_line_color(wks,reftype,nref,rfres)
+      ref_line_pattern   := get_ref_line_pattern(wks,reftype,nref,rfres)
+      ref_line_thickness := get_ref_line_thickness(wks,reftype,nref,rfres)
+    end if
     return([/ref_line,ref_line_on,ref_line_color,ref_line_pattern,\
              ref_line_thickness,ref_grtr_curve_fill_on,\
              ref_less_curve_fill_on,ref_fill_color_g,ref_fill_color_l/])
@@ -6032,7 +6011,7 @@ begin
     end if
     if(bar_chart.and..not.bar_outline_only)
 ;----------------------------------------------------------------------
-; 3. A bar XY plot with filled bars.
+; 3. A bar plot with filled bars.
 ;----------------------------------------------------------------------
       if(xref_fill_on) then
         filled_bar_list = filled_bars_interp(x,y,"x",xref_line,res2)
