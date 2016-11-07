@@ -1308,8 +1308,18 @@ begin
 end
 
 ;***********************************************************************;
+; This is currently an unadvertised function, but it could be useful    ;
+; to outside users.  The slightly annoying thing is that you have to    ;
+; pass in the workstation to handle the case where the user is giving   ;
+; color index values into a workstation color map.                      ;
+;                                                                       ;
 ; Given a list of color maps, color indexes (workstation or absolute),  ;
 ; named colors, RGB, or RGBA colors, convert them to RGBA colors.       ;
+;                                                                       ;
+; I decided to always have this function return N x 4 even in the case  ;
+; of N=1, so that other routines that use this function don't have to   ;
+; test whether they have a 1D or 2D array. They can use rm_single_dims  ;
+; if they need to get rid of a degenerate dimension.                    ;
 ;***********************************************************************;
 undef("convert_color_to_rgba")
 function convert_color_to_rgba(wks,colors)
@@ -1348,11 +1358,10 @@ begin
 
   dims = dimsizes(rgba_colors)
   rank = dimsizes(dims)
-  if(rank.eq.2.and.all(dimsizes(rgba_colors).eq.(/1,4/))) then
-    return(rgba_colors(0,:))
-  else
-    return(rgba_colors)
-  end if
+;;  if(rank.eq.2.and.all(dimsizes(rgba_colors).eq.(/1,4/))) then
+;;    return(rgba_colors(0,:))
+;;  else
+  return(rgba_colors)
 end
 
 
