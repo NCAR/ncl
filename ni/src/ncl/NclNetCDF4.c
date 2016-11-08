@@ -3508,8 +3508,8 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
 	       }
 	       free(values);
 	       ret = NhlNOERROR;
-
-            }
+	       NclFree(component_name);
+	    }
             else
             {
               /*
@@ -3521,8 +3521,7 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
                 storage = (void *)get_nc4_compoundlist(varnode->gid, varnode->id, n_elem,
                                                        start, finish, stride, get_all);
                 ret = NhlNOERROR;
-            }
-	    NclFree(component_name);
+	    }
         }
         else if(NCL_list == varnode->type)
         {
