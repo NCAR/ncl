@@ -12197,16 +12197,20 @@ NhlErrorTypes CellBoundsFill
 	segments = NhlMalloc(ncells * sizeof(int));
 	colors = NhlMalloc(ncells * sizeof(int));
 	
-
 	for (i = 0; i < ncells; i++) {
 		segments[i] = i * nvertices;
 		colors[i] = -99;
-		for (j = 0; j < nlevels; j++) {
-			if (data[i] < levels[j]) {
-				colors[i] = lcols[j];
-				break;
+		if (data[i] == cnp->sfp->missing_value) {
+			colors[i] = cnp->missing_val.gks_fcolor;
+		}
+		else {
+			for (j = 0; j < nlevels; j++) {
+				if (data[i] < levels[j]) {
+					colors[i] = lcols[j];
+					break;
+				}
+				colors[i] = lcols[nlevels];
 			}
-			colors[i] = lcols[nlevels];
 		}
 	}
 
