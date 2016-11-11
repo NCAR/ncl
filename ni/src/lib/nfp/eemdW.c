@@ -59,7 +59,7 @@ NhlErrorTypes ceemdan_W( void )
  * Attributes
  */
   unsigned int *tmp_S_number=NULL, *tmp_num_siftings=NULL;
-  unsigned int def_S_number=0, def_num_siftings=0;
+  unsigned int def_S_number=4, def_num_siftings=50;
   unsigned long int *tmp_rng_seed=NULL, def_rng_seed=0;
   logical set_S_number=False, set_num_siftings=False, set_rng_seed=False;
   NclBasicDataTypes type_S_number, type_num_siftings, type_rng_seed;
@@ -346,14 +346,17 @@ NhlErrorTypes ceemdan_W( void )
   if(!set_S_number) {
     tmp_S_number = (unsigned int *)malloc(sizeof(unsigned int));
     *tmp_S_number = def_S_number;
+    type_S_number = NCL_uint;
   }
   if(!set_num_siftings) {
     tmp_num_siftings = (unsigned int *)malloc(sizeof(unsigned int));
     *tmp_num_siftings = def_num_siftings;
+    type_num_siftings = NCL_uint;
   }
   if(!set_rng_seed) {
     tmp_rng_seed = (unsigned long *)malloc(sizeof(unsigned long));
     *tmp_rng_seed = def_rng_seed;
+    type_rng_seed = NCL_ulong;
   }
   if(tmp_S_number == NULL || tmp_num_siftings == NULL || tmp_rng_seed == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for various input parameters");
@@ -529,7 +532,7 @@ NhlErrorTypes eemd_W( void )
  * Attributes
  */
   unsigned int *tmp_S_number=NULL, *tmp_num_siftings=NULL;
-  unsigned int def_S_number=0, def_num_siftings=0;
+  unsigned int def_S_number=4, def_num_siftings=50;
   unsigned long int *tmp_rng_seed=NULL, def_rng_seed=0;
   logical set_S_number=False, set_num_siftings=False, set_rng_seed=False;
   NclBasicDataTypes type_S_number, type_num_siftings, type_rng_seed;
@@ -816,14 +819,17 @@ NhlErrorTypes eemd_W( void )
   if(!set_S_number) {
     tmp_S_number = (unsigned int *)malloc(sizeof(unsigned int));
     *tmp_S_number = def_S_number;
+    type_S_number = NCL_uint;
   }
   if(!set_num_siftings) {
     tmp_num_siftings = (unsigned int *)malloc(sizeof(unsigned int));
     *tmp_num_siftings = def_num_siftings;
+    type_num_siftings = NCL_uint;
   }
   if(!set_rng_seed) {
     tmp_rng_seed = (unsigned long *)malloc(sizeof(unsigned long));
     *tmp_rng_seed = def_rng_seed;
+    type_rng_seed = NCL_ulong;
   }
   if(tmp_S_number == NULL || tmp_num_siftings == NULL || tmp_rng_seed == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eemd: Unable to allocate memory for various input parameters");
