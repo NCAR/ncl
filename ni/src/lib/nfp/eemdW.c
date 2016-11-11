@@ -62,7 +62,7 @@ NhlErrorTypes ceemdan_W( void )
   unsigned int def_S_number=4, def_num_siftings=50;
   unsigned long int *tmp_rng_seed=NULL, def_rng_seed=0;
   logical set_S_number=False, set_num_siftings=False, set_rng_seed=False;
-  NclBasicDataTypes type_S_number, type_num_siftings, type_rng_seed;
+  NclBasicDataTypes type_S_number=NCL_uint, type_num_siftings=NCL_uint, type_rng_seed=NCL_ulong;
 
 /*
  * Variables for retrieving attributes from "opt".
@@ -250,6 +250,11 @@ NhlErrorTypes ceemdan_W( void )
 
 /* 
  * If "opt" is True, then check if any attributes have been set.
+ * The current ones that are recognized are:
+ *
+ *   "S_number"
+ *   "num_siftings"
+ *   "rng_seed"
  */
   if(*opt) {
     stack_entry = _NclGetArg(4, 6, DONT_CARE);
@@ -276,8 +281,8 @@ NhlErrorTypes ceemdan_W( void )
  */
         attr_list = attr_obj->att.att_list;
 /*
- * Loop through attributes and check them. The current ones 
- * recognized are:
+ * Loop through attributes and check them. The current ones that
+ * are recognized are:
  *
  *   "S_number"
  *   "num_siftings"
@@ -346,17 +351,14 @@ NhlErrorTypes ceemdan_W( void )
   if(!set_S_number) {
     tmp_S_number = (unsigned int *)malloc(sizeof(unsigned int));
     *tmp_S_number = def_S_number;
-    type_S_number = NCL_uint;
   }
   if(!set_num_siftings) {
     tmp_num_siftings = (unsigned int *)malloc(sizeof(unsigned int));
     *tmp_num_siftings = def_num_siftings;
-    type_num_siftings = NCL_uint;
   }
   if(!set_rng_seed) {
     tmp_rng_seed = (unsigned long *)malloc(sizeof(unsigned long));
     *tmp_rng_seed = def_rng_seed;
-    type_rng_seed = NCL_ulong;
   }
   if(tmp_S_number == NULL || tmp_num_siftings == NULL || tmp_rng_seed == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ceemdan: Unable to allocate memory for various input parameters");
@@ -535,7 +537,7 @@ NhlErrorTypes eemd_W( void )
   unsigned int def_S_number=4, def_num_siftings=50;
   unsigned long int *tmp_rng_seed=NULL, def_rng_seed=0;
   logical set_S_number=False, set_num_siftings=False, set_rng_seed=False;
-  NclBasicDataTypes type_S_number, type_num_siftings, type_rng_seed;
+  NclBasicDataTypes type_S_number=NCL_uint, type_num_siftings=NCL_uint, type_rng_seed=NCL_ulong;
 
 /*
  * Variables for retrieving attributes from "opt".
@@ -723,6 +725,11 @@ NhlErrorTypes eemd_W( void )
 
 /* 
  * If "opt" is True, then check if any attributes have been set.
+ * The current ones that are recognized are:
+ *
+ *   "S_number"
+ *   "num_siftings"
+ *   "rng_seed"
  */
   if(*opt) {
     stack_entry = _NclGetArg(4, 6, DONT_CARE);
@@ -819,17 +826,14 @@ NhlErrorTypes eemd_W( void )
   if(!set_S_number) {
     tmp_S_number = (unsigned int *)malloc(sizeof(unsigned int));
     *tmp_S_number = def_S_number;
-    type_S_number = NCL_uint;
   }
   if(!set_num_siftings) {
     tmp_num_siftings = (unsigned int *)malloc(sizeof(unsigned int));
     *tmp_num_siftings = def_num_siftings;
-    type_num_siftings = NCL_uint;
   }
   if(!set_rng_seed) {
     tmp_rng_seed = (unsigned long *)malloc(sizeof(unsigned long));
     *tmp_rng_seed = def_rng_seed;
-    type_rng_seed = NCL_ulong;
   }
   if(tmp_S_number == NULL || tmp_num_siftings == NULL || tmp_rng_seed == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eemd: Unable to allocate memory for various input parameters");
