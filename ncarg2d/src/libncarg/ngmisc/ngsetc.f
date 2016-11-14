@@ -28,7 +28,8 @@ C
 C
 C  Input and output data records for ESCAPE function calls.
 C
-      CHARACTER*80 IDR(13),CDUM
+      PARAMETER (IDRLEN=13)
+      CHARACTER*80 IDR(IDRLEN),CDUM
 C
 C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
@@ -49,7 +50,7 @@ C
 C
 C  Set the appropriate parameter value.
 C
-      DO 10 I=1,4
+      DO 10 I=1,IDRLEN
         IDR(I) = ' '
    10 CONTINUE
 C
