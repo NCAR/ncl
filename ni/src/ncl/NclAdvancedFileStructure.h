@@ -24,6 +24,15 @@ typedef enum
     NCL_UDT_string
 } NclUDTType;
 
+typedef struct _NclFileUserDefinedTypeField
+{
+    int               n_dims;
+    ng_size_t         *dim_sizes;
+    size_t            offset;
+    NclQuark          field_name;
+    NclBasicDataTypes field_type;
+} NclFileUDTField;
+
 typedef struct _NclFileUserDefinedTypeNode
 {
     ng_size_t         id;
@@ -33,8 +42,7 @@ typedef struct _NclFileUserDefinedTypeNode
     int               n_fields;
     NclQuark          name;
     ng_size_t         type;
-    NclQuark          *mem_name;
-    NclBasicDataTypes *mem_type;
+    NclFileUDTField   *fields;
 } NclFileUDTNode;
 
 typedef struct _NclFileUserDefinedTypeRecord
@@ -202,6 +210,7 @@ typedef struct _NclFileVarNode
 
     NclFileDimRecord *chunk_dim_rec;
     NclUDTType             udt_type;
+    NclFileUDTNode         *udt_type_node;   /* this is read-only -- does not need to be freed */
     int                    is_compound;
     NclFileCompoundRecord *comprec;
 

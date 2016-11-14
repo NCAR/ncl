@@ -789,24 +789,36 @@ void _printNclFileUDTRecord(FILE *fp, NclAdvancedFile thefile, NclFileUDTRecord 
 
         for(n = 0; n < udtnode->n_fields; n++)
         {
-          /*
-           *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-           *fprintf(stderr, "\tUDT Comp No. %d: name: <%s>\n", n,
-           *                 NrmQuarkToString(udtnode->mem_name[n]));
-           */
-
-            _printNclTypeValAligned(fp, NCL_string, &(udtnode->mem_name[n]), FALSE);
-            _printStringConst(fp, ",", TRUE);
+		ng_size_t i;
+		/*
+		 *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
+		 *fprintf(stderr, "\tUDT Comp No. %d: name: <%s>\n", n,
+		 *                 NrmQuarkToString(udtnode->mem_name[n]));
+		 */
+		NclFileUDTField   *field;
+		NrmQuark type_name;
+		
+		field = &(udtnode->fields[n]);
+		type_name = NrmStringToQuark(_NclBasicDataTypeToName(field->field_type));
+		
+		_printNclTypeValAligned(fp, NCL_string, &type_name, FALSE);
+		_printNclTypeValAligned(fp, NCL_string, &(field->field_name), FALSE);
+		if (field->n_dims > 0) {
+			_printStringConst(fp, " (", FALSE);
+			for (i = 0; i < field->n_dims; i++) {
+				_printNclTypeVal(fp, NCL_int64, &field->dim_sizes[i], FALSE);
+				if (i < field->n_dims -1)
+					_printStringConst(fp, ",", FALSE);
+				else
+					_printStringConst(fp, ")", FALSE);
+			}
+		}
+		_printStringConst(fp, ";", TRUE);
         }
 
         _decreaseNclPrintIndentation();
 
-        _printStringConstAligned(fp, "};\n\n", FALSE);
-      /*
-       *_printNclTypeVal(fp, NCL_char, "} \t // ", 0);
-       *_justPrintTypeVal(fp, NCL_string, &(udtnode->name), 0);
-       *_justPrintTypeVal(fp, NCL_char, "\n", 0);
-       */
+        _printStringConstAligned(fp, "}\n\n", FALSE);
     }
 
     _decreaseNclPrintIndentation();
@@ -927,7 +939,21 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
     if(NULL == varnode)
         return;
 
-    strcpy(type_str, _NclBasicDataTypeToName(varnode->type));
+
+    if (varnode->udt_type_node) {
+	    strcpy(type_str, NrmQuarkToString(varnode->udt_type_node->name));
+    }
+    else {
+	    switch (varnode->udt_type) {
+	    case NCL_UDT_compound:
+		    strcpy(type_str, NrmQuarkToString(varnode->comprec->name));
+		    break;
+	    default:
+		    strcpy(type_str, _NclBasicDataTypeToName(varnode->type));
+		    break;
+	    }
+    }
+	    
 
   /*
    *if(0 == strcmp("compound", type_str))
@@ -961,7 +987,11 @@ void _printNclFileVarNode(FILE *fp, NclAdvancedFile thefile, NclFileVarNode *var
         _printNclTypeVal(fp, NCL_int64, &total_size, FALSE);
         _printStringConst(fp, " values", TRUE);
 
-        total_size *= _NclSizeOf(varnode->type);
+	if (varnode->udt_type == NCL_UDT_compound)
+		total_size *= varnode->comprec->size;
+	else
+		total_size *= _NclSizeOf(varnode->type);
+
         _printStringConstAligned(fp, "            ", FALSE);
         _printNclTypeVal(fp, NCL_int64, &total_size, FALSE);
         _printStringConst(fp, " bytes", TRUE);
@@ -2287,7 +2317,6 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
                                               NclQuark varname)
 {
     NclFileVarNode *varnode;
-    int slash_count = 0;
     char *cp, *last_cp;
     int is_fully_qualified;
     NclFileGrpNode *lgrpnode = grpnode;
@@ -2613,11 +2642,19 @@ void FileDestroyUDTRecord(NclFileUDTRecord *udt_rec)
         {
             for(n = 0; n < udt_rec->max_udts; ++n)
             {
-                udt_node = &(udt_rec->udt_node[n]);
-                if(NULL != udt_node->mem_name)
-                    NclFree(udt_node->mem_name);
-                if(NULL != udt_node->mem_type)
-                    NclFree(udt_node->mem_type);
+		    NclFileUDTField *field;
+		    int i;
+
+		    udt_node = &(udt_rec->udt_node[n]);
+		    if (udt_node->n_fields > 0) {
+			    for (i = 0; i < udt_node->n_fields; i++) {
+				    field = &(udt_node->fields[i]);
+				    if (field->n_dims > 0) {
+					    NclFree(field->dim_sizes);
+				    }
+			    }
+			    NclFree(udt_node->fields);
+		    }
             }
             NclFree(udt_rec->udt_node);
             udt_rec->udt_node = NULL;

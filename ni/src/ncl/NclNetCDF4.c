@@ -379,16 +379,14 @@ void _NC4_add_udt(NclFileUDTRecord **rootudtrec,
     udtnode->ncl_class = ncl_class;
     udtnode->max_fields = nfields;
     udtnode->n_fields = nfields;
-
-    udtnode->mem_name = (NclQuark *)NclCalloc(nfields, sizeof(NclQuark));
-    assert(udtnode->mem_name);
-    udtnode->mem_type = (NclBasicDataTypes *)NclCalloc(nfields, sizeof(NclBasicDataTypes));
-    assert(udtnode->mem_type);
+    udtnode->fields = (NclFileUDTField *) NclCalloc(nfields, sizeof(NclFileUDTField));
+    assert(udtnode->fields);
 
     for(n = 0; n < nfields; n++)
     {
-        udtnode->mem_name[n] = mem_name[n];
-        udtnode->mem_type[n] = mem_type[n];
+	    NclFileUDTField *field = &(udtnode->fields[n]);
+	    field->field_name = mem_name[n];
+	    field->field_type = mem_type[n];
     }
 
     udtrec->n_udts++;
@@ -1205,6 +1203,7 @@ NclFileCompoundRecord *get_nc4_compoundrec(int ncid, nc_type xtype, NrmQuark **c
        *fprintf(stderr, "\tftype = %d, NC_CHAR = %d, NC_STRING = %d\n", ftype, NC_CHAR, NC_STRING);
        */
 
+		
         if(rank > 0)
         {
             sides = (int *) NclCalloc(rank, sizeof(int));
@@ -1212,6 +1211,11 @@ NclFileCompoundRecord *get_nc4_compoundrec(int ncid, nc_type xtype, NrmQuark **c
             nc_inq_compound_field(ncid, xtype, fidx, NULL,
                                   NULL, NULL, NULL, sides);
         }
+	else if (rank == 0) {  /* scalar value */
+		if (ftype == NC_CHAR) {   /* promote scalar char variables to strings (length unknown until data is read) */
+			ftype = NC_STRING;
+		}
+	}
 
         compnode->the_nc_type = ftype;
         compnode->type = NC4MapToNcl(&ftype);
@@ -1929,8 +1933,6 @@ NclFileUDTRecord *_NC4_get_udts(int gid, int uid, int n_udts)
     NclFileUDTNode   *udtnode;
     int *typeids;
 
-    NclQuark          *mem_name;
-    NclBasicDataTypes *mem_type;
     NclBasicDataTypes ncl_type;
 
     size_t  size;
@@ -1982,21 +1984,39 @@ NclFileUDTRecord *_NC4_get_udts(int gid, int uid, int n_udts)
         udtnode->ncl_class = ncl_class;
         udtnode->max_fields = nfields;
         udtnode->n_fields = nfields;
-
-        mem_name = (NclQuark *) NclCalloc(nfields, sizeof(NclQuark));
-        mem_type = (NclBasicDataTypes *) NclCalloc(nfields, sizeof(NclBasicDataTypes));
+	udtnode->fields = NclCalloc(nfields,sizeof(NclFileUDTField));
+	assert (udtnode->fields);
 
         switch(ncl_class)
         {
+	    int ndims;
+	    int *dim_sizes;  /* NetCDF uses an int * instead of size_t * -- why???, especially when they use size_t for the field offsets and the number of fields */
+	    size_t offset;
             case NC_VLEN:
             case NC_OPAQUE:
             case NC_COMPOUND:
                  for(n = 0; n < nfields; n++)
                  {
                      nc_inq_compound_field(gid, typeids[i], n, buffer,
-                                           NULL, &ftype, NULL, NULL);
-                     mem_name[n] = NrmStringToQuark(buffer);
-                     mem_type[n] = NC4MapToNcl(&ftype);
+                                           &offset, &ftype, NULL, NULL);
+		     udtnode->fields[n].field_name = NrmStringToQuark(buffer);
+		     udtnode->fields[n].field_type =  NC4MapToNcl(&ftype);
+		     udtnode->fields[n].offset = offset;
+		     nc_inq_compound_fieldndims(gid,typeids[i],n,&ndims);
+		     if (ndims == 0) {
+			     udtnode->fields[n].n_dims = 0;
+			     udtnode->fields[n].dim_sizes = NULL;
+		     }
+		     else {
+			     dim_sizes = NclMalloc(sizeof(int) * ndims);
+			     nc_inq_compound_fielddim_sizes(gid,typeids[i],n,dim_sizes);
+			     udtnode->fields[n].n_dims = ndims;
+			     udtnode->fields[n].dim_sizes = (ng_size_t *)NclMalloc(ndims * sizeof(ng_size_t));
+			     for (i = 0; i < ndims; i++) {
+				     udtnode->fields[n].dim_sizes[i] = (ng_size_t) dim_sizes[i];
+			     }
+		     }
+
                    /*
                     *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
                     *fprintf(stderr, "\tField %d, name: <%s>, type: %d\n", n, buffer, ftype);
@@ -2011,8 +2031,8 @@ NclFileUDTRecord *_NC4_get_udts(int gid, int uid, int n_udts)
                  for(n = 0; n < nfields; n++)
                  {
                      nc_inq_enum_member(gid, typeids[i], n, buffer, val);
-                     mem_name[n] = NrmStringToQuark(buffer);
-                     mem_type[n] = NC4MapToNcl(&ncl_type);
+		     udtnode->fields[n].field_name = NrmStringToQuark(buffer);
+		     udtnode->fields[n].field_type =  NC4MapToNcl(&ftype);
                    /*
                     *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
                     *fprintf(stderr, "\tMember %d, name: <%s>, value: %lld\n",
@@ -2026,8 +2046,6 @@ NclFileUDTRecord *_NC4_get_udts(int gid, int uid, int n_udts)
                  exit (-1);
         }
 
-        udtnode->mem_name = mem_name;
-        udtnode->mem_type = mem_type;
     }
 
     free(typeids);
@@ -2407,16 +2425,19 @@ NclFileVarRecord *_NC4_get_vars(NclFileGrpNode *grpnode, int n_vars, int *has_sc
                 case NC_OPAQUE: 
                      {
                          varnode->type = NCL_opaque;
+			 varnode->udt_type = NCL_UDT_opaque;
                      }
                      break;
                 case NC_ENUM: 
                      {
                          varnode->type = NCL_enum;
+			 varnode->udt_type = NCL_UDT_enum;
                      }
                      break;
                 case NC_VLEN:
                      {
                          varnode->type = NCL_list;
+			 varnode->udt_type = NCL_UDT_vlen;
                      }
                      break;
                 case NC_COMPOUND:
@@ -2427,6 +2448,7 @@ NclFileVarRecord *_NC4_get_vars(NclFileGrpNode *grpnode, int n_vars, int *has_sc
                          varnode->type = NCL_compound;
                          varnode->is_compound = 1;
                          varnode->comprec = comprec;
+			 varnode->udt_type = NCL_UDT_compound;
 
                          _addNclAttNode(&(varnode->att_rec), compatt, NCL_string, comprec->nfields, (void*)componentnames);
 			 if(NULL != componentnames)
@@ -3472,14 +3494,22 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
               *fprintf(stderr, "\tnumval = %d, size = %d\n", numval, size);
               */
 
-               for(i = 0; i < numval; i++)
-               {
-                   memcpy(out_data + i * complength, values + i * size + offset, complength);
-               }
-
-               free(values);
-               ret = NhlNOERROR;
-            }
+	       if (compnode->type == NCL_string) {
+		       for (i = 0; i < numval; i++) {
+			       NrmQuark tq;
+			       tq = NrmStringToQuark((char*)(values + i * size + offset));
+			       memcpy(out_data + i * complength,&tq,complength);
+		       }
+	       }
+	       else {
+		       for(i = 0; i < numval; i++) {
+			       memcpy(out_data + i * complength, values + i * size + offset, complength);
+		       }
+	       }
+	       free(values);
+	       ret = NhlNOERROR;
+	       NclFree(component_name);
+	    }
             else
             {
               /*
@@ -3491,8 +3521,7 @@ static void *NC4ReadVar(void *therec, NclQuark thevar,
                 storage = (void *)get_nc4_compoundlist(varnode->gid, varnode->id, n_elem,
                                                        start, finish, stride, get_all);
                 ret = NhlNOERROR;
-            }
-	    NclFree(component_name);
+	    }
         }
         else if(NCL_list == varnode->type)
         {

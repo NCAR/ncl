@@ -314,6 +314,22 @@ begin
 end
 
 ;***********************************************************************;
+; Procedure : delete_attr                                               ;
+;                res:logical                                            ;
+;           att_name: string                                            ;
+;                                                                       ;
+; Delete a resource if it exists.                                       ;
+;***********************************************************************;
+undef("delete_attr")
+procedure delete_attr(res:logical,att_name:string)
+begin
+  if(isatt(res,att_name))
+    delete(res@$att_name$)
+  end if
+  return
+end
+
+;***********************************************************************;
 ; Function : check_attr                                                 ;
 ;                res    : logical                                       ;
 ;           att_name    : string                                        ;
@@ -8632,12 +8648,8 @@ begin
 ;
 ; Delete so they don't get passed on to other routines.
 ;
-      if(isatt(res2,"gsnHistogramDiscreteBinValues")) then
-        delete(res2@gsnHistogramDiscreteBinValues)
-      end if
-      if(isatt(res2,"gsnHistogramDiscreteClassValues")) then
-        delete(res2@gsnHistogramDiscreteClassValues)
-      end if
+      delete_attr(res2,"gsnHistogramDiscreteBinValues")
+      delete_attr(res2,"gsnHistogramDiscreteClassValues")
     else
       setdiscrete = True
       if(isnumeric(xdata)) then
@@ -9363,9 +9375,7 @@ begin
       "trYMinF"    : trymin
       "trYMaxF"    : trymax
       end getvalues
-      if(isatt(cnres,"pmTickMarkDisplayMode")) then
-        delete(cnres@pmTickMarkDisplayMode)
-      end if
+      delete_attr(cnres,"pmTickMarkDisplayMode")
       if (force_x_linear .or. force_x_log) then
         if(isatt(cnres,"trXMinF")) then
           if (cnres@trXMinF .lt. trxmin) then
@@ -11886,7 +11896,7 @@ begin
    if (isatt(opt,"gsnShadeLow")) then
      shaden_set = True
      if(shade_type.eq."color") then
-       shaden = convert_color_to_rgba(tmp_wks,opt@gsnShadeLow)
+       shaden = rm_single_dims(convert_color_to_rgba(tmp_wks,opt@gsnShadeLow))
      else
        shaden      = opt@gsnShadeLow
        shaden_type = typeof(shaden)
@@ -11904,7 +11914,7 @@ begin
    if (isatt(opt,"gsnShadeMid")) then
      shadem_set = True
      if(shade_type.eq."color") then
-       shadem      = convert_color_to_rgba(tmp_wks,opt@gsnShadeMid)
+       shadem      = rm_single_dims(convert_color_to_rgba(tmp_wks,opt@gsnShadeMid))
        shadem_type = "rgba"
      else
        shadem      = opt@gsnShadeMid
@@ -11923,7 +11933,7 @@ begin
    if (isatt(opt,"gsnShadeHigh")) then
      shadep_set = True
      if(shade_type.eq."color") then
-       shadep      = convert_color_to_rgba(tmp_wks,opt@gsnShadeHigh)
+       shadep      = rm_single_dims(convert_color_to_rgba(tmp_wks,opt@gsnShadeHigh))
        shadep_type = "rgba"
      else
        shadep      = opt@gsnShadeHigh
