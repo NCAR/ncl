@@ -307,7 +307,7 @@
 #endif	/* GRIB2lib */
 
 #ifndef	EEMDlib
-#define       EEMDlib   -lgsl
+#define       EEMDlib   -lgsl -lgslcblas
 #endif	/* EEMDlib */
 
 #ifndef	NetCDFlib
