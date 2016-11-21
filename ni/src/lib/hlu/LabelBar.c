@@ -306,7 +306,7 @@ static NhlResource resources[] = {
 
 	{NhlNlbPerimOn, NhlCEdgesOn, NhlTBoolean,
 	 sizeof(NhlBoolean), NhlOffset(NhlLabelBarLayerRec,labelbar.perim_on),
-	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+	 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
 	{NhlNlbPerimColor, NhlCEdgeColor, NhlTColorIndex, 
 	 sizeof(NhlColorIndex),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.perim_color),
