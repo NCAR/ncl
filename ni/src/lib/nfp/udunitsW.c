@@ -552,7 +552,7 @@ NhlErrorTypes ut_calendar_W( void )
  *  YYYY.fraction_of_year
  */
       case 4:
-	nsid = 86400;      /* num seconds in a day */
+        nsid = 86400;      /* num seconds in a day */
         if(ccal == NULL) {
           total_seconds_in_year = seconds_in_year(year,"standard");
           doy = day_of_year(year,month,day,"standard");
@@ -749,6 +749,11 @@ NhlErrorTypes ut_calendar_W( void )
   return(NhlNOERROR);
 }
 
+/*
+ * This function was updated in NCL V6.4.0 to allow
+ * the output to be int, long, or float, or
+ * double (only double was allowed previously).
+ */
 NhlErrorTypes ut_inv_calendar_W( void )
 {
 /*
@@ -758,7 +763,6 @@ NhlErrorTypes ut_inv_calendar_W( void )
   void *second;
   double *tmp_second = NULL;
   NrmQuark *sspec;
-  int *option;
   char *cspec, *cspec_orig;
   int ndims_year;
   ng_size_t dsizes_year[NCL_MAX_DIMENSIONS];
@@ -796,14 +800,17 @@ NhlErrorTypes ut_inv_calendar_W( void )
   NclAttList  *attr_list;
   NclAtt  attr_obj;
   NclStackEntry stack_entry;
-  NrmQuark *scal;
-  char   *ccal = NULL;
+  NrmQuark *scal, *sret_type;
+  char   *ccal = NULL, *cret_type;
 /*
  * Output variables.
  */
-  double *x;
+  void *x;
+  double *tmp_x;
   int has_missing_x;
   NclScalar missing_x;
+  NclTypeClass type_x_class;
+  NclBasicDataTypes type_x;
 /*
  * Variables for returning "units" and "calendar" attributes.
  */
@@ -932,25 +939,14 @@ NhlErrorTypes ut_inv_calendar_W( void )
            NULL,
            NULL,
            1);
-/*
- * Get option.
- */
-  option = (int*)NclGetArgValue(
-           7,
-           8,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           1);
-
 /* 
- * Check the "option" variable to see if it contains a "calendar"
- * attribute.
+ * Check the option argument to see if it contains any
+ * attributes.  The following attributes are supported:
+ *    "calendar"
+ *    "return_type" - Added in V6.4.0
  */
   return_missing = 0;
-
+  type_x = NCL_double;
   stack_entry = _NclGetArg(7, 8, DONT_CARE);
   switch (stack_entry.kind) {
   case NclStk_VAR:
@@ -987,6 +983,29 @@ NhlErrorTypes ut_inv_calendar_W( void )
              strcasecmp(ccal,"360") ) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_inv_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
             return_missing = has_missing_x = 1;
+          }
+        }
+        if ((strcmp(attr_list->attname, "return_type")) == 0) {
+          sret_type = (NrmQuark *) attr_list->attvalue->multidval.val;
+          cret_type = NrmQuarkToString(*sret_type);
+          if(strcasecmp(cret_type,"double") && strcasecmp(cret_type,"float") &&
+             strcasecmp(cret_type,"long") &&
+             strcasecmp(cret_type,"integer") && strcasecmp(cret_type,"int")) {
+            NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_inv_calendar: the return_type attribute can only be set to 'double', 'float', 'long', or 'integer'.\nWill default to 'double'.");
+          }
+          else {
+            if(!strcasecmp(cret_type,"double")) {
+              type_x = NCL_double;
+            }
+            else if(!strcasecmp(cret_type,"float")) {
+              type_x = NCL_float;
+             }
+            else if(!strcasecmp(cret_type,"long")) {
+              type_x = NCL_long;
+             }
+            else if(!strcasecmp(cret_type,"integer") || !strcasecmp(cret_type,"int")) {
+              type_x = NCL_int;
+             }
           }
         }
         attr_list = attr_list->next;
@@ -1027,17 +1046,66 @@ NhlErrorTypes ut_inv_calendar_W( void )
 
 /*
  * Calculate total size of input arrays, and size and dimensions for
- * output array, and alloc memory for output array.
+ * output array, and alloc memory for output array. As of NCL V6.4.0,
+ * the output type can be double, float, long, or integer.
  */
   total_size_input = 1;
   for( i = 0; i < ndims_year; i++ ) total_size_input *= dsizes_year[i];
 
-  x = (double *)calloc(total_size_input,sizeof(double));
-
+  if(type_x == NCL_double) {
+    x = (double *)calloc(total_size_input,sizeof(double));
+  }
+  else if(type_x == NCL_float) {
+    x = (float *)calloc(total_size_input,sizeof(float));
+  }
+  else if(type_x == NCL_long) {
+    x = (long *)calloc(total_size_input,sizeof(long));
+  }
+  else if(type_x == NCL_int) {
+    x = (int *)calloc(total_size_input,sizeof(int));
+  }
   if( x == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
+/*
+ * Create tmp array for holding double output values.
+ */
+  if(type_x != NCL_double) {
+    tmp_x = (double*)calloc(1,sizeof(double));
+    if(tmp_x == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: Unable to allocate memory for coercing output array to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+/* 
+ * x will contain a _FillValue attribute if any of the input
+ * has a _FillValue attribute set.
+ */
+  if(has_missing_year || has_missing_month || has_missing_day ||
+     has_missing_hour || has_missing_minute || has_missing_second) {
+    has_missing_x = 1;
+/*
+ * Get the default missing value for the return type.
+ */
+    if(type_x == NCL_double) {
+      missing_x = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis;
+    }
+    else if(type_x == NCL_float) {
+      missing_x = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis;
+    }
+    else if(type_x == NCL_long) {
+      missing_x = ((NclTypeClass)nclTypelongClass)->type_class.default_mis;
+    }
+    else if(type_x == NCL_int) {
+      missing_x = ((NclTypeClass)nclTypeintClass)->type_class.default_mis;
+    }
+  }
+  else {
+    has_missing_x = 0;
+  }
+
 /*
  * Create tmp array for coercing second to double if necessary.
  */
@@ -1065,7 +1133,8 @@ NhlErrorTypes ut_inv_calendar_W( void )
       tmp_second = &((double*)second)[i];
     }
 
-    if(!return_missing && (!has_missing_year   ||
+    if(!return_missing && 
+       (!has_missing_year  ||
         (has_missing_year && year[i]       != missing_year.intval))   &&
        (!has_missing_month ||
          (has_missing_month && month[i]    != missing_month.intval))  &&
@@ -1078,8 +1147,10 @@ NhlErrorTypes ut_inv_calendar_W( void )
        (!has_missing_second ||
         (has_missing_second && *tmp_second != missing_second.doubleval)) ) {
 
-       (void)utInvCalendar2_cal(year[i],month[i],day[i],hour[i],
-                                minute[i],*tmp_second,utunit,&x[i],ccal);
+      if(type_x == NCL_double) tmp_x = &((double*)x)[i];
+
+      (void)utInvCalendar2_cal(year[i],month[i],day[i],hour[i],
+			       minute[i],*tmp_second,utunit,&tmp_x[0],ccal);
 
 /*
  * This is the bug fix for 360 day calendars and a units
@@ -1088,11 +1159,36 @@ NhlErrorTypes ut_inv_calendar_W( void )
  *
  * See above for more information about the bug.
  */
-       if(years_to_days_fix  == 1) x[i] /= 360.;
-       if(months_to_days_fix == 1) x[i] /= 30.;
+       if(years_to_days_fix  == 1) *tmp_x /= 360.;
+       if(months_to_days_fix == 1) *tmp_x /= 30.;
+/*
+ * Copy output values from temporary tmp_x to x. The
+ * only types possible are double, float, int, or long.
+ * If double, then no coercion necessary.
+ */
+       if(type_x == NCL_float) {
+         coerce_output_float_only(x,tmp_x,1,i);
+       }
+       if(type_x == NCL_long) {
+         coerce_output_long_only(x,tmp_x,1,i);
+       }
+       else if(type_x == NCL_int) {
+         coerce_output_int_only(x,tmp_x,1,i);
+       }
     }
     else {
-      x[i]  = missing_x.doubleval;
+       if(type_x == NCL_double) {
+         ((double*)x)[i] = missing_x.doubleval;
+       }
+       else if(type_x == NCL_float) {
+         ((float*)x)[i] = missing_x.floatval;
+       }
+       else if(type_x == NCL_long) {
+         ((long*)x)[i] = missing_x.longval;
+       }
+       else if(type_x == NCL_int) {
+         ((int*)x)[i] = missing_x.intval;
+       }
     }
   }
 
@@ -1111,11 +1207,13 @@ NhlErrorTypes ut_inv_calendar_W( void )
     NclFree(cspec_orig);
   }
 
+  if(type_x      != NCL_double) NclFree(tmp_x);
   if(type_second != NCL_double) NclFree(tmp_second);
 
 /*
  * Set up variable to return.
  */
+  type_x_class = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_x)));
   if(has_missing_x) {
         return_md = _NclCreateVal(
                             NULL,
@@ -1128,7 +1226,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
                             dsizes_year,
                             TEMPORARY,
                             NULL,
-                            (NclObjClass)nclTypedoubleClass
+                            (NclObjClass)type_x_class
                             );
   }
   else {
@@ -1143,12 +1241,12 @@ NhlErrorTypes ut_inv_calendar_W( void )
                             dsizes_year,
                             TEMPORARY,
                             NULL,
-                            (NclObjClass)nclTypedoubleClass
+                            (NclObjClass)type_x_class
                             );
   }
 
 /*
- * Set up attributes to return.
+ * Set up attributes to return: "units" and "calendar".
  */
   att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
   dsizes[0] = 1;
@@ -1185,10 +1283,6 @@ NhlErrorTypes ut_inv_calendar_W( void )
 
 /*
  * Return "calendar" attribute.
- *
- * We can't just return "sspec" here, because it's an NCL input
- * parameter and this seems to screw things up if we try to
- * return it as an attribute.
  */
   calendar = (NclQuark*)NclMalloc(sizeof(NclQuark));
   if(ccal != NULL) {

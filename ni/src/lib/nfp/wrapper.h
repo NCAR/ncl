@@ -45,6 +45,8 @@ extern float *coerce_output_float(double *, void *, ng_size_t, int);
 
 extern void coerce_output_float_only(void *,double *,ng_size_t, ng_size_t);
 
+extern void coerce_output_long_only(void *,double *,ng_size_t, ng_size_t);
+
 extern void coerce_output_int_only(void *,double *,ng_size_t, ng_size_t);
 
 extern void coerce_output_float_or_double(void *,double *,

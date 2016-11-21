@@ -7261,7 +7261,7 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(cd_calendar_W,args,"cd_calendar",nargs);
 
 /*
- * Register "ut_inv_calendar".
+ * Register "cd_inv_calendar".
  */
     nargs = 0;
     args = NewArgs(8);
@@ -9469,6 +9469,20 @@ int    has_allocated
   }
   NclFree(dx);   /* Free up double precision values */
   return(rx);
+}
+
+/*
+ * Copy double data back to a long array, using a void array. 
+ */
+void coerce_output_long_only(
+void   *x,
+double *dx,
+ng_size_t size_x,
+ng_size_t index_x
+)
+{
+  ng_size_t i;
+  for( i = 0; i < size_x; i++ ) ((long*)x)[index_x+i]  = (long)dx[i];
 }
 
 /*
