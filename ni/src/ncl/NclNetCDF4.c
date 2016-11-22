@@ -528,7 +528,7 @@ int set_compound_attnode(int ncid, int aid, NclFileAttNode **thenode)
 
     nc_type ftype;
     int rank;
-    int *sides;
+    int *dimsizes;
     int i, fidx;
 
     size_t alen;
@@ -595,9 +595,9 @@ int set_compound_attnode(int ncid, int aid, NclFileAttNode **thenode)
 
         compnode = &(comprec->compnode[fidx]);
         
-        sides = NULL;
+        dimsizes = NULL;
         nc_inq_compound_field(ncid, xtype, fidx, buffer,
-                          &offset, &ftype, &rank, sides);
+                          &offset, &ftype, &rank, dimsizes);
 
       /*
        *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -610,10 +610,10 @@ int set_compound_attnode(int ncid, int aid, NclFileAttNode **thenode)
 
         if(rank > 0)
         {
-            sides = (int *) NclCalloc(rank, sizeof(int));
+            dimsizes = (int *) NclCalloc(rank, sizeof(int));
 
             nc_inq_compound_field(ncid, xtype, fidx, NULL,
-                                  NULL, NULL, NULL, sides);
+                                  NULL, NULL, NULL, dimsizes);
         }
 
         compnode->the_nc_type = ftype;
@@ -621,7 +621,7 @@ int set_compound_attnode(int ncid, int aid, NclFileAttNode **thenode)
         compnode->name = NrmStringToQuark(buffer);
         compnode->offset = offset;
         compnode->rank = rank;
-        compnode->sides = sides;
+        compnode->dimsizes = dimsizes;
         compnode->nvals = 1;
 
       /*
@@ -630,7 +630,7 @@ int set_compound_attnode(int ncid, int aid, NclFileAttNode **thenode)
 
         for(i = 0; i < rank; i++)
         {
-            compnode->nvals *= sides[i];
+            compnode->nvals *= dimsizes[i];
         }
 
         switch(ftype)
@@ -1137,7 +1137,7 @@ NclFileCompoundRecord *get_nc4_compoundrec(int ncid, nc_type xtype, NrmQuark **c
 
     nc_type ftype;
     int rank;
-    int *sides;
+    int *dimsizes;
     int i, fidx;
 
     size_t offset;
@@ -1190,9 +1190,9 @@ NclFileCompoundRecord *get_nc4_compoundrec(int ncid, nc_type xtype, NrmQuark **c
 
         compnode = &(comprec->compnode[fidx]);
         
-        sides = NULL;
+        dimsizes = NULL;
         nc_inq_compound_field(ncid, xtype, fidx, buffer,
-                          &offset, &ftype, &rank, sides);
+                          &offset, &ftype, &rank, dimsizes);
 
       /*
        *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
@@ -1206,10 +1206,10 @@ NclFileCompoundRecord *get_nc4_compoundrec(int ncid, nc_type xtype, NrmQuark **c
 		
         if(rank > 0)
         {
-            sides = (int *) NclCalloc(rank, sizeof(int));
+            dimsizes = (int *) NclCalloc(rank, sizeof(int));
 
             nc_inq_compound_field(ncid, xtype, fidx, NULL,
-                                  NULL, NULL, NULL, sides);
+                                  NULL, NULL, NULL, dimsizes);
         }
 	else if (rank == 0) {  /* scalar value */
 		if (ftype == NC_CHAR) {   /* promote scalar char variables to strings (length unknown until data is read) */
@@ -1222,7 +1222,7 @@ NclFileCompoundRecord *get_nc4_compoundrec(int ncid, nc_type xtype, NrmQuark **c
         compnode->name = NrmStringToQuark(buffer);
         compnode->offset = offset;
         compnode->rank = rank;
-        compnode->sides = sides;
+        compnode->dimsizes = dimsizes;
         compnode->nvals = 1;
 
         componentnames[fidx] = compnode->name;
@@ -1231,7 +1231,7 @@ NclFileCompoundRecord *get_nc4_compoundrec(int ncid, nc_type xtype, NrmQuark **c
 
         for(i = 0; i < rank; i++)
         {
-            compnode->nvals *= sides[i];
+            compnode->nvals *= dimsizes[i];
         }
 
         if(NCL_none == compnode->type)
@@ -6865,7 +6865,7 @@ NhlErrorTypes NC4AddCompound(void *rec, NclQuark compound_name, NclQuark var_nam
                 compnode->offset = mem_offset[n];
                 compnode->rank = 1;
                 compnode->nvals = mem_size[n];
-                compnode->sides = NULL;
+                compnode->dimsizes = NULL;
                 compnode->value = NULL;
             }
 

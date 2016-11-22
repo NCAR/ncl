@@ -2603,10 +2603,10 @@ void FileDestroyCompoundRecord(NclFileCompoundRecord *comprec)
             for(n = 0; n < comprec->max_comps; ++n)
             {
                 compnode = &(comprec->compnode[n]);
-                if(NULL != compnode->sides)
+                if(NULL != compnode->dimsizes)
                 {
-                    NclFree(compnode->sides);
-                    compnode->sides = NULL;
+                    NclFree(compnode->dimsizes);
+                    compnode->dimsizes = NULL;
                 }
             }
             NclFree(comprec->compnode);
