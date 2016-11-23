@@ -7292,11 +7292,11 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(8);
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
@@ -9136,6 +9136,41 @@ NclScalar         *missing_rx)
 }
 
 /*
+ * Coerce a missing value to int. If no missing value, then set a
+ * default missing value for the int type.
+ */
+void coerce_missing_int(
+NclBasicDataTypes type_x,
+int               has_missing_x,
+NclScalar         *missing_x,
+NclScalar         *missing_ix)
+{
+/*
+ * Check for missing value and coerce if neccesary.
+ */
+  if(has_missing_x) {
+/*
+ * Coerce missing value to int.
+ */
+    _Nclcoerce((NclTypeClass)nclTypeintClass,
+               (void*)missing_ix,
+               (void*)missing_x,
+               1,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+  }
+  else {
+    if(missing_ix != NULL) {
+/*
+ * Get the default missing value, just in case.
+ */ 
+      missing_ix->intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+    }
+  }
+}
+
+/*
  * Coerce a missing value to double.  Also, set a default missing
  * value and set an int/long/float missing value for the return.
  */
@@ -9888,6 +9923,53 @@ NclScalar         *missing_fx)
 }
 
 /*
+ * Coerce data to int, or just return a pointer to it if
+ * it is already int.
+ */
+int *coerce_input_int(
+void              *x,
+NclBasicDataTypes type_x,
+ng_size_t         size_x,
+int               has_missing_x,
+NclScalar         *missing_x,
+NclScalar         *missing_ix)
+{
+  int *ix;
+/*
+ * Coerce x to integer if necessary.
+ */
+  if(type_x != NCL_int) {
+    ix = (int*)calloc(size_x,sizeof(int));
+    if( ix == NULL ) return(NULL);
+    if(has_missing_x) {
+      _Nclcoerce((NclTypeClass)nclTypeintClass,
+                 (void*)ix,
+                 x,
+                 size_x,
+                 missing_x,
+                 missing_ix,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+    else {
+      _Nclcoerce((NclTypeClass)nclTypeintClass,
+                 (void*)ix,
+                 x,
+                 size_x,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+  }
+  else {
+/*
+ * x is already int.
+ */
+    ix = (int*)x;
+  }
+  return(ix);
+}
+
+/*
  * Coerce data to unsigned int, or just return a pointer to it if
  * it is already uint.
  */
@@ -10026,6 +10108,30 @@ NclScalar         *missing_fx
                NULL,
                NULL,
                typeclass_x);
+  }
+}
+
+/*
+ * Force types higher than an integer to be an integer.
+ */
+void force_subset_input_int(
+void              *x,
+int               *tmp_x,
+ng_size_t         index_x,
+NclBasicDataTypes type_x,
+ng_size_t         size_x
+)
+{
+  ng_size_t i;
+
+  if(type_x == NCL_double) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (int)((double*)x)[index_x+i];
+  }
+  else if(type_x == NCL_float) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (int)((float*)x)[index_x+i];
+  }
+  else if(type_x == NCL_long) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (int)((long*)x)[index_x+i];
   }
 }
 
