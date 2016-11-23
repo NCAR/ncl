@@ -210,7 +210,7 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * various
  */
-  int ret, return_missing;
+  int ret, return_all_missing;
   ng_size_t dsizes[1];
   ng_size_t i, total_size_x;
   ng_size_t total_size_date = 0;
@@ -259,7 +259,7 @@ NhlErrorTypes ut_calendar_W( void )
  * The "calendar" option may optionally be set, but it must be equal to
  * one of the recognized calendars.
  */
-  return_missing = 0;
+  return_all_missing = 0;
 
   stack_entry = _NclGetArg(0, 2, DONT_CARE);
   switch (stack_entry.kind) {
@@ -267,7 +267,7 @@ NhlErrorTypes ut_calendar_W( void )
     if (stack_entry.u.data_var->var.att_id != -1) {
       attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
       if (attr_obj == NULL) {
-        return_missing = 1;
+        return_all_missing = 1;
         break;
       }
     }
@@ -275,14 +275,14 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * att_id == -1 ==> no attributes specified; return all missing.
  */
-      return_missing = 1;
+      return_all_missing = 1;
       break;
     }
 /* 
  * Check for attributes. If none are specified, then return missing values.
  */
     if (attr_obj->att.n_atts == 0) {
-      return_missing = 1;
+      return_all_missing = 1;
       break;
     }
     else {
@@ -302,7 +302,7 @@ NhlErrorTypes ut_calendar_W( void )
              strcasecmp(ccal,"365") && strcasecmp(ccal,"360_day") && 
              strcasecmp(ccal,"360") ) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
-            return_missing = 1;
+            return_all_missing = 1;
           }
         }
         if ((strcmp(attr_list->attname, "units")) == 0) {
@@ -344,7 +344,7 @@ NhlErrorTypes ut_calendar_W( void )
   utunit = ut_parse(unit_system, cspec, UT_ASCII);
   if(utunit == NULL) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: Invalid specification string. Missing values will be returned.");
-    return_missing = 1;
+    return_all_missing = 1;
   }
 /*
  * Calculate size of input array.
@@ -421,11 +421,11 @@ NhlErrorTypes ut_calendar_W( void )
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
 
 /* 
- * If we reach this point and return_missing is not 0, then either
+ * If we reach this point and return_all_missing is not 0, then either
  * "units" was invalid or wasn't set, or "calendar" was not a
  * recoginized calendar. We return all missing values in this case.
  */
-  if(return_missing) {
+  if(return_all_missing) {
         if(*option == 0) {
           for(i = 0; i < total_size_date; i++ ) {
                 ((float*)date)[i] = missing_date.floatval;
@@ -813,7 +813,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
  * various
  */
   ng_size_t i, total_size_input;
-  ng_size_t dsizes[1], return_missing;
+  ng_size_t dsizes[1], return_all_missing;
   int months_to_days_fix=0, years_to_days_fix=0;
 
 /*
@@ -918,7 +918,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
  *    "calendar"
  *    "return_type" - Added in V6.4.0
  */
-  return_missing = 0;
+  return_all_missing = 0;
   type_x = NCL_double;
   stack_entry = _NclGetArg(7, 8, DONT_CARE);
   switch (stack_entry.kind) {
@@ -955,7 +955,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
              strcasecmp(ccal,"365") && strcasecmp(ccal,"360_day") && 
              strcasecmp(ccal,"360") ) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_inv_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
-            return_missing = has_missing_x = 1;
+            return_all_missing = has_missing_x = 1;
           }
         }
         if ((strcmp(attr_list->attname, "return_type")) == 0) {
@@ -1046,7 +1046,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
   if(type_x != NCL_double) {
     tmp_x = (double*)calloc(1,sizeof(double));
     if(tmp_x == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: Unable to allocate memory for coercing output array to double precision");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: Unable to allocate memory for temporary output array");
       return(NhlFATAL);
     }
   }
@@ -1186,7 +1186,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
       tmp_second = &((double*)second)[i];
     }
 
-    if(!return_missing && 
+    if(!return_all_missing && 
        (!has_missing_year  ||
         (has_missing_year && *tmp_year      != missing_iyear.intval))   &&
        (!has_missing_month ||

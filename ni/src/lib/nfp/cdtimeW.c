@@ -20,7 +20,7 @@ extern int day_of_year(int, int, int, const char*);
 extern int seconds_in_year(int, const char *);
 
 extern void set_all_missing(void *dt, ng_size_t total_size, 
-                            NclScalar missing, int opt);
+                            NclScalar missing, NclBasicDataTypes typd_dt);
 
 NhlErrorTypes cd_calendar_W( void )
 {
@@ -77,7 +77,7 @@ NhlErrorTypes cd_calendar_W( void )
 /*
  * various
  */
-  int ret, return_missing;
+  int ret, return_all_missing;
   ng_size_t dsizes[1];
   ng_size_t i, total_size_x;
   ng_size_t total_size_date = 0;
@@ -122,7 +122,7 @@ NhlErrorTypes cd_calendar_W( void )
  * The "calendar" option may optionally be set, but it must be equal to
  * one of the recognized calendars.
  */
-  return_missing = 0;
+  return_all_missing = 0;
 
   stack_entry = _NclGetArg(0, 2, DONT_CARE);
   switch (stack_entry.kind) {
@@ -130,7 +130,7 @@ NhlErrorTypes cd_calendar_W( void )
     if (stack_entry.u.data_var->var.att_id != -1) {
       attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
       if (attr_obj == NULL) {
-        return_missing = 1;
+        return_all_missing = 1;
         break;
       }
     }
@@ -138,14 +138,14 @@ NhlErrorTypes cd_calendar_W( void )
 /*
  * att_id == -1 ==> no attributes specified; return all missing.
  */
-      return_missing = 1;
+      return_all_missing = 1;
       break;
     }
 /* 
  * Check for attributes. If none are specified, then return missing values.
  */
     if (attr_obj->att.n_atts == 0) {
-      return_missing = 1;
+      return_all_missing = 1;
       break;
     }
     else {
@@ -169,7 +169,7 @@ NhlErrorTypes cd_calendar_W( void )
              strcasecmp(ccal,"360_day") && strcasecmp(ccal,"360") &&
              strcasecmp(ccal,"julian")  && strcasecmp(ccal,"none")) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,"cd_calendar: the 'calendar' attribute (%s) is not equal to a recognized calendar. Returning all missing values.",ccal);
-            return_missing = 1;
+            return_all_missing = 1;
           }
         }
         if ((strcmp(attr_list->attname, "units")) == 0) {
@@ -277,12 +277,12 @@ NhlErrorTypes cd_calendar_W( void )
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
 
 /* 
- * If we reach this point and return_missing is not 0, then either
+ * If we reach this point and return_all_missing is not 0, then either
  * "units" was invalid or wasn't set, or "calendar" was not a
  * recoginized calendar. We return all missing values in this case.
  */
-  if(return_missing) {
-    set_all_missing(date, total_size_date, missing_date, *option);
+  if(return_all_missing) {
+    set_all_missing(date, total_size_date, missing_date, type_date);
     ret = NclReturnValue(date,ndims_date,dsizes_date,
                           &missing_date,type_date,0);
     NclFree(dsizes_date);
@@ -308,7 +308,7 @@ NhlErrorTypes cd_calendar_W( void )
  * Only check this once.
  */
       if(i == 0 && (cuErrorOccurred && (cuErrOpts & CU_FATAL))) {
-        set_all_missing(date, total_size_date, missing_date, *option);
+        set_all_missing(date, total_size_date, missing_date, type_date);
         ret = NclReturnValue(date,ndims_date,dsizes_date,
                              &missing_date,type_date,0);
         NclFree(dsizes_date);
@@ -388,7 +388,7 @@ NhlErrorTypes cd_calendar_W( void )
  *  YYYY.fraction_of_year
  */
       case 4:
-	nsid = 86400;      /* num seconds in a day */
+        nsid = 86400;      /* num seconds in a day */
         if(ccal == NULL) {
           total_seconds_in_year = seconds_in_year(year,"standard");
           doy = day_of_year(year,month,day,"standard");
@@ -573,6 +573,12 @@ NhlErrorTypes cd_calendar_W( void )
   return(NhlNOERROR);
 }
 
+/*
+ * This function was updated in NCL V6.4.0 to allow
+ * the y/m/d/h/m input to be any type other than
+ * ints, and the output to be int, long, or float,
+ * or double (only double was allowed previously).
+ */
 NhlErrorTypes cd_inv_calendar_W( void )
 {
 /*
@@ -582,7 +588,6 @@ NhlErrorTypes cd_inv_calendar_W( void )
   void *second;
   double *tmp_second = NULL;
   NrmQuark *sspec;
-  int *option;
   char *cspec;
   int ndims_year;
   ng_size_t dsizes_year[NCL_MAX_DIMENSIONS];
@@ -616,14 +621,17 @@ NhlErrorTypes cd_inv_calendar_W( void )
   NclAttList  *attr_list;
   NclAtt  attr_obj;
   NclStackEntry stack_entry;
-  NrmQuark *scal;
-  char   *ccal = NULL;
+  NrmQuark *scal, *sret_type;
+  char   *ccal = NULL, *cret_type;
 /*
  * Output variables.
  */
-  double *x;
+  void *x;
+  double *tmp_x;
   int has_missing_x;
   NclScalar missing_x;
+  NclTypeClass type_x_class;
+  NclBasicDataTypes type_x;
 /*
  * Variables for returning "units" and "calendar" attributes.
  */
@@ -638,7 +646,7 @@ NhlErrorTypes cd_inv_calendar_W( void )
  */
   int ret;
   ng_size_t i, total_size_input;
-  ng_size_t dsizes[1], return_missing;
+  ng_size_t dsizes[1], return_all_missing;
   cdCalenType ctype;
   double fraction;
 
@@ -725,21 +733,6 @@ NhlErrorTypes cd_inv_calendar_W( void )
       return(NhlFATAL);
     }
   }
-/* 
- * x will contain a _FillValue attribute if any of the input
- * has a _FillValue attribute set.
- */
-  if(has_missing_year || has_missing_month || has_missing_day ||
-     has_missing_hour || has_missing_minute || has_missing_second) {
-    has_missing_x = 1;
-/*
- * Get the default missing value for a double type.
- */
-    missing_x = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis;
-  }
-  else {
-    has_missing_x = 0;
-  }
 /*
  * Get spec string.
  */
@@ -752,25 +745,15 @@ NhlErrorTypes cd_inv_calendar_W( void )
            NULL,
            NULL,
            1);
-/*
- * Get option.
- */
-  option = (int*)NclGetArgValue(
-           7,
-           8,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           1);
 
 /* 
- * Check the "option" variable to see if it contains a "calendar"
- * attribute.
+ * Check the option argument to see if it contains any
+ * attributes.  The following attributes are supported:
+ *    "calendar"
+ *    "return_type" - Added in V6.4.0
  */
-  return_missing = 0;
-
+  return_all_missing = 0;
+  type_x = NCL_double;
   stack_entry = _NclGetArg(7, 8, DONT_CARE);
   switch (stack_entry.kind) {
   case NclStk_VAR:
@@ -810,7 +793,30 @@ NhlErrorTypes cd_inv_calendar_W( void )
              strcasecmp(ccal,"360_day") && strcasecmp(ccal,"360") &&
              strcasecmp(ccal,"julian")  && strcasecmp(ccal,"none")) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,"cd_inv_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
-            return_missing = has_missing_x = 1;
+            return_all_missing = 1;
+          }
+        }
+        if ((strcmp(attr_list->attname, "return_type")) == 0) {
+          sret_type = (NrmQuark *) attr_list->attvalue->multidval.val;
+          cret_type = NrmQuarkToString(*sret_type);
+          if(strcasecmp(cret_type,"double") && strcasecmp(cret_type,"float") &&
+             strcasecmp(cret_type,"long") &&
+             strcasecmp(cret_type,"integer") && strcasecmp(cret_type,"int")) {
+            NhlPError(NhlWARNING,NhlEUNKNOWN,"cd_inv_calendar: the return_type attribute can only be set to 'double', 'float', 'long', or 'integer'.\nWill default to 'double'.");
+          }
+          else {
+            if(!strcasecmp(cret_type,"double")) {
+              type_x = NCL_double;
+            }
+            else if(!strcasecmp(cret_type,"float")) {
+              type_x = NCL_float;
+            }
+            else if(!strcasecmp(cret_type,"long")) {
+              type_x = NCL_long;
+            }
+            else if(!strcasecmp(cret_type,"integer") || !strcasecmp(cret_type,"int")) {
+              type_x = NCL_int;
+            }
           }
         }
         attr_list = attr_list->next;
@@ -843,12 +849,70 @@ NhlErrorTypes cd_inv_calendar_W( void )
   total_size_input = 1;
   for( i = 0; i < ndims_year; i++ ) total_size_input *= dsizes_year[i];
 
-  x = (double *)calloc(total_size_input,sizeof(double));
+  if(type_x == NCL_double) {
+    x = (double *)calloc(total_size_input,sizeof(double));
+  }
+  else if(type_x == NCL_float) {
+    x = (float *)calloc(total_size_input,sizeof(float));
+  }
+  else if(type_x == NCL_long) {
+    x = (long *)calloc(total_size_input,sizeof(long));
+  }
+  else if(type_x == NCL_int) {
+    x = (int *)calloc(total_size_input,sizeof(int));
+  }
 
   if( x == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"cd_inv_calendar: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
+/*
+ * Create tmp array for holding double output values.
+ */
+  if(type_x != NCL_double) {
+    tmp_x = (double*)calloc(1,sizeof(double));
+    if(tmp_x == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"cd_inv_calendar: Unable to allocate memory for temporary output array");
+      return(NhlFATAL);
+    }
+  }
+
+/* 
+ * x will contain a _FillValue attribute if there's bad input, or any of the input
+ * has a _FillValue attribute set. return_all_missing is a flag to indicate whether
+ * *all* values should be set to missing.
+ */
+  if(return_all_missing   || has_missing_year || has_missing_month || has_missing_day ||
+     has_missing_hour || has_missing_minute || has_missing_second) {
+    has_missing_x = 1;
+/*
+ * Get the default missing value for the return type.
+ */
+    if(type_x == NCL_double) {
+      missing_x = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis;
+    }
+    else if(type_x == NCL_float) {
+      missing_x = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis;
+    }
+    else if(type_x == NCL_long) {
+      missing_x = ((NclTypeClass)nclTypelongClass)->type_class.default_mis;
+    }
+    else if(type_x == NCL_int) {
+      missing_x = ((NclTypeClass)nclTypeintClass)->type_class.default_mis;
+    }
+  }
+  else {
+    has_missing_x = 0;
+  }
+
+  if(return_all_missing) {
+    set_all_missing(x, total_size_input, missing_x, type_x);
+    ret = NclReturnValue(x,ndims_year,dsizes_year,&missing_x,
+			 type_x,0);
+    if(type_x != NCL_double) NclFree(tmp_x);
+    return(ret);
+  }
+
 /*
  * Create tmp array for coercing second to double if necessary.
  */
@@ -876,7 +940,7 @@ NhlErrorTypes cd_inv_calendar_W( void )
       tmp_second = &((double*)second)[i];
     }
 
-    if(!return_missing && (!has_missing_year   ||
+    if((!has_missing_year   ||
         (has_missing_year && year[i]       != missing_year.intval))   &&
        (!has_missing_month ||
          (has_missing_month && month[i]    != missing_month.intval))  &&
@@ -889,35 +953,65 @@ NhlErrorTypes cd_inv_calendar_W( void )
        (!has_missing_second ||
         (has_missing_second && *tmp_second != missing_second.doubleval)) ) {
 
+      if(type_x == NCL_double) tmp_x = &((double*)x)[i];
+
       fraction       = (double)minute[i]/60. + *tmp_second/3600.;
       comptime.year  = (long)year[i];
       comptime.month = (short)month[i];
       comptime.day   = (short)day[i];
       comptime.hour  = (double)hour[i] + fraction;
-      (void)cdComp2Rel(ctype,comptime,cspec,&x[i]);
+      (void)cdComp2Rel(ctype,comptime,cspec,tmp_x);
 /*
  * Return all missing values if we encounter a fatal error.
  */
       if(i == 0 && (cuErrorOccurred && (cuErrOpts & CU_FATAL))) {
-        set_all_missing(x, total_size_input, missing_x, 1);
+        set_all_missing(x, total_size_input, missing_x, type_x);
         ret = NclReturnValue(x,ndims_year,dsizes_year,&missing_x,
-                             NCL_double,0);
+                             type_x,0);
         if(type_second != NCL_double) NclFree(tmp_second);
+        if(type_x      != NCL_double) NclFree(tmp_x);
         return(ret);
+      }
+/*
+ * Copy output values from temporary tmp_x to x. The
+ * only types possible are double, float, long, or int.
+ * If double, then no coercion necessary.
+ */
+      if(type_x == NCL_float) {
+	coerce_output_float_only(x,tmp_x,1,i);
+      }
+      if(type_x == NCL_long) {
+	coerce_output_long_only(x,tmp_x,1,i);
+      }
+      else if(type_x == NCL_int) {
+	coerce_output_int_only(x,tmp_x,1,i);
       }
     }
     else {
-      x[i]  = missing_x.doubleval;
+       if(type_x == NCL_double) {
+         ((double*)x)[i] = missing_x.doubleval;
+       }
+       else if(type_x == NCL_float) {
+         ((float*)x)[i] = missing_x.floatval;
+       }
+       else if(type_x == NCL_long) {
+         ((long*)x)[i] = missing_x.longval;
+       }
+       else if(type_x == NCL_int) {
+         ((int*)x)[i] = missing_x.intval;
+       }
     }
   }
 
   if(type_second != NCL_double) NclFree(tmp_second);
+  if(type_x      != NCL_double) NclFree(tmp_x);
 
 /*
  * Set up variable to return.
  */
+  type_x_class = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_x)));
   if(has_missing_x) {
-        return_md = _NclCreateVal(
+       return_md = _NclCreateVal(
                             NULL,
                             NULL,
                             Ncl_MultiDValData,
@@ -928,7 +1022,7 @@ NhlErrorTypes cd_inv_calendar_W( void )
                             dsizes_year,
                             TEMPORARY,
                             NULL,
-                            (NclObjClass)nclTypedoubleClass
+                            (NclObjClass)type_x_class
                             );
   }
   else {
@@ -943,7 +1037,7 @@ NhlErrorTypes cd_inv_calendar_W( void )
                             dsizes_year,
                             TEMPORARY,
                             NULL,
-                            (NclObjClass)nclTypedoubleClass
+                            (NclObjClass)type_x_class
                             );
   }
 
@@ -1042,27 +1136,26 @@ NhlErrorTypes cd_inv_calendar_W( void )
 }
 
 void set_all_missing(void *dt, ng_size_t total_size, 
-                     NclScalar missing, int opt)
+                     NclScalar missing, NclBasicDataTypes type_dt)
 {
   ng_size_t i;
 
-  if(opt == 0) {
-    for(i = 0; i < total_size; i++ ) {
-      ((float*)dt)[i] = missing.floatval;
-    }
-  }
-  else if(opt == -5) {
-    /* identical to option=0, except returns ints */
-    for(i = 0; i < total_size; i++ ) {
-      ((int*)dt)[i] = missing.intval;
-    }
-  }
-  else if(opt >= 1 && opt <= 4) {
+  if(type_dt == NCL_double) {
     for(i = 0; i < total_size; i++ ) {
       ((double*)dt)[i] = missing.doubleval;
     }
   }
-  else if(opt >= -3 && opt <= -1) {
+  else if(type_dt == NCL_float) {
+    for(i = 0; i < total_size; i++ ) {
+      ((float*)dt)[i] = missing.floatval;
+    }
+  }
+  else if(type_dt == NCL_long) {
+    for(i = 0; i < total_size; i++ ) {
+      ((long*)dt)[i] = missing.longval;
+    }
+  }
+  else if(type_dt == NCL_int) {
     for(i = 0; i < total_size; i++ ) {
       ((int*)dt)[i] = missing.intval;
     }
