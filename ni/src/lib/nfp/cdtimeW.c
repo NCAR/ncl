@@ -584,36 +584,22 @@ NhlErrorTypes cd_inv_calendar_W( void )
 /*
  * Input array variables
  */
-  int *year, *month, *day, *hour, *minute;
-  void *second;
-  double *tmp_second = NULL;
+  void *year, *month, *day, *hour, *minute, *second;
+  long *tmp_year = NULL;
+  short *tmp_month = NULL, *tmp_day = NULL;
+  double *tmp_hour = NULL, *tmp_minute = NULL, *tmp_second = NULL;
   NrmQuark *sspec;
   char *cspec;
-  int ndims_year;
-  ng_size_t dsizes_year[NCL_MAX_DIMENSIONS];
-  int has_missing_year;
-  int ndims_month;
-  ng_size_t dsizes_month[NCL_MAX_DIMENSIONS];
-  int has_missing_month;
-  int ndims_day;
-  ng_size_t dsizes_day[NCL_MAX_DIMENSIONS];
-  int has_missing_day;
-  int ndims_hour;
-  ng_size_t dsizes_hour[NCL_MAX_DIMENSIONS];
-  int has_missing_hour;
-  int ndims_minute;
-  ng_size_t dsizes_minute[NCL_MAX_DIMENSIONS];
-  int has_missing_minute;
-  int ndims_second;
-  ng_size_t dsizes_second[NCL_MAX_DIMENSIONS];
-  int has_missing_second;
-  NclScalar missing_year;
-  NclScalar missing_month;
-  NclScalar missing_day;
-  NclScalar missing_hour;
-  NclScalar missing_minute;
-  NclScalar missing_second;
-  NclBasicDataTypes type_second;
+  int has_missing_year,has_missing_month,has_missing_day,has_missing_hour;
+  int has_missing_minute,has_missing_second;
+  int ndims_year,ndims_month,ndims_day,ndims_hour,ndims_minute,ndims_second;
+  ng_size_t dsizes_year[NCL_MAX_DIMENSIONS], dsizes_month[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_day[NCL_MAX_DIMENSIONS], dsizes_hour[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_minute[NCL_MAX_DIMENSIONS], dsizes_second[NCL_MAX_DIMENSIONS];
+  NclScalar missing_year, missing_lyear,missing_month, missing_smonth;
+  NclScalar missing_day, missing_sday,missing_hour,missing_dhour;
+  NclScalar missing_minute,missing_dminute,missing_second,missing_dsecond;
+  NclBasicDataTypes type_year,type_month,type_day,type_hour,type_minute,type_second;
   cdCompTime comptime;
 /*
  * Variables for retrieving attributes from last argument.
@@ -660,50 +646,50 @@ NhlErrorTypes cd_inv_calendar_W( void )
  * implies you don't care about its value.
  * The first size input arrays must be the same dimension sizes.
  */
-  year = (int*)NclGetArgValue(
+  year = (void*)NclGetArgValue(
            0,
            8,
            &ndims_year, 
            dsizes_year,
            &missing_year,
            &has_missing_year,
-           NULL,
+           &type_year,
            DONT_CARE);
-  month = (int*)NclGetArgValue(
+  month = (void*)NclGetArgValue(
            1,
            8,
            &ndims_month, 
            dsizes_month,
            &missing_month,
            &has_missing_month,
-           NULL,
+           &type_month,
            DONT_CARE);
-  day = (int*)NclGetArgValue(
+  day = (void*)NclGetArgValue(
            2,
            8,
            &ndims_day, 
            dsizes_day,
            &missing_day,
            &has_missing_day,
-           NULL,
+           &type_day,
            DONT_CARE);
-  hour = (int*)NclGetArgValue(
+  hour = (void*)NclGetArgValue(
            3,
            8,
            &ndims_hour, 
            dsizes_hour,
            &missing_hour,
            &has_missing_hour,
-           NULL,
+           &type_hour,
            DONT_CARE);
-  minute = (int*)NclGetArgValue(
+  minute = (void*)NclGetArgValue(
            4,
            8,
            &ndims_minute, 
            dsizes_minute,
            &missing_minute,
            &has_missing_minute,
-           NULL,
+           &type_minute,
            DONT_CARE);
   second = (void*)NclGetArgValue(
            5,
@@ -728,7 +714,6 @@ NhlErrorTypes cd_inv_calendar_W( void )
        dsizes_year[i] != dsizes_hour[i]   || 
        dsizes_year[i] != dsizes_minute[i] ||
        dsizes_year[i] != dsizes_second[i]) {
-      
       NhlPError(NhlFATAL,NhlEUNKNOWN,"cd_inv_calendar: The first six arguments must have the same dimensionality");
       return(NhlFATAL);
     }
@@ -745,7 +730,6 @@ NhlErrorTypes cd_inv_calendar_W( void )
            NULL,
            NULL,
            1);
-
 /* 
  * Check the option argument to see if it contains any
  * attributes.  The following attributes are supported:
@@ -844,7 +828,8 @@ NhlErrorTypes cd_inv_calendar_W( void )
 
 /*
  * Calculate total size of input arrays, and size and dimensions for
- * output array, and alloc memory for output array.
+ * output array, and alloc memory for output array. As of NCL V6.4.0,
+ * the output type can be double, float, long, or integer.
  */
   total_size_input = 1;
   for( i = 0; i < ndims_year; i++ ) total_size_input *= dsizes_year[i];
@@ -861,7 +846,6 @@ NhlErrorTypes cd_inv_calendar_W( void )
   else if(type_x == NCL_int) {
     x = (int *)calloc(total_size_input,sizeof(int));
   }
-
   if( x == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"cd_inv_calendar: Unable to allocate memory for output array");
     return(NhlFATAL);
@@ -877,12 +861,22 @@ NhlErrorTypes cd_inv_calendar_W( void )
     }
   }
 
-/* 
+/*
+ * Coerce missing values to the expected types.
+ */
+  coerce_missing_long(type_year,has_missing_year,&missing_year,&missing_lyear);
+  coerce_missing_short(type_month,has_missing_month,&missing_month,&missing_smonth);
+  coerce_missing_short(type_day,has_missing_day,&missing_day,&missing_sday);
+  coerce_missing(type_hour,has_missing_hour,&missing_hour,&missing_dhour,NULL);
+  coerce_missing(type_minute,has_missing_minute,&missing_minute,&missing_dminute,NULL);
+  coerce_missing(type_second,has_missing_second,&missing_second,&missing_dsecond,NULL);
+
+/*
  * x will contain a _FillValue attribute if there's bad input, or any of the input
  * has a _FillValue attribute set. return_all_missing is a flag to indicate whether
- * *all* values should be set to missing.
+ * all values should be set to missing.
  */
-  if(return_all_missing   || has_missing_year || has_missing_month || has_missing_day ||
+  if(return_all_missing || has_missing_year || has_missing_month || has_missing_day ||
      has_missing_hour || has_missing_minute || has_missing_second) {
     has_missing_x = 1;
 /*
@@ -908,18 +902,53 @@ NhlErrorTypes cd_inv_calendar_W( void )
   if(return_all_missing) {
     set_all_missing(x, total_size_input, missing_x, type_x);
     ret = NclReturnValue(x,ndims_year,dsizes_year,&missing_x,
-			 type_x,0);
+                         type_x,0);
     if(type_x != NCL_double) NclFree(tmp_x);
     return(ret);
   }
-
 /*
- * Create tmp array for coercing second to double if necessary.
+ * Create tmp arrays for coercing input arrays to the appropriate types.
+ * Before NCL V6.4.0, year, month, day, hour, minute all had to be integers.
  */
+  if(type_year != NCL_long) {
+    tmp_year = (long*)calloc(1,sizeof(long));
+    if(tmp_year == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"cd_inv_calendar: Unable to allocate memory for coercing year array to long");
+      return(NhlFATAL);
+    }
+  }
+  if(type_month != NCL_short) {
+    tmp_month = (short*)calloc(1,sizeof(short));
+    if(tmp_month == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"cd_inv_calendar: Unable to allocate memory for coercing month array to short");
+      return(NhlFATAL);
+    }
+  }
+  if(type_day != NCL_short) {
+    tmp_day = (short*)calloc(1,sizeof(short));
+    if(tmp_day == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"cd_inv_calendar: Unable to allocate memory for coercing day array to short");
+      return(NhlFATAL);
+    }
+  }
+  if(type_hour != NCL_double) {
+    tmp_hour = (double*)calloc(1,sizeof(double));
+    if(tmp_hour == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"cd_inv_calendar: Unable to allocate memory for coercing hour array to double");
+      return(NhlFATAL);
+    }
+  }
+  if(type_minute != NCL_double) {
+    tmp_minute = (double*)calloc(1,sizeof(double));
+    if(tmp_minute == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"cd_inv_calendar: Unable to allocate memory for coercing minute array to double");
+      return(NhlFATAL);
+    }
+  }
   if(type_second != NCL_double) {
     tmp_second = (double*)calloc(1,sizeof(double));
     if(tmp_second == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"cd_inv_calendar: Unable to allocate memory for coercing second array to double precision");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"cd_inv_calendar: Unable to allocate memory for coercing second array to double");
       return(NhlFATAL);
     }
   }
@@ -929,9 +958,40 @@ NhlErrorTypes cd_inv_calendar_W( void )
  */ 
   for( i = 0; i < total_size_input; i++ ) {
 /*
- * Coerce "second" to double, since this is what the original Udunits
- * routine is expecting. 
+ * Coerce year, month, day, hour, minute to the appropriate type.
  */
+    if(type_year != NCL_long) {
+      force_subset_input_long(year,tmp_year,i,type_year,1);
+    }
+    else {
+      tmp_year = &((long*)year)[i];
+    }
+    if(type_month != NCL_short) {
+      force_subset_input_short(month,tmp_month,i,type_month,1);
+    }
+    else {
+      tmp_month = &((short*)month)[i];
+    }
+    if(type_day != NCL_short) {
+      force_subset_input_short(day,tmp_day,i,type_day,1);
+    }
+    else {
+      tmp_day = &((short*)day)[i];
+    }
+    if(type_hour != NCL_double) {
+      coerce_subset_input_double(hour,tmp_hour,i,type_hour,1,
+                                 has_missing_hour,&missing_hour,NULL);
+    }
+    else {
+      tmp_hour = &((double*)hour)[i];
+    }
+    if(type_minute != NCL_double) {
+      coerce_subset_input_double(minute,tmp_minute,i,type_minute,1,
+                                 has_missing_minute,&missing_minute,NULL);
+    }
+    else {
+      tmp_minute = &((double*)minute)[i];
+    }
     if(type_second != NCL_double) {
       coerce_subset_input_double(second,tmp_second,i,type_second,1,
                                  has_missing_second,&missing_second,NULL);
@@ -941,25 +1001,25 @@ NhlErrorTypes cd_inv_calendar_W( void )
     }
 
     if((!has_missing_year   ||
-        (has_missing_year && year[i]       != missing_year.intval))   &&
+        (has_missing_year && *tmp_year != missing_lyear.longval)) &&
        (!has_missing_month ||
-         (has_missing_month && month[i]    != missing_month.intval))  &&
+        (has_missing_month && *tmp_month != missing_month.shortval)) &&
        (!has_missing_day ||
-         (has_missing_day && day[i]        != missing_day.intval))    &&
+        (has_missing_day && *tmp_day != missing_day.shortval)) &&
        (!has_missing_hour ||
-         (has_missing_hour  && hour[i]     != missing_hour.intval))   &&
+        (has_missing_hour && *tmp_hour != missing_hour.doubleval))   &&
        (!has_missing_minute ||
-         (has_missing_minute && minute[i]  != missing_minute.intval)) &&
+        (has_missing_minute && *tmp_minute != missing_minute.doubleval)) &&
        (!has_missing_second ||
         (has_missing_second && *tmp_second != missing_second.doubleval)) ) {
 
       if(type_x == NCL_double) tmp_x = &((double*)x)[i];
 
-      fraction       = (double)minute[i]/60. + *tmp_second/3600.;
-      comptime.year  = (long)year[i];
-      comptime.month = (short)month[i];
-      comptime.day   = (short)day[i];
-      comptime.hour  = (double)hour[i] + fraction;
+      fraction       = *tmp_minute/60. + *tmp_second/3600.;
+      comptime.year  = *tmp_year;
+      comptime.month = *tmp_month;
+      comptime.day   = *tmp_day;
+      comptime.hour  = *tmp_hour + fraction;
       (void)cdComp2Rel(ctype,comptime,cspec,tmp_x);
 /*
  * Return all missing values if we encounter a fatal error.
@@ -968,6 +1028,11 @@ NhlErrorTypes cd_inv_calendar_W( void )
         set_all_missing(x, total_size_input, missing_x, type_x);
         ret = NclReturnValue(x,ndims_year,dsizes_year,&missing_x,
                              type_x,0);
+        if(type_year   != NCL_long)   NclFree(tmp_year);
+        if(type_month  != NCL_short)  NclFree(tmp_month);
+        if(type_day    != NCL_short)  NclFree(tmp_day);
+        if(type_hour   != NCL_double) NclFree(tmp_hour);
+        if(type_minute != NCL_double) NclFree(tmp_minute);
         if(type_second != NCL_double) NclFree(tmp_second);
         if(type_x      != NCL_double) NclFree(tmp_x);
         return(ret);
@@ -978,13 +1043,13 @@ NhlErrorTypes cd_inv_calendar_W( void )
  * If double, then no coercion necessary.
  */
       if(type_x == NCL_float) {
-	coerce_output_float_only(x,tmp_x,1,i);
+        coerce_output_float_only(x,tmp_x,1,i);
       }
       if(type_x == NCL_long) {
-	coerce_output_long_only(x,tmp_x,1,i);
+        coerce_output_long_only(x,tmp_x,1,i);
       }
       else if(type_x == NCL_int) {
-	coerce_output_int_only(x,tmp_x,1,i);
+        coerce_output_int_only(x,tmp_x,1,i);
       }
     }
     else {
@@ -1003,6 +1068,11 @@ NhlErrorTypes cd_inv_calendar_W( void )
     }
   }
 
+  if(type_year   != NCL_long)   NclFree(tmp_year);
+  if(type_month  != NCL_short)  NclFree(tmp_month);
+  if(type_day    != NCL_short)  NclFree(tmp_day);
+  if(type_hour   != NCL_double) NclFree(tmp_hour);
+  if(type_minute != NCL_double) NclFree(tmp_minute);
   if(type_second != NCL_double) NclFree(tmp_second);
   if(type_x      != NCL_double) NclFree(tmp_x);
 

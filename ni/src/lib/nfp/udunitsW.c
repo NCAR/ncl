@@ -766,14 +766,12 @@ NhlErrorTypes ut_inv_calendar_W( void )
   double *tmp_second = NULL;
   NrmQuark *sspec;
   char *cspec, *cspec_orig;
-  int ndims_year;
-  ng_size_t dsizes_year[NCL_MAX_DIMENSIONS];
   int has_missing_year,has_missing_month,has_missing_day,has_missing_hour;
   int has_missing_minute,has_missing_second;
-  int ndims_month,ndims_day,ndims_hour,ndims_minute,ndims_second;
-  ng_size_t dsizes_month[NCL_MAX_DIMENSIONS], dsizes_day[NCL_MAX_DIMENSIONS];
-  ng_size_t dsizes_hour[NCL_MAX_DIMENSIONS], dsizes_minute[NCL_MAX_DIMENSIONS];
-  ng_size_t dsizes_second[NCL_MAX_DIMENSIONS];
+  int ndims_year,ndims_month,ndims_day,ndims_hour,ndims_minute,ndims_second;
+  ng_size_t dsizes_year[NCL_MAX_DIMENSIONS], dsizes_month[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_day[NCL_MAX_DIMENSIONS], dsizes_hour[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_minute[NCL_MAX_DIMENSIONS], dsizes_second[NCL_MAX_DIMENSIONS];
   NclScalar missing_year, missing_iyear,missing_month, missing_imonth;
   NclScalar missing_day, missing_iday,missing_hour,missing_ihour;
   NclScalar missing_minute,missing_iminute,missing_second,missing_dsecond;
@@ -955,7 +953,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
              strcasecmp(ccal,"365") && strcasecmp(ccal,"360_day") && 
              strcasecmp(ccal,"360") ) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_inv_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
-            return_all_missing = has_missing_x = 1;
+            return_all_missing = 1;
           }
         }
         if ((strcmp(attr_list->attname, "return_type")) == 0) {
@@ -1061,11 +1059,12 @@ NhlErrorTypes ut_inv_calendar_W( void )
   coerce_missing_int(type_minute,has_missing_minute,&missing_minute,&missing_iminute);
   coerce_missing(type_second,has_missing_second,&missing_second,&missing_dsecond,NULL);
 
-/* 
- * x will contain a _FillValue attribute if any of the input
- * has a _FillValue attribute set.
+/*
+ * x will contain a _FillValue attribute if there's bad input, or any of the input
+ * has a _FillValue attribute set. return_all_missing is a flag to indicate whether
+ * all values should be set to missing.
  */
-  if(has_missing_year || has_missing_month || has_missing_day ||
+  if(return_all_missing || has_missing_year || has_missing_month || has_missing_day ||
      has_missing_hour || has_missing_minute || has_missing_second) {
     has_missing_x = 1;
 /*

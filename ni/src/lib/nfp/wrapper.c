@@ -7265,11 +7265,11 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(8);
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
@@ -9136,6 +9136,41 @@ NclScalar         *missing_rx)
 }
 
 /*
+ * Coerce a missing value to long. If no missing value, then set a
+ * default missing value for the long type.
+ */
+void coerce_missing_long(
+NclBasicDataTypes type_x,
+long              has_missing_x,
+NclScalar         *missing_x,
+NclScalar         *missing_lx)
+{
+/*
+ * Check for missing value and coerce if neccesary.
+ */
+  if(has_missing_x) {
+/*
+ * Coerce missing value to long.
+ */
+    _Nclcoerce((NclTypeClass)nclTypelongClass,
+               (void*)missing_lx,
+               (void*)missing_x,
+               1,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+  }
+  else {
+    if(missing_lx != NULL) {
+/*
+ * Get the default missing value, just in case.
+ */ 
+      missing_lx->longval = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+    }
+  }
+}
+
+/*
  * Coerce a missing value to int. If no missing value, then set a
  * default missing value for the int type.
  */
@@ -9166,6 +9201,41 @@ NclScalar         *missing_ix)
  * Get the default missing value, just in case.
  */ 
       missing_ix->intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+    }
+  }
+}
+
+/*
+ * Coerce a missing value to short. If no missing value, then set a
+ * default missing value for the short type.
+ */
+void coerce_missing_short(
+NclBasicDataTypes type_x,
+short             has_missing_x,
+NclScalar         *missing_x,
+NclScalar         *missing_sx)
+{
+/*
+ * Check for missing value and coerce if neccesary.
+ */
+  if(has_missing_x) {
+/*
+ * Coerce missing value to short.
+ */
+    _Nclcoerce((NclTypeClass)nclTypeshortClass,
+               (void*)missing_sx,
+               (void*)missing_x,
+               1,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+  }
+  else {
+    if(missing_sx != NULL) {
+/*
+ * Get the default missing value, just in case.
+ */ 
+      missing_sx->shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
     }
   }
 }
@@ -10113,6 +10183,7 @@ NclScalar         *missing_fx
 
 /*
  * Force types higher than an integer to be an integer.
+ * Only double, float, or long are accepted.
  */
 void force_subset_input_int(
 void              *x,
@@ -10132,6 +10203,59 @@ ng_size_t         size_x
   }
   else if(type_x == NCL_long) { 
     for( i = 0; i < size_x; i++ ) tmp_x[i] = (int)((long*)x)[index_x+i];
+  }
+}
+
+/*
+ * Force types potentially higher than a long to be a long.
+ * Only double, float, or integer are accepted.
+ */
+void force_subset_input_long(
+void              *x,
+long              *tmp_x,
+ng_size_t         index_x,
+NclBasicDataTypes type_x,
+ng_size_t         size_x
+)
+{
+  ng_size_t i;
+
+  if(type_x == NCL_double) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (long)((double*)x)[index_x+i];
+  }
+  else if(type_x == NCL_float) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (long)((float*)x)[index_x+i];
+  }
+  else if(type_x == NCL_int) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (long)((int*)x)[index_x+i];
+  }
+}
+
+/*
+ * Force types potentially higher than a short to be a short.
+ * Only double, float, long, or integer are accepted.
+ */
+void force_subset_input_short(
+void              *x,
+short             *tmp_x,
+ng_size_t         index_x,
+NclBasicDataTypes type_x,
+ng_size_t         size_x
+)
+{
+  ng_size_t i;
+
+  if(type_x == NCL_double) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (short)((double*)x)[index_x+i];
+  }
+  else if(type_x == NCL_float) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (short)((float*)x)[index_x+i];
+  }
+  else if(type_x == NCL_long) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (short)((long*)x)[index_x+i];
+  }
+  else if(type_x == NCL_int) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (short)((int*)x)[index_x+i];
   }
 }
 

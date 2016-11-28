@@ -26,8 +26,14 @@
 extern void coerce_missing(NclBasicDataTypes,int,NclScalar *,
                            NclScalar *,NclScalar *);
 
+extern void coerce_missing_long(NclBasicDataTypes,long,NclScalar *,
+                                NclScalar *);
+
 extern void coerce_missing_int(NclBasicDataTypes,int,NclScalar *,
                                NclScalar *);
+
+extern void coerce_missing_short(NclBasicDataTypes,short,NclScalar *,
+                                 NclScalar *);
 
 extern void coerce_missing_more_types(NclBasicDataTypes,int,NclScalar *,
 				      NclScalar *,NclScalar *);
@@ -82,6 +88,8 @@ extern void coerce_subset_input_float(void *,float *,ng_size_t,NclBasicDataTypes
                                        ng_size_t,int,NclScalar*,NclScalar*);
 
 extern void force_subset_input_int(void *,int *,ng_size_t,NclBasicDataTypes,ng_size_t);
+extern void force_subset_input_long(void *,long *,ng_size_t,NclBasicDataTypes,ng_size_t);
+extern void force_subset_input_short(void *,short *,ng_size_t,NclBasicDataTypes,ng_size_t);
 
 extern double *coerce_output_double(void*,NclBasicDataTypes,ng_size_t);
 
