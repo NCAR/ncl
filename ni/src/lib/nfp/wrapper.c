@@ -10182,8 +10182,7 @@ NclScalar         *missing_fx
 }
 
 /*
- * Force types higher than an integer to be an integer.
- * Only double, float, or long are accepted.
+ * Force incoming numeric values to be integer.
  */
 void force_subset_input_int(
 void              *x,
@@ -10194,21 +10193,15 @@ ng_size_t         size_x
 )
 {
   ng_size_t i;
-
-  if(type_x == NCL_double) { 
-    for( i = 0; i < size_x; i++ ) tmp_x[i] = (int)((double*)x)[index_x+i];
-  }
-  else if(type_x == NCL_float) { 
-    for( i = 0; i < size_x; i++ ) tmp_x[i] = (int)((float*)x)[index_x+i];
-  }
-  else if(type_x == NCL_long) { 
-    for( i = 0; i < size_x; i++ ) tmp_x[i] = (int)((long*)x)[index_x+i];
-  }
+  NclTypeClass typeclass_x, typeclass_xi;
+  typeclass_x  = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_x)));
+  typeclass_xi = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(NCL_int)));
+  for( i = 0; i < size_x; i++ ) _NclScalarForcedCoerce(x + (index_x+i)*typeclass_x->type_class.size,type_x,
+						       (void*)tmp_x + i*typeclass_xi->type_class.size,NCL_int);
 }
 
 /*
- * Force types potentially higher than a long to be a long.
- * Only double, float, or integer are accepted.
+ * Force incoming numeric values to be long.
  */
 void force_subset_input_long(
 void              *x,
@@ -10219,21 +10212,15 @@ ng_size_t         size_x
 )
 {
   ng_size_t i;
-
-  if(type_x == NCL_double) { 
-    for( i = 0; i < size_x; i++ ) tmp_x[i] = (long)((double*)x)[index_x+i];
-  }
-  else if(type_x == NCL_float) { 
-    for( i = 0; i < size_x; i++ ) tmp_x[i] = (long)((float*)x)[index_x+i];
-  }
-  else if(type_x == NCL_int) { 
-    for( i = 0; i < size_x; i++ ) tmp_x[i] = (long)((int*)x)[index_x+i];
-  }
+  NclTypeClass typeclass_x, typeclass_xl;
+  typeclass_x  = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_x)));
+  typeclass_xl = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(NCL_long)));
+  for( i = 0; i < size_x; i++ ) _NclScalarForcedCoerce(x + (index_x+i)*typeclass_x->type_class.size,type_x,
+						       (void*)tmp_x + i*typeclass_xl->type_class.size,NCL_long);
 }
 
 /*
- * Force types potentially higher than a short to be a short.
- * Only double, float, long, or integer are accepted.
+ * Force incoming numeric values to be long.
  */
 void force_subset_input_short(
 void              *x,
@@ -10244,19 +10231,11 @@ ng_size_t         size_x
 )
 {
   ng_size_t i;
-
-  if(type_x == NCL_double) { 
-    for( i = 0; i < size_x; i++ ) tmp_x[i] = (short)((double*)x)[index_x+i];
-  }
-  else if(type_x == NCL_float) { 
-    for( i = 0; i < size_x; i++ ) tmp_x[i] = (short)((float*)x)[index_x+i];
-  }
-  else if(type_x == NCL_long) { 
-    for( i = 0; i < size_x; i++ ) tmp_x[i] = (short)((long*)x)[index_x+i];
-  }
-  else if(type_x == NCL_int) { 
-    for( i = 0; i < size_x; i++ ) tmp_x[i] = (short)((int*)x)[index_x+i];
-  }
+  NclTypeClass typeclass_x, typeclass_xs;
+  typeclass_x  = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_x)));
+  typeclass_xs = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(NCL_short)));
+  for( i = 0; i < size_x; i++ ) _NclScalarForcedCoerce(x + (index_x+i)*typeclass_x->type_class.size,type_x,
+						       (void*)tmp_x + i*typeclass_xs->type_class.size,NCL_short);
 }
 
 /*
