@@ -2390,11 +2390,12 @@ begin
   end if
 end
 ; ********************************************************************
-; D. Shea
 ; Truncate or Round "x" to the number of decimal places [nDec]
 ; This will [I hope] operate on any arbitrary array of float/double 
 ; numbers. However, originally it was designed to work on a scalar for
 ; plotting or printing purposes.
+
+; Warning: This is intended for variables like 12.3456
 
 ; ==> The NCL function "sprintf" has much of the same functionality
 ; ==> as this function. "decimalPlaces" is kept for backward
@@ -2426,20 +2427,10 @@ begin
           shift = 10.0^nDec
       end if
 
-      xTmp = x                            
-      if (isatt(xTmp,"_FillValue")) then
-          FillValue = xTmp@_FillValue
-          delete(xTmp@_FillValue)
-          xTmp@_FillValue = FillValue*shift       ; shifted _FillValue
-      end if
-
-      xTmp = xTmp*shift               
-      xTmp = round(xTmp, 0)
-      xTmp = xTmp/shift
-     ;xTmp = (/ round(x*shift)/shift /)
-
-      if (isvar("FillValue")) then
-          xTmp@_FillValue = FillValue              ; original _FillValue
+      if (Round) then
+          xTmp = (/ toint(round(x*shift,0))/shift /)  ; round
+      else
+          xTmp = toint(x*shift)/shift              ; truncate 
       end if
 
       return(xTmp)
