@@ -26,6 +26,15 @@
 extern void coerce_missing(NclBasicDataTypes,int,NclScalar *,
                            NclScalar *,NclScalar *);
 
+extern void coerce_missing_long(NclBasicDataTypes,long,NclScalar *,
+                                NclScalar *);
+
+extern void coerce_missing_int(NclBasicDataTypes,int,NclScalar *,
+                               NclScalar *);
+
+extern void coerce_missing_short(NclBasicDataTypes,short,NclScalar *,
+                                 NclScalar *);
+
 extern void coerce_missing_more_types(NclBasicDataTypes,int,NclScalar *,
 				      NclScalar *,NclScalar *);
 
@@ -44,6 +53,8 @@ extern double *copy_scalar_to_array(double *, int, ng_size_t *, ng_size_t);
 extern float *coerce_output_float(double *, void *, ng_size_t, int);
 
 extern void coerce_output_float_only(void *,double *,ng_size_t, ng_size_t);
+
+extern void coerce_output_long_only(void *,double *,ng_size_t, ng_size_t);
 
 extern void coerce_output_int_only(void *,double *,ng_size_t, ng_size_t);
 
@@ -64,6 +75,9 @@ extern void coerce_output_step(void *,double *,NclBasicDataTypes,
 extern float *coerce_input_float(void*,NclBasicDataTypes,ng_size_t,int,
                                    NclScalar*,NclScalar*);
 
+extern int *coerce_input_int(void*,NclBasicDataTypes,ng_size_t,int,
+                             NclScalar*,NclScalar*);
+
 extern unsigned int *coerce_input_uint(void*,NclBasicDataTypes,ng_size_t,int,
 				      NclScalar*,NclScalar*);
 
@@ -72,6 +86,10 @@ extern unsigned long *coerce_input_ulong(void*,NclBasicDataTypes,ng_size_t,int,
 
 extern void coerce_subset_input_float(void *,float *,ng_size_t,NclBasicDataTypes,
                                        ng_size_t,int,NclScalar*,NclScalar*);
+
+extern void force_subset_input_int(void *,int *,ng_size_t,NclBasicDataTypes,ng_size_t);
+extern void force_subset_input_long(void *,long *,ng_size_t,NclBasicDataTypes,ng_size_t);
+extern void force_subset_input_short(void *,short *,ng_size_t,NclBasicDataTypes,ng_size_t);
 
 extern double *coerce_output_double(void*,NclBasicDataTypes,ng_size_t);
 

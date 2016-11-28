@@ -7261,15 +7261,15 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(cd_calendar_W,args,"cd_calendar",nargs);
 
 /*
- * Register "ut_inv_calendar".
+ * Register "cd_inv_calendar".
  */
     nargs = 0;
     args = NewArgs(8);
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
@@ -7292,11 +7292,11 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(8);
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
@@ -9136,6 +9136,111 @@ NclScalar         *missing_rx)
 }
 
 /*
+ * Coerce a missing value to long. If no missing value, then set a
+ * default missing value for the long type.
+ */
+void coerce_missing_long(
+NclBasicDataTypes type_x,
+long              has_missing_x,
+NclScalar         *missing_x,
+NclScalar         *missing_lx)
+{
+/*
+ * Check for missing value and coerce if neccesary.
+ */
+  if(has_missing_x) {
+/*
+ * Coerce missing value to long.
+ */
+    _Nclcoerce((NclTypeClass)nclTypelongClass,
+               (void*)missing_lx,
+               (void*)missing_x,
+               1,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+  }
+  else {
+    if(missing_lx != NULL) {
+/*
+ * Get the default missing value, just in case.
+ */ 
+      missing_lx->longval = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+    }
+  }
+}
+
+/*
+ * Coerce a missing value to int. If no missing value, then set a
+ * default missing value for the int type.
+ */
+void coerce_missing_int(
+NclBasicDataTypes type_x,
+int               has_missing_x,
+NclScalar         *missing_x,
+NclScalar         *missing_ix)
+{
+/*
+ * Check for missing value and coerce if neccesary.
+ */
+  if(has_missing_x) {
+/*
+ * Coerce missing value to int.
+ */
+    _Nclcoerce((NclTypeClass)nclTypeintClass,
+               (void*)missing_ix,
+               (void*)missing_x,
+               1,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+  }
+  else {
+    if(missing_ix != NULL) {
+/*
+ * Get the default missing value, just in case.
+ */ 
+      missing_ix->intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+    }
+  }
+}
+
+/*
+ * Coerce a missing value to short. If no missing value, then set a
+ * default missing value for the short type.
+ */
+void coerce_missing_short(
+NclBasicDataTypes type_x,
+short             has_missing_x,
+NclScalar         *missing_x,
+NclScalar         *missing_sx)
+{
+/*
+ * Check for missing value and coerce if neccesary.
+ */
+  if(has_missing_x) {
+/*
+ * Coerce missing value to short.
+ */
+    _Nclcoerce((NclTypeClass)nclTypeshortClass,
+               (void*)missing_sx,
+               (void*)missing_x,
+               1,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+  }
+  else {
+    if(missing_sx != NULL) {
+/*
+ * Get the default missing value, just in case.
+ */ 
+      missing_sx->shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+    }
+  }
+}
+
+/*
  * Coerce a missing value to double.  Also, set a default missing
  * value and set an int/long/float missing value for the return.
  */
@@ -9469,6 +9574,20 @@ int    has_allocated
   }
   NclFree(dx);   /* Free up double precision values */
   return(rx);
+}
+
+/*
+ * Copy double data back to a long array, using a void array. 
+ */
+void coerce_output_long_only(
+void   *x,
+double *dx,
+ng_size_t size_x,
+ng_size_t index_x
+)
+{
+  ng_size_t i;
+  for( i = 0; i < size_x; i++ ) ((long*)x)[index_x+i]  = (long)dx[i];
 }
 
 /*
@@ -9874,6 +9993,53 @@ NclScalar         *missing_fx)
 }
 
 /*
+ * Coerce data to int, or just return a pointer to it if
+ * it is already int.
+ */
+int *coerce_input_int(
+void              *x,
+NclBasicDataTypes type_x,
+ng_size_t         size_x,
+int               has_missing_x,
+NclScalar         *missing_x,
+NclScalar         *missing_ix)
+{
+  int *ix;
+/*
+ * Coerce x to integer if necessary.
+ */
+  if(type_x != NCL_int) {
+    ix = (int*)calloc(size_x,sizeof(int));
+    if( ix == NULL ) return(NULL);
+    if(has_missing_x) {
+      _Nclcoerce((NclTypeClass)nclTypeintClass,
+                 (void*)ix,
+                 x,
+                 size_x,
+                 missing_x,
+                 missing_ix,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+    else {
+      _Nclcoerce((NclTypeClass)nclTypeintClass,
+                 (void*)ix,
+                 x,
+                 size_x,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+  }
+  else {
+/*
+ * x is already int.
+ */
+    ix = (int*)x;
+  }
+  return(ix);
+}
+
+/*
  * Coerce data to unsigned int, or just return a pointer to it if
  * it is already uint.
  */
@@ -10012,6 +10178,84 @@ NclScalar         *missing_fx
                NULL,
                NULL,
                typeclass_x);
+  }
+}
+
+/*
+ * Force types higher than an integer to be an integer.
+ * Only double, float, or long are accepted.
+ */
+void force_subset_input_int(
+void              *x,
+int               *tmp_x,
+ng_size_t         index_x,
+NclBasicDataTypes type_x,
+ng_size_t         size_x
+)
+{
+  ng_size_t i;
+
+  if(type_x == NCL_double) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (int)((double*)x)[index_x+i];
+  }
+  else if(type_x == NCL_float) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (int)((float*)x)[index_x+i];
+  }
+  else if(type_x == NCL_long) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (int)((long*)x)[index_x+i];
+  }
+}
+
+/*
+ * Force types potentially higher than a long to be a long.
+ * Only double, float, or integer are accepted.
+ */
+void force_subset_input_long(
+void              *x,
+long              *tmp_x,
+ng_size_t         index_x,
+NclBasicDataTypes type_x,
+ng_size_t         size_x
+)
+{
+  ng_size_t i;
+
+  if(type_x == NCL_double) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (long)((double*)x)[index_x+i];
+  }
+  else if(type_x == NCL_float) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (long)((float*)x)[index_x+i];
+  }
+  else if(type_x == NCL_int) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (long)((int*)x)[index_x+i];
+  }
+}
+
+/*
+ * Force types potentially higher than a short to be a short.
+ * Only double, float, long, or integer are accepted.
+ */
+void force_subset_input_short(
+void              *x,
+short             *tmp_x,
+ng_size_t         index_x,
+NclBasicDataTypes type_x,
+ng_size_t         size_x
+)
+{
+  ng_size_t i;
+
+  if(type_x == NCL_double) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (short)((double*)x)[index_x+i];
+  }
+  else if(type_x == NCL_float) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (short)((float*)x)[index_x+i];
+  }
+  else if(type_x == NCL_long) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (short)((long*)x)[index_x+i];
+  }
+  else if(type_x == NCL_int) { 
+    for( i = 0; i < size_x; i++ ) tmp_x[i] = (short)((int*)x)[index_x+i];
   }
 }
 
