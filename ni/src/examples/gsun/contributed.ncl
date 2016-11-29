@@ -2390,35 +2390,39 @@ begin
   end if
 end
 ; ********************************************************************
+; From contributed.ncl
+; ********************************************************************
+; D. Shea
 ; Truncate or Round "x" to the number of decimal places [nDec]
 ; This will [I hope] operate on any arbitrary array of float/double 
 ; numbers. However, originally it was designed to work on a scalar for
 ; plotting or printing purposes.
-
-; Warning: This is intended for variables like 12.3456
 
 ; ==> The NCL function "sprintf" has much of the same functionality
 ; ==> as this function. "decimalPlaces" is kept for backward
 ; ==> compatibility reasons.
 ;
 ; It was upgraded by D Shea in Dec 2009 to use "round" and to
-; return metadata.
+; return metadata. It ronds to the higher absolute number.
 ;
 ; x     - float or double only
 ; nDec  - number of decimal places to the right of decimal point
 ; Round - round or truncate
 ;   
 ; usage: 
-;   x is a scalar
-;   xRound = decimalPlaces(x, 2, True)  ; x=12.345678 => 12.35
-;   xRound = decimalPlaces(x, 2, False) ; x=12.345678 => 12.34
+;   x = 12.345678: 
+;   xRound = decimalPlaces( x, 2, True)   ;  12.35
+;   xRound = decimalPlaces( x, 2, False)  ;  12.34
+;   xRound = decimalPlaces(-x, 2, True)   ; -12.35
+;   xRound = decimalPlaces(-x, 2, False)  ; -12.34
 ;   title  = "EOF: PerCent Variance="+decimalPlaces(pcvar(0), 2, True)
 
 undef("decimalPlaces")
 function decimalPlaces(x:numeric, nDec:integer, Round:logical)
-local xType, shift, xTmp, _FillValue
+local xType, xSign, shift, xTmp, _FillValue
 begin
   xType = typeof(x)
+  xSign = where(x.lt.0, -1, 1)
 
   if (xType.eq."float"  .or.  xType.eq."double") then
       if (xType.eq."double") then
@@ -2427,12 +2431,14 @@ begin
           shift = 10.0^nDec
       end if
 
+      xTmp = x                                        ; meta data
       if (Round) then
-          xTmp = (/ toint(round(x*shift,0))/shift /)  ; round
+          xTmp = (/ toint(round(abs(xTmp*shift),0))/shift /)  ; round
       else
-          xTmp = toint(x*shift)/shift              ; truncate 
+          xTmp = toint(abs(xTmp*shift))/shift                 ; truncate 
       end if
 
+      xTmp = xSign*xTmp
       return(xTmp)
   else
       print ("decimalPlaces: input is of type "+xType )
@@ -2440,7 +2446,6 @@ begin
       return (x)           
   end if
 end
-
 ; *******************************************************************
 ; M. Haley
 ; Constructs a string with dim names to return with the _Wrap fcns
