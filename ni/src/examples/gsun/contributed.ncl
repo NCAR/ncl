@@ -15965,10 +15965,14 @@ begin
   rankth  = dimsizes(dimth)
   ranklat = dimsizes(dimlat)   
 
-  if (.not.(rankth.eq.ranku) .and. all(dimth.eq.dimu)) then
-      print("eady_growth_rate: th, u, lat and must have the same rank & dimensionality")
+  if (.not.(rankth.eq.ranku .and. rankth.eq.rankz .and. rankth.eq.ranklat) \
+      .and. all(dimth.eq.dimu) .and. all(dimth.eq.dimz) .and. all(dimth.eq.dimlat)) then
+      print("eady_growth_rate: th, u, lat and must have the same rank & sizes")
+      print("ranku="+ranku+"  rankth="+rankth+"  rankz="+rankz+"  ranklat="+ranklat)
       print(dimth)
       print(dimu) 
+      print(dimz) 
+      print(dimlat) 
       exit
   end if
 
