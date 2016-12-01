@@ -582,6 +582,11 @@ NhlErrorTypes cd_calendar_W( void )
 NhlErrorTypes cd_inv_calendar_W( void )
 {
 /*
+ * Variables for handling NCL variables.
+ */
+  NclStackEntry data;
+  NclMultiDValData tmp_md = NULL;
+/*
  * Input array variables
  */
   void *year, *month, *day, *hour, *minute, *second;
@@ -590,16 +595,17 @@ NhlErrorTypes cd_inv_calendar_W( void )
   double *tmp_hour = NULL, *tmp_minute = NULL, *tmp_second = NULL;
   NrmQuark *sspec;
   char *cspec;
+  ng_size_t *dsizes_year, *dsizes_month, *dsizes_day, *dsizes_hour;
+  ng_size_t *dsizes_minute, *dsizes_second;
+  ng_size_t size_year, size_month, size_day, size_hour, size_minute, size_second;
   int has_missing_year,has_missing_month,has_missing_day,has_missing_hour;
   int has_missing_minute,has_missing_second;
   int ndims_year,ndims_month,ndims_day,ndims_hour,ndims_minute,ndims_second;
-  ng_size_t dsizes_year[NCL_MAX_DIMENSIONS], dsizes_month[NCL_MAX_DIMENSIONS];
-  ng_size_t dsizes_day[NCL_MAX_DIMENSIONS], dsizes_hour[NCL_MAX_DIMENSIONS];
-  ng_size_t dsizes_minute[NCL_MAX_DIMENSIONS], dsizes_second[NCL_MAX_DIMENSIONS];
-  NclScalar missing_year, missing_lyear,missing_month, missing_smonth;
-  NclScalar missing_day, missing_sday,missing_hour,missing_dhour;
-  NclScalar missing_minute,missing_dminute,missing_second,missing_dsecond;
+  NclScalar missing_year,missing_month, missing_day, missing_hour;
+  NclScalar missing_minute, missing_second;
   NclBasicDataTypes type_year,type_month,type_day,type_hour,type_minute,type_second;
+  NclTypeClass type_class_year, type_class_month, type_class_day, type_class_hour;
+  NclTypeClass type_class_minute, type_class_second;
   cdCompTime comptime;
 /*
  * Variables for retrieving attributes from last argument.
@@ -635,72 +641,160 @@ NhlErrorTypes cd_inv_calendar_W( void )
   ng_size_t dsizes[1], return_all_missing;
   cdCalenType ctype;
   double fraction;
+  logical is_missing;
 
   /* initialize error flag */
   cuErrorOccurred = 0;
 
 /*
- * Retrieve parameters
+ * Retrieve parameters. We have to do this the "hard" way because of 
+ * handling types that might get coerced to "lower" values (double to 
+ * integer for example).
  *
- * Note any of the pointer parameters can be set to NULL, which
- * implies you don't care about its value.
- * The first size input arrays must be the same dimension sizes.
+ * To make things easier, assign various aspects of multidval to
+ * individual variables.
  */
-  year = (void*)NclGetArgValue(
-           0,
-           8,
-           &ndims_year, 
-           dsizes_year,
-           &missing_year,
-           &has_missing_year,
-           &type_year,
-           DONT_CARE);
-  month = (void*)NclGetArgValue(
-           1,
-           8,
-           &ndims_month, 
-           dsizes_month,
-           &missing_month,
-           &has_missing_month,
-           &type_month,
-           DONT_CARE);
-  day = (void*)NclGetArgValue(
-           2,
-           8,
-           &ndims_day, 
-           dsizes_day,
-           &missing_day,
-           &has_missing_day,
-           &type_day,
-           DONT_CARE);
-  hour = (void*)NclGetArgValue(
-           3,
-           8,
-           &ndims_hour, 
-           dsizes_hour,
-           &missing_hour,
-           &has_missing_hour,
-           &type_hour,
-           DONT_CARE);
-  minute = (void*)NclGetArgValue(
-           4,
-           8,
-           &ndims_minute, 
-           dsizes_minute,
-           &missing_minute,
-           &has_missing_minute,
-           &type_minute,
-           DONT_CARE);
-  second = (void*)NclGetArgValue(
-           5,
-           8,
-           &ndims_second, 
-           dsizes_second,
-           &missing_second,
-           &has_missing_second,
-           &type_second,
-           DONT_CARE);
 
+/* Year */  
+  data = _NclGetArg(0,8,DONT_CARE);
+  switch(data.kind) {
+  case NclStk_VAR:
+    tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+    break;
+  case NclStk_VAL:
+    tmp_md = (NclMultiDValData)data.u.data_obj;
+    break;
+  default:
+    NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+    return(NhlFATAL);
+  }
+  if(tmp_md == NULL)
+    return(NhlFATAL);
+  year             = tmp_md->multidval.val;
+  ndims_year       = tmp_md->multidval.n_dims;
+  dsizes_year      = tmp_md->multidval.dim_sizes;
+  type_year        = tmp_md->multidval.data_type;
+  type_class_year  = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_year)));
+  size_year        = tmp_md->multidval.type->type_class.size;
+  missing_year     = tmp_md->multidval.missing_value.value;
+  has_missing_year = tmp_md->multidval.missing_value.has_missing;
+/* Month */  
+  data = _NclGetArg(1,8,DONT_CARE);
+  switch(data.kind) {
+  case NclStk_VAR:
+    tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+    break;
+  case NclStk_VAL:
+    tmp_md = (NclMultiDValData)data.u.data_obj;
+    break;
+  default:
+    NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+    return(NhlFATAL);
+  }
+  if(tmp_md == NULL)
+    return(NhlFATAL);
+  month             = tmp_md->multidval.val;
+  ndims_month       = tmp_md->multidval.n_dims;
+  dsizes_month      = tmp_md->multidval.dim_sizes;
+  type_month        = tmp_md->multidval.data_type;
+  type_class_month  = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_month)));
+  size_month        = tmp_md->multidval.type->type_class.size;
+  missing_month     = tmp_md->multidval.missing_value.value;
+  has_missing_month = tmp_md->multidval.missing_value.has_missing;
+/* Day */  
+  data = _NclGetArg(2,8,DONT_CARE);
+  switch(data.kind) {
+  case NclStk_VAR:
+    tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+    break;
+  case NclStk_VAL:
+    tmp_md = (NclMultiDValData)data.u.data_obj;
+    break;
+  default:
+    NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+    return(NhlFATAL);
+  }
+  if(tmp_md == NULL)
+    return(NhlFATAL);
+  day             = tmp_md->multidval.val;
+  ndims_day       = tmp_md->multidval.n_dims;
+  dsizes_day      = tmp_md->multidval.dim_sizes;
+  type_day        = tmp_md->multidval.data_type;
+  type_class_day  = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_day)));
+  size_day        = tmp_md->multidval.type->type_class.size;
+  missing_day     = tmp_md->multidval.missing_value.value;
+  has_missing_day = tmp_md->multidval.missing_value.has_missing;
+/* Hour */  
+  data = _NclGetArg(3,8,DONT_CARE);
+  switch(data.kind) {
+  case NclStk_VAR:
+    tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+    break;
+  case NclStk_VAL:
+    tmp_md = (NclMultiDValData)data.u.data_obj;
+    break;
+  default:
+    NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+    return(NhlFATAL);
+  }
+  if(tmp_md == NULL)
+    return(NhlFATAL);
+  hour             = tmp_md->multidval.val;
+  ndims_hour       = tmp_md->multidval.n_dims;
+  dsizes_hour      = tmp_md->multidval.dim_sizes;
+  type_hour        = tmp_md->multidval.data_type;
+  type_class_hour  = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_hour)));
+  size_hour        = tmp_md->multidval.type->type_class.size;
+  missing_hour     = tmp_md->multidval.missing_value.value;
+  has_missing_hour = tmp_md->multidval.missing_value.has_missing;
+/* Minute */  
+  data = _NclGetArg(4,8,DONT_CARE);
+  switch(data.kind) {
+  case NclStk_VAR:
+    tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+    break;
+  case NclStk_VAL:
+    tmp_md = (NclMultiDValData)data.u.data_obj;
+    break;
+  default:
+    NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+    return(NhlFATAL);
+  }
+  if(tmp_md == NULL)
+    return(NhlFATAL);
+  minute             = tmp_md->multidval.val;
+  ndims_minute       = tmp_md->multidval.n_dims;
+  dsizes_minute      = tmp_md->multidval.dim_sizes;
+  type_minute        = tmp_md->multidval.data_type;
+  type_class_minute  = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_minute)));
+  size_minute        = tmp_md->multidval.type->type_class.size;
+  missing_minute     = tmp_md->multidval.missing_value.value;
+  has_missing_minute = tmp_md->multidval.missing_value.has_missing;
+/* Second */  
+  data = _NclGetArg(5,8,DONT_CARE);
+  switch(data.kind) {
+  case NclStk_VAR:
+    tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+    break;
+  case NclStk_VAL:
+    tmp_md = (NclMultiDValData)data.u.data_obj;
+    break;
+  default:
+    NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
+    return(NhlFATAL);
+  }
+  if(tmp_md == NULL)
+    return(NhlFATAL);
+  second             = tmp_md->multidval.val;
+  ndims_second       = tmp_md->multidval.n_dims;
+  dsizes_second      = tmp_md->multidval.dim_sizes;
+  type_second        = tmp_md->multidval.data_type;
+  type_class_second  = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_second)));
+  size_second        = tmp_md->multidval.type->type_class.size;
+  missing_second     = tmp_md->multidval.missing_value.value;
+  has_missing_second = tmp_md->multidval.missing_value.has_missing;
+
+/* Error checking */
   if(ndims_year != ndims_month || ndims_year != ndims_day    || 
      ndims_year != ndims_hour  || ndims_year != ndims_minute ||
      ndims_year != ndims_second) {
@@ -862,16 +956,6 @@ NhlErrorTypes cd_inv_calendar_W( void )
   }
 
 /*
- * Coerce missing values to the expected types.
- */
-  coerce_missing_long(type_year,has_missing_year,&missing_year,&missing_lyear);
-  coerce_missing_short(type_month,has_missing_month,&missing_month,&missing_smonth);
-  coerce_missing_short(type_day,has_missing_day,&missing_day,&missing_sday);
-  coerce_missing(type_hour,has_missing_hour,&missing_hour,&missing_dhour,NULL);
-  coerce_missing(type_minute,has_missing_minute,&missing_minute,&missing_dminute,NULL);
-  coerce_missing(type_second,has_missing_second,&missing_second,&missing_dsecond,NULL);
-
-/*
  * x will contain a _FillValue attribute if there's bad input, or any of the input
  * has a _FillValue attribute set. return_all_missing is a flag to indicate whether
  * all values should be set to missing.
@@ -954,11 +1038,51 @@ NhlErrorTypes cd_inv_calendar_W( void )
   }
 
 /* 
- * Loop through each data value, and call Udunits routine.
+ * Loop through each data value, and call cdComp2Rel routine.
  */ 
   for( i = 0; i < total_size_input; i++ ) {
+    is_missing = False;
 /*
- * Coerce year, month, day, hour, minute to the appropriate type.
+ * Check for missing values. If any of the input is missing, then 
+ * the output should be set to missing for the same loop index. 
+ */
+    if(has_missing_year) {
+       _Ncleq(type_class_year,&is_missing,&(((char*)year)[i*size_year]),&missing_year,NULL,NULL,1,1);
+    }
+    if(!is_missing && has_missing_month) {
+       _Ncleq(type_class_month,&is_missing,&(((char*)month)[i*size_month]),&missing_month,NULL,NULL,1,1);
+    }
+    if(!is_missing && has_missing_day) {
+       _Ncleq(type_class_day,&is_missing,&(((char*)day)[i*size_day]),&missing_day,NULL,NULL,1,1);
+    }
+    if(!is_missing && has_missing_hour) {
+       _Ncleq(type_class_hour,&is_missing,&(((char*)hour)[i*size_hour]),&missing_hour,NULL,NULL,1,1);
+    }
+    if(!is_missing && has_missing_minute) {
+       _Ncleq(type_class_minute,&is_missing,&(((char*)minute)[i*size_minute]),&missing_minute,NULL,NULL,1,1);
+    }
+    if(!is_missing && has_missing_second) {
+       _Ncleq(type_class_second,&is_missing,&(((char*)second)[i*size_second]),&missing_second,NULL,NULL,1,1);
+    }
+    if(is_missing) {
+      has_missing_x = 1;
+      if(type_x == NCL_double) {
+         ((double*)x)[i] = missing_x.doubleval;
+      }
+      else if(type_x == NCL_float) {
+        ((float*)x)[i] = missing_x.floatval;
+      }
+      else if(type_x == NCL_long) {
+        ((long*)x)[i] = missing_x.longval;
+      }
+      else if(type_x == NCL_int) {
+        ((int*)x)[i] = missing_x.intval;
+      }
+      continue;
+    }
+/*
+ * No missing values detected, so coerce year, month, day, hour, 
+ * minute to the appropriate type.
  */
     if(type_year != NCL_long) {
       force_subset_input_long(year,tmp_year,i,type_year,1);
@@ -1000,71 +1124,43 @@ NhlErrorTypes cd_inv_calendar_W( void )
       tmp_second = &((double*)second)[i];
     }
 
-    if((!has_missing_year   ||
-        (has_missing_year && *tmp_year != missing_lyear.longval)) &&
-       (!has_missing_month ||
-        (has_missing_month && *tmp_month != missing_month.shortval)) &&
-       (!has_missing_day ||
-        (has_missing_day && *tmp_day != missing_day.shortval)) &&
-       (!has_missing_hour ||
-        (has_missing_hour && *tmp_hour != missing_hour.doubleval))   &&
-       (!has_missing_minute ||
-        (has_missing_minute && *tmp_minute != missing_minute.doubleval)) &&
-       (!has_missing_second ||
-        (has_missing_second && *tmp_second != missing_second.doubleval)) ) {
+    if(type_x == NCL_double) tmp_x = &((double*)x)[i];
 
-      if(type_x == NCL_double) tmp_x = &((double*)x)[i];
-
-      fraction       = *tmp_minute/60. + *tmp_second/3600.;
-      comptime.year  = *tmp_year;
-      comptime.month = *tmp_month;
-      comptime.day   = *tmp_day;
-      comptime.hour  = *tmp_hour + fraction;
-      (void)cdComp2Rel(ctype,comptime,cspec,tmp_x);
+    fraction       = *tmp_minute/60. + *tmp_second/3600.;
+    comptime.year  = *tmp_year;
+    comptime.month = *tmp_month;
+    comptime.day   = *tmp_day;
+    comptime.hour  = *tmp_hour + fraction;
+    (void)cdComp2Rel(ctype,comptime,cspec,tmp_x);
 /*
  * Return all missing values if we encounter a fatal error.
  */
-      if(i == 0 && (cuErrorOccurred && (cuErrOpts & CU_FATAL))) {
-        set_all_missing(x, total_size_input, missing_x, type_x);
-        ret = NclReturnValue(x,ndims_year,dsizes_year,&missing_x,
-                             type_x,0);
-        if(type_year   != NCL_long)   NclFree(tmp_year);
-        if(type_month  != NCL_short)  NclFree(tmp_month);
-        if(type_day    != NCL_short)  NclFree(tmp_day);
-        if(type_hour   != NCL_double) NclFree(tmp_hour);
-        if(type_minute != NCL_double) NclFree(tmp_minute);
-        if(type_second != NCL_double) NclFree(tmp_second);
-        if(type_x      != NCL_double) NclFree(tmp_x);
-        return(ret);
-      }
+    if(i == 0 && (cuErrorOccurred && (cuErrOpts & CU_FATAL))) {
+      set_all_missing(x, total_size_input, missing_x, type_x);
+      ret = NclReturnValue(x,ndims_year,dsizes_year,&missing_x,
+                           type_x,0);
+      if(type_year   != NCL_long)   NclFree(tmp_year);
+      if(type_month  != NCL_short)  NclFree(tmp_month);
+      if(type_day    != NCL_short)  NclFree(tmp_day);
+      if(type_hour   != NCL_double) NclFree(tmp_hour);
+      if(type_minute != NCL_double) NclFree(tmp_minute);
+      if(type_second != NCL_double) NclFree(tmp_second);
+      if(type_x      != NCL_double) NclFree(tmp_x);
+      return(ret);
+    }
 /*
  * Copy output values from temporary tmp_x to x. The
  * only types possible are double, float, long, or int.
  * If double, then no coercion necessary.
  */
-      if(type_x == NCL_float) {
-        coerce_output_float_only(x,tmp_x,1,i);
-      }
-      if(type_x == NCL_long) {
-        coerce_output_long_only(x,tmp_x,1,i);
-      }
-      else if(type_x == NCL_int) {
-        coerce_output_int_only(x,tmp_x,1,i);
-      }
+    if(type_x == NCL_float) {
+      coerce_output_float_only(x,tmp_x,1,i);
     }
-    else {
-       if(type_x == NCL_double) {
-         ((double*)x)[i] = missing_x.doubleval;
-       }
-       else if(type_x == NCL_float) {
-         ((float*)x)[i] = missing_x.floatval;
-       }
-       else if(type_x == NCL_long) {
-         ((long*)x)[i] = missing_x.longval;
-       }
-       else if(type_x == NCL_int) {
-         ((int*)x)[i] = missing_x.intval;
-       }
+    if(type_x == NCL_long) {
+      coerce_output_long_only(x,tmp_x,1,i);
+    }
+    else if(type_x == NCL_int) {
+      coerce_output_int_only(x,tmp_x,1,i);
     }
   }
 
