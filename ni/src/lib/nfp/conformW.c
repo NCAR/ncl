@@ -50,7 +50,7 @@ NhlErrorTypes conform_W( void )
  */
   void *x;
   NclStackEntry data;
-  int *cnfrm_dims;
+  int *cnfrm_dims, *tmp_cnfrm_dims;
   NclMultiDValData tmp_md = NULL;
   int ndims_x;
   ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
@@ -65,10 +65,11 @@ NhlErrorTypes conform_W( void )
 /*
  * various
  */
-  int scalar_tmp_md, copy_scalar = 0, copy_array = 0;
   ng_size_t i, j;
+  int scalar_tmp_md;
+  logical is_scalar_array = False, is_same_array = False, is_degen_array = False;
   ng_size_t new_position, size_conform, conform_pos;
-  int type_size;
+  int ic, num_degen_dims, type_size;
   ng_size_t *skip_x = NULL;
   ng_size_t *skip_c = NULL;
   ng_size_t *indices = NULL;
@@ -113,58 +114,24 @@ NhlErrorTypes conform_W( void )
            DONT_CARE);
 
 /*
- * Check if we're dealing with the special case of where the second
- * argument is a scalar, and the third argument is -1.  If this 
- * is true, then the scalar value will be copied to every 
- * element of the new array.
- */
-  scalar_tmp_md = is_scalar(tmp_md->multidval.n_dims,
-                            tmp_md->multidval.dim_sizes);
-
-  if(cnfrm_dims[0] == -1) {
-    if(scalar_tmp_md) {
-      copy_scalar = 1;
-    }
-    else {
-      if(tmp_md->multidval.n_dims == ndims_x) {
-        for(i = 0; i < ndims_x; i++ ) {
-          if(tmp_md->multidval.dim_sizes[i] != dsizes_x[i]) {
-            NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: if the third argument is -1, then second argument must either be a scalar or an array of the same dimensionality as indicated by the first argument");
-            return(NhlFATAL);
-          }
-        }
-      }
-      else {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: if the third argument is -1, then second argument must either be a scalar or an array of the same dimensionality as indicated by the first argument");
-        return(NhlFATAL);
-      }
-      copy_array = 1;
-    }
-  }
-
-/*
- * If not dealing with the special -1 case, then the number of
- * dimensions of the second argument must be the same as the length
- * of the third argument.
- */
-  if(!copy_scalar && !copy_array && tmp_md->multidval.n_dims != dsizes_conform[0]) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: The array to be conformed must have the same number of dimensions as indicated by the length of the last argument");
-    return(NhlFATAL);
-  }
-
-/*
- * If not a the -1 case, check for errors:
- *
- *    1. The dimension indices indicated by the third argument must
+ * If not dealing with the special -1 case, then do some error checking:
+ *    1. The number of dimensions of the second argument must be the 
+ *       same as the length of the third argument.
+ *    2. The dimension indices indicated by the third argument must
  *       be in the range of the dimension indices of x (i.e. if x is
- *       only 3-dimensional, then one of the indices in the 3rd
- *       argument cannot be a "4").
- *    2. The dimensions indices indicated by the third argument must
+ *       only 3-dimensional, then none of the indices in the 3rd
+ *       argument can be greater than 3).
+ *    3. The dimensions indices indicated by the third argument must
  *       be unique and increasing.
  *    4. The dimensions sizes of the second argument must be the same
  *       as those indicated by the third argument.
  */
-  if(!copy_scalar && !copy_array) {
+  num_degen_dims = 0;
+  if(cnfrm_dims[0] != -1) {
+    if(tmp_md->multidval.n_dims != dsizes_conform[0]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: The array to be conformed must have the same number of dimensions as indicated by the length of the last argument");
+      return(NhlFATAL);
+    }
     for(i = 0; i < dsizes_conform[0]; i++ ) {
       if(cnfrm_dims[i] < 0 || cnfrm_dims[i] > (ndims_x-1)) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: the third argument contains a dimension that is out-of-range of the dimensions of x");
@@ -176,11 +143,86 @@ NhlErrorTypes conform_W( void )
           return(NhlFATAL);
         }
       }
-      if(dsizes_x[cnfrm_dims[i]] != tmp_md->multidval.dim_sizes[i] ) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: the dimensions sizes of the second argument do not match those indicated by the third argument");
+/*
+ * In NCL V6.4.0, if any of the dsizes_x dimensions are degenerate (equal to 1), then
+ * this is consider valid.
+ */
+      if(dsizes_x[cnfrm_dims[i]] != tmp_md->multidval.dim_sizes[i] && tmp_md->multidval.dim_sizes[i] != 1) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: the dimension sizes of the second argument do not match those indicated by the third argument");
         return(NhlFATAL);
       }
+      /* Count the number of degenerate dimensions so we can remove them later */
+      if(tmp_md->multidval.dim_sizes[i] == 1) num_degen_dims++;
     }
+  }
+/*
+ * Check if we're dealing with the special case of where the second
+ * argument is a scalar and the third argument is -1.  If this 
+ * is true, then the scalar value will be copied to every 
+ * element of the new array.
+ */
+  else {
+    scalar_tmp_md = is_scalar(tmp_md->multidval.n_dims,
+                              tmp_md->multidval.dim_sizes);
+
+    if(scalar_tmp_md) {
+      is_scalar_array = True;
+    }
+    else {
+/*
+ * In NCL V6.4.0, we added a new feature that allows you to
+ * to conform one array to another, if the smaller array
+ * has degenerate dimensions.  For example, you can conform
+ * a 3 x 1 x 5 array to a 3 x 4 x 5 array, using the "-1"
+ * value for the third argument.
+ */
+      if(tmp_md->multidval.n_dims == ndims_x) {
+        is_same_array = is_degen_array = True;
+        i = 0;
+        while (i < ndims_x && (is_same_array || (!is_same_array && is_degen_array))) {
+          if(is_same_array && tmp_md->multidval.dim_sizes[i] != dsizes_x[i]) {
+            is_same_array  = False;
+            is_degen_array = True;
+          }
+          if(is_degen_array && tmp_md->multidval.dim_sizes[i] != dsizes_x[i] && 
+                               tmp_md->multidval.dim_sizes[i] != 1) {
+            is_degen_array = False;
+          }
+          if(tmp_md->multidval.dim_sizes[i] == 1) num_degen_dims++;
+          i++;
+        }
+      }
+    }
+    if(!is_scalar_array && !is_same_array && !is_degen_array) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: if the third argument is -1, then second argument must either be a scalar, an array of the same dimensionality as indicated by the first argument, or an array with singleton dimensions.");
+      return(NhlFATAL);
+    }
+  }
+
+  /* If there are degenerate dimensions, then remove them from the input cnfrm_dims */
+  if(num_degen_dims > 0) {
+    if(cnfrm_dims[0] == -1) {
+      dsizes_conform[0] = tmp_md->multidval.n_dims-num_degen_dims;
+      tmp_cnfrm_dims = (int*)NclMalloc(dsizes_conform[0]*sizeof(int));
+      ic = 0;
+      for(i = 0; i < tmp_md->multidval.n_dims; i++) {
+        if(tmp_md->multidval.dim_sizes[i] != 1) tmp_cnfrm_dims[ic++] = i;
+      }
+    }
+    else {
+      tmp_cnfrm_dims = (int*)NclMalloc((dsizes_conform[0]-num_degen_dims)*sizeof(int));
+      ic = 0;
+      for(i = 0; i < dsizes_conform[0]; i++) {
+        if(tmp_md->multidval.dim_sizes[i] != 1) tmp_cnfrm_dims[ic++] = cnfrm_dims[i];
+      }
+      dsizes_conform[0] = dsizes_conform[0]-num_degen_dims;
+    }
+  }
+  else {
+    tmp_cnfrm_dims = cnfrm_dims;
+  }
+
+  if(!is_scalar_array && !is_same_array) {
 /*
  * Create an array to hold the number of linear elements you have to
  * skip over when you increment a particular index.
@@ -192,8 +234,8 @@ NhlErrorTypes conform_W( void )
  * and so on.
  */
     skip_x  = (ng_size_t*)calloc(ndims_x,sizeof(ng_size_t));
-    indices = (ng_size_t*)calloc(ndims_x,sizeof(ng_size_t));
     skip_c  = (ng_size_t*)calloc(dsizes_conform[0],sizeof(ng_size_t));
+    indices = (ng_size_t*)calloc(ndims_x,sizeof(ng_size_t));
 
     size_conform = dsizes_x[ndims_x-1];
     skip_x[ndims_x-1] = 1; 
@@ -204,7 +246,7 @@ NhlErrorTypes conform_W( void )
     }
     skip_c[dsizes_conform[0]-1] = 1;
     for(i = dsizes_conform[0]-2; i >= 0; i--) {
-      skip_c[i] = skip_c[i+1]*dsizes_x[cnfrm_dims[i+1]];
+      skip_c[i] = skip_c[i+1]*dsizes_x[tmp_cnfrm_dims[i+1]];
     }
     ndims  = ndims_x;
   }
@@ -230,7 +272,7 @@ NhlErrorTypes conform_W( void )
   }
 
   type_size = tmp_md->multidval.type->type_class.size;
-  if(!copy_scalar && !copy_array) {
+  if(!is_scalar_array && !is_same_array) {
 /*
  * This is the case where the third argument is not equal to -1.
  *
@@ -247,14 +289,14 @@ NhlErrorTypes conform_W( void )
       }
       conform_pos = 0;
       for(j = 0; j < dsizes_conform[0]; j++) {
-        conform_pos += indices[cnfrm_dims[j]] * skip_c[j];
+        conform_pos += indices[tmp_cnfrm_dims[j]] * skip_c[j];
       }
       memcpy((void*)((char*)conform + i*type_size),
              (void*)((char*)tmp_md->multidval.val + conform_pos*type_size),
              type_size);
     }
   }
-  else if(copy_scalar) {
+  else if(is_scalar_array) {
 /*
  * This is the scalar case. Copy the scalar value to the output array.
  */
@@ -272,11 +314,12 @@ NhlErrorTypes conform_W( void )
 /*
  * Free unneeded memory.
  */
-  if(!copy_scalar && !copy_array) {
+  if(!is_scalar_array && !is_same_array) {
     NclFree(skip_x);
     NclFree(indices);
     NclFree(skip_c);
   }
+  if(num_degen_dims > 0) NclFree(tmp_cnfrm_dims);
 
 /*
  * Return values.
@@ -309,7 +352,7 @@ NhlErrorTypes conform_dims_W( void )
   void *tmp_dsizes_x;
   ng_size_t *dsizes_x;
   NclStackEntry data;
-  int *cnfrm_dims;
+  int *cnfrm_dims, *tmp_cnfrm_dims;
   NclMultiDValData tmp_md = NULL;
   ng_size_t ndims_x;
   NclBasicDataTypes type_dsizes_x;
@@ -381,19 +424,19 @@ NhlErrorTypes conform_dims_W( void )
  *       same as the length of the third argument.
  *    2. The dimension indices indicated by the third argument must
  *       be in the range of the dimension indices of x (i.e. if x is
- *       only 3-dimensional, then one of the indices in the 3rd
- *       argument cannot be a "4").
+ *       only 3-dimensional, then none of the indices in the 3rd
+ *       argument can be greater than 3).
  *    3. The dimensions indices indicated by the third argument must
  *       be unique and increasing.
  *    4. The dimensions sizes of the second argument must be the same
  *       as those indicated by the third argument.
  */
+  num_degen_dims = 0;
   if(cnfrm_dims[0] != -1) {
     if(tmp_md->multidval.n_dims != dsizes_conform[0]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"conform_dims: The array to be conformed must have the same number of dimensions as indicated by the length of the last argument");
       return(NhlFATAL);
     }
-    num_degen_dims = 0;
     for(i = 0; i < dsizes_conform[0]; i++ ) {
       if(cnfrm_dims[i] < 0 || cnfrm_dims[i] > (ndims_x-1)) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"conform_dims: the third argument contains a dimension that is out-of-range of the dimensions of x");
@@ -416,13 +459,6 @@ NhlErrorTypes conform_dims_W( void )
       /* Count the number of degenerate dimensions so we can remove them later */
       if(tmp_md->multidval.dim_sizes[i] == 1) num_degen_dims++;
     }
-    if(num_degen_dims > 0) {
-      ic = 0;
-      for(i = 0; i < dsizes_conform[0]; i++) {
-        if(tmp_md->multidval.dim_sizes[i] != 1) cnfrm_dims[ic++] = cnfrm_dims[i];
-      }
-      dsizes_conform[0] = dsizes_conform[0]-num_degen_dims;
-    }
   }
 /*
  * Check if we're dealing with the special case of where the second
@@ -440,14 +476,13 @@ NhlErrorTypes conform_dims_W( void )
     else {
 /*
  * In NCL V6.4.0, we added a new feature that allows you to
- * to conform one array to another, if the smaller array
+ * to conform one array to another if the smaller array
  * has degenerate dimensions.  For example, you can conform
  * a 3 x 1 x 5 array to a 3 x 4 x 5 array, using the "-1"
  * value for the third argument.
  */
       if(tmp_md->multidval.n_dims == ndims_x) {
         is_same_array = is_degen_array = True;
-        num_degen_dims = 0;
         i = 0;
         while (i < ndims_x && (is_same_array || (!is_same_array && is_degen_array))) {
           if(is_same_array && tmp_md->multidval.dim_sizes[i] != dsizes_x[i]) {
@@ -458,9 +493,7 @@ NhlErrorTypes conform_dims_W( void )
                                tmp_md->multidval.dim_sizes[i] != 1) {
             is_degen_array = False;
           }
-          if(tmp_md->multidval.dim_sizes[i] == 1) {
-            num_degen_dims++;
-          }
+          if(tmp_md->multidval.dim_sizes[i] == 1) num_degen_dims++;
           i++;
         }
       }
@@ -469,13 +502,29 @@ NhlErrorTypes conform_dims_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"conform_dims: if the third argument is -1, then second argument must either be a scalar, an array of the same dimensionality as indicated by the first argument, or an array with singleton dimensions.");
       return(NhlFATAL);
     }
-    if(is_degen_array) {
+  }
+
+  /* If there are degenerate dimensions, then remove them from the input cnfrm_dims */
+  if(num_degen_dims > 0) {
+    if(cnfrm_dims[0] == -1) {
       dsizes_conform[0] = tmp_md->multidval.n_dims-num_degen_dims;
+      tmp_cnfrm_dims = (int*)NclMalloc(dsizes_conform[0]*sizeof(int));
       ic = 0;
       for(i = 0; i < tmp_md->multidval.n_dims; i++) {
-        if(tmp_md->multidval.dim_sizes[i] != 1) cnfrm_dims[ic++] = i;
+        if(tmp_md->multidval.dim_sizes[i] != 1) tmp_cnfrm_dims[ic++] = i;
       }
     }
+    else {
+      tmp_cnfrm_dims = (int*)NclMalloc((dsizes_conform[0]-num_degen_dims)*sizeof(int));
+      ic = 0;
+      for(i = 0; i < dsizes_conform[0]; i++) {
+        if(tmp_md->multidval.dim_sizes[i] != 1) tmp_cnfrm_dims[ic++] = cnfrm_dims[i];
+      }
+      dsizes_conform[0] = dsizes_conform[0]-num_degen_dims;
+    }
+  }
+  else {
+    tmp_cnfrm_dims = cnfrm_dims;
   }
 
   if(!is_scalar_array && !is_same_array) {
@@ -502,7 +551,7 @@ NhlErrorTypes conform_dims_W( void )
     }
     skip_c[dsizes_conform[0]-1] = 1;
     for(i = dsizes_conform[0]-2; i >= 0; i--) {
-      skip_c[i] = skip_c[i+1]*dsizes_x[cnfrm_dims[i+1]];
+      skip_c[i] = skip_c[i+1]*dsizes_x[tmp_cnfrm_dims[i+1]];
     }
     ndims  = ndims_x;
   }
@@ -545,7 +594,7 @@ NhlErrorTypes conform_dims_W( void )
       }
       conform_pos = 0;
       for(j = 0; j < dsizes_conform[0]; j++) {
-        conform_pos += indices[cnfrm_dims[j]] * skip_c[j];
+        conform_pos += indices[tmp_cnfrm_dims[j]] * skip_c[j];
       }
       memcpy((void*)((char*)conform + i*type_size),
              (void*)((char*)tmp_md->multidval.val + conform_pos*type_size),
@@ -575,6 +624,7 @@ NhlErrorTypes conform_dims_W( void )
     NclFree(indices);
     NclFree(skip_c);
   }
+  if(num_degen_dims > 0) NclFree(tmp_cnfrm_dims);
 
 /*
  * Return values.
