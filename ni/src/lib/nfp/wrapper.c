@@ -10265,6 +10265,11 @@ int arg_num, num_args;
   }
 }
 
+/*
+ * This function takes a void* variable that holds dimension sizes
+ * as bytes, shorts, integers, or longs, and returns the dimensions 
+ * as an ng_size_t array.
+ */
 ng_size_t *get_dimensions(void *tmp_dimensions,int n_dimensions,
                           NclBasicDataTypes type_dimensions, const char *name)
 {
