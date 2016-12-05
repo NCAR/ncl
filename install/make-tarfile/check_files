@@ -1881,6 +1881,7 @@ lib/ncarg/nclscripts/contrib/calendar_decode2.ncl
 lib/ncarg/nclscripts/contrib/cd_inv_string.ncl
 lib/ncarg/nclscripts/contrib/cd_string.ncl
 lib/ncarg/nclscripts/contrib/clmMonTXXX.ncl
+lib/ncarg/nclscripts/contrib/box_percentile_plot.ncl
 lib/ncarg/nclscripts/contrib/kf_filter.ncl
 lib/ncarg/nclscripts/contrib/nchoosek.ncl
 lib/ncarg/nclscripts/contrib/run_cor.ncl
