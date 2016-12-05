@@ -4361,10 +4361,10 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
 
     char prntln[NCL_INITIAL_STRING_LENGTH];
     char buffer[NCL_INITIAL_STRING_LENGTH];
-    char seperator[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
+    char separator[MAX_LIST_ELEMENT][MAX_PRINT_NAME_LENGTH];
 
     int nstart, length, remain;
-    int has_seperator[MAX_LIST_ELEMENT];
+    int has_separator[MAX_LIST_ELEMENT];
 
     length = 1 + strlen(fmtstr);
     tmp = (char*)NclCalloc(length, sizeof(char));
@@ -4386,11 +4386,6 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
     thevar = (NclVar)theobj;
     thelist = (NclList) theobj;
 
-  /*
-   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tprefix = <%s>\n", prefix);
-   */
-
     nelems = 0;
     memset(format, 0, MAX_LIST_ELEMENT * MAX_PRINT_NAME_LENGTH);
     result = strtok(tmp, "%");
@@ -4400,9 +4395,6 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
         {
             strcpy(format[nelems], "%");
             strcat(format[nelems], result);
-          /*
-           *fprintf(stderr, "\tformat[%d] = <%s>\n", nelems, format[nelems]);
-           */
         }
         else
         {
@@ -4437,10 +4429,6 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
                  else
                      strcpy(name[nelems], "unnamed");
 
-               /*
-                *fprintf(stderr,"\tVariable name: <%s>\n",name[nelems]);
-                */
-
                  thevalue = (NclMultiDValData)_NclGetObj(thevar->var.thevalue_id);
                  if(thevalue->obj.obj_type_mask & Ncl_MultiDValnclfileData)
                  {
@@ -4461,10 +4449,6 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
                  }
                  else if(thevalue->obj.obj_type_mask & Ncl_MultiDVallistData)
                  {
-                   /*
-                    *ret = _PrintListVarSummary((NclObj)thevalue,fp);
-                    */
-         
                      NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: can not print list in list yet.\n", "process_list");
                      return(NhlFATAL);
                  }
@@ -4475,35 +4459,26 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
                      if(thevalue != NULL)
                      {
                          type[nelems] = thevalue->multidval.data_type;
-                       /*
-                        *fprintf(stderr, "Type: %s\n",_NclBasicDataTypeToName(thevalue->multidval.data_type));
-                        *fprintf(stderr, "Total Size: %lld bytes\n",(long long)thevalue->multidval.totalsize);
-                        *fprintf(stderr, "            %lld values\n",(long long)thevalue->multidval.totalelements);
-                        */
                          if(thevalue->multidval.totalelements > maxlen)
                              maxlen = thevalue->multidval.totalelements;
                          size[nelems] = thevalue->multidval.totalelements;
          
-                       /*
-                        *fprintf(stderr, "\ttype[%d]: %s\n", nelems, _NclBasicDataTypeToName(type[nelems]));
-                        *fprintf(stderr, "\tsize[%d]: %d\n", nelems, size[nelems]);
-                        */
                      }
                  }
 
                  break;
             default:
                  fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
-                 fprintf(stderr, "\tUNRECOGANIZED cur_obj->obj.obj_type %d: %o\n", nelems, cur_obj->obj.obj_type);
+                 fprintf(stderr, "\tUNRECOGNIZED cur_obj->obj.obj_type %d: %o\n", nelems, cur_obj->obj.obj_type);
         }
 
-        has_seperator[nelems] = 0;
+        has_separator[nelems] = 0;
         length = strlen(format[nelems]) - 1;
 
         if(! isalpha(format[nelems][length]))
         {
-            has_seperator[nelems] = 1;
-            strcpy(seperator[nelems], format[nelems] + length);
+            has_separator[nelems] = 1;
+            strcpy(separator[nelems], format[nelems] + length);
         }
 
         step = step->next;
@@ -4513,10 +4488,10 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
     if(maxelems > 1)
     {
         nelems = maxelems - 2;
-        if(has_seperator[nelems])
+        if(has_separator[nelems])
         {
-            has_seperator[nelems + 1] = 1;
-            strcpy(seperator[nelems + 1], " ");
+            has_separator[nelems + 1] = 1;
+            strcpy(separator[nelems + 1], " ");
         }
     }
 
@@ -4526,11 +4501,8 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
 
     if(maxelems > truelems)
        maxelems = truelems;
-  /*
-   *fprintf(stderr, "\n\tmaxlen = %d\n", maxlen);
-   */
 
-  /*Print value of elements*/
+    /*Print value of elements*/
     if(! output)
     {
         for(nelems = 0; nelems < maxelems; ++nelems)
@@ -4646,12 +4618,18 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
                                  sprintf(buffer, format[nelems], *(cp + i));
                              }
                              break;
+                        case NCL_logical:
+                             {
+                                 logical *lp = (logical *) thevalue->multidval.val;
+                                 sprintf(buffer, format[nelems], (*(lp + i) ? "True" : "False"));
+                             }
+                             break;
                         default:
                              memset(buffer, ' ', ndvdl[nelems]);
                              buffer[ndvdl[nelems]] = '\0';
 
                              fprintf(stderr, "\tin file: %s, line: %d\n", __FILE__, __LINE__);
-                             fprintf(stderr, "\tUNRECOGANIZED thevalue->multidval.data_type 0x%o\n", thevalue->multidval.data_type);
+                             fprintf(stderr, "\tUNRECOGNIZED thevalue->multidval.data_type 0x%o\n", thevalue->multidval.data_type);
                     }
                 }
 
@@ -4660,7 +4638,7 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
                 if(length > ndvdl[nelems])
                     ndvdl[nelems] = length;
 
-                if(has_seperator[nelems])
+                if(has_separator[nelems])
                 {
                     strcat(prntln, buffer);
                     nstart += length;
@@ -4712,10 +4690,10 @@ NhlErrorTypes process_list(FILE *fp, obj *list_id, char *fmtstr, int *ndvdl, int
                 memset(buffer, ' ', ndvdl[nelems] + 1);
                 buffer[ndvdl[nelems]] = '\0';
 
-                if(has_seperator[nelems])
+                if(has_separator[nelems])
                 {
-                    buffer[ndvdl[nelems] - strlen(seperator[nelems])] = '\0';
-                    strcat(buffer, seperator[nelems]);
+                    buffer[ndvdl[nelems] - strlen(separator[nelems])] = '\0';
+                    strcat(buffer, separator[nelems]);
                 }
                 else
                     if(nelems)
