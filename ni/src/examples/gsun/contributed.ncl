@@ -15856,6 +15856,322 @@ begin
   
   return(hinfo(idx(0),1))  ; to the right of = sign
 end
+;--------------
+undef("coriolis_param")
+function coriolis_param(lat:numeric)
+; Coriolis Parameter 
+local rad, omega
+begin
+  if (typeof(lat).eq."double") then
+      omega = 7.292d-5                   ; (1/s)     ; earth ang rotation
+      rad   = get_d2r("double")          ; rad=4d0*atan(1d0)/180d0
+  else
+      omega = 7.292e-5         
+      rad   = get_d2r("float")           ; rad=4.0*atan(1.0)/180.0
+  end if
+
+  fcor  = 2*omega*sin(lat*rad)    
+  fcor@long_name = "Coriolis parameter"
+  fcor@units     = "1/s"
+  copy_VarCoords(lat, fcor)
+
+  return(fcor)
+end
+;--------------
+undef("wgt_vertical_n")
+function wgt_vertical_n (X:numeric, dp:numeric, iopt:integer, lev_dim[1]:integer)
+; 
+; Perform weighted vertical average (integral) or sum
+; 
+; Requirement: X must be in the following order: ([time,],lev,lat,lon)
+;
+; Nomenclature:
+; X         - array to be integrated. No missing data allowed
+; dp        - pressure thickness computed by "dpres_hybrid_ccm" or "dpres_plevel"
+;             Must be the same size/shape as X
+;             No missing data allowed.
+; iopt      - =0 weighted vertical average
+;             =1 weighted vertical sum
+;             =2 weighted vertical sum, vertical avg
+; lev_dim   - level dimension
+;             lev_dim = 0                            ; (lev), (0); (time,lev),  (0,1) 
+;                                                    ; (lev,lat,lon),  (0,1,2) 
+;             lev_dim = 1                            ; (time,lev,lat,lon), (0,1,2,3)
+;             lev_dim = 2                            ; (case,time,lev,lat,lon), (01,2,3,4)
+;+++++++++++++++++++++++
+; Usage for hybrid levels
+;        f = addfile("....", "r")
+;        hyai = f->hyai
+;        hybi = f->hybi
+;        p0   = f->P0                               ; p0=1000 or p0=100000
+;        ps   = f->PS
+;    
+;        dp   = dpres_hybrid_ccm (ps,p0,hyai,hybi)  ; Pa [kg/(m s2)]
+;--------------------
+; Usage for pressure levels
+;        f   = addfile("....", "r")
+;        lev = f->lev  ; (/  1,  2,  3,  5,   7, 10, 20, 30, \   ; hPa 
+;                           50, 70,100,150, 200,250,300,400, \
+;                          500,600,700,775, 850,925,1000 /)
+;                      ; uniys of lev and psfc must match
+;        psfc= f->PS   ; PA         (time,lat,lon)
+;        lev = lev*100 ; make PA to match psfc       
+;        lev@units = "PA"
+;
+;        ptop= 0       ; integrate 0==>psfc at each grid point
+;
+;                      ; dp(klev,nlat,mlon) or dp(ntim,klev,nlat,mlon)
+;        dp  = dpres_plevel(lev, psfc, ptop, 0)     ; Pa [kg/(m s2)]
+;--------------------
+; Use the 'dp' from above                           ; (  0 , 1 , 2 , 3 )
+;        t    = f->T                                ; (time,lev,lat,lon)
+;        xvi  = wgt_vert_n(t, dp,  0, 1)
+
+local dimX, dimDP, rankX, Xdp, vsum, wsum, vavg
+begin
+
+  dimX  = dimsizes( X )
+  dimDP = dimsizes( dp )
+  rankX = dimsizes( dimX )
+
+  if (.not.all(dimDP.eq.dimX) ) then  ; error check
+      print("wgt_vertical_n: dimension sizes are not equal")
+      print("wgt_vertical_n:  dimX="+dimX)
+      print("wgt_vertical_n: dimDP="+dimsizes(dp) )
+      exit
+  end if
+
+  if (isatt(X,"_FillValue") .and. any(ismissing(X)) ) then  ; error check
+      print("wgt_vertical_n: No _FillValue allowed")
+      print("wgt_vertical_n: X: nFill="+num(ismissing(X)))
+      exit
+  end if
+
+;;if (isatt(dp,"_FillValue") .and. any(ismissing(dp)) ) then  ; error check
+;;    print("wgt_vertical_n: No _FillValue allowed")
+;;    print("wgt_vertical_n: dp: nFill="+num(ismissing(dp)))
+;;    exit
+;;end if
+
+  Xdp  = X*dp                                ; [? kg/(m s2)]   (temporary variable)
+  copy_VarCoords(X, Xdp)
+
+  vsum = dim_sum_n_Wrap( Xdp, lev_dim )      ; sum vertically [ie integrate]
+  if (iopt.eq.1) then
+      return(vsum)
+  end if
+
+  wsum = dim_sum_n_Wrap( dp , lev_dim )      ;  "      " 
+  if (any(wsum.eq.0)) then
+      if (.not.isatt(wsum,"_FillValue")) then
+          wsum@_FillValue = default_fillvalue(typeof(wsum))
+      end if
+      wsum = where(wsum.eq.0, wsum@_FillValue, wsum)   ; avoid division by 0
+  end if
+      
+  vavg = vsum/wsum                           ; one less dimension (no vertical dim)
+  copy_VarMeta(vsum, vavg) 
+  vavg@NCL_op = "Weighted Vertical Average"
+
+  vsum@NCL_op = "Weighted Vertical Sum"
+  wsum@NCL_op = "Summed Weights"
+
+  if (iopt.eq.0) then
+      return(vavg)
+  end if
+
+  return([/ vavg, vsum, wsum /] )    ; iopt=2
+end
+;--------------------------------------------------------
+undef("dim_maxind")
+function dim_maxind(x, nDim[1]:integer)
+;
+; This is a modification of the original algorithmn posted to ncl-talk by
+; Dave Allured (NOAA Affilate): April, 2016
+;
+local dimx, rankx, N, xmax, nmsgx, dim_xmax, t, tr, mask1
+begin
+  dimx  = dimsizes(x)
+  rankx = dimsizes(dimx)
+
+  if (nDim.ne.0) then
+      print("dim_maxind: *** Currently nDim must be set to zero; nDim="+nDim)
+      return( new(dimx(1:), integer, -99) )
+  end if
+
+  if (rankx.gt.4) then
+      print("dim_maxind: *** Currently 1D, 2D, 3D, 4D are supported; rank="+rankx)
+      print("                This corresponds to the leftmost dimension.")
+      return( new(dimx(1:), integer, -99) )
+  end if
+
+  if (rankx.eq.1) then
+      ind_xmax           = maxind(x)
+      ind_xmax@long_name = "index of 1st  max value"
+      ind_xmax@tag       = "dim_maxind"
+      return(ind_xmax)
+  end if
+
+  N     = dimx(nDim)    ; size of the dimension corresponding to 'nDim'    
+
+  xmax     = dim_max_n_Wrap (x, nDim)
+  dim_xmax = dimsizes(xmax)
+  ind_xmax = new (dim_xmax, integer, -99 )
+
+
+  if (rankx.eq.2) then
+      do t = 1, N
+         tr = N-t
+         mask1    = (x(tr,:) .ge. xmax)
+         mask1    = where (ismissing(mask1), False, mask1)
+         ind_xmax = where (mask1, tr, ind_xmax)
+      end do
+  end if
+
+  if (rankx.eq.3) then
+      do t = 1, N
+         tr = N-t
+         mask1    = (x(tr,:,:) .ge. xmax)
+         mask1    = where (ismissing(mask1), False, mask1)
+         ind_xmax = where (mask1, tr, ind_xmax)
+      end do
+  end if
+
+  if (rankx.eq.4) then
+      do t = 1, N
+         tr = N-t
+         mask1    = (x(tr,:,:,:) .ge. xmax)
+         mask1    = where (ismissing(mask1), False, mask1)
+         ind_xmax = where (mask1, tr, ind_xmax)
+      end do
+  end if
+
+  copy_VarCoords(xmax, ind_xmax)
+  ind_xmax@long_name = "index of 1st  max value"
+  ind_xmax@tag       = "dim_maxind"
+
+  return(ind_xmax)
+end
+;--------------------------------------------------
+undef("dim_minind")
+function dim_minind(x, nDim[1]:integer)
+;
+; It is a modification of the original algorithmn posted to ncl-talk  
+; Dave Allured (NOAA Affilate): April, 2016
+;
+local dimx, rankx, N, xmin, dim_xmin, t, tr, mask1
+begin
+  dimx  = dimsizes(x)
+  rankx = dimsizes(dimx)
+
+  if (nDim.ne.0) then
+      print("dim_minind: *** Currently nDim must be set to zero; nDim="+nDim)
+      return( new(dimx(1:), integer, -99) )
+  end if
+
+  if (rankx.gt.4) then
+      print("dim_minind: *** Currently 1D, 2D, 3D, 4D are supported; rank="+rankx)
+      print("                This corresponds to the leftmost dimension.")
+      return( new(dimx(1:), integer, -99) )
+  end if
+
+  if (rankx.eq.1) then
+      ind_xmin           = minind(x)
+      ind_xmin@long_name = "index of 1st min value"
+      ind_xmin@tag       = "dim_minind"
+      return(ind_xmin)
+  end if
+
+  N     = dimx(nDim)    ; size of the dimension corresponding to 'nDim'    
+
+  xmin     = dim_min_n_Wrap (x, nDim)
+  dim_xmin = dimsizes(xmin)
+  ind_xmin = new (dim_xmin, integer, -99)
+
+  if (rankx.eq.2) then
+      do t = 1, N
+         tr = N-t
+         mask1    = (x(tr,:) .le. xmin)
+         mask1    = where (ismissing(mask1), False, mask1)
+         ind_xmin = where (mask1, tr, ind_xmin)
+      end do
+  end if
+
+  if (rankx.eq.3) then
+      do t = 1, N
+         tr = N-t
+         mask1    = (x(tr,:,:) .le. xmin)
+         mask1    = where (ismissing(mask1), False, mask1)
+         ind_xmin = where (mask1, tr, ind_xmin)
+      end do
+  end if
+
+  if (rankx.eq.4) then
+      do t = 1, N
+         tr = N-t
+         mask1    = (x(tr,:,:,:) .le. xmin)
+         mask1    = where (ismissing(mask1), False, mask1)
+         ind_xmin = where (mask1, tr, ind_xmin)
+      end do
+  end if
+
+  copy_VarCoords(xmin, ind_xmin)
+  ind_xmin@long_name = "index of 1st  min value"
+  ind_xmin@tag       = "dim_minind"
+
+  return(ind_xmin)
+end
+;--------------------------------------------------
+undef("cohsq_c2p")
+function cohsq_c2p(coher2:numeric, df:numeric)
+;
+; INPUT:
+; coher2 - coherence squared (0-1)
+; df     - degrees of freedom
+;
+; Dennis Hartmann
+; http://www.atmos.washington.edu/~dennis/552_Notes_6c.pdf
+;     See Table 6.2 , page 187 and the associated caption on page 186
+;
+; Paul Julian's paper
+; http://journals.ametsoc.org/doi/abs/10.1175/1520-0469%281975%29032%3C0836%3ACOTDOS%3E2.0.CO%3B2
+;
+begin
+                                                    ; df from FFT
+;;prob = 1.0-(1.0-coher2)^((df/2.0)-1.0)            ; Paul Julian 
+  prob = 1.0-(1.0-coher2)^( df     -1.0)            ; match Hartmann           
+
+  prob@long_name = "coherence squared probability"
+  prob@NCL_tag   = "cohsq_c2p: p=1-(1-coher_sq)^(df-1)"
+  copy_VarCoords(coher2, prob)
+  return(prob)
+end
+;--------------------------------------------------
+undef("cohsq_p2c")
+function cohsq_p2c(prob:numeric, df:numeric)
+; 
+; INPUT:
+; prob  - probability (0-1)
+; df    - degrees of freedom
+;
+; Dennis Hartmann
+; http://www.atmos.washington.edu/~dennis/552_Notes_6c.pdf
+;     See Table 6.2 , page 187 and the associated caption on page 186
+;
+; Paul Julian's paper
+; http://journals.ametsoc.org/doi/abs/10.1175/1520-0469%281975%29032%3C0836%3ACOTDOS%3E2.0.CO%3B2
+;
+begin
+                                                    ; df from FFT
+;;c2  =  1.-(1.-prob)^(1./((df/2.)-1.))             ; Paul Julian 
+  c2  =  1.-(1.-prob)^(1./( df    -1.))             ; match Hartmann
+
+  c2@long_name = "coherence-squared confidence level"
+  c2@NCL_tag   = "cohsq_p2c: coher_sq=1-(1-prob)^(1/(df-1))"
+  copy_VarCoords(prob, c2)
+  return(c2)
+end
+;--------------------------------------------------
 ;------------------------------
 undef("brunt_vaisala_atm")
 function brunt_vaisala_atm(th:numeric, z:numeric, opt[1]:integer, ndimz[1]:integer)
@@ -18480,321 +18796,3 @@ begin
   gradLatLon = [/ cgy, cgx /]   ; return two variables as a type 'list'
   return( gradLatLon )
 end
-; *****************************************************************
-; Calculate Coriolis parameter:set nonu
-; *****************************************************************
-undef("coriolis_param")
-function coriolis_param(lat:numeric)
-; Coriolis Parameter 
-local rad, omega
-begin
-  if (typeof(lat).eq."double") then
-      omega = 7.292d-5                   ; (1/s)     ; earth ang rotation
-      rad   = get_d2r("double")          ; rad=4d0*atan(1d0)/180d0
-  else
-      omega = 7.292e-5         
-      rad   = get_d2r("float")           ; rad=4.0*atan(1.0)/180.0
-  end if
-
-  fcor  = 2*omega*sin(lat*rad)    
-  fcor@long_name = "Coriolis parameter"
-  fcor@units     = "1/s"
-  copy_VarCoords(lat, fcor)
-
-  return(fcor)
-end
-;--------------
-undef("wgt_vertical_n")
-function wgt_vertical_n (X:numeric, dp:numeric, iopt:integer, lev_dim[1]:integer)
-; 
-; Perform weighted vertical average (integral) or sum
-; 
-; Requirement: X must be in the following order: ([time,],lev,lat,lon)
-;
-; Nomenclature:
-; X         - array to be integrated. No missing data allowed
-; dp        - pressure thickness computed by "dpres_hybrid_ccm" or "dpres_plevel"
-;             Must be the same size/shape as X
-;             No missing data allowed.
-; iopt      - =0 weighted vertical average
-;             =1 weighted vertical sum
-;             =2 weighted vertical sum, vertical avg
-; lev_dim   - level dimension
-;             lev_dim = 0                            ; (lev), (0); (time,lev),  (0,1) 
-;                                                    ; (lev,lat,lon),  (0,1,2) 
-;             lev_dim = 1                            ; (time,lev,lat,lon), (0,1,2,3)
-;             lev_dim = 2                            ; (case,time,lev,lat,lon), (01,2,3,4)
-;+++++++++++++++++++++++
-; Usage for hybrid levels
-;        f = addfile("....", "r")
-;        hyai = f->hyai
-;        hybi = f->hybi
-;        p0   = f->P0                               ; p0=1000 or p0=100000
-;        ps   = f->PS
-;    
-;        dp   = dpres_hybrid_ccm (ps,p0,hyai,hybi)  ; Pa [kg/(m s2)]
-;--------------------
-; Usage for pressure levels
-;        f   = addfile("....", "r")
-;        lev = f->lev  ; (/  1,  2,  3,  5,   7, 10, 20, 30, \   ; hPa 
-;                           50, 70,100,150, 200,250,300,400, \
-;                          500,600,700,775, 850,925,1000 /)
-;                      ; uniys of lev and psfc must match
-;        psfc= f->PS   ; PA         (time,lat,lon)
-;        lev = lev*100 ; make PA to match psfc       
-;        lev@units = "PA"
-;
-;        ptop= 0       ; integrate 0==>psfc at each grid point
-;
-;                      ; dp(klev,nlat,mlon) or dp(ntim,klev,nlat,mlon)
-;        dp  = dpres_plevel(lev, psfc, ptop, 0)     ; Pa [kg/(m s2)]
-;--------------------
-; Use the 'dp' from above                           ; (  0 , 1 , 2 , 3 )
-;        t    = f->T                                ; (time,lev,lat,lon)
-;        xvi  = wgt_vert_n(t, dp,  0, 1)
-
-local dimX, dimDP, rankX, Xdp, vsum, wsum, vavg
-begin
-
-  dimX  = dimsizes( X )
-  dimDP = dimsizes( dp )
-  rankX = dimsizes( dimX )
-
-  if (.not.all(dimDP.eq.dimX) ) then  ; error check
-      print("wgt_vertical_n: dimension sizes are not equal")
-      print("wgt_vertical_n:  dimX="+dimX)
-      print("wgt_vertical_n: dimDP="+dimsizes(dp) )
-      exit
-  end if
-
-  if (isatt(X,"_FillValue") .and. any(ismissing(X)) ) then  ; error check
-      print("wgt_vertical_n: No _FillValue allowed")
-      print("wgt_vertical_n: X: nFill="+num(ismissing(X)))
-      exit
-  end if
-
-;;if (isatt(dp,"_FillValue") .and. any(ismissing(dp)) ) then  ; error check
-;;    print("wgt_vertical_n: No _FillValue allowed")
-;;    print("wgt_vertical_n: dp: nFill="+num(ismissing(dp)))
-;;    exit
-;;end if
-
-  Xdp  = X*dp                                ; [? kg/(m s2)]   (temporary variable)
-  copy_VarCoords(X, Xdp)
-
-  vsum = dim_sum_n_Wrap( Xdp, lev_dim )      ; sum vertically [ie integrate]
-  if (iopt.eq.1) then
-      return(vsum)
-  end if
-
-  wsum = dim_sum_n_Wrap( dp , lev_dim )      ;  "      " 
-  if (any(wsum.eq.0)) then
-      if (.not.isatt(wsum,"_FillValue")) then
-          wsum@_FillValue = default_fillvalue(typeof(wsum))
-      end if
-      wsum = where(wsum.eq.0, wsum@_FillValue, wsum)   ; avoid division by 0
-  end if
-      
-  vavg = vsum/wsum                           ; one less dimension (no vertical dim)
-  copy_VarMeta(vsum, vavg) 
-  vavg@NCL_op = "Weighted Vertical Average"
-
-  vsum@NCL_op = "Weighted Vertical Sum"
-  wsum@NCL_op = "Summed Weights"
-
-  if (iopt.eq.0) then
-      return(vavg)
-  end if
-
-  return([/ vavg, vsum, wsum /] )    ; iopt=2
-end
-;--------------------------------------------------------
-undef("dim_maxind")
-function dim_maxind(x, nDim[1]:integer)
-;
-; This is a modification of the original algorithmn posted to ncl-talk by
-; Dave Allured (NOAA Affilate): April, 2016
-;
-local dimx, rankx, N, xmax, nmsgx, dim_xmax, t, tr, mask1
-begin
-  dimx  = dimsizes(x)
-  rankx = dimsizes(dimx)
-
-  if (nDim.ne.0) then
-      print("dim_maxind: *** Currently nDim must be set to zero; nDim="+nDim)
-      return( new(dimx(1:), integer, -99) )
-  end if
-
-  if (rankx.gt.4) then
-      print("dim_maxind: *** Currently 1D, 2D, 3D, 4D are supported; rank="+rankx)
-      print("                This corresponds to the leftmost dimension.")
-      return( new(dimx(1:), integer, -99) )
-  end if
-
-  if (rankx.eq.1) then
-      ind_xmax           = maxind(x)
-      ind_xmax@long_name = "index of 1st  max value"
-      ind_xmax@tag       = "dim_maxind"
-      return(ind_xmax)
-  end if
-
-  N     = dimx(nDim)    ; size of the dimension corresponding to 'nDim'    
-
-  xmax     = dim_max_n_Wrap (x, nDim)
-  dim_xmax = dimsizes(xmax)
-  ind_xmax = new (dim_xmax, integer, -99 )
-
-
-  if (rankx.eq.2) then
-      do t = 1, N
-         tr = N-t
-         mask1    = (x(tr,:) .ge. xmax)
-         mask1    = where (ismissing(mask1), False, mask1)
-         ind_xmax = where (mask1, tr, ind_xmax)
-      end do
-  end if
-
-  if (rankx.eq.3) then
-      do t = 1, N
-         tr = N-t
-         mask1    = (x(tr,:,:) .ge. xmax)
-         mask1    = where (ismissing(mask1), False, mask1)
-         ind_xmax = where (mask1, tr, ind_xmax)
-      end do
-  end if
-
-  if (rankx.eq.4) then
-      do t = 1, N
-         tr = N-t
-         mask1    = (x(tr,:,:,:) .ge. xmax)
-         mask1    = where (ismissing(mask1), False, mask1)
-         ind_xmax = where (mask1, tr, ind_xmax)
-      end do
-  end if
-
-  copy_VarCoords(xmax, ind_xmax)
-  ind_xmax@long_name = "index of 1st  max value"
-  ind_xmax@tag       = "dim_maxind"
-
-  return(ind_xmax)
-end
-;--------------------------------------------------
-undef("dim_minind")
-function dim_minind(x, nDim[1]:integer)
-;
-; It is a modification of the original algorithmn posted to ncl-talk  
-; Dave Allured (NOAA Affilate): April, 2016
-;
-local dimx, rankx, N, xmin, dim_xmin, t, tr, mask1
-begin
-  dimx  = dimsizes(x)
-  rankx = dimsizes(dimx)
-
-  if (nDim.ne.0) then
-      print("dim_minind: *** Currently nDim must be set to zero; nDim="+nDim)
-      return( new(dimx(1:), integer, -99) )
-  end if
-
-  if (rankx.gt.4) then
-      print("dim_minind: *** Currently 1D, 2D, 3D, 4D are supported; rank="+rankx)
-      print("                This corresponds to the leftmost dimension.")
-      return( new(dimx(1:), integer, -99) )
-  end if
-
-  if (rankx.eq.1) then
-      ind_xmin           = minind(x)
-      ind_xmin@long_name = "index of 1st min value"
-      ind_xmin@tag       = "dim_minind"
-      return(ind_xmin)
-  end if
-
-  N     = dimx(nDim)    ; size of the dimension corresponding to 'nDim'    
-
-  xmin     = dim_min_n_Wrap (x, nDim)
-  dim_xmin = dimsizes(xmin)
-  ind_xmin = new (dim_xmin, integer, -99)
-
-  if (rankx.eq.2) then
-      do t = 1, N
-         tr = N-t
-         mask1    = (x(tr,:) .le. xmin)
-         mask1    = where (ismissing(mask1), False, mask1)
-         ind_xmin = where (mask1, tr, ind_xmin)
-      end do
-  end if
-
-  if (rankx.eq.3) then
-      do t = 1, N
-         tr = N-t
-         mask1    = (x(tr,:,:) .le. xmin)
-         mask1    = where (ismissing(mask1), False, mask1)
-         ind_xmin = where (mask1, tr, ind_xmin)
-      end do
-  end if
-
-  if (rankx.eq.4) then
-      do t = 1, N
-         tr = N-t
-         mask1    = (x(tr,:,:,:) .le. xmin)
-         mask1    = where (ismissing(mask1), False, mask1)
-         ind_xmin = where (mask1, tr, ind_xmin)
-      end do
-  end if
-
-  copy_VarCoords(xmin, ind_xmin)
-  ind_xmin@long_name = "index of 1st  min value"
-  ind_xmin@tag       = "dim_minind"
-
-  return(ind_xmin)
-end
-;--------------------------------------------------
-undef("cohsq_c2p")
-function cohsq_c2p(coher2:numeric, df:numeric)
-;
-; INPUT:
-; coher2 - coherence squared (0-1)
-; df     - degrees of freedom
-;
-; Dennis Hartmann
-; http://www.atmos.washington.edu/~dennis/552_Notes_6c.pdf
-;     See Table 6.2 , page 187 and the associated caption on page 186
-;
-; Paul Julian's paper
-; http://journals.ametsoc.org/doi/abs/10.1175/1520-0469%281975%29032%3C0836%3ACOTDOS%3E2.0.CO%3B2
-;
-begin
-                                                    ; df from FFT
-;;prob = 1.0-(1.0-coher2)^((df/2.0)-1.0)            ; Paul Julian 
-  prob = 1.0-(1.0-coher2)^( df     -1.0)            ; match Hartmann           
-
-  prob@long_name = "coherence squared probability"
-  prob@NCL_tag   = "cohsq_c2p: p=1-(1-coher_sq)^(df-1)"
-  copy_VarCoords(coher2, prob)
-  return(prob)
-end
-;--------------------------------------------------
-undef("cohsq_p2c")
-function cohsq_p2c(prob:numeric, df:numeric)
-; 
-; INPUT:
-; prob  - probability (0-1)
-; df    - degrees of freedom
-;
-; Dennis Hartmann
-; http://www.atmos.washington.edu/~dennis/552_Notes_6c.pdf
-;     See Table 6.2 , page 187 and the associated caption on page 186
-;
-; Paul Julian's paper
-; http://journals.ametsoc.org/doi/abs/10.1175/1520-0469%281975%29032%3C0836%3ACOTDOS%3E2.0.CO%3B2
-;
-begin
-                                                    ; df from FFT
-;;c2  =  1.-(1.-prob)^(1./((df/2.)-1.))             ; Paul Julian 
-  c2  =  1.-(1.-prob)^(1./( df    -1.))             ; match Hartmann
-
-  c2@long_name = "coherence-squared confidence level"
-  c2@NCL_tag   = "cohsq_p2c: coher_sq=1-(1-prob)^(1/(df-1))"
-  copy_VarCoords(prob, c2)
-  return(c2)
-end
-;--------------------------------------------------
