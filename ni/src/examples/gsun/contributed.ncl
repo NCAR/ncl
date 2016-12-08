@@ -16869,15 +16869,18 @@ function epflux4(U[*][*][*][*]:numeric, V[*][*][*][*]:numeric \
 ; Reference:
 ; Edmon, H.J., B.J. Hoskins,and M.E. McIntyre,1980:
 ; Eliassen-Palm cross sections for the troposphere.
-; J.  
-; Atmos. Sci., 37:2600–2616
+; J. Atmos. Sci., 37:2600–2616
 ;********************************************************
 ; local not required
 local PLVL, P0, LAT, a, PI, phi, cphi, acphi, asphi, omega, latfac   \
     , THETA, THEATp, THETAptm, THETAza, Uza, Vza, UV, UVzm, UVzmtm   \
     , Fphi, Fp, dudt, EPdiv, EPdiv1, EPdiv2, EPdiv \
-    , rhofac, strat1, stratmask
+    , rhofac, strat1, stratmask, print_var_info
 begin
+  print_var_info = False
+  if (opt .and. isatt(opt,"print_var_info")) then
+      print_var_info = True
+  end if
 
 ;---Dimension sizes
 
@@ -16891,45 +16894,57 @@ begin
   
   PLVL = plvl
   if (max(plvl).lt.2000) then                 ; must be hPa
-      PLVL = plvl*100
+      PLVL = PLVL*100                         ; make local be Pa
   end if
   logPLVL = log(PLVL)                         ; used below
-  P0      = 100000                            ; "Pa"
+  P0      = 100000                            ; "Pa", reference
 
 ;---LAT is a local version of 'lat'. 
 ;   Get around any pole singularity: ie., avoid dividing by cos(90)=0.0 
 ;   Set abs(LAT)=90 to _FillValue
 
   LAT = lat
-  LAT@_FillValue = 1e20                       ; any out-of-range value will do
+  LAT@_FillValue = totype(1e20,typeof(LAT))   ; any out-of-range value will do
   LAT = where(abs(LAT).eq.90, LAT@_FillValue, LAT) 
   
 ;---Constants & quantities needed
  
   a     = 6.37122e06       ; radius of the earth (m)
-  PI    = 3.14159          ; 3.14159265358979
+  PI    = get_pi(U)        ; same type as 'U'
   omega = 7.2921e-5   
 
   phi   = LAT*PI/180.0     ; latitude in radians
   cphi  = cos(phi)
   acphi = a*cphi             
-  asphi = a*sin(phi)       ; a* sin latitude for use in calculating the divergence.
+  asphi = a*sin(phi)       ; a*sin latitude for use in calculating the divergence.
   f     = 2*omega*sin(phi) ; coriolis parameter
   
-  latfac= acphi*cphi       ; scale factor includes extra cos(phi) for graphical display of arrows 
+  latfac= acphi*cphi       ; scale factor includes extra cos(phi) 
+                           ; for graphical display of arrows 
                            ; see Edmon et al, 1980
-
 ;---Compute theta (degK)
 
  ;THETA   = T*(conform(T,PLVL,1)/P0)^(-0.286) ; (time,lev,lat,lon)
   THETA   = T*(P0/conform(T,PLVL,1))^( 0.286) ; (time,lev,lat,lon)
   THETA@long_name = "potential temperature"
   THETA@units     = "degK"
+  copy_VarCoords(T, THETA)
+  if (print_var_info) then
+      printVarSummary(THETA)
+      printMinMax(THETA,0)
+      print("~~~")
+  end if
+
 
 ;---Zonal mean (zm) THEATA
 
   THETAzm = dim_avg_n_Wrap(THETA, 3)          ; (time,lev,lat) => (0,1,2)
   THETAzm@long_name = "zonal mean potential temperature"
+  if (print_var_info) then
+      printVarSummary(THETAzm)
+      printMinMax(THETAzm,0)
+      print("~~~")
+  end if
   
 ;---d(THETAzm)/d(log(p))                      ; p<==>plvl
 
@@ -16937,14 +16952,30 @@ begin
   THETAp@long_name = "d(THETAzm)/d[log(p)]"
   THETAp@units     = "degK/hPa"
   copy_VarCoords(THETAzm, THETAp)
+  if (print_var_info) then
+      printVarSummary(THETAp)
+      printMinMax(THETAp,0)
+      print("~~~")
+  end if
                                              
-;---Compute (1/p)*[d(THETA)/d(log(p)]
+;---Compute (1/p)*THETAp = THETAp/p 
 
   THETAp   = THETAp/conform(THETAp,PLVL,1)    ; broadcast PLVL to all other dimensions
+  THETAp@long_name = "THETAp/plvl"
+  if (print_var_info) then
+      printVarSummary(THETAp)
+      printMinMax(THETAp,0)
+      print("~~~")
+  end if
 
 ;---Compute time average of THETAp
 
   THETAptm = dim_avg_n_Wrap(THETAp,0)         ; (lev,lat,lon)
+  if (print_var_info) then
+      printVarSummary(THETAptm)
+      printMinMax(THETAptm,0)
+      print("~~~")
+  end if
 
 ;---Zonal mean wind component anomalies (za)
   
@@ -16954,30 +16985,73 @@ begin
   THETAza@long_name = "THETA zonal anomaly"
   Vza@long_name     = "V meridional anomaly"                    
   Uza@long_name     = "U zonal anomaly U"                    
+  if (print_var_info) then
+      printVarSummary(Uza)
+      printMinMax(Uza,0)
+      print("~~~")
+      printVarSummary(Vza)
+      printMinMax(Vza,0)
+      print("~~~")
+      printVarSummary(THETAza)
+      printMinMax(THETAza,0)
+      print("~~~")
+  end if
 
 ;---Anomaly products
   
   UV       = Uza*Vza                          ; (time,lev,lat,lon)
   UV@long_name = "Uza*Vza: U'V'"
   UV@units = "m2/s2"
+  copy_VarCoords(U,UV)
+  if (print_var_info) then
+      printVarSummary(UV)
+      printMinMax(UV,0)
+      print("~~~")
+  end if
 
   VTHETA  = Vza*THETAza                       ; (time,lev,lat,lon)
   VTHETA@long_name = "Vza*THETAza"
   VTHETA@units     = "degK-m/s"
+  copy_VarCoords(V,VTHETA)
+  if (print_var_info) then
+      printVarSummary(VTHETA)
+      printMinMax(VTHETA,0)
+      print("~~~")
+  end if
 
 ;---Zonal (zm) & time (tm) means of UV & VTHETA 
 
   UVzm    = dim_avg_n_Wrap(UV  ,3)            ; (time,lev,lat)
   UVzm@long_name   = "zonal mean UV"
+  if (print_var_info) then
+      printVarSummary(UVzm)
+      printMinMax(UVzm,0)
+      print("~~~")
+  end if
 
   UVzmtm  = dim_avg_n_Wrap(UVzm,0)            ; (lev,lat) 
   UVzmtm@long_name = "time mean of zonal mean UV"
+  if (print_var_info) then
+      printVarSummary(UVzmtm)
+      printMinMax(UVzmtm,0)
+      print("~~~")
+  end if
   
   VTHETAzm   = dim_avg_n_Wrap(VTHETA  ,3)     ; (time,lev,lat)
   VTHETAzm@long_name   = "zonal mean UV"
+  if (print_var_info) then
+      printVarSummary(VTHETAzm)
+      printMinMax(VTHETAzm,0)
+      print("~~~")
+  end if
 
   VTHETAzmtm = dim_avg_n_Wrap(VTHETAzm,0)     ; (lev,lat)
   VTHETAzmtm@long_name = "time mean of zonal mean UV"
+  if (print_var_info) then
+      printVarSummary(VTHETAzmtm)
+      printMinMax(VTHETAzmtm,0)
+      print("~~~")
+  end if
 
 ;---EP flux meridional and vertical compoments
   
@@ -16987,16 +17061,37 @@ begin
   Fp@long_name   = "(VTHETAzmtm/THETAptm): vertical component of EP flux"
   copy_VarCoords(UVzmtm    ,Fphi)
   copy_VarCoords(VTHETAzmtm,Fp)
+  if (print_var_info) then
+      printVarSummary(Fphi)
+      printMinMax(Fphi,0)
+      print("~~~")
+      printVarSummary(Fp)
+      printMinMax(Fp,0)
+      print("~~~")
+  end if
 
 ;---EP Flux Divergence
 ;   Derivative w.r.t latitude  using  1/[a cos(phi)]  d/dphi [cos(phi)*X] =  d/d [asin(phi)] Fphi
 ;   Note: Fphi already has the extra factor of cos(phi)
 
-  EPdiv1  = center_finite_diff_n(Fphi,asphi,False,0,1)  ; Meridional divergence
-  EPdiv2  = center_finite_diff_n(Fp,PLVL,False,0,0)     ; Vertical divergence
-  EPdiv  = EPdiv1 + EPdiv2                              ; Add components
+  EPdiv1 = center_finite_diff_n(Fphi,asphi,False,0,1)  
+  EPdiv1@long_name = "Meridional divergence"
+
+  EPdiv2 = center_finite_diff_n(Fp,PLVL,False,0,0)    
+  EPdiv2@long_name = "Vertical divergence"
+
+  EPdiv  = EPdiv1 + EPdiv2                             ; Add components
   EPdiv@long_name   = "EP flux divergence"
   copy_VarCoords(Fp, EPdiv)
+  if (print_var_info) then
+      printMinMax(EPdiv1,0)
+      print("~~~")
+      printMinMax(EPdiv2,0)
+      print("~~~")
+      printVarSummary(EPdiv)
+      printMinMax(EPdiv,0)
+      print("~~~")
+  end if
   delete( [/EPdiv1, EPdiv2 /])
   
 ;---Compute acceleration from div(F):   
@@ -17006,6 +17101,11 @@ begin
   dudt@long_name = "acceleration from EP flux divergence"
   dudt@units     = "m/s2"
   copy_VarCoords(EPdiv,dudt)
+  if (print_var_info) then
+      printVarSummary(dudt)
+      printMinMax(dudt,0)
+      print("~~~")
+  end if
 
 ;---Optional return (opt@raw=True)
 
@@ -17026,7 +17126,7 @@ begin
   Fp   = Fp/P0                      ; Fp/1.0e5
   Fphi = Fphi/PI
 
-;---Option: scale by sqrt(presure)
+;---Option: scale by sqrt(pressure)
 
   if (opt .and. isatt(opt, "scale_sqrt_p") .and. .not.opt@scale_sqrt_p) then
       scale_by_sqrt_p = 0               ; not used
@@ -17082,9 +17182,17 @@ begin
       U4   = new( (/ntim,klvl,nlat,mlon/), typeof(U), getFillValue(U)) 
       V4   = new( (/ntim,klvl,nlat,mlon/), typeof(V), getFillValue(V)) 
       T4   = new( (/ntim,klvl,nlat,mlon/), typeof(T), getFillValue(T)) 
-      U4(0,:,:,:) = U 
-      V4(0,:,:,:) = V 
-      T4(0,:,:,:) = T 
+      U4(0:0,:,:,:) = U 
+      V4(0:0,:,:,:) = V 
+      T4(0:0,:,:,:) = T 
+                          ; the following is *not* necessary but ....
+      U4!0 = "time_dumy"    
+      V4!0 = "time_dumy"
+      T4!0 = "time_dumy"
+      U4&time_dumy = 0
+      V4&time_dumy = 0
+      T4&time_dumy = 0
+
       epflx = epflux4(U4,V4,T4,plvl,lat,opt)
   end if
 
