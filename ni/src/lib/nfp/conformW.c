@@ -582,9 +582,6 @@ NhlErrorTypes conform_dims_W( void )
   * with the degenerate dimensions removed.
   */
     if(conform_indexes[0] == -1) {
-      printf("dims is -1\n");
-      printf("before num_conform_indexes = %ld\n", num_conform_indexes);
-      printf("num_degen = %d\n", num_degen_dims);
       num_conform_indexes = tmp_md->multidval.n_dims-num_degen_dims;
       tmp_conform_indexes = (int*)NclMalloc(num_conform_indexes*sizeof(int));
       ic = 0;

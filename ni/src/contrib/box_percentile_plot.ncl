@@ -21,7 +21,7 @@
 ; function to calculate percentile values
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Carl Schreck (carl@cicsnc.org)
-undef ( "percent_to_value" )
+undef("percent_to_value")
 function percent_to_value( \
   i_data           : numeric, \
   i_percentiles[*] : numeric  \
@@ -69,6 +69,7 @@ end ; percent_to_value
 ; changes towards a core functionality
 ;    Frank Kreienkamp 2015-08-26 
 ;
+undef("Boxplot_Core")
 function Boxplot_Core (wks:graphic,x[*]:numeric,y[*][*]:numeric,boxOpts:logical,plotres:logical,lineres:logical)
 ;
 ;    This function creates a blank linLog plot object, on which box plots are created by extensive
@@ -208,7 +209,7 @@ end ; function Boxplot_Core
 ;     Carl Schreck (carl@cicsnc.org)
 ;     February 2012
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-undef ( "box_percentile_plot" )
+undef("box_percentile_plot")
 function box_percentile_plot( \\
   io_wks          : graphic, \\
   i_data          : numeric, \\
@@ -217,7 +218,7 @@ function box_percentile_plot( \\
   i_lineRes       : logical, \\
   i_markerRes     : logical, \\
   i_PerRes        : logical)
-local None
+local res, minData, maxdata, nice, dims, ndims, boxData 
 begin
 
   res = i_res
