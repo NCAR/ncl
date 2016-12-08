@@ -101,7 +101,8 @@ extern void set_subset_output_missing(void *,ng_size_t,NclBasicDataTypes,ng_size
 extern void set_subset_output_missing_step(void *,ng_size_t,ng_size_t,NclBasicDataTypes,
 					   ng_size_t,double);
 
-extern int is_scalar(int,ng_size_t*);
+extern logical is_scalar(int,ng_size_t*);
+extern logical is_scalar_array(int,ng_size_t*);
 
 
 extern void compute_nlatnlon(ng_size_t *, int, ng_size_t *, ng_size_t *,

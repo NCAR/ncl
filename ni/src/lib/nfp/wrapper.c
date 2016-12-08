@@ -9492,19 +9492,31 @@ NclScalar         *missing_dx
  * Checks if a variable is a scalar or not.
  * Returns 1 if it is, and a 0 if it isn't.
  */
-int is_scalar(
+logical is_scalar(
 int        ndims_x,
 ng_size_t *dsizes_x
 )
 {
-  int is_scalar;
-  if(ndims_x == 1 && dsizes_x[0] == 1) {
-    is_scalar = 1;
+  if(ndims_x == 1 && dsizes_x[0] == 1) return(True);
+  return(False);
+}
+
+
+/*
+ * Checks if a variable is a scalar or an array 
+ * of all degenerate dimensions, i.e. 1 x 1 x 2.
+ * Returns 1 if it is, and a 0 if it isn't.
+ */
+logical is_scalar_array(
+int        ndims_x,
+ng_size_t *dsizes_x
+)
+{
+  int i = 0;
+  while(i < ndims_x) {
+    if(dsizes_x[i++] != 1) return(False);
   }
-  else {
-    is_scalar = 0;
-  }
-  return(is_scalar);
+  return(True);
 }
 
 
@@ -10197,7 +10209,7 @@ ng_size_t         size_x
   typeclass_x  = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_x)));
   typeclass_xi = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(NCL_int)));
   for( i = 0; i < size_x; i++ ) _NclScalarForcedCoerce(x + (index_x+i)*typeclass_x->type_class.size,type_x,
-						       (void*)tmp_x + i*typeclass_xi->type_class.size,NCL_int);
+                                                       (void*)tmp_x + i*typeclass_xi->type_class.size,NCL_int);
 }
 
 /*
@@ -10216,7 +10228,7 @@ ng_size_t         size_x
   typeclass_x  = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_x)));
   typeclass_xl = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(NCL_long)));
   for( i = 0; i < size_x; i++ ) _NclScalarForcedCoerce(x + (index_x+i)*typeclass_x->type_class.size,type_x,
-						       (void*)tmp_x + i*typeclass_xl->type_class.size,NCL_long);
+                                                       (void*)tmp_x + i*typeclass_xl->type_class.size,NCL_long);
 }
 
 /*
@@ -10235,7 +10247,7 @@ ng_size_t         size_x
   typeclass_x  = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_x)));
   typeclass_xs = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(NCL_short)));
   for( i = 0; i < size_x; i++ ) _NclScalarForcedCoerce(x + (index_x+i)*typeclass_x->type_class.size,type_x,
-						       (void*)tmp_x + i*typeclass_xs->type_class.size,NCL_short);
+                                                       (void*)tmp_x + i*typeclass_xs->type_class.size,NCL_short);
 }
 
 /*
