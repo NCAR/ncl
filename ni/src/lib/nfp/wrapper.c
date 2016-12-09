@@ -10208,8 +10208,8 @@ ng_size_t         size_x
   NclTypeClass typeclass_x, typeclass_xi;
   typeclass_x  = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_x)));
   typeclass_xi = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(NCL_int)));
-  for( i = 0; i < size_x; i++ ) _NclScalarForcedCoerce(x + (index_x+i)*typeclass_x->type_class.size,type_x,
-                                                       (void*)tmp_x + i*typeclass_xi->type_class.size,NCL_int);
+  for( i = 0; i < size_x; i++ ) _NclScalarForcedCoerce((char*)x + (index_x+i)*typeclass_x->type_class.size,type_x,
+                                                       (char*)tmp_x + i*typeclass_xi->type_class.size,NCL_int);
 }
 
 /*
@@ -10227,8 +10227,8 @@ ng_size_t         size_x
   NclTypeClass typeclass_x, typeclass_xl;
   typeclass_x  = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_x)));
   typeclass_xl = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(NCL_long)));
-  for( i = 0; i < size_x; i++ ) _NclScalarForcedCoerce(x + (index_x+i)*typeclass_x->type_class.size,type_x,
-                                                       (void*)tmp_x + i*typeclass_xl->type_class.size,NCL_long);
+  for( i = 0; i < size_x; i++ ) _NclScalarForcedCoerce((char*)x + (index_x+i)*typeclass_x->type_class.size,type_x,
+                                                       (char*)tmp_x + i*typeclass_xl->type_class.size,NCL_long);
 }
 
 /*
@@ -10246,8 +10246,8 @@ ng_size_t         size_x
   NclTypeClass typeclass_x, typeclass_xs;
   typeclass_x  = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_x)));
   typeclass_xs = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(NCL_short)));
-  for( i = 0; i < size_x; i++ ) _NclScalarForcedCoerce(x + (index_x+i)*typeclass_x->type_class.size,type_x,
-                                                       (void*)tmp_x + i*typeclass_xs->type_class.size,NCL_short);
+  for( i = 0; i < size_x; i++ ) _NclScalarForcedCoerce((char*)x + (index_x+i)*typeclass_x->type_class.size,type_x,
+                                                       (char*)tmp_x + i*typeclass_xs->type_class.size,NCL_short);
 }
 
 /*
