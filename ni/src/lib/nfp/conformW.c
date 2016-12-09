@@ -62,6 +62,7 @@ NhlErrorTypes conform_W( void )
  */
   void *conform;
   int ndims;
+  NclScalar missing_conform;
 /*
  * various
  */
@@ -96,7 +97,7 @@ NhlErrorTypes conform_W( void )
     tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
     break;
   case NclStk_VAL:
-    tmp_md = (NclMultiDValData)data.u.data_obj;
+    tmp_md = data.u.data_obj;
     break;
   default:
     NhlPError(NhlFATAL,NhlEUNKNOWN,"conform: invalid first input argument.");
@@ -374,8 +375,8 @@ NhlErrorTypes conform_W( void )
  * Return values.
  */
   if(tmp_md->multidval.missing_value.has_missing) {
-    ret = NclReturnValue(conform,ndims,dsizes_x,
-                         &tmp_md->multidval.missing_value.value,
+    missing_conform = tmp_md->multidval.missing_value.value;
+    ret = NclReturnValue(conform,ndims,dsizes_x,&missing_conform,
                          tmp_md->multidval.data_type,0);
   }
   else {
@@ -411,6 +412,7 @@ NhlErrorTypes conform_dims_W( void )
  */
   void *conform;
   int ndims;
+  NclScalar missing_conform;
 /*
  * various
  */
@@ -728,8 +730,8 @@ NhlErrorTypes conform_dims_W( void )
  * Return values.
  */
   if(tmp_md->multidval.missing_value.has_missing) {
-    ret = NclReturnValue(conform,ndims,dsizes_x,
-                         &tmp_md->multidval.missing_value.value,
+    missing_conform = tmp_md->multidval.missing_value.value;
+    ret = NclReturnValue(conform,ndims,dsizes_x,&missing_conform,
                          tmp_md->multidval.data_type,0);
   }
   else {
@@ -787,6 +789,7 @@ NhlErrorTypes reshape_W( void )
   void *xreshape;
   int ndims_xreshape;
   ng_size_t *dsizes_xreshape;
+  NclScalar missing_xreshape;
 
 /*
  * various
@@ -923,10 +926,9 @@ NhlErrorTypes reshape_W( void )
  * Return values.
  */
   if(tmp_md->multidval.missing_value.has_missing) {
-    ret = NclReturnValue(xreshape,ndims_xreshape,
-                         dsizes_xreshape,
-                         &tmp_md->multidval.missing_value.value,
-                         tmp_md->multidval.data_type,0);
+    missing_xreshape = tmp_md->multidval.missing_value.value;
+    ret = NclReturnValue(xreshape,ndims_xreshape,dsizes_xreshape,
+                         &missing_xreshape,tmp_md->multidval.data_type,0);
   }
   else {
     ret = NclReturnValue(xreshape,ndims_xreshape,dsizes_xreshape,
