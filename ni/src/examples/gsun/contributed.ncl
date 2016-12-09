@@ -4579,7 +4579,6 @@ begin
 end
 
 ; =====================================
-undef("clmDayHr")
 ;
 ; Calculate daily  temporal means.
 ; This is a more general form of clmDayTLL
@@ -4589,6 +4588,7 @@ undef("clmDayHr")
 ; It has not been extensively tested and it is not documented.
 ; Consider this unsupported at this time.
 ;
+undef("clmDayHr")
 function clmDayHr(z:numeric, yyyymmddhh[*]:integer)
 begin
   yyyy = yyyymmddhh/1000000
