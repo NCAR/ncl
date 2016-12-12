@@ -10,9 +10,12 @@ C                                                ! output
 C NCLEND
 c     dpres = dpres_plevel(plevel, psfc, ptop, iopt)
 c
-      integer nt, ml, nl, kl, jer 
+      integer nt, ml, nl, kl, jer, kloop 
       double precision  dplvl(klvl)
 cdebugdouble precision  dpsum, pdif   
+
+      kflag = 0
+      kloop = -999
 
 c loop over all grid points
 
@@ -23,7 +26,10 @@ c loop over all grid points
 c calculate vertical 'dp' at current grid point
 
              call dpres1d(klvl,plevel,psfc(ml,nl,nt),pmsg
-     +                    ,ptop,dplvl,iopt,kflag,ier)
+     +                    ,ptop,dplvl,iopt,kloop,ier)
+             if (kloop.eq.1) then
+                 kflag = 1
+             end if
 
 c transfer to return array
 
