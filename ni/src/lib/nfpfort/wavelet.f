@@ -321,7 +321,7 @@ C whatsoever.
       DOUBLE PRECISION ymean,yvar,freq1,pi,period1,coi1
 
 C** initialize work arrays
-      PARAMETER (nk=65535)
+      PARAMETER (nk=2097151)
       DOUBLE PRECISION wsave(4*nk+15),kwave(nk)
       DOUBLE COMPLEX yfft(nk),daughter(nk)
 
