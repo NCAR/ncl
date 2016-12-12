@@ -18,6 +18,9 @@ extern int cuErrOpts;
 
 extern int day_of_year(int, int, int, const char*);
 extern int seconds_in_year(int, const char *);
+extern double fraction_of_year (int year, int month, int day, 
+                                int hour, int minute, double second,
+				const char *calendar);
 
 extern void set_all_missing(void *dt, ng_size_t total_size, 
                             NclScalar missing, NclBasicDataTypes typd_dt);
@@ -37,12 +40,6 @@ NhlErrorTypes cd_calendar_W( void )
   int has_missing_x;
   NclScalar missing_x, missing_dx;
   NclBasicDataTypes type_x;
-/* 
- * Variables for calculating fraction of year,  if the option is 4.
- */
-  int doy, nsid, total_seconds_in_year, seconds_in_doy, seconds_in_hour;
-  int seconds_in_minute; 
-  double current_seconds_in_year, fraction_of_year;
 
 /*
  * Variables for retrieving attributes from the first argument.
@@ -322,6 +319,7 @@ NhlErrorTypes cd_calendar_W( void )
  * above are calculated from the fractional part of the hour.
  */
       hour  = (int)comptime.hour;
+
 /*
  * Calculate the return values, based on the input option.
  */
@@ -388,39 +386,7 @@ NhlErrorTypes cd_calendar_W( void )
  *  YYYY.fraction_of_year
  */
       case 4:
-        nsid = 86400;      /* num seconds in a day */
-        if(ccal == NULL) {
-          total_seconds_in_year = seconds_in_year(year,"standard");
-          doy = day_of_year(year,month,day,"standard");
-        }
-        else {
-          total_seconds_in_year = seconds_in_year(year,ccal);
-          doy = day_of_year(year,month,day,ccal);
-        }
-        if(doy > 1) {
-          seconds_in_doy = (doy-1) * nsid;
-        }
-        else {
-          seconds_in_doy = 0;
-        }
-        if(hour > 1) {
-          seconds_in_hour  = (hour-1) * 3600;
-        }
-        else {
-          seconds_in_hour  = 0;
-        }
-        if(minute > 1) {
-          seconds_in_minute  = (minute-1) * 60;
-        }
-        else {
-          seconds_in_minute  = 0;
-        }
-        current_seconds_in_year = seconds_in_doy + 
-          seconds_in_hour + 
-          seconds_in_minute + 
-          second;
-        fraction_of_year = current_seconds_in_year/(double)total_seconds_in_year;
-        ((double*)date)[index_date] = (double)year + fraction_of_year;
+        ((double*)date)[index_date] = (double)year + fraction_of_year(year,month,day,hour,minute,second,ccal);
         break;
       }
     }

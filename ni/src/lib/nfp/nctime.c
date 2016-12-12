@@ -43,6 +43,13 @@ int cuErrorOccurred;		     /* True iff cdError was called */
 #define CD_DEFAULT_BASEYEAR "1979"	     /* Default base year for relative time (no 'since' clause) */
 #define VALCMP(a,b) ((a)<(b)?-1:(b)<(a)?1:0)
 
+/* forward declarations */
+void CdMonthDay(int *doy, CdTime *date);
+void CdDayOfYear(CdTime *date, int *doy);
+void cdComp2Rel(cdCalenType timetype, cdCompTime comptime, char* relunits, double* reltime);
+void cdRel2CompMixed(double reltime, cdUnitTime unit, cdCompTime basetime, cdCompTime *comptime);
+void cdRel2Comp(cdCalenType timetype, char* relunits, double reltime, cdCompTime* comptime);
+
 /* 
  * "calendar_type" was extracted from the "ncdump.c" code in 
  * NetCDF-4.1.1 and modified for use in NCL.
@@ -95,7 +102,7 @@ cdTrim(char* s, int n)
 
 	if(s==NULL)
 		return;
-	for(c=s; *c && c<s+n-1 && !isspace(*c); c++);
+	for(c=s; *c && c<s+n-1 && !isspace((int)*c); c++);
 	*c='\0';
 	return;
 }
@@ -235,7 +242,6 @@ Cde2h(double etime, CdTimeType timeType, long baseYear, CdTime *htime)
 	int 	doy;			/* day of year */
 	int     daysInLeapYear;		     /* number of days in a leap year */
 	int     daysInYear;		     /* days in non-leap year */
-	extern void CdMonthDay(int *doy, CdTime *date);
 
 	doy	= (int) floor(etime / 24.) + 1;
 	htime->hour	= etime - (double) (doy - 1) * 24.;
@@ -694,7 +700,6 @@ Cdh2e(CdTime *htime, double *etime)
 	long    baseYear;		     /* base year for epochal time */
 	int     daysInLeapYear;		     /* number of days in a leap year */
 	int     daysInYear;		     /* days in non-leap year */
-	extern void CdDayOfYear(CdTime *date, int *doy);
 
 	CdDayOfYear(htime,&doy);
 	
@@ -896,6 +901,7 @@ cdComp2Rel(cdCalenType timetype, cdCompTime comptime, char* relunits, double* re
 	humantime.hour = comptime.hour;
 	Cdh2e(&humantime,&etm);
 					     /* Calculate relative time value for months or hours */
+
 	deltime.count = 1;
 	/* Coverity[MIXED_ENUMS] */
 	deltime.units = (CdTimeUnit)unit;
@@ -1127,7 +1133,6 @@ cdRel2Comp(cdCalenType timetype, char* relunits, double reltime, cdCompTime* com
 	Cdh2e(&humantime,&base_etm);
 					     /* If months, seasons, or years, */
 	if(baseunits == cdMonth){
-
 					     /* Calculate new epochal time from integer months. */
 					     /* Convert back to human, then comptime. */
 					     /* For zero reltime, just return the basetime*/
@@ -1140,7 +1145,6 @@ cdRel2Comp(cdCalenType timetype, char* relunits, double reltime, cdCompTime* com
 					     /* Convert back to human, then comptime. */
 	else if(baseunits == cdHour){
 		Cde2h(base_etm+delta, old_timetype, 1970, &humantime);
-		
 	}
 	comptime->year = humantime.year;
 	comptime->month = humantime.month;
