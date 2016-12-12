@@ -1,16 +1,38 @@
-int utCalendar2( double val, ut_unit *dataunits, int *year, int *month, int *day, int *hour, 
-				int *minute, double *second );
+/*
+    The CalCalcs routines, a set of C-language routines to perform
+    calendar calculations.
 
-int utCalendar2_cal( double val, ut_unit *dataunits, int *year, int *month, int *day, int *hour, 
-				int *minute, double *second, const char *calendar );
+    Version 1.0, released 7 January 2010
 
-int utInvCalendar2( int year, int month, int day, int hour, int minute,
-                double second, ut_unit *unit, double *value );
+    Copyright (C) 2010 David W. Pierce, dpierce@ucsd.edu
 
-int utInvCalendar2_cal( int year, int month, int day, int hour, int minute,
-                double second, ut_unit *unit, double *value, const char *calendar );
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-#define UT_EINVALID     -5      /* invalid unit-structure */
-#define UT_ENOINIT      -6      /* package not initialized */
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#define UT_ENOINIT -10
+#define UT_EINVALID -11
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int utCalendar2_cal( double val, const char *dataunits_str, int *year, int *month, int *day, int *hour, 
+	int *minute, double *second, const char *calendar_name );
+int utInvCalendar2_cal( int year, int month, int day, int hour, int minute, double second,
+        const char *user_unit_str, double *value, const char *calendar_name );
+
+#ifdef __cplusplus
+}
+#endif
 
