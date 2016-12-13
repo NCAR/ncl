@@ -2820,7 +2820,7 @@ NrmQuark* _get_refquarks(hid_t dset, hid_t p_type, int *nref)
  ***********************************************************************
  */
 
-herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode **node)
+herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode *node)
 {
     hsize_t     cur_size[H5S_MAX_RANK];   /* current dataset dimensions */
     hsize_t     max_size[H5S_MAX_RANK];   /* maximum dataset dimensions */
@@ -2831,7 +2831,7 @@ herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode **node)
     int   i;
 
     char *typename;
-    NclFileVarNode *varnode = *node;
+    NclFileVarNode *varnode = node;
 
     hsize_t     var_size = 1;
 
@@ -2896,6 +2896,17 @@ herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode **node)
    */
 
     varnode->type = string2NclType(typename);
+#if 0
+    switch (varnode->type) {
+    case NCL_compound:
+	    /*return _readH5CompoundInfo(*/
+    case NCL_reference:
+    case NCL_enum:
+    case NCL_vlen:
+    default:
+	    break;
+    }
+#endif
 
     if(NCL_compound == varnode->type)
     {
@@ -3157,7 +3168,7 @@ herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode **node)
 	    {
 		    ng_size_t size;
 		    char buf[1024];
-		    hid_t dataset_id, type_id;
+		    hid_t deref_id, type_id;
 		    herr_t status;
 		    hsize_t dims[20], max_dims[20];
 		    int ndims;
@@ -3190,37 +3201,34 @@ herr_t _readH5dataInfo(hid_t dset, char *name, NclFileVarNode **node)
 			    fprintf(stderr, "\nError in file: %s, line: %d\n", __FILE__, __LINE__);
 		    }
 	    
-		    dataset_id = H5Rdereference(dset, ref_type, loc);
-		    valid = H5Iis_valid(dataset_id);
-		    t = H5Iget_type(dataset_id);
-		    size = H5Iget_name(dataset_id,NULL,0);
+		    deref_id = H5Rdereference(dset, ref_type, loc);
+		    valid = H5Iis_valid(deref_id);
+		    size = H5Iget_name(deref_id,NULL,0);
 		    size += 1;
-		    size = H5Iget_name(dataset_id,buf,size);
+		    size = H5Iget_name(deref_id,buf,size);
 		    if (!valid) {
-			    /*if (! (H5Iis_valid(dataset_id) && (H5Iget_type(dataset_id) == H5I_DATASET))) {*/
 			    ref_node[i].obj_id = -1;
 			    ref_node[i].obj_name = NrmStringToQuark("unresolved reference");
 		    }
 		    else {
-			    switch (t) {
-			    case H5I_FILE:
-			    case H5I_GROUP:
-			    case H5I_DATATYPE:
-			    case H5I_DATASPACE:
-			    case H5I_DATASET:
-			    case H5I_ATTR:
-			    case H5I_BADID:
-				    ;
-			    }
-			    type_id = H5Dget_type(dataset_id);
-			    size = H5Rget_name(dset, ref_type, loc,NULL,0);
-			    size += 1;
-			    size = H5Rget_name(dset, ref_type, loc,buf,size);
-			    ref_node[i].obj_id = dataset_id;
+			    ref_node[i].obj_id = deref_id;
 			    ref_node[i].obj_name = NrmStringToQuark(buf);
-			    /*ref_node[i].ref = (int) rbuf[i];*/
+			    switch (ref_node[i].obj_type) {
+			    case H5O_TYPE_NAMED_DATATYPE:
+				    H5Tclose(deref_id);
+				    break;
+			    case H5O_TYPE_DATASET:
+				    type_id = H5Dget_type(deref_id);
+				    H5Dclose(deref_id);
+				    break;
+			    case H5O_TYPE_GROUP:
+				    H5Gclose(deref_id);
+				    break;
+			    }
 		    }
+		    
 	    }
+	    varnode->type_specific_rec = (void *) ref_node;
 
 	    return SUCCEED;
 
@@ -3466,7 +3474,7 @@ herr_t _searchH5obj(char *name, const H5O_info_t *oinfo,
                 if(FAILED == status)
                     return FAILED;
 
-                _readH5dataInfo(obj_id, name, &curvarnode);
+                _readH5dataInfo(obj_id, name, curvarnode);
 
                 H5Aiterate(obj_id, H5_INDEX_NAME, H5_ITER_INC, NULL, _checkH5attribute, &curvarnode->att_rec);
 
@@ -5416,7 +5424,7 @@ NrmQuark* _readH5reference(hid_t dset, hid_t gid, hid_t type, const char* varnam
  ***********************************************************************
  * Function:	_getH5reference
  *
- * Purpose:	get the string dataset
+ * Purpose:	get reference type data
  *
  * Programmer:	Wei Huang
  *		June 8, 2012
@@ -5433,11 +5441,31 @@ void _getH5reference(hid_t fid, NclFileVarNode *varnode,
     H5S_class_t space_type;
     hid_t       d_space;
     hid_t       d_type;
+    ng_size_t dimsize[H5S_MAX_RANK];
+    ng_size_t i, n, position, start_position, totalsize;
+    int       nref = 0;
+    NrmQuark* quarkptr = (NrmQuark*) storage;
+    NclFileReferenceNode *refnode = (NclFileReferenceNode *) varnode->type_specific_rec;
 
-  /*
-   *fprintf(stderr, "\nEnter _getH5reference, file: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tvarname: <%s>\n", NrmQuarkToString(varnode->name));
-   */
+    dimsize[0] = 0;
+    totalsize = 1;
+    for(n = 0; n < varnode->dim_rec->n_dims; ++n)
+    {
+	    totalsize *= varnode->dim_rec->dim_node[n].size;
+	    dimsize[n+1] = totalsize;
+    }
+
+    position = 0;
+    for(n = varnode->dim_rec->n_dims - 1; n >= 0; --n)
+    {
+	    start_position = dimsize[n];
+	    for(i = start[n]; i <= finish[n]; i += stride[n])
+	    {
+		    quarkptr[position] = refnode[start_position + i].obj_name;
+		    ++position;
+	    }
+    }
+#if 0
 
     did = H5Dopen(fid, NrmQuarkToString(varnode->real_name), H5P_DEFAULT);
     if (did < 0) {
@@ -5507,10 +5535,8 @@ void _getH5reference(hid_t fid, NclFileVarNode *varnode,
     H5Sclose(d_space);
     H5Tclose(d_type);
     H5Dclose(did);
+#endif
 
-  /*
-   *fprintf(stderr, "Leave _getH5reference, file: %s, line: %d\n\n", __FILE__, __LINE__);
-   */
 }
 
 /*

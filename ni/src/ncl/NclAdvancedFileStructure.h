@@ -213,6 +213,7 @@ typedef struct _NclFileVarNode
     NclFileUDTNode         *udt_type_node;   /* this is read-only -- does not need to be freed */
     int                    is_compound;
     NclFileCompoundRecord *comprec;
+    void                  *type_specific_rec;  /* for reference and other types */
 
     NclFileAttRecord *att_rec;
 

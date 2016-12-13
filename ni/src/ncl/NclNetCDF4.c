@@ -4610,10 +4610,8 @@ static NhlErrorTypes NC4WriteVarAtt(void *therec, NclQuark thevar,
                 if (*(NrmQuark*)attnode->value == *(NrmQuark*)data)
                     return NhlNOERROR;
             }
-            else
-            {
-                memcmp(attnode->value,data,
-                         nctypelen(attnode->the_nc_type)*attnode->n_elem);
+            else if  (! memcmp(attnode->value,data,
+			      nctypelen(attnode->the_nc_type)*attnode->n_elem)) {
                 return NhlNOERROR;
             }
         }
@@ -4659,9 +4657,8 @@ static NhlErrorTypes NC4WriteVarAtt(void *therec, NclQuark thevar,
             }
             ret = nc_put_att(fid, attrec->aid, NrmQuarkToString(theatt),
                              attnode->the_nc_type, strlen(buffer), buffer);
-            if (ret != -1 && attnode->value != NULL)
-                memcpy(attnode->value,data,sizeof(NclQuark));
-            attnode->is_virtual = 0;
+            if (ret != -1)
+		    attnode->is_virtual = 0;
         }
         else
         {
