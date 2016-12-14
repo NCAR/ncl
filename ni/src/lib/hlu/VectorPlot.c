@@ -2294,6 +2294,9 @@ CurlyVectorSetValues
 	float			afr;
 	int			rlist;
 
+        if (! vcp->data_init) {
+		return NhlNOERROR;
+	}
 /*
  * we're forced to use the RL interface because it is the only one that
  * allows a data object to be set.
