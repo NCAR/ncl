@@ -17115,7 +17115,7 @@ begin
 ;   Rate of change in angular momentum per unit mass and divide by a*cos(phi).
   
   dudt = 86400*EPdiv/conform(EPdiv,acphi,1) ; 
-  dudt@long_name = "acceleration from EP flux divergence"
+  dudt@long_name = "acceleration of zonal wind"
   dudt@units     = "m/s2"
   copy_VarCoords(EPdiv,dudt)
 
