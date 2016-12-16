@@ -271,6 +271,46 @@ begin
   end if
 end
 
+;**********************************************************************
+; This is a hack to fix bug NCL-2530 discovered in 6.4.0. If
+; If cnLabelBarEndStyle is set to IncludeMinMaxLabels, lbLabelAlignment
+;  cannot be set explicitly to *anything*. If you do, this screws up 
+; the labelbar labels (lbLabelStrings).
+;
+; In NCL V6.3.0, this was working properly and the plot was correct. 
+; The work-around is remove the  lbLabelAlignment setting, if
+; cnLabelBarEndStyle is set to IncludeMinMaxLabels.
+; 
+; I think the underlying issue is that if IncludeMinMaxLabels is
+; set, then lbLabelALignment can only be "ExternalEdges". I decided
+; to comment out the warning below.
+;**********************************************************************
+undef("_tmp_fix_for_minmax_labelbar")
+procedure _tmp_fix_for_minmax_labelbar(cres)
+local aln_res_name, end_res_name, aln_res_value, end_res_value
+begin
+  aln_res_name = "lbLabelAlignment"
+  end_res_name = "cnLabelBarEndStyle"
+  if(.not.cres.or..not.(isatt(cres,aln_res_name).and.isatt(cres,end_res_name))) then
+    return
+  end if
+
+  end_res_value = "IncludeMinMaxLabels"
+  aln_res_value = "ExternalEdges"
+  if(str_lower(cres@$end_res_name$).eq.str_lower(end_res_value)) then
+    if(str_lower(cres@$aln_res_name$).ne.str_lower(aln_res_value)) then
+      print("_tmp_fix_for_minmax_labelbar: Warning: you can only use " + \
+            aln_res_value + "")
+      print("for " + aln_res_name + " if you set " + end_res_name + \
+            " to " + end_res_value+ ".")
+      print("NCL will internally remove this resource setting.")
+    end if
+    delete(cres@$aln_res_name$)
+  end if
+
+  return
+end
+
 ;***********************************************************************;
 ; Function : get_resources                                              ;
 ;                res:logical                                            ;
@@ -292,6 +332,7 @@ begin
     res2 = True
   end if
   remove_internal_wrf_resources(res2)
+  _tmp_fix_for_minmax_labelbar(res2)
   return(res2)
 end
 
@@ -9176,7 +9217,6 @@ begin
   return(histogram)
 end
 
-
 ;***********************************************************************;
 ; Function : gsn_contour                                                ;
 ;                   wks: workstation object                             ;
@@ -9257,6 +9297,7 @@ begin
 ; create time. Too bad it has to be so clunky.
 ;
     is_lb_mode = isatt(res2,"pmLabelBarDisplayMode")
+
     if(is_lb_mode) then
       lb_mode = get_display_mode(res2,"pmLabelBarDisplayMode","NoCreate")
       delete(res2@pmLabelBarDisplayMode)
