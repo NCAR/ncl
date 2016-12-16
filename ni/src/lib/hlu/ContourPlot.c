@@ -12366,7 +12366,7 @@ typedef struct amap_node {
 	int right_id;
 } Amap_Node;
 
-void _NHLCALLF(fixareamap,FIXAREAMAP)(int *amap) 
+void fixareamap(int *amap) 
 {
 	int i,j,k;
 	/* find a point that maps into the visible area, 
@@ -12573,3 +12573,58 @@ void _NHLCALLF(fixareamap,FIXAREAMAP)(int *amap)
 	return;
 }
 
+/*
+ * checks an areamap to see if there is something drawable within it.
+ * If not calls fixareamap to create a new areamap that will draw
+ * a single filled area covering the viewport
+ */
+
+typedef struct _AmapNode {
+	int flag;
+	int x;
+	int y;
+	int draw_next;
+	int draw_prev;
+	int coord_next;
+	int coord_prev;
+	int gid;
+	int left_id;
+	int right_id;
+} AmapNode;
+	
+void _NHLCALLF(checkareamap,CHECKAREAMAP)(int *amap) 
+{
+	int i,j;
+	if (amap[0] - amap[5] == amap[6]) 
+		fixareamap(amap);
+	else {
+#if 0
+		for (i = 27; i < amap[4]; i++) {
+			AmapNode *anode = (AmapNode *) &(amap[i]);
+			if (anode->left_id >= amap[5] && anode->right_id >= amap[5]) {
+				if (amap[anode->left_id-1] > 200 && amap[anode->left_id-1] < 513 &&
+				    amap[anode->right_id-1] > 200 && amap[anode->right_id-1] < 513) {
+					return;
+				}
+			}
+		}
+		fixareamap(amap);
+	}
+#endif
+#if 1
+		for (i = amap[5] -1 ; i < amap[0] - amap[6]; i++) {
+			if (amap[i] > 200 && amap[i] < 513) {  /* this the range of valid HLU area ids multiplied by 2 and plus 1 */
+				for (j = 27; j < amap[4]; j += 10) {
+					AmapNode *anode = (AmapNode *) &(amap[j]);
+					if ((anode->left_id == i || anode->right_id == i) &&
+					    anode->left_id > 0 && anode->right_id > 0) {
+						return;
+					}
+				}
+			}
+		}
+
+		fixareamap(amap);
+	}
+#endif						
+}
