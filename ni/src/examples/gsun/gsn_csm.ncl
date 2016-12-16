@@ -2296,7 +2296,7 @@ procedure add_labelbar(wks:graphic,plot,zone:integer, \
                        font_height:numeric,type:string,res:logical)
 local anno, num_res, amres, lbres, labelbar_object, lbar_orient, \
 lbar_side, lbar_just, fill_patterns, fill_scales, mono_fill_pat, \
-mono_fill_scl, mono_fill_col, levels
+mono_fill_scl, mono_fill_col, levels, class_name, the_plot
 begin
 ;
 ; If lbLabelBarOn is set to False, then don't bother with a labelbar.
@@ -2337,7 +2337,6 @@ begin
   set_attr(lbres,"lbOrientation",lbar_orient)
   set_attr(amres,"amSide",lbar_side)
   set_attr(amres,"amJust",lbar_just)
-
 ; 
 ; Determine what the default labelbar width and height should be depending
 ; on shape of plot (this is for a horizontal labelbar).  For example, if
@@ -2428,7 +2427,7 @@ begin
         (.not.check_attr(lbres,"lbBoxEndCapStyle","RectangleEnds",True).and.\
          .not.check_attr(lbres,"lbBoxEndCapStyle",0,False))) then
       print("Warning:add_labelbar: you can't turn on triangle ends for the labelbar if")
-      print("  cnLabelBarEndStyle is set to 'ExcludeOuterBoxes")
+      print("  cnLabelBarEndStyle is set to 'ExcludeOuterBoxes'")
       print("  Turning off triangle(s) for labelbar.")
       cap_style = 0
     else
@@ -2527,28 +2526,34 @@ begin
   end if
 ;
 ; If user set cn/vcLabelBarEndLabelsOn to True or the LabelBarStyle
-; resource to 1, then we need to add min/max labels. Use lbstrings (rather
-; than actual min/max of data) because the labels will already be 
+; resource to 1 (IncludeMinMaxLabels) then we need to add min/max 
+; labels, if the user hasn't already set lbLabelStrings. Use lbLabelStrings
+; rather than actual min/max of data, because the labels will already be 
 ; formatted correctly.
 ;
-  nlev = dimsizes(levels)
-  if(end_labels_on.and.end_labelbar_style.eq.1.and. \
-      (lbstrings(0).eq."".or.lbstrings(nlev+1).eq."")) then
-    print("Warning:add_labelbar: invalid end labels, turning them off.")
-    end_labels_on = False
-  end if
-  if(end_labels_on) then
-    if(end_labelbar_style.eq.1) then
-      newlevels         = new(nlev+2,typeof(levels))
-      newlevels(1:nlev) = levels
-      newlevels(0)      = stringtoxxx(lbstrings(0),typeof(newlevels))
-      newlevels(nlev+1) = stringtoxxx(lbstrings(nlev+1),typeof(newlevels))
-      delete(levels)
-      levels = newlevels
-      delete(newlevels)
+  if(.not.isatt(res,"lbLabelStrings")) then
+    nlev = dimsizes(levels)
+    nlab = dimsizes(lbstrings)
+    if(end_labels_on.and.end_labelbar_style.eq.1.and. \
+        (lbstrings(0).eq."".or.lbstrings(nlab-1).eq."")) then
+      print("Warning:add_labelbar: invalid end labels, turning them off.")
+      end_labels_on = False
     end if
-    set_attr(lbres,"lbLabelAlignment","ExternalEdges")
-  end if
+    if(end_labels_on) then
+      if(end_labelbar_style.eq.1) then
+        newlevels         = new(nlev+2,typeof(levels))
+        newlevels(1:nlev) = levels
+        newlevels(0)      = stringtoxxx(lbstrings(0),typeof(newlevels))
+        newlevels(nlev+1) = stringtoxxx(lbstrings(nlab-1),typeof(newlevels))
+        delete(levels)
+        levels = newlevels
+        delete(newlevels)
+      end if
+      set_attr(lbres,"lbLabelAlignment","ExternalEdges")
+    end if
+  else
+    lbres@lbLabelStrings = res@lbLabelStrings
+  end if  
 
   levels = fix_zero_contour(levels)
 
