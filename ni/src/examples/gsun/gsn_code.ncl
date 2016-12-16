@@ -271,6 +271,86 @@ begin
   end if
 end
 
+;***********************************************************************;
+; Function : check_attr                                                 ;
+;                res    : logical                                       ;
+;           att_name    : string                                        ;
+;          att_value                                                    ;
+;          convert_lower: logical                                       ;
+;                                                                       ;
+; Checks if res@att_name exists and if it is equal to att_value         ;
+; att_name, or the value att_value.                                     ;
+;***********************************************************************;
+undef("check_attr")
+function check_attr(res:logical,att_name:string,att_value, \
+                    convert_lower:logical)
+local res2, new_att_value, is_att_value_string, is_att_name_string
+begin
+  res2 = res
+
+  if(res2.and.isatt(res2,att_name))
+    if(typeof(att_value).eq."string") then
+      is_att_value_string = True
+    else
+      is_att_value_string = False
+    end if
+
+    if(typeof(res@$att_name$).eq."string") then
+      is_att_name_string = True
+     else
+      is_att_name_string = False
+    end if
+;
+; If one value is a string and the other isn't, then we can't
+; compare them, and we just have to return False.
+
+    if(is_att_name_string.ne.is_att_value_string) then
+      return(False)
+    end if
+
+    if(is_att_value_string.and.convert_lower)
+      new_att_value   = lower_case(att_value)
+      res2@$att_name$ = lower_case(res2@$att_name$)
+    else
+      new_att_value = att_value
+    end if
+
+    if(res2@$att_name$.eq.new_att_value)
+      return(True)
+    end if
+  end if
+
+  return(False)
+end
+
+;***********************************************************************;
+; Function : check_attr_two_values                                      ;
+;                res     : logical                                      ;
+;           att_name     : string                                       ;
+;          att_str_value : string                                       ;
+;          att_num_value : numeric                                      ;
+;          convert_lower: logical                                       ;
+;                                                                       ;
+; This function is similar to check_attr, except it allows you to check ;
+; both a string and numeric value of a resource. For example,           ;
+; "lbOrientation" can be set to 0 or 1 for horizontal or vertial, or it ;
+; can be set directly to "horizontal" or "vertical". To check for       ;
+; resources that can be two types of values, use:                       ;
+;                                                                       ;
+;  check_attr_two_values(lbres,"lbOrientation","vertical",1,True)       ;
+;***********************************************************************;
+undef("check_attr_two_values")
+function check_attr_two_values(res:logical,att_name:string,\
+                               att_str_value:string,att_num_value:numeric,\
+                               convert_lower:logical)
+begin
+  if(typeof(res@$att_name$).eq."string") then
+    return(check_attr(res,att_name,att_str_value,convert_lower))
+  else
+    return(check_attr(res,att_name,att_num_value,False))
+  end if
+end
+
 ;**********************************************************************
 ; This is a hack to fix bug NCL-2530 discovered in 6.4.0. If
 ; If cnLabelBarEndStyle is set to IncludeMinMaxLabels, lbLabelAlignment
@@ -287,7 +367,7 @@ end
 ;**********************************************************************
 undef("_tmp_fix_for_minmax_labelbar")
 procedure _tmp_fix_for_minmax_labelbar(cres)
-local aln_res_name, end_res_name, aln_res_value, end_res_value
+local aln_res_name, end_res_name, aln_res_str_val, end_res_str_val
 begin
   aln_res_name = "lbLabelAlignment"
   end_res_name = "cnLabelBarEndStyle"
@@ -295,15 +375,19 @@ begin
     return
   end if
 
-  end_res_value = "IncludeMinMaxLabels"
-  aln_res_value = "ExternalEdges"
-  if(str_lower(cres@$end_res_name$).eq.str_lower(end_res_value)) then
-    if(str_lower(cres@$aln_res_name$).ne.str_lower(aln_res_value)) then
-      print("_tmp_fix_for_minmax_labelbar: Warning: you can only use " + \
-            aln_res_value + "")
-      print("for " + aln_res_name + " if you set " + end_res_name + \
-            " to " + end_res_value+ ".")
-      print("NCL will internally remove this resource setting.")
+  end_res_str_val = "IncludeMinMaxLabels"
+  end_res_int_val = 1
+  aln_res_str_val= "ExternalEdges"
+  aln_res_int_val = 2
+
+  if(check_attr_two_values(cres,end_res_name,end_res_str_val,\
+                           end_res_int_val,True)) then
+    if(.not.check_attr_two_values(cres,aln_res_name,aln_res_str_val,\
+                                  aln_res_int_val,True)) then
+      print("_tmp_fix_for_minmax_labelbar: Warning: if you set " + end_res_name)
+      print("to " + end_res_str_val + ", then you can only set " + aln_res_name)
+      print("to " + aln_res_str_val + ".")
+      print("NCL will internally remove the " + aln_res_name + " setting.")
     end if
     delete(cres@$aln_res_name$)
   end if
@@ -368,57 +452,6 @@ begin
     delete(res@$att_name$)
   end if
   return
-end
-
-;***********************************************************************;
-; Function : check_attr                                                 ;
-;                res    : logical                                       ;
-;           att_name    : string                                        ;
-;          att_value                                                    ;
-;          convert_lower: logical                                       ;
-;                                                                       ;
-; Checks if res@att_name exists and if it is equal to att_value.        ;
-;***********************************************************************;
-undef("check_attr")
-function check_attr(res:logical,att_name:string,att_value, \
-                    convert_lower:logical)
-local res2, new_att_value, is_att_value_string, is_att_name_string
-begin
-  res2 = res
-
-  if(res2.and.isatt(res2,att_name))
-    if(typeof(att_value).eq."string") then
-      is_att_value_string = True
-    else
-      is_att_value_string = False
-    end if
-
-    if(typeof(res@$att_name$).eq."string") then
-      is_att_name_string = True
-     else
-      is_att_name_string = False
-    end if
-;
-; If one value is a string and the other isn't, then we can't
-; compare them, and we just have to return False.
-
-    if(is_att_name_string.ne.is_att_value_string) then
-      return(False)
-    end if
-
-    if(is_att_value_string.and.convert_lower)
-      new_att_value   = lower_case(att_value)
-      res2@$att_name$ = lower_case(res2@$att_name$)
-    else
-      new_att_value = att_value
-    end if
-
-    if(res2@$att_name$.eq.new_att_value)
-      return(True)
-    end if
-  end if
-
-  return(False)
 end
 
 ;***********************************************************************;
