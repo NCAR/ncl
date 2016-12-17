@@ -344,6 +344,9 @@ function check_attr_two_values(res:logical,att_name:string,\
                                att_str_value:string,att_num_value:numeric,\
                                convert_lower:logical)
 begin
+  if(.not.isatt(res,att_name)) then
+    return(False)
+  end if
   if(typeof(res@$att_name$).eq."string") then
     return(check_attr(res,att_name,att_str_value,convert_lower))
   else
@@ -6443,8 +6446,7 @@ begin
   lbhor = True
   if(panel_labelbar) then
     lbres = get_res_eq(res,(/"lb","pmLabelBar","vp"/))  ; Get labelbar resources.
-    if(check_attr(lbres,"lbOrientation","vertical",True).or.\
-       check_attr(lbres,"lbOrientation",1,True)) then
+    if(check_attr_two_values(lbres,"lbOrientation","vertical",1,True)) then
       lbhor = False
       labelbar_width = 0.20 * plot_width + 2.*xwsp
 ;
