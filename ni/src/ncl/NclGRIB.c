@@ -4669,7 +4669,7 @@ unsigned char *val;
 
 
 /* this routine for getting the extended size of a larger than normal ECMWF file is
- * derived from wgrib code
+ * derived from wgrib code attributed to Brian Doty
  */
 ng_size_t possible_ecmwf_large_record(int gribfile, off_t offset, ng_size_t size, ng_size_t *bds_size)
 {
@@ -4721,14 +4721,10 @@ ng_size_t possible_ecmwf_large_record(int gribfile, off_t offset, ng_size_t size
 
 	/* Now we can check if this record is hacked */
 
-	/*if (bdslen >= 120) {
-		ec_large_grib = 0;
-		}*/
 	if (bdslen < 120) {
 		/* ECMWF hack */
 		size = (len & 0x7fffff) * 120 - bdslen + 4;
 		*bds_size = size - (12 + pdslen + gdslen + bmslen);
-		/*ec_large_grib = 1;*/
 	}
 	return size;
 }
