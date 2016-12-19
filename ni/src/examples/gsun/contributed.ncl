@@ -4484,23 +4484,24 @@ begin
  ;    end if
  ;end if
 
-  cf = ezfftf( clmDay )                     ; [2] x [nday/2+1]
+  cf = ezfftf_n( clmDay, 0)                 ; [2] x [nday/2]
                                             ; remember NCL is 0-based 
                                             ; cf(:,0:nHarm-1) are retained unaltered
   cf(:,nHarm   ) = 0.5*cf(:,nHarm)          ; mini-taper
   cf(:,nHarm+1:) = 0.0                      ; set all higher coef to 0.0
 
-  clmDaySmth  = ezfftb( cf, cf@xbar)                 ; reconstructed series
+  clmDaySmth  = ezfftb_n( cf, cf@xbar, 1)   ; reconstructed series
+
+  copy_VarMeta(clmDay, clmDaySmth)
   clmDaySmth@information = "smthClmDayT: Smoothed daily climatological averages"
   clmDaySmth@smoothing   = "FFT: "+nHarm+" harmonics were retained."
   return(clmDaySmth)
 end
-
 ; =====================================
 undef("smthClmDayTLL")
 function smthClmDayTLL (clmDay[*][*][*]:numeric, nHarm:integer)
 ;
-local nFill, dn, z, cf, clmDaySmth 
+local nFill, dn, cf, clmDaySmth 
 begin
   
 ; The following was commented out (post 6.2.0) when people started using 
@@ -4515,69 +4516,65 @@ begin
  ;    end if
  ;end if
 
-  dn = getvardims(clmDay)                   ; get dimension names
-  if (dn(0).ne."year_day") then
-      print("smthClmDayTLL: Warning: Usually expect year_day to be the dimension name")
-  end if
+; Historical stuff: Not needed
+ ;dn = getvardims(clmDay)                   ; get dimension names
+ ;if (dn(0).ne."year_day") then
+ ;    print("smthClmDayTLL: Warning: Usually expect year_day to be the dimension name")
+ ;end if
 
-  z  = clmDay($dn(1)$|:,$dn(2)$|:,$dn(0)$|:); reorder make time fastest varying dimension
-  cf = ezfftf( z )                          ; [2] x [nlat] x [mlon] x [nday/2+1]
+  cf = ezfftf_n( clmDay, 0)                 ; [2] x [nday/2] x [nlat] x [mlon]
 
                                             ; remember NCL is 0-based 
                                             ; cf(:,0:nHarm-1) are retained unaltered
-  cf(:,:,:,nHarm   ) = 0.5*cf(:,:,:,nHarm)  ; mini-taper
-  cf(:,:,:,nHarm+1:) = 0.0                  ; set all higher coef to 0.0
+  cf(:,nHarm,:,:   ) = 0.5*cf(:,nHarm,:,:)  ; mini-taper
+  cf(:,nHarm+1:,:,:) = 0.0                  ; set all higher coef to 0.0
 
-  z  = ezfftb( cf, cf@xbar)                 ; reconstructed series
+  clmDaySmth  = ezfftb_n( cf, cf@xbar, 1)   ; reconstructed series
 
-  clmDaySmth = z($dn(0)$|:,$dn(1)$|:,$dn(2)$|:)
+  copy_VarMeta(clmDay, clmDaySmth)
   clmDaySmth@information = "Smoothed daily climatological averages"
   clmDaySmth@smoothing   = "FFT: "+nHarm+" harmonics were retained."
 
   return(clmDaySmth)
 end
-
 ; =====================================
 undef("smthClmDayTLLL")
 function smthClmDayTLLL (clmDay[*][*][*][*]:numeric, nHarm:integer)
-;  lxf: Li 2011-05-15
 local nFill, dn, z, cf, clmDaySmth
 begin
   
 ; The following was commented out (post 6.2.0) when people started using 
 ; this on daily ocean which, of course, have _FillValue over land.
 
-  if (isatt(clmDay, "_FillValue")) then
-      nFill = num(ismissing(clmDay))
-      if (nFill.gt.0) then
-          print("smthClmDayTLLL: No missing values allowed: ezfftf does not allow")
-          print("smthClmDayTLLL: nFill="+nFill)
-          exit
-      end if
-  end if
+ ;if (isatt(clmDay, "_FillValue")) then
+ ;    nFill = num(ismissing(clmDay))
+ ;    if (nFill.gt.0) then
+ ;        print("smthClmDayTLLL: No missing values allowed: ezfftf does not allow")
+ ;        print("smthClmDayTLLL: nFill="+nFill)
+ ;        exit
+ ;    end if
+ ;end if
 
-  dn = getvardims(clmDay)                   ; get dimension names
-  if (dn(0).ne."year_day") then
-      print("smthClmDayTLLL: Warning: Usually expect year_day to be the dimension name")
-  end if
+; Historical stuff: Not needed
+ ;dn = getvardims(clmDay)                   ; get dimension names
+ ;if (dn(0).ne."year_day") then
+ ;    print("smthClmDayTLLL: Warning: Usually expect year_day to be the dimension name")
+ ;end if
 
-  z  = clmDay($dn(1)$|:,$dn(2)$|:,$dn(3)$|:,$dn(0)$|:); reorder make time fastest varying dimension
-  cf = ezfftf( z )                          ; [2] x [klev] x [nlat] x [mlon] x [183]
-
+  cf = ezfftf_n( clmDay, 0 )                ; [2] x [nday/2] x [klev] x [nlat] x [mlon]
                                             ; remember NCL is 0-based
                                             ; cf(:,0:nHarm-1) are retained unaltered
-  cf(:,:,:,:,nHarm   ) = 0.5*cf(:,:,:,:,nHarm)  ; mini-taper
-  cf(:,:,:,:,nHarm+1:) = 0.0                  ; set all higher coef to 0.0
+  cf(:,nHarm,:,:,:   ) = 0.5*cf(:,nHarm,:,:,:); mini-taper
+  cf(:,nHarm+1:,:,:,:) = 0.0                ; set all higher coef to 0.0
 
-  z  = ezfftb( cf, cf@xbar)                 ; reconstructed series
+  clmDaySmth  = ezfftb_n( cf, cf@xbar, 1)                 ; reconstructed series
 
-  clmDaySmth = z($dn(0)$|:,$dn(1)$|:,$dn(2)$|:,$dn(3)$|:)
+  copy_VarMeta(clmDay, clmDaySmth)
   clmDaySmth@information = "Smoothed daily climatological averages"
   clmDaySmth@smoothing   = "FFT: "+nHarm+" harmonics were retained."
 
   return(clmDaySmth)
 end
-
 ; =====================================
 ;
 ; Calculate daily  temporal means.
