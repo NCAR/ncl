@@ -3467,7 +3467,7 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                     char *component_name = NULL;
 
                     component_name = _getComponentName(NrmQuarkToString(var_name), &struct_name);
-
+		    NclFree(struct_name);
                     if(NULL != component_name)
                     {
                       /*
@@ -3496,8 +3496,7 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                           var_name,
                           start, finish, stride, val);
 
-                        free(component_name);
-                        free(struct_name);
+                        NclFree(component_name);
                     }
                     else
                     {
