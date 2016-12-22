@@ -1961,8 +1961,8 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 					af[i] = tmpf[((int*)tmp_md->multidval.val)[i] ]/100000.0;
 				else 
 					af[i] = DEFAULT_MISSING_FLOAT;
-				if (nv/2+((int*)tmp_md->multidval.val)[i] < dimsizes_level)
-					bf[i] = tmpf[nv/2+((int*)tmp_md->multidval.val)[i]];
+				if (nv/2+((int*)tmp_md->multidval.val)[i] < dimsizes_level * 2)
+					bf[i] = tmpf[((int*)tmp_md->multidval.val)[i]];
 				else 
 					bf[i] = DEFAULT_MISSING_FLOAT;
 			}
@@ -4667,18 +4667,80 @@ unsigned char *val;
 	return(tmp.ivalue);
 }
 
-	
+
+/* this routine for getting the extended size of a larger than normal ECMWF file is
+ * derived from wgrib code attributed to Brian Doty
+ */
+ng_size_t possible_ecmwf_large_record(int gribfile, off_t offset, ng_size_t size, ng_size_t *bds_size)
+{
+	int gdsflg, bmsflg, center;
+	unsigned int pdslen, gdslen, bmslen, bdslen;
+	unsigned char buf[8];
+	ng_size_t len;
+
+	len = size;
+
+	/* Get pdslen */
+
+	if (lseek(gribfile,offset + 8,SEEK_SET) < 0) return 0;
+	if (read(gribfile,buf, 8) != 8) return 0;
+	pdslen = UnsignedCnvtToDecimal(3,buf);
+
+	center = buf[4];
+
+	/* know that NCEP and CMC do not use echack */
+	if (center != 98) {
+		return size;
+	}
+
+
+	gdsflg = buf[7] & 128;
+	bmsflg = buf[7] & 64;
+
+	gdslen=0;
+	if (gdsflg) {
+		if (lseek(gribfile,offset + 8 + pdslen,SEEK_SET) < 0) return 0;
+		if (read(gribfile,buf, 3) != 3) return 0;
+		gdslen =  UnsignedCnvtToDecimal(3,buf);
+	}
+
+	/* if there, get length of bms */
+
+	bmslen = 0;
+	if (bmsflg) {
+		if (lseek(gribfile,offset + 8 + pdslen + gdslen,SEEK_SET) < 0) return 0;
+		if (read(gribfile,buf, 3) != 3) return 0;
+		bmslen =  UnsignedCnvtToDecimal(3,buf);
+	}
+
+	/* get bds length */
+
+	if (lseek(gribfile,offset + 8 + pdslen + gdslen + bmslen,SEEK_SET) < 0) return 0;
+	if (read(gribfile,buf, 3) != 3) return 0;
+	bdslen =  UnsignedCnvtToDecimal(3,buf);
+
+	/* Now we can check if this record is hacked */
+
+	if (bdslen < 120) {
+		/* ECMWF hack */
+		size = (len & 0x7fffff) * 120 - bdslen + 4;
+		*bds_size = size - (12 + pdslen + gdslen + bmslen);
+	}
+	return size;
+}
+
 int GetNextGribOffset
 #if NhlNeedProto
-(int gribfile,off_t *offset, unsigned int *totalsize, off_t startoff, off_t *nextoff,int* version)
+(int gribfile,off_t *offset, unsigned int *totalsize, off_t startoff, off_t *nextoff,int* version,ng_size_t *bds_size)
 #else
-(gribfile, offset, totalsize, startoff, nextoff,version)
+	(gribfile, offset, totalsize, startoff, nextoff,version,bds_size)
 int gribfile;
 off_t *offset;
 unsigned int *totalsize;
 off_t startoff;
 off_t *nextoff;
 int *version;
+ng_size_t *bds_size;
 #endif
 {
 	int j,ret1,ret4;
@@ -4726,16 +4788,15 @@ int *version;
 					continue;
 
 				*version = vbuf[j+7];
-/*
-				fprintf(stdout,"found GRIB\n");
-*/
 				if(*version == 1){
 					is = &(vbuf[j]);
-/*
-					fprintf(stdout,"found GRIB version 1\n");
-*/
 					*offset = off + j;
 					size = UnsignedCnvtToDecimal(3,&(is[4]));
+
+					if (size & 0x800000) { /* if ECMWF this could be a larger record than 3 octets can specify */
+						size = possible_ecmwf_large_record(gribfile,off,size,bds_size);
+					}
+
 #ifdef GRIBRECDUMP
 					if(count == 0) {
 						fd_out = open("./tmp.out.grb",(O_CREAT|O_RDWR));
@@ -4830,7 +4891,7 @@ int *version;
 							break;
 						}
 						for (k = 0; k < vbuflen-4; k++) {
-						     if (! vbuf[k] == '7')
+							if (! (vbuf[k] == '7'))
 							     continue;
 						     if(strncmp("7777",(char*)&vbuf[k],4))
 							     continue;
@@ -6463,6 +6524,7 @@ int wr_status;
 	struct stat statbuf;
 	int suffix;
 	int table_warning = 0;
+	ng_size_t bds_size = -1;
 
 	if (! Ptables) {
 		InitPtables();
@@ -6487,14 +6549,9 @@ int wr_status;
 	vbuflen = statbuf.st_blksize;
 	vbuf = (void*)NclMalloc(vbuflen);
 
-	/*
-	setvbuf(fd,vbuf,_IOFBF,4*getpagesize());
-	*/
-
-	
 	if (fd > 0) {
 		while(!done) {
-			ret = GetNextGribOffset(fd,&offset,&size,offset,&nextoff,&version);
+			ret = GetNextGribOffset(fd,&offset,&size,offset,&nextoff,&version,&bds_size);
 			if(ret == GRIBEOF) {
 				done = 1;
 			} 
@@ -6683,15 +6740,21 @@ int wr_status;
 					grib_rec->bds_off = (version ? 8:4) + grib_rec->pds_size + grib_rec->bms_size + grib_rec->gds_size;
 					vbufpos += grib_rec->bms_size;
 					if (vbuflen - vbufpos > 3) {
-						grib_rec->bds_size = CnvtToDecimal(3,&(vbuf[vbufpos]));
+						if (bds_size < 0)
+							grib_rec->bds_size = CnvtToDecimal(3,&(vbuf[vbufpos]));
+						else 
+							grib_rec->bds_size = bds_size;
 						grib_rec->bds_flags = vbuf[vbufpos+3];
 						grib_rec->int_or_float = (int)(grib_rec->bds_flags & (char)0040) ? 1 : 0;
 					}
 					else {
 						lseek(fd,(unsigned)(grib_rec->offset + grib_rec->bds_off),SEEK_SET);
 						read(fd,(void*)tmpc,4);
+						if (bds_size < 0)
+							grib_rec->bds_size = CnvtToDecimal(3,tmpc);
+						else 
+							grib_rec->bds_size = bds_size;
 						grib_rec->bds_flags = tmpc[3];
-						grib_rec->bds_size = CnvtToDecimal(3,tmpc);
 						grib_rec->int_or_float = (int)(tmpc[3]  & (char)0040) ? 1 : 0;
 					}
 				}

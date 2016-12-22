@@ -1160,3 +1160,50 @@ const char *get_calendar_attribute(int arg_num, int total_args) {
   }
   return default_cal;
 }
+
+double fraction_of_year (int year, int month, int day, int hour, int minute,
+			 double second, const char *calendar)
+{
+/*      
+ * This function will calculate how far we are into the current year
+ * in seconds, and return it as a fraction of the year.
+ *
+ * This is meant as an internal function for option 4 of cd_calendar and
+ * ut_calendar.
+ */
+  int doy, nsid, total_seconds_in_year, seconds_in_doy, seconds_in_hour;
+  int seconds_in_minute;
+  double current_seconds_in_year;
+
+  nsid = 86400;      /* num seconds in a day */
+/* 
+ * Calculate how far we are into current year and multiply
+ * by number of seconds in a day.
+ */
+  if(calendar == NULL) {
+    total_seconds_in_year = seconds_in_year(year,"standard");
+    doy = day_of_year(year,month,day,"standard");
+  }
+  else {
+    total_seconds_in_year = seconds_in_year(year,calendar);
+    doy = day_of_year(year,month,day,calendar);
+  }
+  if(doy > 1) {
+    seconds_in_doy = (doy-1) * nsid;
+  }
+  else {
+    seconds_in_doy = 0;
+  }
+/* 
+ * Now add in how many seconds we are into the current day, by 
+ * checking the hours, minutes, and seconds and doing the appropriate 
+ * calculation.
+ */
+  if(hour > 0)   seconds_in_hour   = hour * 3600;
+  else           seconds_in_hour   = 0;
+  if(minute > 0) seconds_in_minute = minute * 60;
+  else           seconds_in_minute = 0;
+  current_seconds_in_year = seconds_in_doy + seconds_in_hour + 
+    seconds_in_minute + second;
+  return((double)current_seconds_in_year/(double)total_seconds_in_year);
+}

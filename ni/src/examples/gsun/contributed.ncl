@@ -4484,23 +4484,24 @@ begin
  ;    end if
  ;end if
 
-  cf = ezfftf( clmDay )                     ; [2] x [nday/2+1]
+  cf = ezfftf_n( clmDay, 0)                 ; [2] x [nday/2]
                                             ; remember NCL is 0-based 
                                             ; cf(:,0:nHarm-1) are retained unaltered
   cf(:,nHarm   ) = 0.5*cf(:,nHarm)          ; mini-taper
   cf(:,nHarm+1:) = 0.0                      ; set all higher coef to 0.0
 
-  clmDaySmth  = ezfftb( cf, cf@xbar)                 ; reconstructed series
+  clmDaySmth  = ezfftb_n( cf, cf@xbar, 1)   ; reconstructed series
+
+  copy_VarMeta(clmDay, clmDaySmth)
   clmDaySmth@information = "smthClmDayT: Smoothed daily climatological averages"
   clmDaySmth@smoothing   = "FFT: "+nHarm+" harmonics were retained."
   return(clmDaySmth)
 end
-
 ; =====================================
 undef("smthClmDayTLL")
 function smthClmDayTLL (clmDay[*][*][*]:numeric, nHarm:integer)
 ;
-local nFill, dn, z, cf, clmDaySmth 
+local nFill, dn, cf, clmDaySmth 
 begin
   
 ; The following was commented out (post 6.2.0) when people started using 
@@ -4515,69 +4516,65 @@ begin
  ;    end if
  ;end if
 
-  dn = getvardims(clmDay)                   ; get dimension names
-  if (dn(0).ne."year_day") then
-      print("smthClmDayTLL: Warning: Usually expect year_day to be the dimension name")
-  end if
+; Historical stuff: Not needed
+ ;dn = getvardims(clmDay)                   ; get dimension names
+ ;if (dn(0).ne."year_day") then
+ ;    print("smthClmDayTLL: Warning: Usually expect year_day to be the dimension name")
+ ;end if
 
-  z  = clmDay($dn(1)$|:,$dn(2)$|:,$dn(0)$|:); reorder make time fastest varying dimension
-  cf = ezfftf( z )                          ; [2] x [nlat] x [mlon] x [nday/2+1]
+  cf = ezfftf_n( clmDay, 0)                 ; [2] x [nday/2] x [nlat] x [mlon]
 
                                             ; remember NCL is 0-based 
                                             ; cf(:,0:nHarm-1) are retained unaltered
-  cf(:,:,:,nHarm   ) = 0.5*cf(:,:,:,nHarm)  ; mini-taper
-  cf(:,:,:,nHarm+1:) = 0.0                  ; set all higher coef to 0.0
+  cf(:,nHarm,:,:   ) = 0.5*cf(:,nHarm,:,:)  ; mini-taper
+  cf(:,nHarm+1:,:,:) = 0.0                  ; set all higher coef to 0.0
 
-  z  = ezfftb( cf, cf@xbar)                 ; reconstructed series
+  clmDaySmth  = ezfftb_n( cf, cf@xbar, 1)   ; reconstructed series
 
-  clmDaySmth = z($dn(0)$|:,$dn(1)$|:,$dn(2)$|:)
+  copy_VarMeta(clmDay, clmDaySmth)
   clmDaySmth@information = "Smoothed daily climatological averages"
   clmDaySmth@smoothing   = "FFT: "+nHarm+" harmonics were retained."
 
   return(clmDaySmth)
 end
-
 ; =====================================
 undef("smthClmDayTLLL")
 function smthClmDayTLLL (clmDay[*][*][*][*]:numeric, nHarm:integer)
-;  lxf: Li 2011-05-15
 local nFill, dn, z, cf, clmDaySmth
 begin
   
 ; The following was commented out (post 6.2.0) when people started using 
 ; this on daily ocean which, of course, have _FillValue over land.
 
-  if (isatt(clmDay, "_FillValue")) then
-      nFill = num(ismissing(clmDay))
-      if (nFill.gt.0) then
-          print("smthClmDayTLLL: No missing values allowed: ezfftf does not allow")
-          print("smthClmDayTLLL: nFill="+nFill)
-          exit
-      end if
-  end if
+ ;if (isatt(clmDay, "_FillValue")) then
+ ;    nFill = num(ismissing(clmDay))
+ ;    if (nFill.gt.0) then
+ ;        print("smthClmDayTLLL: No missing values allowed: ezfftf does not allow")
+ ;        print("smthClmDayTLLL: nFill="+nFill)
+ ;        exit
+ ;    end if
+ ;end if
 
-  dn = getvardims(clmDay)                   ; get dimension names
-  if (dn(0).ne."year_day") then
-      print("smthClmDayTLLL: Warning: Usually expect year_day to be the dimension name")
-  end if
+; Historical stuff: Not needed
+ ;dn = getvardims(clmDay)                   ; get dimension names
+ ;if (dn(0).ne."year_day") then
+ ;    print("smthClmDayTLLL: Warning: Usually expect year_day to be the dimension name")
+ ;end if
 
-  z  = clmDay($dn(1)$|:,$dn(2)$|:,$dn(3)$|:,$dn(0)$|:); reorder make time fastest varying dimension
-  cf = ezfftf( z )                          ; [2] x [klev] x [nlat] x [mlon] x [183]
-
+  cf = ezfftf_n( clmDay, 0 )                ; [2] x [nday/2] x [klev] x [nlat] x [mlon]
                                             ; remember NCL is 0-based
                                             ; cf(:,0:nHarm-1) are retained unaltered
-  cf(:,:,:,:,nHarm   ) = 0.5*cf(:,:,:,:,nHarm)  ; mini-taper
-  cf(:,:,:,:,nHarm+1:) = 0.0                  ; set all higher coef to 0.0
+  cf(:,nHarm,:,:,:   ) = 0.5*cf(:,nHarm,:,:,:); mini-taper
+  cf(:,nHarm+1:,:,:,:) = 0.0                ; set all higher coef to 0.0
 
-  z  = ezfftb( cf, cf@xbar)                 ; reconstructed series
+  clmDaySmth  = ezfftb_n( cf, cf@xbar, 1)                 ; reconstructed series
 
-  clmDaySmth = z($dn(0)$|:,$dn(1)$|:,$dn(2)$|:,$dn(3)$|:)
+  copy_VarMeta(clmDay, clmDaySmth)
   clmDaySmth@information = "Smoothed daily climatological averages"
   clmDaySmth@smoothing   = "FFT: "+nHarm+" harmonics were retained."
 
   return(clmDaySmth)
 end
-
 ; =====================================
 ;
 ; Calculate daily  temporal means.
@@ -16862,9 +16859,11 @@ function epflux4(U[*][*][*][*]:numeric, V[*][*][*][*]:numeric \
 ; Adapted by C. Smith [NOAA/ESRL PSD]a.gov
 ; Modified by Joe Barsugli to add contours of EP-Flux divergence June 2010
 ; Modified by Joe Barsugli to redo scaling of arrows in the vertical June 2010
+; Original code available here:  
+;         http://www.esrl.noaa.gov/psd/data/epflux/epflux.2010.ncl
 ;********************************************************
-; Modified by Dennis Shea to NCL 6.0.0 release June 2012 
-; Made into a function by Dennis Shea Sept. 2015 for 6.3.1 inclusion
+; Modified by Dennis Shea to NCL 6.0.0 release June 2012 (hidden) 
+; Made into a supported function by Dennis Shea Sept. 2015 for 6.3.1 inclusion
 ;********************************************************
 ; Reference:
 ; Edmon, H.J., B.J. Hoskins,and M.E. McIntyre,1980:
@@ -16924,11 +16923,12 @@ begin
                            ; see Edmon et al, 1980
 ;---Compute theta (degK)
 
- ;THETA   = T*(conform(T,PLVL,1)/P0)^(-0.286) ; (time,lev,lat,lon)
+ ;THETA   = T*(conform(T,PLVL,1)/P0)^(-0.286) ; (time,lev,lat,lon); (0,1,2,3)
   THETA   = T*(P0/conform(T,PLVL,1))^( 0.286) ; (time,lev,lat,lon)
   THETA@long_name = "potential temperature"
   THETA@units     = "degK"
   copy_VarCoords(T, THETA)
+
   if (print_var_info) then
       printVarSummary(THETA)
       printMinMax(THETA,0)
@@ -16940,6 +16940,7 @@ begin
 
   THETAzm = dim_avg_n_Wrap(THETA, 3)          ; (time,lev,lat) => (0,1,2)
   THETAzm@long_name = "zonal mean potential temperature"
+
   if (print_var_info) then
       printVarSummary(THETAzm)
       printMinMax(THETAzm,0)
@@ -16950,18 +16951,21 @@ begin
 
   THETAp   = center_finite_diff_n (THETAzm,logPLVL,False,0,1) ; (time,lev,lat)
   THETAp@long_name = "d(THETAzm)/d[log(p)]"
-  THETAp@units     = "degK/hPa"
+  THETAp@units     = "degK"
   copy_VarCoords(THETAzm, THETAp)
+
   if (print_var_info) then
       printVarSummary(THETAp)
       printMinMax(THETAp,0)
       print("~~~")
   end if
                                              
-;---Compute (1/p)*THETAp = THETAp/p 
+;---Compute (1/p)*THETAp = THETAp/p (overwrite variable) 
 
   THETAp   = THETAp/conform(THETAp,PLVL,1)    ; broadcast PLVL to all other dimensions
   THETAp@long_name = "THETAp/plvl"
+  THETAp@units     = "degK/Pa"
+
   if (print_var_info) then
       printVarSummary(THETAp)
       printMinMax(THETAp,0)
@@ -16971,6 +16975,7 @@ begin
 ;---Compute time average of THETAp
 
   THETAptm = dim_avg_n_Wrap(THETAp,0)         ; (lev,lat,lon)
+
   if (print_var_info) then
       printVarSummary(THETAptm)
       printMinMax(THETAptm,0)
@@ -16985,6 +16990,7 @@ begin
   THETAza@long_name = "THETA zonal anomaly"
   Vza@long_name     = "V meridional anomaly"                    
   Uza@long_name     = "U zonal anomaly U"                    
+
   if (print_var_info) then
       printVarSummary(Uza)
       printMinMax(Uza,0)
@@ -17003,6 +17009,7 @@ begin
   UV@long_name = "Uza*Vza: U'V'"
   UV@units = "m2/s2"
   copy_VarCoords(U,UV)
+
   if (print_var_info) then
       printVarSummary(UV)
       printMinMax(UV,0)
@@ -17013,6 +17020,7 @@ begin
   VTHETA@long_name = "Vza*THETAza"
   VTHETA@units     = "degK-m/s"
   copy_VarCoords(V,VTHETA)
+
   if (print_var_info) then
       printVarSummary(VTHETA)
       printMinMax(VTHETA,0)
@@ -17023,6 +17031,7 @@ begin
 
   UVzm    = dim_avg_n_Wrap(UV  ,3)            ; (time,lev,lat)
   UVzm@long_name   = "zonal mean UV"
+
   if (print_var_info) then
       printVarSummary(UVzm)
       printMinMax(UVzm,0)
@@ -17031,6 +17040,7 @@ begin
 
   UVzmtm  = dim_avg_n_Wrap(UVzm,0)            ; (lev,lat) 
   UVzmtm@long_name = "time mean of zonal mean UV"
+
   if (print_var_info) then
       printVarSummary(UVzmtm)
       printMinMax(UVzmtm,0)
@@ -17039,6 +17049,7 @@ begin
   
   VTHETAzm   = dim_avg_n_Wrap(VTHETA  ,3)     ; (time,lev,lat)
   VTHETAzm@long_name   = "zonal mean UV"
+
   if (print_var_info) then
       printVarSummary(VTHETAzm)
       printMinMax(VTHETAzm,0)
@@ -17047,6 +17058,7 @@ begin
 
   VTHETAzmtm = dim_avg_n_Wrap(VTHETAzm,0)     ; (lev,lat)
   VTHETAzmtm@long_name = "time mean of zonal mean UV"
+
   if (print_var_info) then
       printVarSummary(VTHETAzmtm)
       printMinMax(VTHETAzmtm,0)
@@ -17061,6 +17073,7 @@ begin
   Fp@long_name   = "(VTHETAzmtm/THETAptm): vertical component of EP flux"
   copy_VarCoords(UVzmtm    ,Fphi)
   copy_VarCoords(VTHETAzmtm,Fp)
+
   if (print_var_info) then
       printVarSummary(Fphi)
       printMinMax(Fphi,0)
@@ -17083,6 +17096,7 @@ begin
   EPdiv  = EPdiv1 + EPdiv2                             ; Add components
   EPdiv@long_name   = "EP flux divergence"
   copy_VarCoords(Fp, EPdiv)
+
   if (print_var_info) then
       printMinMax(EPdiv1,0)
       print("~~~")
@@ -17098,9 +17112,10 @@ begin
 ;   Rate of change in angular momentum per unit mass and divide by a*cos(phi).
   
   dudt = 86400*EPdiv/conform(EPdiv,acphi,1) ; 
-  dudt@long_name = "acceleration from EP flux divergence"
+  dudt@long_name = "acceleration of zonal wind"
   dudt@units     = "m/s2"
   copy_VarCoords(EPdiv,dudt)
+
   if (print_var_info) then
       printVarSummary(dudt)
       printMinMax(dudt,0)
@@ -17137,8 +17152,8 @@ begin
       Fp   = Fp*conform(Fp,rhofac,0)
       Fphi = Fphi*conform(Fphi,rhofac,0)
 
-      Fp@long_name   = "Vertical EP Flux: scaled by (P0/plvl)" 
-      Fphi@long_name = "Meridional EP Flux: scaled by (P0/plvl)" 
+      Fp@long_name   = "Vertical EP Flux: scaled by sqrt(P0/plvl)" 
+      Fphi@long_name = "Meridional EP Flux: scaled by sqrt(P0/plvl)" 
   end if
   
 ;--Scale by a magnification factor above 100 hPa (10000 Pa). 
