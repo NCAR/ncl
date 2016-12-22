@@ -14,6 +14,8 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Important modifications:
+;       22 Dec 2016:
+;           Added check to ensure ESMF_RegridWeightGen can be executed.
 ;       27 Apr 2015:
 ;           Added unadvertised ElementVertices, so that user can input own 
 ;           element vertices mesh when regridding unstructured data.
@@ -2717,7 +2719,7 @@ undef("ESMF_regrid_gen_weights")
 procedure ESMF_regrid_gen_weights(srcGridFile[1]:string, dstGridFile[1]:string, \
                            wgtFile[1]:string, opt[1]:logical)
 local DEBUG, NumProc, Executer, ESMFCMD, ESMF_exec, interp_method, pole, opt, \
-      path_to_ESMF
+      path_to_ESMF, ESMF_exec_exists
 begin
   valid_interp_methods = (/"bilinear","patch","conserve", \
                            "nearestdtos","neareststod"/)
@@ -2757,6 +2759,13 @@ begin
     path_to_ESMF = ESMF_exec
   else
     path_to_ESMF = getenv("ESMFBINDIR") + "/" + ESMF_exec
+  end if
+
+;---Check if ESMF_exec exists and can be executed
+  ESMF_exec_exists = systemfunc(path_to_ESMF + " --help >/dev/null 2>&1 && echo True || echo False")
+  if (.not.ESMF_exec_exists) then
+    print("ESMF_regrid_gen_weights: could not find " + ESMF_exec + " executable.")
+    exit
   end if
 
 ;---Check for options
