@@ -16,6 +16,7 @@
 ;    Important modifications:
 ;       22 Dec 2016:
 ;           Added check to ensure ESMF_RegridWeightGen can be executed.
+;           Added version detection for ESMF_RegridWeightGen.
 ;       27 Apr 2015:
 ;           Added unadvertised ElementVertices, so that user can input own 
 ;           element vertices mesh when regridding unstructured data.
@@ -2767,6 +2768,9 @@ begin
     print("ESMF_regrid_gen_weights: could not find " + ESMF_exec + " executable.")
     exit
   end if
+
+;---Check ESMF_RegridWeightGen version.
+  ESMF_MAJOR_VERSION = toint(systemfunc(ESMF_exec + " --version | grep MAJOR | awk '{print $2}'"))
 
 ;---Check for options
   PrintTimings   = isatt_logical_true(opt2,"PrintTimings")
