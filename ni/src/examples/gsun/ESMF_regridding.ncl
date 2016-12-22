@@ -17,6 +17,8 @@
 ;       22 Dec 2016:
 ;           Added check to ensure ESMF_RegridWeightGen can be executed.
 ;           Added version detection for ESMF_RegridWeightGen.
+;           Added --ignore_degenerate flag to ESMF_RegridWeightGen for ESMF
+;           >=7.0.0 to match functionality with older versions.
 ;       27 Apr 2015:
 ;           Added unadvertised ElementVertices, so that user can input own 
 ;           element vertices mesh when regridding unstructured data.
@@ -2831,8 +2833,16 @@ begin
 ;---Check if the weight file already exists.
   check_for_file(wgtFile,opt2)
 
+;---Add necessary --ignore_degenerate flag for ESMF >=7.0.0
+  if(ESMF_MAJOR_VERSION.ge.7) then
+    ESMF_IGNORE_DEGENERATE = "--ignore_degenerate "
+  else
+    ESMF_IGNORE_DEGENERATE = ""
+  end if
+
 ;---Build the command (First Pass - non-optional features)
   ESMFCMD = Executer + path_to_ESMF \
+            + ESMF_IGNORE_DEGENERATE \
             + " --source " + srcGridFile \
             + " --destination " + dstGridFile \
             + " --weight "+ wgtFile
