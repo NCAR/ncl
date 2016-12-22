@@ -204,7 +204,7 @@ c                     ASSIGN TO NEARBY GRID POINT
 c                     determine subscripts to nearest grid pt
          NN = -1
          IF (NFLAG.EQ.1) THEN
-             NN = ((Y(K)-GYOUT(1))/DY) + 1 
+             NN = ((Y(K)-GYOUT(1))/DY) + 2 
          ELSE
              DO N=1,NY-1
                 IF (Y(K).GE.GYOUT(N) .AND. Y(K).LT.GYOUT(N+1) ) THEN   
@@ -219,7 +219,7 @@ c                     determine subscripts to nearest grid pt
 
    20    MM = -1
          IF (MFLAG.EQ.1) THEN
-             MM = ((X(K)-GXOUT(1))/DX) + 1 
+             MM = ((X(K)-GXOUT(1))/DX) + 2 
          ELSE
              DO M=1,MX-1
                 IF (X(K).GE.GXOUT(M) .AND. X(K).LT.GXOUT(M+1) ) THEN   
