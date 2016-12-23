@@ -202,6 +202,7 @@ c                     ASSIGN TO NEARBY GRID POINT
       KSUM = 0
       DO K = 1,KPTS
 c                     determine subscripts to nearest grid pt
+c                     The '+ 2' was added Dec 22, 2017. It had been '+ 1'
          NN = -1
          IF (NFLAG.EQ.1) THEN
              NN = ((Y(K)-GYOUT(1))/DY) + 2 
