@@ -108,6 +108,22 @@ begin
 end
 
 ;***********************************************************************;
+; Function : lower_case                                                 ;
+;           name : string                                               ;
+;                                                                       ;
+; Converts "name" to lowercase. This is an old alias for str_lower.     ;
+;                                                                       ;
+; Keep this for backwards compatibility purposes.  This function is not ;
+; advertised, but users may still be using it.                          ;
+;***********************************************************************;
+undef("lower_case")
+function lower_case(name:string)
+begin
+  return(str_lower(name))
+end
+
+
+;***********************************************************************;
 ; Function : enum_list                                                  ;
 ;                                                                       ;
 ; This function returns a list of predefined resource values and their  ;
