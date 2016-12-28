@@ -108,6 +108,219 @@ begin
 end
 
 ;***********************************************************************;
+; Function : enum_list                                                  ;
+;                                                                       ;
+; This function returns a list of predefined resource values and their  ;
+; their equivalent enumerated integers as defined in various include    ;
+; files in the C code.  This is a temporary solution until an internal  ;
+; function is created that will automatically return these values.      ;
+;***********************************************************************;
+undef("enum_list")
+function enum_list()
+begin
+  return(str_lower((/\ 
+             (/"BoxCenters","0"/),\
+             (/"InteriorEdges","1"/),\
+             (/"ExternalEdges","2"/),\
+             (/"IncludeOuterBoxes","0"/),\
+             (/"IncludeMinMaxLabels","1"/),\
+             (/"ExcludeOuterBoxes","2"/),\
+             (/"NoCreate","-1"/),\
+             (/"Never","0"/),\
+             (/"Always","1"/),\
+             (/"Conditional","2"/),\
+             (/"ForceAlways","3"/),\
+             (/"Horizontal","0"/),\
+             (/"Vertical","1"/),\
+             (/"PreDraw","0"/),\
+             (/"Draw","1"/),\
+             (/"PostDraw","2"/),\
+             (/"Rectangle","0"/),\
+             (/"RectangleEnds","0"/),\
+             (/"TriangleLowVal","1"/),\
+             (/"TriangleLowEnd","1"/),\
+             (/"TriangleHighVal","2"/),\
+             (/"TriangleHighEnd","2"/),\
+             (/"TriangleBoth","3"/),\
+             (/"TriangleBothEnds","3"/),\
+             (/"Automatic","0"/),\
+             (/"Manual","1"/),\
+             (/"Explicit","2"/),\
+             (/"AreaFill","0"/),\
+             (/"RasterFill","1"/),\
+             (/"CellFill","2"/),\
+             (/"MeshFill","3"/),\
+             (/"Top","0"/),\
+             (/"Bottom","1"/),\
+             (/"Right","2"/),\
+             (/"Left","3"/),\
+             (/"Center","4"/),\
+             (/"AutomaticLevels","0"/),\
+             (/"ManualLevels","1"/),\
+             (/"ExplicitLevels","2"/),\
+             (/"EqualSpacedLevels","3"/),\
+             (/"LineArrow","0"/),\
+             (/"FillArrow","1"/),\
+             (/"WindBarb","2"/),\
+             (/"CurlyVector","3"/),\
+             (/"Map","0"/),\
+             (/"LogLin","1"/),\
+             (/"Irregular","2"/),\
+             (/"Curvilinear","3"/),\
+             (/"Spherical","4"/),\
+             (/"TriangularMesh","5"/),\
+             (/"MaximalArea","0"/),\
+             (/"Latlon","1"/),\
+             (/"Angles","2"/),\
+             (/"NPC","3"/),\
+             (/"NDC","4"/),\
+             (/"Corners","5"/),\
+             (/"Points","6"/),\
+             (/"Window","7"/),\
+             (/"Orthographic","0"/),\
+             (/"Stereographic","1"/),\
+             (/"LambertEqualArea","2"/),\
+             (/"Gnomonic","3"/),\
+             (/"AzimuthalEquidistant","4"/),\
+             (/"Satellite","5"/),\
+             (/"PseudoMollweide","6"/),\
+             (/"Mercator","7"/),\
+             (/"CylindricalEquidistant","8"/),\
+             (/"LambertConformal","9"/),\
+             (/"Robinson","20"/),\
+             (/"CylindricalEqualArea","11"/),\
+             (/"RotatedMercator","12"/),\
+             (/"Aitoff","13"/),\
+             (/"Hammer","14"/),\
+             (/"Mollweide","15"/),\
+             (/"WinkelTripel","16"/)\
+             /)))
+end
+
+;***********************************************************************;
+; Function : get_enum_value(enum_string[*]:string)                      ;
+;                                                                       ;
+; This function returns the enum value for the given predefined         ;
+; resource vaule(s). This is useful if you are doing a getvalues on a   ;
+; resource that is normally set with a predefined string, like:         ;
+;                                                                       ;
+;    res@lbLabelAlignment = "BoxCenters"                                ;
+;                                                                       ;
+; Since getvalues always returns the ENUM value and not the string      ;
+; value, this function returns the enum value so you can check both the ;
+; string and integer values of a resource. This function is used by the ;
+; check_attr_enum_value function.                                       ;
+;***********************************************************************;
+undef("get_enum_value")
+function get_enum_value(enum_strings[*]:string)
+local values, nvals, ii, n
+begin
+;
+; Note the lbBoxEndCapStyle has different names internally than
+; it does for the user: Rectangle versus RectangleEnds,
+; TriangleLowVal versus TrangleLowEnd, etc. We've accounted for
+; both below.
+;
+  enum_values = enum_list()
+  nvals   = dimsizes(enum_strings)
+  ret_val = new(nvals,integer)
+  do n=0,nvals-1
+     ii := ind(str_lower(enum_strings(n)).eq.enum_values(:,0))
+     if(.not.any(ismissing(ii))) then
+       ret_val(n) = toint(enum_values(ii,1))
+     else
+       ret_val(n) = ret_val@_FillValue
+     end if
+  end do
+  return(ret_val)
+end
+
+;***********************************************************************;
+; Function : check_attr                                                 ;
+;                res    : logical                                       ;
+;           att_name    : string                                        ;
+;          att_value                                                    ;
+;          convert_lower: logical                                       ;
+;                                                                       ;
+; Checks if res@att_name exists and if it is equal to att_value         ;
+; att_name, or the value att_value.                                     ;
+;***********************************************************************;
+undef("check_attr")
+function check_attr(res:logical,att_name:string,att_value, \
+                    convert_lower:logical)
+local res2, new_att_value, is_att_value_string, is_att_name_string
+begin
+  res2 = res
+
+  if(res2.and.isatt(res2,att_name))
+    if(typeof(att_value).eq."string") then
+      is_att_value_string = True
+    else
+      is_att_value_string = False
+    end if
+
+    if(typeof(res@$att_name$).eq."string") then
+      is_att_name_string = True
+     else
+      is_att_name_string = False
+    end if
+;
+; If one value is a string and the other isn't, then we can't
+; compare them, and we just have to return False.
+
+    if(is_att_name_string.ne.is_att_value_string) then
+      return(False)
+    end if
+
+    if(is_att_value_string.and.convert_lower)
+      new_att_value   = str_lower(att_value)
+      res2@$att_name$ = str_lower(res2@$att_name$)
+    else
+      new_att_value = att_value
+    end if
+
+    if(res2@$att_name$.eq.new_att_value)
+      return(True)
+    end if
+  end if
+
+  return(False)
+end
+
+;***********************************************************************;
+; Function : check_attr_enum_value                                      ;
+;                res     : logical                                      ;
+;           att_name     : string                                       ;
+;          att_str_value : string                                       ;
+;                                                                       ;
+; This function is similar to check_attr, except it allows you to check ;
+; if a resource is set, and if so, it can check both its predefined     ;
+; string value and its enumerated value. For example, "lbOrientation"   ;
+; can be set to "horizontal" or "vertical", or the equivalent integer   ;
+; values, 0 or 1.                                                       ;
+;***********************************************************************;
+undef("check_attr_enum_value")
+function check_attr_enum_value(res:logical,att_name:string,att_str_value:string)
+local att_num_value
+begin
+  if(.not.isatt(res,att_name).or.typeof(res@$att_name$).ne."string".and.\
+                                 typeof(res@$att_name$).ne."integer") then
+    return(False)
+  end if
+  if(typeof(res@$att_name$).eq."string") then
+    return(check_attr(res,att_name,att_str_value,True))
+  else
+    att_num_value = get_enum_value(att_str_value)
+    if(any(ismissing(att_num_value))) then
+      print("check_attr_enum_value: warning: invalid predefined resource value: '" + att_str_value + "'.")
+      return(False)
+    else
+      return(check_attr(res,att_name,att_num_value,False))
+    end if
+  end if
+end
+
+;***********************************************************************;
 ; Function : get_res_value                                              ;
 ;                res                                                    ;
 ;            resname[*]:string                                          ;

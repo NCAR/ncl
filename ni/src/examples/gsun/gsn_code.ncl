@@ -168,19 +168,6 @@ begin
 end
 
 ;***********************************************************************;
-; Function : lower_case                                                 ;
-;           name : string                                               ;
-;                                                                       ;
-; Converts "name" to lowercase. Uses "str_lower" now.                   ;
-;***********************************************************************;
-undef("lower_case")
-function lower_case(name:string)
-begin
-  return(str_lower(name))
-end
-
-
-;***********************************************************************;
 ; Function : get_long_name_units_string                                 ;
 ;            data : numeric                                             ;
 ;                                                                       ;
@@ -271,102 +258,21 @@ begin
   end if
 end
 
-;***********************************************************************;
-; Function : check_attr                                                 ;
-;                res    : logical                                       ;
-;           att_name    : string                                        ;
-;          att_value                                                    ;
-;          convert_lower: logical                                       ;
-;                                                                       ;
-; Checks if res@att_name exists and if it is equal to att_value         ;
-; att_name, or the value att_value.                                     ;
-;***********************************************************************;
-undef("check_attr")
-function check_attr(res:logical,att_name:string,att_value, \
-                    convert_lower:logical)
-local res2, new_att_value, is_att_value_string, is_att_name_string
-begin
-  res2 = res
-
-  if(res2.and.isatt(res2,att_name))
-    if(typeof(att_value).eq."string") then
-      is_att_value_string = True
-    else
-      is_att_value_string = False
-    end if
-
-    if(typeof(res@$att_name$).eq."string") then
-      is_att_name_string = True
-     else
-      is_att_name_string = False
-    end if
-;
-; If one value is a string and the other isn't, then we can't
-; compare them, and we just have to return False.
-
-    if(is_att_name_string.ne.is_att_value_string) then
-      return(False)
-    end if
-
-    if(is_att_value_string.and.convert_lower)
-      new_att_value   = lower_case(att_value)
-      res2@$att_name$ = lower_case(res2@$att_name$)
-    else
-      new_att_value = att_value
-    end if
-
-    if(res2@$att_name$.eq.new_att_value)
-      return(True)
-    end if
-  end if
-
-  return(False)
-end
-
-;***********************************************************************;
-; Function : check_attr_two_values                                      ;
-;                res     : logical                                      ;
-;           att_name     : string                                       ;
-;          att_str_value : string                                       ;
-;          att_num_value : numeric                                      ;
-;          convert_lower: logical                                       ;
-;                                                                       ;
-; This function is similar to check_attr, except it allows you to check ;
-; both a string and numeric value of a resource. For example,           ;
-; "lbOrientation" can be set to 0 or 1 for horizontal or vertial, or it ;
-; can be set directly to "horizontal" or "vertical". To check for       ;
-; resources that can be two types of values, use:                       ;
-;                                                                       ;
-;  check_attr_two_values(lbres,"lbOrientation","vertical",1,True)       ;
-;***********************************************************************;
-undef("check_attr_two_values")
-function check_attr_two_values(res:logical,att_name:string,\
-                               att_str_value:string,att_num_value:numeric,\
-                               convert_lower:logical)
-begin
-  if(.not.isatt(res,att_name)) then
-    return(False)
-  end if
-  if(typeof(res@$att_name$).eq."string") then
-    return(check_attr(res,att_name,att_str_value,convert_lower))
-  else
-    return(check_attr(res,att_name,att_num_value,False))
-  end if
-end
-
 ;**********************************************************************
-; This is a hack to fix bug NCL-2530 discovered in 6.4.0. If
-; If cnLabelBarEndStyle is set to IncludeMinMaxLabels, lbLabelAlignment
-;  cannot be set explicitly to *anything*. If you do, this screws up 
-; the labelbar labels (lbLabelStrings).
+; This is a hack to fix some bugs discovered in 6.4.0, related to 
+; NCL-2530:
 ;
-; In NCL V6.3.0, this was working properly and the plot was correct. 
-; The work-around is remove the  lbLabelAlignment setting, if
-; cnLabelBarEndStyle is set to IncludeMinMaxLabels.
-; 
-; I think the underlying issue is that if IncludeMinMaxLabels is
-; set, then lbLabelALignment can only be "ExternalEdges". I decided
-; to comment out the warning below.
+; - If cnLabelBarEndStyle is set to IncludeMinMaxLabels,
+;   lbLabelAlignment cannot be set explicitly to *anything*. If it is,
+;   this screws up the labelbar labels (lbLabelStrings).
+;
+; - If cnLabelBarEndStyle is set to ExcludeOuterBoxes, then 
+;   lbLabelAlignment can only be ExternalEdges.
+;
+;  lbLabelAlignment      cnLabelBarEndStyle
+;    0 - BoxCenters        0 - IncludeOuterBoxes
+;    1 - InteriorEdges     1 - IncludeMinMaxLabels
+;    2 - ExternalEdges     2 - ExcludeOuterBoxes
 ;**********************************************************************
 undef("_tmp_fix_for_minmax_labelbar")
 procedure _tmp_fix_for_minmax_labelbar(cres)
@@ -377,24 +283,33 @@ begin
   if(.not.cres.or..not.(isatt(cres,aln_res_name).and.isatt(cres,end_res_name))) then
     return
   end if
-
-  end_res_str_val = "IncludeMinMaxLabels"
-  end_res_int_val = 1
-  aln_res_str_val= "ExternalEdges"
-  aln_res_int_val = 2
-
-  if(check_attr_two_values(cres,end_res_name,end_res_str_val,\
-                           end_res_int_val,True)) then
-    if(.not.check_attr_two_values(cres,aln_res_name,aln_res_str_val,\
-                                  aln_res_int_val,True)) then
-      print("_tmp_fix_for_minmax_labelbar: Warning: if you set " + end_res_name)
-      print("to " + end_res_str_val + ", then you can only set " + aln_res_name)
-      print("to " + aln_res_str_val + ".")
-      print("NCL will internally remove the " + aln_res_name + " setting.")
+;
+; These are the pairings of the two resources that are NOT allowed,
+; and the values they need to be reset to. In some cases the resource
+; setting needs to be removed (because of the 6.4.0 bug).
+;
+  aln_res_str_vals = (/"InteriorEdges","BoxCenters","ExternalEdges"/)
+  aln_res_int_vals = get_enum_value(aln_res_str_vals)
+  end_res_str_vals = (/"IncludeMinMaxLabels","IncludeMinMaxLabels","IncludeMinMaxLabels"/)
+  end_res_int_vals = get_enum_value(end_res_str_vals)
+  aln_exp_str_vals = (/"ExternalEdges","ExternalEdges","ExternalEdges"/)   ; The expected values
+  aln_rmv_vals     = (/True,True,True/)                                    ; Whether to remove the resource
+  nalign = dimsizes(aln_res_str_vals)
+  
+  do n=0,nalign-1
+    if(check_attr_enum_value(cres,end_res_name,end_res_str_vals(n)).and.\
+       check_attr_enum_value(cres,aln_res_name,aln_res_str_vals(n))) then
+      if(aln_rmv_vals(n)) then
+        print("_tmp_fix_for_minmax_labelbar: Warning: if you set " + end_res_name)
+        print("to " + end_res_str_vals(n) + ", then you can only set " + aln_res_name)
+        print("to " + aln_exp_str_vals(n) + ".")
+        print("NCL will internally remove the " + aln_res_name + " setting.")
+        delete(cres@$aln_res_name$)
+      else
+        cres@$aln_res_name$ := aln_exp_str_vals(n)
+      end if
     end if
-    delete(cres@$aln_res_name$)
-  end if
-
+  end do
   return
 end
 
@@ -623,33 +538,21 @@ end
 ; an integer value if it's set as a string.                             ;
 ;***********************************************************************;
 undef("get_display_mode")
-function get_display_mode(res:logical,name:string,value)
+function get_display_mode(res[1]:logical,name[1]:string,value[1])
 local display_mode, new_display_mode 
 begin
   display_mode = get_res_value_keep(res,name,value)
 
   if(typeof(display_mode).ne."string") then
     return(display_mode)
-  else
-    new_display_mode = -1      ; Default is -1 ("nocreate")
-
-    if(lower_case(display_mode).eq."nocreate") then
-      new_display_mode = -1
-    end if
-    if(lower_case(display_mode).eq."never") then
-      new_display_mode = 0
-    end if
-    if(lower_case(display_mode).eq."always") then
-      new_display_mode = 1
-    end if
-    if(lower_case(display_mode).eq."conditional") then
-      new_display_mode = 2
-    end if
-    delete(display_mode)
-    display_mode = new_display_mode
   end if
-
-  return(new_display_mode)
+  
+  new_display_mode = get_enum_value(display_mode)
+  if(any(ismissing(new_display_mode))) then
+    return(get_enum_value("NoCreate"))
+  else
+    return(new_display_mode)
+  end if
 end
 
 ;***********************************************************************;
@@ -1512,8 +1415,7 @@ begin
     getvalues plot
       "pmLabelBarDisplayMode" : lbar_mode
     end getvalues
-;---lbar_mode.eq.1 --> "Always"
-    if(lbar_mode.eq.1) then
+    if(lbar_mode.eq.get_enum_value("Always")) then
       new_plot = plot
       new_plot@PlotManagerLabelBar = True
       return(new_plot)
@@ -2471,7 +2373,7 @@ begin
       lc_orient = "landscape"
     end if
   else
-    lc_orient = lower_case(paper_orient)
+    lc_orient = str_lower(paper_orient)
   end if
 ;
 ; Get the bounding box that covers all the plots.  If gsnPanel 
@@ -3157,7 +3059,7 @@ undef("is_cairo_ps")
 function is_cairo_ps(wtype)
 local lwtype, cpsenv
 begin
-  lwtype = lower_case(wtype)
+  lwtype = str_lower(wtype)
   cpsenv = getenv("NCARG_OLD_PS")
   if(lwtype.eq."newps".or.(lwtype.eq."ps".and.ismissing(cpsenv))) then
     return(True)
@@ -3173,7 +3075,7 @@ undef("is_cairo_pdf")
 function is_cairo_pdf(wtype)
 local lwtype, cpdfenv
 begin
-  lwtype  = lower_case(wtype)
+  lwtype  = str_lower(wtype)
   cpdfenv = getenv("NCARG_OLD_PDF")
   if(lwtype.eq."newpdf".or.(lwtype.eq."pdf".and.ismissing(cpdfenv))) then
     return(True)
@@ -3189,7 +3091,7 @@ undef("is_cairo_png")
 function is_cairo_png(wtype)
 local lwtype
 begin
-  lwtype = lower_case(wtype)
+  lwtype = str_lower(wtype)
   if(lwtype.eq."newpng".or.lwtype.eq."png") then
     return(True)
   else
@@ -3204,7 +3106,7 @@ undef("is_cairo_eps")
 function is_cairo_eps(wtype)
 local lwtype, cpsenv
 begin
-  lwtype = lower_case(wtype)
+  lwtype = str_lower(wtype)
   cpsenv = getenv("NCARG_OLD_EPS")
   if (lwtype.eq."eps".and.ismissing(cpsenv)) then
     return(True)
@@ -3220,7 +3122,7 @@ undef("is_cairo_svg")
 function is_cairo_svg(wtype)
 local lwtype
 begin
-  lwtype = lower_case(wtype)
+  lwtype = str_lower(wtype)
   if (lwtype.eq."svg") then
     return(True)
   else
@@ -3533,7 +3435,7 @@ function gsn_open_wks(type[1]:string,name[1]:string)
 local i, wks, appusrdir, name_char, not_found, res_file, res_dir, type2, realtype, suffix
 begin
     type2   = type          ; Make copy of type and its resources
-    type2  = lower_case(type)
+    type2  = str_lower(type)
     res_dir = "./"          ; Default resource directory.
     res_file = "gsnapp"     ; Default resource file name.
     valid_type = False      ; Is type valid?
@@ -6197,7 +6099,7 @@ begin
     orths = (/     1.0,          -1.0,      -1.0,        1.0/)
 
     amres = get_res_eq(res,"am")
-    just = lower_case(get_res_value(res,(/"gsnPanelFigureStringsJust","amJust"/),"bottomright"))
+    just = str_lower(get_res_value(res,(/"gsnPanelFigureStringsJust","amJust"/),"bottomright"))
 ;
 ; Look for all resources that start with gsnPanelFigureStrings, and replace
 ; this with just "tx". This is what allows us to sneak in text resources
@@ -6350,11 +6252,11 @@ begin
   if(panel_labelbar) then
 ;
 ; The cnLabelBarEndStyle resource is only available with contour 
-; plots, and it is 0 by default (IncludeOuterBoxes). We need to check
-; if it is 1 (IncludeMinMaxLabels) or 2 (ExcludeOuterBoxes) and do
-; the appropriate thing. IncludeMinMaxLabels is not currently supported.
+; plots, and it is IncludeOuterBoxes by default. We need to check
+; if it is IncludeMinMaxLabels or ExcludeOuterBoxes and do
+; the appropriate thing.
 ;
-    end_style = 0     ; IncludeOuterBoxes
+    end_style = get_enum_value("IncludeOuterBoxes")
     if(new_plot_lab@plot_type.eq."contour") then
       getvalues new_plot_lab
         "cnFillOn" : fill_on
@@ -6381,14 +6283,12 @@ begin
         "vcMonoFillArrowFillColor" : mono_fill_arrow
         "vcMonoWindBarbColor"      : mono_wind_barb
       end getvalues
-;
-; 0 = linearrow, 1 = fillarrow, 2 = windbarb, 3 = curlyvector
-;
-      if(    (fill_arrows_on .and. .not.mono_fill_arrow)     .or. \
-        (.not.fill_arrows_on .and. .not.mono_line_color)   .or. \
-        (gstyle.eq.1 .and. .not.mono_fill_arrow)  .or. \
-        (gstyle.eq.2 .and. .not.mono_wind_barb)  .or. \
-        (gstyle.eq.0 .or. gstyle.eq.3) .and. .not.mono_line_color) then
+      if(    (fill_arrows_on .and. .not.mono_fill_arrow) .or. \
+        (.not.fill_arrows_on .and. .not.mono_line_color) .or. \
+        (gstyle.eq.get_enum_value("FillArrow") .and. .not.mono_fill_arrow) .or. \
+        (gstyle.eq.get_enum_value("WindBarb") .and. .not.mono_wind_barb) .or. \
+        (gstyle.eq.get_enum_value("LineArrow") .or. get_enum_value("CurlyVector")) .and. \
+          .not.mono_line_color) then
 ;---There are no fill patterns in VectorPlot, only solids.
         mono_fill_pat = True
         mono_fill_scl = True
@@ -6446,7 +6346,7 @@ begin
   lbhor = True
   if(panel_labelbar) then
     lbres = get_res_eq(res,(/"lb","pmLabelBar","vp"/))  ; Get labelbar resources.
-    if(check_attr_two_values(lbres,"lbOrientation","vertical",1,True)) then
+    if(check_attr_enum_value(lbres,"lbOrientation","vertical")) then
       lbhor = False
       labelbar_width = 0.20 * plot_width + 2.*xwsp
 ;
@@ -7170,7 +7070,7 @@ begin
   getvalues new_base
     "trGridType" : grid_type
   end getvalues
-  if(grid_type.ge.3) then
+  if(grid_type.eq.get_enum_value("Spherical").or.get_enum_value("TriangularMesh")) then
     print("Warning: gsn_attach_plots: the base plot is either spherical or triangular, so can't fix the tickmarks")
     found_base = False
   end if
@@ -12424,27 +12324,27 @@ begin
 ;
           txjust = txres2@txJust
 
-          if(any(lower_case(txjust).eq. \
+          if(any(str_lower(txjust).eq. \
                  (/"bottomleft","bottomcenter","bottomright"/))) then
             ypos = y(1) - ((nr+1) * ysize)
           end if
-          if(any(lower_case(txjust).eq. \
+          if(any(str_lower(txjust).eq. \
                  (/"centerleft","centercenter","centerright"/))) then
             ypos = (y(1) - ((nr+1) * ysize)) + ysize2
           end if
-          if(any(lower_case(txjust).eq. \
+          if(any(str_lower(txjust).eq. \
                  (/"topleft","topcenter","topright"/))) then
             ypos = y(1) - (nr * ysize)
           end if
-          if(any(lower_case(txjust).eq. \
+          if(any(str_lower(txjust).eq. \
                  (/"bottomleft","centerleft","topleft"/))) then
             xpos = x(0) + (nc * xsize)
           end if
-          if(any(lower_case(txjust).eq. \
+          if(any(str_lower(txjust).eq. \
                  (/"bottomcenter","centercenter","topcenter"/))) then
             xpos = (x(0) + (nc * xsize)) + xsize2
           end if
-          if(any(lower_case(txjust).eq. \
+          if(any(str_lower(txjust).eq. \
                  (/"bottomright","centerright","topright"/))) then
             xpos = x(0) + ((nc+1) * xsize)
           end if

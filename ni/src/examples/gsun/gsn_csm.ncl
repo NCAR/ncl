@@ -1250,7 +1250,7 @@ begin
   getvalues pobj
     "trGridType" : tr_grid_type
   end getvalues
-  if(any(tr_grid_type.eq.(/3,4/))) then
+  if(any(tr_grid_type.eq.get_enum_value((/"Curvilinear","Spherical"/)))) then
     return(False)
   else
     return(True)
@@ -1293,7 +1293,7 @@ begin
 ; If the axis tickmarks are being labeled explicitly by the user, 
 ; then don't put a label on that axis.
 ;
-  if(check_attr_two_values(res,mode_res,"Explicit",2,True)) then
+  if(check_attr_enum_value(res,mode_res,"Explicit")) then
     set_attr(tires,axis_res,"")
   else
     if(.not.is_xyplot) then
@@ -2251,7 +2251,7 @@ begin
   set_attr(r,"lbPerimOn",False)
   set_attr(r,"lbLabelJust","CenterCenter")
   set_attr(r,"lbAutoManage",False)
-  if(check_attr_two_values(r,"lbOrientation","vertical",1,True))
+  if(check_attr_enum_value(r,"lbOrientation","vertical"))
     set_attr(r,"pmLabelBarSide","right")
   else
     set_attr(r,"pmLabelBarSide","bottom")
@@ -2259,10 +2259,8 @@ begin
   end if
   if(type.eq."polar")
     set_attr(r,"pmLabelBarOrthogonalPosF",0.05)
-  else if(type.eq."ce".and.\
-          .not.(check_attr(r,"pmTickMarkDisplayMode","Always",True).or.\
-                check_attr(r,"pmTickMarkDisplayMode",2,False).or.\
-                check_attr(r,"pmTickMarkDisplayMode",3,False))) then
+  else if(type.eq."ce".and..not.any(check_attr_enum_value(r,"pmTickMarkDisplayMode", \
+                     (/"Always","Conditional","ForceAlways"/)))) then
     set_attr(r,"pmLabelBarOrthogonalPosF",0.08)
   end if
   end if
@@ -2325,7 +2323,7 @@ begin
   lbar_side   = "bottom"
   lbar_just   = "bottomcenter"
 
-  if(check_attr_two_values(lbres,"lbOrientation","vertical",1,True)) then
+  if(check_attr_enum_value(lbres,"lbOrientation","vertical")) then
     lbar_orient = "vertical"
     lbar_side   = "right"
     lbar_just   = "centerright"
@@ -2410,22 +2408,23 @@ begin
     end getvalues
 ;
 ; As of V6.4.0, you can create labelbars with triangles via 
-; lbBoxEndCapStyle. The cap / end styles are:
+; lbBoxEndCapStyle. Certain cap styles cannot be used
+; with certain end styles.
 ;
-;   cap styles            end styles
-; 0 - rectangle          0 - include outer boxes
-; 1 - triangle low       1 - include min/max labels
-; 2 - triangle high      2 - exclude outer boxes
-; 3 - triangle both
+;   cap styles          end styles
+; rectangle ends     include outer boxes
+; triangle low       include min/max labels
+; triangle high      exclude outer boxes
+; triangle both
 ;
-; You can't have end style = 2 and cap style != 0.
+; You can't have end style = "ExcludeOuterBoxes" and cap style != "RectangleEnds"
 ;
-    if(end_labelbar_style.eq.2.and.\
-      .not.check_attr_two_values(lbres,"lbBoxEndCapStyle","RectangleEnds",0,True))
-      print("Warning:add_labelbar: you can't turn on triangle ends for the labelbar if")
+    if(end_labelbar_style.eq.get_enum_value("ExcludeOuterBoxes").and.\
+      .not.check_attr_enum_value(lbres,"lbBoxEndCapStyle","RectangleEnds"))
+      print("Warning: add_labelbar: you can't turn on triangle ends for the labelbar if")
       print("  cnLabelBarEndStyle is set to 'ExcludeOuterBoxes'")
       print("  Turning off triangle(s) for labelbar.")
-      cap_style = 0
+      cap_style = get_enum_value("RectangleEnds")
     else
       cap_style = lbres@lbBoxEndCapStyle
     end if
@@ -2435,22 +2434,23 @@ begin
 ;
 ; The three end label styles are:
 ;
-; 0 - IncludeOuterBoxes  (default)
-; 1 - IncludeMinMaxLabels (the equivalent of cnLabelBarEndLabelsOn=True)
-; 2 - ExcludeOuterBoxes
+; IncludeOuterBoxes  (default)
+; IncludeMinMaxLabels (the equivalent of cnLabelBarEndLabelsOn=True)
+; ExcludeOuterBoxes
 ; 
-; If the end label style is 0 (the default) *and* xxLabelBarEndLabelsOn
-; is True, then set the style to 1. If the style is 1 or 2 (the only
-; other valid values), then xxLabelBarEndLabelsOn should be set True.
+; If the end label style is IncludeOuterBoxes (the default) *and* 
+; xxLabelBarEndLabelsOn is True, then set the style to IncludeMinMaxLabels.
+; If the style is IncludeMinMaxLabels or ExcludeOuterBoxes, then 
+; xxLabelBarEndLabelsOn should be set True.
 ;
-    if(end_labelbar_style.eq.0) then
+    if(end_labelbar_style.eq.get_enum_value("IncludeOuterBoxes")) then
       if(end_labels_on) then
-        end_labelbar_style = 1
+        end_labelbar_style = get_enum_value("IncludeMinMaxLabels")
       end if
     else
       end_labels_on = True
     end if
-    if(end_labelbar_style.eq.2) then
+    if(end_labelbar_style.eq.get_enum_value("ExcludeOuterBoxes")) then
 ; Don't use the first fill color, scale, or pattern.
       nc2 = dimsizes(tmp_colors)
       end_labels_on = True
@@ -2467,7 +2467,7 @@ begin
 ; Check if the fill mode is "RasterFill". If so, be sure to 
 ; set lbRasterFillOn to True
 ;
-    if(.not.isatt(lbres,"lbRasterFillOn").and.fill_mode.eq.1)
+    if(.not.isatt(lbres,"lbRasterFillOn").and.fill_mode.eq.get_enum_value("RasterFill"))
       lbres@lbRasterFillOn = True
     end if
 ;
@@ -2515,9 +2515,9 @@ begin
 ;
   if(.not.isvar("end_labelbar_style")) then
     if(end_labels_on) then
-      end_labelbar_style = 1
+      end_labelbar_style = get_enum_value("IncludeMinMaxLabels")
     else
-      end_labelbar_style = 0
+      end_labelbar_style = get_enum_value("IncludeOuterBoxes")
     end if
   end if
 ;
@@ -2530,13 +2530,13 @@ begin
   if(.not.isatt(res,"lbLabelStrings")) then
     nlev = dimsizes(levels)
     nlab = dimsizes(lbstrings)
-    if(end_labels_on.and.end_labelbar_style.eq.1.and. \
+    if(end_labels_on.and.end_labelbar_style.eq.get_enum_value("IncludeMinMaxLabels").and. \
         (lbstrings(0).eq."".or.lbstrings(nlab-1).eq."")) then
-      print("Warning:add_labelbar: invalid end labels, turning them off.")
+      print("Warning: add_labelbar: invalid end labels, turning them off.")
       end_labels_on = False
     end if
     if(end_labels_on) then
-      if(end_labelbar_style.eq.1) then
+      if(end_labelbar_style.eq.get_enum_value("IncludeMinMaxLabels")) then
         newlevels         = new(nlev+2,typeof(levels))
         newlevels(1:nlev) = levels
         newlevels(0)      = stringtoxxx(lbstrings(0),typeof(newlevels))
@@ -2578,7 +2578,7 @@ procedure fix_labelbar(plot:graphic,font_height:numeric,res)
 local width, height, the_plot, class_name, ratio1, ratio2, ratio, \
       ratios, lwscale, wh_ind, def_lvpwf, lbar_orient, lbres
 begin
-  if(check_attr_two_values(res,"lbOrientation","vertical",1,True)) then
+  if(check_attr_enum_value(res,"lbOrientation","vertical")) then
     lbar_orient = "vertical"
   else
     lbar_orient = "horizontal"
@@ -3508,7 +3508,7 @@ begin
       "vpHeightF"    : vphf
       "mpLimitMode"  : limit_mode
     end getvalues
-    if(limit_mode.ne.5) then
+    if(limit_mode.ne.get_enum_value("Satellite")) then
       getvalues map
         "mpMinLonF"    : min_lon
         "mpMaxLonF"    : max_lon
@@ -3931,17 +3931,14 @@ begin
   mpres = True
   if(isatt(res,"mpProjection")) then
     iproj = res@mpProjection
-    if((typeof(iproj).eq."integer".and.iproj.ne.9).or.\
-       (typeof(iproj).eq."string".and. \
-        lower_case(iproj).ne."lambertconformal")) then
+    if(.not.check_attr_enum_value(res,"mpProjection","LambertConformal")) then
       print("mask_lambert_conformal: warning: you are using a projection other")
       print("  than LambertConformal. Unexpected results will likely occur.")
     end if
     delete(iproj)
   end if
 
-  mpres@mpProjection = get_res_value_keep(res,"mpProjection", \
-                                          "LambertConformal")
+  mpres@mpProjection = get_res_value_keep(res,"mpProjection","LambertConformal")
 
   if(isatt(res,"mpLimitMode")) then
     need_to_set_limits = False
@@ -5955,11 +5952,11 @@ begin
 ; If user explicitly sets X or Y tick marks, then don't label the X 
 ; or Y axis automatically.
 
-    if(check_attr_two_values(res2,"tmXBMode","Explicit",2,True))
+    if(check_attr_enum_value(res2,"tmXBMode","Explicit"))
       set_attr(res2,"tiXAxisString","")
     end if
 
-    if(check_attr_two_values(res2,"tmYLMode","Explicit",2,True))
+    if(check_attr_enum_value(res2,"tmYLMode","Explicit"))
       set_attr(res2,"tiYAxisString","")
     end if
 ;
@@ -6406,7 +6403,7 @@ begin
     if(isatt(res2,"mpProjection")) then
       iproj = res2@mpProjection
       if( (typeof(iproj).eq."integer".and.iproj.ne.8).or.\
-          (typeof(iproj).eq."string".and.lower_case(iproj).ne. \
+          (typeof(iproj).eq."string".and.str_lower(iproj).ne. \
                                              "cylindricalequidistant")) then
         print("gsn_csm_map_ce: Warning: you are calling one of the CE map functions,")
         print("but setting the map projection to something other than")
@@ -6442,9 +6439,8 @@ begin
 ;
 ; Increase title zone if map tickmarks are on.
 ;
-    if(check_attr(res2,"pmTickMarkDisplayMode","Always",True).or.\
-       check_attr(res2,"pmTickMarkDisplayMode",2,False).or.\
-       check_attr(res2,"pmTickMarkDisplayMode",3,False)) then
+    if(any(check_attr_enum_value(res2,"pmTickMarkDisplayMode",\
+           (/"Always","Conditional","ForceAlways"/)))) then
       main_zone = main_zone + 1
     end if
     lat_spacing  = get_res_value(res2,"gsnMajorLatSpacing",0.)
@@ -6475,9 +6471,9 @@ begin
     if(typeof(limit_mode).eq."integer") then
       limit_modes = (/"MaximalArea","LatLon","Angles","NPC","NDC",\
                       "Corners","Points","Window"/)
-      limit_mode := lower_case(limit_modes(limit_mode))
+      limit_mode := str_lower(limit_modes(limit_mode))
     else
-      limit_mode = lower_case(limit_mode)
+      limit_mode = str_lower(limit_mode)
     end if
 ;
 ; If automatic tick marks are turned on, or if mpCenterLatF != 0,
@@ -7352,7 +7348,7 @@ begin
     return(gsn_csm_map_polar(wks,res2))
   else
     if(.not.isatt(res2,"mpProjection").or.\
-       check_attr_two_values(res2,"mpProjection","cylindricalequidistant",8,True))
+       check_attr_enum_value(res2,"mpProjection","CylindricalEquidistant"))
       return(gsn_csm_map_ce(wks,res2))
     else   
       return(gsn_csm_map_other(wks,res2))
@@ -7767,7 +7763,7 @@ begin
             cnres = get_res_ne(res2,(/"mp","vp","tm","tx","am","pm","gsnZonal"/))
             set_labelbar_res(cnres,"ce")
           else
-            if(check_attr_two_values(lbres,"lbOrientation","vertical",1,True))
+            if(check_attr_enum_value(lbres,"lbOrientation","vertical"))
               set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
               set_attr(mpres,"vpHeightF",0.75)   ; on the side.
               set_attr(mpres,     "vpXF",0.08)
@@ -8051,7 +8047,7 @@ begin
             cnres = get_res_ne(res2,(/"mp","vp","tm","tx","am","pm","gsnMask","gsnZonal"/))
             set_labelbar_res(cnres,"other")
           else
-            if(check_attr_two_values(lbres,"lbOrientation","vertical",1,True))
+            if(check_attr_enum_value(lbres,"lbOrientation","vertical"))
               set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
               set_attr(mpres,"vpHeightF",0.75)   ; on the side.
               set_attr(mpres,     "vpXF",0.08)
@@ -8086,10 +8082,8 @@ begin
 ;
 ; Increase labelbar zone if map tickmarks are on.
 ;
-    if(old_lbar_on.and.\
-       check_attr(mpres,"pmTickMarkDisplayMode","Always",True).or.\
-       check_attr(mpres,"pmTickMarkDisplayMode",2,False).or.\
-       check_attr(mpres,"pmTickMarkDisplayMode",3,False)) then
+    if(old_lbar_on.and.any(check_attr_enum_value(mpres,"pmTickMarkDisplayMode",\
+           (/"Always","Conditional","ForceAlways"/)))) then
       lbar_zone = lbar_zone + 1
     end if
 
@@ -8322,7 +8316,7 @@ begin
             vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","pm"/))
             set_labelbar_res(vcres,"vector")
           else
-            if(check_attr_two_values(lbres,"lbOrientation","vertical",1,True))
+            if(check_attr_enum_value(lbres,"lbOrientation","vertical"))
               set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
               set_attr(mpres,"vpHeightF",0.75)   ; on the side.
               set_attr(mpres,     "vpXF",0.08)
@@ -8534,7 +8528,7 @@ begin
     end if
 
     if(old_lbar_on)
-      if(check_attr_two_values(lbres,"lbOrientation","vertical",1,True))
+      if(check_attr_enum_value(lbres,"lbOrientation","vertical"))
         set_attr(mpres,"vpXF",0.15)
         set_attr(vcres,"vcRefAnnoOrthogonalPosF",0.04)
         set_attr(lbres,"pmLabelBarOrthogonalPosF",0.1)
@@ -9434,7 +9428,7 @@ begin
     mpres@gsnFrame = False
 
     if(old_lbar_on.and.\
-       check_attr_two_values(lbres,"lbOrientation","vertical",1,True))
+       check_attr_enum_value(lbres,"lbOrientation","vertical"))
       set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
       set_attr(mpres,"vpHeightF",0.75)   ; on the side.
       set_attr(mpres,     "vpXF",0.08)
@@ -9626,8 +9620,8 @@ begin
     check_for_y_lat_coord(datanew,res2,"contour_map")
     check_for_lon_coord(datanew,res2,"contour_map")
 
-    lbar_orient  = lower_case(get_res_value_keep(res2,"lbOrientation", \
-                              "horizontal"))
+    lbar_orient  = str_lower(get_res_value_keep(res2,"lbOrientation", \
+                             "horizontal"))
     infolabel_on = get_res_value_keep(res2,"cnInfoLabelOn",False)
 ;
 ; Now that we know what's being drawn for annotations (labelbar, 
@@ -9830,8 +9824,8 @@ begin
         set_labelbar_res(res2,"contour")
       end if
     end if
-    lbar_orient  = lower_case(get_res_value_keep(res2,"lbOrientation", \
-                              "horizontal"))
+    lbar_orient  = str_lower(get_res_value_keep(res2,"lbOrientation", \
+                             "horizontal"))
     infolabel_on = get_res_value_keep(res2,"cnInfoLabelOn",False)
 
 ;
@@ -10084,7 +10078,7 @@ begin
     end if
 
     if(old_lbar_on.and.\
-       check_attr_two_values(lbres,"lbOrientation","vertical",1,True)) then
+       check_attr_enum_value(lbres,"lbOrientation","vertical")) then
       set_attr(res2, "vpWidthF",0.75)   ; Make room for labelbar
       set_attr(res2,"vpHeightF",0.75)   ; on the side.
       set_attr(res2,     "vpXF",0.08)
@@ -10475,7 +10469,7 @@ begin
     mpres@gsnFrame = False
 
     if(old_lbar_on.and.\
-       check_attr_two_values(lbres,"lbOrientation","vertical",1,True))
+       check_attr_enum_value(lbres,"lbOrientation","vertical"))
       set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
       set_attr(mpres,"vpHeightF",0.75)   ; on the side.
       set_attr(mpres,     "vpXF",0.08)
@@ -10773,7 +10767,7 @@ begin
 
     delete_attr(res2,"lbLabelBarOn")
 
-    lbar_orient  = lower_case(get_res_value_keep(res2,"lbOrientation", \
+    lbar_orient  = str_lower(get_res_value_keep(res2,"lbOrientation", \
                               "horizontal"))
     infolabel_on = get_res_value_keep(res2,"cnInfoLabelOn",False)
     refanno_on   = get_res_value_keep(res2,"vcRefAnnoOn",True)
@@ -11072,7 +11066,7 @@ begin
 
     delete_attr(res2,"lbLabelBarOn")
 
-    lbar_orient  = lower_case(get_res_value_keep(res2,"lbOrientation", \
+    lbar_orient  = str_lower(get_res_value_keep(res2,"lbOrientation", \
                               "horizontal"))
     infolabel_on = get_res_value_keep(res2,"cnInfoLabelOn",False)
     refanno_on   = get_res_value_keep(res2,"vcRefAnnoOn",True)
@@ -11252,7 +11246,7 @@ begin
               isatt(res,"gsnPolar")))
     return(gsn_csm_contour_map_polar(wks,data,res))
   else
-    if(check_attr_two_values(res,"mpProjection","CylindricalEquidistant",8,True).or.\
+    if(check_attr_enum_value(res,"mpProjection","CylindricalEquidistant").or.\
        .not.isatt(res,"mpProjection"))
       return(gsn_csm_contour_map_ce(wks,data,res))
     else
@@ -11292,7 +11286,7 @@ begin
               isatt(res,"gsnPolar")))
     return(gsn_csm_streamline_map_polar(wks,u,v,res))
   else
-    if(check_attr_two_values(res,"mpProjection","CylindricalEquidistant",8,True).or.\
+    if(check_attr_enum_value(res,"mpProjection","CylindricalEquidistant").or.\
        .not.isatt(res,"mpProjection"))
       return(gsn_csm_streamline_map_ce(wks,u,v,res))
     else
@@ -11332,7 +11326,7 @@ begin
               isatt(res,"gsnPolar")))
     return(gsn_csm_vector_map_polar(wks,u,v,res))
   else
-    if(check_attr_two_values(res,"mpProjection","CylindricalEquidistant",8,True).or.\
+    if(check_attr_enum_value(res,"mpProjection","CylindricalEquidistant").or.\
        .not.isatt(res,"mpProjection"))
       return(gsn_csm_vector_map_ce(wks,u,v,res))
     else
@@ -11374,7 +11368,7 @@ begin
               isatt(res,"gsnPolar")))
     return(gsn_csm_vector_scalar_map_polar(wks,u,v,data,res))
   else
-    if(check_attr_two_values(res,"mpProjection","CylindricalEquidistant",8,True).or.\
+    if(check_attr_enum_value(res,"mpProjection","CylindricalEquidistant").or.\
        .not.isatt(res,"mpProjection"))
       return(gsn_csm_vector_scalar_map_ce(wks,u,v,data,res))
     else
@@ -11417,7 +11411,7 @@ begin
               isatt(res,"gsnPolar")))
     return(gsn_csm_streamline_contour_map_polar(wks,u,v,data,res))
   else
-    if(check_attr_two_values(res,"mpProjection","CylindricalEquidistant",8,True).or.\
+    if(check_attr_enum_value(res,"mpProjection","CylindricalEquidistant").or.\
        .not.isatt(res,"mpProjection"))
       return(gsn_csm_streamline_contour_map_ce(wks,u,v,data,res))
     else
@@ -11534,22 +11528,19 @@ begin
 ; by gsn_streamline_scalar, so you have to check for it explicitly
 ; being True here.
 ;
-      if(.not.check_attr(res2,"stMonoLineColor",True,False))
-        lbar_type = "streamline"
-        if(.not.isatt(lbres,"lbLabelBarOn").or.\
-           check_attr(lbres,"lbLabelBarOn",True,False))
-          old_lbar_on = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-          new_lbar_on = .not.old_lbar_on
-          if(new_lbar_on) then
-            set_labelbar_res(res2,"other")
-          end if
+    if(.not.check_attr(res2,"stMonoLineColor",True,False))
+      lbar_type = "streamline"
+      if(.not.isatt(lbres,"lbLabelBarOn").or.\
+         check_attr(lbres,"lbLabelBarOn",True,False))
+        old_lbar_on = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+        new_lbar_on = .not.old_lbar_on
+        if(new_lbar_on) then
+          set_labelbar_res(res2,"other")
         end if
       end if
+    end if
 
-
-
-    if(old_lbar_on.and.\
-       check_attr_two_values(lbres,"lbOrientation","vertical",1,True))
+    if(old_lbar_on.and.check_attr_enum_value(lbres,"lbOrientation","vertical"))
       set_attr(res2, "vpWidthF",0.75)   ; Make room for labelbar
       set_attr(res2,"vpHeightF",0.75)   ; on the side.
       set_attr(res2,     "vpXF",0.08)
@@ -11820,8 +11811,7 @@ begin
     mpres@gsnDraw  = False
     mpres@gsnFrame = False
 
-    if(old_lbar_on.and.\
-       check_attr_two_values(lbres,"lbOrientation","vertical",1,True))
+    if(old_lbar_on.and.check_attr_enum_value(lbres,"lbOrientation","vertical"))
       set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
       set_attr(mpres,"vpHeightF",0.75)   ; on the side.
       set_attr(mpres,     "vpXF",0.08)
@@ -12008,7 +11998,7 @@ begin
 
     delete_attr(res2,"lbLabelBarOn")
 
-    lbar_orient  = lower_case(get_res_value_keep(res2,"lbOrientation", \
+    lbar_orient  = str_lower(get_res_value_keep(res2,"lbOrientation", \
                               "horizontal"))
     infolabel_on = get_res_value_keep(res2,"cnInfoLabelOn",False)
 ;
@@ -12227,7 +12217,7 @@ begin
 
     delete_attr(res2,"lbLabelBarOn")
 
-    lbar_orient  = lower_case(get_res_value_keep(res2,"lbOrientation", \
+    lbar_orient  = str_lower(get_res_value_keep(res2,"lbOrientation", \
                               "horizontal"))
     infolabel_on = get_res_value_keep(res2,"cnInfoLabelOn",False)
 
@@ -12369,7 +12359,7 @@ begin
               isatt(res,"gsnPolar")))
     return(gsn_csm_streamline_scalar_map_polar(wks,u,v,data,res))
   else
-    if(check_attr_two_values(res,"mpProjection","CylindricalEquidistant",8,True).or.\
+    if(check_attr_enum_value(res,"mpProjection","CylindricalEquidistant").or.\
        .not.isatt(res,"mpProjection"))
       return(gsn_csm_streamline_scalar_map_ce(wks,u,v,data,res))
     else
