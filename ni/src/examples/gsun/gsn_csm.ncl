@@ -2259,8 +2259,10 @@ begin
   end if
   if(type.eq."polar")
     set_attr(r,"pmLabelBarOrthogonalPosF",0.05)
-  else if(type.eq."ce".and..not.any(check_attr_enum_value(r,"pmTickMarkDisplayMode", \
-                     (/"Always","Conditional","ForceAlways"/)))) then
+  else if(type.eq."ce".and..not.\
+          (check_attr_enum_value(mpres,"pmTickMarkDisplayMode","Always").or.\
+           check_attr_enum_value(mpres,"pmTickMarkDisplayMode","Conditional").or.\
+           check_attr_enum_value(mpres,"pmTickMarkDisplayMode","ForceAlways"))) then
     set_attr(r,"pmLabelBarOrthogonalPosF",0.08)
   end if
   end if
@@ -2537,18 +2539,10 @@ begin
     end if
     if(end_labels_on) then
       if(end_labelbar_style.eq.get_enum_value("IncludeMinMaxLabels")) then
-        newlevels         = new(nlev+2,typeof(levels))
-        newlevels(1:nlev) = levels
-        newlevels(0)      = stringtoxxx(lbstrings(0),typeof(newlevels))
-        newlevels(nlev+1) = stringtoxxx(lbstrings(nlab-1),typeof(newlevels))
-        delete(levels)
-        levels = newlevels
-        delete(newlevels)
+        lbres@lbLabelStrings = lbstrings
       end if
       set_attr(lbres,"lbLabelAlignment","ExternalEdges")
     end if
-  else
-    lbres@lbLabelStrings = res@lbLabelStrings
   end if  
 
   levels = fix_zero_contour(levels)
@@ -2558,8 +2552,6 @@ begin
   anno = NhlAddAnnotation(plot,labelbar_object)
 
   attsetvalues_check(anno,amres)   ; Set annotation resources.
-
-  delete(levels)
 
   return
 end
@@ -6439,8 +6431,9 @@ begin
 ;
 ; Increase title zone if map tickmarks are on.
 ;
-    if(any(check_attr_enum_value(res2,"pmTickMarkDisplayMode",\
-           (/"Always","Conditional","ForceAlways"/)))) then
+    if(check_attr_enum_value(res2,"pmTickMarkDisplayMode","Always").or.\
+       check_attr_enum_value(res2,"pmTickMarkDisplayMode","Conditional").or.\
+       check_attr_enum_value(res2,"pmTickMarkDisplayMode","ForceAlways")) then
       main_zone = main_zone + 1
     end if
     lat_spacing  = get_res_value(res2,"gsnMajorLatSpacing",0.)
@@ -8082,8 +8075,10 @@ begin
 ;
 ; Increase labelbar zone if map tickmarks are on.
 ;
-    if(old_lbar_on.and.any(check_attr_enum_value(mpres,"pmTickMarkDisplayMode",\
-           (/"Always","Conditional","ForceAlways"/)))) then
+    if(old_lbar_on.and.\
+        (check_attr_enum_value(mpres,"pmTickMarkDisplayMode","Always").or.\
+         check_attr_enum_value(mpres,"pmTickMarkDisplayMode","Conditional").or.\
+         check_attr_enum_value(mpres,"pmTickMarkDisplayMode","ForceAlways"))) then
       lbar_zone = lbar_zone + 1
     end if
 

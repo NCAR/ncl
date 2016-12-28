@@ -258,8 +258,7 @@ end
 ;          att_value                                                    ;
 ;          convert_lower: logical                                       ;
 ;                                                                       ;
-; Checks if res@att_name exists and if it is equal to att_value         ;
-; att_name, or the value att_value.                                     ;
+; Checks if res@att_name exists and if it is equal to att_value.        ;
 ;***********************************************************************;
 undef("check_attr")
 function check_attr(res:logical,att_name:string,att_value, \
@@ -267,7 +266,6 @@ function check_attr(res:logical,att_name:string,att_value, \
 local res2, new_att_value, is_att_value_string, is_att_name_string
 begin
   res2 = res
-
   if(res2.and.isatt(res2,att_name))
     if(typeof(att_value).eq."string") then
       is_att_value_string = True
@@ -306,7 +304,7 @@ end
 ;***********************************************************************;
 ; Function : check_attr_enum_value                                      ;
 ;                res     : logical                                      ;
-;           att_name     : string                                       ;
+;           att_name[1]  : string                                       ;
 ;          att_str_value : string                                       ;
 ;                                                                       ;
 ; This function is similar to check_attr, except it allows you to check ;
@@ -316,7 +314,7 @@ end
 ; values, 0 or 1.                                                       ;
 ;***********************************************************************;
 undef("check_attr_enum_value")
-function check_attr_enum_value(res:logical,att_name:string,att_str_value:string)
+function check_attr_enum_value(res:logical,att_name[1]:string,att_str_value:string)
 local att_num_value
 begin
   if(.not.isatt(res,att_name).or.typeof(res@$att_name$).ne."string".and.\
