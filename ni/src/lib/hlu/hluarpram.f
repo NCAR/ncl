@@ -817,54 +817,59 @@ C the edges together.
 C
       GO TO 10118
 10104 CONTINUE
-        IF (.NOT.(ABS(IAM(IP1+7)).EQ.ABS(IAM(IP2+7)))) GO TO 10119
-          IL1=IAM(IP1+8)
-          IR1=IAM(IP1+9)
-          IF (.NOT.(IAM(IP1+1).EQ.IAM(IP2+1).AND.IAM(IP1+2).EQ.IAM(IP2+2
-     +))) GO TO 10120
-            IL2=IAM(IP2+8)
-            IR2=IAM(IP2+9)
-          GO TO 10121
-10120     CONTINUE
-            IL2=IAM(IP2+9)
-            IR2=IAM(IP2+8)
-10121     CONTINUE
-          IMN=MAX(-1,MIN(IL1,IL2))
-          IMX=MAX(-1,MAX(IL1,IL2))
-          IF (.NOT.(IMN.EQ.IMX)) GO TO 10122
-            IAM(IP1+8)=IMN
-C  
-C this is HLU-specific stuff that makes this version of ARPRAM 
+
+C this is HLU-specific code that makes this version of ARPRAM 
 C different. If one of the area ids represents the Conpack grid
 C boundary, then keep the other id rather than changing it to 0.
 C The original version should be used with EZMAP ids.
 C
-          GO TO 10123
-10122     CONTINUE
-          IF (.NOT.(IAM(IMN).EQ.199)) GO TO 10124
+
+      IF (ABS(IAM(IP1+7)).EQ.ABS(IAM(IP2+7))) THEN
+         IL1=IAM(IP1+8)
+         IR1=IAM(IP1+9)
+         IF (IAM(IP1+1).EQ.IAM(IP2+1).AND.
+     +        IAM(IP1+2).EQ.IAM(IP2+2)) THEN
+            IL2=IAM(IP2+8)
+            IR2=IAM(IP2+9)
+         ELSE
+            IL2=IAM(IP2+9)
+            IR2=IAM(IP2+8)
+         END IF
+         IMN=MAX(-1,MIN(IL1,IL2))
+         IMX=MAX(-1,MAX(IL1,IL2))
+         IF (IMN.EQ.IMX) THEN
+            IAM(IP1+8)=IMN
+         ELSE IF (IMN.LE.0) THEN
             IAM(IP1+8) = IMX
-          GO TO 10123
-10124     CONTINUE
-          IF (.NOT.(IAM(IMX).EQ.199)) GO TO 10125
+         ELSE IF (IAM(IMN).EQ.199) THEN
+            IAM(IP1+8) = IMX
+         ELSE IF (IMX .LE. 0) THEN
             IAM(IP1+8) = IMN
-          GO TO 10123
-10125     CONTINUE
-            IAM(IP1+8)=0
-10123     CONTINUE
-          IMN=MAX(-1,MIN(IR1,IR2))
-          IMX=MAX(-1,MAX(IR1,IR2))
-          IF (.NOT.(IMN.EQ.IMX)) GO TO 10126
+         ELSE IF (IAM(IMX).EQ.199) THEN
+            IAM(IP1+8) = IMN
+         END IF
+         IMN=MAX(-1,MIN(IR1,IR2))
+         IMX=MAX(-1,MAX(IR1,IR2))
+         IF (IMN.EQ.IMX) THEN
             IAM(IP1+9)=IMN
-          GO TO 10127
-10126     CONTINUE
-            IAM(IP1+9)=0
-10127     CONTINUE
-          IAM(IP2+8)=0
-          IAM(IP2+9)=0
-          IAM(IP2+7)=0
-        GO TO 10128
-10119   CONTINUE
-          IF (IAM(IP1+7).GT.0) IAM(IP2+7)=-ABS(IAM(IP2+7))
+         ELSE IF (IMN.LE.0) THEN
+            IAM(IP1+9) = IMX
+         ELSE IF (IAM(IMN).EQ.199) THEN
+            IAM(IP1+9) = IMX
+         ELSE IF (IMX .LE. 0) THEN
+            IAM(IP1+9) = IMN
+         ELSE IF (IAM(IMX).EQ.199) THEN
+            IAM(IP1+9) = IMN
+         END IF
+         IAM(IP2+8)=0
+         IAM(IP2+9)=0
+         IAM(IP2+7)=0
+      ELSE
+         IF (IAM(IP1+7).GT.0) THEN
+            IAM(IP2+7) = -ABS(IAM(IP2+7))
+         END IF
+      END IF
+C  
 10128   CONTINUE
       GO TO (10103,10108,10110,10115,10117) , L10104
 10118 CONTINUE
@@ -2046,20 +2051,7 @@ C
 C
 C Done.
 C
-      IF (IAM(1) - IAM(6) .EQ. IAM(7)) THEN
-         CALL FIXAREAMAP(IAM)
-      ELSE
-         do i = IAM(6), IAM(1) - IAM(7) - 1
-            if (IAM(i) .gt. 200 .and. iam(i) .lt. 513) then
-               do j = 16, IAM(5), 10
-                  if (i.eq.IAM(j) .or. i.eq.IAM(j+1)) then
-                     return
-                  end if
-               end do
-            end if
-         end do
-         CALL FIXAREAMAP(IAM)
-      END IF
+      CALL CHECKAREAMAP(IAM)
 
       RETURN
 C

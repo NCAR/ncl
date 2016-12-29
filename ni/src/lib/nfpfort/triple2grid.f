@@ -1,7 +1,8 @@
 C NCLFORTSTART
       SUBROUTINE TRIPLE2GRID1(KZ,XI,YI,ZI,ZMSG,MX,NY,GX,GY,GRID,
      +                        DOMAIN,LOOP,METHOD,DISTMX,MX2,NY2,
-     +                        X,Y,Z,GXBIG,GYBIG,GBIG,IER)
+     +                        X,Y,Z,GBIGX,GBIGY,GBIGXY,IER)
+C C C+                        X,Y,Z,GXBIG,GYBIG,GBIG,IER)
       IMPLICIT NONE
 
 c NCL:  grid = triple2grid(xi,yi,zi,gx,gy,option)
@@ -10,13 +11,21 @@ c NCL:  grid = triple2grid(xi,yi,zi,gx,gy,option)
       DOUBLE PRECISION GRID(MX,NY),GX(MX),GY(NY),DISTMX,DOMAIN
       DOUBLE PRECISION XI(KZ),YI(KZ),ZI(KZ),ZMSG
       DOUBLE PRECISION X(KZ),Y(KZ),Z(KZ)
+
+C C C WRAPIT can not handle semantics like:  0:MX2-1 
+C C C DOUBLE PRECISION GXBIG(0:MX2-1),GYBIG(0:NY2-1)
+C C C DOUBLE PRECISION GBIG(0:MX2-1,0:NY2-1)
+C C C These are place holders
+      DOUBLE PRECISION GBIGX(MX2),GBIGY(NY2)
+      DOUBLE PRECISION GBIGXY(MX2,NY2)
+C NCLEND
+
+C C C These are the real work arrays
       DOUBLE PRECISION GXBIG(0:MX2-1),GYBIG(0:NY2-1)
       DOUBLE PRECISION GBIG(0:MX2-1,0:NY2-1)
 
-C NCLEND
-
       INTEGER M,N,K,KOUT,KPTS, MFLAG,NFLAG
-      DOUBLE PRECISION DD,XX,YY,SLPY,SLPX,DDEPS,DDCRIT
+      DOUBLE PRECISION DD,DDEPS,DDCRIT
 
 c c c real     t0, t1, t2, second
       logical  debug
@@ -83,7 +92,6 @@ c                    equally spaced in y ???
       END DO
    20 CONTINUE
           
-c                     default: LOOP=0   [NCL: option=False]
       IF (KOUT.EQ.0) THEN
           IF (LOOP.EQ.0) THEN
               CALL TRIP2GRD2(KPTS,X,Y,Z,ZMSG,MX,NY,GX,GY,GRID
@@ -102,6 +110,7 @@ c          allows outliers to influence grid
           DO M = 1,MX
              GXBIG(M) = GX(M)
           END DO
+
 c          domain is arbitrary
           GYBIG(0)    = GY(1)  - DOMAIN*(GY(2)-GY(1))
           GYBIG(NY+1) = GY(NY) + DOMAIN*(GY(NY)-GY(NY-1))
@@ -131,7 +140,7 @@ c c c end if
       END
 C ------------
       SUBROUTINE TRIP2GRD2(KZ,X,Y,Z,ZMSG,MX,NY,GXOUT,GYOUT,GOUT
-     +                    ,MFLAG,NFLAG,METHOD,DDCRIT,IER)
+     +                     ,MFLAG,NFLAG,METHOD,DDCRIT,IER)
 
 c This sub assigns each "Z" to a grid point.
 c It is possible that the number of grid points having values assigned
@@ -158,10 +167,11 @@ c c c t0    = second()
 
 c                     strip out missing data (kpts)
 c                     count the number of pts outside the grid (kout)
-      IER = 0
+      IER  = 0
       KPTS = KZ
       DX   = ABS( GXOUT(3)-GXOUT(2) )
       DY   = ABS( GYOUT(3)-GYOUT(2) )
+
 c                          initialize
       DO N = 1,NY
         DO M = 1,MX
@@ -188,7 +198,6 @@ c c c t1  = second()
    10   CONTINUE
       END DO
 
-
 c  Did all kpts input get assigned to the gout?
 c  ier = -1 is not really an error; it is just informational
 c           meaning that no 'nearest neighbor' stuff was used.
@@ -204,7 +213,7 @@ c                     ASSIGN TO NEARBY GRID POINT
 c                     determine subscripts to nearest grid pt
          NN = -1
          IF (NFLAG.EQ.1) THEN
-             NN = ((Y(K)-GYOUT(1))/DY) + 1 
+             NN = INT(((Y(K)-GYOUT(1))/DY))+2  
          ELSE
              DO N=1,NY-1
                 IF (Y(K).GE.GYOUT(N) .AND. Y(K).LT.GYOUT(N+1) ) THEN   
@@ -219,7 +228,7 @@ c                     determine subscripts to nearest grid pt
 
    20    MM = -1
          IF (MFLAG.EQ.1) THEN
-             MM = ((X(K)-GXOUT(1))/DX) + 1 
+             MM = INT(((X(K)-GXOUT(1))/DX))+2
          ELSE
              DO M=1,MX-1
                 IF (X(K).GE.GXOUT(M) .AND. X(K).LT.GXOUT(M+1) ) THEN   
@@ -272,9 +281,9 @@ C ------------
       DOUBLE PRECISION GXOUT(MX),GYOUT(NY),GOUT(MX,NY)
       DOUBLE PRECISION X(KZ),Y(KZ),Z(KZ),ZMSG, DDCRIT
 c                          local
-      INTEGER M,N,K,MM,NN,KSUM,KPTS
+      INTEGER M,N,K,KSUM,KPTS
       DOUBLE PRECISION DOUT(MX,NY), DIST(KZ)
-     +                ,RE,RAD,DMIN,RLAT,RLON,ATMP 
+     +                ,RE,RAD,RLAT,ATMP 
 
 c c c real     t0, t1, t2, second
       logical  debug

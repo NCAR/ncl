@@ -136,15 +136,16 @@ begin
 ;;cf(:,:,:,{:fCrit}) = 0.0
 ;; original code end    ====================
 
-  cf   = ezfftf_n(z, 0)                           
+  cf   = ezfftf_n(z, 0)                         ; [2] x [ntim/2] x [nlat] x [mlon]             
   cf!0 = "cmplx"                                ; dimension clarity
   cf!1 = "freq"
-  cf!2 = "lat"
-  cf!3 = "lon"
+  cf!2 = "lat"                                  ; dNam(1)
+  cf!3 = "lon"                                  ; dNam(2)
  
   cf&cmplx = (/ 0,1 /)
-  cf&lat   = z&$dNam(1)$
-  cf&lon   = z&$dNam(2)$
+  cf&lat   = z&$dNam(1)$                        ; dNam(1)
+  cf&lon   = z&$dNam(2)$                        ; dNam(2)
+
                                                 ; create freq dim values
   freq     = fspan(1,nDayTot*spd/2,nDayTot*spd/2)/nDayTot
   freq!0   = "freq"                             ; clarity
@@ -163,7 +164,6 @@ begin
   z = (/ ezfftb_n(cf,cf@xbar,1) /)             ; (/ ... /) avoid meta warning msg
 
   if (iret.eq.0) then                           ; return in original order
-     ;return( zt($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) ) ; (time,lat,lon)
       return( z )                               ; (time,lat,lon)
   else                                          ; return in permuted order
       return( z($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) ) ; (lat,lon,time)
@@ -1954,15 +1954,12 @@ begin
   bpfwgt = filwgts_lanczos (bpfNwgt, ihp, fca, fcb, sigma )
 ;;printVarSummary(bpfwgt))
 
+  work   = x
+  tdim   = 0   ; time is assumed to be the leftmost dimension
+
   if (opt .and. isatt(opt,"fft") .and. opt@fft) then 
 
-; As of 6.2.0 there are no ezfft_n / exfftb_n 
-; until there is an ezfft_n (exfftb_n) the opt@fft=True option
-; must be handled in the 'old-fashioned' way' (dimension reordering)
-
-    ;;work   = x(lat|:,lon|:,time|:)       ; reorder so time is rightmost
-      work   = x($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)   ; generic
-    ;;printVarSummary(work)
+; Beginning with 6.2.0 there are ezfft_n / exfftb_n 
 
       if (isatt(work,"_FillValue")) then
           delete(work@_FillValue)          ; avoid annoying warning msg
@@ -1970,7 +1967,7 @@ begin
 
                                            ; By default ... no detrend
       if (opt .and.(isatt(opt,"detrend") .and. opt@detrend)) then
-          work  = dtrend(work, False)         ; detrend reordered array
+          work  = dtrend_n(work, False, tdim) ; detrend array
           work@detrend = "data detrended in time"        
       end if
                                            ; By default ... no taper
@@ -1980,30 +1977,25 @@ begin
           tim_taper = 0.10                 ; default taper is 10%
       end if
 
-      work       = taper(work, tim_taper, 0)  ; rightmost dimension (time) 
+      work       = taper_n(work, tim_taper, 0, tdim)  
       work@taper = "data tapered in time"        
                                            ; fft in time
-      cf   = ezfftf (work)                 ; cf(2,nlat,mlon,ntim/2)
-    ;;printVarSummary(cf)
+      cf   = ezfftf_n (work, tdim)         ; cf(2,ntim/2,nlat,mlon)
+     ;printVarSummary(cf)                  ;    0,   1  ,  2 ,  3
                                            ; map response of digitial
                                            ; filter to fft space
       fcf  = fspan(0, 0.5, ntim/2)         ; fft freq
       wcf  = linint1 (bpfwgt@freq, bpfwgt@resp, False, fcf, 0)
-    ;;printVarSummary(wcf)
-      WCF  = conform(cf(0,:,:,:), wcf, 2)
+      WCF  = conform(cf, wcf, 1)
       delete(wcf)
                                
-      cf(0,:,:,:) = cf(0,:,:,:)*WCF        ; apply response coef
-      cf(1,:,:,:) = cf(1,:,:,:)*WCF
+      cf   = cf*WCF                        ; apply response coef
       delete(WCF)
        
-      work = ezfftb(cf, 0.0)               ; fourier synthesis
+      work = ezfftb_n(cf, 0.0, 1)          ; fourier synthesis
       delete(cf)
-      work@process  =  "FFT with digital respoonse mapped tp FFT space"
+      work@process  =  "FFT with digital respoonse mapped to FFT space"
   else
-      work   = x                          ; _n
-    ;;printVarSummary(work)
-                                          ; By default ... no detrend
       work  = dtrend_n(work, False, 0 )   ; detrend
       work@detrend = "data detrended in time"        
       
@@ -2014,14 +2006,6 @@ begin
   work@band_pass_start = bpfStrt
   work@band_pass_last  = bpfLast
   work@band_pass_Nwgts = bpfNwgt
-
-;;X      = work($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:)   
-;;copy_VarMeta (x, X)
-;;X@long_name = "Band Pass: "
-;;if (isatt(x,"long_name")) then
-;;    X@long_name = "Band Pass: "+x@long_name
-;;end if
-;;return( X )
 
   if (isatt(work,"long_name")) then
       work@long_name = "Band Pass: "+work@long_name

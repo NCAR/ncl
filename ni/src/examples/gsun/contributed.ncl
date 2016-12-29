@@ -4484,23 +4484,24 @@ begin
  ;    end if
  ;end if
 
-  cf = ezfftf( clmDay )                     ; [2] x [nday/2+1]
+  cf = ezfftf_n( clmDay, 0)                 ; [2] x [nday/2]
                                             ; remember NCL is 0-based 
                                             ; cf(:,0:nHarm-1) are retained unaltered
   cf(:,nHarm   ) = 0.5*cf(:,nHarm)          ; mini-taper
   cf(:,nHarm+1:) = 0.0                      ; set all higher coef to 0.0
 
-  clmDaySmth  = ezfftb( cf, cf@xbar)                 ; reconstructed series
+  clmDaySmth  = ezfftb_n( cf, cf@xbar, 1)   ; reconstructed series
+
+  copy_VarMeta(clmDay, clmDaySmth)
   clmDaySmth@information = "smthClmDayT: Smoothed daily climatological averages"
   clmDaySmth@smoothing   = "FFT: "+nHarm+" harmonics were retained."
   return(clmDaySmth)
 end
-
 ; =====================================
 undef("smthClmDayTLL")
 function smthClmDayTLL (clmDay[*][*][*]:numeric, nHarm:integer)
 ;
-local nFill, dn, z, cf, clmDaySmth 
+local nFill, dn, cf, clmDaySmth 
 begin
   
 ; The following was commented out (post 6.2.0) when people started using 
@@ -4515,69 +4516,65 @@ begin
  ;    end if
  ;end if
 
-  dn = getvardims(clmDay)                   ; get dimension names
-  if (dn(0).ne."year_day") then
-      print("smthClmDayTLL: Warning: Usually expect year_day to be the dimension name")
-  end if
+; Historical stuff: Not needed
+ ;dn = getvardims(clmDay)                   ; get dimension names
+ ;if (dn(0).ne."year_day") then
+ ;    print("smthClmDayTLL: Warning: Usually expect year_day to be the dimension name")
+ ;end if
 
-  z  = clmDay($dn(1)$|:,$dn(2)$|:,$dn(0)$|:); reorder make time fastest varying dimension
-  cf = ezfftf( z )                          ; [2] x [nlat] x [mlon] x [nday/2+1]
+  cf = ezfftf_n( clmDay, 0)                 ; [2] x [nday/2] x [nlat] x [mlon]
 
                                             ; remember NCL is 0-based 
                                             ; cf(:,0:nHarm-1) are retained unaltered
-  cf(:,:,:,nHarm   ) = 0.5*cf(:,:,:,nHarm)  ; mini-taper
-  cf(:,:,:,nHarm+1:) = 0.0                  ; set all higher coef to 0.0
+  cf(:,nHarm,:,:   ) = 0.5*cf(:,nHarm,:,:)  ; mini-taper
+  cf(:,nHarm+1:,:,:) = 0.0                  ; set all higher coef to 0.0
 
-  z  = ezfftb( cf, cf@xbar)                 ; reconstructed series
+  clmDaySmth  = ezfftb_n( cf, cf@xbar, 1)   ; reconstructed series
 
-  clmDaySmth = z($dn(0)$|:,$dn(1)$|:,$dn(2)$|:)
+  copy_VarMeta(clmDay, clmDaySmth)
   clmDaySmth@information = "Smoothed daily climatological averages"
   clmDaySmth@smoothing   = "FFT: "+nHarm+" harmonics were retained."
 
   return(clmDaySmth)
 end
-
 ; =====================================
 undef("smthClmDayTLLL")
 function smthClmDayTLLL (clmDay[*][*][*][*]:numeric, nHarm:integer)
-;  lxf: Li 2011-05-15
 local nFill, dn, z, cf, clmDaySmth
 begin
   
 ; The following was commented out (post 6.2.0) when people started using 
 ; this on daily ocean which, of course, have _FillValue over land.
 
-  if (isatt(clmDay, "_FillValue")) then
-      nFill = num(ismissing(clmDay))
-      if (nFill.gt.0) then
-          print("smthClmDayTLLL: No missing values allowed: ezfftf does not allow")
-          print("smthClmDayTLLL: nFill="+nFill)
-          exit
-      end if
-  end if
+ ;if (isatt(clmDay, "_FillValue")) then
+ ;    nFill = num(ismissing(clmDay))
+ ;    if (nFill.gt.0) then
+ ;        print("smthClmDayTLLL: No missing values allowed: ezfftf does not allow")
+ ;        print("smthClmDayTLLL: nFill="+nFill)
+ ;        exit
+ ;    end if
+ ;end if
 
-  dn = getvardims(clmDay)                   ; get dimension names
-  if (dn(0).ne."year_day") then
-      print("smthClmDayTLLL: Warning: Usually expect year_day to be the dimension name")
-  end if
+; Historical stuff: Not needed
+ ;dn = getvardims(clmDay)                   ; get dimension names
+ ;if (dn(0).ne."year_day") then
+ ;    print("smthClmDayTLLL: Warning: Usually expect year_day to be the dimension name")
+ ;end if
 
-  z  = clmDay($dn(1)$|:,$dn(2)$|:,$dn(3)$|:,$dn(0)$|:); reorder make time fastest varying dimension
-  cf = ezfftf( z )                          ; [2] x [klev] x [nlat] x [mlon] x [183]
-
+  cf = ezfftf_n( clmDay, 0 )                ; [2] x [nday/2] x [klev] x [nlat] x [mlon]
                                             ; remember NCL is 0-based
                                             ; cf(:,0:nHarm-1) are retained unaltered
-  cf(:,:,:,:,nHarm   ) = 0.5*cf(:,:,:,:,nHarm)  ; mini-taper
-  cf(:,:,:,:,nHarm+1:) = 0.0                  ; set all higher coef to 0.0
+  cf(:,nHarm,:,:,:   ) = 0.5*cf(:,nHarm,:,:,:); mini-taper
+  cf(:,nHarm+1:,:,:,:) = 0.0                ; set all higher coef to 0.0
 
-  z  = ezfftb( cf, cf@xbar)                 ; reconstructed series
+  clmDaySmth  = ezfftb_n( cf, cf@xbar, 1)                 ; reconstructed series
 
-  clmDaySmth = z($dn(0)$|:,$dn(1)$|:,$dn(2)$|:,$dn(3)$|:)
+  copy_VarMeta(clmDay, clmDaySmth)
   clmDaySmth@information = "Smoothed daily climatological averages"
   clmDaySmth@smoothing   = "FFT: "+nHarm+" harmonics were retained."
 
   return(clmDaySmth)
 end
-
 ; =====================================
 ;
 ; Calculate daily  temporal means.
@@ -10177,41 +10174,34 @@ end
 ;
 ;   opt        - flag: opt=0 if annual total value [sum 12 values] is to be returned
 ;                      opt=1 if annual mean  value is to be returned [(annual total)/12]
-;                      opt>1 special: calculate annual mean with < 12 values
-;                                     # values used to calculate "annual" mean
-;                                       can be 1<=opt<=12
 ;                    
 ;   Usage:
 ;                 PRC_annual_total = month_to_annual( prc, 0) 
 ;                 TMP_annual_mean  = month_to_annual( tmp, 1) 
-;                 special
-;                 TMP_annual_mean  = month_to_annual( tmp, 10)   ; 10 or more values
 ;
+; NOTE: there is some extra (non-sensical code) embedded due
+; to a special request introduced in NCL 4.2.0.a033
 
 undef("month_to_annual")
 function month_to_annual(x:numeric, opt:integer)
 local dimx, rankx, ntim, nyr, nyrs, nt, nx, ny, kz, nn, nmo \
     , dName, xAnnual, xTemp, n, m, k, nMsg, nmos, NMOS, nGood
 begin
-  if (opt.lt.0 .or. opt.gt.12) then
+  if (opt.lt.0 .or. opt.gt.1) then
       print("month_to_annual: illegal value of opt: opt="+opt)
       exit
   end if
 
   NMOS  = 12                   ; fixed ... will not change
   nmos  = 12                   ; possible change in value
-  if (opt.gt.1) then
-      nmos = opt         
-  end if
+;;if (opt.gt.1) then           ; leftover from a 'special request'. No longer applicable.
+;;    nmos = opt         
+;;end if
   NMOS1 = NMOS-1               ; convenience
 
   dimx  = dimsizes(x)
   rankx = dimsizes(dimx)
   NTIM  = dimx(0)
-  if (dimx(0).ne.NTIM) then
-      print("month_to_annual: yyyymm and x time dimension must be same size")
-      exit
-  end if 
 
   if (rankx .gt. 4) then
       print("*** FATAL  ***")
@@ -10220,14 +10210,14 @@ begin
       exit
   end if
 
-  nyrs = NTIM/NMOS
-  ntim = nyrs*NMOS
   if (NTIM%NMOS .ne. 0) then
-      print("*** WARNING ***")
+      print("*** FATAL ***")
       print("month_to_annual: ntim="+NTIM+" not multiple of 12:  nyrs="+nyrs)
-      nyrs = nyrs + 1
+      exit
   end if
 
+  nyrs = NTIM/NMOS
+  ntim = nyrs*NMOS
 
   if (rankx.eq.1) then
       xAnnual = new ( nyrs, typeof(x), getFillValue(x)) ;  contributed.ncl
@@ -10248,9 +10238,9 @@ begin
          if (nMsg.eq.0 .and. opt.ge.1) then
              xAnnual(nyr)   = avg ( x(nt:nt+NMOS1) )  ; always opt=1
          end if
-         if (nMsg.gt.0 .and. opt.gt.1 .and. nGood.ge.nmos) then
-             xAnnual(nyr)   = avg ( x(nt:nt+NMOS1) )  ; always opt=1
-         end if
+;;       if (nMsg.gt.0 .and. opt.gt.1 .and. nGood.ge.nmos) then
+;;           xAnnual(nyr)   = avg ( x(nt:nt+NMOS1) )  ; always opt=1
+;;       end if
       end do
 
       copy_VarAtts (x, xAnnual)
@@ -17115,7 +17105,7 @@ begin
 ;   Rate of change in angular momentum per unit mass and divide by a*cos(phi).
   
   dudt = 86400*EPdiv/conform(EPdiv,acphi,1) ; 
-  dudt@long_name = "acceleration from EP flux divergence"
+  dudt@long_name = "acceleration of zonal wind"
   dudt@units     = "m/s2"
   copy_VarCoords(EPdiv,dudt)
 

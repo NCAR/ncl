@@ -2603,10 +2603,10 @@ void FileDestroyCompoundRecord(NclFileCompoundRecord *comprec)
             for(n = 0; n < comprec->max_comps; ++n)
             {
                 compnode = &(comprec->compnode[n]);
-                if(NULL != compnode->sides)
+                if(NULL != compnode->dimsizes)
                 {
-                    NclFree(compnode->sides);
-                    compnode->sides = NULL;
+                    NclFree(compnode->dimsizes);
+                    compnode->dimsizes = NULL;
                 }
             }
             NclFree(comprec->compnode);
@@ -3467,7 +3467,7 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                     char *component_name = NULL;
 
                     component_name = _getComponentName(NrmQuarkToString(var_name), &struct_name);
-
+		    NclFree(struct_name);
                     if(NULL != component_name)
                     {
                       /*
@@ -3496,8 +3496,7 @@ static struct _NclMultiDValDataRec* MyAdvancedFileReadVarValue(NclFile infile, N
                           var_name,
                           start, finish, stride, val);
 
-                        free(component_name);
-                        free(struct_name);
+                        NclFree(component_name);
                     }
                     else
                     {
@@ -6260,29 +6259,12 @@ static NhlErrorTypes AdvancedFileWriteVarAtt(NclFile infile, NclQuark var, NclQu
 
         /* get the last att val in case there's an error writing the att */
         last_att_val_md = _NclCopyVal(_NclGetAtt(att_id,NrmQuarkToString(attname),NULL),NULL);
-        ret = _NclAddAtt(att_id,NrmQuarkToString(attname),value,sel_ptr);
-        if(ret < NhlWARNING)
-        {
-                        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                "Could not write attribute (%s) to attribute list",
-                NrmQuarkToString( attname)));
-            ret = NhlFATAL;
-            goto done_AdvancedFileWriteVarAtt;
-        }
 
-        tmp_att_md = _NclGetAtt(att_id,NrmQuarkToString(attname),NULL);
-	/* the value is stored in the att_rec as well (not a copy - it's a pointer to the value */
-	for (i = 0; i < varnode->att_rec->n_atts; i++) {
-		if (varnode->att_rec->att_node[i].name == attname) {
-			varnode->att_rec->att_node[i].value = tmp_att_md->multidval.val;
-			break;
-		}
-	}
         ret = (*thefile->advancedfile.format_funcs->write_var_att)(
                 thefile->advancedfile.grpnode,
                 var,
                 attname,
-                tmp_att_md->multidval.val
+                value->multidval.val
                 );
 
         if (ret < NhlNOERROR)
@@ -6294,6 +6276,28 @@ static NhlErrorTypes AdvancedFileWriteVarAtt(NclFile infile, NclQuark var, NclQu
         {
             _NclDestroyObj((NclObj)last_att_val_md);
         }
+
+	/* the value is stored in the att_rec as well (not a copy - it's a pointer to the value 
+	   -- but this needs to happen after calling the format specific function; otherwise the
+	   format function thinks there's nothing to update and won't call the format specific code */
+	   
+        ret = _NclAddAtt(att_id,NrmQuarkToString(attname),value,sel_ptr);
+        if(ret < NhlWARNING)
+        {
+                        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                "Could not write attribute (%s) to attribute list",
+                NrmQuarkToString( attname)));
+            ret = NhlFATAL;
+            goto done_AdvancedFileWriteVarAtt;
+        }
+        tmp_att_md = _NclGetAtt(att_id,NrmQuarkToString(attname),NULL);
+	for (i = 0; i < varnode->att_rec->n_atts; i++) {
+		if (varnode->att_rec->att_node[i].name == attname) {
+			varnode->att_rec->att_node[i].value = tmp_att_md->multidval.val;
+			break;
+		}
+	}
+
         goto done_AdvancedFileWriteVarAtt;
     }
     else if((!exists)&&(thefile->advancedfile.format_funcs->add_att != NULL))

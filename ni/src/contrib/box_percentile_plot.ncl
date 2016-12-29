@@ -1,10 +1,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; box_percentile_plot
-;   Frank Kreienkamp 2015-08-26
+;   Frank Kreienkamp 2015-09-16
 ;
 ; based on:
-;   Esty WW, Banfield J: The box-percentile plot. J Statistical Software 8 No. 17, 2003. (http://www.jstatsoft.org/v08/i17)
-;
 ;   cjs_auto_boxplot.ncl
 ;   function percent_to_value
 ;     Carl Schreck (carl@cicsnc.org)
@@ -20,7 +18,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; function to calculate percentile values
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Carl Schreck (carl@cicsnc.org)
+;
 undef("percent_to_value")
 function percent_to_value( \
   i_data           : numeric, \
@@ -69,8 +67,6 @@ end ; percent_to_value
 ; changes towards a core functionality
 ;    Frank Kreienkamp 2015-08-26 
 ;
-undef("Boxplot_Core")
-function Boxplot_Core (wks:graphic,x[*]:numeric,y[*][*]:numeric,boxOpts:logical,plotres:logical,lineres:logical)
 ;
 ;    This function creates a blank linLog plot object, on which box plots are created by extensive
 ;    use of gsn_add_polyline. The user can draw as many or as few box plots as they wish.
@@ -92,11 +88,13 @@ function Boxplot_Core (wks:graphic,x[*]:numeric,y[*][*]:numeric,boxOpts:logical,
 ;                        boxes drawn, only the first color specified will be used.
 ;    plotres ----- An optional xy-plot resource list. Will override defaults where applicable.
 ;    lineres ----- An optional resource list pertaining to the lines used to draw the boxes/lines.
-;
+;   
 ;    Example call: plot3 = boxplot(wks,ntime,newyval,opti,res,False)
 ;               draw(plot3)
 ;               frame(wks)
 ;
+undef("Boxplot_Core")
+function Boxplot_Core (wks:graphic,x[*]:numeric,y[*][*]:numeric,boxOpts:logical,plotres:logical,lineres:logical)
 begin
      dimquery = dimsizes(y)
      numbox = dimquery(0)
@@ -203,6 +201,7 @@ end ; function Boxplot_Core
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; box_percentile_plot
 ;   Frank Kreienkamp 2015-08-26
+;   Frank Kreienkamp 2015-09-16 - added DNA
 ;
 ; based on
 ;   cjs_auto_boxplot.ncl
@@ -216,9 +215,11 @@ function box_percentile_plot( \\
   i_res           : logical, \\
   i_boxOpts       : logical, \\
   i_lineRes       : logical, \\
+  i_PerRes        : logical, \\
   i_markerRes     : logical, \\
-  i_PerRes        : logical)
-local res, minData, maxdata, nice, dims, ndims, boxData 
+  i_DNA           : logical, \\
+  i_NoMember      : logical)
+local None
 begin
 
   res = i_res
@@ -239,12 +240,15 @@ begin
   ; These are some parameters that could be useful to have up top
   dims = dimsizes(i_data)
   ndims = dimsizes(dims)
+  ;print(dims)
   if( ndims.eq.1 ) then
     nLines = 1
   else
     nLines = dims(0)
   end if
   boxData = new( (/ nLines, 5 /), float )
+  NoneActiveData = new( (/ nLines/), logical )
+  NoneActiveData = False
   isInsideFences = new( dims, logical )
 
   ; calculate the special points
@@ -263,7 +267,12 @@ begin
     if( ndims.eq.1 ) then
       currData = i_data( ind( .not.ismissing( i_data ) ) )
     else
-      currData = i_data( iLine, ind( .not.ismissing( i_data(iLine,:) ) ) )
+      if (all(ismissing(i_data(iLine,:)))) then
+        NoneActiveData(iLine) = True
+        continue
+      else
+        currData = i_data( iLine, ind( .not.ismissing( i_data(iLine,:) ) ) )
+      end if
     end if
     qsort(currData)
     boxData(iLine,0) = min(currData)
@@ -292,127 +301,184 @@ begin
     end if
     delete(currData)
   end do
-  
+ 
   i_lineRes1 = i_lineRes
   i_lineRes1@gsLineThicknessF = 0.00001
   retVal = Boxplot_Core( io_wks, ispan( 0, nLines-1, 1 ), boxData, i_boxOpts, \\
     res, i_lineRes1 )
 
   ; plot
-  do iLine = 0, nLines-1
-    PerRes = True
-    if( dimsizes(i_PerRes@gsLineColor).gt.1 ) then
-      PerRes@gsLineColor = i_PerRes@gsLineColor(iLine)
-    else
-      PerRes@gsLineColor = i_PerRes@gsLineColor
-    end if
-    PerRes = True
-    if( dimsizes(i_PerRes@gsLineThicknessF).gt.1 ) then
-      PerRes@gsLineThicknessF = i_PerRes@gsLineThicknessF(iLine)
-    else
-      PerRes@gsLineThicknessF = i_PerRes@gsLineThicknessF
-    end if    
-    if( dimsizes(i_PerRes@boxColors).gt.1 ) then
-      PerRes@boxColors = i_PerRes@boxColors(iLine)
-    else
-      PerRes@boxColors = i_PerRes@boxColors
-    end if     
-    if( dimsizes(i_PerRes@gsFillColor).gt.1 ) then
-      PerRes@gsFillColor = i_PerRes@gsFillColor(iLine)
-    else
-      PerRes@gsFillColor = i_PerRes@gsFillColor
-    end if
-    
-    if( dimsizes(i_PerRes@FillBox).gt.1 ) then
-      iFill = i_PerRes@FillBox(iLine)
-    else
-      iFill = i_PerRes@FillBox
-    end if    
-    
-    if (iFill) then
-      rOffsetPos = 0 
-      retVal@$unique_string("PerX1")$ = gsn_add_polygon(io_wks, retVal, iLine + rOffsetPos + PerX,PerY(iLine,:),PerRes)
-      retVal@$unique_string("PerX2")$ = gsn_add_polygon(io_wks, retVal, iLine + rOffsetPos  - PerX,PerY(iLine,:),PerRes)
-    else
-      rOffsetPos = 0
-      retVal@$unique_string("PerX1")$ = gsn_add_polyline(io_wks, retVal, iLine + rOffsetPos  + PerX,PerY(iLine,:),PerRes)
-      retVal@$unique_string("PerX2")$ = gsn_add_polyline(io_wks, retVal, iLine + rOffsetPos  - PerX,PerY(iLine,:),PerRes)        
-    end if
-    
-    if( dimsizes(i_PerRes@MarkPer).gt.1 ) then
-      iMark = i_PerRes@MarkPer(iLine)
-    else
-      iMark = i_PerRes@MarkPer
-    end if     
-    if (iMark) then
-      if (iFill) then
-        PerRes@gsLineColor = "white"
-        PerRes@gsLineThicknessF = i_PerRes@gsLineThicknessF * 2
+    do iLine = 0, nLines-1
+      if (NoneActiveData(iLine)) then
+	continue
       end if
-      KoorMarkPer = new((/2,2/),float)
-      KoorMarkPer(0,0) = iLine + rOffsetPos  + PerX(25)
-      KoorMarkPer(1,0) = iLine + rOffsetPos  - PerX(25)
-      KoorMarkPer(:,1) = PerY(iLine,25)
-      retVal@$unique_string("MarkPerX1")$ = gsn_add_polyline(io_wks, retVal, KoorMarkPer(:,0),KoorMarkPer(:,1),PerRes)
+      PerRes = True
+      if( dimsizes(i_PerRes@gsLineColor).gt.1 ) then
+	PerRes@gsLineColor = i_PerRes@gsLineColor(iLine)
+      else
+	PerRes@gsLineColor = i_PerRes@gsLineColor
+      end if
+      PerRes = True
+      if( dimsizes(i_PerRes@gsLineThicknessF).gt.1 ) then
+	PerRes@gsLineThicknessF = i_PerRes@gsLineThicknessF(iLine)
+      else
+	PerRes@gsLineThicknessF = i_PerRes@gsLineThicknessF
+      end if    
+      if( dimsizes(i_PerRes@gsFillColor).gt.1 ) then
+	PerRes@gsFillColor = i_PerRes@gsFillColor(iLine)
+      else
+	PerRes@gsFillColor = i_PerRes@gsFillColor
+      end if
       
-      KoorMarkPer(0,0) = iLine + rOffsetPos + PerX(50)
-      KoorMarkPer(1,0) = iLine + rOffsetPos  - PerX(50)
-      KoorMarkPer(:,1) = PerY(iLine,50)
-      retVal@$unique_string("MarkPerX2")$ = gsn_add_polyline(io_wks, retVal, KoorMarkPer(:,0),KoorMarkPer(:,1),PerRes)
-      
-      KoorMarkPer(0,0) = iLine + rOffsetPos  + PerX(75)
-      KoorMarkPer(1,0) = iLine + rOffsetPos  - PerX(75)
-      KoorMarkPer(:,1) = PerY(iLine,75)
-      retVal@$unique_string("MarkPerX3")$ = gsn_add_polyline(io_wks, retVal, KoorMarkPer(:,0),KoorMarkPer(:,1),PerRes)  
+      if( dimsizes(i_PerRes@FillBox).gt.1 ) then
+	iFill = i_PerRes@FillBox(iLine)
+      else
+	iFill = i_PerRes@FillBox
+      end if    
       
       if (iFill) then
-        if( dimsizes(i_PerRes@gsLineColor).gt.1 ) then
-          PerRes@gsLineColor = i_PerRes@gsLineColor(iLine)
-        else
-          PerRes@gsLineColor = i_PerRes@gsLineColor
-        end if
-        PerRes = True
-        if( dimsizes(i_PerRes@gsLineThicknessF).gt.1 ) then
-          PerRes@gsLineThicknessF = i_PerRes@gsLineThicknessF(iLine)
-        else
-          PerRes@gsLineThicknessF = i_PerRes@gsLineThicknessF
-        end if 
-        retVal@$unique_string("PerX1")$ = gsn_add_polyline(io_wks, retVal, iLine + rOffsetPos  + PerX,PerY(iLine,:),PerRes)
-        retVal@$unique_string("PerX2")$ = gsn_add_polyline(io_wks, retVal, iLine + rOffsetPos  - PerX,PerY(iLine,:),PerRes)         
+	rOffsetPos = 0. 
+	if (i_DNA) then
+	  rOffsetPos = -0.2
+	end if
+	retVal@$unique_string("PerX1")$ = gsn_add_polygon(io_wks, retVal, iLine + rOffsetPos + PerX,PerY(iLine,:),PerRes)
+	retVal@$unique_string("PerX2")$ = gsn_add_polygon(io_wks, retVal, iLine + rOffsetPos  - PerX,PerY(iLine,:),PerRes)
+      else
+	rOffsetPos = 0.
+	if (i_DNA) then
+	  rOffsetPos = -0.2
+	end if
+	retVal@$unique_string("PerX1")$ = gsn_add_polyline(io_wks, retVal, iLine + rOffsetPos  + PerX,PerY(iLine,:),PerRes)
+	retVal@$unique_string("PerX2")$ = gsn_add_polyline(io_wks, retVal, iLine + rOffsetPos  - PerX,PerY(iLine,:),PerRes)        
+      end if
+      
+      if( dimsizes(i_PerRes@MarkPer).gt.1 ) then
+	iMark = i_PerRes@MarkPer(iLine)
+      else
+	iMark = i_PerRes@MarkPer
+      end if     
+      if (iMark) then
+	if (iFill) then
+	  PerRes@gsLineColor = "white"
+	  PerRes@gsLineThicknessF = i_PerRes@gsLineThicknessF * 2
+	end if
+	KoorMarkPer = new((/2,2/),float)
+	KoorMarkPer(0,0) = iLine + rOffsetPos  + PerX(25)
+	KoorMarkPer(1,0) = iLine + rOffsetPos  - PerX(25)
+	KoorMarkPer(:,1) = PerY(iLine,25)
+	retVal@$unique_string("MarkPerX1")$ = gsn_add_polyline(io_wks, retVal, KoorMarkPer(:,0),KoorMarkPer(:,1),PerRes)
+	
+	KoorMarkPer(0,0) = iLine + rOffsetPos + PerX(50)
+	KoorMarkPer(1,0) = iLine + rOffsetPos  - PerX(50)
+	KoorMarkPer(:,1) = PerY(iLine,50)
+	retVal@$unique_string("MarkPerX2")$ = gsn_add_polyline(io_wks, retVal, KoorMarkPer(:,0),KoorMarkPer(:,1),PerRes)
+	
+	KoorMarkPer(0,0) = iLine + rOffsetPos  + PerX(75)
+	KoorMarkPer(1,0) = iLine + rOffsetPos  - PerX(75)
+	KoorMarkPer(:,1) = PerY(iLine,75)
+	retVal@$unique_string("MarkPerX3")$ = gsn_add_polyline(io_wks, retVal, KoorMarkPer(:,0),KoorMarkPer(:,1),PerRes)  
+	end if
+	if (iFill) then
+	  if( dimsizes(i_PerRes@gsLineColor).gt.1 ) then
+	    PerRes@gsLineColor = i_PerRes@gsLineColor(iLine)
+	  else
+	    PerRes@gsLineColor = i_PerRes@gsLineColor
+	  end if
+	  PerRes = True
+	  if( dimsizes(i_PerRes@gsLineThicknessF).gt.1 ) then
+	    PerRes@gsLineThicknessF = i_PerRes@gsLineThicknessF(iLine)
+	  else
+	    PerRes@gsLineThicknessF = i_PerRes@gsLineThicknessF
+	  end if 
+	  retVal@$unique_string("PerX1")$ = gsn_add_polyline(io_wks, retVal, iLine + rOffsetPos  + PerX,PerY(iLine,:),PerRes)
+	  retVal@$unique_string("PerX2")$ = gsn_add_polyline(io_wks, retVal, iLine + rOffsetPos  - PerX,PerY(iLine,:),PerRes)         
+	end if      
+
+      
+      if( dimsizes(i_PerRes@Avg).gt.1 ) then
+	iAvg = i_PerRes@Avg(iLine)
+      else
+	iAvg = i_PerRes@Avg
       end if      
-    end if
-    
-    if( dimsizes(i_PerRes@Avg).gt.1 ) then
-      iAvg = i_PerRes@Avg(iLine)
-    else
-      iAvg = i_PerRes@Avg
-    end if      
-    if (iAvg) then
-      markerRes = True
-      if( dimsizes(i_markerRes@gsMarkerIndex).gt.1 ) then
-        markerRes@gsMarkerIndex = i_markerRes@gsMarkerIndex(iLine)
-      else
-        markerRes@gsMarkerIndex = i_markerRes@gsMarkerIndex
+      if (iAvg) then
+	markerRes = True
+	if( dimsizes(i_markerRes@gsMarkerIndex).gt.1 ) then
+	  markerRes@gsMarkerIndex = i_markerRes@gsMarkerIndex(iLine)
+	else
+	  markerRes@gsMarkerIndex = i_markerRes@gsMarkerIndex
+	end if
+	if( dimsizes(i_markerRes@gsMarkerSizeF).gt.1 ) then
+	  markerRes@gsMarkerSizeF = i_markerRes@gsMarkerSizeF(iLine)
+	else
+	  markerRes@gsMarkerSizeF = i_markerRes@gsMarkerSizeF
+	end if
+	if( dimsizes(i_markerRes@gsMarkerThicknessF).gt.1 ) then
+	  markerRes@gsMarkerThicknessF = i_markerRes@gsMarkerThicknessF(iLine)
+	else
+	  markerRes@gsMarkerThicknessF = i_markerRes@gsMarkerThicknessF
+	end if
+	if( dimsizes(i_markerRes@gsMarkerColor).gt.1 ) then
+	  markerRes@gsMarkerColor = i_markerRes@gsMarkerColor(iLine)
+	else
+	  markerRes@gsMarkerColor = i_markerRes@gsMarkerColor
+	end if
+	markerRes@gsClipOn = False
+	retVal@$unique_string("avg")$ = gsn_add_polymarker(io_wks, retVal, iLine + rOffsetPos, Avg(iLine), markerRes )
       end if
-      if( dimsizes(i_markerRes@gsMarkerSizeF).gt.1 ) then
-        markerRes@gsMarkerSizeF = i_markerRes@gsMarkerSizeF(iLine)
-      else
-        markerRes@gsMarkerSizeF = i_markerRes@gsMarkerSizeF
+      if (i_DNA) then
+	if( ndims.eq.1 ) then
+	  ;currData = i_data( ind( .not.ismissing( i_data ) ) )
+	  currData = i_data 
+	else
+	  if (all(ismissing(i_data(iLine,:)))) then
+	    continue
+	  else
+	    ;currData = i_data( iLine, ind( .not.ismissing( i_data(iLine,:) ) ) )
+	    currData = i_data(iLine,:)
+	  end if
+	end if    
+	markerRes1 = True
+      
+	
+	;markerRes1@gsMarkerIndex = i_DNA@gsMarkerIndex
+	;markerRes1@gsMarkerSizeF = i_DNA@gsMarkerSizeF
+	;markerRes1@gsLineThicknessF = i_DNA@gsLineThicknessF
+	;markerRes1@gsLineColor  = i_DNA@gsLineColor 
+	;markerRes1@gsClipOn = False
+	dimsX = dimsizes(currData)
+	do i = 0, dimsX-1
+	  if (ismissing(currData(i))) then
+	  continue
+	  end if
+	  if( dimsizes(i_DNA@gsLineColor).gt.1 ) then
+	    markerRes1@gsLineColor = i_DNA@gsLineColor(i)
+	  else
+	    markerRes1@gsLineColor = i_DNA@gsLineColor
+	  end if      
+	  if( dimsizes(i_DNA@gsLineThicknessF).gt.1 ) then
+	    markerRes1@gsLineThicknessF = i_DNA@gsLineThicknessF(i)
+	  else
+	    markerRes1@gsLineThicknessF = i_DNA@gsLineThicknessF
+	  end if        
+	  retVal@$unique_string("dnaX1")$ = gsn_add_polyline(io_wks, retVal, (/iLine + 0.15,iLine + 0.25/),(/currData(i),currData(i)/),markerRes1)
+	end do 
+	delete(currData)
       end if
-      if( dimsizes(i_markerRes@gsMarkerThicknessF).gt.1 ) then
-        markerRes@gsMarkerThicknessF = i_markerRes@gsMarkerThicknessF(iLine)
-      else
-        markerRes@gsMarkerThicknessF = i_markerRes@gsMarkerThicknessF
+      if (i_NoMember) then
+	if( ndims.eq.1 ) then
+	  currData = i_data 
+	else
+	  if (all(ismissing(i_data(iLine,:)))) then
+	    continue
+	  else
+	    currData = i_data(iLine,:)
+	  end if
+	end if  
+	dimsX = dimsizes(currData( ind( .not.ismissing( currData ) ) ))  ;dimsizes(currData)
+	retVal@$unique_string("NoX1")$ = gsn_add_text(io_wks, retVal,tostring(dimsX),iLine+0.05,i_res@trYMinF + 0.0,i_NoMember)
+	delete(currData)
       end if
-      if( dimsizes(i_markerRes@gsMarkerColor).gt.1 ) then
-        markerRes@gsMarkerColor = i_markerRes@gsMarkerColor(iLine)
-      else
-        markerRes@gsMarkerColor = i_markerRes@gsMarkerColor
-      end if
-      markerRes@gsClipOn = False
-      retVal@$unique_string("avg")$ = gsn_add_polymarker(io_wks, retVal, iLine + rOffsetPos, Avg(iLine), markerRes )
-    end if
-  end do
+    end do
   return(retVal)
 end ; 
 

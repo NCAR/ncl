@@ -425,4 +425,4 @@ typedef struct _GribTable {
 #define DEFAULT_MISSING_INT ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval
 
 extern int GetNextGribOffset(int gribfile, off_t *offset, unsigned int *totalsize,
-                             off_t startoff, off_t *nextoff,int* version);
+                             off_t startoff, off_t *nextoff,int* version, ng_size_t *bds_size);

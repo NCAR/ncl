@@ -599,7 +599,7 @@ while ($n <= $nfiles)
                 goto VALID_FILE
             endif
         else
-	    set psfx = "$sfx"
+            set psfx = "$fil:e"
         endif
 
         # Does the file have a suffix (delineated by a ".") or
