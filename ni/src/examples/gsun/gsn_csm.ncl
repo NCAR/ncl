@@ -12434,7 +12434,7 @@ begin
   set_attr(res2_tmp,"cnLineLabelBackgroundColor",-1)
   if(.not.isatt(res2_tmp,"cnInfoLabelOrthogonalPosF"))
     if(res1_tmp@cnFillOn)
-      if(check_attr_two_values(res1_tmp,"lbOrientation","horizontal",0,True))
+      if(check_attr_enum_value(res1_tmp,"lbOrientation","horizontal"))
         set_attr(res2_tmp,"cnInfoLabelOrthogonalPosF",-0.01)
       else
         set_attr(res2_tmp,"cnInfoLabelOrthogonalPosF",0.12)
