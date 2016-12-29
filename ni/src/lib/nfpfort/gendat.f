@@ -30,7 +30,7 @@ C
 C
 C This is all being done inside NCL C wrapper, so redundant, but safe.
 C
-      IF(ISEED.LT.0.OR.JSEED.GT.100) THEN
+      IF(ISEED.LT.0.OR.ISEED.GT.100) THEN
         JSEED = 0
       ELSE
         JSEED = ISEED

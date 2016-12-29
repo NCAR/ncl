@@ -23,7 +23,6 @@
 extern "C" {
 #endif
 #include <stdio.h>
-#include <strings.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Callbacks.h>
@@ -60,8 +59,11 @@ extern "C" {
 
 extern int cmd_line;
 
-extern void _NclHLUVarValChange(NhlArgVal cbdata, NhlArgVal udata);
-
+extern void _NclHLUVarValChange(
+#if     NhlNeedProto
+NhlArgVal cbdata, NhlArgVal udata
+#endif
+);
 typedef struct exe_stack_node {
         NclValue *ptr;
         int *lptr;
@@ -76,8 +78,14 @@ char **fptr;
 NclValue *machine;
 NhlErrorTypes estatus = NhlNOERROR;
 static int level = 0;
+static short _ItIsNclReassign = 0;
 
-static void _NclPushExecute(void)
+static void _NclPushExecute
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
 {
         ExeStackNode *tmp = handle.next;
 
@@ -88,8 +96,12 @@ static void _NclPushExecute(void)
         handle.next->machine= machine;
         handle.next->next= tmp;
 }
-
-static void _NclPopExecute(void)
+static void _NclPopExecute
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
 {
         ExeStackNode *tmp = handle.next;
 
@@ -7754,17 +7766,13 @@ void performASSIGN_VAR_VAR_OP(NclStackEntry *lhs_var, NclStackEntry *rhs_var,
         estatus = NhlFATAL;
     }
 
-    int selfReassign = FALSE;
-    if (lhs_sym == rhs_sym)
-        selfReassign = TRUE;
-    
     /*if((estatus!=NhlFATAL)&&(lhs_var != NULL)&&(lhs_var->kind == NclStk_NOVAL))*/
-    if(((estatus!=NhlFATAL)&&(lhs_var != NULL)&&(lhs_var->kind == NclStk_NOVAL)) || selfReassign)
+    if(((estatus!=NhlFATAL)&&(lhs_var != NULL)&&(lhs_var->kind == NclStk_NOVAL)) || _ItIsNclReassign)
     {
         if(lhs_nsubs != 0)
         {
             NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                      "re-assignment into a slice of variable %s is an undefined operation",
+                      "%s is undefined, can not subscript an undefined variable",
                        lhs_sym->name));
             estatus = NhlFATAL;
             _NclCleanUpStack(lhs_nsubs);
@@ -7834,12 +7842,8 @@ void performASSIGN_VAR_VAR_OP(NclStackEntry *lhs_var, NclStackEntry *rhs_var,
 
             if(estatus != NhlFATAL)
             {
-                tmp_var = _NclVarRead(rhs_var->u.data_var,rhs_sel_ptr);
-                if (selfReassign)
-                    /* on reassignment of a variable to a slice of itself, now safe to free memory on lhs */
-                    _NclDestroyObj(_NclGetObj(lhs_var->u.data_var->var.thevalue_id));
                 lhs_var->kind = NclStk_VAR;
-                lhs_var->u.data_var = tmp_var;
+                lhs_var->u.data_var = _NclVarRead(rhs_var->u.data_var,rhs_sel_ptr);
                 if(lhs_var->u.data_var == NULL)
                 {
                     estatus = NhlFATAL;
@@ -8148,11 +8152,11 @@ void CallREASSIGN_VAR_VAR_OP(void)
 
     if(0 == strcmp(lhs_sym->name, rhs_sym->name))
     {
-        /* reassigning a variable to itself is a NO-OP */
-        if ( !(lhs_nsubs == 0 && rhs_nsubs == 0)) {
-            performASSIGN_VAR_VAR_OP(lhs_var, rhs_var, lhs_nsubs, rhs_nsubs,
+        _ItIsNclReassign = 1;
+
+        performASSIGN_VAR_VAR_OP(lhs_var, rhs_var, lhs_nsubs, rhs_nsubs,
                                    lhs_sym, rhs_sym);
-        }
+        _ItIsNclReassign = 0;
     }
     else
     {
@@ -8174,7 +8178,13 @@ void CallPUSHNULL(void) {
 
 
 
-NclExecuteReturnStatus _NclExecute(unsigned long start_offset)
+NclExecuteReturnStatus _NclExecute
+#if	NhlNeedProto
+(unsigned long start_offset)
+#else 
+(start_offset) 
+	unsigned long start_offset;
+#endif
 {
 	int cline;
 	char *cfile = NULL;

@@ -107,18 +107,18 @@ typedef struct _NclFileCompoundNode
     NclQuark             name;
     NclBasicDataTypes    type;
     nc_type              the_nc_type;
+    int                  index;
     size_t               offset;
     int                  rank;
-    int                  nvals;
-    int                 *sides;
-
+    ng_size_t            nvals;
+    ng_size_t           *dimsizes;
     void                *value;
 } NclFileCompoundNode;
 
 typedef struct _NclFileCompoundRecord
 {
     size_t            max_comps;
-    size_t            n_comps;   /* aka nfields */
+    size_t            n_comps;   /* aka nfields -- this is used by HDF5 whereas nfields is used by NetCDF4 -- dont know why  */
     size_t            type;
     size_t            size;
     size_t            nfields;
@@ -213,6 +213,7 @@ typedef struct _NclFileVarNode
     NclFileUDTNode         *udt_type_node;   /* this is read-only -- does not need to be freed */
     int                    is_compound;
     NclFileCompoundRecord *comprec;
+    void                  *type_specific_rec;  /* for reference and other types */
 
     NclFileAttRecord *att_rec;
 
