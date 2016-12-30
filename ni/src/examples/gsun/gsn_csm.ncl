@@ -2260,9 +2260,9 @@ begin
   if(type.eq."polar")
     set_attr(r,"pmLabelBarOrthogonalPosF",0.05)
   else if(type.eq."ce".and..not.\
-          (check_attr_enum_value(mpres,"pmTickMarkDisplayMode","Always").or.\
-           check_attr_enum_value(mpres,"pmTickMarkDisplayMode","Conditional").or.\
-           check_attr_enum_value(mpres,"pmTickMarkDisplayMode","ForceAlways"))) then
+          (check_attr_enum_value(r,"pmTickMarkDisplayMode","Always").or.\
+           check_attr_enum_value(r,"pmTickMarkDisplayMode","Conditional").or.\
+           check_attr_enum_value(r,"pmTickMarkDisplayMode","ForceAlways"))) then
     set_attr(r,"pmLabelBarOrthogonalPosF",0.08)
   end if
   end if
@@ -4198,7 +4198,8 @@ begin
 ; Outline the area we are looking at (optional).
 ;
    if(maskoutln) then
-     pres@gsLineColor      = convert_color_to_rgba(wks,"foreground")
+     tmp_color             = convert_color_to_rgba(wks,"foreground")
+     pres@gsLineColor      = tmp_color(0,:)
      pres@gsLineThicknessF = 3.0
      var_string         = unique_string("lamb_polyline")
      outline_lon        = (/ minlon, maxlon, maxlon, minlon, minlon /)
