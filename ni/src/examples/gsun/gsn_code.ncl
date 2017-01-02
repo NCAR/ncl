@@ -7070,8 +7070,9 @@ begin
   getvalues new_base
     "trGridType" : grid_type
   end getvalues
-  if(grid_type.eq.get_enum_value("Spherical").or.get_enum_value("TriangularMesh")) then
-    print("Warning: gsn_attach_plots: the base plot is either spherical or triangular, so can't fix the tickmarks")
+  if(any(grid_type.eq.(/get_enum_value("Spherical"),\
+                        get_enum_value("TriangularMesh")/))) then
+    print("Warning: gsn_attach_plots: the base plot is either spherical or a triangular mesh, so can't fix the tickmarks")
     found_base = False
   end if
 ;
