@@ -25,6 +25,14 @@
  *                  the poles. The three frames present three 
  *                  different map projections, showing how the 
  *                  primitives adapt to various levels of distortion.
+ *
+ * Note: beginning with NCL 6.2.0 the rules for drawing polylines (and to some extent polygons) changed.
+ *       Prior to 6.2.0 you could draw a polyline that spanned the globe using only 2 points with longitudes 0 and 360.
+ *       However, this created difficult to resolve ambiguities when dealing with lines that cross the cyclic point of
+ *       of longitude. Therefore, the rule was adapted that the path between two specified points always takes the
+ *       shortest path around the globe, meaning that a line between 0 and 360 is of length 0 in longitude. Therefore it
+ *       now takes at least 3 points (0., 180, 360.) and preferably 4 points (eliminating all possible ambiguity)
+ *       to draw a line spanning the globe in longitude. This script has been modified to work with the new rule.    
  */
 
 #include <stdio.h>
@@ -46,9 +54,9 @@ int main(int argc, char *argv[])
     int rlist;
     int appid,wid,canvas,gsid;
     int i;
-    float px[5];
-    float py[5];
-    char *projection[] = {"orthographic","mollweide","stereographic"};
+    float px[9];
+    float py[9];
+    char *projection[] = {"orthographic","mollweide","stereographic","lambertequalarea"};
 
 /*
  * Initialize the high level utility library
@@ -136,7 +144,7 @@ int main(int argc, char *argv[])
     NhlRLClear(rlist);
     NhlCreate(&gsid,"style",NhlgraphicStyleClass,wid,rlist);
 
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < 4; i++) {
 
 /*
  * Set the map projection
@@ -158,17 +166,26 @@ int main(int argc, char *argv[])
 	    py[0] = -23.5;
 	    py[1] = 23.5;
 	    py[2] = 23.5;
-	    py[3] = -23.5;
-	    py[4] = -23.5;
+	    py[3] = 23.5;
+	    py[4] = 23.5;
+	    py[5] = -23.5;
+	    py[6] = -23.5;
+	    py[7] = -23.5;
+	    py[8] = -23.5;
 	    px[0] = 360.;
 	    px[1] = 360.;
-	    px[2] = 0.;
-	    px[3] = 0.;
-	    px[4] = 360.;
-	    NhlDataPolygon(canvas,gsid,px,py,5);
+	    px[2] = 240.;
+	    px[3] = 120.;
+	    px[4] = 0.;
+	    px[5] = 0.;
+	    px[6] = 120.;
+	    px[7] = 240.;
+	    px[8] = 360.;
+	    NhlDataPolygon(canvas,gsid,px,py,9);
 
 /*
  * Next draw the north and south temperate zones
+ * Note the px array does not need to change for the next four NhlDataPolygon draws
  */
 	    NhlRLClear(rlist);
 	    NhlRLSetInteger(rlist,NhlNgsFillColor,3);
@@ -177,26 +194,24 @@ int main(int argc, char *argv[])
 	    py[0] = 23.5;
 	    py[1] = 66.5;
 	    py[2] = 66.5;
-	    py[3] = 23.5;
-	    py[4] = 23.5;
-	    px[0] = 360.;
-	    px[1] = 360.;
-	    px[2] =  0.;
-	    px[3] = 0.;
-	    px[4] = 360.;
-	    NhlDataPolygon(canvas,gsid,px,py,5);
+	    py[3] = 66.5;
+	    py[4] = 66.5;
+	    py[5] = 23.5;
+	    py[6] = 23.5;
+	    py[7] = 23.5;
+	    py[8] = 23.5;
+	    NhlDataPolygon(canvas,gsid,px,py,9);
 
 	    py[0] = -23.5;
 	    py[1] = -66.5;
 	    py[2] = -66.5;
-	    py[3] = -23.5;
-	    py[4] = -23.5;
-	    px[0] = 360.;
-	    px[1] = 360.;
-	    px[2] =  0.;
-	    px[3] = 0.;
-	    px[4] = 360.;
-	    NhlDataPolygon(canvas,gsid,px,py,5);
+	    py[3] = -66.5;
+	    py[4] = -66.5;
+	    py[5] = -23.5;
+	    py[6] = -23.5;
+	    py[7] = -23.5;
+	    py[8] = -23.5;
+	    NhlDataPolygon(canvas,gsid,px,py,9);
 /*
  * Draw the frigid zones
  */
@@ -207,26 +222,25 @@ int main(int argc, char *argv[])
 	    py[0] = 90.;
 	    py[1] = 66.5;
 	    py[2] = 66.5;
-	    py[3] = 90.;
-	    py[4] = 90.;
-	    px[0] = 360.;
-	    px[1] = 360.;
-	    px[2] =  0.;
-	    px[3] = 0.;
-	    px[4] = 360.;
-	    NhlDataPolygon(canvas,gsid,px,py,5);
+	    py[3] = 66.5;
+	    py[4] = 66.5;
+	    py[5] = 90.;
+	    py[6] = 90.;
+	    py[7] = 90.;
+	    py[8] = 90.;
+	    NhlDataPolygon(canvas,gsid,px,py,9);
 
 	    py[0] = -90.;
 	    py[1] = -66.5;
 	    py[2] = -66.5;
-	    py[3] = -90.;
-	    py[4] = -90.;
-	    px[0] = 360.;
-	    px[1] = 360.;
-	    px[2] =  0.;
-	    px[3] = 0.;
-	    px[4] = 360.;
-	    NhlDataPolygon(canvas,gsid,px,py,5);
+	    py[3] = -66.5;
+	    py[4] = -66.5;
+	    py[5] = -90.;
+	    py[6] = -90.;
+	    py[7] = -90.;
+	    py[8] = -90.;
+	    NhlDataPolygon(canvas,gsid,px,py,9);
+
 /*
  * Draw the map outlines and grid
  */
@@ -250,11 +264,15 @@ int main(int argc, char *argv[])
 	    NhlRLSetString(rlist,NhlNgsLineLabelString,"e|q|u|a|t|o|r");
 	    NhlSetValues(gsid,rlist);
 
-	    px[0] = 360;
-	    px[1] = 0;
+	    px[0] = 0;
+	    px[1] = 120.0;
+	    px[2] = 240.0;
+	    px[3] = 360.0;
 	    py[0] = 0;
 	    py[1] = 0;
-	    NhlDataPolyline(canvas,gsid,px,py,2);
+	    py[2] = 0;
+	    py[3] = 0;
+	    NhlDataPolyline(canvas,gsid,px,py,4);
 
 /*
  * Tropic of cancer
@@ -264,11 +282,11 @@ int main(int argc, char *argv[])
 			   "t|r|o|p|i|c o|f c|a|n|c|e|r");
 	    NhlSetValues(gsid,rlist);
 
-	    px[0] = 360;
-	    px[1] = 0;
 	    py[0] = 23.5;
 	    py[1] = 23.5;
-	    NhlDataPolyline(canvas,gsid,px,py,2);
+	    py[2] = 23.5;
+	    py[3] = 23.5;
+	    NhlDataPolyline(canvas,gsid,px,py,4);
 /*
  * Tropic of capricorn (Note: currently there is a limit on the 
  * number of characters in a line label that prevents the '|'
@@ -280,11 +298,11 @@ int main(int argc, char *argv[])
 			   "tr|o|p|ic of c|a|p|r|i|c|o|rn");
 	    NhlSetValues(gsid,rlist);
 
-	    px[0] = 360;
-	    px[1] = 0;
 	    py[0] = -23.5;
 	    py[1] = -23.5;
-	    NhlDataPolyline(canvas,gsid,px,py,2);
+	    py[2] = -23.5;
+	    py[3] = -23.5;
+	    NhlDataPolyline(canvas,gsid,px,py,4);
 /*
  * Arctic circle
  */
@@ -293,11 +311,11 @@ int main(int argc, char *argv[])
 			   "a|r|c|t|i|c c|i|r|c|l|e");
 	    NhlSetValues(gsid,rlist);
 
-	    px[0] = 360;
-	    px[1] = 0;
 	    py[0] = 66.5;
 	    py[1] = 66.5;
-	    NhlDataPolyline(canvas,gsid,px,py,2);
+	    py[2] = 66.5;
+	    py[3] = 66.5;
+	    NhlDataPolyline(canvas,gsid,px,py,4);
 /*
  * Antarctic circle
  */
@@ -306,11 +324,11 @@ int main(int argc, char *argv[])
 			   "|a|n|t|a|r|c|t|i|c c|i|r|c|l|e");
 	    NhlSetValues(gsid,rlist);
 
-	    px[0] = 360;
-	    px[1] = 0;
 	    py[0] = -66.5;
 	    py[1] = -66.5;
-	    NhlDataPolyline(canvas,gsid,px,py,2);
+	    py[2] = -66.5;
+	    py[3] = -66.5;
+	    NhlDataPolyline(canvas,gsid,px,py,4);
 
 	    NhlFrame(wid);
     }

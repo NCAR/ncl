@@ -622,7 +622,7 @@ NhlLayer parent;
 	NhlMapTransObjLayerPart	*mtp = &(minstance->mptrans);
 	char *cproj, *climit;
 	float v_angle_lim, h_angle_lim, center_lat, center_lon;
-	float rl1[2],rl2[2],rl3[2],rl4[2];
+	float rl1[2] = {0,0},rl2[2] = {0,0},rl3[2] = { 0, 0},rl4[2] = {0, 0};
         NhlBoolean outside_viewspace = False;
         float pxl,pxr,pyb,pyt,pw,ph;
 	double denom;
