@@ -2529,7 +2529,7 @@ begin
 ;
 ; Now we have to figure out what labels to use for the labelbar.
 ;
-; If user set cn/vcLabelBarEndLabelsOn to True or the LabelBarStyle
+; If user set cn/st/vcLabelBarEndLabelsOn to True or the LabelBarStyle
 ; resource to IncludeMinMaxLabels, then we need to add min/max 
 ; labels, if the user hasn't done so (by setting lbLabelStrings). 
 ; Use lbLabelStrings rather than actual min/max of data, because the 
