@@ -151,13 +151,9 @@ begin
              (/"PreDraw","0"/),\
              (/"Draw","1"/),\
              (/"PostDraw","2"/),\
-             (/"Rectangle","0"/),\
              (/"RectangleEnds","0"/),\
-             (/"TriangleLowVal","1"/),\
              (/"TriangleLowEnd","1"/),\
-             (/"TriangleHighVal","2"/),\
              (/"TriangleHighEnd","2"/),\
-             (/"TriangleBoth","3"/),\
              (/"TriangleBothEnds","3"/),\
              (/"Automatic","0"/),\
              (/"Manual","1"/),\
