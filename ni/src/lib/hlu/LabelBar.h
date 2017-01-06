@@ -41,7 +41,7 @@ typedef enum _NhllbBoxSizingMode {
 #define NhlTlbBoxSizingMode "lbBoxSizingMode"
 
 typedef enum _NhllbBoxEndCapStyle {
-    NhlRECTANGLE = 0, NhlTRIANGLELOWVAL, NhlTRIANGLEHIGHVAL, NhlTRIANGLEBOTH
+    NhlRECTANGLEENDS = 0, NhlTRIANGLELOWEND, NhlTRIANGLEHIGHEND, NhlTRIANGLEBOTHENDS
 } NhllbBoxEndCapStyle;
 
 #define NhlTlbBoxEndCapStyle "lbBoxEndCapStyle"

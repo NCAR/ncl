@@ -302,7 +302,7 @@ static NhlResource resources[] = {
 	{NhlNlbBoxEndCapStyle, NhlClbBoxEndCapStyle, NhlTlbBoxEndCapStyle, 
 	 sizeof(NhllbBoxEndCapStyle), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.box_end_cap_style),
-         NhlTImmediate,_NhlUSET((NhlPointer)NhlRECTANGLE),0,NULL},                
+         NhlTImmediate,_NhlUSET((NhlPointer)NhlRECTANGLEENDS),0,NULL},                
 
 	{NhlNlbPerimOn, NhlCEdgesOn, NhlTBoolean,
 	 sizeof(NhlBoolean), NhlOffset(NhlLabelBarLayerRec,labelbar.perim_on),
@@ -4239,14 +4239,14 @@ NhlBoolean edges_only;
 	if (lb_p->orient == NhlHORIZONTAL) {
 
 		for (i=0; i<lb_p->box_count; i++) {
-                    if (i == 0 && (endcapStyle == NhlTRIANGLEBOTH || endcapStyle == NhlTRIANGLELOWVAL)) {
+                    if (i == 0 && (endcapStyle == NhlTRIANGLEBOTHENDS || endcapStyle == NhlTRIANGLELOWEND)) {
                         ypoints[0] = (lb_p->adj_bar.t + lb_p->adj_bar.b) / 2.0; 
                         ypoints[1] = lb_p->adj_bar.b;
                         ypoints[2] = lb_p->adj_bar.t;
                         ypoints[3] = ypoints[0];
                         ypoints[4] = ypoints[0];                        
                     }
-                    else if (i == (lb_p->box_count-1) && (endcapStyle == NhlTRIANGLEBOTH || endcapStyle == NhlTRIANGLEHIGHVAL)) {
+                    else if (i == (lb_p->box_count-1) && (endcapStyle == NhlTRIANGLEBOTHENDS || endcapStyle == NhlTRIANGLEHIGHEND)) {
                         ypoints[0] = lb_p->adj_bar.b;
                         ypoints[1] = (lb_p->adj_bar.b + lb_p->adj_bar.t) / 2.0;
                         ypoints[2] = ypoints[1];
@@ -4301,14 +4301,14 @@ NhlBoolean edges_only;
 	else {
 		for (i=0; i< lb_p->box_count; i++) {
 
-                    if (i == 0 && (endcapStyle == NhlTRIANGLEBOTH || endcapStyle == NhlTRIANGLELOWVAL)) {
+                    if (i == 0 && (endcapStyle == NhlTRIANGLEBOTHENDS || endcapStyle == NhlTRIANGLELOWEND)) {
                         xpoints[0] = (lb_p->adj_bar.l + lb_p->adj_bar.r) / 2.0; 
                         xpoints[1] = xpoints[0];
                         xpoints[2] = lb_p->adj_bar.r;
                         xpoints[3] = lb_p->adj_bar.l;
                         xpoints[4] = xpoints[0];                        
                     }
-                    else if (i == (lb_p->box_count-1) && (endcapStyle == NhlTRIANGLEBOTH || endcapStyle == NhlTRIANGLEHIGHVAL)) {
+                    else if (i == (lb_p->box_count-1) && (endcapStyle == NhlTRIANGLEBOTHENDS || endcapStyle == NhlTRIANGLEHIGHEND)) {
                         xpoints[0] = lb_p->adj_bar.l;
                         xpoints[1] = lb_p->adj_bar.r;
                         xpoints[2] = (lb_p->adj_bar.l + lb_p->adj_bar.r) / 2.0;
@@ -4631,10 +4631,10 @@ static NhlErrorTypes    LabelBarClassInitialize
         };
         
         _NhlEnumVals   boxendcapstylelist[] = {
-            {NhlRECTANGLE,         "RectangleEnds"},
-            {NhlTRIANGLELOWVAL,    "TriangleLowEnd"},
-            {NhlTRIANGLEHIGHVAL,   "TriangleHighEnd"},
-            {NhlTRIANGLEBOTH,      "TriangleBothEnds"},
+            {NhlRECTANGLEENDS,     "RectangleEnds"},
+            {NhlTRIANGLELOWEND,    "TriangleLowEnd"},
+            {NhlTRIANGLEHIGHEND,   "TriangleHighEnd"},
+            {NhlTRIANGLEBOTHENDS,  "TriangleBothEnds"},
         };
 
 	_NhlRegisterEnumType(NhlviewClass,NhlTlbLabelAlignmentMode,
