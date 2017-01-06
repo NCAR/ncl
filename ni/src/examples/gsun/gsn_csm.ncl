@@ -2315,7 +2315,7 @@ begin
   set_attr(amres,"amResizeNotify",True)
   set_attr(amres,"amParallelPosF",parallel)
   set_attr(lbres,"lbLabelFontHeightF",font_height)
-  set_attr(lbres,"lbBoxEndCapStyle","RectangleEnds")
+  set_attr(lbres,"lbBoxEndCapStyle",get_enum_value("RectangleEnds"))
 
 ;---The default is to attach a horizontal labelbar at the bottom of the plot.
   if(check_attr_enum_value(lbres,"lbOrientation","vertical")) then
