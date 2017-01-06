@@ -264,7 +264,12 @@ end
 ;
 ; If cnLabelBarEndStyle is set to IncludeMinMaxLabels, there's a bug
 ; where lbLabelAlignment can't be set explicitly to *anything*. If
-; it is, this screws up the labelbar labels (lbLabelStrings).
+; it is, this screws up the labelbar labels (lbLabelStrings). 
+; The only allowed setting for lbLabelAlignment when IncludeMinMaxLabels
+; are turned on is "ExteriorEdges". But, due to the bug, if you set
+; this, the labels won't be correct. This procedure 
+;
+; The fix is to simply 
 ;**********************************************************************
 undef("_tmp_fix_for_minmax_labelbar")
 procedure _tmp_fix_for_minmax_labelbar(cres)
@@ -276,7 +281,7 @@ begin
     return
   end if
 ;
-; These are the pairings of the two resources that are NOT allowed,
+; These are the pairings of the two resources, two of which are NOT allowed.
 ; and the values they need to be reset to. In some cases the resource
 ; setting needs to be removed (because of the 6.4.0 bug).
 ;
@@ -306,9 +311,17 @@ begin
 end
 
 ;**********************************************************************
-; This procedure fixes bad pairings of resources set for a contour
-; labelbar. If cnLabelBarEndStyle is set to IncludeMinMaxLabels or 
-; ExcludeOuterBoxes, then lbLabelAlignment can only be ExternalEdges.
+; This procedure fixes invalid pairings of cnLabelBarEndStyle and 
+; lbLabelAlignment, by resetting them to meaningful values.
+;
+; Here are some examples of invalid pairings:
+;
+;  lbLabelAlignment     cnLabelBarEndStyle
+;  ----------------     ------------------
+;  InteriorEdges        IncludeMinMaxLabels
+;  BoxCenters           IncludeMinMaxLabels
+;  BoxCenters           ExcludeOuterBoxes
+;  ExcludeOuterBoxes    IncludeMinMaxLabels
 ;**********************************************************************
 undef("_fix_incorrect_labelbar_resource_pairings")
 procedure _fix_incorrect_labelbar_resource_pairings(cres)
@@ -1477,7 +1490,7 @@ begin
         "cnFillOn"              : cn_fillon
         "pmLabelBarDisplayMode" : lbar_mode
       end getvalues 
-      if(lbar_mode.eq.1.or.cn_fillon) then
+      if(lbar_mode.eq.get_enum_value("Always").or.cn_fillon) then
         found = True
         new_plot = ids(i)
         new_plot@plot_type = "contour"
@@ -1495,11 +1508,11 @@ begin
         "vcMonoWindBarbColor"      : vc_monowindbarbcolor
         "pmLabelBarDisplayMode"    : lbar_mode
       end getvalues
-      if( (lbar_mode.eq.1) .or.\
-          (vc_glyphstyle.eq.0.and..not.vc_monolinearrowcolor) .or.\
-          (vc_glyphstyle.eq.1.and..not.vc_monofillarrowfillcolor) .or. \
-          (vc_glyphstyle.eq.2.and..not.vc_monowindbarbcolor)  .or. \
-          (vc_glyphstyle.eq.3.and..not.vc_monolinearrowcolor)) then
+      if( (lbar_mode.eq.get_enum_value("Always")) .or.\
+          (vc_glyphstyle.eq.get_enum_value("LineArrow").and..not.vc_monolinearrowcolor) .or.\
+          (vc_glyphstyle.eq.get_enum_value("FillArrow").and..not.vc_monofillarrowfillcolor) .or. \
+          (vc_glyphstyle.eq.get_enum_value("WindBarb").and..not.vc_monowindbarbcolor)  .or. \
+          (vc_glyphstyle.eq.get_enum_value("CurlyVector").and..not.vc_monolinearrowcolor)) then
         found = True
         new_plot = ids(i)
         new_plot@plot_type = "vector"
@@ -1510,7 +1523,7 @@ begin
         "stMonoLineColor"       : st_monolinecolor
         "pmLabelBarDisplayMode" : lbar_mode
       end getvalues
-      if(lbar_mode.eq.1.or..not.st_monolinecolor) then
+      if(lbar_mode.eq.get_enum_value("Always").or..not.st_monolinecolor) then
         found = True
         new_plot = ids(i)
         new_plot@plot_type = "streamline"
@@ -3008,14 +3021,14 @@ end
 ; perimeter is turned off, and the fill patterns are set to solid.      ;
 ;                                                                       ;
 ; "EndStyle" is a special internal resource that comes from the         ;
-; cnLabelBarEndStyle resource. It defaults to 0 (include outer boxes),  ;
-; and can be set to 1 (include min/max labels) or 2 (exclude outer      ; 
-; boxes). The assumption is that if this resource is set to 2, then the ;
-; nbox, colors, and labels that are input are set up expecting one more ;
-; box than you have labels (i.e. you are expecting to label the         ;
-; interior edges only). If set to 2, then the assumption is that the    ;
-; labels already contain the min/max values, and you have the correct   ;
-; nbox and colors.                                                      ;
+; cnLabelBarEndStyle resource. It defaults to IncludeOuterBoxes, and can;
+; be set to IncludeMinMaxLabels) or ExcludeOuterBoxes. The assumption is;
+; that if this resource is set to ExcludeOuterBoxes, then the nbox,     ;
+; colors, and labels that are input are set up expecting one more box   ;
+; than you have labels (i.e. you are expecting to label the interior    ;
+; edges only). If set to 2, then the assumption is that the labels      ;
+; already contain the min/max values, and you have the correct nbox     ;
+; and colors.                                                           ;
 ;                                                                       ;
 ;***********************************************************************;
 undef("create_labelbar")
@@ -3037,23 +3050,23 @@ begin
   mono_fill_pat = get_res_value(lbres,"lbMonoFillPattern",True);
 
   if(isatt(lbres,"EndStyle")) then
-    end_style = get_res_value(lbres,"EndStyle",0)
-    if(.not.(end_style.ge.0.and.end_style.le.2)) then
-      end_style = 0
+    end_style = get_res_value(lbres,"EndStyle",get_enum_value("IncludeOuterBoxes"))
+    if(.not.any(end_style.eq.(/get_enum_value("IncludeOuterBoxes"),\
+                               get_enum_value("IncludeMinMaxLabels"),\
+                               get_enum_value("ExcludeOuterBoxes")/))) then
+      end_style = get_enum_value("IncludeOuterBoxes")
     end if
-    if(end_style.eq.2) then
-; Exclude outer boxes
+    if(end_style.eq.get_enum_value("ExcludeOuterBoxes")) then
       nbox2       = nbox-2
       new_colors  = get_res_value(lbres,"lbFillColors",colors(1:))
       label_align = get_res_value(lbres,"lbLabelAlignment","ExternalEdges")
     else
       nbox2       = nbox
       new_colors  = get_res_value(lbres,"lbFillColors",colors)
-      if(end_style.eq.0) then
-; Include outer boxes
+      if(end_style.eq.get_enum_value("IncludeOuterBoxes")) then
         label_align = get_res_value(lbres,"lbLabelAlignment","InteriorEdges")
       else
-; Include min max labels
+; IncludeMinMaxLabels
         label_align = get_res_value(lbres,"lbLabelAlignment","ExternalEdges")
       end if
     end if
@@ -6673,10 +6686,11 @@ begin
 ; Check if a labelbar is to be drawn at the bottom.
 ;
   if(panel_labelbar) then
-    if(end_style.eq.0.or.end_style.eq.2) then
+    if(end_style.eq.get_enum_value("IncludeOuterBoxes").or.\
+       end_style.eq.get_enum_value("ExcludeOuterBoxes")) then
       lbres@EndStyle = end_style
     else
-      lbres@EndStyle = 0
+      lbres@EndStyle = get_enum_value("IncludeOuterBoxes")
       print("Warning: gsn_panel: this routine only supports a cnLabelBarEndStyle that is set to 'IncludeOuterBoxes' or 'ExcludeOuterBoxes'")
     end if
 ;
