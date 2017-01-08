@@ -259,17 +259,15 @@ begin
 end
 
 ;**********************************************************************
-; This is a hack to fix some bugs discovered in 6.4.0, related to 
-; NCL-2530:
+; This is a hack to fix a bug discovered in 6.4.0, related to NCL-2530.
 ;
 ; If cnLabelBarEndStyle is set to IncludeMinMaxLabels, there's a bug
 ; where lbLabelAlignment can't be set explicitly to *anything*. If
 ; it is, this screws up the labelbar labels (lbLabelStrings). 
 ; The only allowed setting for lbLabelAlignment when IncludeMinMaxLabels
-; are turned on is "ExteriorEdges". But, due to the bug, if you set
-; this, the labels won't be correct. This procedure 
-;
-; The fix is to simply 
+; are turned on is "ExternalEdges". But, due to the bug, if you set
+; this, the labels won't be correct. This procedure simply removes
+; the lbLabelAlignment setting.
 ;**********************************************************************
 undef("_tmp_fix_for_minmax_labelbar")
 procedure _tmp_fix_for_minmax_labelbar(cres)
@@ -277,85 +275,73 @@ local aln_res_name, end_res_name, aln_res_str_val, end_res_str_val
 begin
   aln_res_name = "lbLabelAlignment"
   end_res_name = "cnLabelBarEndStyle"
-  if(.not.cres.or..not.(isatt(cres,aln_res_name).and.isatt(cres,end_res_name))) then
-    return
+  if(cres.and.isatt(cres,aln_res_name).and.isatt(cres,end_res_name).and.\
+    check_attr_enum_value(cres,end_res_name,"IncludeMinMaxLabels")) then
+    delete(cres@$aln_res_name$)
   end if
-;
-; These are the pairings of the two resources, two of which are NOT allowed.
-; and the values they need to be reset to. In some cases the resource
-; setting needs to be removed (because of the 6.4.0 bug).
-;
-  aln_res_str_vals = (/"InteriorEdges","BoxCenters","ExternalEdges"/)
-  end_res_str_vals = (/"IncludeMinMaxLabels","IncludeMinMaxLabels","IncludeMinMaxLabels"/)
-  aln_exp_str_vals = (/"ExternalEdges","ExternalEdges","ExternalEdges"/)
-
-  aln_res_int_vals = get_enum_value(aln_res_str_vals)
-  end_res_int_vals = get_enum_value(end_res_str_vals)
-  aln_rmv_vals     = (/True,True,True/)
-  nalign = dimsizes(aln_res_str_vals)
-  
-  do n=0,nalign-1
-    if(check_attr_enum_value(cres,end_res_name,end_res_str_vals(n)).and.\
-       check_attr_enum_value(cres,aln_res_name,aln_res_str_vals(n))) then
-      print("_tmp_fix_for_minmax_labelbar: Warning: if you set " + end_res_name)
-      print("to " + end_res_str_vals(n) + ", then you can only set " + aln_res_name)
-      print("to " + aln_exp_str_vals(n) + ".")
-      if(aln_rmv_vals(n)) then
-        delete(cres@$aln_res_name$)
-      else
-        cres@$aln_res_name$ := aln_exp_str_vals(n)
-      end if
-    end if
-  end do
   return
 end
 
 ;**********************************************************************
-; This procedure fixes invalid pairings of cnLabelBarEndStyle and 
-; lbLabelAlignment, by resetting them to meaningful values.
-;
-; Here are some examples of invalid pairings:
-;
-;  lbLabelAlignment     cnLabelBarEndStyle
-;  ----------------     ------------------
-;  InteriorEdges        IncludeMinMaxLabels
-;  BoxCenters           IncludeMinMaxLabels
-;  BoxCenters           ExcludeOuterBoxes
-;  ExcludeOuterBoxes    IncludeMinMaxLabels
+; This procedure fixes invalid settings of various labelbar resources
+; related to contour plots.
 ;**********************************************************************
-undef("_fix_incorrect_labelbar_resource_pairings")
-procedure _fix_incorrect_labelbar_resource_pairings(cres)
+undef("_fix_labelbar_resources")
+procedure _fix_labelbar_resources(cres)
 local aln_res_name, end_res_name, aln_res_str_val, end_res_str_val
 begin
-  aln_res_name = "lbLabelAlignment"
-  end_res_name = "cnLabelBarEndStyle"
-  if(.not.cres.or..not.(isatt(cres,aln_res_name).and.isatt(cres,end_res_name))) then
+  if(.not.cres) then
     return
   end if
-;
-; These are the pairings of the two resources that are NOT allowed,
-; and the values they need to be reset to. Some of these may have
-; already been taken care of in the _tmp_fix_for_minmax_labelbar 
-; procedure.
-;
-  aln_res_str_vals = (/"InteriorEdges","BoxCenters","ExternalEdges","BoxCenters","InteriorEdges"/)
-  end_res_str_vals = (/"IncludeMinMaxLabels","IncludeMinMaxLabels","IncludeMinMaxLabels","ExcludeOuterBoxes","ExcludeOuterBoxes"/)
-  aln_exp_str_vals = (/"ExternalEdges","ExternalEdges","ExternalEdges","ExternalEdges","ExternalEdges"/)   ; The expected values
 
-  aln_res_int_vals = get_enum_value(aln_res_str_vals)
-  end_res_int_vals = get_enum_value(end_res_str_vals)
-  nalign = dimsizes(aln_res_str_vals)
-  
-  do n=0,nalign-1
-    if(check_attr_enum_value(cres,end_res_name,end_res_str_vals(n)).and.\
-       check_attr_enum_value(cres,aln_res_name,aln_res_str_vals(n))) then
-      print("_fix_incorrect_labelbar_resource_pairings: Warning: if you set " + end_res_name)
-      print("to " + end_res_str_vals(n) + ", then you can only set " + aln_res_name)
-      print("to " + aln_exp_str_vals(n) + ".")
-      cres@$aln_res_name$ := aln_exp_str_vals(n)
+  end_on_res   = "cnLabelBarEndLabelsOn"
+  aln_res_name = "lbLabelAlignment"
+  end_res_name = "cnLabelBarEndStyle"
+  cap_res_name = "lbBoxEndCapStyle"
+  if(isatt(cres,end_on_res)) then
+    print("_fix_labelbar_resources: Warning: " + end_on_res + " is deprecated.")
+    if(isatt(cres,end_res_name)) then
+      print("  Your setting of " + end_res_name + " will override it.")
+    else if(cres@$end_on_res$) then
+      print("  Will remove it and set " + end_res_name + " to 'IncludeMinMaxLabels'.")
+      cres@$end_res_name$ = "IncludeMinMaxLabels"
+    else if(.not.cres@$end_on_res$) then
+      print("  Will remove it.")
     end if
-  end do
-  return
+    end if
+    end if
+    delete(cres@$end_on_res$)
+  end if
+
+  if(.not.(isatt(cres,aln_res_name).or.isatt(cres,cap_res_name)).and.\
+     .not.isatt(cres,end_res_name)) then
+    return
+  end if
+
+  if(isatt(cres,aln_res_name).and.\
+     (.not.check_attr_enum_value(cres,aln_res_name,"ExternalEdges").and.\
+      check_attr_enum_value(cres,end_res_name,"IncludeMinMaxLabels"))) then
+    print("_fix_labelbar_resources: Warning: if you set " + end_res_name + " to")
+    print("  IncludeMinMaxLabels, then you should not set " + aln_res_name + ".")
+    print("  Will remove the "+ aln_res_name + " resource.")
+    delete(cres@$aln_res_name$)
+  end if
+  if(isatt(cres,aln_res_name).and.\
+     (.not.check_attr_enum_value(cres,aln_res_name,"ExternalEdges").and.\
+      check_attr_enum_value(cres,end_res_name,"ExcludeOuterBoxes"))) then
+    print("_fix_labelbar_resources: Warning: if you set " + end_res_name + " to")
+    print("  ExcludeOuterBoxes, then you should not set " + aln_res_name + ".")
+    print("  Will remove the "+ aln_res_name + " resource.")
+    delete(cres@$aln_res_name$)
+  end if
+  if(isatt(cres,cap_res_name).and.\
+     (.not.check_attr_enum_value(cres,cap_res_name,"RectangleEnds").and.\
+      .not.check_attr_enum_value(cres,end_res_name,"IncludeOuterBoxes"))) then
+    print("_fix_labelbar_resources: Warning: if you set " + cap_res_name + " to")
+    print("  any of the triangle-cap styles, then you should not set " + end_res_name + ".")
+    print("  Will remove the "+ end_res_name + " resource.")
+    delete(cres@$end_res_name$)
+  end if
 end
 
 ;***********************************************************************;
@@ -379,8 +365,8 @@ begin
     res2 = True
   end if
   remove_internal_wrf_resources(res2)
+  _fix_labelbar_resources(res2)
   _tmp_fix_for_minmax_labelbar(res2)
-  _fix_incorrect_labelbar_resource_pairings(res2)
   return(res2)
 end
 
