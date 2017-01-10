@@ -28,8 +28,8 @@ HDRS = wrapper.h nctime.h
 
 #ifdef BuildUdunits
 UDUNITS_DEFS = -DBuildUdunits
-UDUNITS_SRCS = udunitsW.c utCalendar2_cal.c
-UDUNITS_OBJS = udunitsW.o utCalendar2_cal.o
+UDUNITS_SRCS = udunitsW.c utCalendar2_cal.c udunitsW_calcalcs.c utCalendar2_cal_calcalcs.c calcalcs.c
+UDUNITS_OBJS = udunitsW.o utCalendar2_cal.o udunitsW_calcalcs.o utCalendar2_cal_calcalcs.o calcalcs.o
 #else
 #define UDUNITS_SRCS
 #define UDUNITS_OBJS

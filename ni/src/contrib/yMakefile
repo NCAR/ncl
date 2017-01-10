@@ -8,7 +8,7 @@ GE_SCRIPT = NCL_GETools.ncl
 #endif
 
 CONTRIB_SCRIPTS = calendar_decode2.ncl time_axis_labels.ncl		\
-		  ut_string.ncl run_cor.ncl kf_filter.ncl		\
+		  ut_string.ncl ut_string_fix.ncl run_cor.ncl kf_filter.ncl		\
 		  cd_string.ncl cd_inv_string.ncl calcMonAnomTXXX.ncl	\
 		  clmMonTXXX.ncl nchoosek.ncl box_percentile_plot.ncl $(GE_SCRIPT)
 
