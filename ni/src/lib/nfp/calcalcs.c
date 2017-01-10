@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
+#include <strings.h>
 
 #include "calcalcs.h"
 
