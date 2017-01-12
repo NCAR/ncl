@@ -3576,7 +3576,7 @@ begin
 
    copy_VarAtts (x,aveMonth)
    aveMonth@time_op_ncl = "Climatology: "+ (ntim/nmos) +" years"
-   aveMonth@info    = "function clmMonLLT: contributed.ncl"
+   aveMonth@info    = "function clmMonTLL: contributed.ncl"
 
 ; copy spatial (eg, lat/lon) coordinate variables
 
@@ -3977,7 +3977,7 @@ begin
 
    copy_VarAtts (x,aveMonth)
    aveMonth@time_op_ncl = "Climatology: "+ (ntim/nmos) +" years"
-   aveMonth@info    = "function clmMonLLLT: contributed.ncl"
+   aveMonth@info    = "function clmMonTLLL: contributed.ncl"
 
 ; copy spatial (eg, lat/lon) coordinate variables
 
