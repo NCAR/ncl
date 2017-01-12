@@ -2716,7 +2716,8 @@ end
 undef("ESMF_regrid_gen_weights")
 procedure ESMF_regrid_gen_weights(srcGridFile[1]:string, dstGridFile[1]:string, \
                            wgtFile[1]:string, opt[1]:logical)
-local DEBUG, NumProc, Executer, ESMFCMD, ESMF_exec, interp_method, pole, opt
+local DEBUG, NumProc, Executer, ESMFCMD, ESMF_exec, interp_method, pole, opt, \
+      path_to_ESMF
 begin
   valid_interp_methods = (/"bilinear","patch","conserve", \
                            "nearestdtos","neareststod"/)
@@ -2750,6 +2751,13 @@ begin
 
 ;---Name of ESMF offline regridder
   ESMF_exec = "ESMF_RegridWeightGen"
+
+;---Check ESMFBINDIR
+  if (ismissing(getenv("ESMFBINDIR"))) then
+    path_to_ESMF = ESMF_exec
+  else
+    path_to_ESMF = getenv("ESMFBINDIR") + "/" + ESMF_exec
+  end if
 
 ;---Check for options
   PrintTimings   = isatt_logical_true(opt2,"PrintTimings")
@@ -2811,17 +2819,10 @@ begin
   check_for_file(wgtFile,opt2)
 
 ;---Build the command (First Pass - non-optional features)
-  if (ismissing(getenv("ESMFBINDIR"))) then
-    ESMFCMD = Executer + ESMF_exec + " " \
-              + "--source " + srcGridFile \
-              + " --destination " + dstGridFile \
-              + " --weight "+ wgtFile
-  else 
-    ESMFCMD = Executer + "$ESMFBINDIR/" + ESMF_exec + " " \
-              + "--source " + srcGridFile \
-              + " --destination " + dstGridFile \
-              + " --weight " + wgtFile
-  end if
+  ESMFCMD = Executer + path_to_ESMF \
+            + " --source " + srcGridFile \
+            + " --destination " + dstGridFile \
+            + " --weight "+ wgtFile
 
 ;---Check for options
   if (opt2) then
