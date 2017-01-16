@@ -384,7 +384,7 @@ GribTable models[] = {
 
 int level_index[] = {1,2,3,4,5,6,7,8,9,20,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,
 		     115,116,117,119,120,121,125,128,141,160,200,201,204,206,207,209,210,211,212,213,214,
-		     215,216,217,222,223,224,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,251,252};
+		     215,216,217,220,222,223,224,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,251,252};
 
 int ecmwf_local_level[] = {210};
 int ecmwf_local_start_index = sizeof(level_index) / sizeof(int);
@@ -442,6 +442,7 @@ char *level_str[] = {
 	"CEIL", /*215*/
 	"CBB",  /*216*/
 	"CBT",  /*217*/
+	"PBLRI", /*220*/
 	"MCBL", /*222*/
 	"MCTL", /*223*/
 	"MCY",  /*224*/
@@ -522,6 +523,7 @@ char *level_units_str[] = {
 	"none", /*"CEIL",  215*/
 	"m",    /*"CBB",  216*/
 	"m",    /*"CBT",  217*/
+        "none", /*PBLRI,  220*/
 	"none", /*"MCBL", 222*/
 	"none", /*"MCTL", 223*/
 	"none", /*"MCY",  224*/
@@ -602,6 +604,7 @@ char *level_str_long_name[] = {
 	"cloud ceiling",  /*"CEIL", 215*/
 	"cumulonimbus base", /*"CBB",216*/
         "cumulonimbus top", /*CBT,217*/
+	"planetary boundary layer (derived from Richardson number)", /*PBLRI, 220*/
 	"middle cloud bottom level", /*"MCBL", 222*/
 	"middle cloud top level", /*"MCTL", 223*/
 	"middle cloud layer", /*"MCY",  224*/

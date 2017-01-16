@@ -1774,7 +1774,7 @@ herr_t _checkH5attribute(hid_t obj_id, const char *attr_name, const H5A_info_t *
 		hsize_t t_size;
 		NrmQuark *value;
 		int i,j;
-		int tlen;
+		int tlen = 0;
 		NclFileReferenceNode *ref_node_list;
 
 		rdata = (hvl_t *)NclCalloc(nelmts , sizeof(hvl_t));

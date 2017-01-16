@@ -510,6 +510,8 @@ extern NhlErrorTypes cd_inv_calendar_W(void);
 #ifdef BuildUdunits
 extern NhlErrorTypes ut_calendar_W(void);
 extern NhlErrorTypes ut_inv_calendar_W(void);
+extern NhlErrorTypes ut_calendar_fix_W(void);
+extern NhlErrorTypes ut_inv_calendar_fix_W(void);
 #endif
 
 /*
@@ -7278,7 +7280,7 @@ void NclAddUserFuncs(void)
 
 #ifdef BuildUdunits
 /*
- * Register "ut_calendar".
+ * Register "ut_calendar"
  */
     nargs = 0;
     args = NewArgs(2);
@@ -7286,6 +7288,16 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(ut_calendar_W,args,"ut_calendar",nargs);
+
+/*
+ * Register "ut_calendar_fix"
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(ut_calendar_fix_W,args,"ut_calendar_fix",nargs);
 
 /*
  * Register "ut_inv_calendar".
@@ -7302,6 +7314,22 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(ut_inv_calendar_W,args,"ut_inv_calendar",nargs);
+
+/*
+ * Register "ut_inv_calendar_fix".
+ */
+    nargs = 0;
+    args = NewArgs(8);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(ut_inv_calendar_fix_W,args,"ut_inv_calendar_fix",nargs);
 #endif
 
 /*

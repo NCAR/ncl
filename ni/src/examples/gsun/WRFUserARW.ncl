@@ -1396,7 +1396,7 @@ begin
 
   if( any( variable .eq. (/"pw"/) ) ) then
        ;Precipitable Water 
-       print("calculating precipitable water")
+;;     print("calculating precipitable water")
        gas_const = 287.  ; J/K/kg
        Cp        = 1004. ; J/K/kg     
        T      = _get_wrf_var(file_handle,"T",time)
@@ -1546,7 +1546,7 @@ begin
        uh_opt@uhmxhgt = 5000.
        dim_vars = dimsizes(varin)
 
-       print("Calculating updraft helicity")
+;;     print("Calculating updraft helicity")
        if(dim_vars .eq. 1) then
          print("  Using defaults for the integration limits")
        end if

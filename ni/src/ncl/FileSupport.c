@@ -3784,6 +3784,7 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 		return file_ext_q;
 	}
 	else if(*end_of_name == NULL) {
+		*fname_q = NrmStringToQuark(last_slash);
 		return file_ext_q;  /* this is still -1 */
 	} else {
 		*len_path = *end_of_name - the_path;
@@ -4116,12 +4117,12 @@ NclFile _NclOpenFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	NclFile file_out = NULL;
 
 	NclQuark file_ext_q = -1;
-	NclQuark fname_q;
+	NclQuark fname_q = NrmNULLQUARK;
 	NhlBoolean is_http;
 	char *end_of_name = NULL;
 	int len_path;
 
-        struct stat file_stat;
+	struct stat file_stat;
 	short use_advanced_file_structure = 0;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	NrmQuark afs = NrmStringToQuark("advanced");
@@ -4160,6 +4161,16 @@ NclFile _NclOpenFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 		else if (rw_status > -1)
 		{
 			the_real_path = NrmStringToQuark(_NGResolvePath(NrmQuarkToString(path)));
+
+			/* Handle cases where _NGResolvePath(path) returns NULL */
+			if (NrmQuarkToString(the_real_path) == NULL)
+			{
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					"_NclOpenFile: cannot resolve path <%s>; check for undefined environment variables",
+					NrmQuarkToString(path));
+				return file_out;
+			}
+
 			NclQuark old_file_ext_q = file_ext_q;
 			int stat_ret;
 
@@ -4167,7 +4178,7 @@ NclFile _NclOpenFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 
 			if ((0 == stat(NrmQuarkToString(the_real_path), &file_stat)) &&
 			    /*file_stat.st_size &&*/
-			    (S_ISREG(file_stat.st_mode) || S_ISLNK (file_stat.st_mode)))
+				(S_ISREG(file_stat.st_mode) || S_ISLNK (file_stat.st_mode)))
 				file_ext_q = _NclVerifyFile(the_real_path, old_file_ext_q, &use_advanced_file_structure);
 			else
 			{

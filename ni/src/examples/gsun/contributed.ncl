@@ -3576,7 +3576,7 @@ begin
 
    copy_VarAtts (x,aveMonth)
    aveMonth@time_op_ncl = "Climatology: "+ (ntim/nmos) +" years"
-   aveMonth@info    = "function clmMonLLT: contributed.ncl"
+   aveMonth@info    = "function clmMonTLL: contributed.ncl"
 
 ; copy spatial (eg, lat/lon) coordinate variables
 
@@ -3977,7 +3977,7 @@ begin
 
    copy_VarAtts (x,aveMonth)
    aveMonth@time_op_ncl = "Climatology: "+ (ntim/nmos) +" years"
-   aveMonth@info    = "function clmMonLLLT: contributed.ncl"
+   aveMonth@info    = "function clmMonTLLL: contributed.ncl"
 
 ; copy spatial (eg, lat/lon) coordinate variables
 
@@ -10174,41 +10174,34 @@ end
 ;
 ;   opt        - flag: opt=0 if annual total value [sum 12 values] is to be returned
 ;                      opt=1 if annual mean  value is to be returned [(annual total)/12]
-;                      opt>1 special: calculate annual mean with < 12 values
-;                                     # values used to calculate "annual" mean
-;                                       can be 1<=opt<=12
 ;                    
 ;   Usage:
 ;                 PRC_annual_total = month_to_annual( prc, 0) 
 ;                 TMP_annual_mean  = month_to_annual( tmp, 1) 
-;                 special
-;                 TMP_annual_mean  = month_to_annual( tmp, 10)   ; 10 or more values
 ;
+; NOTE: there is some extra (non-sensical code) embedded due
+; to a special request introduced in NCL 4.2.0.a033
 
 undef("month_to_annual")
 function month_to_annual(x:numeric, opt:integer)
 local dimx, rankx, ntim, nyr, nyrs, nt, nx, ny, kz, nn, nmo \
     , dName, xAnnual, xTemp, n, m, k, nMsg, nmos, NMOS, nGood
 begin
-  if (opt.lt.0 .or. opt.gt.12) then
+  if (opt.lt.0 .or. opt.gt.1) then
       print("month_to_annual: illegal value of opt: opt="+opt)
       exit
   end if
 
   NMOS  = 12                   ; fixed ... will not change
   nmos  = 12                   ; possible change in value
-  if (opt.gt.1) then
-      nmos = opt         
-  end if
+;;if (opt.gt.1) then           ; leftover from a 'special request'. No longer applicable.
+;;    nmos = opt         
+;;end if
   NMOS1 = NMOS-1               ; convenience
 
   dimx  = dimsizes(x)
   rankx = dimsizes(dimx)
   NTIM  = dimx(0)
-  if (dimx(0).ne.NTIM) then
-      print("month_to_annual: yyyymm and x time dimension must be same size")
-      exit
-  end if 
 
   if (rankx .gt. 4) then
       print("*** FATAL  ***")
@@ -10217,14 +10210,14 @@ begin
       exit
   end if
 
-  nyrs = NTIM/NMOS
-  ntim = nyrs*NMOS
   if (NTIM%NMOS .ne. 0) then
-      print("*** WARNING ***")
+      print("*** FATAL ***")
       print("month_to_annual: ntim="+NTIM+" not multiple of 12:  nyrs="+nyrs)
-      nyrs = nyrs + 1
+      exit
   end if
 
+  nyrs = NTIM/NMOS
+  ntim = nyrs*NMOS
 
   if (rankx.eq.1) then
       xAnnual = new ( nyrs, typeof(x), getFillValue(x)) ;  contributed.ncl
@@ -10245,9 +10238,9 @@ begin
          if (nMsg.eq.0 .and. opt.ge.1) then
              xAnnual(nyr)   = avg ( x(nt:nt+NMOS1) )  ; always opt=1
          end if
-         if (nMsg.gt.0 .and. opt.gt.1 .and. nGood.ge.nmos) then
-             xAnnual(nyr)   = avg ( x(nt:nt+NMOS1) )  ; always opt=1
-         end if
+;;       if (nMsg.gt.0 .and. opt.gt.1 .and. nGood.ge.nmos) then
+;;           xAnnual(nyr)   = avg ( x(nt:nt+NMOS1) )  ; always opt=1
+;;       end if
       end do
 
       copy_VarAtts (x, xAnnual)
@@ -11864,6 +11857,47 @@ begin
  retVal = ut_inv_calendar( toint(utcDate(:,0)), toint(utcDate(:,1)), toint(utcDate(:,2)), \
                            toint(utcDate(:,3)), toint(utcDate(:,4)), utcDate(:,5), \
                            unitsTo, opt )
+ return( retVal )
+end
+
+; **********************************************************************
+; This is identical to ut_convert, except it calls a fixed 
+; version of ut_calendar that is based on D. Pierce's Calcalcs routine.
+;
+; Converts a time variable from one units to another. The input
+; variable must contain a "units" attribute of the correct form.
+;
+; Input variables:
+;   dateFrom: the original date
+;   unitsTo:  the NEW date units
+; Return Value:
+;   retVal:   the date converted to its new units
+;***********************************************************************
+undef("ut_convert_fix")
+function ut_convert_fix( dateFrom:numeric, unitsTo:string )
+local retVal, tempDate, utcDate
+begin
+ if(.not.isatt(dateFrom,"units")) then
+   print("ut_convert_fix: 'dateFrom' contains no 'units' attribute.")
+   print("            Will return all missing values.")
+  
+   retVal = new(dimsizes(dateFrom),double)
+   return(retVal)
+ end if
+
+ tempDate       = dateFrom
+ tempDate@units = dateFrom@units
+
+ utcDate = ut_calendar_fix( tempDate, -5 )
+
+ opt = 0
+ if(isatt(dateFrom,"calendar")) then
+   opt@calendar = dateFrom@calendar
+ end if
+
+ retVal = ut_inv_calendar_fix( toint(utcDate(:,0)), toint(utcDate(:,1)), toint(utcDate(:,2)), \
+                               toint(utcDate(:,3)), toint(utcDate(:,4)), utcDate(:,5), \
+                               unitsTo, opt )
  return( retVal )
 end
 
@@ -13730,6 +13764,54 @@ begin
   TIME   = cd_inv_calendar(toint(date(:,0)),toint(date(:,1)) \
                           ,toint(date(:,2)),toint(date(:,3)) \
                           ,toint(date(:,4)),todouble(date(:,5)),new_time_units, 0)
+
+  if (isatt(time,"calendar")) then
+      TIME@calendar = time@calendar
+  end if
+
+  TIME!0        = "time"
+  TIME&time     =  TIME
+                          ; delete attributes that may no longer be appropriate
+  if (isatt(TIME,"actual_range")) then
+     delete(TIME@actual_range)
+  end if
+  if (isatt(TIME,"delta_t")) then
+     delete(TIME@delta_t)
+  end if
+  if (isatt(TIME,"avg_period")) then
+     delete(TIME@avg_period)
+  end if
+  if (isatt(TIME,"prev_avg_period")) then
+     delete(TIME@prev_avg_period)
+  end if
+
+  if (typeof(time).eq."float") then
+      return(dble2flt(TIME))     ; retain meta data 
+  else
+      return(TIME)
+  end if
+end
+
+; --------------------------
+undef("time_to_newtime_fix")
+function time_to_newtime_fix(time[*]:numeric, new_time_units[1]:string)
+;
+; Change a "udunits" recognized time unit to a new (different)
+; "udunits" recognized time unit. This is identical to 
+; time_to_newtime, except it uses a fixed version of ut_calendar
+; that was added in NCL V6.4.0. This function is still being tested,
+; so hence the "_fix" appended.
+;
+; Example:
+;  TIME = time_to_newtime_fix(time, "days since 1950-01-01 00:00" ) ; Time(time) 
+;  time = time_to_newtime_fix(time, "hours since 1800-01-01 00:00") ; time(time) 
+begin
+  ntim   = dimsizes(time)
+  date   = cd_calendar( time, 0)
+ ;print(date(:,0)+"  "+date(:,1)+"  "+date(:,2)+"  "+date(:,3))
+  TIME   = ut_inv_calendar_fix(toint(date(:,0)),toint(date(:,1)) \
+                              ,toint(date(:,2)),toint(date(:,3)) \
+                              ,toint(date(:,4)),todouble(date(:,5)),new_time_units, 0)
 
   if (isatt(time,"calendar")) then
       TIME@calendar = time@calendar

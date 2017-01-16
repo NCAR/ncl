@@ -6283,7 +6283,7 @@ static NhlErrorTypes ManageLabelBar
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbFillDotSizeF,cnp->fill_dot_size);
                 if (cnp->lbar_end_style == NhlEXCLUDEOUTERBOXES)
-                    NhlSetSArg(&sargs[(*nargs)++], NhlNlbBoxEndCapStyle, NhlRECTANGLE);
+                    NhlSetSArg(&sargs[(*nargs)++], NhlNlbBoxEndCapStyle, NhlRECTANGLEENDS);
 		return ret;
 	}
 
@@ -6338,7 +6338,7 @@ static NhlErrorTypes ManageLabelBar
         if (cnp->fill_opacity != ocnp->fill_opacity)
                 NhlSetSArg(&sargs[(*nargs)++], NhlNlbFillOpacityF, cnp->fill_opacity);
         if (cnp->lbar_end_style == NhlEXCLUDEOUTERBOXES)
-                NhlSetSArg(&sargs[(*nargs)++], NhlNlbBoxEndCapStyle, NhlRECTANGLE);
+                NhlSetSArg(&sargs[(*nargs)++], NhlNlbBoxEndCapStyle, NhlRECTANGLEENDS);
 
 	return ret;
 }

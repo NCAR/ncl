@@ -25,6 +25,21 @@ C                  lines (e.g. arctic circle). Markers are drawn at
 C                  the poles. The three frames present three 
 C                  different map projections, showing how the 
 C
+C Note: beginning with NCL 6.2.0 the rules for drawing polylines 
+C       (and to some extent polygons) changed.
+C       Prior to 6.2.0 you could draw a polyline that spanned the 
+C       globe using only 2 points with longitudes 0 and 360.
+C       However, this created difficult to resolve ambiguities when
+C       dealing with lines that cross the cyclic point of
+C       longitude. Therefore, the rule was adapted that the path
+C       between two specified points always takes the shortest path 
+C       around the globe, meaning that a line between 0 and 360 is 
+C       of length 0 in longitude. Therefore it now takes at least 
+C       3 points (0., 180, 360.) and preferably 4 points (eliminating
+C       all possible ambiguity) to draw a line spanning the globe in 
+C       longitude. This script has been modified to work with the 
+C       new rule.    
+C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
@@ -38,9 +53,11 @@ C
       integer rlist
       integer appid,wid,canvas,gsid
       integer i 
-      real px(5),py(5)
-      character*13 projection(3)
-      data projection/'orthographic','mollweide','stereographic'/
+      real px(9),py(9)
+      character*16 projection(4)
+      data projection / 'orthographic','mollweide','stereographic',
+     1 'lambertequalarea'/
+  
       character*7  wks_type
 C
 C Define the workstation type
@@ -137,7 +154,7 @@ C Create a GraphicStyle to control the primitive attributes.
 C
       call NhlFCreate(gsid,'style',NhlFgraphicStyleClass,wid,0,ierr)
 
-      do 10 i=1,3
+      do 10 i=1,4
 C
 C Set the map projection
 C
@@ -158,16 +175,26 @@ C
          py(1) = -23.5
          py(2) = 23.5
          py(3) = 23.5
-         py(4) = -23.5
-         py(5) = -23.5
+         py(4) = 23.5
+         py(5) = 23.5
+         py(6) = -23.5
+         py(7) = -23.5
+         py(8) = -23.5
+         py(9) = -23.5
          px(1) = 360.
          px(2) = 360.
-         px(3) = 0.
-         px(4) = 0.
-         px(5) = 360.
-         call NhlFDataPolygon(canvas,gsid,px,py,5,ierr)
+         px(3) = 240.
+         px(4) = 120.
+         px(5) = 0.
+         px(6) = 0.
+         px(7) = 120.
+         px(8) = 240.
+         px(9) = 360.
+         call NhlFDataPolygon(canvas,gsid,px,py,9,ierr)
 C
 C Next draw the north and south temperate zones
+C Note the px array does not need to change for the 
+C next four NhlDataPolygon draws
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetInteger(rlist,'gsFillColor',3,ierr)
@@ -176,26 +203,27 @@ C
          py(1) = 23.5
          py(2) = 66.5
          py(3) = 66.5
-         py(4) = 23.5
-         py(5) = 23.5
-         px(1) = 360.
-         px(2) = 360.
-         px(3) =  0.
-         px(4) = 0.
-         px(5) = 360.
-         call NhlFDataPolygon(canvas,gsid,px,py,5,ierr)
+         py(4) = 66.5
+         py(5) = 66.5
+         py(6) = 23.5
+         py(7) = 23.5
+         py(8) = 23.5
+         py(9) = 23.5
+
+
+         call NhlFDataPolygon(canvas,gsid,px,py,9,ierr)
 
          py(1) = -23.5
          py(2) = -66.5
          py(3) = -66.5
-         py(4) = -23.5
-         py(5) = -23.5
-         px(1) = 360.
-         px(2) = 360.
-         px(3) =  0.
-         px(4) = 0.
-         px(5) = 360.
-         call NhlFDataPolygon(canvas,gsid,px,py,5,ierr)
+         py(4) = -66.5
+         py(5) = -66.5
+         py(6) = -23.5
+         py(7) = -23.5
+         py(8) = -23.5
+         py(9) = -23.5
+
+         call NhlFDataPolygon(canvas,gsid,px,py,9,ierr)
 C
 C Draw the frigid zones
 C
@@ -206,26 +234,24 @@ C
          py(1) = 90.
          py(2) = 66.5
          py(3) = 66.5
-         py(4) = 90.
-         py(5) = 90.
-         px(1) = 360.
-         px(2) = 360.
-         px(3) =  0.
-         px(4) = 0.
-         px(5) = 360.
-         call NhlFDataPolygon(canvas,gsid,px,py,5,ierr)
+         py(4) = 66.5
+         py(5) = 66.5
+         py(6) = 90.
+         py(7) = 90.
+         py(8) = 90.
+         py(9) = 90.
+         call NhlFDataPolygon(canvas,gsid,px,py,9,ierr)
 
          py(1) = -90.
          py(2) = -66.5
          py(3) = -66.5
-         py(4) = -90.
-         py(5) = -90.
-         px(1) = 360.
-         px(2) = 360.
-         px(3) =  0.
-         px(4) = 0.
-         px(5) = 360.
-         call NhlFDataPolygon(canvas,gsid,px,py,5,ierr)
+         py(4) = -66.5
+         py(5) = -66.5
+         py(6) = -90.
+         py(7) = -90.
+         py(8) = -90.
+         py(9) = -90.
+         call NhlFDataPolygon(canvas,gsid,px,py,9,ierr)
 C
 C Draw the map outlines and grid
 C
@@ -249,11 +275,15 @@ C
      +        ierr)
          call NhlFSetValues(gsid,rlist,ierr)
 
-         px(1) = 360
-         px(2) = 0
+         px(1) = 0
+         px(2) = 120.0
+         px(3) = 240.0
+         px(4) = 360.0
          py(1) = 0
          py(2) = 0
-         call NhlFDataPolyline(canvas,gsid,px,py,2,ierr)
+         py(3) = 0
+         py(4) = 0
+         call NhlFDataPolyline(canvas,gsid,px,py,4,ierr)
 C
 C Tropic of cancer
 C
@@ -262,11 +292,11 @@ C
      +        't|r|o|p|i|c o|f c|a|n|c|e|r',ierr)
          call NhlFSetValues(gsid,rlist,ierr)
 
-         px(1) = 360
-         px(2) = 0
          py(1) = 23.5
          py(2) = 23.5
-         call NhlFDataPolyline(canvas,gsid,px,py,2,ierr)
+         py(3) = 23.5
+         py(4) = 23.5
+         call NhlFDataPolyline(canvas,gsid,px,py,4,ierr)
 C
 C Tropic of capricorn (Note: currently there is a limit on the 
 C number of characters in a line label that prevents the '|'
@@ -278,11 +308,11 @@ C
      +        'tr|o|p|ic of c|a|p|r|i|c|o|rn',ierr)
          call NhlFSetValues(gsid,rlist,ierr)
 
-         px(1) = 360.
-         px(2) = 0.
          py(1) = -23.5
          py(2) = -23.5
-         call NhlFDataPolyline(canvas,gsid,px,py,2,ierr)
+         py(3) = -23.5
+         py(4) = -23.5
+         call NhlFDataPolyline(canvas,gsid,px,py,4,ierr)
 C
 C Arctic circle
 C
@@ -291,11 +321,11 @@ C
      +        'a|r|c|t|i|c c|i|r|c|l|e',ierr)
          call NhlFSetValues(gsid,rlist,ierr)
 
-         px(1) = 360.
-         px(2) = 0.
          py(1) = 66.5
          py(2) = 66.5
-         call NhlFDataPolyline(canvas,gsid,px,py,2,ierr)
+         py(3) = 66.5
+         py(4) = 66.5
+         call NhlFDataPolyline(canvas,gsid,px,py,4,ierr)
 C
 C Antarctic circle
 C
@@ -304,11 +334,11 @@ C
      +        '|a|n|t|a|r|c|t|i|c c|i|r|c|l|e',ierr)
          call NhlFSetValues(gsid,rlist,ierr)
 
-         px(1) = 360.
-         px(2) = 0.
          py(1) = -66.5
          py(2) = -66.5
-         call NhlFDataPolyline(canvas,gsid,px,py,2,ierr)
+         py(3) = -66.5
+         py(4) = -66.5
+         call NhlFDataPolyline(canvas,gsid,px,py,4,ierr)
 
          call NhlFFrame(wid,ierr)
  10   continue

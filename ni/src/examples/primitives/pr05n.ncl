@@ -26,7 +26,13 @@
 ;                  different map projections, showing how the 
 ;                  primitives adapt to various levels of distortion.
 ;
-
+; Note: beginning with NCL 6.2.0 the rules for drawing polylines (and to some extent polygons) changed.
+;       Prior to 6.2.0 you could draw a polyline that spanned the globe using only 2 points with longitudes 0 and 360.
+;       However, this created difficult to resolve ambiguities when dealing with lines that cross the cyclic point of
+;       of longitude. Therefore, the rule was adapted that the path between two specified points always takes the 
+;       shortest path around the globe, meaning that a line between 0 and 360 is of length 0 in longitude. Therefore it
+;       now takes at least 3 points (0., 180, 360.) and preferably 4 points (eliminating all possible ambiguity)
+;       to draw a line spanning the globe in longitude. This script has been modified to work with the new rule.
 ;
 ; Begin NCL script.
 ;
@@ -35,7 +41,7 @@ begin
 ;
 ; Initialize variables
 ;
-projection = (/"orthographic","mollweide","stereographic"/)
+projection = (/"orthographic","mollweide","stereographic","lambertequalarea"/)
 
 ;
 ; Create Application object.  The Application object name is used to
@@ -50,6 +56,8 @@ end create
 ;
 ; Default is to display output to an X workstation
 ;
+wks_type = "pdf"
+wks_type = "png"
 wks_type = "x11"
 
 if (str_lower(wks_type).eq."ncgm") then
@@ -119,13 +127,14 @@ end create
 ;
 gsid = create "style" graphicStyleClass wid end create
 
-do i = 0,2
+do i = 0,3
 
 ;
 ; Set the map projection
 ;
   setvalues canvas
     "mpProjection" : projection(i)
+;    "mpDumpPolygonAreaMap" : True
   end setvalues
 ;
 ; Draw polygons representing the 5 major zones of the globe, beginning
@@ -135,40 +144,40 @@ do i = 0,2
   setvalues gsid
     "gsMarkerColor" : 0
     "gsEdgesOn" : False
-    "gsFillColor" : 2
+    "gsFillColor" : "red"
   end setvalues
 
-  px = (/360.,360.,0.,0.,360./)
-  py = (/-23.5,23.5,23.5,-23.5,-23.5/)
+  px = (/360.,360.,240., 120.,0.,0.,120,240,360./)
+  py = (/-23.5,23.5,23.5,23.5,23.5,-23.5,-23.5,-23.5,-23.5/)
   NhlDataPolygon(canvas,gsid,px,py)
 
 ;
 ; Next draw the north and south temperate zones
 ;
   setvalues gsid
-    "gsFillColor" : 3
+    "gsFillColor" : "green"
   end setvalues
 
-  py(0:4) = (/ 23.5 , 66.5 , 66.5 , 23.5 , 23.5/)
-  px(0:4) = (/ 360. , 360. , 0. , 0. , 360./)
+  py = (/23.5,66.5,66.5,66.5,66.5,23.5,23.5,23.5,23.5/)
+  px = (/360.,360.,240., 120.,0.,0.,120,240,360./)
   NhlDataPolygon(canvas,gsid,px,py)
 
-  py(0:4) = (/ -23.5 , -66.5 , -66.5 , -23.5 , -23.5 /)
-  px(0:4) = (/ 360. , 360. ,  0. , 0.  , 360. /)
+  py = (/-23.5,-66.5,-66.5,-66.5,-66.5,-23.5,-23.5,-23.5,-23.5/)
+  px = (/360.,360.,240., 120.,0.,0.,120,240,360./)
   NhlDataPolygon(canvas,gsid,px,py)
 ;
 ; Draw the frigid zones
 ;
   setvalues gsid
-    "gsFillColor" : 4
+    "gsFillColor" : "blue"
   end setvalues
 
-  py(0:4) = (/ 90. , 66.5 , 66.5 , 90. , 90. /)
-  px(0:4) = (/ 360.  , 360. , 0. , 0. , 360. /)
+  py = (/90,66.5,66.5,66.5,66.5,90,90,90,90/)
+  px = (/360.,360.,240., 120.,0.,0.,120,240,360./)
   NhlDataPolygon(canvas,gsid,px,py)
 
-  py(0:4) = (/ -90. , -66.5 , -66.5 , -90. , -90./)
-  px(0:4) = (/ 360. , 360.  , 0. , 0. , 360./)
+  py = (/-90,-66.5,-66.5,-66.5,-66.5,-90,-90,-90,-90/)
+  px = (/360.,360.,240., 120.,0.,0.,120,240,360./)
   NhlDataPolygon(canvas,gsid,px,py)
 
 ;
@@ -192,9 +201,9 @@ do i = 0,2
     "gsLineLabelString" : "e|q|u|a|t|o|r"
   end setvalues
 
-  px(0:1) = (/360.,0/)
-  py(0:1) = 0.
-  NhlDataPolyline(canvas,gsid,px(:1),py(:1))
+  px(0:3) = (/0.,120., 240.,360.0/)
+  py(0:3) = 0.
+  NhlDataPolyline(canvas,gsid,px(:3),py(:3))
 
 ;
 ; Tropic of cancer
@@ -203,9 +212,8 @@ do i = 0,2
     "gsLineLabelString" : "t|r|o|p|i|c o|f c|a|n|c|e|r"
   end setvalues
 
-  px(0:1) = (/360., 0./)
-  py(0:1) = 23.5
-  NhlDataPolyline(canvas,gsid,px(:1),py(:1))
+  py(0:3) = 23.5
+  NhlDataPolyline(canvas,gsid,px(:3),py(:3))
 
 ;
 ; Tropic of capricorn (Note: currently there is a limit on the 
@@ -217,8 +225,8 @@ do i = 0,2
     "gsLineLabelString" : "tr|o|p|ic of c|a|p|r|i|c|o|rn"
   end setvalues
 
-  py(0:1) = -23.5
-  NhlDataPolyline(canvas,gsid,px(:1),py(:1))
+  py(0:3) = -23.5
+  NhlDataPolyline(canvas,gsid,px(:3),py(:3))
 ;
 ; Arctic circle
 ;
@@ -226,8 +234,8 @@ do i = 0,2
     "gsLineLabelString" : "a|r|c|t|i|c c|i|r|c|l|e"
   end setvalues
 
-  py(0:1) = 66.5
-  NhlDataPolyline(canvas,gsid,px(:1),py(:1))
+  py(0:3) = 66.5
+  NhlDataPolyline(canvas,gsid,px(:3),py(:3))
 
 ;
 ; Antarctic circle
@@ -236,8 +244,8 @@ do i = 0,2
     "gsLineLabelString" : "|a|n|t|a|r|c|t|i|c c|i|r|c|l|e"
   end setvalues
 
-  py(0:1) = -66.5
-  NhlDataPolyline(canvas,gsid,px(:1),py(:1))
+  py(0:3) = -66.5
+  NhlDataPolyline(canvas,gsid,px(:3),py(:3))
   frame(wid)
 
 end do
