@@ -6055,6 +6055,9 @@ static NhlErrorTypes ManageLabelBar
 			redo_lbar = True;
 		}
 	}
+        else if (cnp->llabel_strings != ocnp->llabel_strings ) {
+            redo_lbar = True;
+        }
 	else if (! cnp->lbar_labels_set) {
 		redo_lbar = True;
 		cnp->lbar_labels_set = True;  /* this must remain set as long as explicit mode is on in order
