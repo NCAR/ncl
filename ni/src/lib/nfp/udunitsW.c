@@ -137,7 +137,7 @@ char *fix_units_for_360_bug(char *ccal, char *cunits, int *montoday,
  *    the time coordinate variable below that may be used for this
  *    purpose.
  *
- * The ut_calendar function below depends on the udunits package,
+ * The ut_calendar_old function below depends on the udunits package,
  * with a Udunits enhancement provided by the David Pierce, the
  * developer of "ncview".
  *
@@ -598,20 +598,17 @@ NhlErrorTypes ut_calendar_W( void )
   }
 
 /*
- * Free the work arrays.
+ * Free the work array and extra units
  */
 
   if(type_x != NCL_double) NclFree(tmp_x);
+  NclFree(cspec_orig);
 
 /*
  * Close up Udunits.
  */
   utclose_ncl(unit_system);
 
-/*
- * Free extra units
- */
-  NclFree(cspec_orig);
 
   ut_free(utunit);
 

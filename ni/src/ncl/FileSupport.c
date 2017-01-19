@@ -3784,6 +3784,7 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 		return file_ext_q;
 	}
 	else if(*end_of_name == NULL) {
+		*fname_q = NrmStringToQuark(last_slash);
 		return file_ext_q;  /* this is still -1 */
 	} else {
 		*len_path = *end_of_name - the_path;
@@ -4116,7 +4117,7 @@ NclFile _NclOpenFile(NclObj inst, NclObjClass theclass, NclObjTypes obj_type,
 	NclFile file_out = NULL;
 
 	NclQuark file_ext_q = -1;
-	NclQuark fname_q;
+	NclQuark fname_q = NrmNULLQUARK;
 	NhlBoolean is_http;
 	char *end_of_name = NULL;
 	int len_path;

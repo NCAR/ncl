@@ -2329,20 +2329,19 @@ NclFileVarNode *_getVarNodeFromNclFileGrpNode(NclFileGrpNode *grpnode,
     last_cp = buf;
     is_fully_qualified =  (last_cp[0] == '/') ? 1 : 0;
     if (is_fully_qualified) last_cp++;
-/*if (! is_fully_qualified) {*/
-	    while ((cp = strchr(last_cp, '/')) != NULL) {
-		    *cp = '\0';
-		    lgrpnode = _getGrpNodeFromNclFileGrpNode(lgrpnode,NrmStringToQuark(last_cp));
-		    last_cp = cp + 1;
-	    }
-	    lvarname = NrmStringToQuark(last_cp);
-/*}*/
+    while ((cp = strchr(last_cp, '/')) != NULL) {
+	    *cp = '\0';
+	    lgrpnode = _getGrpNodeFromNclFileGrpNode(lgrpnode,NrmStringToQuark(last_cp));
+	    last_cp = cp + 1;
+    }
+    lvarname = NrmStringToQuark(last_cp);
+
     
-    varnode = _getVarNodeFromNclFileGrpNode_asVar(grpnode, lvarname);
+    varnode = _getVarNodeFromNclFileGrpNode_asVar(lgrpnode, lvarname);
     if(NULL != varnode)
         return varnode;
 
-    varnode = _getVarNodeFromNclFileGrpNode_asCompound(grpnode, lvarname);
+    varnode = _getVarNodeFromNclFileGrpNode_asCompound(lgrpnode, lvarname);
     return varnode;
 }
 

@@ -3576,7 +3576,7 @@ begin
 
    copy_VarAtts (x,aveMonth)
    aveMonth@time_op_ncl = "Climatology: "+ (ntim/nmos) +" years"
-   aveMonth@info    = "function clmMonLLT: contributed.ncl"
+   aveMonth@info    = "function clmMonTLL: contributed.ncl"
 
 ; copy spatial (eg, lat/lon) coordinate variables
 
@@ -3977,7 +3977,7 @@ begin
 
    copy_VarAtts (x,aveMonth)
    aveMonth@time_op_ncl = "Climatology: "+ (ntim/nmos) +" years"
-   aveMonth@info    = "function clmMonLLLT: contributed.ncl"
+   aveMonth@info    = "function clmMonTLLL: contributed.ncl"
 
 ; copy spatial (eg, lat/lon) coordinate variables
 
@@ -11861,6 +11861,47 @@ begin
 end
 
 ; **********************************************************************
+; This is identical to ut_convert, except it calls a fixed 
+; version of ut_calendar that is based on D. Pierce's Calcalcs routine.
+;
+; Converts a time variable from one units to another. The input
+; variable must contain a "units" attribute of the correct form.
+;
+; Input variables:
+;   dateFrom: the original date
+;   unitsTo:  the NEW date units
+; Return Value:
+;   retVal:   the date converted to its new units
+;***********************************************************************
+undef("ut_convert_fix")
+function ut_convert_fix( dateFrom:numeric, unitsTo:string )
+local retVal, tempDate, utcDate
+begin
+ if(.not.isatt(dateFrom,"units")) then
+   print("ut_convert_fix: 'dateFrom' contains no 'units' attribute.")
+   print("            Will return all missing values.")
+  
+   retVal = new(dimsizes(dateFrom),double)
+   return(retVal)
+ end if
+
+ tempDate       = dateFrom
+ tempDate@units = dateFrom@units
+
+ utcDate = ut_calendar_fix( tempDate, -5 )
+
+ opt = 0
+ if(isatt(dateFrom,"calendar")) then
+   opt@calendar = dateFrom@calendar
+ end if
+
+ retVal = ut_inv_calendar_fix( toint(utcDate(:,0)), toint(utcDate(:,1)), toint(utcDate(:,2)), \
+                               toint(utcDate(:,3)), toint(utcDate(:,4)), utcDate(:,5), \
+                               unitsTo, opt )
+ return( retVal )
+end
+
+; **********************************************************************
 ; This is identical to ut_convert, except it uses cd_calendar.
 ;***********************************************************************
 undef("cd_convert")
@@ -13751,6 +13792,54 @@ begin
   end if
 end
 
+; --------------------------
+undef("time_to_newtime_fix")
+function time_to_newtime_fix(time[*]:numeric, new_time_units[1]:string)
+;
+; Change a "udunits" recognized time unit to a new (different)
+; "udunits" recognized time unit. This is identical to 
+; time_to_newtime, except it uses a fixed version of ut_calendar
+; that was added in NCL V6.4.0. This function is still being tested,
+; so hence the "_fix" appended.
+;
+; Example:
+;  TIME = time_to_newtime_fix(time, "days since 1950-01-01 00:00" ) ; Time(time) 
+;  time = time_to_newtime_fix(time, "hours since 1800-01-01 00:00") ; time(time) 
+begin
+  ntim   = dimsizes(time)
+  date   = cd_calendar( time, 0)
+ ;print(date(:,0)+"  "+date(:,1)+"  "+date(:,2)+"  "+date(:,3))
+  TIME   = ut_inv_calendar_fix(toint(date(:,0)),toint(date(:,1)) \
+                              ,toint(date(:,2)),toint(date(:,3)) \
+                              ,toint(date(:,4)),todouble(date(:,5)),new_time_units, 0)
+
+  if (isatt(time,"calendar")) then
+      TIME@calendar = time@calendar
+  end if
+
+  TIME!0        = "time"
+  TIME&time     =  TIME
+                          ; delete attributes that may no longer be appropriate
+  if (isatt(TIME,"actual_range")) then
+     delete(TIME@actual_range)
+  end if
+  if (isatt(TIME,"delta_t")) then
+     delete(TIME@delta_t)
+  end if
+  if (isatt(TIME,"avg_period")) then
+     delete(TIME@avg_period)
+  end if
+  if (isatt(TIME,"prev_avg_period")) then
+     delete(TIME@prev_avg_period)
+  end if
+
+  if (typeof(time).eq."float") then
+      return(dble2flt(TIME))     ; retain meta data 
+  else
+      return(TIME)
+  end if
+end
+
 undef("sigma_interface")
 function sigma_interface (sigma[*]:numeric, sigma_top[1]:numeric)
 ; -------------------------------------------------
@@ -14107,10 +14196,10 @@ begin
   end if
 end
 ; ----------------------------------------------------
-undef ("rm_single_dims")
+undef("rm_single_dims")
 function rm_single_dims (x)
 ; remove singleton (degenerate) dimensions. A singleton dimension is size 1.
-; NCL philosophy: do not 'lose' information. 
+; NCL philosophy: do not 'lose' information.
 local dimx, dimy, rankx, dnamx, y, m, n
 begin
   dimx  = dimsizes(x)
@@ -14122,7 +14211,7 @@ begin
   rankx = dimsizes(dimx)
   dnamx = getvardims(x)             ; dim names
 
-  if (all(dimx.eq.1)) then    
+  if (all(dimx.eq.1)) then
       dimy = 1                      ; all degenerate dimensions
   else
       dimy = dimx(ind(dimx.ne.1))
@@ -14131,17 +14220,19 @@ begin
 
   m     = -1
   do n=0,rankx-1
-     if (.not.ismissing(dnamx(n))) then
-         if (iscoord(x, dnamx(n))) then 
-             if (dimx(n).ne.1) then
-                 m   = m+1
-                 y!m = dnamx(n)
-                 y&$dnamx(n)$ = x&$dnamx(n)$ ; attach coord &
-             else                            ; do not 'lose' information
+    if (.not.ismissing(dnamx(n))) then
+         if (dimx(n).ne.1) then
+              m   = m+1
+              y!m = dnamx(n)
+              if (iscoord(x, dnamx(n))) then
+                 y&$dnamx(n)$ = x&$dnamx(n)$ ; attach coord
+              end if
+          else                          
+              if (iscoord(x, dnamx(n))) then
                  y@$dnamx(n)$ = x&$dnamx(n)$ ; attach singleton coord as attribute @
-             end if
-         end if
-     end if
+              end if
+          end if
+      end if
   end do
   copy_VarAtts(x,y)
 
