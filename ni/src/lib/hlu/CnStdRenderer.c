@@ -1122,7 +1122,8 @@ static NhlErrorTypes AddDataBoundToAreamap
 	c_arseti("RC(1)",1);
 	c_arseti("RC(3)",2);
 #endif
-	c_arseti("RC",1);
+	/* RC has been set to 1 ; I am now finding better results with 0 -- we'll see */
+	c_arseti("RC",0);
 	if (! ezmap) {
 		float twlx,twrx,twby,twuy;
 		float gwlx,gwrx,gwby,gwuy;
@@ -1182,8 +1183,18 @@ static NhlErrorTypes AddDataBoundToAreamap
 			return ret;
 		}
 
-		xrev = cl->trans.x_reverse;
-		yrev = cl->trans.y_reverse;
+		if (twlx < twrx) {
+			xrev = cl->trans.x_reverse;
+		}
+		else {
+			xrev = ! cl->trans.x_reverse;
+		}
+		if (twby < twuy) {
+			yrev = cl->trans.y_reverse;
+		}
+		else {
+			yrev = ! cl->trans.y_reverse;
+		}
 /*
  * added a hack to prevent fill dropout in certain cases, where because
  * of floating point precision issues in the mapping routines, contour

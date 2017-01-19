@@ -3064,7 +3064,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 	c_arseti("RC(1)",1);
 	c_arseti("RC(3)",2);
 #endif
-	c_arseti("RC",1);
+	c_arseti("RC",0);
 
 
 	if (! ezmap) {
@@ -3126,8 +3126,19 @@ static NhlErrorTypes AddDataBoundToAreamap
 			return ret;
 		}
 
-		xrev = twlx > twrx;
-		yrev = twby > twuy;
+		if (twlx < twrx) {
+			xrev = cl->trans.x_reverse;
+		}
+		else {
+			xrev = ! cl->trans.x_reverse;
+		}
+		if (twby < twuy) {
+			yrev = cl->trans.y_reverse;
+		}
+		else {
+			yrev = ! cl->trans.y_reverse;
+		}
+
 /*
  * added a hack to prevent fill dropout in certain cases, where because
  * of floating point precision issues in the mapping routines, contour

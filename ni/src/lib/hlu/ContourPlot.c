@@ -12192,7 +12192,7 @@ NhlErrorTypes CellBoundsFill
 	for (i = 0; i < ncells; i++) {
 		segments[i] = i * nvertices;
 		colors[i] = -99;
-		if (data[i] == cnp->sfp->missing_value) {
+		if (cnp->sfp->missing_value_set && data[i] == cnp->sfp->missing_value) {
 			colors[i] = cnp->missing_val.gks_fcolor;
 		}
 		else {
