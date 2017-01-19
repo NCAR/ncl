@@ -14196,10 +14196,10 @@ begin
   end if
 end
 ; ----------------------------------------------------
-undef ("rm_single_dims")
+undef("rm_single_dims")
 function rm_single_dims (x)
 ; remove singleton (degenerate) dimensions. A singleton dimension is size 1.
-; NCL philosophy: do not 'lose' information. 
+; NCL philosophy: do not 'lose' information.
 local dimx, dimy, rankx, dnamx, y, m, n
 begin
   dimx  = dimsizes(x)
@@ -14211,7 +14211,7 @@ begin
   rankx = dimsizes(dimx)
   dnamx = getvardims(x)             ; dim names
 
-  if (all(dimx.eq.1)) then    
+  if (all(dimx.eq.1)) then
       dimy = 1                      ; all degenerate dimensions
   else
       dimy = dimx(ind(dimx.ne.1))
@@ -14220,17 +14220,19 @@ begin
 
   m     = -1
   do n=0,rankx-1
-     if (.not.ismissing(dnamx(n))) then
-         if (iscoord(x, dnamx(n))) then 
-             if (dimx(n).ne.1) then
-                 m   = m+1
-                 y!m = dnamx(n)
-                 y&$dnamx(n)$ = x&$dnamx(n)$ ; attach coord &
-             else                            ; do not 'lose' information
+    if (.not.ismissing(dnamx(n))) then
+         if (dimx(n).ne.1) then
+              m   = m+1
+              y!m = dnamx(n)
+              if (iscoord(x, dnamx(n))) then
+                 y&$dnamx(n)$ = x&$dnamx(n)$ ; attach coord
+              end if
+          else                          
+              if (iscoord(x, dnamx(n))) then
                  y@$dnamx(n)$ = x&$dnamx(n)$ ; attach singleton coord as attribute @
-             end if
-         end if
-     end if
+              end if
+          end if
+      end if
   end do
   copy_VarAtts(x,y)
 
