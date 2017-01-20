@@ -12421,7 +12421,7 @@ void fixareamap(int *amap)
 		if (Cnp->sfp->d_arr->num_dimensions == 1) {    /* a triangular mesh */
 			ty = (float*)Cnp->sfp->y_arr->data;
 			tx = (float*)Cnp->sfp->x_arr->data;
-			td = (float*)Cnp->sfp->x_arr->data;
+			td = (float*)Cnp->sfp->d_arr->data;
 			for (i = 0; i < Cnp->sfp->d_arr->num_elements; i++) {
 				subret =  _NhlDataToWin(Cnp->trans_obj,&(tx[i]),&(ty[i]),1,&txw,&tyw,
 							&mystatus,&out_of_range,&out_of_range);

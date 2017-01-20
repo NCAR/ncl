@@ -2459,17 +2459,14 @@ static void SetRegionAttrs
 
 	/* Only set the grid bound identifier (99) if the GridBoundFill resources are set to allow the grid bound area to be visible;
 	   this is because the grid boundary needs to be calculated with more precision, potentially impacting performance */
-	if (cpix == -1 && reg_attrs->fill_color > NhlTRANSPARENT && reg_attrs->fill_pat > NhlHOLLOWFILL) {
-		if (reg_attrs == &cl->contourplot.grid_bound) {
-			c_ctseti("AIA",-1);     
+	if (reg_attrs == &cl->contourplot.grid_bound) {
+		if (cpix == -1 && reg_attrs->fill_color > NhlTRANSPARENT && reg_attrs->fill_pat > NhlHOLLOWFILL) {
+			c_ctseti("AIA",99);     
 			/*c_ctsetr("PIT",0.001); */ /* forced to the minimum recommended value, regardless of max_point_distance */
-		}
-		else {
-			c_ctseti("AIA",-1);
 		}
 	}
 	else if (cpix == -1)
-                c_ctseti("AIA",-1);
+                c_ctseti("AIA",98);
 	else if (cpix == -2)
 		c_ctseti("AIA",97);
 	else
@@ -2583,7 +2580,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
                 cnp->low_lbls.gks_plcolor =
                         _NhlGetGksCi(cl->base.wkptr,
                                      cnp->low_lbls.perim_lcolor);
-
+#if 0
 	if (cnp->missing_val.fill_color > NhlTRANSPARENT && cnp->missing_val.fill_pat > NhlHOLLOWFILL) {
 		SetRegionAttrs(cl,&cnp->grid_bound,-1);
 		SetRegionAttrs(cl,&cnp->missing_val,-1); 
@@ -2592,6 +2589,9 @@ static NhlErrorTypes UpdateLineAndLabelParams
 		SetRegionAttrs(cl,&cnp->missing_val,-1); 
 		SetRegionAttrs(cl,&cnp->grid_bound,-1);
 	}
+#endif
+	SetRegionAttrs(cl,&cnp->grid_bound,-1);
+	SetRegionAttrs(cl,&cnp->missing_val,-1); 
 	SetRegionAttrs(cl,&cnp->out_of_range,-2);
 
 	*do_lines = True;
@@ -5958,6 +5958,7 @@ int (_NHLCALLF(hluctfill,HLUCTFILL))
 				switch (iai[i]) {
 				case 99:
 				case 98:
+#if 0
 					if (Cnp->missing_val.gks_fcolor > NhlTRANSPARENT &&
 					    Cnp->missing_val.fill_pat > NhlHOLLOWFILL) {
 						col_ix = Cnp->missing_val.fill_color;
@@ -5969,6 +5970,10 @@ int (_NHLCALLF(hluctfill,HLUCTFILL))
 						pat_ix = Cnp->grid_bound.fill_pat;
 						fscale = Cnp->grid_bound.fill_scale;
 					}
+#endif
+					col_ix = Cnp->missing_val.fill_color;
+					pat_ix = Cnp->missing_val.fill_pat;
+					fscale = Cnp->missing_val.fill_scale;
 					break;
 				case 97:
 					reg_attrs = &Cnp->out_of_range;
