@@ -12617,7 +12617,7 @@ void _NHLCALLF(checkareamap,CHECKAREAMAP)(int *amap)
 				for (j = 27; j < amap[4]; j += 10) {
 					AmapNode *anode = (AmapNode *) &(amap[j]);
 					if ((anode->left_id == i || anode->right_id == i) &&
-					    anode->left_id > 0 && anode->right_id > 0) {
+					    anode->left_id > 0 && anode->right_id > 0 && anode->left_id != anode->right_id) {
 						return;
 					}
 				}
