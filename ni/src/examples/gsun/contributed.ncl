@@ -15243,6 +15243,67 @@ begin
   return( theta )
 end
 ;=========================
+undef("pot_temp_equiv")
+function pot_temp_equiv(p:numeric, t:numeric, q:numeric, dim:integer, opt[1]:logical) ;
+;
+; Calculate Equivalent Potential Temperature 
+; ...  https://en.wikipedia.org/wiki/Equivalent_potential_temperature
+;
+;  p : pressure (must be scalar, 1D or same size as t & q)
+;  t : temperature (degK)
+;  q : specific humidity (kg/kg; dimensionless)
+;  p0: reference pressure: must be same units as p (Pa or hPa)
+;
+local dimp, dimt, dimq, rankp, rankt, rankq, p0, Lv, cpd, R, kap, r, t_e
+begin 
+  dimp   = dimsizes(p) 
+  dimt   = dimsizes(t) 
+  dimq   = dimsizes(q) 
+  rankp  = dimsizes(dimp) 
+  rankt  = dimsizes(dimt) 
+  rankq  = dimsizes(dimq) 
+
+  if (.not.(rankq.eq.rankt)) then
+      print("pot_temp_equiv: FATAL error: q,t ranks do not match")
+      exit
+  end if
+
+  if (.not.all(dimt.eq.dimq)) then
+      print("pot_temp_equiv: FATAL error: q,t dimension sizes do not match")
+      exit
+  end if
+
+  p0 = 100000.0                  ; Pa
+  if (all(p.lt.1100)) then
+      p0 = 1000.0                ; hPa
+  end if
+
+  Lv   = 2.51e6  ; latent heat of vaporization at the triple point [J/kg]; Bluestein, p203        
+  cpd  = 1004.64 ; specific heat at constant pressure for air 
+  R    = 287.04  ; specific gas constant for air [J/(Kg-K)]
+  kap  = R/cpd    
+  r    = q/(1-q) ; convert spc humidity to mixing ratio
+  t_e  = t + ( Lv / cpd ) * r    ;                 Lv     cpd         q
+                                 ; Units check: ([J/kg]/[J/(kg-K)])[kg/kg]  => K
+  if (rankp.eq.rankt) then
+      if (all(dimp.eq.dimt)) then
+          t_e  = t_e * ( p0 / p )^kap  ; p0 and pm must be same units
+      else
+          print("pot_temp_equiv: FATAL error: p,t rank ok but dimension sizes do not match")
+          print("                dimp="+dimp+"   dimt="+dimt) 
+          exit
+      end if
+  else                           ; conform p to t
+      t_e  = t_e * ( p0 / conform(t,p,dim) )^kap  ; p0 and p must be same units
+  end if
+ 
+  t_e@long_name = "equivalent potential temperature"
+  t_e@units     = "K"
+  t_e@tag       = "NCL: pot_temp_equiv"
+  copy_VarCoords( t, t_e ) ; assign coordinates
+  return(t_e)
+end   
+;=========================
 undef("static_stability") 
 function static_stability (p:numeric, t:numeric, npr[1]:integer, sopt[1]:integer)
 ;
