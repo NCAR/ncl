@@ -3064,7 +3064,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 	c_arseti("RC(1)",1);
 	c_arseti("RC(3)",2);
 #endif
-	c_arseti("RC",1);
+	c_arseti("RC",0);
 
 
 	if (! ezmap) {
