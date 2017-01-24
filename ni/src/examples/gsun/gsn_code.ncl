@@ -168,19 +168,6 @@ begin
 end
 
 ;***********************************************************************;
-; Function : lower_case                                                 ;
-;           name : string                                               ;
-;                                                                       ;
-; Converts "name" to lowercase. Uses "str_lower" now.                   ;
-;***********************************************************************;
-undef("lower_case")
-function lower_case(name:string)
-begin
-  return(str_lower(name))
-end
-
-
-;***********************************************************************;
 ; Function : get_long_name_units_string                                 ;
 ;            data : numeric                                             ;
 ;                                                                       ;
@@ -271,6 +258,73 @@ begin
   end if
 end
 
+;**********************************************************************
+; This procedure fixes invalid settings of various labelbar resources
+; related to contour plots.
+;**********************************************************************
+undef("_fix_labelbar_resources")
+procedure _fix_labelbar_resources(cres)
+local aln_res_name, end_res_name, aln_res_str_val, end_res_str_val
+begin
+  if(.not.cres) then
+    return
+  end if
+
+  end_on_res   = "cnLabelBarEndLabelsOn"
+  aln_res_name = "lbLabelAlignment"
+  str_res_name = "lbLabelStrings"
+  end_res_name = "cnLabelBarEndStyle"
+  cap_res_name = "lbBoxEndCapStyle"
+  if(isatt(cres,end_on_res)) then
+    print("_fix_labelbar_resources: Warning: " + end_on_res + " is deprecated.")
+    if(isatt(cres,end_res_name)) then
+      print("  Your setting of " + end_res_name + " will override it.")
+    else if(cres@$end_on_res$) then
+      print("  Will remove it and set " + end_res_name + " to 'IncludeMinMaxLabels'.")
+      cres@$end_res_name$ = "IncludeMinMaxLabels"
+    else if(.not.cres@$end_on_res$) then
+      print("  Will remove it.")
+    end if
+    end if
+    end if
+    delete(cres@$end_on_res$)
+  end if
+
+;
+; The next set of checks are for if cnLabelBarEndStyle is set to
+; something, and one of lbLabelAlignment, lbBoxEndCapStyle, or 
+; lbLabelStrings is also set to something that doesn't make sense.
+;
+  if(.not.(isatt(cres,aln_res_name).or.\
+           isatt(cres,cap_res_name).or.\
+           isatt(cres,str_res_name)).and.\
+     .not.isatt(cres,end_res_name)) then
+    return
+  end if
+
+  if(isatt(cres,aln_res_name).and.\
+     (.not.check_attr_enum_value(cres,aln_res_name,"ExternalEdges").and.\
+      check_attr_enum_value(cres,end_res_name,"IncludeMinMaxLabels"))) then
+    print("_fix_labelbar_resources: Warning: if you set " + end_res_name + " to")
+    print("  IncludeMinMaxLabels, then you should not set " + aln_res_name + ".")
+    print("  Will remove the "+ aln_res_name + " resource.")
+    delete(cres@$aln_res_name$)
+  end if
+
+  if((isatt(cres,cap_res_name).and.isatt(cres,end_res_name)).and.\
+     (.not.check_attr_enum_value(cres,cap_res_name,"RectangleEnds").and.\
+           check_attr_enum_value(cres,end_res_name,"ExcludeOuterBoxes"))) then
+    print("_fix_labelbar_resources: Warning: if you set " + end_res_name + " to")
+    print("  ExcludeOuterBoxes, then you should not set " + cap_res_name + " to")
+    print("  any of the triangle ends.")
+    print("  Will remove the " + cap_res_name + " resource.")
+    if(isatt(cres,str_res_name)) then
+      print("  Be sure to check that " + str_res_name + " is correct!")
+    end if
+    delete(cres@$cap_res_name$)
+  end if
+end
+
 ;***********************************************************************;
 ; Function : get_resources                                              ;
 ;                res:logical                                            ;
@@ -292,6 +346,7 @@ begin
     res2 = True
   end if
   remove_internal_wrf_resources(res2)
+  _fix_labelbar_resources(res2)
   return(res2)
 end
 
@@ -327,57 +382,6 @@ begin
     delete(res@$att_name$)
   end if
   return
-end
-
-;***********************************************************************;
-; Function : check_attr                                                 ;
-;                res    : logical                                       ;
-;           att_name    : string                                        ;
-;          att_value                                                    ;
-;          convert_lower: logical                                       ;
-;                                                                       ;
-; Checks if res@att_name exists and if it is equal to att_value.        ;
-;***********************************************************************;
-undef("check_attr")
-function check_attr(res:logical,att_name:string,att_value, \
-                    convert_lower:logical)
-local res2, new_att_value, is_att_value_string, is_att_name_string
-begin
-  res2 = res
-
-  if(res2.and.isatt(res2,att_name))
-    if(typeof(att_value).eq."string") then
-      is_att_value_string = True
-    else
-      is_att_value_string = False
-    end if
-
-    if(typeof(res@$att_name$).eq."string") then
-      is_att_name_string = True
-     else
-      is_att_name_string = False
-    end if
-;
-; If one value is a string and the other isn't, then we can't
-; compare them, and we just have to return False.
-
-    if(is_att_name_string.ne.is_att_value_string) then
-      return(False)
-    end if
-
-    if(is_att_value_string.and.convert_lower)
-      new_att_value   = lower_case(att_value)
-      res2@$att_name$ = lower_case(res2@$att_name$)
-    else
-      new_att_value = att_value
-    end if
-
-    if(res2@$att_name$.eq.new_att_value)
-      return(True)
-    end if
-  end if
-
-  return(False)
 end
 
 ;***********************************************************************;
@@ -546,33 +550,21 @@ end
 ; an integer value if it's set as a string.                             ;
 ;***********************************************************************;
 undef("get_display_mode")
-function get_display_mode(res:logical,name:string,value)
+function get_display_mode(res[1]:logical,name[1]:string,value[1])
 local display_mode, new_display_mode 
 begin
   display_mode = get_res_value_keep(res,name,value)
 
   if(typeof(display_mode).ne."string") then
     return(display_mode)
-  else
-    new_display_mode = -1      ; Default is -1 ("nocreate")
-
-    if(lower_case(display_mode).eq."nocreate") then
-      new_display_mode = -1
-    end if
-    if(lower_case(display_mode).eq."never") then
-      new_display_mode = 0
-    end if
-    if(lower_case(display_mode).eq."always") then
-      new_display_mode = 1
-    end if
-    if(lower_case(display_mode).eq."conditional") then
-      new_display_mode = 2
-    end if
-    delete(display_mode)
-    display_mode = new_display_mode
   end if
-
-  return(new_display_mode)
+  
+  new_display_mode = get_enum_value(display_mode)
+  if(any(ismissing(new_display_mode))) then
+    return(get_enum_value("NoCreate"))
+  else
+    return(new_display_mode)
+  end if
 end
 
 ;***********************************************************************;
@@ -1435,8 +1427,7 @@ begin
     getvalues plot
       "pmLabelBarDisplayMode" : lbar_mode
     end getvalues
-;---lbar_mode.eq.1 --> "Always"
-    if(lbar_mode.eq.1) then
+    if(lbar_mode.eq.get_enum_value("Always")) then
       new_plot = plot
       new_plot@PlotManagerLabelBar = True
       return(new_plot)
@@ -1465,7 +1456,7 @@ begin
         "cnFillOn"              : cn_fillon
         "pmLabelBarDisplayMode" : lbar_mode
       end getvalues 
-      if(lbar_mode.eq.1.or.cn_fillon) then
+      if(lbar_mode.eq.get_enum_value("Always").or.cn_fillon) then
         found = True
         new_plot = ids(i)
         new_plot@plot_type = "contour"
@@ -1483,11 +1474,11 @@ begin
         "vcMonoWindBarbColor"      : vc_monowindbarbcolor
         "pmLabelBarDisplayMode"    : lbar_mode
       end getvalues
-      if( (lbar_mode.eq.1) .or.\
-          (vc_glyphstyle.eq.0.and..not.vc_monolinearrowcolor) .or.\
-          (vc_glyphstyle.eq.1.and..not.vc_monofillarrowfillcolor) .or. \
-          (vc_glyphstyle.eq.2.and..not.vc_monowindbarbcolor)  .or. \
-          (vc_glyphstyle.eq.3.and..not.vc_monolinearrowcolor)) then
+      if( (lbar_mode.eq.get_enum_value("Always")) .or.\
+          (vc_glyphstyle.eq.get_enum_value("LineArrow").and..not.vc_monolinearrowcolor) .or.\
+          (vc_glyphstyle.eq.get_enum_value("FillArrow").and..not.vc_monofillarrowfillcolor) .or. \
+          (vc_glyphstyle.eq.get_enum_value("WindBarb").and..not.vc_monowindbarbcolor)  .or. \
+          (vc_glyphstyle.eq.get_enum_value("CurlyVector").and..not.vc_monolinearrowcolor)) then
         found = True
         new_plot = ids(i)
         new_plot@plot_type = "vector"
@@ -1498,7 +1489,7 @@ begin
         "stMonoLineColor"       : st_monolinecolor
         "pmLabelBarDisplayMode" : lbar_mode
       end getvalues
-      if(lbar_mode.eq.1.or..not.st_monolinecolor) then
+      if(lbar_mode.eq.get_enum_value("Always").or..not.st_monolinecolor) then
         found = True
         new_plot = ids(i)
         new_plot@plot_type = "streamline"
@@ -2394,7 +2385,7 @@ begin
       lc_orient = "landscape"
     end if
   else
-    lc_orient = lower_case(paper_orient)
+    lc_orient = str_lower(paper_orient)
   end if
 ;
 ; Get the bounding box that covers all the plots.  If gsnPanel 
@@ -2996,14 +2987,14 @@ end
 ; perimeter is turned off, and the fill patterns are set to solid.      ;
 ;                                                                       ;
 ; "EndStyle" is a special internal resource that comes from the         ;
-; cnLabelBarEndStyle resource. It defaults to 0 (include outer boxes),  ;
-; and can be set to 1 (include min/max labels) or 2 (exclude outer      ; 
-; boxes). The assumption is that if this resource is set to 2, then the ;
-; nbox, colors, and labels that are input are set up expecting one more ;
-; box than you have labels (i.e. you are expecting to label the         ;
-; interior edges only). If set to 2, then the assumption is that the    ;
-; labels already contain the min/max values, and you have the correct   ;
-; nbox and colors.                                                      ;
+; cnLabelBarEndStyle resource. It defaults to IncludeOuterBoxes, and can;
+; be set to IncludeMinMaxLabels) or ExcludeOuterBoxes. The assumption is;
+; that if this resource is set to ExcludeOuterBoxes, then the nbox,     ;
+; colors, and labels that are input are set up expecting one more box   ;
+; than you have labels (i.e. you are expecting to label the interior    ;
+; edges only). If set to 2, then the assumption is that the labels      ;
+; already contain the min/max values, and you have the correct nbox     ;
+; and colors.                                                           ;
 ;                                                                       ;
 ;***********************************************************************;
 undef("create_labelbar")
@@ -3025,23 +3016,23 @@ begin
   mono_fill_pat = get_res_value(lbres,"lbMonoFillPattern",True);
 
   if(isatt(lbres,"EndStyle")) then
-    end_style = get_res_value(lbres,"EndStyle",0)
-    if(.not.(end_style.ge.0.and.end_style.le.2)) then
-      end_style = 0
+    end_style = get_res_value(lbres,"EndStyle",get_enum_value("IncludeOuterBoxes"))
+    if(.not.any(end_style.eq.(/get_enum_value("IncludeOuterBoxes"),\
+                               get_enum_value("IncludeMinMaxLabels"),\
+                               get_enum_value("ExcludeOuterBoxes")/))) then
+      end_style = get_enum_value("IncludeOuterBoxes")
     end if
-    if(end_style.eq.2) then
-; Exclude outer boxes
+    if(end_style.eq.get_enum_value("ExcludeOuterBoxes")) then
       nbox2       = nbox-2
       new_colors  = get_res_value(lbres,"lbFillColors",colors(1:))
       label_align = get_res_value(lbres,"lbLabelAlignment","ExternalEdges")
     else
       nbox2       = nbox
       new_colors  = get_res_value(lbres,"lbFillColors",colors)
-      if(end_style.eq.0) then
-; Include outer boxes
+      if(end_style.eq.get_enum_value("IncludeOuterBoxes")) then
         label_align = get_res_value(lbres,"lbLabelAlignment","InteriorEdges")
       else
-; Include min max labels
+; IncludeMinMaxLabels
         label_align = get_res_value(lbres,"lbLabelAlignment","ExternalEdges")
       end if
     end if
@@ -3080,7 +3071,7 @@ undef("is_cairo_ps")
 function is_cairo_ps(wtype)
 local lwtype, cpsenv
 begin
-  lwtype = lower_case(wtype)
+  lwtype = str_lower(wtype)
   cpsenv = getenv("NCARG_OLD_PS")
   if(lwtype.eq."newps".or.(lwtype.eq."ps".and.ismissing(cpsenv))) then
     return(True)
@@ -3096,7 +3087,7 @@ undef("is_cairo_pdf")
 function is_cairo_pdf(wtype)
 local lwtype, cpdfenv
 begin
-  lwtype  = lower_case(wtype)
+  lwtype  = str_lower(wtype)
   cpdfenv = getenv("NCARG_OLD_PDF")
   if(lwtype.eq."newpdf".or.(lwtype.eq."pdf".and.ismissing(cpdfenv))) then
     return(True)
@@ -3112,7 +3103,7 @@ undef("is_cairo_png")
 function is_cairo_png(wtype)
 local lwtype
 begin
-  lwtype = lower_case(wtype)
+  lwtype = str_lower(wtype)
   if(lwtype.eq."newpng".or.lwtype.eq."png") then
     return(True)
   else
@@ -3127,7 +3118,7 @@ undef("is_cairo_eps")
 function is_cairo_eps(wtype)
 local lwtype, cpsenv
 begin
-  lwtype = lower_case(wtype)
+  lwtype = str_lower(wtype)
   cpsenv = getenv("NCARG_OLD_EPS")
   if (lwtype.eq."eps".and.ismissing(cpsenv)) then
     return(True)
@@ -3143,7 +3134,7 @@ undef("is_cairo_svg")
 function is_cairo_svg(wtype)
 local lwtype
 begin
-  lwtype = lower_case(wtype)
+  lwtype = str_lower(wtype)
   if (lwtype.eq."svg") then
     return(True)
   else
@@ -3456,7 +3447,7 @@ function gsn_open_wks(type[1]:string,name[1]:string)
 local i, wks, appusrdir, name_char, not_found, res_file, res_dir, type2, realtype, suffix
 begin
     type2   = type          ; Make copy of type and its resources
-    type2  = lower_case(type)
+    type2  = str_lower(type)
     res_dir = "./"          ; Default resource directory.
     res_file = "gsnapp"     ; Default resource file name.
     valid_type = False      ; Is type valid?
@@ -6120,7 +6111,7 @@ begin
     orths = (/     1.0,          -1.0,      -1.0,        1.0/)
 
     amres = get_res_eq(res,"am")
-    just = lower_case(get_res_value(res,(/"gsnPanelFigureStringsJust","amJust"/),"bottomright"))
+    just = str_lower(get_res_value(res,(/"gsnPanelFigureStringsJust","amJust"/),"bottomright"))
 ;
 ; Look for all resources that start with gsnPanelFigureStrings, and replace
 ; this with just "tx". This is what allows us to sneak in text resources
@@ -6273,11 +6264,11 @@ begin
   if(panel_labelbar) then
 ;
 ; The cnLabelBarEndStyle resource is only available with contour 
-; plots, and it is 0 by default (IncludeOuterBoxes). We need to check
-; if it is 1 (IncludeMinMaxLabels) or 2 (ExcludeOuterBoxes) and do
-; the appropriate thing. IncludeMinMaxLabels is not currently supported.
+; plots, and it is IncludeOuterBoxes by default. We need to check
+; if it is IncludeMinMaxLabels or ExcludeOuterBoxes and do
+; the appropriate thing.
 ;
-    end_style = 0     ; IncludeOuterBoxes
+    end_style = get_enum_value("IncludeOuterBoxes")
     if(new_plot_lab@plot_type.eq."contour") then
       getvalues new_plot_lab
         "cnFillOn" : fill_on
@@ -6304,14 +6295,12 @@ begin
         "vcMonoFillArrowFillColor" : mono_fill_arrow
         "vcMonoWindBarbColor"      : mono_wind_barb
       end getvalues
-;
-; 0 = linearrow, 1 = fillarrow, 2 = windbarb, 3 = curlyvector
-;
-      if(    (fill_arrows_on .and. .not.mono_fill_arrow)     .or. \
-        (.not.fill_arrows_on .and. .not.mono_line_color)   .or. \
-        (gstyle.eq.1 .and. .not.mono_fill_arrow)  .or. \
-        (gstyle.eq.2 .and. .not.mono_wind_barb)  .or. \
-        (gstyle.eq.0 .or. gstyle.eq.3) .and. .not.mono_line_color) then
+      if(    (fill_arrows_on .and. .not.mono_fill_arrow) .or. \
+        (.not.fill_arrows_on .and. .not.mono_line_color) .or. \
+        (gstyle.eq.get_enum_value("FillArrow") .and. .not.mono_fill_arrow) .or. \
+        (gstyle.eq.get_enum_value("WindBarb") .and. .not.mono_wind_barb) .or. \
+        (gstyle.eq.get_enum_value("LineArrow") .or. get_enum_value("CurlyVector")) .and. \
+          .not.mono_line_color) then
 ;---There are no fill patterns in VectorPlot, only solids.
         mono_fill_pat = True
         mono_fill_scl = True
@@ -6369,8 +6358,7 @@ begin
   lbhor = True
   if(panel_labelbar) then
     lbres = get_res_eq(res,(/"lb","pmLabelBar","vp"/))  ; Get labelbar resources.
-    if(check_attr(lbres,"lbOrientation","vertical",True).or.\
-       check_attr(lbres,"lbOrientation",1,True)) then
+    if(check_attr_enum_value(lbres,"lbOrientation","vertical")) then
       lbhor = False
       labelbar_width = 0.20 * plot_width + 2.*xwsp
 ;
@@ -6664,10 +6652,11 @@ begin
 ; Check if a labelbar is to be drawn at the bottom.
 ;
   if(panel_labelbar) then
-    if(end_style.eq.0.or.end_style.eq.2) then
+    if(end_style.eq.get_enum_value("IncludeOuterBoxes").or.\
+       end_style.eq.get_enum_value("ExcludeOuterBoxes")) then
       lbres@EndStyle = end_style
     else
-      lbres@EndStyle = 0
+      lbres@EndStyle = get_enum_value("IncludeOuterBoxes")
       print("Warning: gsn_panel: this routine only supports a cnLabelBarEndStyle that is set to 'IncludeOuterBoxes' or 'ExcludeOuterBoxes'")
     end if
 ;
@@ -7094,8 +7083,9 @@ begin
   getvalues new_base
     "trGridType" : grid_type
   end getvalues
-  if(grid_type.ge.3) then
-    print("Warning: gsn_attach_plots: the base plot is either spherical or triangular, so can't fix the tickmarks")
+  if(any(grid_type.eq.(/get_enum_value("Spherical"),\
+                        get_enum_value("TriangularMesh")/))) then
+    print("Warning: gsn_attach_plots: the base plot is either spherical or a triangular mesh, so can't fix the tickmarks")
     found_base = False
   end if
 ;
@@ -9176,7 +9166,6 @@ begin
   return(histogram)
 end
 
-
 ;***********************************************************************;
 ; Function : gsn_contour                                                ;
 ;                   wks: workstation object                             ;
@@ -9257,6 +9246,7 @@ begin
 ; create time. Too bad it has to be so clunky.
 ;
     is_lb_mode = isatt(res2,"pmLabelBarDisplayMode")
+
     if(is_lb_mode) then
       lb_mode = get_display_mode(res2,"pmLabelBarDisplayMode","NoCreate")
       delete(res2@pmLabelBarDisplayMode)
@@ -12348,27 +12338,27 @@ begin
 ;
           txjust = txres2@txJust
 
-          if(any(lower_case(txjust).eq. \
+          if(any(str_lower(txjust).eq. \
                  (/"bottomleft","bottomcenter","bottomright"/))) then
             ypos = y(1) - ((nr+1) * ysize)
           end if
-          if(any(lower_case(txjust).eq. \
+          if(any(str_lower(txjust).eq. \
                  (/"centerleft","centercenter","centerright"/))) then
             ypos = (y(1) - ((nr+1) * ysize)) + ysize2
           end if
-          if(any(lower_case(txjust).eq. \
+          if(any(str_lower(txjust).eq. \
                  (/"topleft","topcenter","topright"/))) then
             ypos = y(1) - (nr * ysize)
           end if
-          if(any(lower_case(txjust).eq. \
+          if(any(str_lower(txjust).eq. \
                  (/"bottomleft","centerleft","topleft"/))) then
             xpos = x(0) + (nc * xsize)
           end if
-          if(any(lower_case(txjust).eq. \
+          if(any(str_lower(txjust).eq. \
                  (/"bottomcenter","centercenter","topcenter"/))) then
             xpos = (x(0) + (nc * xsize)) + xsize2
           end if
-          if(any(lower_case(txjust).eq. \
+          if(any(str_lower(txjust).eq. \
                  (/"bottomright","centerright","topright"/))) then
             xpos = x(0) + ((nc+1) * xsize)
           end if
