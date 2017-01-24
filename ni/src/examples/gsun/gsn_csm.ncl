@@ -2426,20 +2426,7 @@ begin
 ; stLabelBarEndStyle resources.
 ;
 ; lbBoxEndCapStyle was added in V6.4.0 and allows you to add triangle
-; ends for the labelbar. For now, we're going to say that if the cap 
-; style is any of the triangle ends, then the end style can only be 
-; "IncludeOuterBoxes".
-;
-    if((end_labelbar_style.eq.get_enum_value("ExcludeOuterBoxes").or.\
-        end_labelbar_style.eq.get_enum_value("IncludeMinMaxLabels")).and.\
-      .not.check_attr_enum_value(lbres,"lbBoxEndCapStyle","RectangleEnds")) then
-      print("Warning: add_labelbar: you can't set lbBoxEndCapStyle to any of")
-      print("  the triangle ends if cnLabelBarEndStyle is not set to 'IncludeOuterBoxes'.")
-      print("  Turning off triangle(s) for labelbar.")
-      cap_style = get_enum_value("RectangleEnds")
-    else
-      cap_style = lbres@lbBoxEndCapStyle
-    end if
+; ends for the labelbar. 
 ;
 ; cnLabelBarEndLabelsOn was deprecated in V5.0, but we still need to
 ; check for it. It's been replaced by cnLabelBarEndStyle.
@@ -2449,6 +2436,7 @@ begin
 ; IncludeMinMaxLabels. Conversely, if the style is IncludeMinMaxLabels 
 ; or ExcludeOuterBoxes, then xxLabelBarEndLabelsOn should be set True.
 ;
+    cap_style = lbres@lbBoxEndCapStyle
     if(end_labelbar_style.eq.get_enum_value("IncludeOuterBoxes")) then
       if(end_labels_on) then
         end_labelbar_style = get_enum_value("IncludeMinMaxLabels")
@@ -2547,9 +2535,11 @@ begin
       if(end_labelbar_style.eq.get_enum_value("IncludeMinMaxLabels")) then
         lbres@lbLabelStrings = lbstrings
       end if
-      set_attr(lbres,"lbLabelAlignment","ExternalEdges")
     end if
   end if  
+  if(end_labels_on) then
+    set_attr(lbres,"lbLabelAlignment","ExternalEdges")
+  end if
 
   levels = fix_zero_contour(levels)
 
@@ -4204,7 +4194,6 @@ begin
 ; Outline the area we are looking at (optional).
 ;
    if(maskoutln) then
-     tmp_color             = convert_color_to_rgba(wks,"foreground")
      pres@gsLineColor      = rm_single_dims_no_meta(convert_color_to_rgba(wks,"foreground"))
      pres@gsLineThicknessF = 3.0
      var_string         = unique_string("lamb_polyline")
