@@ -4205,7 +4205,7 @@ begin
 ;
    if(maskoutln) then
      tmp_color             = convert_color_to_rgba(wks,"foreground")
-     pres@gsLineColor      = tmp_color(0,:)
+     pres@gsLineColor      = rm_single_dims_no_meta(convert_color_to_rgba(wks,"foreground"))
      pres@gsLineThicknessF = 3.0
      var_string         = unique_string("lamb_polyline")
      outline_lon        = (/ minlon, maxlon, maxlon, minlon, minlon /)

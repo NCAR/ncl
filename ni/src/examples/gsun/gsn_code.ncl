@@ -11906,7 +11906,7 @@ begin
    if (isatt(opt,"gsnShadeLow")) then
      shaden_set = True
      if(shade_type.eq."color") then
-       shaden = rm_single_dims(convert_color_to_rgba(tmp_wks,opt@gsnShadeLow))
+       shaden = rm_single_dims_no_meta(convert_color_to_rgba(tmp_wks,opt@gsnShadeLow))
      else
        shaden      = opt@gsnShadeLow
        shaden_type = typeof(shaden)
@@ -11924,7 +11924,7 @@ begin
    if (isatt(opt,"gsnShadeMid")) then
      shadem_set = True
      if(shade_type.eq."color") then
-       shadem      = rm_single_dims(convert_color_to_rgba(tmp_wks,opt@gsnShadeMid))
+       shadem      = rm_single_dims_no_meta(convert_color_to_rgba(tmp_wks,opt@gsnShadeMid))
        shadem_type = "rgba"
      else
        shadem      = opt@gsnShadeMid
@@ -11943,7 +11943,7 @@ begin
    if (isatt(opt,"gsnShadeHigh")) then
      shadep_set = True
      if(shade_type.eq."color") then
-       shadep      = rm_single_dims(convert_color_to_rgba(tmp_wks,opt@gsnShadeHigh))
+       shadep      = rm_single_dims_no_meta(convert_color_to_rgba(tmp_wks,opt@gsnShadeHigh))
        shadep_type = "rgba"
      else
        shadep      = opt@gsnShadeHigh

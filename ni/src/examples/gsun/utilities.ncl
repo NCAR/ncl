@@ -885,6 +885,39 @@ begin
   return cmap
 end
 
+;**********************************************************************
+; I had to create a "non-metadata" version of rm_single_dims_no_meta 
+; because rm_single_dims references copy_VarAtts which is only in 
+; contributed.ncl and not seen by this script. Eventually we'll want to 
+; reorder some of these 'utility' functions so they are more visible
+; by other routines.
+;
+; Do NOT make this function public. It should be renamed first and
+; potentially refactored so that "rm_single_dims" uses this routine.
+;**********************************************************************
+undef("rm_single_dims_no_meta")
+function rm_single_dims_no_meta(x)
+; Remove singleton (degenerate) dimensions. A singleton dimension is size 1.
+local dimx, dimy, rankx 
+begin
+  dimx  = dimsizes(x)
+
+  if (.not.any(dimx.eq.1)) then
+      return(x)                     ; no degenerate dimensions
+  end if
+
+  rankx = dimsizes(dimx)
+
+  if (all(dimx.eq.1)) then    
+      dimy = 1                      ; all degenerate dimensions
+  else
+      dimy = dimx(ind(dimx.ne.1))
+  end if
+  y     = onedtond(ndtooned(x), dimy)
+
+  return(y)
+end
+
 ;***********************************************************************;
 ; This function converts an nD array to a 2D array. For example:        ;
 ;   - 4 x 5 x 3 becomes 20 x 3                                          ;
@@ -1683,8 +1716,9 @@ end
 ;                                                                       ;
 ; I decided to always have this function return N x 4 even in the case  ;
 ; of N=1, so that other routines that use this function don't have to   ;
-; test whether they have a 1D or 2D array. They can use rm_single_dims  ;
-; if they need to get rid of a degenerate dimension.                    ;
+; test whether they have a 1D or 2D array. They can use                 ;
+; rm_single_dims_no_meta if they need to get rid of a degenerate        ;
+; dimension.                                                            ;
 ;***********************************************************************;
 undef("convert_color_to_rgba")
 function convert_color_to_rgba(wks,colors)
