@@ -6060,6 +6060,9 @@ static NhlErrorTypes ManageLabelBar
 		cnp->lbar_labels_set = True;  /* this must remain set as long as explicit mode is on in order
 						 to prevent the explicit labels from being reset automatically */
 	}
+	else if (cnp->llabel_strings != ocnp->llabel_strings ) {
+		redo_lbar = True;
+	}
 	else {
 		/* don't copy line label strings if set to explicit and lbar_labels_set is True */
 		redo_lbar = False;
