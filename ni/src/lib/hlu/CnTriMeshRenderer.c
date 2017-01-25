@@ -2466,7 +2466,7 @@ static void SetRegionAttrs
 		}
 	}
 	else if (cpix == -1)
-                c_ctseti("AIA",98);
+                c_ctseti("AIA",-1);
 	else if (cpix == -2)
 		c_ctseti("AIA",97);
 	else
@@ -3073,7 +3073,11 @@ static NhlErrorTypes AddDataBoundToAreamap
 		float gxmin,gxmax,gymin,gymax;
 		NhlBoolean lbox, rbox, bbox, tbox;
 
-		c_arseti("RC",0);
+		if (cnp->smoothing_on)
+			c_arseti("RC",1);
+		else
+			c_arseti("RC",0);
+
 		ret = NhlVAGetValues(cnp->trans_obj->base.id,
 				     NhlNtrXMinF,&txmin,
 				     NhlNtrXMaxF,&txmax,
@@ -4347,6 +4351,7 @@ static NhlErrorTypes CnTriMeshRender
 	}
 	else if (do_fill && cnp->fill_order == order) {
 		NhlcnFillMode fill_mode = cnp->fill_mode;
+		int is_constant;
 
 		if (fill_mode == NhlAREAFILL) {
 			if (! mesh_inited) {
@@ -4398,6 +4403,7 @@ static NhlErrorTypes CnTriMeshRender
 				ContourAbortDraw(cnl);
 				return ret;
 			}
+
 
 			/* flag1 is set to 999 to indicate that the HLU version
 			   of ARPRAM should be called. It has special handling

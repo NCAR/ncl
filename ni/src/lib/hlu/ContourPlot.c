@@ -12553,7 +12553,8 @@ void fixareamap(int *amap)
 
 	if (aid > -999) {
 		/* reinit the areamap */
-		subret = _NhlIdleWorkspace(Cnp->aws);
+		if (Cnp->aws)
+			subret = _NhlIdleWorkspace(Cnp->aws);
 		Cnp->aws = NULL;
 		subret = cnInitAreamap(Cnl,"FixAreaMap");
 /* add the boundary to the areamap */
