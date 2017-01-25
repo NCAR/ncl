@@ -2,7 +2,6 @@ C NCLFORTSTART
       SUBROUTINE TRIPLE2GRID1(KZ,XI,YI,ZI,ZMSG,MX,NY,GX,GY,GRID,
      +                        DOMAIN,LOOP,METHOD,DISTMX,MX2,NY2,
      +                        X,Y,Z,GBIGX,GBIGY,GBIGXY,IER)
-C C C+                        X,Y,Z,GXBIG,GYBIG,GBIG,IER)
       IMPLICIT NONE
 
 c NCL:  grid = triple2grid(xi,yi,zi,gx,gy,option)
@@ -15,15 +14,9 @@ c NCL:  grid = triple2grid(xi,yi,zi,gx,gy,option)
 C C C WRAPIT can not handle semantics like:  0:MX2-1 
 C C C DOUBLE PRECISION GXBIG(0:MX2-1),GYBIG(0:NY2-1)
 C C C DOUBLE PRECISION GBIG(0:MX2-1,0:NY2-1)
-C C C These are place holders
       DOUBLE PRECISION GBIGX(MX2),GBIGY(NY2)
       DOUBLE PRECISION GBIGXY(MX2,NY2)
 C NCLEND
-
-C C C These are the real work arrays
-      DOUBLE PRECISION GXBIG(0:MX2-1),GYBIG(0:NY2-1)
-      DOUBLE PRECISION GBIG(0:MX2-1,0:NY2-1)
-
       INTEGER M,N,K,KOUT,KPTS, MFLAG,NFLAG
       DOUBLE PRECISION DD,DDEPS,DDCRIT
 
@@ -91,7 +84,7 @@ c                    equally spaced in y ???
          END IF
       END DO
    20 CONTINUE
-          
+
       IF (KOUT.EQ.0) THEN
           IF (LOOP.EQ.0) THEN
               CALL TRIP2GRD2(KPTS,X,Y,Z,ZMSG,MX,NY,GX,GY,GRID
@@ -104,30 +97,29 @@ c                    equally spaced in y ???
 c          create an oversized (big) grid
 c          allows outliers to influence grid
           DO N = 1,NY
-             GYBIG(N) = GY(N)
+             GBIGY(N+1) = GY(N)
           END DO
 
           DO M = 1,MX
-             GXBIG(M) = GX(M)
+             GBIGX(M+1) = GX(M)
           END DO
-
 c          domain is arbitrary
-          GYBIG(0)    = GY(1)  - DOMAIN*(GY(2)-GY(1))
-          GYBIG(NY+1) = GY(NY) + DOMAIN*(GY(NY)-GY(NY-1))
-          GXBIG(0)    = GX(1)  - DOMAIN*(GX(2)-GX(1))
-          GXBIG(MX+1) = GX(MX) + DOMAIN*(GX(MX)-GX(MX-1))
+          GBIGY(1)   = GY(1)  - DOMAIN*(GY(2)-GY(1))
+          GBIGY(NY2) = GY(NY) + DOMAIN*(GY(NY)-GY(NY-1))
+          GBIGX(1)   = GX(1)  - DOMAIN*(GX(2)-GX(1))
+          GBIGX(MX2) = GX(MX) + DOMAIN*(GX(MX)-GX(MX-1))
 
           IF (LOOP.EQ.0) THEN
-              CALL TRIP2GRD2(KPTS,X,Y,Z,ZMSG,MX+2,NY+2,GXBIG,GYBIG,GBIG
-     +                      ,MFLAG,NFLAG,METHOD,DDCRIT,IER)
+              CALL TRIP2GRD2(KPTS,X,Y,Z,ZMSG,MX2,NY2,GBIGX,GBIGY
+     +                      ,GBIGXY,MFLAG,NFLAG,METHOD,DDCRIT,IER)
           ELSE
-              CALL TRIP2GRD3(KPTS,X,Y,Z,ZMSG,MX+2,NY+2,GXBIG,GYBIG,GBIG
-     +                      ,MFLAG,NFLAG,METHOD,DDCRIT,IER)
+              CALL TRIP2GRD3(KPTS,X,Y,Z,ZMSG,MX2,NY2,GBIGX,GBIGY
+     +                      ,GBIGXY,MFLAG,NFLAG,METHOD,DDCRIT,IER)
           END IF
 c           store interior of gbig in return array
           DO N = 1,NY
             DO M = 1,MX
-               GRID(M,N) = GBIG(M,N)
+               GRID(M,N) = GBIGXY(M+1,N+1)
             END DO
           END DO
       END IF
@@ -179,6 +171,7 @@ c                          initialize
            GOUT(M,N) = ZMSG
         END DO
       END DO
+
 c                     EXACT MATCHES ONLY 
 c c c t1  = second()
       KSUM = 0
@@ -240,7 +233,7 @@ c                     determine subscripts to nearest grid pt
                 END IF
              END DO
          END IF
-        
+
   30     IF (MM.GE.1 .AND. MM.LE.MX .AND.
      +       NN.GE.1 .AND. NN.LE.NY) THEN
 
