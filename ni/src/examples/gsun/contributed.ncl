@@ -15244,58 +15244,96 @@ begin
 end
 ;=========================
 undef("pot_temp_equiv")
-function pot_temp_equiv(p:numeric, t:numeric, q:numeric, dim:integer, opt[1]:logical) ;
+function pot_temp_equiv(p:numeric, t:numeric, h:numeric, dim:integer, humVarType[1]:string) ;
 ;
 ; Calculate Equivalent Potential Temperature 
 ; ...  https://en.wikipedia.org/wiki/Equivalent_potential_temperature
 ;
 ;  p : pressure (must be scalar, 1D or same size as t & q)
 ;  t : temperature (degK)
-;  q : specific humidity (kg/kg; dimensionless)
+;  h : humidity variable
+;      (a) specific humidity (kg/kg) : humVarType = "q"
+;      (b) mixing ratio (kg/kg/)     : humVarType = "r"
+;      (c) dew point (K)             : humVarType = "td"
+;      (d) relative humidity (%)     : humVarType = "rh"
+;  
 ;  p0: reference pressure: must be same units as p (Pa or hPa)
 ;
-local dimp, dimt, dimq, rankp, rankt, rankq, p0, Lv, cpd, R, kap, r, t_e
+; contribution: Carl Schreck (NCSU)
+;
+local dimp, dimt, dimq, rankp, rankt, rankq, p0 \
+    , Lv, cpd, R, kap, r, t_e, pExpand, humVarType_lc
 begin 
   dimp   = dimsizes(p) 
   dimt   = dimsizes(t) 
-  dimq   = dimsizes(q) 
+  dimh   = dimsizes(h) 
   rankp  = dimsizes(dimp) 
   rankt  = dimsizes(dimt) 
-  rankq  = dimsizes(dimq) 
+  rankh  = dimsizes(dimh) 
 
-  if (.not.(rankq.eq.rankt)) then
-      print("pot_temp_equiv: FATAL error: q,t ranks do not match")
+  if (.not.(rankh.eq.rankt)) then
+      print("pot_temp_equiv: FATAL error: h,t ranks do not match")
       exit
   end if
 
-  if (.not.all(dimt.eq.dimq)) then
-      print("pot_temp_equiv: FATAL error: q,t dimension sizes do not match")
+  if (.not.all(dimt.eq.dimh)) then
+      print("pot_temp_equiv: FATAL error: h,t dimension sizes do not match")
       exit
   end if
 
-  p0 = 100000.0                  ; Pa
+  p0 = 100000.0                    ; Pa
   if (all(p.lt.1100)) then
-      p0 = 1000.0                ; hPa
+      p0 = 1000.0                  ; hPa
   end if
 
-  Lv   = 2.51e6  ; latent heat of vaporization at the triple point [J/kg]; Bluestein, p203        
-  cpd  = 1004.64 ; specific heat at constant pressure for air 
-  R    = 287.04  ; specific gas constant for air [J/(Kg-K)]
-  kap  = R/cpd    
-  r    = q/(1-q) ; convert spc humidity to mixing ratio
-  t_e  = t + ( Lv / cpd ) * r    ;                 Lv     cpd         q
-                                 ; Units check: ([J/kg]/[J/(kg-K)])[kg/kg]  => K
   if (rankp.eq.rankt) then
       if (all(dimp.eq.dimt)) then
-          t_e  = t_e * ( p0 / p )^kap  ; p0 and pm must be same units
+          pExpand = p
       else
           print("pot_temp_equiv: FATAL error: p,t rank ok but dimension sizes do not match")
           print("                dimp="+dimp+"   dimt="+dimt) 
           exit
       end if
-  else                           ; conform p to t
-      t_e  = t_e * ( p0 / conform(t,p,dim) )^kap  ; p0 and p must be same units
+  else                             
+      pExpand = conform(t,p,dim)   ; conform p to t (expand, replicate, broadcast)
   end if
+
+
+  Lv   = 2.51e6  ; latent heat of vaporization at the triple point [J/kg]; Bluestein, p203        
+  cpd  = 1004.64 ; specific heat at constant pressure for air 
+  R    = 287.04  ; specific gas constant for air [J/(Kg-K)]
+  kap  = R/cpd    
+
+  humVarType_lc = str_lower(humVarType)    ; ensure lower case for testing
+
+  if( humVarType_lc.eq."q" ) then
+    r = h/(1-h)                            ; convert spc humidity to mixing ratio
+  else if( humVarType_lc.eq."r" )
+    r = h                                  ; humidity is already mixing ratio
+  else if( humVarType_lc.eq."td" )
+    if (p0.eq.1000.0) then
+      r = mixhum_ptd( pExpand*100., h, 1 ) ; convert dewpoint to mixing ratio
+    else
+      r = mixhum_ptd( pExpand, h, 1 )      ; convert dewpoint to mixing ratio
+    end if
+  else if( humVarType_lc.eq."rh" )
+    if (p0.eq.1000.0) then
+        r = mixhum_ptrh( pExpand, t, h, 1 )      ; convert relative humidity to mixing ratio
+    else
+        r = mixhum_ptrh( pExpand*0.01, t, h, 1 ) ; convert relative humidity to mixing ratio
+    end if 
+  else
+    print("pot_temp_equiv: FATAL error: Invalid humidity variable" )
+    print("                humVarType="+humVarType)
+    exit
+  end if
+  end if
+  end if
+  end if
+
+  t_e  = t + ( Lv / cpd ) * r    ;                 Lv     cpd         q
+                                 ; Units check: ([J/kg]/[J/(kg-K)])[kg/kg]  => K
+  t_e  = t_e * ( p0 / pExpand )^kap  ; p0 and pm must be same units
  
   t_e@long_name = "equivalent potential temperature"
   t_e@units     = "K"
