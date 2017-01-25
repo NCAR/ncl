@@ -12616,7 +12616,7 @@ void _NHLCALLF(checkareamap,CHECKAREAMAP)(int *amap)
 			if (amap[i] > 200 && amap[i] < 513) {  /* this the range of valid HLU area ids multiplied by 2 and plus 1 */
 				for (j = 27; j < amap[4]; j += 10) {
 					AmapNode *anode = (AmapNode *) &(amap[j]);
-					if ((anode->left_id == i || anode->right_id == i) &&
+					if (((anode->left_id == i+1) || (anode->right_id == i+1)) &&
 					    anode->left_id > 0 && anode->right_id > 0 /*&& anode->left_id != anode->right_id*/) {
 						return;
 					}

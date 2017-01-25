@@ -1123,7 +1123,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 	c_arseti("RC(3)",2);
 #endif
 	/* RC has been set to 1 ; I am now finding better results with 0 -- we'll see */
-	c_arseti("RC",0);
+
 	if (! ezmap) {
 		float twlx,twrx,twby,twuy;
 		float gwlx,gwrx,gwby,gwuy;
@@ -1131,6 +1131,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 		float gxmin,gxmax,gymin,gymax;
 		NhlBoolean lbox, rbox, bbox, tbox;
 
+		c_arseti("RC",0);
 		ret = NhlVAGetValues(cnp->trans_obj->base.id,
 				     NhlNtrXMinF,&txmin,
 				     NhlNtrXMaxF,&txmax,
@@ -1373,6 +1374,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 		_NhlAredam(cnp->aws,xa,ya,1,3,0,-1,entry_name);
 
 #endif
+		c_arseti("RC",1);
 		c_mpgetc("OU",cval,3);
 		c_mpsetc("OU","NO");
 		c_mpseti("G2",2);
