@@ -4540,13 +4540,27 @@ static NhlErrorTypes    LabelBarDraw
 /* 
  * Draw the boxes
  */
+        /* NCL-2539:  We believe this code was introduced around 2005 to deal with a combination of the 
+         * original ps/eps driver, and printers of the day, whereby colors drawn with cell-fill vs. polygon-fill
+         * primitives had slightly difference appearances.  This code caused the labelbar boxes to be drawn as cell-fills
+         * whenever the contours were drawn that way (i.e., in the case of cnFillMode = "RasterFill".
+         *
+         * However, DrawRasterBoxes() breaks the newly introduced triangular/rectangular labelbar endcap styles,
+         * causing *both* endcap styles to be drawn if a triangular endcap is intended. Note there is no color differences
+         * in drawing with cell-fill vs. polygon-fill with the cairo-based ps/eps drivers. So as this bit of 
+         * conditional logic addresses issues that may no longer be relevant, I am commenting it out, invoking only
+         * DrawFilledBoxes() to due the work, and this bit of code should likely be deleted at some future point.
+         * --RLB 1/2017
+         */
+#if 0        
 	if (lb_p->raster_fill_on) {
 		DrawRasterBoxes(lbl);
 	}
 	else {
 		DrawFilledBoxes(lbl,False);
 	}
-		
+#endif
+        DrawFilledBoxes(lbl, False);
 
 	if (lbl->view.use_segments) {
 

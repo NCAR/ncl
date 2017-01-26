@@ -14196,10 +14196,10 @@ begin
   end if
 end
 ; ----------------------------------------------------
-undef ("rm_single_dims")
+undef("rm_single_dims")
 function rm_single_dims (x)
 ; remove singleton (degenerate) dimensions. A singleton dimension is size 1.
-; NCL philosophy: do not 'lose' information. 
+; NCL philosophy: do not 'lose' information.
 local dimx, dimy, rankx, dnamx, y, m, n
 begin
   dimx  = dimsizes(x)
@@ -14211,7 +14211,7 @@ begin
   rankx = dimsizes(dimx)
   dnamx = getvardims(x)             ; dim names
 
-  if (all(dimx.eq.1)) then    
+  if (all(dimx.eq.1)) then
       dimy = 1                      ; all degenerate dimensions
   else
       dimy = dimx(ind(dimx.ne.1))
@@ -14220,17 +14220,19 @@ begin
 
   m     = -1
   do n=0,rankx-1
-     if (.not.ismissing(dnamx(n))) then
-         if (iscoord(x, dnamx(n))) then 
-             if (dimx(n).ne.1) then
-                 m   = m+1
-                 y!m = dnamx(n)
-                 y&$dnamx(n)$ = x&$dnamx(n)$ ; attach coord &
-             else                            ; do not 'lose' information
+    if (.not.ismissing(dnamx(n))) then
+         if (dimx(n).ne.1) then
+              m   = m+1
+              y!m = dnamx(n)
+              if (iscoord(x, dnamx(n))) then
+                 y&$dnamx(n)$ = x&$dnamx(n)$ ; attach coord
+              end if
+          else                          
+              if (iscoord(x, dnamx(n))) then
                  y@$dnamx(n)$ = x&$dnamx(n)$ ; attach singleton coord as attribute @
-             end if
-         end if
-     end if
+              end if
+          end if
+      end if
   end do
   copy_VarAtts(x,y)
 
@@ -15240,6 +15242,105 @@ begin
 
   return( theta )
 end
+;=========================
+undef("pot_temp_equiv")
+function pot_temp_equiv(p:numeric, t:numeric, h:numeric, dim:integer, humVarType[1]:string) ;
+;
+; Calculate Equivalent Potential Temperature 
+; ...  https://en.wikipedia.org/wiki/Equivalent_potential_temperature
+;
+;  p : pressure (must be scalar, 1D or same size as t & q)
+;  t : temperature (degK)
+;  h : humidity variable
+;      (a) specific humidity (kg/kg) : humVarType = "q"
+;      (b) mixing ratio (kg/kg/)     : humVarType = "r"
+;      (c) dew point (K)             : humVarType = "td"
+;      (d) relative humidity (%)     : humVarType = "rh"
+;  
+;  p0: reference pressure: must be same units as p (Pa or hPa)
+;
+; contribution: Carl Schreck (NCSU)
+;
+local dimp, dimt, dimq, rankp, rankt, rankq, p0 \
+    , Lv, cpd, R, kap, r, t_e, pExpand, humVarType_lc
+begin 
+  dimp   = dimsizes(p) 
+  dimt   = dimsizes(t) 
+  dimh   = dimsizes(h) 
+  rankp  = dimsizes(dimp) 
+  rankt  = dimsizes(dimt) 
+  rankh  = dimsizes(dimh) 
+
+  if (.not.(rankh.eq.rankt)) then
+      print("pot_temp_equiv: FATAL error: h,t ranks do not match")
+      exit
+  end if
+
+  if (.not.all(dimt.eq.dimh)) then
+      print("pot_temp_equiv: FATAL error: h,t dimension sizes do not match")
+      exit
+  end if
+
+  p0 = 100000.0                    ; Pa
+  if (all(p.lt.1100)) then
+      p0 = 1000.0                  ; hPa
+  end if
+
+  if (rankp.eq.rankt) then
+      if (all(dimp.eq.dimt)) then
+          pExpand = p
+      else
+          print("pot_temp_equiv: FATAL error: p,t rank ok but dimension sizes do not match")
+          print("                dimp="+dimp+"   dimt="+dimt) 
+          exit
+      end if
+  else                             
+      pExpand = conform(t,p,dim)   ; conform p to t (expand, replicate, broadcast)
+  end if
+
+
+  Lv   = 2.51e6  ; latent heat of vaporization at the triple point [J/kg]; Bluestein, p203        
+  cpd  = 1004.64 ; specific heat at constant pressure for air 
+  R    = 287.04  ; specific gas constant for air [J/(Kg-K)]
+  kap  = R/cpd    
+
+  humVarType_lc = str_lower(humVarType)    ; ensure lower case for testing
+
+  if( humVarType_lc.eq."q" ) then
+    r = h/(1-h)                            ; convert spc humidity to mixing ratio
+  else if( humVarType_lc.eq."r" )
+    r = h                                  ; humidity is already mixing ratio
+  else if( humVarType_lc.eq."td" )
+    if (p0.eq.1000.0) then
+      r = mixhum_ptd( pExpand*100., h, 1 ) ; convert dewpoint to mixing ratio
+    else
+      r = mixhum_ptd( pExpand, h, 1 )      ; convert dewpoint to mixing ratio
+    end if
+  else if( humVarType_lc.eq."rh" )
+    if (p0.eq.1000.0) then
+        r = mixhum_ptrh( pExpand, t, h, 1 )      ; convert relative humidity to mixing ratio
+    else
+        r = mixhum_ptrh( pExpand*0.01, t, h, 1 ) ; convert relative humidity to mixing ratio
+    end if 
+  else
+    print("pot_temp_equiv: FATAL error: Invalid humidity variable" )
+    print("                humVarType="+humVarType)
+    exit
+  end if
+  end if
+  end if
+  end if
+
+  t_e  = t + ( Lv / cpd ) * r    ;                 Lv     cpd         q
+                                 ; Units check: ([J/kg]/[J/(kg-K)])[kg/kg]  => K
+  t_e  = t_e * ( p0 / pExpand )^kap  ; p0 and pm must be same units
+ 
+  t_e@long_name = "equivalent potential temperature"
+  t_e@units     = "K"
+  t_e@tag       = "NCL: pot_temp_equiv"
+  copy_VarCoords( t, t_e ) ; assign coordinates
+  return(t_e)
+end   
 ;=========================
 undef("static_stability") 
 function static_stability (p:numeric, t:numeric, npr[1]:integer, sopt[1]:integer)

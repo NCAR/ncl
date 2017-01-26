@@ -476,6 +476,10 @@ NhlErrorTypes triple2grid_W( void )
             method = *(int *) attr_list->attvalue->multidval.val;
           }
           
+          if ((strcmp(attr_list->attname, "loop")) == 0) {
+            loop = *(int *) attr_list->attvalue->multidval.val;
+          }
+          
           attr_list = attr_list->next;
         }
       }
