@@ -3073,11 +3073,13 @@ static NhlErrorTypes AddDataBoundToAreamap
 		float gxmin,gxmax,gymin,gymax;
 		NhlBoolean lbox, rbox, bbox, tbox;
 
+#if 0
 		if (cnp->smoothing_on)
 			c_arseti("RC",1);
 		else
 			c_arseti("RC",0);
-
+#endif
+		c_arseti("RC",1);
 		ret = NhlVAGetValues(cnp->trans_obj->base.id,
 				     NhlNtrXMinF,&txmin,
 				     NhlNtrXMaxF,&txmax,
