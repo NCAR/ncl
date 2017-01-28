@@ -6055,9 +6055,6 @@ static NhlErrorTypes ManageLabelBar
 			redo_lbar = True;
 		}
 	}
-	else if (cnp->llabel_strings != ocnp->llabel_strings ) {
-		redo_lbar = True;
-	}
 	else if (! cnp->lbar_labels_set) {
 		redo_lbar = True;
 		cnp->lbar_labels_set = True;  /* this must remain set as long as explicit mode is on in order
@@ -12599,30 +12596,24 @@ typedef struct _AmapNode {
 void _NHLCALLF(checkareamap,CHECKAREAMAP)(int *amap) 
 {
 	int i,j;
+#if 0
+	if (Cnp->dump_area_map)
+		_NhlDumpAreaMap(Cnp->aws,"checkareamap");
+#endif
+
 	if (amap[0] - amap[5] == amap[6]) 
 		fixareamap(amap);
 	else {
-#if 0
-		for (i = 27; i < amap[4]; i++) {
-			AmapNode *anode = (AmapNode *) &(amap[i]);
-			if (anode->left_id >= amap[5] && anode->right_id >= amap[5]) {
-				if (amap[anode->left_id-1] > 200 && amap[anode->left_id-1] < 513 &&
-				    amap[anode->right_id-1] > 200 && amap[anode->right_id-1] < 513) {
-					return;
-				}
-			}
-		}
-		fixareamap(amap);
-	}
-#endif
-#if 1
-		for (i = amap[5] -1 ; i < amap[0] - amap[6]; i++) {
-			if (amap[i] > 200 && amap[i] < 513) {  /* this the range of valid HLU area ids multiplied by 2 and plus 1 */
+		for (i = amap[5] ; i <= amap[0] - amap[6]; i++) {
+			if (amap[i-1] > 200 && amap[i-1] < 513) {  /* this the range of valid HLU area ids multiplied by 2 and plus 1 */
 				for (j = 27; j < amap[4]; j += 10) {
 					AmapNode *anode = (AmapNode *) &(amap[j]);
-					if (((anode->left_id == i+1) || (anode->right_id == i+1)) &&
-					    anode->left_id > 0 && anode->right_id > 0 /*&& anode->left_id != anode->right_id*/) {
-						return;
+					if (((anode->left_id == i) || (anode->right_id == i)) 
+                                            /*&& anode->left_id > 0 && anode->right_id > 0 && anode->left_id != anode->right_id*/ ) {
+						if (anode->left_id != anode->gid && anode->right_id != anode->gid &&
+						    anode->left_id != anode->right_id &&
+						    amap[anode->left_id-1] != 19999  && amap[anode->right_id-1] != 19999 )  /* this maps to area id 999 used to draw a boundary around the edge */
+							return;
 					}
 				}
 			}
@@ -12630,5 +12621,4 @@ void _NHLCALLF(checkareamap,CHECKAREAMAP)(int *amap)
 
 		fixareamap(amap);
 	}
-#endif						
 }
