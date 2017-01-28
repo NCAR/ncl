@@ -2459,13 +2459,10 @@ static void SetRegionAttrs
 
 	/* Only set the grid bound identifier (99) if the GridBoundFill resources are set to allow the grid bound area to be visible;
 	   this is because the grid boundary needs to be calculated with more precision, potentially impacting performance */
-	if (cpix == -1 && reg_attrs->fill_color > NhlTRANSPARENT && reg_attrs->fill_pat > NhlHOLLOWFILL) {
-		if (reg_attrs == &cl->contourplot.grid_bound) {
-			c_ctseti("AIA",-1);     
+	if (reg_attrs == &cl->contourplot.grid_bound) {
+		if (cpix == -1 && reg_attrs->fill_color > NhlTRANSPARENT && reg_attrs->fill_pat > NhlHOLLOWFILL) {
+			c_ctseti("AIA",99);     
 			/*c_ctsetr("PIT",0.001); */ /* forced to the minimum recommended value, regardless of max_point_distance */
-		}
-		else {
-			c_ctseti("AIA",-1);
 		}
 	}
 	else if (cpix == -1)
@@ -2583,7 +2580,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
                 cnp->low_lbls.gks_plcolor =
                         _NhlGetGksCi(cl->base.wkptr,
                                      cnp->low_lbls.perim_lcolor);
-
+#if 0
 	if (cnp->missing_val.fill_color > NhlTRANSPARENT && cnp->missing_val.fill_pat > NhlHOLLOWFILL) {
 		SetRegionAttrs(cl,&cnp->grid_bound,-1);
 		SetRegionAttrs(cl,&cnp->missing_val,-1); 
@@ -2592,6 +2589,9 @@ static NhlErrorTypes UpdateLineAndLabelParams
 		SetRegionAttrs(cl,&cnp->missing_val,-1); 
 		SetRegionAttrs(cl,&cnp->grid_bound,-1);
 	}
+#endif
+	SetRegionAttrs(cl,&cnp->grid_bound,-1);
+	SetRegionAttrs(cl,&cnp->missing_val,-1); 
 	SetRegionAttrs(cl,&cnp->out_of_range,-2);
 
 	*do_lines = True;
@@ -3064,7 +3064,6 @@ static NhlErrorTypes AddDataBoundToAreamap
 	c_arseti("RC(1)",1);
 	c_arseti("RC(3)",2);
 #endif
-	c_arseti("RC",1);
 
 
 	if (! ezmap) {
@@ -3073,6 +3072,11 @@ static NhlErrorTypes AddDataBoundToAreamap
 		float txmin,txmax,tymin,tymax;
 		float gxmin,gxmax,gymin,gymax;
 		NhlBoolean lbox, rbox, bbox, tbox;
+
+		if (cnp->smoothing_on)
+			c_arseti("RC",1);
+		else
+			c_arseti("RC",0);
 
 		ret = NhlVAGetValues(cnp->trans_obj->base.id,
 				     NhlNtrXMinF,&txmin,
@@ -3126,8 +3130,19 @@ static NhlErrorTypes AddDataBoundToAreamap
 			return ret;
 		}
 
-		xrev = twlx > twrx;
-		yrev = twby > twuy;
+		if (twlx < twrx) {
+			xrev = cl->trans.x_reverse;
+		}
+		else {
+			xrev = ! cl->trans.x_reverse;
+		}
+		if (twby < twuy) {
+			yrev = cl->trans.y_reverse;
+		}
+		else {
+			yrev = ! cl->trans.y_reverse;
+		}
+
 /*
  * added a hack to prevent fill dropout in certain cases, where because
  * of floating point precision issues in the mapping routines, contour
@@ -3304,6 +3319,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 		_NhlAredam(cnp->aws,xa,ya,1,3,0,-1,entry_name);
 
 #endif
+		c_arseti("RC",1);
 		c_mpgetc("OU",cval,3);
 		c_mpsetc("OU","NO");
 		c_mpseti("G2",3);
@@ -4335,6 +4351,7 @@ static NhlErrorTypes CnTriMeshRender
 	}
 	else if (do_fill && cnp->fill_order == order) {
 		NhlcnFillMode fill_mode = cnp->fill_mode;
+		int is_constant;
 
 		if (fill_mode == NhlAREAFILL) {
 			if (! mesh_inited) {
@@ -4386,6 +4403,7 @@ static NhlErrorTypes CnTriMeshRender
 				ContourAbortDraw(cnl);
 				return ret;
 			}
+
 
 			/* flag1 is set to 999 to indicate that the HLU version
 			   of ARPRAM should be called. It has special handling
@@ -5947,6 +5965,7 @@ int (_NHLCALLF(hluctfill,HLUCTFILL))
 				switch (iai[i]) {
 				case 99:
 				case 98:
+#if 0
 					if (Cnp->missing_val.gks_fcolor > NhlTRANSPARENT &&
 					    Cnp->missing_val.fill_pat > NhlHOLLOWFILL) {
 						col_ix = Cnp->missing_val.fill_color;
@@ -5958,6 +5977,10 @@ int (_NHLCALLF(hluctfill,HLUCTFILL))
 						pat_ix = Cnp->grid_bound.fill_pat;
 						fscale = Cnp->grid_bound.fill_scale;
 					}
+#endif
+					col_ix = Cnp->missing_val.fill_color;
+					pat_ix = Cnp->missing_val.fill_pat;
+					fscale = Cnp->missing_val.fill_scale;
 					break;
 				case 97:
 					reg_attrs = &Cnp->out_of_range;
