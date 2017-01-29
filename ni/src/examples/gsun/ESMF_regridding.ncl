@@ -2768,7 +2768,7 @@ begin
 
 ;---Check if ESMF_exec exists and can be executed
   ESMF_exec_exists = systemfunc(path_to_ESMF + " --help >/dev/null 2>&1 && echo True || echo False")
-  if (.not.ESMF_exec_exists) then
+  if (ESMF_exec_exists.eq."False") then
     print("ESMF_regrid_gen_weights: could not find " + ESMF_exec + " executable.")
     exit
   end if
