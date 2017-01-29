@@ -227,12 +227,6 @@ undef("get_enum_value")
 function get_enum_value(enum_strings[*]:string)
 local values, nvals, ii, n
 begin
-;
-; Note the lbBoxEndCapStyle has different names internally than
-; it does for the user: Rectangle versus RectangleEnds,
-; TriangleLowVal versus TrangleLowEnd, etc. We've accounted for
-; both below.
-;
   enum_values = enum_list()
   nvals   = dimsizes(enum_strings)
   ret_val = new(nvals,integer)
