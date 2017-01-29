@@ -2304,21 +2304,6 @@ begin
   lbres = True   ; hold labelbar resources
   amres = True   ; hold annomanager resources 
 
-  print("======================================================================")
-  if(isatt(res,"CallingFrom")) then
-    print("Calling from " + res@CallingFrom)
-    ttt = get_res_value(res,"CallingFrom","")
-  else
-    print("Calling from Don't Know")
-  end if
-  if(isatt(res,"PrintNum")) then
-    print(" # " + res@PrintNum)
-    ttt = get_res_value(res,"PrintNum",-1)
-  else
-    print(" # -1")
-  end if
-  print("======================================================================")
-
   parallel = get_res_value(res,"pmLabelBarParallelPosF",0.5)
 
 ;---Check for annotation/labelbar resources
@@ -7587,8 +7572,6 @@ begin
 
 ;---Create a labelbar or fix an existing one
     if(use_old_lbar) then
-lbres@CallingFrom = "gsn_csm_contour_map_polar"
-lbres@PrintNum = "01"
       add_labelbar(wks,contour_object,lbar_zone,\
                    font_height,"polar",lbar_on,lbres)
     end if
@@ -7899,8 +7882,6 @@ begin
 
 ;---Create a labelbar or fix an existing one.
     if(use_old_lbar) then
-lbres@CallingFrom = "gsn_csm_contour_map_ce"
-lbres@PrintNum = "02"
       add_labelbar(wks,contour_object,lbar_zone,xbfontf,"ce",lbar_on,lbres)
     end if
     if(use_mgr_lbar) then
@@ -8183,8 +8164,6 @@ begin
 
 ; Create a labelbar or fix existing one.
     if(use_old_lbar) then
-lbres@CallingFrom = "gsn_csm_contour_map_other"
-lbres@PrintNum = "03"
       add_labelbar(wks,contour_object,lbar_zone,\
                    0.6 * font_height,"other",lbar_on,lbres)
     end if
@@ -8444,8 +8423,6 @@ begin
 
 ; Create a labelbar or fix an existing one.
     if(use_old_lbar) then
-lbres@CallingFrom = "gsn_csm_vector_map_ce"
-lbres@PrintNum = "04"
       add_labelbar(wks,vector_object,lbar_zone,xbfontf,"vector",lbar_on,lbres)
     end if
     if(use_mgr_lbar) then
@@ -8635,8 +8612,6 @@ begin
 
 ; Create a labelbar or fix an existing one.
     if(use_old_lbar) then
-lbres@CallingFrom = "gsn_csm_vector_map_polar"
-lbres@PrintNum = "05"
       add_labelbar(wks,vector_object,lbar_zone, \
                    font_height,"vector",lbar_on,lbres)
     end if
@@ -8806,8 +8781,6 @@ begin
 
 ; Create a labelbar or fix an existing one.
     if(use_old_lbar) then
-lbres@CallingFrom = "gsn_csm_vector_map_other"
-lbres@PrintNum = "06"
       add_labelbar(wks,vector_object,2,0.6 * font_height,"other",lbar_on,lbres)
     end if
     if(use_mgr_lbar) then
@@ -9537,8 +9510,6 @@ begin
       else
         lbar_zone = 3
       end if
-lbres@CallingFrom = "gsn_csm_streamline_map_polar"
-lbres@PrintNum = "07"
       add_labelbar(wks,stream_object@contour,lbar_zone,xbfontf,"vector",lbar_on,lbres)
     end if
     if(use_mgr_lbar)
@@ -9744,8 +9715,6 @@ begin
     end if
     if(use_old_lbar)
       lbres = get_res_eq(res2,(/"lb","pm"/))
-lbres@CallingFrom = "gsn_csm_streamline_contour_map_polar"
-lbres@PrintNum = "08"
       add_labelbar(wks,stream_object@contour, \
                    lbar_zone,font_height,"vector",lbar_on,lbres)
     end if
@@ -9953,8 +9922,6 @@ begin
     end if
     if(use_old_lbar)
       lbres = get_res_eq(res2,(/"lb","pm"/))
-lbres@CallingFrom = "gsn_csm_streamline_contour_map_other"
-lbres@PrintNum = "09"
       add_labelbar(wks,stream_object@contour,lbar_zone,font_height,"vector",lbar_on,lbres)
     end if
     if(use_mgr_lbar)
@@ -10273,8 +10240,6 @@ begin
     end if
     if(scalar_contour)
       if(use_old_lbar)
-lbres@CallingFrom = "gsn_csm_vector_scalar"
-lbres@PrintNum = "10"
         add_labelbar(wks,base_object,lbar_zone,xbfontf, \
                      "vector",lbar_on,lbres)
       end if
@@ -10283,8 +10248,6 @@ lbres@PrintNum = "10"
       end if
     else
       if(use_old_lbar)
-lbres@CallingFrom = "gsn_csm_vector_scalar"
-lbres@PrintNum = "11"
         add_labelbar(wks,base_object,lbar_zone,xbfontf, \
                      "vector",lbar_on,lbres)
       end if
@@ -10641,8 +10604,6 @@ begin
     end if
     if(scalar_contour)
       if(use_old_lbar)
-lbres@CallingFrom = "gsn_csm_vector_scalar_map_ce"
-lbres@PrintNum = "12"
         add_labelbar(wks,base_object,lbar_zone,xbfontf, \
                      "vector",lbar_on,lbres)
       end if
@@ -10651,8 +10612,6 @@ lbres@PrintNum = "12"
       end if
     else
       if(use_old_lbar)
-lbres@CallingFrom = "gsn_csm_vector_scalar_map_ce"
-lbres@PrintNum = "13"
         add_labelbar(wks,base_object,lbar_zone,xbfontf,"vector",lbar_on,lbres)
       end if
       if(use_mgr_lbar)
@@ -10944,8 +10903,6 @@ begin
 
     if(scalar_contour)
       if(use_old_lbar)
-lbres@CallingFrom = "gsn_csm_vector_scalar_map_polar"
-lbres@PrintNum = "14"
         add_labelbar(wks,base_object,lbar_zone,font_height, \
                      "vector",lbar_on,lbres)
       end if
@@ -10954,8 +10911,6 @@ lbres@PrintNum = "14"
       end if
     else
       if(use_old_lbar)
-lbres@CallingFrom = "gsn_csm_vector_scalar_map_polar"
-lbres@PrintNum = "15"
         add_labelbar(wks,base_object,lbar_zone,font_height,"vector",lbar_on,lbres)
       end if
       if(use_mgr_lbar)
@@ -11257,8 +11212,6 @@ begin
     end if
     if(scalar_contour)
       if(use_old_lbar)
-lbres@CallingFrom = "gsn_csm_vector_scalar_map_other"
-lbres@PrintNum = "16"
         add_labelbar(wks,base_object,lbar_zone,font_height, \
                      "vector",lbar_on,lbres)
       end if
@@ -11267,8 +11220,6 @@ lbres@PrintNum = "16"
       end if
     else
       if(use_old_lbar)
-lbres@CallingFrom = "gsn_csm_vector_scalar_map_other"
-lbres@PrintNum = "17"
         add_labelbar(wks,base_object,lbar_zone,font_height, \
                      "vector",lbar_on,lbres)
       end if
@@ -11719,8 +11670,6 @@ begin
       end if
     end if
     if(use_old_lbar)
-lbres@CallingFrom = "gsn_csm_streamline_scalar"
-lbres@PrintNum = "18"
       add_labelbar(wks,streamline_object,lbar_zone,xbfontf,"streamline",lbar_on,lbres)
     end if
     if(use_mgr_lbar)
@@ -11944,8 +11893,6 @@ begin
       lbar_zone = 2
     end if
     if(use_old_lbar)
-lbres@CallingFrom = "gsn_csm_streamline_scalar_map_ce"
-lbres@PrintNum = "19"
       add_labelbar(wks,streamline_object,lbar_zone,xbfontf,"streamline",lbar_on,lbres)
     end if
     if(use_mgr_lbar)
@@ -12173,8 +12120,6 @@ begin
     end if
 
     if(use_old_lbar)
-lbres@CallingFrom = "gsn_csm_streamline_scalar_map_polar"
-lbres@PrintNum = "20"
       add_labelbar(wks,streamline_object,lbar_zone,font_height,"streamline",lbar_on,lbres)
     end if
     if(use_mgr_lbar)
@@ -12382,8 +12327,6 @@ begin
       lbres = get_res_eq(res2,(/"lb","pm"/))
     end if
     if(use_old_lbar)
-lbres@CallingFrom = "gsn_csm_streamline_scalar_map_other"
-lbres@PrintNum = "21"
       add_labelbar(wks,streamline_object,lbar_zone,font_height, \
                    "streamline",lbar_on,lbres)
     end if
@@ -13512,8 +13455,6 @@ begin
 ; Create a labelbar or fix an existing one.
     if(use_old_lbar)
       lbres = get_res_eq(res2,(/"lb","pm"/))
-lbres@CallingFrom = "gsn_csm_contour"
-lbres@PrintNum = "22"
       add_labelbar(wks,contour_object,3,font_height,"contour",lbar_on,lbres)
     end if
     if(use_mgr_lbar)
@@ -14168,8 +14109,6 @@ begin
 ; Create a labelbar or fix an existing one.
     if(use_old_lbar)
       lbres = get_res_eq(res2,(/"lb","pm"/))
-lbres@CallingFrom = "gsn_csm_vector"
-lbres@PrintNum = "23"
       add_labelbar(wks,vector_object,3,font_height,"vector",lbar_on,lbres)
     end if
     if(use_mgr_lbar)
@@ -14491,8 +14430,6 @@ begin
 ; Create a labelbar or fix an existing one.
     if(use_old_lbar)
       lbres = get_res_eq(res2,(/"lb","pm"/))
-lbres@CallingFrom = "gsn_csm_streamline"
-lbres@PrintNum = "24"
       add_labelbar(wks,stream_object,3,font_height,"streamline",lbar_on,lbres)
     end if
     if(use_mgr_lbar)
