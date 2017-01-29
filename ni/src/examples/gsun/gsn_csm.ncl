@@ -2275,6 +2275,7 @@ end
 ;               zone: integer                                           ;
 ;        font_height: numeric                                           ;
 ;               type: string                                            ;
+;           lbar_on : logical                                           ;
 ;                res: logical                                           ;
 ;                                                                       ;
 ; This procedure attaches a labelbar to "plot" (which must be either a  ;
@@ -2288,21 +2289,35 @@ end
 ; labelbar. This is what the global GSN_OLD_LABELBAR variable is for.   ;
 ; If set to True, then the PlotManager labelbar is *not* used, and a    ;
 ; a custom labelbar via this routine, is created.                       ;
+;
+; In V6.4.0 we changed this code to create the lablebar, but only add   ;
+; it as an annotation if lbar_on is True.                               ;
 ;***********************************************************************;
 undef("add_labelbar")
 procedure add_labelbar(wks:graphic,plot,zone:integer, \
-                       font_height:numeric,type:string,res:logical)
+                       font_height:numeric,type:string,\
+                       lbar_on,res:logical)
 local anno, num_res, amres, lbres, labelbar_object, lbar_orient, \
 lbar_side, lbar_just, fill_patterns, fill_scales, mono_fill_pat, \
-mono_fill_scl, mono_fill_col, levels, class_name, the_plot
+mono_fill_scl, mono_fill_col, levels, class_name, the_plot, anno_off
 begin
-;---If lbLabelBarOn is set to False, then don't go any further.
-  if(check_attr(res,"lbLabelBarOn",False,False))
-    return
-  end if
-
   lbres = True   ; hold labelbar resources
   amres = True   ; hold annomanager resources 
+
+  print("======================================================================")
+  if(isatt(res,"CallingFrom")) then
+    print("Calling from " + res@CallingFrom)
+    ttt = get_res_value(res,"CallingFrom","")
+  else
+    print("Calling from Don't Know")
+  end if
+  if(isatt(res,"PrintNum")) then
+    print(" # " + res@PrintNum)
+    ttt = get_res_value(res,"PrintNum",-1)
+  else
+    print(" # -1")
+  end if
+  print("======================================================================")
 
   parallel = get_res_value(res,"pmLabelBarParallelPosF",0.5)
 
@@ -2388,6 +2403,7 @@ begin
 ; labelbar.
 ; 
   class_name = NhlClassName(plot)
+
   if(class_name.eq."logLinPlotClass".or.class_name.eq."irregularPlotClass")
     the_plot = plot@contour
   else
@@ -2544,9 +2560,15 @@ begin
   levels = fix_zero_contour(levels)
 
   labelbar_object = create_labelbar(wks,dimsizes(colors),colors,levels,lbres)
-
+;
+; Check if the user has requested to turn off the labelbar.
+; We will go ahead and create it, just in case it is needed
+; later (by gsn_panel, for example), but we will turn it off
+; by setting amOn to False.
+;
   anno = NhlAddAnnotation(plot,labelbar_object)
 
+  set_attr(amres,"amOn",lbar_on)
   attsetvalues_check(anno,amres)   ; Set annotation resources.
 
   return
@@ -2560,12 +2582,38 @@ end
 ;                                                                       ;
 ; This is for when we decide to start using the PlotManager labelbar    ;
 ; again (GSN_OLD_LABELBAR = False).                                     ;
+;                                                                       ;
+; lbar_on is the setting from lbLabelBarOn. For now, don't do anything  ;
+; if this is False. This may change when/if we decide to use the        ;
+; PlotManager labelbar as the default.                                  ;
 ;***********************************************************************;
 undef("fix_labelbar")
-procedure fix_labelbar(plot:graphic,font_height:numeric,res)
+procedure fix_labelbar(plot:graphic,font_height:numeric,\
+                       lbar_on[1]:logical,res)
 local width, height, the_plot, class_name, ratio1, ratio2, ratio, \
       ratios, lwscale, wh_ind, def_lvpwf, lbar_orient, lbres
 begin
+  if(.not.lbar_on) then
+    return
+  end if
+  class_name = NhlClassName(plot)
+  if(class_name.eq."logLinPlotClass".or.class_name.eq."irregularPlotClass") then
+    if(isatt(plot,"contour")) then
+      the_plot = plot@contour
+    else if(isatt(plot,"vector")) then
+      the_plot = plot@vector
+    else if(isatt(plot,"streamline")) then
+      the_plot = plot@streamline
+    else
+      print("Warning: fix_labelbar: invalid plot type, won't try to fix the labelbar.")
+      exit      
+    end if
+    end if
+    end if
+  else
+    the_plot = plot
+  end if
+
   if(check_attr_enum_value(res,"lbOrientation","vertical")) then
     lbar_orient = "vertical"
   else
@@ -2609,7 +2657,15 @@ begin
   lbres = True
   lbres = get_res_eq(res,"lb")
   if(res.and.any(isatt(res,(/"lbLabelAlignment","lbLabelStrings"/)))) then
-    lbres@cnExplicitLabelBarLabelsOn = get_res_value_keep(res,"cnExplicitLabelBarLabelsOn",True)
+    if(class_name.eq."contourPlotClass") then
+      lbres@cnExplicitLabelBarLabelsOn = get_res_value_keep(res,"cnExplicitLabelBarLabelsOn",True)
+    else if(class_name.eq."vectorPlotClass") then
+      lbres@vcExplicitLabelBarLabelsOn = get_res_value_keep(res,"vcExplicitLabelBarLabelsOn",True)
+    else if(class_name.eq."streamlinePlotClass") then
+      lbres@stExplicitLabelBarLabelsOn = get_res_value_keep(res,"stExplicitLabelBarLabelsOn",True)
+    end if
+    end if
+    end if
   end if
   if(.not.res.or..not.isatt(res,"pmLabelBarHeightF"))
     lbres@pmLabelBarHeightF = height
@@ -2620,13 +2676,6 @@ begin
   if(.not.res.or..not.isatt(res,"lbLabelFontHeightF")) then
     lbres@lbLabelFontHeightF = font_height
     lbres@lbAutoManage       = False
-  end if
-
-  class_name = NhlClassName(plot)
-  if(class_name.eq."logLinPlotClass".or.class_name.eq."irregularPlotClass")
-    the_plot = plot@contour
-  else
-    the_plot = plot
   end if
 
   attsetvalues(the_plot,lbres)
@@ -7384,7 +7433,7 @@ end
 undef("gsn_csm_contour_map_polar")
 function gsn_csm_contour_map_polar(wks:graphic,data:numeric,resources:logical)
 local i, contour_object, map_object, res, lbar_pos, lbar_zone, \
-old_lbar_on, new_lbar_on, calldraw, callframe, main_offset, datanew, res2, \
+use_old_lbar, use_mgr_lbar, calldraw, callframe, main_offset, datanew, res2, \
 cnres, mpres, vpwf, vphf, font_height, levels, colors, lbres, \
 infolabel_on, infolabel_zone, lbar_zone, lbar_height, lbar_width
 begin
@@ -7396,10 +7445,8 @@ begin
       return
     end if
 
-; Initialize.
-    old_lbar_on   = False     ; Labelbar flag
-    new_lbar_on   = False
-    res2          = get_resources(resources) ; Copy of resources
+    res2  = get_resources(resources) ; Copy of resources
+
 ;
 ; Write data and plot resource information to a file so we can 
 ; reconstruct plot if desired, without all the computational
@@ -7409,9 +7456,7 @@ begin
       gsnp_write_debug_info(data,new(1,float),new(1,float),\
                        "gsn_csm_contour_map_polar",res2,1)
     end if
-
-    lbar_zone     = 3         ; Zone for labelbar (may change later)
-    mpres         = True      ; Will hold map resources
+    mpres = True      ; Will hold map resources
 
 ; Check for whether a cyclic point might need to be added.
     if(get_lon_cyclic_point_default(data,res2,"map",False)) then
@@ -7474,22 +7519,26 @@ begin
                               "gsnPolar"/))
     cnres = get_res_ne(res2,(/"mp","vp","lb","tx","am","gsnPolar"/))
 
-    if(cnres)
-      if(check_attr(cnres,"cnFillOn",True,False))
-        if(.not.isatt(lbres,"lbLabelBarOn").or.\
-          check_attr(lbres,"lbLabelBarOn",True,False))
-          old_lbar_on = get_res_value(cnres,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-          new_lbar_on = .not.old_lbar_on
-          if(new_lbar_on) then
+;---Labelbar stuff
+    lbar_zone = 3         ; Zone for labelbar (may change later)
+    if(check_attr(cnres,"cnFillOn",True,False))
+      lbar_on = get_res_value(lbres,"lbLabelBarOn",True)
+      use_old_lbar = get_res_value(cnres,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+      use_mgr_lbar = .not.use_old_lbar
+      if(lbar_on) then
+        if(use_mgr_lbar) then
 ;---Make sure we keep the labelbar resources as part of cnres resources
-            delete(cnres)
-            cnres = get_res_ne(res2,(/"mp","vp","tx","am","gsnPolar"/))
-            set_labelbar_res(cnres,"polar")
-          end if
-          set_attr(cnres,"cnLineLabelsOn",False)
+          delete(cnres)
+          cnres = get_res_ne(res2,(/"mp","vp","tx","am","gsnPolar"/))
+          set_labelbar_res(cnres,"polar")
         end if
-        set_attr(cnres,"cnInfoLabelOn",False)
+        set_attr(cnres,"cnLineLabelsOn",False)
       end if
+      set_attr(cnres,"cnInfoLabelOn",False)
+    else
+      use_old_lbar = False
+      use_mgr_lbar = False
+      lbar_on = False
     end if
 ;
 ; Compute zone for labelbar if it is supposed to get drawn.
@@ -7536,13 +7585,15 @@ begin
         "tiMainFontHeightF"    : main_font_height ; main title size
     end setvalues
 
-;---Create a labelbar, or fix an existing one
-    if(old_lbar_on) then
+;---Create a labelbar or fix an existing one
+    if(use_old_lbar) then
+lbres@CallingFrom = "gsn_csm_contour_map_polar"
+lbres@PrintNum = "01"
       add_labelbar(wks,contour_object,lbar_zone,\
-                   font_height,"polar",lbres)
+                   font_height,"polar",lbar_on,lbres)
     end if
-    if(new_lbar_on) then
-      fix_labelbar(contour_object,font_height,cnres)
+    if(use_mgr_lbar) then
+      fix_labelbar(contour_object,font_height,lbar_on,cnres)
     end if
   
     draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
@@ -7591,7 +7642,7 @@ end
 undef("gsn_csm_contour_map_ce")
 function gsn_csm_contour_map_ce(wks:graphic,data:numeric,resources:logical)
 local i, contour_object, labelbar_object, xy_object, map_object, \
-calldraw, callframe, old_lbar_on, zonal_mean_plot, min_lat, max_lat, datanew, \
+calldraw, callframe, use_old_lbar, zonal_mean_plot, min_lat, max_lat, datanew, \
 res, res2, lbres, xy_res, mpres, cnres, levels, colors, \
 lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
 map_vpwf, map_vphf, vphf, contour_plot, zonal_zone
@@ -7605,8 +7656,6 @@ begin
     end if
 
 ; Initialize.
-    old_lbar_on    = False    ; Default is no labelbar.
-    new_lbar_on    = False    ; Default is no labelbar.
     mpres          = True
 
     infolabel_zone = 2        ; Zone for info label (may change later)
@@ -7741,28 +7790,32 @@ begin
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
     cnres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm","gsnZonal"/))
 
-    if(cnres)
-      if(check_attr(cnres,"cnFillOn",True,False))
-        if(.not.check_attr(lbres,"lbLabelBarOn",False,False))
-          old_lbar_on = get_res_value(cnres,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-          new_lbar_on = .not.old_lbar_on
-          if(new_lbar_on) then
+;---Labelbar stuff
+    if(check_attr(cnres,"cnFillOn",True,False))
+      lbar_on = get_res_value(lbres,"lbLabelBarOn",True)
+      use_old_lbar = get_res_value(cnres,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+      use_mgr_lbar = .not.use_old_lbar
+      if(lbar_on) then
+        if(use_mgr_lbar) then
 ;---Make sure we keep the labelbar resources as part of cnres resources
-            delete(cnres)
-            cnres = get_res_ne(res2,(/"mp","vp","tm","tx","am","pm","gsnZonal"/))
-            set_labelbar_res(cnres,"ce")
-          else
-            if(check_attr_enum_value(lbres,"lbOrientation","vertical"))
-              set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
-              set_attr(mpres,"vpHeightF",0.75)   ; on the side.
-              set_attr(mpres,     "vpXF",0.08)
-              set_attr(mpres,     "vpYF",0.90)
-            end if
+          delete(cnres)
+          cnres = get_res_ne(res2,(/"mp","vp","tm","tx","am","pm","gsnZonal"/))
+          set_labelbar_res(cnres,"ce")
+        else
+          if(check_attr_enum_value(lbres,"lbOrientation","vertical"))
+            set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
+            set_attr(mpres,"vpHeightF",0.75)   ; on the side.
+            set_attr(mpres,     "vpXF",0.08)
+            set_attr(mpres,     "vpYF",0.90)
           end if
-          set_attr(cnres,"cnLineLabelsOn",False)
         end if
-        set_attr(cnres,"cnInfoLabelOn",False)
+        set_attr(cnres,"cnLineLabelsOn",False)
       end if
+      set_attr(cnres,"cnInfoLabelOn",False)
+    else
+      lbar_on = False
+      use_old_lbar = False
+      use_mgr_lbar = False
     end if
 ;
 ; Compute zones for zonal means plot, info label, and labelbar if
@@ -7844,12 +7897,14 @@ begin
       end if
     end if
 
-;---Create a labelbar, or fix an existing one.
-    if(old_lbar_on) then
-      add_labelbar(wks,contour_object,lbar_zone,xbfontf,"ce",lbres)
+;---Create a labelbar or fix an existing one.
+    if(use_old_lbar) then
+lbres@CallingFrom = "gsn_csm_contour_map_ce"
+lbres@PrintNum = "02"
+      add_labelbar(wks,contour_object,lbar_zone,xbfontf,"ce",lbar_on,lbres)
     end if
-    if(new_lbar_on) then
-      fix_labelbar(contour_object,xbfontf,cnres)
+    if(use_mgr_lbar) then
+      fix_labelbar(contour_object,xbfontf,lbar_on,cnres)
     end if
 
 ; Add a zonal mean plot if requested.
@@ -7912,7 +7967,7 @@ undef("gsn_csm_contour_map_other")
 function gsn_csm_contour_map_other(wks:graphic,data:numeric,\
                                    resources:logical)
 local i, contour_object, labelbar_object, xy_object, map_object, \
-calldraw, callframe, old_lbar_on, min_lat, max_lat, datanew, \
+calldraw, callframe, use_old_lbar, min_lat, max_lat, datanew, \
 res, res2, lbres, xy_res, mpres, cnres, levels, colors, \
 lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
 map_vpwf, map_vphf, vphf, contour_plot, zonal_mean_plot, zonal_zone
@@ -7926,10 +7981,7 @@ begin
     end if
 
 ; Initialize.
-    old_lbar_on    = False    ; Default is no labelbar.
-    new_lbar_on    = False
     mpres          = True
-
     infolabel_zone = 2        ; Zone for info label (may change later)
     lbar_zone      = 2        ; Zone for labelbar (may change later)
     zonal_zone     = 2        ; Zone for zonal means plot
@@ -8024,29 +8076,32 @@ begin
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT","gsnMask"/))
     cnres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm","gsnMask","gsnZonal"/))
 
-    if(cnres)
-      if(check_attr(cnres,"cnFillOn",True,False))
-        if(.not.isatt(lbres,"lbLabelBarOn").or.\
-          check_attr(lbres,"lbLabelBarOn",True,False))
-          old_lbar_on = get_res_value(cnres,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-          new_lbar_on = .not.old_lbar_on
-          if(new_lbar_on) then
+;---Labelbar stuff
+    if(check_attr(cnres,"cnFillOn",True,False))
+      lbar_on = get_res_value(lbres,"lbLabelBarOn",True)
+      use_old_lbar = get_res_value(cnres,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+      use_mgr_lbar = .not.use_old_lbar
+      if(lbar_on) then
+        if(use_mgr_lbar) then
 ;---Make sure we keep the labelbar resources as part of cnres resources
-            delete(cnres)
-            cnres = get_res_ne(res2,(/"mp","vp","tm","tx","am","pm","gsnMask","gsnZonal"/))
-            set_labelbar_res(cnres,"other")
-          else
-            if(check_attr_enum_value(lbres,"lbOrientation","vertical"))
-              set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
-              set_attr(mpres,"vpHeightF",0.75)   ; on the side.
-              set_attr(mpres,     "vpXF",0.08)
-              set_attr(mpres,     "vpYF",0.85)
-            end if
+          delete(cnres)
+          cnres = get_res_ne(res2,(/"mp","vp","tm","tx","am","pm","gsnMask","gsnZonal"/))
+          set_labelbar_res(cnres,"other")
+        else
+          if(check_attr_enum_value(lbres,"lbOrientation","vertical"))
+            set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
+            set_attr(mpres,"vpHeightF",0.75)   ; on the side.
+            set_attr(mpres,     "vpXF",0.08)
+            set_attr(mpres,     "vpYF",0.85)
           end if
-          set_attr(cnres,"cnLineLabelsOn",False)
         end if
-        set_attr(cnres,"cnInfoLabelOn",False)
+        set_attr(cnres,"cnLineLabelsOn",False)
       end if
+      set_attr(cnres,"cnInfoLabelOn",False)
+    else
+      use_old_lbar = False
+      use_mgr_lbar = False
+      lbar_on = False
     end if
 ;
 ; Compute zones for info label and labelbar if
@@ -8071,7 +8126,7 @@ begin
 ;
 ; Increase labelbar zone if map tickmarks are on.
 ;
-    if(old_lbar_on.and.\
+    if(lbar_on.and.use_old_lbar.and.\
         (check_attr_enum_value(mpres,"pmTickMarkDisplayMode","Always").or.\
          check_attr_enum_value(mpres,"pmTickMarkDisplayMode","Conditional").or.\
          check_attr_enum_value(mpres,"pmTickMarkDisplayMode","ForceAlways"))) then
@@ -8126,14 +8181,15 @@ begin
       end setvalues
     end if
 
-; Create a labelbar.
-
-    if(old_lbar_on) then
+; Create a labelbar or fix existing one.
+    if(use_old_lbar) then
+lbres@CallingFrom = "gsn_csm_contour_map_other"
+lbres@PrintNum = "03"
       add_labelbar(wks,contour_object,lbar_zone,\
-                   0.6 * font_height,"other",lbres)
+                   0.6 * font_height,"other",lbar_on,lbres)
     end if
-    if(new_lbar_on) then
-      fix_labelbar(contour_object,0.6*font_height,cnres)
+    if(use_mgr_lbar) then
+      fix_labelbar(contour_object,0.6*font_height,lbar_on,cnres)
     end if
 
 ; Add a zonal mean plot if requested.
@@ -8193,15 +8249,13 @@ function gsn_csm_vector_map_ce(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
                                resources:logical)
 local i, vector_object, map_object, res, res2, calldraw, vcres, \
 lbres, map_vpwf, map_vphf, vpwf, vphf, callframe, min_lat, max_lat, \
-old_lbar_on, lbar_zone, unew, vnew
+use_old_lbar, lbar_zone, unew, vnew
 begin
 
 ; Initialize.
     annolabel_zone = 2        ; Zone for vector anno label
     mpres          = True
-    lbar_zone      = 2        ; Zone for labelbar (may change later)
-    old_lbar_on    = False
-    new_lbar_on    = False
+
     res2 = get_resources(resources)
 ;
 ; Write data and plot resource information to a file so we can 
@@ -8295,27 +8349,31 @@ begin
     vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","lb","pm"/))
     lbres = get_res_eq(res2,(/"lb","pm"/))
 
-    if(vcres)
-      if(check_attr(vcres,"vcMonoLineArrowColor",False,False))
-        if(.not.isatt(lbres,"lbLabelBarOn").or.\
-          check_attr(lbres,"lbLabelBarOn",True,False))
-          old_lbar_on = get_res_value(vcres,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-          new_lbar_on = .not.old_lbar_on
-          if(new_lbar_on) then
+;---Labelbar stuff
+    lbar_zone      = 2        ; Zone for labelbar (may change later)
+    if(check_attr(vcres,"vcMonoLineArrowColor",False,False))
+      lbar_on = get_res_value(lbres,"lbLabelBarOn",True)
+      use_old_lbar = get_res_value(vcres,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+      use_mgr_lbar = .not.use_old_lbar
+      if(lbar_on) then
+        if(use_mgr_lbar) then
 ;---Make sure we keep the labelbar resources as part of vcres resources
-            delete(vcres)
-            vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","pm"/))
-            set_labelbar_res(vcres,"vector")
-          else
-            if(check_attr_enum_value(lbres,"lbOrientation","vertical"))
-              set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
-              set_attr(mpres,"vpHeightF",0.75)   ; on the side.
-              set_attr(mpres,     "vpXF",0.08)
-              set_attr(mpres,     "vpYF",0.90)
-            end if
+          delete(vcres)
+          vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","pm"/))
+          set_labelbar_res(vcres,"vector")
+        else
+          if(check_attr_enum_value(lbres,"lbOrientation","vertical"))
+            set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
+            set_attr(mpres,"vpHeightF",0.75)   ; on the side.
+            set_attr(mpres,     "vpXF",0.08)
+            set_attr(mpres,     "vpYF",0.90)
           end if
         end if
       end if
+    else
+      use_old_lbar = False
+      use_mgr_lbar = False
+      lbar_on = False
     end if
 ;
 ; Default is for the vector reference anno label to be on.  To be
@@ -8384,13 +8442,14 @@ begin
       end setvalues
     end if
 
-; Create a labelbar.
-
-    if(old_lbar_on)
-      add_labelbar(wks,vector_object,lbar_zone,xbfontf,"vector",lbres)
+; Create a labelbar or fix an existing one.
+    if(use_old_lbar) then
+lbres@CallingFrom = "gsn_csm_vector_map_ce"
+lbres@PrintNum = "04"
+      add_labelbar(wks,vector_object,lbar_zone,xbfontf,"vector",lbar_on,lbres)
     end if
-    if(new_lbar_on) then
-      fix_labelbar(vector_object,xbfontf,vcres)
+    if(use_mgr_lbar) then
+      fix_labelbar(vector_object,xbfontf,lbar_on,vcres)
     end if
   
 ; Draw all this stuff: map plot, subtitles, and tick marks.
@@ -8436,12 +8495,10 @@ function gsn_csm_vector_map_polar(wks:graphic,u[*][*]:numeric, \
                                   v[*][*]:numeric,resources:logical)
 local i, vector_object, map_object, res, res2, calldraw, vcres, \
 lbres, map_vpwf, map_vphf, vpwf, vphf, callframe, min_lat, max_lat, \
-old_lbar_on, lbar_zone, unew, vnew
+use_old_lbar, lbar_zone, unew, vnew
 begin
 
 ; Initialize.
-    old_lbar_on    = False
-    new_lbar_on    = False
     annolabel_zone = 2        ; Zone for vector anno label
     lbar_zone      = 2        ; Zone for labelbar (may change later)
     mpres          = True
@@ -8502,23 +8559,26 @@ begin
     vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","lb","pm","gsnPolar"/))
     lbres = get_res_eq(res2,(/"lb","pm"/))
 
-    if(vcres)
-      if(check_attr(vcres,"vcMonoLineArrowColor",False,False))
-        if(.not.isatt(lbres,"lbLabelBarOn").or.\
-          check_attr(lbres,"lbLabelBarOn",True,False))
-          old_lbar_on = get_res_value(vcres,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-          new_lbar_on = .not.old_lbar_on
-          if(new_lbar_on) then
-;---Make sure we keep the labelbar resources as part of cnres resources
-            delete(vcres)
-            vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","pm","gsnPolar"/))
-            set_labelbar_res(vcres,"polar")
-          end if
+;---Labelbar stuff
+    if(check_attr(vcres,"vcMonoLineArrowColor",False,False))
+      lbar_on = get_res_value(lbres,"lbLabelBarOn",True)
+      use_old_lbar = get_res_value(vcres,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+      use_mgr_lbar = .not.use_old_lbar
+      if(lbar_on) then
+        if(use_mgr_lbar) then
+;---Make sure we keep the labelbar resources as part of vcres resources
+          delete(vcres)
+          vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","pm","gsnPolar"/))
+          set_labelbar_res(vcres,"polar")
         end if
       end if
+    else
+      use_old_lbar = False
+      use_mgr_lbar = False
+      lbar_on = False
     end if
 
-    if(old_lbar_on)
+    if(lbar_on.and.use_old_lbar)
       if(check_attr_enum_value(lbres,"lbOrientation","vertical"))
         set_attr(mpres,"vpXF",0.15)
         set_attr(vcres,"vcRefAnnoOrthogonalPosF",0.04)
@@ -8573,14 +8633,15 @@ begin
         "tiMainFontHeightF"    : main_font_height  ; main title size
     end setvalues
 
-; Create a labelbar.
-
-    if(old_lbar_on)
+; Create a labelbar or fix an existing one.
+    if(use_old_lbar) then
+lbres@CallingFrom = "gsn_csm_vector_map_polar"
+lbres@PrintNum = "05"
       add_labelbar(wks,vector_object,lbar_zone, \
-                   font_height,"vector",lbres)
+                   font_height,"vector",lbar_on,lbres)
     end if
-    if(new_lbar_on) then
-      fix_labelbar(vector_object,font_height,vcres)
+    if(use_mgr_lbar) then
+      fix_labelbar(vector_object,font_height,lbar_on,vcres)
     end if
   
 ; Draw all this stuff: map plot, subtitles, and tick marks.
@@ -8622,17 +8683,14 @@ undef("gsn_csm_vector_map_other")
 function gsn_csm_vector_map_other(wks:graphic,u[*][*]:numeric,\
                                   v[*][*]:numeric,resources:logical)
 local i, vector_object, labelbar_object, xy_object, map_object, \
-calldraw, callframe, old_lbar_on, min_lat, max_lat, datanew, \
+calldraw, callframe, use_old_lbar, min_lat, max_lat, datanew, \
 res, res2, lbres, xy_res, mpres, vcres, levels, colors, \
 lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
 map_vpwf, map_vphf, vphf 
 begin
 ; Initialize.
-    old_lbar_on    = False    ; Default is no labelbar.
-    new_lbar_on    = False    ; Default is no labelbar.
-    mpres          = True
-
-    res2 = get_resources(resources)
+    mpres = True
+    res2  = get_resources(resources)
 ;
 ; Write data and plot resource information to a file so we can 
 ; reconstruct plot if desired, without all the computational
@@ -8686,20 +8744,23 @@ begin
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT","gsnMask"/))
     vcres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm","gsnMask"/))
 
-    if(vcres)
-      if(check_attr(vcres,"vcMonoLineArrowColor",False,False))
-        if(.not.isatt(lbres,"lbLabelBarOn").or.\
-          check_attr(lbres,"lbLabelBarOn",True,False))
-          old_lbar_on = get_res_value(vcres,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-          new_lbar_on = .not.old_lbar_on
-          if(new_lbar_on) then
+;---Labelbar stuff
+    if(check_attr(vcres,"vcMonoLineArrowColor",False,False))
+      lbar_on = get_res_value(lbres,"lbLabelBarOn",True)
+      use_old_lbar = get_res_value(vcres,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+      use_mgr_lbar = .not.use_old_lbar
+      if(lbar_on) then
+        if(use_mgr_lbar) then
 ;---Make sure we keep the labelbar resources as part of vcres resources
-            delete(vcres)
-            vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","pm","gsnMask"/))
-            set_labelbar_res(vcres,"other")
-          end if
+          delete(vcres)
+          vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","pm","gsnMask"/))
+          set_labelbar_res(vcres,"other")
         end if
       end if
+    else
+      use_old_lbar = False
+      use_mgr_lbar = False
+      lbar_on = False
     end if
 
 ; Before we create the objects, turn off draw and frame for them.
@@ -8743,14 +8804,16 @@ begin
       end setvalues
     end if
 
-; Create a labelbar.
+; Create a labelbar or fix an existing one.
+    if(use_old_lbar) then
+lbres@CallingFrom = "gsn_csm_vector_map_other"
+lbres@PrintNum = "06"
+      add_labelbar(wks,vector_object,2,0.6 * font_height,"other",lbar_on,lbres)
+    end if
+    if(use_mgr_lbar) then
+      fix_labelbar(vector_object,0.6*font_height,lbar_on,vcres)
+    end if
 
-    if(old_lbar_on)
-      add_labelbar(wks,vector_object,2,0.6 * font_height,"other",lbres)
-    end if
-    if(new_lbar_on) then
-      fix_labelbar(vector_object,0.6*font_height,vcres)
-    end if
 ; Draw all this stuff: map plot, subtitles, and tick marks.
 
     draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
@@ -8805,8 +8868,6 @@ begin
 ; Initialize.
     infolabel_zone = 2        ; Zone for info label (may change later)
     mpres          = True
-    new_lbar_on    = False
-
     res2 = get_resources(resources)
 ;
 ; Write data and plot resource information to a file so we can 
@@ -8892,16 +8953,17 @@ begin
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
     stres = get_res_ne(res2,(/"mp","vp","tm","tx","am"/))
 
-;---Check for labelbar addition
-    if(stres)
-      if(check_attr(stres,"stMonoLineColor",False,False).and.\
-         (.not.isatt(stres,"lbLabelBarOn").or.\
-        check_attr(stres,"lbLabelBarOn",True,False)))
-        new_lbar_on = True
+;---Labelbar stuff. We only use the PlotManager labelbar here, just because.
+    use_mgr_lbar = False
+    if(check_attr(stres,"stMonoLineColor",False,False))
+      lbar_on = get_res_value(stres,"lbLabelBarOn",True)
+      if(lbar_on)
+        use_mgr_lbar = True
         set_labelbar_res(stres,"ce")
       end if
+    else
+      lbar_on = get_res_value(stres,"lbLabelBarOn",False) ; make sure to remove it
     end if
-    delete_attr(stres,"lbLabelBarOn")
 
 ; Before we create the objects, turn off draw and frame for them.
     stres = True
@@ -8942,8 +9004,8 @@ begin
     end setvalues
 
 ;---Create a labelbar.
-    if(new_lbar_on)
-      fix_labelbar(stream_object,font_height,stres)
+    if(use_mgr_lbar)
+      fix_labelbar(stream_object,font_height,lbar_on,stres)
     end if
 
 ; Draw all this stuff: map plot, subtitles, and tick marks.
@@ -8986,12 +9048,11 @@ undef("gsn_csm_streamline_map_polar")
 function gsn_csm_streamline_map_polar(wks:graphic,u[*][*]:numeric, \
                                       v[*][*]:numeric,resources:logical)
 local i, stream_object, map_object, res, res2, calldraw, stres, \
-new_lbar_on, map_vpwf, map_vphf, vpwf, vphf, callframe, unew, vnew
+use_mgr_lbar, map_vpwf, map_vphf, vpwf, vphf, callframe, unew, vnew
 begin
 
 ; Initialize.
     mpres          = True
-    new_lbar_on    = False
     res2 = get_resources(resources)
 ;
 ; Write data and plot resource information to a file so we can 
@@ -9048,16 +9109,15 @@ begin
                               "pmT","gsnPolar"/))
     stres = get_res_ne(res2,(/"mp","vp","tm","tx","am","gsnPolar"/))
 
-;---Check for labelbar addition
-    if(stres)
-      if(check_attr(stres,"stMonoLineColor",False,False).and.\
-         (.not.isatt(stres,"lbLabelBarOn").or.\
-        check_attr(stres,"lbLabelBarOn",True,False)))
-        new_lbar_on = True
-        set_labelbar_res(stres,"polar")
-      end if
+;---Labelbar stuff
+    if(check_attr(stres,"stMonoLineColor",False,False))
+      lbar_on = get_res_value(stres,"lbLabelBarOn",True)
+      use_mgr_lbar = True
+      set_labelbar_res(stres,"polar")
+    else
+      lbar_on = get_res_value(stres,"lbLabelBarOn",False)  ; to make sure it is not set
+      use_mgr_lbar = False
     end if
-    delete_attr(stres,"lbLabelBarOn")
 
 ; Before we create the objects, turn off draw and frame for them.
     stres = True
@@ -9093,8 +9153,8 @@ begin
     end setvalues
 
 ;---Create a labelbar.
-    if(new_lbar_on)
-      fix_labelbar(stream_object,font_height,stres)
+    if(use_mgr_lbar)
+      fix_labelbar(stream_object,font_height,lbar_on,stres)
     end if
 
 ; Draw all this stuff: map plot, subtitles, and tick marks.
@@ -9137,12 +9197,11 @@ undef("gsn_csm_streamline_map_other")
 function gsn_csm_streamline_map_other(wks:graphic,u[*][*]:numeric,\
                                       v[*][*]:numeric,resources:logical)
 local i, stream_object, labelbar_object, xy_object, map_object, \
-calldraw, callframe, min_lat, max_lat, datanew, new_lbar_on, \
+calldraw, callframe, min_lat, max_lat, datanew, use_mgr_lbar, \
 res, res2, mpres, stres, map_vpwf, map_vphf, vphf 
 begin
 ; Initialize.
     mpres          = True
-    new_lbar_on    = False
 
     res2 = get_resources(resources)
 ;
@@ -9196,16 +9255,15 @@ begin
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT","gsnMask"/))
     stres = get_res_ne(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT","gsnMask"/))
 
-;---Check for labelbar addition
-    if(stres)
-      if(check_attr(stres,"stMonoLineColor",False,False).and.\
-         (.not.isatt(stres,"lbLabelBarOn").or.\
-        check_attr(stres,"lbLabelBarOn",True,False)))
-        new_lbar_on = True
-        set_labelbar_res(stres,"other")
-      end if
+;---Labelbar stuff
+    if(check_attr(stres,"stMonoLineColor",False,False))
+      lbar_on = get_res_value(stres,"lbLabelBarOn",True)
+      use_mgr_lbar = True
+      set_labelbar_res(stres,"other")
+    else
+      lbar_on = get_res_value(stres,"lbLabelBarOn",False)
+      use_mgr_lbar = False
     end if
-    delete_attr(stres,"lbLabelBarOn")
 
 ; Before we create the objects, turn off draw and frame for them.
     stres           = True
@@ -9239,8 +9297,8 @@ begin
     end setvalues
 
 ;---Create a labelbar.
-    if(new_lbar_on)
-      fix_labelbar(stream_object,font_height,stres)
+    if(use_mgr_lbar)
+      fix_labelbar(stream_object,font_height,lbar_on,stres)
     end if
 
 ; Draw all this stuff: map plot, subtitles, and tick marks.
@@ -9271,7 +9329,7 @@ function gsn_csm_streamline_contour_map_ce(wks:graphic,u[*][*]:numeric,\
                    v[*][*]:numeric,data:numeric,resources:logical)
 local i, stream_object, map_object, res, res2, \
 calldraw, callframe, min_lat, max_lat, unew, vnew, datanew, \
-map_vpwf, map_vphf, vpwf, vphf, old_lbar_on
+map_vpwf, map_vphf, vpwf, vphf, use_old_lbar
 begin
 ;
 ; Make sure input data is 1D or 2D
@@ -9283,8 +9341,6 @@ begin
 
 ; Initialize.
     infolabel_on   = False
-    old_lbar_on    = False
-    new_lbar_on    = False
     mpres          = True
     res2 = get_resources(resources)
 ;
@@ -9366,21 +9422,24 @@ begin
       delete(res2@gsnMinorLatSpacing)
     end if
 
-; Turn on labelbar if cnFillOn is True and it wasn't explicitly 
-; turned off.
+;---Labelbar stuff
     if(check_attr(res2,"cnFillOn",True,False))
       set_attr(res2,"cnFillDrawOrder","Predraw")
       set_attr(res2,"cnInfoLabelOn",False)
-      if(.not.isatt(lbres,"lbLabelBarOn").or.\
-         check_attr(lbres,"lbLabelBarOn",True,False))
+      lbar_on = get_res_value(lbres,"lbLabelBarOn",True)
+      use_old_lbar = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+      use_mgr_lbar = .not.use_old_lbar
+      if(lbar_on) then
         set_attr(res2,"cnLineLabelsOn",False)
         set_attr(res2,"cnInfoLabelOn",False)
-        old_lbar_on = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-        new_lbar_on = .not.old_lbar_on
-        if(new_lbar_on) then
+        if(use_mgr_lbar) then
           set_labelbar_res(res2,"vector")
         end if
       end if
+    else
+      use_old_lbar = False
+      use_mgr_lbar = False
+      lbar_on = False
     end if
 
     check_for_y_lat_coord(datanew,res2,"contour_map")
@@ -9418,7 +9477,7 @@ begin
     mpres@gsnDraw  = False
     mpres@gsnFrame = False
 
-    if(old_lbar_on.and.\
+    if(lbar_on.and.use_old_lbar.and.\
        check_attr_enum_value(lbres,"lbOrientation","vertical"))
       set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
       set_attr(mpres,"vpHeightF",0.75)   ; on the side.
@@ -9471,19 +9530,19 @@ begin
       end setvalues
     end if
 
-; Create a labelbar.
-
-    if(old_lbar_on)
+; Create a labelbar or fix an existing one
+    if(use_old_lbar)
       if(.not.infolabel_on)
         lbar_zone = 2
       else
         lbar_zone = 3
       end if
-
-      add_labelbar(wks,stream_object@contour,lbar_zone,xbfontf,"vector",lbres)
+lbres@CallingFrom = "gsn_csm_streamline_map_polar"
+lbres@PrintNum = "07"
+      add_labelbar(wks,stream_object@contour,lbar_zone,xbfontf,"vector",lbar_on,lbres)
     end if
-    if(new_lbar_on)
-      fix_labelbar(stream_object@contour,xbfontf,stres)
+    if(use_mgr_lbar)
+      fix_labelbar(stream_object@contour,xbfontf,lbar_on,stres)
     end if
   
 ; Draw all this stuff: map plot, subtitles, and tick marks.
@@ -9514,7 +9573,7 @@ function gsn_csm_streamline_contour_map_polar(wks:graphic,u[*][*]:numeric, \
                                          v[*][*]:numeric,data:numeric,
                                          resources:logical)
 local i, stream_object, map_object, res, res2, calldraw, vcres, \
-lbres, vpwf, vphf, callframe, old_lbar_on, lbar_zone, unew, vnew
+lbres, vpwf, vphf, callframe, use_old_lbar, lbar_zone, unew, vnew
 begin
 ;
 ; Make sure input data is 1D or 2D
@@ -9530,8 +9589,6 @@ begin
 ; needed.
 ;
 ; Initialize.
-    old_lbar_on   = False     ; Labelbar flag
-    new_lbar_on   = False
     res2  = get_resources(resources)
 ;
 ; Write data and plot resource information to a file so we can 
@@ -9587,23 +9644,25 @@ begin
 ; Check for subtitles at top and add to mpres if exist.
 
     set_subtitles_res(res2,mpres)
-; 
-; Determine which annotations (labelbar, info label) should be turned on. 
-; By default, labelbar is on, and contour info label is off.
-;
+
+;---Labelbar stuff
     if(check_attr(res2,"cnFillOn",True,False))
       set_attr(res2,"cnFillDrawOrder","Predraw")
       set_attr(res2,"cnLineLabelsOn",False)
       set_attr(res2,"cnLinesOn",False)
       set_attr(res2,"cnInfoLabelOn",False)
-      old_lbar_on = get_res_value(res2,"lbLabelBarOn",GSN_OLD_LABELBAR)
-      new_lbar_on = .not.old_lbar_on
-      if(new_lbar_on) then
+      lbar_on = get_res_value(res2,"lbLabelBarOn",True)
+      use_old_lbar = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+      use_mgr_lbar = .not.use_old_lbar
+      if(use_mgr_lbar) then
         set_labelbar_res(res2,"polar")
       end if
     else    
       set_attr(res2,"cnInfoLabelOn",True)
       set_attr(res2,"lbLabelBarOn",False)
+      use_old_lbar = False
+      use_mgr_lbar = False
+      lbar_on = False
     end if
 ;
 ; Check for coordinate variables for scalar field.
@@ -9626,7 +9685,7 @@ begin
       set_attr(res2,"cnInfoLabelJust","TopRight")
     end if
 
-    if(old_lbar_on)
+    if(lbar_on.and.use_old_lbar)
       if(lbar_orient.eq."vertical")
         set_attr(res2,"vpXF",0.15)
         set_attr(res2,"pmLabelBarOrthogonalPosF",0.1)
@@ -9675,24 +9734,23 @@ begin
         "tiMainFontHeightF"    : main_font_height  ; main title size
     end setvalues
 
-; Create a labelbar.
-
-    if(old_lbar_on)
+; Create a labelbar or fix an existing one.
+    if(use_old_lbar)
       if(.not.infolabel_on)
         lbar_zone = 2
       else
         lbar_zone = 3
       end if
-;
-; Get labelbar resources, if any.
-;
-      lbres = get_res_eq(res2,(/"lb","pm"/))
-
-      add_labelbar(wks,stream_object@contour, \
-                   lbar_zone,font_height,"vector",lbres)
     end if
-    if(new_lbar_on)
-      fix_labelbar(stream_object@contour,font_height,stres)
+    if(use_old_lbar)
+      lbres = get_res_eq(res2,(/"lb","pm"/))
+lbres@CallingFrom = "gsn_csm_streamline_contour_map_polar"
+lbres@PrintNum = "08"
+      add_labelbar(wks,stream_object@contour, \
+                   lbar_zone,font_height,"vector",lbar_on,lbres)
+    end if
+    if(use_mgr_lbar)
+      fix_labelbar(stream_object@contour,font_height,lbar_on,stres)
     end if
   
 ; Draw all this stuff: map plot, subtitles, and tick marks.
@@ -9724,7 +9782,7 @@ function gsn_csm_streamline_contour_map_other(wks:graphic,u[*][*]:numeric,\
                                         v[*][*]:numeric,data:numeric, \
                                         resources:logical)
 local i, stream_object, labelbar_object, map_object, \
-calldraw, callframe, old_lbar_on, min_lat, max_lat, datanew, \
+calldraw, callframe, use_old_lbar, min_lat, max_lat, datanew, \
 res, res2, lbres, mpres, vcres, levels, colors, \
 lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
 map_vpwf, map_vphf, vphf 
@@ -9738,8 +9796,6 @@ begin
     end if
 ; Initialize.
     infolabel_on   = False
-    old_lbar_on    = False    ; Default is no labelbar.
-    new_lbar_on    = False    ; Default is no labelbar.
     mpres          = True
 
     res2 = get_resources(resources)
@@ -9807,13 +9863,22 @@ begin
 ;
     check_for_y_lat_coord(datanew,res2,"contour_map")
     check_for_lon_coord(datanew,res2,"contour_map")
-
-    if(get_res_value_keep(res2,"lbLabelBarOn",True)) then
-      old_lbar_on = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-      new_lbar_on = .not.old_lbar_on
-      if(new_lbar_on) then
+;
+; Labelbar stuff
+;
+; This is a bit difference because we have to check for labelbars
+; for both contours and streamlines.
+;
+    lbar_on = get_res_value_keep(res2,"lbLabelBarOn",True)
+    if(lbar_on)
+      use_old_lbar = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+      use_mgr_lbar = .not.use_old_lbar
+      if(use_mgr_lbar) then
         set_labelbar_res(res2,"contour")
       end if
+    else
+      use_old_lbar = False
+      use_mgr_lbar = False
     end if
     lbar_orient  = str_lower(get_res_value_keep(res2,"lbOrientation", \
                              "horizontal"))
@@ -9840,7 +9905,7 @@ begin
 
 ; This section tests for regular resources.
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT","gsnMask"/))
-    if(old_lbar_on) then
+    if(use_old_lbar) then
       stres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm","gsnMask"/))
     else
       stres = get_res_ne(res2,(/"mp","vp","tm","tx","am","pm","gsnMask"/))
@@ -9878,23 +9943,22 @@ begin
       "tiMainFontHeightF"    : main_font_height  ; main title size
     end setvalues
 
-; Create a labelbar.
-
-    if(old_lbar_on)
+; Create a labelbar or fix an existing one.
+    if(use_old_lbar)
       if(.not.infolabel_on)
         lbar_zone = 2
       else
         lbar_zone = 3
       end if
-;
-; Get labelbar resources, if any.
-;
-      lbres = get_res_eq(res2,(/"lb","pm"/))
-
-      add_labelbar(wks,stream_object@contour,lbar_zone,font_height,"vector",lbres)
     end if
-    if(new_lbar_on)
-      fix_labelbar(stream_object@contour,font_height,stres)
+    if(use_old_lbar)
+      lbres = get_res_eq(res2,(/"lb","pm"/))
+lbres@CallingFrom = "gsn_csm_streamline_contour_map_other"
+lbres@PrintNum = "09"
+      add_labelbar(wks,stream_object@contour,lbar_zone,font_height,"vector",lbar_on,lbres)
+    end if
+    if(use_mgr_lbar)
+      fix_labelbar(stream_object@contour,font_height,lbar_on,stres)
     end if
   
 ; Draw all this stuff: map plot, subtitles, and tick marks.
@@ -9930,8 +9994,8 @@ end
 undef("gsn_csm_vector_scalar")
 function gsn_csm_vector_scalar(wks:graphic,u[*][*]:numeric,v[*][*]:numeric, \
                                data:numeric,resources:logical)
-local i, vector_object, res, res2, old_lbar_on, new_lbar_on, \
-calldraw, callframe, unew, vnew, datanew, vpwf, vphf, old_lbar_on, lbar_type
+local i, vector_object, res, res2, use_old_lbar, use_mgr_lbar, \
+calldraw, callframe, unew, vnew, datanew, vpwf, vphf, use_old_lbar, lbar_type
 begin
 ;
 ; Make sure input data is 1D or 2D
@@ -9945,9 +10009,6 @@ begin
     main_zone      = 2         ; Zone for main title (may change later)
     infolabel_on   = False
     refanno_on     = True
-    old_lbar_on    = False
-    new_lbar_on    = False
-    lbar_type      = ""
     res2 = get_resources(resources)
 ;
 ; Write data and plot resource information to a file so we can 
@@ -10014,25 +10075,27 @@ begin
 ; Check for type of scalar field representation.
     scalar_contour = get_res_value(res2,"gsnScalarContour",False)
 
-; Get labelbar resources.
+;---Labelbar stuff
+    lbar_type = ""
     lbres = get_res_eq(res2,(/"lb","pm"/))
-
     if(scalar_contour)
-; Turn on labelbar if cnFillOn is True and it wasn't explicitly 
-; turned off.
       if(check_attr(res2,"cnFillOn",True,False))
         lbar_type = "contour"
         set_attr(res2,"cnFillDrawOrder","Predraw")
         set_attr(res2,"cnInfoLabelOn",False)
-        if(.not.isatt(lbres,"lbLabelBarOn").or.\
-           check_attr(lbres,"lbLabelBarOn",True,False))
+        lbar_on = get_res_value(lbres,"lbLabelBarOn",True)
+        use_old_lbar = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+        use_mgr_lbar = .not.use_old_lbar
+        if(lbar_on)
           set_attr(res2,"cnLineLabelsOn",False)
-          old_lbar_on = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-          new_lbar_on = .not.old_lbar_on
-          if(new_lbar_on) then
+          if(use_mgr_lbar) then
             set_labelbar_res(res2,"contour")
           end if
         end if
+      else
+        lbar_on = False
+        use_old_lbar = False
+        use_mgr_lbar = False
       end if
     else
 ;
@@ -10042,14 +10105,18 @@ begin
 ;
       if(.not.check_attr(res2,"vcMonoLineArrowColor",True,False))
         lbar_type = "vector"
-        if(.not.isatt(lbres,"lbLabelBarOn").or.\
-           check_attr(lbres,"lbLabelBarOn",True,False))
-          old_lbar_on = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-          new_lbar_on = .not.old_lbar_on
-          if(new_lbar_on) then
+        lbar_on = get_res_value(lbres,"lbLabelBarOn",True)
+        use_old_lbar = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+        use_mgr_lbar = .not.use_old_lbar
+        if(lbar_on)
+          if(use_mgr_lbar) then
             set_labelbar_res(res2,"vector")
           end if
         end if
+      else
+        lbar_on = False
+        use_old_lbar = False
+        use_mgr_lbar = False
       end if
     end if
 
@@ -10060,7 +10127,7 @@ begin
 
 ; Turn off info label if labelbar is on, unless otherwise specified by user.
     if(scalar_contour)
-      if(old_lbar_on.or.new_lbar_on)
+      if(lbar_on.and.(use_old_lbar.or.use_mgr_lbar))
         set_attr(res2,"cnInfoLabelOn",False)
       else
         set_attr(res2,"cnInfoLabelOn",True)
@@ -10068,7 +10135,7 @@ begin
       infolabel_on = res2@cnInfoLabelOn
     end if
 
-    if(old_lbar_on.and.\
+    if(lbar_on.and.use_old_lbar.and.\
        check_attr_enum_value(lbres,"lbOrientation","vertical")) then
       set_attr(res2, "vpWidthF",0.75)   ; Make room for labelbar
       set_attr(res2,"vpHeightF",0.75)   ; on the side.
@@ -10092,7 +10159,7 @@ begin
     end if
 
 ; Before we create the vector object, turn off draw and frame for it.
-    if(new_lbar_on) then
+    if(lbar_on.and.use_mgr_lbar) then
       vcres = get_res_ne(res2,(/"mp","tx","am"/))
     else
       vcres = get_res_ne(res2,(/"mp","lb","tx","am","pm"/))
@@ -10196,8 +10263,8 @@ begin
       end if
     end if
 
-;---Create a labelbar.
-    if(old_lbar_on)
+;---Create a labelbar or fix an existing one.
+    if(use_old_lbar)
       if(.not.refanno_on.and..not.infolabel_on)
         lbar_zone = 2
       else
@@ -10205,19 +10272,24 @@ begin
       end if
     end if
     if(scalar_contour)
-      if(old_lbar_on)
+      if(use_old_lbar)
+lbres@CallingFrom = "gsn_csm_vector_scalar"
+lbres@PrintNum = "10"
         add_labelbar(wks,base_object,lbar_zone,xbfontf, \
-                     "vector",lbres)
+                     "vector",lbar_on,lbres)
       end if
-      if(new_lbar_on)
-        fix_labelbar(base_object,xbfontf,vcres)
+      if(use_mgr_lbar)
+        fix_labelbar(base_object,xbfontf,lbar_on,vcres)
       end if
     else
-      if(old_lbar_on)
-        add_labelbar(wks,base_object,lbar_zone,xbfontf,"vector",lbres)
+      if(use_old_lbar)
+lbres@CallingFrom = "gsn_csm_vector_scalar"
+lbres@PrintNum = "11"
+        add_labelbar(wks,base_object,lbar_zone,xbfontf, \
+                     "vector",lbar_on,lbres)
       end if
-      if(new_lbar_on)
-        fix_labelbar(base_object,xbfontf,vcres)
+      if(use_mgr_lbar)
+        fix_labelbar(base_object,xbfontf,lbar_on,vcres)
       end if
     end if
   
@@ -10263,7 +10335,7 @@ function gsn_csm_vector_scalar_map_ce(wks:graphic,u[*][*]:numeric,\
                    v[*][*]:numeric,data:numeric,resources:logical)
 local i, vector_object, map_object, res, res2, \
 calldraw, callframe, min_lat, max_lat, unew, vnew, datanew, \
-map_vpwf, map_vphf, vpwf, vphf, old_lbar_on, new_lbar_on, lbar_type
+map_vpwf, map_vphf, vpwf, vphf, use_old_lbar, use_mgr_lbar, lbar_type
 begin
 ;
 ; Make sure input data is 1D or 2D
@@ -10276,9 +10348,6 @@ begin
 ; Initialize.
     infolabel_on   = False
     refanno_on     = True
-    old_lbar_on    = False
-    new_lbar_on    = False
-    lbar_type      = ""
     mpres          = True
     res2           = get_resources(resources)
 ;
@@ -10369,23 +10438,27 @@ begin
       delete(res2@gsnMinorLatSpacing)
     end if
 
+;---Labelbar stuff
+    lbar_type = ""
     if(scalar_contour)
-; Turn on labelbar if cnFillOn is True and it wasn't explicitly 
-; turned off.
       if(check_attr(res2,"cnFillOn",True,False))
         lbar_type = "contour"
         set_attr(res2,"cnFillDrawOrder","Predraw")
         set_attr(res2,"cnInfoLabelOn",False)
-        if(.not.isatt(lbres,"lbLabelBarOn").or.\
-           check_attr(lbres,"lbLabelBarOn",True,False))
-          old_lbar_on = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-          new_lbar_on = .not.old_lbar_on
-          if(new_lbar_on) then
+        lbar_on = get_res_value(lbres,"lbLabelBarOn",True)
+        use_old_lbar = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+        use_mgr_lbar = .not.use_old_lbar
+        if(lbar_on) then
+          if(use_mgr_lbar) then
             set_labelbar_res(res2,"contour")
           end if
           set_attr(res2,"cnLineLabelsOn",False)
           set_attr(res2,"cnInfoLabelOn",False)
         end if
+      else
+        lbar_on = False
+        use_old_lbar = False
+        use_mgr_lbar = False
       end if
 
       check_for_y_lat_coord(datanew,res2,"contour_map")
@@ -10408,14 +10481,18 @@ begin
 ;
       if(.not.check_attr(res2,"vcMonoLineArrowColor",True,False))
         lbar_type = "vector"
-        if(.not.isatt(lbres,"lbLabelBarOn").or.\
-           check_attr(lbres,"lbLabelBarOn",True,False))
-          old_lbar_on = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-          new_lbar_on = .not.old_lbar_on
-          if(new_lbar_on) then
+        lbar_on = get_res_value(lbres,"lbLabelBarOn",True)
+        use_old_lbar = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+        use_mgr_lbar = .not.use_old_lbar
+        if(lbar_on) then
+          if(use_mgr_lbar) then
             set_labelbar_res(res2,"vector")
           end if
         end if
+      else
+        lbar_on = False
+        use_old_lbar = False
+        use_mgr_lbar = False
       end if
     end if
 
@@ -10426,7 +10503,7 @@ begin
 
 ; Turn off info label if labelbar is on, unless otherwise specified by user.
     if(scalar_contour)
-      if(old_lbar_on.or.new_lbar_on)
+      if(lbar_on.and.(use_old_lbar.or.use_mgr_lbar))
         set_attr(res2,"cnInfoLabelOn",False)
       else
         set_attr(res2,"cnInfoLabelOn",True)
@@ -10445,7 +10522,7 @@ begin
 
 ; This section tests for regular resources.
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
-    if(new_lbar_on) then
+    if(use_mgr_lbar.and.lbar_on) then
       vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am"/))
     else
       vcres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm"/))
@@ -10459,7 +10536,7 @@ begin
     mpres@gsnDraw  = False
     mpres@gsnFrame = False
 
-    if(old_lbar_on.and.\
+    if(lbar_on.and.use_old_lbar.and.\
        check_attr_enum_value(lbres,"lbOrientation","vertical"))
       set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
       set_attr(mpres,"vpHeightF",0.75)   ; on the side.
@@ -10544,7 +10621,7 @@ begin
 
 ; Create a labelbar.
 
-    if(old_lbar_on)
+    if(use_old_lbar)
       if(.not.refanno_on.and..not.infolabel_on)
         lbar_zone = 2
       else
@@ -10563,19 +10640,23 @@ begin
       end if
     end if
     if(scalar_contour)
-      if(old_lbar_on)
+      if(use_old_lbar)
+lbres@CallingFrom = "gsn_csm_vector_scalar_map_ce"
+lbres@PrintNum = "12"
         add_labelbar(wks,base_object,lbar_zone,xbfontf, \
-                     "vector",lbres)
+                     "vector",lbar_on,lbres)
       end if
-      if(new_lbar_on)
-        fix_labelbar(base_object,xbfontf,vcres)
+      if(use_mgr_lbar)
+        fix_labelbar(base_object,xbfontf,lbar_on,vcres)
       end if
     else
-      if(old_lbar_on)
-        add_labelbar(wks,base_object,lbar_zone,xbfontf,"vector",lbres)
+      if(use_old_lbar)
+lbres@CallingFrom = "gsn_csm_vector_scalar_map_ce"
+lbres@PrintNum = "13"
+        add_labelbar(wks,base_object,lbar_zone,xbfontf,"vector",lbar_on,lbres)
       end if
-      if(new_lbar_on)
-        fix_labelbar(base_object,xbfontf,vcres)
+      if(use_mgr_lbar)
+        fix_labelbar(base_object,xbfontf,lbar_on,vcres)
       end if
     end if
 
@@ -10623,11 +10704,8 @@ function gsn_csm_vector_scalar_map_polar(wks:graphic,u[*][*]:numeric, \
                                          v[*][*]:numeric,data:numeric,
                                          resources:logical)
 local i, vector_object, map_object, res, res2, calldraw, vcres, lbres, \
-vpwf, vphf, callframe, old_lbar_on, new_lbar_on, lbar_type, lbar_zone, unew, vnew
+vpwf, vphf, callframe, use_old_lbar, use_mgr_lbar, lbar_type, lbar_zone, unew, vnew
 begin
-; Initialize.
-    old_lbar_on    = False
-    new_lbar_on    = False
 ;
 ; Make sure input data is 1D or 2D
 ;
@@ -10719,23 +10797,26 @@ begin
       check_for_lon_coord(datanew,res2,"contour_map")
     end if
 
+;---Labelbar stuff
     lbar_type = ""
     if(scalar_contour)
-; Turn on labelbar if cnFillOn is True and it wasn't explicitly 
-; turned off.
       if(check_attr(res2,"cnFillOn",True,False))
+        lbar_on = get_res_value(res2,"lbLabelBarOn",True)
+        use_old_lbar = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+        use_mgr_lbar = .not.use_old_lbar
         lbar_type = "contour"
         set_attr(res2,"cnFillDrawOrder","Predraw")
         set_attr(res2,"cnInfoLabelOn",False)
-        if(.not.isatt(res2,"lbLabelBarOn").or.\
-           check_attr(res2,"lbLabelBarOn",True,False))
-          old_lbar_on = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-          new_lbar_on = .not.old_lbar_on
-          if(new_lbar_on) then
+        if(lbar_on) then
+          if(use_mgr_lbar) then
             set_labelbar_res(res2,"polar")
           end if
           set_attr(res2,"cnInfoLabelOn",False)
         end if
+      else
+        lbar_on = get_res_value(res2,"lbLabelBarOn",False)   ; make sure this resource gets removed from res2
+        use_old_lbar = False
+        use_mgr_lbar = False
       end if
     else
 ;
@@ -10744,19 +10825,21 @@ begin
 ; being True here.
 ;
       if(.not.check_attr(res2,"vcMonoLineArrowColor",True,False))
+        lbar_on = get_res_value(res2,"lbLabelBarOn",True)
+        use_old_lbar = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+        use_mgr_lbar = .not.use_old_lbar
         lbar_type = "vector"
-        if(.not.isatt(res2,"lbLabelBarOn").or.\
-           check_attr(res2,"lbLabelBarOn",True,False))
-          old_lbar_on = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-          new_lbar_on = .not.old_lbar_on
-          if(new_lbar_on) then
+        if(lbar_on) then
+          if(use_mgr_lbar) then
             set_labelbar_res(res2,"polar")
           end if
         end if
+      else
+        lbar_on = get_res_value(res2,"lbLabelBarOn",False)   ; make sure this resource gets removed from res2
+        use_old_lbar = False
+        use_mgr_lbar = False
       end if
     end if
-
-    delete_attr(res2,"lbLabelBarOn")
 
     lbar_orient  = str_lower(get_res_value_keep(res2,"lbOrientation", \
                               "horizontal"))
@@ -10789,7 +10872,7 @@ begin
       set_attr(res2,"cnInfoLabelJust","TopRight")
     end if
 
-    if(old_lbar_on)
+    if(lbar_on.and.use_old_lbar)
       if(lbar_orient.eq."vertical")
         set_attr(res2,"vpXF",0.15)
         set_attr(res2,"pmLabelBarOrthogonalPosF",0.1)
@@ -10806,7 +10889,7 @@ begin
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO",\
                               "pmT","gsnPolar"/))
 
-    if(old_lbar_on) then
+    if(lbar_on.and.use_old_lbar) then
       vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","lb","pm","gsnPolar"/))
     else
       vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","gsnPolar"/))
@@ -10850,33 +10933,33 @@ begin
 
 ; Create a labelbar.
 
-    if(old_lbar_on)
+    if(use_old_lbar)
       if(.not.refanno_on.and..not.infolabel_on)
         lbar_zone = 2
       else
         lbar_zone = 3
       end if
-;
-; Get labelbar resources, if any.
-;
       lbres = get_res_eq(res2,(/"lb","pm"/))
-
     end if
 
     if(scalar_contour)
-      if(old_lbar_on)
+      if(use_old_lbar)
+lbres@CallingFrom = "gsn_csm_vector_scalar_map_polar"
+lbres@PrintNum = "14"
         add_labelbar(wks,base_object,lbar_zone,font_height, \
-                     "vector",lbres)
+                     "vector",lbar_on,lbres)
       end if
-      if(new_lbar_on)
-        fix_labelbar(base_object,font_height,vcres)
+      if(use_mgr_lbar)
+        fix_labelbar(base_object,font_height,lbar_on,vcres)
       end if
     else
-      if(old_lbar_on)
-        add_labelbar(wks,base_object,lbar_zone,font_height,"vector",lbres)
+      if(use_old_lbar)
+lbres@CallingFrom = "gsn_csm_vector_scalar_map_polar"
+lbres@PrintNum = "15"
+        add_labelbar(wks,base_object,lbar_zone,font_height,"vector",lbar_on,lbres)
       end if
-      if(new_lbar_on)
-        fix_labelbar(base_object,font_height,vcres)
+      if(use_mgr_lbar)
+        fix_labelbar(base_object,font_height,lbar_on,vcres)
       end if
     end if
   
@@ -10924,8 +11007,8 @@ function gsn_csm_vector_scalar_map_other(wks:graphic,u[*][*]:numeric,\
                                         v[*][*]:numeric,data:numeric, \
                                         resources:logical)
 local i, vector_object, labelbar_object, map_object, \
-calldraw, callframe, old_lbar_on, lbar_type, min_lat, max_lat, datanew, \
-res, res2, lbres, mpres, vcres, levels, colors, new_lbar_on, \
+calldraw, callframe, use_old_lbar, lbar_type, min_lat, max_lat, datanew, \
+res, res2, lbres, mpres, vcres, levels, colors, use_mgr_lbar, \
 lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
 map_vpwf, map_vphf, vphf 
 begin
@@ -10940,12 +11023,9 @@ begin
 ; Initialize.
     infolabel_on   = False
     refanno_on     = True
-    old_lbar_on    = False    ; Default is no labelbar.
-    new_lbar_on    = False
-    lbar_type      = ""
     mpres          = True
-
     res2           = get_resources(resources)
+
 ;
 ; Write data and plot resource information to a file so we can 
 ; reconstruct plot if desired, without all the computational
@@ -10996,10 +11076,16 @@ begin
     scalar_contour = get_res_value(res2,"gsnScalarContour",False)
 
 ; 
+; Labelbar stuff
+;
 ; Determine which annotations (labelbar, vector reference anno, info label)
 ; should be turned on.  By default, labelbar and vector anno are on, and
 ; contour info label is off.
 ;
+    lbar_on        = False
+    lbar_type      = ""
+    use_old_lbar   = False    ; Default is no labelbar.
+    use_mgr_lbar   = False
     if(scalar_contour)
       if(check_attr(res2,"cnFillOn",True,False))
         lbar_type = "contour"
@@ -11026,15 +11112,17 @@ begin
         lbar_type = "contour"
         set_attr(res2,"cnFillDrawOrder","Predraw")
         set_attr(res2,"cnInfoLabelOn",False)
-        if(.not.isatt(res2,"lbLabelBarOn").or.\
-           check_attr(res2,"lbLabelBarOn",True,False))
-          old_lbar_on = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-          new_lbar_on = .not.old_lbar_on
-          if(new_lbar_on) then
+        lbar_on = get_res_value(res2,"lbLabelBarOn",True)
+        use_old_lbar = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+        use_mgr_lbar = .not.use_old_lbar
+        if(lbar_on) then
+          if(use_mgr_lbar) then
             set_labelbar_res(res2,"contour")
           end if
           set_attr(res2,"cnInfoLabelOn",False)
         end if
+      else
+        lbar_on = get_res_value(res2,"lbLabelBarOn",False)  ; make sure this gets removed from res2
       end if
     else
 ;
@@ -11044,18 +11132,18 @@ begin
 ;
       if(.not.check_attr(res2,"vcMonoLineArrowColor",True,False))
         lbar_type = "vector"
-        if(.not.isatt(res2,"lbLabelBarOn").or.\
-           check_attr(res2,"lbLabelBarOn",True,False))
-          old_lbar_on = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-          new_lbar_on = .not.old_lbar_on
-          if(new_lbar_on) then
+        use_old_lbar = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+        use_mgr_lbar = .not.use_old_lbar
+        lbar_on = get_res_value(res2,"lbLabelBarOn",True)
+        if(lbar_on) then
+          if(use_mgr_lbar) then
             set_labelbar_res(res2,"vector")
           end if
         end if
+      else
+        lbar_on = get_res_value(res2,"lbLabelBarOn",False)  ; make sure this gets removed from res2
       end if
     end if
-
-    delete_attr(res2,"lbLabelBarOn")
 
     lbar_orient  = str_lower(get_res_value_keep(res2,"lbOrientation", \
                               "horizontal"))
@@ -11100,7 +11188,7 @@ begin
 ; This section tests for regular resources.
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT","gsnMask"/))
 
-    if(old_lbar_on) then
+    if(lbar_on.and.use_old_lbar) then
       vcres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm","gsnMask"/))
     else
       vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","gsnMask"/))
@@ -11158,7 +11246,7 @@ begin
 
 ; Create a labelbar.
 
-    if(old_lbar_on)
+    if(use_old_lbar)
       if(.not.refanno_on.and..not.infolabel_on)
         lbar_zone = 2
       else
@@ -11168,20 +11256,24 @@ begin
       lbres = get_res_eq(res2,(/"lb","pm"/))
     end if
     if(scalar_contour)
-      if(old_lbar_on)
+      if(use_old_lbar)
+lbres@CallingFrom = "gsn_csm_vector_scalar_map_other"
+lbres@PrintNum = "16"
         add_labelbar(wks,base_object,lbar_zone,font_height, \
-                     "vector",lbres)
+                     "vector",lbar_on,lbres)
       end if
-      if(new_lbar_on)
-        fix_labelbar(base_object,font_height,vcres)
+      if(use_mgr_lbar)
+        fix_labelbar(base_object,font_height,lbar_on,vcres)
       end if
     else
-      if(old_lbar_on)
+      if(use_old_lbar)
+lbres@CallingFrom = "gsn_csm_vector_scalar_map_other"
+lbres@PrintNum = "17"
         add_labelbar(wks,base_object,lbar_zone,font_height, \
-                     "vector",lbres)
+                     "vector",lbar_on,lbres)
       end if
-      if(new_lbar_on)
-        fix_labelbar(base_object,font_height,vcres)
+      if(use_mgr_lbar)
+        fix_labelbar(base_object,font_height,lbar_on,vcres)
       end if
     end if
   
@@ -11431,8 +11523,8 @@ end
 undef("gsn_csm_streamline_scalar")
 function gsn_csm_streamline_scalar(wks:graphic,u[*][*]:numeric,v[*][*]:numeric, \
                                data:numeric,resources:logical)
-local i, streamline_object, res, res2, old_lbar_on, new_lbar_on, \
-calldraw, callframe, unew, vnew, datanew, vpwf, vphf, old_lbar_on, lbar_type
+local i, streamline_object, res, res2, use_old_lbar, use_mgr_lbar, \
+calldraw, callframe, unew, vnew, datanew, vpwf, vphf, use_old_lbar, lbar_type
 begin
 ;
 ; Make sure input data is 1D or 2D
@@ -11445,10 +11537,8 @@ begin
 ; Initialize.
     main_zone      = 2         ; Zone for main title (may change later)
     infolabel_on   = False
-    old_lbar_on    = False
-    new_lbar_on    = False
-    lbar_type      = ""
     res2 = get_resources(resources)
+
 ;
 ; Write data and plot resource information to a file so we can
 ; reconstruct plot if desired, without all the computational
@@ -11515,23 +11605,30 @@ begin
     lbres = get_res_eq(res2,(/"lb","pm"/))
 
 ;
+; Labelbar stuff
+;
 ; Check for a streamline labelbar. stMonoLineColor is set to False
 ; by gsn_streamline_scalar, so you have to check for it explicitly
 ; being True here.
 ;
+    lbar_type      = ""
     if(.not.check_attr(res2,"stMonoLineColor",True,False))
       lbar_type = "streamline"
-      if(.not.isatt(lbres,"lbLabelBarOn").or.\
-         check_attr(lbres,"lbLabelBarOn",True,False))
-        old_lbar_on = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-        new_lbar_on = .not.old_lbar_on
-        if(new_lbar_on) then
+      lbar_on = get_res_value(lbres,"lbLabelBarOn",True)
+      use_old_lbar = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+      use_mgr_lbar = .not.use_old_lbar
+      if(lbar_on) then
+        if(use_mgr_lbar) then
           set_labelbar_res(res2,"other")
         end if
       end if
+    else
+      lbar_on = False
+      use_old_lbar   = False
+      use_mgr_lbar   = False
     end if
 
-    if(old_lbar_on.and.check_attr_enum_value(lbres,"lbOrientation","vertical"))
+    if(lbar_on.and.use_old_lbar.and.check_attr_enum_value(lbres,"lbOrientation","vertical"))
       set_attr(res2, "vpWidthF",0.75)   ; Make room for labelbar
       set_attr(res2,"vpHeightF",0.75)   ; on the side.
       set_attr(res2,     "vpXF",0.08)
@@ -11539,7 +11636,7 @@ begin
     end if
 
 ; Before we create the streamline object, turn off draw and frame for it.
-    if(new_lbar_on) then
+    if(lbar_on.and.use_mgr_lbar) then
       stres = get_res_ne(res2,(/"mp","tx","am"/))
     else
       stres = get_res_ne(res2,(/"mp","lb","tx","am","pm"/))
@@ -11613,22 +11710,22 @@ begin
                                    major_length,minor_length,point_outward)
     end if
 
-; Make sure info labels, line labels, and streamline labels are same size.
-
-;---Create a labelbar.
-    if(old_lbar_on)
+;---Create a labelbar or fix an existing one.
+    if(lbar_on.and.use_old_lbar)
       if(.not.infolabel_on)
         lbar_zone = 2
       else
         lbar_zone = 3
       end if
     end if
-      if(old_lbar_on)
-        add_labelbar(wks,streamline_object,lbar_zone,xbfontf,"streamline",lbres)
-      end if
-      if(new_lbar_on)
-        fix_labelbar(streamline_object,xbfontf,stres)
-      end if
+    if(use_old_lbar)
+lbres@CallingFrom = "gsn_csm_streamline_scalar"
+lbres@PrintNum = "18"
+      add_labelbar(wks,streamline_object,lbar_zone,xbfontf,"streamline",lbar_on,lbres)
+    end if
+    if(use_mgr_lbar)
+      fix_labelbar(streamline_object,xbfontf,lbar_on,stres)
+    end if
 
 ; Set up three subtitles at top, if they exist.
     subres = get_res_eq(res2,(/"tx","am"/))  ; Get textitem resources
@@ -11671,7 +11768,7 @@ function gsn_csm_streamline_scalar_map_ce(wks:graphic,u[*][*]:numeric,\
                    v[*][*]:numeric,data:numeric,resources:logical)
 local i, streamline_object, map_object, res, res2, \
 calldraw, callframe, min_lat, max_lat, unew, vnew, datanew, \
-map_vpwf, map_vphf, vpwf, vphf, old_lbar_on, new_lbar_on, lbar_type
+map_vpwf, map_vphf, vpwf, vphf, use_old_lbar, use_mgr_lbar, lbar_type
 begin
 ;
 ; Make sure input data is 1D or 2D
@@ -11683,9 +11780,6 @@ begin
 
 ; Initialize.
     infolabel_on   = False
-    old_lbar_on    = False
-    new_lbar_on    = False
-    lbar_type      = ""
     mpres          = True
     res2           = get_resources(resources)
 ;
@@ -11759,23 +11853,28 @@ begin
     end if
 
 ;
+; Labelbar stuff
+;
 ; Check for a streamline labelbar. stMonoLineColor is set to False
 ; by gsn_streamline_scalar, so you have to check for it explicitly
 ; being True here.
 ;
-      if(.not.check_attr(res2,"stMonoLineColor",True,False))
-        lbar_type = "streamline"
-        if(.not.isatt(lbres,"lbLabelBarOn").or.\
-           check_attr(lbres,"lbLabelBarOn",True,False))
-          old_lbar_on = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-          new_lbar_on = .not.old_lbar_on
-          if(new_lbar_on) then
-            set_labelbar_res(res2,"other")
-          end if
+    lbar_type = ""
+    if(.not.check_attr(res2,"stMonoLineColor",True,False))
+      lbar_type = "streamline"
+      lbar_on = get_res_value(lbres,"lbLabelBarOn",True)
+      use_old_lbar = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+      use_mgr_lbar = .not.use_old_lbar
+      if(lbar_on) then
+        if(use_mgr_lbar) then
+          set_labelbar_res(res2,"other")
         end if
       end if
-
-
+    else
+      lbar_on = False
+      use_old_lbar = False
+      use_mgr_lbar = False
+    end if
 ;
 ; Tickmarks.
 ;
@@ -11788,7 +11887,7 @@ begin
 
 ; This section tests for regular resources.
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
-    if(new_lbar_on) then
+    if(lbar_on.and.use_mgr_lbar) then
       stres = get_res_ne(res2,(/"mp","vp","tm","tx","am"/))
     else
       stres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm"/))
@@ -11802,7 +11901,7 @@ begin
     mpres@gsnDraw  = False
     mpres@gsnFrame = False
 
-    if(old_lbar_on.and.check_attr_enum_value(lbres,"lbOrientation","vertical"))
+    if(lbar_on.and.use_old_lbar.and.check_attr_enum_value(lbres,"lbOrientation","vertical"))
       set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
       set_attr(mpres,"vpHeightF",0.75)   ; on the side.
       set_attr(mpres,     "vpXF",0.08)
@@ -11840,19 +11939,18 @@ begin
         "tiMainFontHeightF"    : main_font_height  ; main title size
     end setvalues
 
-; Create a labelbar.
-
-    if(old_lbar_on)
-      if(.not.infolabel_on)
-        lbar_zone = 2
-      end if
+; Create a labelbar or fix an existing one.
+    if(use_old_lbar.and..not.infolabel_on)
+      lbar_zone = 2
     end if
-      if(old_lbar_on)
-        add_labelbar(wks,streamline_object,lbar_zone,xbfontf,"streamline",lbres)
-      end if
-      if(new_lbar_on)
-        fix_labelbar(streamline_object,xbfontf,stres)
-      end if
+    if(use_old_lbar)
+lbres@CallingFrom = "gsn_csm_streamline_scalar_map_ce"
+lbres@PrintNum = "19"
+      add_labelbar(wks,streamline_object,lbar_zone,xbfontf,"streamline",lbar_on,lbres)
+    end if
+    if(use_mgr_lbar)
+      fix_labelbar(streamline_object,xbfontf,lbar_on,stres)
+    end if
 
 ; Draw all this stuff: map plot, subtitles, and tick marks.
     draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
@@ -11892,11 +11990,8 @@ function gsn_csm_streamline_scalar_map_polar(wks:graphic,u[*][*]:numeric, \
                                          v[*][*]:numeric,data:numeric,
                                          resources:logical)
 local i, streamline_object, map_object, res, res2, calldraw, stres, lbres, \
-vpwf, vphf, callframe, old_lbar_on, new_lbar_on, lbar_type, lbar_zone, unew, vnew
+vpwf, vphf, callframe, use_old_lbar, use_mgr_lbar, lbar_type, lbar_zone, unew, vnew
 begin
-; Initialize.
-    old_lbar_on    = False
-    new_lbar_on    = False
 ;
 ; Make sure input data is 1D or 2D
 ;
@@ -11966,28 +12061,33 @@ begin
 
     set_subtitles_res(res2,mpres)
 ;
+; Labelbar stuff
+;
 ; Determine which annotations (labelbar, streamline reference anno, info label)
 ; should be turned on.  By default, labelbar and streamline anno are on, and
 ; contour info label is off.
 ;
-    lbar_type = "";
 ; Check for a streamline labelbar. stMonoLineColor is set to False
 ; by gsn_streamline_scalar, so you have to check for it explicitly
 ; being True here.
 ;
-      if(.not.check_attr(res2,"stMonoLineColor",True,False))
-        lbar_type = "streamline"
-        if(.not.isatt(res2,"lbLabelBarOn").or.\
-           check_attr(res2,"lbLabelBarOn",True,False))
-          old_lbar_on = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-          new_lbar_on = .not.old_lbar_on
-          if(new_lbar_on) then
-            set_labelbar_res(res2,"polar")
-          end if
+;
+    lbar_type     = "";
+    if(.not.check_attr(res2,"stMonoLineColor",True,False))
+      lbar_type = "streamline"
+      lbar_on = get_res_value(res2,"lbLabelBarOn",True)
+      use_old_lbar = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+      use_mgr_lbar = .not.use_old_lbar
+      if(lbar_on) then
+        if(use_mgr_lbar) then
+          set_labelbar_res(res2,"polar")
         end if
       end if
-
-    delete_attr(res2,"lbLabelBarOn")
+    else
+      lbar_on = get_res_value(res2,"lbLabelBarOn",False) ; make sure gets removed from res2
+      use_old_lbar  = False
+      use_mgr_lbar  = False
+    end if
 
     lbar_orient  = str_lower(get_res_value_keep(res2,"lbOrientation", \
                               "horizontal"))
@@ -12007,7 +12107,7 @@ begin
       set_attr(res2,"cnInfoLabelJust","TopRight")
     end if
 
-    if(old_lbar_on)
+    if(lbar_on.and.use_old_lbar)
       if(lbar_orient.eq."vertical")
         set_attr(res2,"vpXF",0.15)
         set_attr(res2,"pmLabelBarOrthogonalPosF",0.1)
@@ -12024,7 +12124,7 @@ begin
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO",\
                               "pmT","gsnPolar"/))
 
-    if(old_lbar_on) then
+    if(lbar_on.and.use_old_lbar) then
       stres = get_res_ne(res2,(/"mp","vp","tm","tx","am","lb","pm","gsnPolar"/))
     else
       stres = get_res_ne(res2,(/"mp","vp","tm","tx","am","gsnPolar"/))
@@ -12063,25 +12163,23 @@ begin
 
 ; Create a labelbar.
 
-    if(old_lbar_on)
+    if(lbar_on.and.use_old_lbar)
       if(.not.infolabel_on)
         lbar_zone = 2
       else
         lbar_zone = 3
       end if
-;
-; Get labelbar resources, if any.
-;
       lbres = get_res_eq(res2,(/"lb","pm"/))
-
     end if
 
-      if(old_lbar_on)
-        add_labelbar(wks,streamline_object,lbar_zone,font_height,"streamline",lbres)
-      end if
-      if(new_lbar_on)
-        fix_labelbar(streamline_object,font_height,stres)
-      end if
+    if(use_old_lbar)
+lbres@CallingFrom = "gsn_csm_streamline_scalar_map_polar"
+lbres@PrintNum = "20"
+      add_labelbar(wks,streamline_object,lbar_zone,font_height,"streamline",lbar_on,lbres)
+    end if
+    if(use_mgr_lbar)
+      fix_labelbar(streamline_object,font_height,lbar_on,stres)
+    end if
 
 ; Draw all this stuff: map plot, subtitles, and tick marks.
     draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
@@ -12121,8 +12219,8 @@ function gsn_csm_streamline_scalar_map_other(wks:graphic,u[*][*]:numeric,\
                                         v[*][*]:numeric,data:numeric, \
                                         resources:logical)
 local i, streamline_object, labelbar_object, map_object, \
-calldraw, callframe, old_lbar_on, lbar_type, min_lat, max_lat, datanew, \
-res, res2, lbres, mpres, stres, levels, colors, new_lbar_on, \
+calldraw, callframe, use_old_lbar, lbar_type, min_lat, max_lat, datanew, \
+res, res2, lbres, mpres, stres, levels, colors, use_mgr_lbar, \
 lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
 map_vpwf, map_vphf, vphf
 begin
@@ -12136,12 +12234,9 @@ begin
 
 ; Initialize.
     infolabel_on   = False
-    old_lbar_on    = False    ; Default is no labelbar.
-    new_lbar_on    = False
-    lbar_type      = ""
     mpres          = True
-
     res2           = get_resources(resources)
+
 ;
 ; Write data and plot resource information to a file so we can
 ; reconstruct plot if desired, without all the computational
@@ -12187,26 +12282,29 @@ begin
 ; Check for subtitles at top and add to mpres if exist.
 
     set_subtitles_res(res2,mpres)
-
-
-;;
+;
+; Labelbar stuff
+;
 ; Check for a streamline labelbar. stMonoLineColor is set to False
 ; by gsn_streamline_scalar, so you have to check for it explicitly
 ; being True here.
 ;
-      if(.not.check_attr(res2,"stMonoLineColor",True,False))
-        lbar_type = "streamline"
-        if(.not.isatt(res2,"lbLabelBarOn").or.\
-           check_attr(res2,"lbLabelBarOn",True,False))
-          old_lbar_on = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-          new_lbar_on = .not.old_lbar_on
-          if(new_lbar_on) then
-            set_labelbar_res(res2,"streamline")
-          end if
+    lbar_type = ""
+    if(.not.check_attr(res2,"stMonoLineColor",True,False))
+      lbar_type = "streamline"
+      lbar_on = get_res_value(res2,"lbLabelBarOn",True)
+      use_old_lbar = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+      use_mgr_lbar = .not.use_old_lbar
+      if(lbar_on) then
+        if(use_mgr_lbar) then
+          set_labelbar_res(res2,"streamline")
         end if
       end if
-
-    delete_attr(res2,"lbLabelBarOn")
+    else
+      lbar_on = get_res_value(res2,"lbLabelBarOn",False)    ; to make sure removed from res2
+      use_old_lbar    = False
+      use_mgr_lbar    = False
+    end if
 
     lbar_orient  = str_lower(get_res_value_keep(res2,"lbOrientation", \
                               "horizontal"))
@@ -12236,7 +12334,7 @@ begin
 ; This section tests for regular resources.
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT","gsnMask"/))
 
-    if(old_lbar_on) then
+    if(lbar_on.and.use_old_lbar) then
       stres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm","gsnMask"/))
     else
       stres = get_res_ne(res2,(/"mp","vp","tm","tx","am","gsnMask"/))
@@ -12274,27 +12372,24 @@ begin
       "tiMainFontHeightF"    : main_font_height  ; main title size
     end setvalues
 
-; Set font heights only if they haven't been set explicitly by user.
-
-
-; Create a labelbar.
-
-    if(old_lbar_on)
+; Create a labelbar or fix an existing one.
+    if(lbar_on.and.use_old_lbar)
       if(.not.infolabel_on)
         lbar_zone = 2
       else
         lbar_zone = 3
       end if
-;---Get labelbar resources, if any.
       lbres = get_res_eq(res2,(/"lb","pm"/))
     end if
-      if(old_lbar_on)
-        add_labelbar(wks,streamline_object,lbar_zone,font_height, \
-                     "streamline",lbres)
-      end if
-      if(new_lbar_on)
-        fix_labelbar(streamline_object,font_height,stres)
-      end if
+    if(use_old_lbar)
+lbres@CallingFrom = "gsn_csm_streamline_scalar_map_other"
+lbres@PrintNum = "21"
+      add_labelbar(wks,streamline_object,lbar_zone,font_height, \
+                   "streamline",lbar_on,lbres)
+    end if
+    if(use_mgr_lbar)
+      fix_labelbar(streamline_object,font_height,lbar_on,stres)
+    end if
 
 ; Draw all this stuff: map plot, subtitles, and tick marks.
 
@@ -13241,7 +13336,7 @@ end
 ;***********************************************************************;
 undef("gsn_csm_contour")
 function gsn_csm_contour(wks:graphic,data:numeric,resources:logical)
-local res, contour_object, res2, xfontf, yfontf, font_height, old_lbar_on, \
+local res, contour_object, res2, xfontf, yfontf, font_height, use_old_lbar, \
 calldraw, callframe, left_string, center_string, right_string, \
 main_zone, datanew, popgrid, contour_plot
 begin
@@ -13254,8 +13349,6 @@ begin
     end if
 
 ; Initialize.
-    old_lbar_on   = False     ; Labelbar flag
-    new_lbar_on   = False     ; Labelbar flag
     main_zone     = 2         ; Zone for main title (may change later)
     res2          = get_resources(resources)
 ;
@@ -13326,21 +13419,27 @@ begin
 
     check_for_coord_arrays(datanew,res2,"contour")
 ;
+; Labelbar stuff
+;
 ; Turn on a labelbar if fill is True and if the labelbar is not
 ; explicitly being turned off.
 ;
-    if(check_attr(res2,"cnFillOn",True,False).and. \
-       (.not.isatt(res2,"lbLabelBarOn").or.\
-        .not.check_attr(res2,"lbLabelBarOn",False,False)))
-      old_lbar_on = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-      new_lbar_on = .not.old_lbar_on
-      if(new_lbar_on) then
-        set_labelbar_res(res2,"contour")
+    if(check_attr(res2,"cnFillOn",True,False)) then
+      lbar_on      = get_res_value(res2,"lbLabelBarOn",True)
+      use_old_lbar = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+      use_mgr_lbar = .not.use_old_lbar
+      if(lbar_on)
+        if(use_mgr_lbar) then
+          set_labelbar_res(res2,"contour")
+        end if
+        set_attr(res2,"cnLineLabelsOn",False)
+        set_attr(res2,"cnInfoLabelOn",False)
       end if
-      set_attr(res2,"cnLineLabelsOn",False)
-      set_attr(res2,"cnInfoLabelOn",False)
+    else
+      lbar_on = get_res_value(res2,"lbLabelBarOn",False)
+      use_old_lbar   = False
+      use_mgr_lbar   = False
     end if
-    delete_attr(res2,"lbLabelBarOn")
 
     res2          = True
     res2@gsnDraw  = False   ; Internally, don't draw plot or advance
@@ -13410,14 +13509,15 @@ begin
       end if
     end if
 
-; Create a labelbar.
-
-    if(old_lbar_on)
+; Create a labelbar or fix an existing one.
+    if(use_old_lbar)
       lbres = get_res_eq(res2,(/"lb","pm"/))
-      add_labelbar(wks,contour_object,3,font_height,"contour",lbres)
+lbres@CallingFrom = "gsn_csm_contour"
+lbres@PrintNum = "22"
+      add_labelbar(wks,contour_object,3,font_height,"contour",lbar_on,lbres)
     end if
-    if(new_lbar_on)
-      fix_labelbar(contour_object,font_height,cnres)
+    if(use_mgr_lbar)
+      fix_labelbar(contour_object,font_height,lbar_on,cnres)
     end if
   
 ; Set up three subtitles at top, if they exist.
@@ -13917,16 +14017,14 @@ end
 ;***********************************************************************;
 undef("gsn_csm_vector")
 function gsn_csm_vector(wks:graphic,u[*][*]:numeric,v[*][*],resources:logical)
-local res, vector_object, res2, xfontf, yfontf, font_height, old_lbar_on, \
+local res, vector_object, res2, xfontf, yfontf, font_height, use_old_lbar, \
 calldraw, callframe, left_string, center_string, right_string, \
 main_zone, unew, vnew
 begin
-
 ; Initialize.
-    old_lbar_on   = False     ; Labelbar flag
-    new_lbar_on   = False     ; Labelbar flag
     main_zone     = 2         ; Zone for main title (may change later)
     res2          = get_resources(resources)
+
 ;
 ; Write data and plot resource information to a file so we can 
 ; reconstruct plot if desired, without all the computational
@@ -13984,20 +14082,22 @@ begin
 ; Use coordinate variables for X and/or Y if they exist.
 
     check_for_coord_arrays(unew,res2,"vector")
-;
-; Turn on a labelbar if fill is True and if the labelbar is not
-; explicitly being turned off.
-;
-    if(check_attr(res2,"vcMonoLineArrowColor",False,False).and.\
-       (.not.isatt(res2,"lbLabelBarOn").or.\
-        check_attr(res2,"lbLabelBarOn",True,False)))
-      old_lbar_on = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-      new_lbar_on = .not.old_lbar_on
-      if(new_lbar_on) then
-        set_labelbar_res(res2,"vector")
-     end if
+
+;---Labelbar stuff
+    if(check_attr(res2,"vcMonoLineArrowColor",False,False)) then
+      lbar_on = get_res_value(res2,"lbLabelBarOn",True)
+      use_old_lbar = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+      use_mgr_lbar = .not.use_old_lbar
+      if(lbar_on) then
+        if(use_mgr_lbar) then
+          set_labelbar_res(res2,"vector")
+        end if
+      end if
+    else
+      lbar_on = get_res_value(res2,"lbLabelBarOn",False)
+      use_old_lbar   = False
+      use_mgr_lbar   = False
     end if
-    delete_attr(res2,"lbLabelBarOn")
 
     res2          = True
     res2@gsnDraw  = False     ; Internally, don't draw plot or advance
@@ -14065,14 +14165,15 @@ begin
                                    major_length,minor_length,point_outward)
     end if
 
-; Create a labelbar.
-
-    if(old_lbar_on)
+; Create a labelbar or fix an existing one.
+    if(use_old_lbar)
       lbres = get_res_eq(res2,(/"lb","pm"/))
-      add_labelbar(wks,vector_object,3,font_height,"vector",lbres)
+lbres@CallingFrom = "gsn_csm_vector"
+lbres@PrintNum = "23"
+      add_labelbar(wks,vector_object,3,font_height,"vector",lbar_on,lbres)
     end if
-    if(new_lbar_on)
-      fix_labelbar(vector_object,font_height,vcres)
+    if(use_mgr_lbar)
+      fix_labelbar(vector_object,font_height,lbar_on,vcres)
     end if
   
 ; Set up three subtitles at top, if they exist.
@@ -14234,14 +14335,12 @@ function gsn_csm_streamline(wks:graphic,u[*][*]:numeric,v[*][*],\
                             resources:logical)
 local res, stream_object, res2, xfontf, yfontf, font_height, \
 calldraw, callframe, left_string, center_string, right_string, \
-main_zone, unew, vnew, old_lbar_on
+main_zone, unew, vnew, use_old_lbar
 begin
-
 ; Initialize.
-    old_lbar_on   = False     ; Labelbar flag
-    new_lbar_on   = False
     main_zone     = 2         ; Zone for main title (may change later)
     res2          = get_resources(resources)
+
 ;
 ; Write data and plot resource information to a file so we can 
 ; reconstruct plot if desired, without all the computational
@@ -14297,20 +14396,22 @@ begin
 ; Use coordinate variables for X and/or Y if they exist.
 
     check_for_coord_arrays(unew,res2,"vector")
-;
-; Turn on a labelbar if fill is True and if the labelbar is not
-; explicitly being turned off.
-;
-    if(check_attr(res2,"stMonoLineColor",False,False).and.\
-       (.not.isatt(res2,"lbLabelBarOn").or.\
-        check_attr(res2,"lbLabelBarOn",True,False)))
-      old_lbar_on = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
-      new_lbar_on = .not.old_lbar_on
-      if(new_lbar_on) then
-        set_labelbar_res(res2,"streamline")
-     end if
+
+;---Labelbar stuff
+    if(check_attr(res2,"stMonoLineColor",False,False))
+      lbar_on = get_res_value(res2,"lbLabelBarOn",True)
+      use_old_lbar = get_res_value(res2,"gsnOldLabelBar",GSN_OLD_LABELBAR)
+      use_mgr_lbar = .not.use_old_lbar
+      if(lbar_on)
+        if(use_mgr_lbar) then
+          set_labelbar_res(res2,"streamline")
+        end if
+      end if
+    else
+      lbar_on = get_res_value(res2,"lbLabelBarOn",False)
+      use_old_lbar   = False
+      use_mgr_lbar   = False
     end if
-    delete_attr(res2,"lbLabelBarOn")
 
     res2          = True
     res2@gsnDraw  = False     ; Internally, don't draw plot or advance
@@ -14387,14 +14488,15 @@ begin
     add_subtitles(wks,stream_object,left_string,center_string,\
                   right_string,subres)
 
-; Create a labelbar.
-
-    if(old_lbar_on)
+; Create a labelbar or fix an existing one.
+    if(use_old_lbar)
       lbres = get_res_eq(res2,(/"lb","pm"/))
-      add_labelbar(wks,stream_object,3,font_height,"streamline",lbres)
+lbres@CallingFrom = "gsn_csm_streamline"
+lbres@PrintNum = "24"
+      add_labelbar(wks,stream_object,3,font_height,"streamline",lbar_on,lbres)
     end if
-    if(new_lbar_on)
-      fix_labelbar(stream_object,font_height,stres)
+    if(use_mgr_lbar)
+      fix_labelbar(stream_object,font_height,lbar_on,stres)
     end if
 
 ; Draw all this stuff: streamline plot and subtitles.

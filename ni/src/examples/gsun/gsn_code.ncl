@@ -1397,9 +1397,9 @@ end
 ; This function is for gsn_panel, to help it determine which plot info  ;
 ; to use to construct a labelbar.                                       ;
 ;                                                                       ;
-; In a future release of NCL (> 6.1.0), we hope to make the PlotManager ;
-; the default labelbar, so we added some checks to this code for        ; 
-; pmLabelBarDisplayMode being equal to 1 ("Always").                    ;
+; In a future release of NCL we hope to make the PlotManager the        ;
+; default labelbar, so we added some checks to this code for            ; 
+; pmLabelBarDisplayMode being equal to "Always".                        ;
 ;***********************************************************************;
 undef("get_plot_labelbar")
 function get_plot_labelbar(plot:graphic)
@@ -1463,10 +1463,6 @@ begin
       end if
     end if
     if(id_class.eq."vectorPlotClass") then
-;
-;  Glyph styles:
-     ; 0 = linearrow, 1 = fillarrow, 2 = windbarb, 3 = curlyvector
-;
       getvalues ids(i)
         "vcGlyphStyle"             : vc_glyphstyle
         "vcMonoFillArrowFillColor" : vc_monofillarrowfillcolor
@@ -2987,15 +2983,9 @@ end
 ; perimeter is turned off, and the fill patterns are set to solid.      ;
 ;                                                                       ;
 ; "EndStyle" is a special internal resource that comes from the         ;
-; cnLabelBarEndStyle resource. It defaults to IncludeOuterBoxes, and can;
-; be set to IncludeMinMaxLabels) or ExcludeOuterBoxes. The assumption is;
-; that if this resource is set to ExcludeOuterBoxes, then the nbox,     ;
-; colors, and labels that are input are set up expecting one more box   ;
-; than you have labels (i.e. you are expecting to label the interior    ;
-; edges only). If set to 2, then the assumption is that the labels      ;
-; already contain the min/max values, and you have the correct nbox     ;
-; and colors.                                                           ;
-;                                                                       ;
+; cnLabelBarEndStyle resource. Since there is no specific EndStyle      ;
+; resource for labelbar objects, we may have to subset the colors and   ;
+; the labels to account for this. This is what "SubsetStuff" is for.    ;
 ;***********************************************************************;
 undef("create_labelbar")
 function create_labelbar(wks:graphic, nbox:integer, colors, labels, \
@@ -3014,7 +3004,9 @@ begin
   perim_on      = get_res_value(lbres,"lbPerimOn",False)
   font_height   = get_res_value(lbres,"lbLabelFontHeightF",0.1)
   mono_fill_pat = get_res_value(lbres,"lbMonoFillPattern",True);
+  subset_stuff  = get_res_value(lbres,"SubsetStuff",False)
 
+  ncolors = dimsizes(colors)
   if(isatt(lbres,"EndStyle")) then
     end_style = get_res_value(lbres,"EndStyle",get_enum_value("IncludeOuterBoxes"))
     if(.not.any(end_style.eq.(/get_enum_value("IncludeOuterBoxes"),\
@@ -3023,16 +3015,25 @@ begin
       end_style = get_enum_value("IncludeOuterBoxes")
     end if
     if(end_style.eq.get_enum_value("ExcludeOuterBoxes")) then
-      nbox2       = nbox-2
-      new_colors  = get_res_value(lbres,"lbFillColors",colors(1:))
       label_align = get_res_value(lbres,"lbLabelAlignment","ExternalEdges")
+      if(subset_stuff) then
+        nbox2       = nbox-2
+        new_colors  = get_res_value(lbres,"lbFillColors",colors(1:ncolors-2))
+;;        if(label_align.eq.get_enum_value("InteriorEdges"))
+;;          tmp_labels = new_labels(1:)
+;;          delete(new_labels)
+;;          new_labels = tmp_labels
+;;        end if
+      else
+        nbox2       = nbox
+        new_colors  = get_res_value(lbres,"lbFillColors",colors)
+      end if
     else
       nbox2       = nbox
       new_colors  = get_res_value(lbres,"lbFillColors",colors)
       if(end_style.eq.get_enum_value("IncludeOuterBoxes")) then
         label_align = get_res_value(lbres,"lbLabelAlignment","InteriorEdges")
-      else
-; IncludeMinMaxLabels
+      else ; IncludeMinMaxLabels
         label_align = get_res_value(lbres,"lbLabelAlignment","ExternalEdges")
       end if
     end if
@@ -5935,6 +5936,205 @@ begin
   end if
 end
 
+;----------------------------------------------------------------------
+; Retrieve resource needed to determine the end style for a 
+; labelbar. This resource is only available for contour plots, so
+; we have to default it to "IncludeOuterBoxes" for other plot types.
+;----------------------------------------------------------------------
+undef("get_lbar_end_style")
+function get_lbar_end_style(plot[1]:graphic)
+begin
+  if(plot@plot_type.eq."contour") then
+    getvalues plot
+      "cnLabelBarEndStyle" : end_style
+    end getvalues
+  else
+    end_style = get_enum_value("IncludeOuterBoxes")
+  end if
+  return(end_style)
+end
+
+;----------------------------------------------------------------------
+; Retrieve resource values from a labelbar object so we can construct
+; a new labelbar object for a panel plot.
+;----------------------------------------------------------------------
+undef("get_panel_labelbar_info_from_lbar")
+function get_panel_labelbar_info_from_lbar(plot[1]:graphic,\
+                                           lbar_object[1]:graphic)
+local subset_stuff
+begin
+  panel_labelbar = True
+  getvalues lbar_object
+    "lbMonoFillColor" : mono_fill_color
+    "lbMonoFillPattern" : mono_fill_pattern
+    "lbFillPatterns" : fill_patterns
+    "lbMonoFillScale" : mono_fill_scale
+    "lbFillScales" : fill_scales
+    "lbBoxEndCapStyle" : cap_style
+    "lbLabelStrings" : label_strings
+    "lbLabelAlignment"  : label_alignment
+    "lbFillColors" : fill_colors
+  end getvalues
+  end_style = get_lbar_end_style(plot)
+  
+  subset_stuff = False
+  return([/panel_labelbar,label_strings,fill_colors,fill_patterns,\
+           fill_scales,mono_fill_color,mono_fill_pattern,mono_fill_scale,\
+           end_style,cap_style,label_alignment,subset_stuff/])
+end
+
+;----------------------------------------------------------------------
+; Retrieve resource values from a plot object so we can construct
+; a new labelbar object for a panel plot.  Unfortunately, we can't
+; allow a cnLabelBarEndStyle of IncludeMinMaxLabels, because we
+; don't have an easy way to reconstruct the min/max labels from the
+; plot object.
+;----------------------------------------------------------------------
+undef("get_panel_labelbar_info_from_plot")
+function get_panel_labelbar_info_from_plot(plot[1]:graphic)
+local end_style,cap_style,fill_on,colors,fill_on,fill_patterns,\
+fill_scales,mono_fill_pat,mono_fill_scl,mono_fill_col,levels,gstyle,\
+fill_arrows_on,mono_line_color,mono_fill_arrow,mono_wind_barb,colors,\
+levels,tmp_levels,nlevels,dmin,dmax, data_id, subset_stuff
+begin
+
+;---Set these defaults just in case
+  end_style   = get_enum_value("IncludeOuterBoxes")
+  cap_style   = get_enum_value("RectangleEnds")
+  label_align = get_enum_value("InteriorEdges")
+
+  panel_labelbar = True
+  if(plot@plot_type.eq."contour") then
+    getvalues plot
+      "cnFillOn" : fill_on
+    end getvalues
+    if(fill_on) then
+      getvalues plot
+        "cnFillColors"       : colors
+        "cnFillPatterns"     : fill_patterns
+        "cnFillScales"       : fill_scales
+        "cnMonoFillPattern"  : mono_fill_pat
+        "cnMonoFillScale"    : mono_fill_scl
+        "cnMonoFillColor"    : mono_fill_col
+        "cnLevels"           : tmp_levels
+        "cnLabelBarEndStyle" : end_style
+        "lbBoxEndCapStyle"   : cap_style
+        "lbLabelAlignment"   : label_align
+        "lbLabelStrings"     : label_strings
+      end getvalues
+      if(end_style.eq.get_enum_value("IncludeMinMaxLabels")) then
+        getvalues plot
+          "cnScalarFieldData" : data_id    
+        end getvalues
+        getvalues data_id
+          "sfDataMinV" : dmin
+          "sfDataMaxV" : dmax
+        end getvalues
+        nlevels = dimsizes(tmp_levels)
+        levels = new(nlevels+2,typeof(tmp_levels))
+        levels(0)         = dmin  
+        levels(1:nlevels) = tmp_levels
+        levels(nlevels+1) = dmax
+      else
+        levels = tmp_levels
+      end if
+    else
+      panel_labelbar = False
+    end if
+  end if
+  if(plot@plot_type.eq."vector") then
+    getvalues plot
+      "vcGlyphStyle"             : gstyle
+      "vcFillArrowsOn"           : fill_arrows_on
+      "vcMonoLineArrowColor"     : mono_line_color
+      "vcMonoFillArrowFillColor" : mono_fill_arrow
+      "vcMonoWindBarbColor"      : mono_wind_barb
+    end getvalues
+    if(    (fill_arrows_on .and. .not.mono_fill_arrow) .or. \
+      (.not.fill_arrows_on .and. .not.mono_line_color) .or. \
+      (gstyle.eq.get_enum_value("FillArrow") .and. .not.mono_fill_arrow) .or. \
+      (gstyle.eq.get_enum_value("WindBarb") .and. .not.mono_wind_barb) .or. \
+      (gstyle.eq.get_enum_value("LineArrow") .or. get_enum_value("CurlyVector")) .and. \
+        .not.mono_line_color) then
+;---There are no fill patterns in VectorPlot, only solids.
+      mono_fill_pat = True
+      mono_fill_scl = True
+      mono_fill_col = False
+      fill_scales = -1
+      getvalues plot
+        "vcLevels"         : levels
+        "vcLevelColors"    : colors
+        "lbBoxEndCapStyle" : cap_style
+        "lbLabelAlignment" : label_align
+        "lbLabelStrings"   : label_strings
+      end getvalues
+    else
+      panel_labelbar = False
+    end if
+  else if(plot@plot_type.eq."streamline") then
+    getvalues plot
+      "stMonoLineColor"  : mono_line_color
+    end getvalues
+    if(.not.mono_line_color) then
+;---There are no fill patterns in StreamlinePlot, only solids.
+      mono_fill_pat = True
+      mono_fill_scl = True
+      mono_fill_col = False
+      getvalues plot
+        "stLevels"         : levels
+        "stLevelColors"    : colors
+        "lbBoxEndCapStyle" : cap_style
+        "lbLabelAlignment" : label_align
+        "lbLabelStrings"   : label_strings
+      end getvalues
+    else
+      panel_labelbar = False
+    end if
+  else
+  end if
+  end if
+  if(.not.isvar("fill_scales")) then
+    fill_scales = -1
+  end if
+  if(.not.isvar("fill_patterns")) then
+    fill_patterns = -1
+  end if
+
+;
+; There's no lb resource equivalent for removing the end boxes 
+; from a contour label bar (cnLabelBarEndStyle = ExcludeOuterBoxes),
+; so we have to set a flag that will be used by the create_labelbar
+; routine, telling it to remove the first and last colors.
+;
+  subset_stuff = True
+  return([/panel_labelbar,label_strings,colors,fill_patterns,fill_scales,\
+           mono_fill_col,mono_fill_pat,mono_fill_scl,end_style,cap_style,\
+           label_align,subset_stuff/])
+end
+
+;----------------------------------------------------------------------
+; Determine if we have to retrieve the labelbar information from
+; a plot, or from a labelbar added as an annotation, and then call
+; the appropriate function to get the necessary information to 
+; reconstruct the labelbar from scratch.
+;----------------------------------------------------------------------
+undef("get_panel_labelbar_info")
+function get_panel_labelbar_info(plot[1]:graphic)
+local pm_annos, class_name, ilab
+begin
+  getvalues plot
+    "pmAnnoViews" : pm_annos
+  end getvalues
+  class_names = NhlClassName(pm_annos)
+  ilab = ind(class_names.eq."labelBarClass")
+  if(.not.all(ismissing(ilab))) then
+    lbar_list = get_panel_labelbar_info_from_lbar(plot,pm_annos(ilab))
+  else
+    lbar_list = get_panel_labelbar_info_from_plot(plot)
+  end if
+  return(lbar_list)
+end
+
 ;***********************************************************************;
 ; Procedure : gsn_panel                                                 ;
 ;                 wks: workstation object                               ;
@@ -5969,6 +6169,12 @@ end
 ;   gsnPanelSave                                                        ;
 ;   gsnDraw                                                             ;
 ;                                                                       ;
+; Added in V6.4.0 to replace txStringXXX:                               ;
+;    gsnPanelMainString                                                 ;
+;    gsnPanelMainStringFontHeightF                                      ;
+;    gsnPanelMainPosYF / gsnPanelMainPosXF                              ;
+;    Other gsnPanelMainXXXX resources                                   ;  
+;                                                                       ;
 ;***********************************************************************;
 undef("gsn_panel_return")
 function gsn_panel_return(wks:graphic,plot[*]:graphic,dims[*]:integer,\
@@ -5980,7 +6186,8 @@ begin
 ;
 ; First check if paneling is to be specified by (#rows x #columns) or
 ; by #columns per row.  The default is rows x columns, unless 
-; resource gsnPanelRowSpec is set to True
+; resource gsnPanelRowSpec is set to True, in which case "dims"
+; will represent number of plots per row.
 ; 
   is_row_spec = get_res_value(res,"gsnPanelRowSpec",False)
 ;
@@ -5994,14 +6201,14 @@ begin
     ncols = max(row_spec)
     do i=0,nrows-1
       if(row_spec(i).lt.0)
-        print("Error: gsn_panel: you have specified a negative value for the number of plots in a row.")
+        print("gsn_panel: Error: you have specified a negative value for the number of plots in a row.")
         exit
       end if
       npanels = npanels + row_spec(i)
     end do
   else
     if(ddims.ne.2)
-      print("Error: gsn_panel: for the third argument of gsn_panel, you must either specify # rows by # columns or set gsnPanelRowSpec to True and set the number of plots per row.")
+      print("gsn_panel: Error: for the third argument of gsn_panel, you must either specify # rows by # columns or set gsnPanelRowSpec to True and set the number of plots per row.")
       exit
     end if
     nrows    = dims(0)
@@ -6014,7 +6221,7 @@ begin
   nplots  = dimsizes(plot)      ; Total number of plots.
 
   if(nplots.gt.npanels)
-    print("Warning: gsn_panel: you have more plots than you have panels.")
+    print("gsn_panel: warning: you have more plots than you have panels.")
     print("Only " + npanels + " plots will be drawn.")
     nplots = npanels
   end if
@@ -6072,7 +6279,8 @@ begin
   end if
 ;
 ; Calculate number of plot objects that will actually be drawn.
-; (Panel plots plus labelbar and main string, if any.)
+; This include the panel plots, the labelbar (if any), and 
+; main string (if any).
 ;
   nnewplots = nplots
   if(panel_labelbar) then
@@ -6128,63 +6336,66 @@ begin
 ; they are valid.
 ;
   if(xwsp_perc.lt.0.or.xwsp_perc.ge.100.)
-    print("Warning: gsn_panel: attribute gsnPanelXWhiteSpacePercent must be >= 0 and < 100.")
+    print("gsn_panel: Warning: attribute gsnPanelXWhiteSpacePercent must be >= 0 and < 100.")
     print("Defaulting to 1.")
     xwsp_perc = 1.
   end if
 
   if(ywsp_perc.lt.0.or.ywsp_perc.ge.100.)
-    print("Warning: gsn_panel: attribute gsnPanelYWhiteSpacePercent must be >= 0 and < 100.")
+    print("gsn_panel: Warning: attribute gsnPanelYWhiteSpacePercent must be >= 0 and < 100.")
     print("Defaulting to 1.")
     ywsp_perc = 1.
   end if
 
   if(x_lft.lt.0..or.x_lft.ge.1.)
-    print("Warning: gsn_panel: attribute gsnPanelLeft must be >= 0.0 and < 1.0")
+    print("gsn_panel: Warning: attribute gsnPanelLeft must be >= 0.0 and < 1.0")
     print("Defaulting to 0.")
     x_lft = 0.0
   end if
 
   if(x_rgt.le.0..or.x_rgt.gt.1.)
-    print("Warning: gsn_panel: attribute gsnPanelRight must be > 0.0 and <= 1.0")
+    print("gsn_panel: Warning: attribute gsnPanelRight must be > 0.0 and <= 1.0")
     print("Defaulting to 1.")
     x_rgt = 1.0
   end if
 
   if(y_top.le.0..or.y_top.gt.1.)
-    print("Warning: gsn_panel: attribute gsnPanelTop must be > 0.0 and <= 1.0")
+    print("gsn_panel: Warning: attribute gsnPanelTop must be > 0.0 and <= 1.0")
     print("Defaulting to 1.")
     y_top = 1.0
   end if
 
   if(y_bot.lt.0..or.y_bot.ge.1.)
-    print("Warning: gsn_panel: attribute gsnPanelBottom must be >= 0.0 and < 1.0")
+    print("gsn_panel: Warning: attribute gsnPanelBottom must be >= 0.0 and < 1.0")
     print("Defaulting to 0.")
     y_bot = 0.0
   end if
 
   if(x_rgt.le.x_lft)
-    print("Error: gsn_panel: attribute gsnPanelRight ("+x_rgt+") must be greater")
+    print("gsn_panel: Error: attribute gsnPanelRight ("+x_rgt+") must be greater")
     print("than gsnPanelLeft ("+x_lft+").")
     exit
   end if
 
   if(y_top.le.y_bot)
-    print("Error: gsn_panel: attribute gsnPanelTop ("+y_top+") must be greater")
+    print("gsn_panel: Error: attribute gsnPanelTop ("+y_top+") must be greater")
     print("than gsnPanelBottom ("+y_bot+").")
     exit
   end if
 
 ;
+; Get the plot object id that we will use to determine the scale factor
+; for resizing all of the plots. If gsnPanelScalePlotId was set
+; (panel_id), then use this. Otherwise, we will start at the first
+; plot and keep going until we find a "valid" (non missing) plot.
+;
 ; We assume all plots are the same size, so if we get the size of
 ; one of them, then this should represent the size of the rest
-; of them.  Also, count the number of non-missing plots for later.
-; Since some of the plots might be missing, grab the first one that
-; isn't, and use this one to determine plot size.
+; of them. Also, count the number of non-missing plots for later.
 ;
   ind_nomsg = ind(.not.ismissing(plot(0:nplots-1)))
   if(all(ismissing(ind_nomsg))) then
-    print("Error: gsn_panel: all of the plots passed to gsn_panel appear to be invalid")
+    print("gsn_panel: Error: all of the plots passed to gsn_panel appear to be invalid")
     exit
   end if
   if(panel_plotid.ge.0.and.panel_plotid.le.(nplots-1).and. \
@@ -6208,14 +6419,15 @@ begin
 
 ;
 ; Get the type of plots we have. "plot" can be a map, in which case
-; the vector or contour plot overlaid on it will be indicated
-; by "plot@contour" or "plot@vector"
+; the contour, vector, streamine plot overlaid on it will be indicated
+; by an attribute, for example, "plot@contour" or "plot@vector".
 ;
   new_plot     = get_plot_not_loglin(plot(valid_plot))
   new_plot_lab = get_plot_labelbar(plot(valid_plot))
-
 ;
-; Get the font height.
+; Get the font height of a particular plot element, so we can
+; use this for panel plot elements, like the size of the 
+; common labelbar labels, the main title, etc.
 ;
   if(is_figure_strings.or.panel_labelbar) then
     if(new_plot@plot_type.eq."contour") then
@@ -6224,7 +6436,7 @@ begin
       end getvalues
     else if(new_plot@plot_type.eq."vector") then
       getvalues new_plot
-        "vcRefAnnoFontHeightF"     : font_height
+        "vcRefAnnoFontHeightF" : font_height
       end getvalues
     else if(new_plot@plot_type.eq."xy") then
       getvalues new_plot
@@ -6239,104 +6451,40 @@ begin
       font_height = 0.01
     else
       font_height = 0.01
-;; Commented this out because it is annoying.
-;;      if((is_figure_strings.and. \
-;;          .not.isatt(res,"gsnPanelFigureStringsFontHeightF"))) then
-;;        print("Warning: gsn_panel: unrecognized plot type.")
-;;        print("Unable to get information for various font heights.")
-;;        print("Make sure your font heights look okay.")
-;;        print("Set gsnPanelFigureStringsFontHeightF resource to control figure strings font height.")
-;;      end if
     end if
     end if
     end if
     end if
 ;
-; Use this font height for the panel strings, if any, unless the user
-; has set gsnPanelFigureStringsFontHeightF.
+; Use this font height for the panel figure strings, if any, unless
+; the user has set gsnPanelFigureStringsFontHeightF.
 ;
     pfont_height = get_res_value(res,"gsnPanelFigureStringsFontHeightF",\
                                  font_height)
   end if
-;
-; Get labelbar info.
-;
+
+;---Get information needed for reconstructing a labelbar from scratch.
   if(panel_labelbar) then
-;
-; The cnLabelBarEndStyle resource is only available with contour 
-; plots, and it is IncludeOuterBoxes by default. We need to check
-; if it is IncludeMinMaxLabels or ExcludeOuterBoxes and do
-; the appropriate thing.
-;
-    end_style = get_enum_value("IncludeOuterBoxes")
-    if(new_plot_lab@plot_type.eq."contour") then
-      getvalues new_plot_lab
-        "cnFillOn" : fill_on
-      end getvalues
-      if(fill_on) then
-        getvalues new_plot_lab
-          "cnFillColors"      : colors
-          "cnFillPatterns"    : fill_patterns
-          "cnFillScales"      : fill_scales
-          "cnMonoFillPattern" : mono_fill_pat
-          "cnMonoFillScale"   : mono_fill_scl
-          "cnMonoFillColor"   : mono_fill_col
-          "cnLevels"          : levels
-          "cnLabelBarEndStyle" : end_style
-        end getvalues
-      else
-        panel_labelbar = False
-      end if
-    else if(new_plot_lab@plot_type.eq."vector") then
-      getvalues new_plot_lab
-        "vcGlyphStyle"             : gstyle
-        "vcFillArrowsOn"           : fill_arrows_on
-        "vcMonoLineArrowColor"     : mono_line_color
-        "vcMonoFillArrowFillColor" : mono_fill_arrow
-        "vcMonoWindBarbColor"      : mono_wind_barb
-      end getvalues
-      if(    (fill_arrows_on .and. .not.mono_fill_arrow) .or. \
-        (.not.fill_arrows_on .and. .not.mono_line_color) .or. \
-        (gstyle.eq.get_enum_value("FillArrow") .and. .not.mono_fill_arrow) .or. \
-        (gstyle.eq.get_enum_value("WindBarb") .and. .not.mono_wind_barb) .or. \
-        (gstyle.eq.get_enum_value("LineArrow") .or. get_enum_value("CurlyVector")) .and. \
-          .not.mono_line_color) then
-;---There are no fill patterns in VectorPlot, only solids.
-        mono_fill_pat = True
-        mono_fill_scl = True
-        mono_fill_col = False
-        getvalues new_plot_lab
-          "vcLevels"      : levels
-          "vcLevelColors" : colors
-        end getvalues
-      else
-        panel_labelbar = False
-      end if
-    else if(new_plot_lab@plot_type.eq."streamline") then
-      getvalues new_plot_lab
-        "stMonoLineColor" : mono_line_color
-      end getvalues
-      if(.not.mono_line_color) then
-;---There are no fill patterns in StreamlinePlot, only solids.
-        mono_fill_pat = True
-        mono_fill_scl = True
-        mono_fill_col = False
-        getvalues new_plot_lab
-          "stLevels"      : levels
-          "stLevelColors" : colors
-        end getvalues
-      else
-        panel_labelbar = False
-      end if
-    else
-      if(.not.isatt(res,"lbLabelFontHeightF")) then
-        print("Set lbLabelFontHeightF resource to control labelbar font heights.")
-      end if
-    end if
-    end if
-    end if
+    lbar_list = get_panel_labelbar_info(new_plot_lab)
+    panel_labelbar = lbar_list[0]
+    lb_label_strings = lbar_list[1]
+    lb_fill_colors = lbar_list[2]
+    lb_fill_patterns = lbar_list[3]
+    lb_fill_scales = lbar_list[4]
+    lb_mono_fill_color = lbar_list[5]
+    lb_mono_fill_pattern = lbar_list[6]
+    lb_mono_fill_scale = lbar_list[7]
+    lb_end_style = lbar_list[8]
+    lb_cap_style = lbar_list[9]
+    lb_label_alignment = lbar_list[10]
+    lb_subset_stuff = lbar_list[11]
   end if
 
+;
+; This section calculates the scale factor needed to rescale the 
+; plots so they fit on one page.  It has to account for white 
+; space between each plot, and space for the labelbar and main title, 
+; if any.
 ;
 ; plot_width  : total width of plot with all of its annotations
 ; plot_height : total height of plot with all of its annotations
@@ -6353,7 +6501,7 @@ begin
   total_height = 2.*ywsp + plot_height  ; with white space added.
 ;
 ; If we are putting a global labelbar at the bottom (right), make 
-; it 2/10 the height (width) of the plot.
+; it 0.2x the height (width) of the plot.
 ;
   lbhor = True
   if(panel_labelbar) then
@@ -6405,8 +6553,7 @@ begin
 ;
 ; Previously, we used to include xrange and yrange as part of the min
 ; statement. This seemed to cause problems if you set one of
-; gsnPanelTop/Bottom/Right/Left however, so I removed it.  Initial
-; testing on Sylvia's panel examples seems to indicate this is okay.
+; gsnPanelTop/Bottom/Right/Left however, so I removed it.
 ;
     row_scale = yrange/(nrows*total_height+labelbar_height)
     col_scale = xrange/(ncols*total_width)
@@ -6452,10 +6599,7 @@ begin
 
   ypos = y_top - ywsp - dyt -(ysp/2.+new_total_height*ispan(0,nrows-1,1))
 
-  delete(top)
-  delete(bottom)
-  delete(right)
-  delete(left)
+  delete([/top,bottom,right,left/])
 ;
 ; If we have figure strings, then determine white spacing around 
 ; the text box.
@@ -6649,16 +6793,10 @@ begin
   scaled_width  = scale*max(old_vp(:,2))
   scaled_height = scale*max(old_vp(:,3))
 ;
-; Check if a labelbar is to be drawn at the bottom.
+; Check if a labelbar is to be drawn.
 ;
   if(panel_labelbar) then
-    if(end_style.eq.get_enum_value("IncludeOuterBoxes").or.\
-       end_style.eq.get_enum_value("ExcludeOuterBoxes")) then
-      lbres@EndStyle = end_style
-    else
-      lbres@EndStyle = get_enum_value("IncludeOuterBoxes")
-      print("Warning: gsn_panel: this routine only supports a cnLabelBarEndStyle that is set to 'IncludeOuterBoxes' or 'ExcludeOuterBoxes'")
-    end if
+    lbres@EndStyle = lb_end_style
 ;
 ; If plot type is unknown or xy, then we can't get labelbar information.
 ;
@@ -6716,27 +6854,30 @@ begin
 ; Check if we want different fill patterns or fill scales.  If so, we
 ; have to pass these on to the labelbar.
 ;
-      set_attr(lbres,"lbMonoFillColor",mono_fill_col)
-      if(.not.mono_fill_pat)
+      set_attr(lbres,"lbMonoFillColor",lb_mono_fill_color)
+      if(.not.lb_mono_fill_pattern)
         set_attr(lbres,"lbMonoFillPattern", False)
-        set_attr(lbres,"lbFillPatterns",    fill_patterns)
+        set_attr(lbres,"lbFillPatterns", lb_fill_patterns)
       end if
-      if(.not.mono_fill_scl)
+      if(.not.lb_mono_fill_scale)
         set_attr(lbres,"lbMonoFillScale", False)
-        set_attr(lbres,"lbFillScales",    fill_scales)
+        set_attr(lbres,"lbFillScales", lb_fill_scales)
       end if
-;
-; Create the labelbar.  First check the levels to make sure that a
-; contour level with a value like 1e-8 is not really supposed to be
-; a value of 0.
-;
-      levels = fix_zero_contour(levels)
+      if(isvar("lb_cap_style"))
+        set_attr(lbres,"lbBoxEndCapStyle",lb_cap_style)
+      end if
+      set_attr(lbres,"lbLabelAlignment",lb_label_alignment)
+;      if(isvar("lb_levels"))
+;        lb_label_strings = fix_zero_contour(lb_levels)   ; Make sure level 0 is not something like 1e-8
+;      end if
+      lbres@SubsetStuff = lb_subset_stuff
 
-      newplots(nplot) = create_labelbar(wks,dimsizes(colors),colors, \
-                                        levels,lbres)
+;---Create the labelbar.
+      newplots(nplot) = create_labelbar(wks,dimsizes(lb_fill_colors),lb_fill_colors, \
+                                        lb_label_strings,lbres)
       nplot = nplot + 1
     else
-       print("Warning: gsn_panel: unrecognized plot type for getting labelbar information. Ignoring labelbar request.")
+       print("gsn_panel: Warning: unrecognized plot type for getting labelbar information. Ignoring labelbar request.")
     end if
   end if
 ;
@@ -6746,7 +6887,6 @@ begin
     y_top     = min((/y_top,max_top/))
     main_ypos = get_res_value_keep(res,(/"gsnPanelMainPosYF","txPosYF"/),y_top + 0.03)
     main_xpos = get_res_value_keep(res,(/"gsnPanelMainPosXF","txPosXF"/),0.5)
-
     if(panel_debug) 
       print("-------Panel title values-------")
       print("    title                = " + main_string)
@@ -6755,7 +6895,7 @@ begin
     end if
 
     if((main_ypos+main_font_hgt).gt.1)
-       print("Warning: gsn_panel: font height (" + main_font_hgt + ") of main string is too large to fit in space provided. Either decrease font size or set gsnPanelTop.")
+       print("gsn_panel: Warning: font height (" + main_font_hgt + ") of main string is too large to fit in space provided. Either decrease font size or set gsnPanelTop.")
     end if
 
 ;
