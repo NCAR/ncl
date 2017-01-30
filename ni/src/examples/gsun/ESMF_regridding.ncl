@@ -2774,7 +2774,7 @@ begin
   end if
 
 ;---Check ESMF_RegridWeightGen version.
-  ESMF_MAJOR_VERSION = toint(systemfunc(ESMF_exec + " --version | grep MAJOR | awk '{print $2}'"))
+  ESMF_MAJOR_VERSION = toint(systemfunc(path_to_ESMF + " --version | grep MAJOR | awk '{print $2}'"))
 
 ;---Check for options
   PrintTimings   = isatt_logical_true(opt2,"PrintTimings")
