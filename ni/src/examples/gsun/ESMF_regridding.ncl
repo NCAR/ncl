@@ -14,6 +14,13 @@
 ; This script was added to the NCL trunk on 13 Oct 2011.
 ;
 ;    Important modifications:
+;       22 Dec 2016:
+;           Added check to ensure ESMF_RegridWeightGen can be executed.
+;           Added version detection for ESMF_RegridWeightGen.
+;           Added --ignore_degenerate flag to ESMF_RegridWeightGen for ESMF
+;           >=7.0.0 to match functionality with older versions.
+;           Added --src_loc and --dst_loc flags to ESMF_RegridWeightGen to
+;           further ensure compatibility with old and new versions of ESMF.
 ;       27 Apr 2015:
 ;           Added unadvertised ElementVertices, so that user can input own 
 ;           element vertices mesh when regridding unstructured data.
@@ -2716,7 +2723,8 @@ end
 undef("ESMF_regrid_gen_weights")
 procedure ESMF_regrid_gen_weights(srcGridFile[1]:string, dstGridFile[1]:string, \
                            wgtFile[1]:string, opt[1]:logical)
-local DEBUG, NumProc, Executer, ESMFCMD, ESMF_exec, interp_method, pole, opt
+local DEBUG, NumProc, Executer, ESMFCMD, ESMF_exec, interp_method, pole, opt, \
+      path_to_ESMF, ESMF_exec_exists, SRC_LOC, DST_LOC
 begin
   valid_interp_methods = (/"bilinear","patch","conserve", \
                            "nearestdtos","neareststod"/)
@@ -2751,6 +2759,23 @@ begin
 ;---Name of ESMF offline regridder
   ESMF_exec = "ESMF_RegridWeightGen"
 
+;---Check ESMFBINDIR
+  if (ismissing(getenv("ESMFBINDIR"))) then
+    path_to_ESMF = ESMF_exec
+  else
+    path_to_ESMF = getenv("ESMFBINDIR") + "/" + ESMF_exec
+  end if
+
+;---Check if ESMF_exec exists and can be executed
+  ESMF_exec_exists = systemfunc(path_to_ESMF + " --help >/dev/null 2>&1 && echo True || echo False")
+  if (ESMF_exec_exists.eq."False") then
+    print("ESMF_regrid_gen_weights: could not find " + ESMF_exec + " executable.")
+    exit
+  end if
+
+;---Check ESMF_RegridWeightGen version.
+  ESMF_MAJOR_VERSION = toint(systemfunc(path_to_ESMF + " --version | grep MAJOR | awk '{print $2}'"))
+
 ;---Check for options
   PrintTimings   = isatt_logical_true(opt2,"PrintTimings")
   if(PrintTimings) then
@@ -2769,10 +2794,17 @@ begin
   end if
 
 ;---Check if the source grid file is an ESMF file.
-  if (isatt_logical_true(opt2,"SrcESMF").and. \
-      .not.(is_ESMF(srcGridFile,True))) then
-    print("ESMF_regrid_gen_weights: invalid or missing ESMF source grid file.")
-    exit
+  SRC_LOC = ""
+  if (isatt_logical_true(opt2,"SrcESMF")) then
+    if (is_ESMF(srcGridFile,True)) then
+      if (ESMF_MAJOR_VERSION.ge.7) then
+        ;---Necessary flag for ESMF >=7.0.0
+        SRC_LOC = "--src_loc corner "
+      end if
+    else
+      print("ESMF_regrid_gen_weights: invalid or missing ESMF source grid file.")
+      exit
+    end if
   end if
 
 ;---Check if the destination grid file is a SCRIP file.
@@ -2783,10 +2815,17 @@ begin
   end if
 
 ;---Check if the destination grid file is a ESMF file.
-  if (isatt_logical_true(opt2,"DstESMF").and. \
-      .not.(is_ESMF(dstGridFile,True))) then
-    print("ESMF_regrid_gen_weights: invalid or missing ESMF destination grid file.")
-    exit
+  DST_LOC = ""
+  if (isatt_logical_true(opt2,"DstESMF")) then
+    if (is_ESMF(dstGridFile,True)) then
+      if (ESMF_MAJOR_VERSION.ge.7) then
+        ;---Necessary flag for ESMF >=7.0.0
+        DST_LOC = "--dst_loc corner "
+      end if
+    else
+      print("ESMF_regrid_gen_weights: invalid or missing ESMF destination grid file.")
+      exit
+    end if
   end if
 
 ;
@@ -2810,18 +2849,20 @@ begin
 ;---Check if the weight file already exists.
   check_for_file(wgtFile,opt2)
 
-;---Build the command (First Pass - non-optional features)
-  if (ismissing(getenv("ESMFBINDIR"))) then
-    ESMFCMD = Executer + ESMF_exec + " " \
-              + "--source " + srcGridFile \
-              + " --destination " + dstGridFile \
-              + " --weight "+ wgtFile
-  else 
-    ESMFCMD = Executer + "$ESMFBINDIR/" + ESMF_exec + " " \
-              + "--source " + srcGridFile \
-              + " --destination " + dstGridFile \
-              + " --weight " + wgtFile
+;---Add necessary --ignore_degenerate flag for ESMF >=7.0.0
+  if(ESMF_MAJOR_VERSION.ge.7) then
+    ESMF_IGNORE_DEGENERATE = "--ignore_degenerate "
+  else
+    ESMF_IGNORE_DEGENERATE = ""
   end if
+
+;---Build the command (First Pass - non-optional features)
+  ESMFCMD = Executer + path_to_ESMF \
+            + ESMF_IGNORE_DEGENERATE \
+            + SRC_LOC + DST_LOC \
+            + " --source " + srcGridFile \
+            + " --destination " + dstGridFile \
+            + " --weight "+ wgtFile
 
 ;---Check for options
   if (opt2) then
