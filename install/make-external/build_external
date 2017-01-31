@@ -273,6 +273,8 @@ INSTALL_PNG=1
 INSTALL_JPEG=1
 INSTALL_JASPER=1
 INSTALL_SZIP=1
+# Maybe don't install curl on the Macs, unless you also build with --with-ssl=...
+# Otherwise, the https OPeNDAP tests may not work.
 INSTALL_CURL=1
 INSTALL_HDF5=1
 INSTALL_HDFEOS5=1
