@@ -2851,7 +2851,7 @@ begin
 
 ;---Add necessary --ignore_degenerate flag for ESMF >=7.0.0
   if(ESMF_MAJOR_VERSION.ge.7) then
-    ESMF_IGNORE_DEGENERATE = "--ignore_degenerate "
+    ESMF_IGNORE_DEGENERATE = " --ignore_degenerate "
   else
     ESMF_IGNORE_DEGENERATE = ""
   end if
