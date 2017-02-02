@@ -85,6 +85,15 @@ c                    equally spaced in y ???
       END DO
    20 CONTINUE
 
+C  MH Note: 02/01/2017
+C
+C  There's a serious bug in TRIP2GRD3 that sometimes causes the return 
+C  values to be all missing or just flat out wrong. This bug is 
+C  elusive; it appears to change in behavior if you run this code
+C  in debug mode, or even on different systems (Mac versus Linux).
+C  Since TRIP2GRD2 seems to be working for now and is faster, we
+C  will have the NCL C driver code set LOOP=0 no matter what.
+C
       IF (KOUT.EQ.0) THEN
           IF (LOOP.EQ.0) THEN
               CALL TRIP2GRD2(KPTS,X,Y,Z,ZMSG,MX,NY,GX,GY,GRID
@@ -109,6 +118,7 @@ c          domain is arbitrary
           GBIGX(1)   = GX(1)  - DOMAIN*(GX(2)-GX(1))
           GBIGX(MX2) = GX(MX) + DOMAIN*(GX(MX)-GX(MX-1))
 
+C  See MH note above about TRIP2GRD3 and LOOP.
           IF (LOOP.EQ.0) THEN
               CALL TRIP2GRD2(KPTS,X,Y,Z,ZMSG,MX2,NY2,GBIGX,GBIGY
      +                      ,GBIGXY,MFLAG,NFLAG,METHOD,DDCRIT,IER)
