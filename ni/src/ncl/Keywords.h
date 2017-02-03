@@ -37,6 +37,7 @@ static struct {
 {"do",           DO},
 {"if",           IF},
 {"else",         ELSE},
+{"elseif",       ELSEIF},
 {"then",         THEN},
 {"begin",        BGIN},
 {"end",          END},

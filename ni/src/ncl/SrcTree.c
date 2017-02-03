@@ -308,6 +308,7 @@ void *_NclMakeReturn
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }
+        
 void _NclIfThenDestroy
 #if     NhlNeedProto
 (struct ncl_genericnode *thenode)
@@ -434,6 +435,48 @@ NclSrcListNode * block_stmnt_list2;
 	return((void*)tmp);
 }
 
+/*
+ * These next two functions dealing with "elseif" clauses are unique in that they don't return an AST fragment, but
+ * rather modify an existing fragment. Namely, by design of the parse/grammar, they are handed a NclIfThenElse struct.
+ * Its block_stmnt_list2 component is either NULL or not. If not NULL, then the block_stmnt_list2 points to another
+ * NclIfThenElse struct whose, block_stmnt_list2 is NULL or not.  This chain of NclIfThenElse structs continues until a
+ * block_stmnt_list2 is found that is NULL. The given NclSrcListNode is assigned to that block_stmnt_list2.
+ * 
+ * In this way, the "elseif" construct is implemented just like the regular "else if" construct, but in such a way as 
+ * not require and "end if" for every "if" in the compound statement. That is, in terms of implementation, these
+ * two are identical, just vary syntactically:
+ *     
+ *      if (...) then            if (...) then
+ *         ...                      ...
+ *      elseif (...) then        else if (...) then
+ *         ...                      ...
+ *      else                     else
+ *         ...                      ...
+ *      end if                   end if
+ *                               end if
+ * 
+ */
+void _NclAppendElseIfClause(NclIfThenElse *elseif, void *conditional_expr, NclSrcListNode *block_stmnt_list)
+{
+    NclSrcListNode *slnode = _NclMakeNewListNode();
+    slnode->node = _NclMakeIfThenElse(conditional_expr, block_stmnt_list, NULL);
+    slnode->next = NULL;
+
+    NclIfThenElse *tmp = elseif;
+    while (tmp->block_stmnt_list2 != NULL) {
+        tmp = tmp->block_stmnt_list2->node;        
+    }    
+    tmp->block_stmnt_list2 = slnode;
+}
+
+void _NclAppendElseIfElseClause(NclIfThenElse *elseif, NclSrcListNode *block_stmnt_list)
+{
+    NclIfThenElse *tmp = elseif;
+    while (tmp->block_stmnt_list2 != NULL) {
+        tmp = tmp->block_stmnt_list2->node;        
+    }    
+    tmp->block_stmnt_list2 = block_stmnt_list;
+}
 
 void _NclGResDestroy
 #if	NhlNeedProto
