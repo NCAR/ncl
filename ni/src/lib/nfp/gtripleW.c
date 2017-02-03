@@ -421,11 +421,14 @@ NhlErrorTypes triple2grid_W( void )
  */
   if(*option) {
 /*
- * "method" may be set by the user; it's default is 1 if option is True.
- * "loop" is just an integer representation of "option". loop = 0 if
- * option = False.
+ * "method" may be set by the user; its default is 1 if option is True.
+ * 
+ * Prior to NCL V6.4.0, "loop" was an integer representation of "option".
+ * However, the Fortran code that gets invoked when loop=1 appears to be 
+ * buggy, so we are now forcing loop=0 no matter what. Also, "domain" 
+ * will default to 1.0 if not set by user. It used to be 0.0.
  */ 
-    loop   = 1;
+    loop   = 0;
     method = 1;
 /*
  * Retrieve  "option" again, this time getting all the stuff that
@@ -502,7 +505,7 @@ NhlErrorTypes triple2grid_W( void )
   }
   if(!has_domain) {
     domain  = (double *)malloc(sizeof(double));
-    *domain = 0.;
+    *domain = 1.;   /* As of NCL V6.4.0, this defaults to 1. Was 0 previously. See note above */
   }
 /*
  * Allocate space for work arrays.

@@ -184,7 +184,16 @@ begin
    ymdhms1i = ymdhms1
   end if
   delete(ymdhms1)
-  taxisvalues = cd_inv_calendar(ymdhms1i(:,0),ymdhms1i(:,1),ymdhms1i(:,2),ymdhms1i(:,3),ymdhms1i(:,4),ymdhms1i(:,5),time@units,0)
+
+;---Check for a "calendar" attribute.
+  if(isatt(time,"calendar"))
+    opt_calendar = 0
+    opt_calendar@calendar = time@calendar
+  else
+    opt_calendar = 0
+  end if
+
+  taxisvalues = cd_inv_calendar(ymdhms1i(:,0),ymdhms1i(:,1),ymdhms1i(:,2),ymdhms1i(:,3),ymdhms1i(:,4),ymdhms1i(:,5),time@units,opt_calendar)
 
   dimsz = dimsizes(ymdhms1i)
   ntick = dimsz(0)

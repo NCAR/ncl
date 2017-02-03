@@ -5789,6 +5789,12 @@ static NhlErrorTypes NC4AddVarAtt(void *therec, NclQuark thevar, NclQuark theatt
                 {
                     ret = _addNclAttNode(&(varnode->att_rec), theatt,
                                          data_type, n_items, values);
+		    for (i = 0; i < varnode->att_rec->n_atts; i++) {
+			    if (varnode->att_rec->att_node[i].name == theatt) {
+				    varnode->att_rec->att_node[i].the_nc_type = *the_data_type;
+				    break;
+			    }
+		    }
                     NclFree(the_data_type);
                   /*
                    *fprintf(stderr, "Leave NC4AddVarAtt, file: %s, line: %d\n\n", __FILE__, __LINE__);
