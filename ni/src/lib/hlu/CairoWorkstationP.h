@@ -7,7 +7,6 @@
 
 # include   <ncarg/hlu/WorkstationP.h>
 # include   <ncarg/hlu/CairoWorkstation.h>
-# include   <ncarg/gksP.h>
 
 /*
  * CAIRO workstation type identifiers start at 40.
@@ -43,14 +42,20 @@ typedef struct _NhlCairoWorkstationLayerPart {
     float              page_height;
 
     /* fields for image-based workstations */
-    _NGCPixConfig      pixconfig;
+    int                imageWidth;
+    int                imageHeight;
 
     /* fields for window-based workstations */
     NhlBoolean         window_id_set;
     int                window_id;
     NhlBoolean         pause_set;
     NhlBoolean         pause;
-    _NGCXWinConfig     xwinconfig;
+    int                windowPosX;
+    int                windowPosY;
+    int                windowWidth;
+    int                windowHeight;
+    char*              windowTitle;
+    char*              iconTitle;
 
     /* Private internal fields */
     NhlBoolean  dev_bounds_updated;

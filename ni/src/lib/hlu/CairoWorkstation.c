@@ -8,6 +8,7 @@
 #include   <ncarg/hlu/ConvertersP.h>
 #include   <ncarg/hlu/pageutil.h>
 #include   <ncarg/hlu/color.h>
+#include   <ncarg/gksP.h>
 #include "hlu.h"
 #include "CairoWorkstation.h"
 
@@ -93,14 +94,11 @@ static NhlResource resourcesImageWS[] = {
     /* Resources for image-based output formats. We'll use the existing NGC_PIXCONFIG struct
      * for this purpose, but not all of its fields will be utilized.
      */
-    {_NhlNwkPixConf, _NhlCwkPixConf, NhlTInteger, sizeof (int), Oset(pixconfig.type),
-        NhlTImmediate, _NhlUSET((NhlPointer) NGC_PIXCONFIG),
-        _NhlRES_NOACCESS | _NhlRES_PRIVATE, NULL},
     {NhlNwkWidth, NhlCwkWidth, NhlTInteger, sizeof (int),
-        Oset(pixconfig.width), NhlTImmediate,
+        Oset(imageWidth), NhlTImmediate,
         _NhlUSET((NhlPointer) 1024), _NhlRES_NOSACCESS, NULL},
     {NhlNwkHeight, NhlCwkHeight, NhlTInteger, sizeof (int),
-        Oset(pixconfig.height), NhlTImmediate,
+        Oset(imageHeight), NhlTImmediate,
         _NhlUSET((NhlPointer) 1024), _NhlRES_NOSACCESS, NULL},
 
     /* See Jira ncl-1913.  The drawing hack does not apply to ImageWorkstations, but we silently include this resource 
@@ -128,24 +126,21 @@ static NhlResource resourcesWindowWS[] = {
     {NhlNwkPause, NhlCwkPause, NhlTBoolean, sizeof (NhlBoolean),
         Oset(pause), NhlTProcedure, _NhlUSET((NhlPointer) _NhlResUnset), 0, NULL},
 
-    {"no.res", "no.res", NhlTInteger, sizeof (int), Oset(xwinconfig.type),
-        NhlTImmediate, _NhlUSET((NhlPointer) NGC_XWINCONFIG),
-        _NhlRES_NOACCESS | _NhlRES_PRIVATE, NULL},
-    {NhlNpositionX, NhlCpositionX, NhlTInteger, sizeof (int), Oset(xwinconfig.x),
+    {NhlNpositionX, NhlCpositionX, NhlTInteger, sizeof (int), Oset(windowPosX),
         NhlTImmediate, _NhlUSET((NhlPointer) 0), _NhlRES_NOSACCESS, NULL},
-    {NhlNpositionY, NhlCpositionY, NhlTInteger, sizeof (int), Oset(xwinconfig.y),
+    {NhlNpositionY, NhlCpositionY, NhlTInteger, sizeof (int), Oset(windowPosY),
         NhlTImmediate, _NhlUSET((NhlPointer) 0), _NhlRES_NOSACCESS, NULL},
     {NhlNwkWidth, NhlCwkWidth, NhlTInteger, sizeof (int),
-        Oset(xwinconfig.width),
+        Oset(windowWidth),
         NhlTImmediate, _NhlUSET((NhlPointer) 1000), _NhlRES_NOSACCESS, NULL},
     {NhlNwkHeight, NhlCwkHeight, NhlTInteger, sizeof (int),
-        Oset(xwinconfig.height), NhlTImmediate,
+        Oset(windowHeight), NhlTImmediate,
         _NhlUSET((NhlPointer) 1000), _NhlRES_NOSACCESS, NULL},
     {NhlNwkTitle, NhlCwkTitle, NhlTString, sizeof (NhlString),
-        Oset(xwinconfig.title), NhlTImmediate, _NhlUSET((NhlPointer) NULL),
+        Oset(windowTitle), NhlTImmediate, _NhlUSET((NhlPointer) NULL),
         _NhlRES_NOSACCESS, (NhlFreeFunc) NhlFree},
     {NhlNwkIconTitle, NhlCwkIconTitle, NhlTString, sizeof (NhlString),
-        Oset(xwinconfig.icon_title), NhlTImmediate, _NhlUSET((NhlPointer) NULL),
+        Oset(iconTitle), NhlTImmediate, _NhlUSET((NhlPointer) NULL),
         _NhlRES_NOSACCESS, (NhlFreeFunc) NhlFree},
 
     /* See Jira ncl-1913.  The drawing hack does not apply to ImageWorkstations, but we silently include this resource 
@@ -817,27 +812,27 @@ CairoWindowWorkstationInitialize(NhlClass lclass, NhlLayer req, NhlLayer new, _N
 
     }
 
-    if (!cairoLayer->xwinconfig.title)
-        cairoLayer->xwinconfig.title = (char*) newCairo->base.name;
-    tstr = cairoLayer->xwinconfig.title;
-    cairoLayer->xwinconfig.title =
+    if (!cairoLayer->windowTitle)
+        cairoLayer->windowTitle = (char*) newCairo->base.name;
+    tstr = cairoLayer->windowTitle;
+    cairoLayer->windowTitle =
             (char*) NhlMalloc((unsigned) strlen(tstr) + 1);
-    if (!cairoLayer->xwinconfig.title) {
+    if (!cairoLayer->windowTitle) {
         NHLPERROR((NhlFATAL, ENOMEM, NULL));
         return NhlFATAL;
     }
-    strcpy(cairoLayer->xwinconfig.title, tstr);
+    strcpy(cairoLayer->windowTitle, tstr);
 
-    if (!cairoLayer->xwinconfig.icon_title)
-        cairoLayer->xwinconfig.icon_title = (char*) newCairo->base.name;
-    tstr = cairoLayer->xwinconfig.icon_title;
-    cairoLayer->xwinconfig.icon_title =
+    if (!cairoLayer->iconTitle)
+        cairoLayer->iconTitle = (char*) newCairo->base.name;
+    tstr = cairoLayer->iconTitle;
+    cairoLayer->iconTitle =
             (char*) NhlMalloc((unsigned) strlen(tstr) + 1);
-    if (!cairoLayer->xwinconfig.icon_title) {
+    if (!cairoLayer->iconTitle) {
         NHLPERROR((NhlFATAL, ENOMEM, NULL));
         return NhlFATAL;
     }
-    strcpy(cairoLayer->xwinconfig.icon_title, tstr);
+    strcpy(cairoLayer->iconTitle, tstr);
 
     return ret;
 }
@@ -1036,10 +1031,10 @@ CairoWorkstationDestroy(NhlLayer l) {
     NhlCairoWorkstationLayerPart *cairo = &((NhlCairoWorkstationLayer) l)->cairo;
 
     if (cairo->format == NhlCX11) {
-        if (cairo->xwinconfig.title)
-            NhlFree(cairo->xwinconfig.title);
-        if (cairo->xwinconfig.icon_title)
-            NhlFree(cairo->xwinconfig.icon_title);
+        if (cairo->windowTitle)
+            NhlFree(cairo->windowTitle);
+        if (cairo->iconTitle)
+            NhlFree(cairo->iconTitle);
     }
   /*
    *else if (cairo->format == NhlCQT) {
@@ -1133,13 +1128,13 @@ CairoImageWorkstationOpen(NhlLayer l) {
     NhlErrorTypes ret;
 
     /* we need to calculate the NDC frame within the image... */
-    int minRange = (cairo->pixconfig.width < cairo->pixconfig.height) ? cairo->pixconfig.width : cairo->pixconfig.height;
-    int adjust = (cairo->pixconfig.width - minRange) / 2;
+    int minRange = (cairo->imageWidth < cairo->imageHeight) ? cairo->imageWidth : cairo->imageHeight;
+    int adjust = (cairo->imageWidth - minRange) / 2;
     cairo->lower_x = adjust;
-    cairo->upper_x = cairo->pixconfig.width - adjust;
-    adjust = (cairo->pixconfig.height - minRange) / 2;
+    cairo->upper_x = cairo->imageWidth - adjust;
+    adjust = (cairo->imageHeight - minRange) / 2;
     cairo->lower_y = adjust;
-    cairo->upper_y = cairo->pixconfig.height - adjust;
+    cairo->upper_y = cairo->imageHeight - adjust;
 
     /* Note that these can be set for the "next" workstation */
     c_ngsetc("me", cairo->filename);
@@ -1149,9 +1144,14 @@ CairoImageWorkstationOpen(NhlLayer l) {
     c_ngseti("uy", cairo->upper_y);
     
     /* image width/height must be set before opening workstation */
-    cairo->pixconfig.work_id = -1; /* part of the escape mechanism; -1 means "apply to *next* workstation */
-    gesc_in_pixconf.escape_r1.data = &cairo->pixconfig;
-    gesc_in_pixconf.escape_r1.size = sizeof (cairo->pixconfig);
+    _NGCesc cesc;
+    memset(&cesc, 0, sizeof(cesc));
+    cesc.type = NGC_PIXCONFIG;
+    cesc.pixconfig.work_id = -1;  /* part of the escape mechanism; -1 means "apply to *next* workstation */
+    cesc.pixconfig.width = cairo->imageWidth;
+    cesc.pixconfig.height = cairo->imageHeight;
+    gesc_in_pixconf.escape_r1.data = &cesc;
+    gesc_in_pixconf.escape_r1.size = sizeof (cesc);
     gescape(NGESC_CNATIVE, &gesc_in_pixconf, NULL, NULL);
 
     ret = (*NhlworkstationClassRec.work_class.open_work)(l);
@@ -1168,13 +1168,13 @@ CairoWindowWorkstationOpen(NhlLayer l) {
     NhlErrorTypes ret;
 
     /* we need to calculate the NDC frame within the image... */
-    int minRange = (cairo->xwinconfig.width < cairo->xwinconfig.height) ? cairo->xwinconfig.width : cairo->xwinconfig.height;
-    int adjust = (cairo->xwinconfig.width - minRange) / 2;
+    int minRange = (cairo->windowWidth < cairo->windowHeight) ? cairo->windowWidth : cairo->windowHeight;
+    int adjust = (cairo->windowWidth - minRange) / 2;
     cairo->lower_x = adjust;
-    cairo->upper_x = cairo->xwinconfig.width - adjust;
-    adjust = (cairo->xwinconfig.height - minRange) / 2;
+    cairo->upper_x = cairo->windowWidth - adjust;
+    adjust = (cairo->windowHeight - minRange) / 2;
     cairo->lower_y = adjust;
-    cairo->upper_y = cairo->xwinconfig.height - adjust;
+    cairo->upper_y = cairo->windowHeight - adjust;
 
     /* Note that these can be set for the "next" workstation */
     c_ngseti("lx", cairo->lower_x);
@@ -1183,9 +1183,18 @@ CairoWindowWorkstationOpen(NhlLayer l) {
     c_ngseti("uy", cairo->upper_y);
 
     /* image width/height must be set before opening workstation */
-    cairo->xwinconfig.work_id = -1; /* part of the escape mechanism; -1 means "apply to *next* workstation */
-    gesc_in_xwconf.escape_r1.data = &cairo->xwinconfig;
-    gesc_in_xwconf.escape_r1.size = sizeof(cairo->xwinconfig);
+       _NGCesc cesc;
+    memset(&cesc, 0, sizeof(cesc));
+    cesc.type = NGC_XWINCONFIG;
+    cesc.xwinconfig.work_id = -1;  /* part of the escape mechanism; -1 means "apply to *next* workstation */
+    cesc.xwinconfig.x = cairo->windowPosX;
+    cesc.xwinconfig.y = cairo->windowPosY;
+    cesc.xwinconfig.width = cairo->windowWidth;
+    cesc.xwinconfig.height = cairo->windowHeight;
+    cesc.xwinconfig.title = cairo->windowTitle;
+    cesc.xwinconfig.icon_title = cairo->iconTitle;
+    gesc_in_xwconf.escape_r1.data = &cesc;
+    gesc_in_xwconf.escape_r1.size = sizeof (cesc);
     gescape(NGESC_CNATIVE, &gesc_in_xwconf, NULL, NULL);
 
     ret = (*NhlworkstationClassRec.work_class.open_work)(l);
