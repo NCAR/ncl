@@ -54,7 +54,7 @@ begin
    land_only                 =  where(lsm1 .ge. 50, var, var@_FillValue)   ;-- mask less than 50%
 
 ;-- define the workstation (graphic will be written to a file)
-   wks      =  gsn_open_wks("png","plot_transparent_lsm")
+   wks      =  gsn_open_wks("png","NUG_transparent_land_sea_mask_Africa")
 
 ;-- set plot resources
    res                       =  True

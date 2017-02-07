@@ -20,6 +20,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
 begin
 
+;-- Check for required DEU shapefile
   diri = "./"
   fili = "DEU_adm/DEU_adm1.shp"
 
@@ -33,9 +34,23 @@ begin
      print("")
      exit
   end if
+
+;-- Check for required RANGS database
+  rangs_dir  = ncargpath("rangs")
+  rangs_file = "gshhs(0).rim"
+  if(.not.fileexists(rangs_dir + "/" + rangs_file)) then
+     print("")
+     print("You don't have the necessary high-res map database for this script.")
+     print("See this URL for information on how to download it.")
+     print("")
+     print("http://www.ncl.ucar.edu/Document/Graphics/rangs.shtml")
+     print("")
+     print("You can also set mpDataBaseVersion to MediumRes.")
+     exit
+  end if
   
 ;-- open workstation
-   wks = gsn_open_wks("png","plot_shapefile_plot")
+   wks = gsn_open_wks("png","NUG_shapefile_plot")
 
 ;-- set resources for the map
    res                     =  True

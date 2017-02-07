@@ -16,7 +16,7 @@ begin
 
 ;-- output file
   dummy  = "dum_tmp.png"
-  output = "plot_with_logo.png"
+  output = "NUG_insert_logo.png"
   
 ;-- open a workstation
   wks  = gsn_open_wks("png", dummy)

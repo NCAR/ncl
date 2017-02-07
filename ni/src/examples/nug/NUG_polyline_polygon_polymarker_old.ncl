@@ -26,7 +26,7 @@ begin
               ber_lat+yoff-dy/)
 
 ;-- define the workstation (plot type and name)
-  wks = gsn_open_wks("png","plot_polyline_polygon_polymarker_old")
+  wks = gsn_open_wks("png","NUG_polyline_polygon_polymarker_old")
 
 ;-- set map resources
   res                         =  True

@@ -25,13 +25,13 @@ begin
       exit
    end if
   
-   f     =  addfile(diri+fili, "r")
-   var   =  f->T850
-   lat1d =  f->lat
-   lon1d =  f->lon
+   f         =  addfile(diri+fili, "r")
+   var       =  f->T850
+   var@lat1d =  f->lat     ; In NCL V6.4.0 and later, can use special
+   var@lon1d =  f->lon     ; "lat1d", "lon1d" attributes
 
 ;-- define the workstation (plot type and name)
-   wks = gsn_open_wks("png","NUG_unstructured_grid")
+   wks = gsn_open_wks("png","NUG_unstructured_grid_640")
 
 ;-- set resources
    res                       =  True
@@ -42,10 +42,6 @@ begin
 
    res@tiMainString          = "NCL Doc Example: Unstructured grid (CAM-SE)"  ;-- title string
    res@tiMainFontHeightF     =  0.02
-
-;---Lat/lon arrays of curvilinear grid for overlaying on map
-   res@sfXArray              =  lon1d
-   res@sfYArray              =  lat1d
 
 ;-- draw the contour map
    plot = gsn_csm_contour_map(wks,var,res)

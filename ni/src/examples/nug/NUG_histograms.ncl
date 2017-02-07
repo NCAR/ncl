@@ -17,7 +17,7 @@ begin
   xint = ispan(0,500,25)
 
 ;-- open workstation
-  wks = gsn_open_wks("png","plot_histograms")           ;-- open workstation
+  wks = gsn_open_wks("png","NUG_histograms")           ;-- open workstation
   gsn_define_colormap(wks,"rainbow")                   ;-- choose colormap
 
   res                                   =  True

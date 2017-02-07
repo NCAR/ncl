@@ -33,7 +33,7 @@ begin
    labels = (/ "1000", "925", "850", "775", "700", "600", "500", "400", "300", "250", "200", "150", "100", "70", "50", "30", "10" /)
 
 ;-- open workstation
-   wks  = gsn_open_wks ("png", "plot_multi_plot_along_y" )
+   wks  = gsn_open_wks ("png", "NUG_multiple_plots_along_y" )
    gsn_define_colormap(wks,"BlWhRe")                ; choose colormap
 
 ;-- resources pressure height plot

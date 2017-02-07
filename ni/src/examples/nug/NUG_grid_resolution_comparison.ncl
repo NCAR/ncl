@@ -86,7 +86,7 @@ begin
   land_only3  = mask(variable3,lsm3,-9999)
 
 ;-- open workstation
-  wks                    = gsn_open_wks("png","plot_grid_resolution_comparison")
+  wks                    = gsn_open_wks("png","NUG_grid_resolution_comparison")
   gsn_define_colormap(wks,"OceanLakeLandSnow")
 
 ;-- define the global resources for all plots

@@ -50,7 +50,7 @@ begin
   land_only      =  where(lsm1 .ge. 50, var, var@_FillValue)   ;-- mask less than 50%
 
 ;---- define the workstation (plot output type and name)
-  wks = gsn_open_wks("png","plot_masking")
+  wks = gsn_open_wks("png","NUG_masking")
 
 ;---- set resources
   res                       =  True

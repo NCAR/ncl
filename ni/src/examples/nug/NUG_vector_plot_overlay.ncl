@@ -37,7 +37,7 @@ begin
 
 ;-- define the workstation (graphic will be written to a file)
 
-   wks =  gsn_open_wks("png","plot_vector_overlay")
+   wks =  gsn_open_wks("png","NUG_vector_plot_overlay")
 
 ;-- set plot resources
    cnres                     = True

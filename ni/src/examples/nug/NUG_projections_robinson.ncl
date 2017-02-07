@@ -30,7 +30,7 @@ begin
   var =  file1->SSS(0,0,:,:)
 
 ;-- define the workstation (plot type and name)
-  wks = gsn_open_wks("png","NUG_robinson")
+  wks = gsn_open_wks("png","NUG_projections_robinson")
 
 ;-- set resources
   res                       =  True

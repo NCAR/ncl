@@ -111,7 +111,7 @@ begin
   data(11,56:148) = temp12
 
 ;-- open a workstation
-  wks =  gsn_open_wks("png", "plot_multi_timeseries")
+  wks =  gsn_open_wks("png", "NUG_multi_timeseries")
 
 ;-- set resources
   res = True

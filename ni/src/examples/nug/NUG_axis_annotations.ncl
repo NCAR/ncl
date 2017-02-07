@@ -31,7 +31,7 @@ begin
    lon_t = f->lon({0:60})                     ;-- longitude=0-60E
 
 ;---- define the workstation (plot output type and name)
-   wks = gsn_open_wks("png","plot_axis_annotations")
+   wks = gsn_open_wks("png","NUG_axis_annotations")
 
 ;---- set resources
    res                        =  True

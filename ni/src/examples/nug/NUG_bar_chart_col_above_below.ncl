@@ -15,7 +15,7 @@ begin
    x = fspan(1.0,  12.0,  n)
    y = random_uniform(low, high, n)
 
-   wks = gsn_open_wks("png","plot_bar_chart_col_above_below")
+   wks = gsn_open_wks("png","NUG_bar_chart_col_above_below")
 
    res                       =  True
    res@gsnDraw               =  True

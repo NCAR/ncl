@@ -31,7 +31,7 @@ begin
   lev_t =  f->lev                    ;-- currently 17 levels
 
 ;-- define workstation
-  wks = gsn_open_wks("png","plot_slice_plot")
+  wks = gsn_open_wks("png","NUG_slice_plot")
 
 ;-- set resources
   res                          =  True

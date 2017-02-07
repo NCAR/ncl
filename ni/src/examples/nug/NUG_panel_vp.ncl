@@ -29,7 +29,7 @@ begin
   t    =  f->tas
 
 ;-- open a PNG file
-  wks = gsn_open_wks("png","plot_panel_vp")
+  wks = gsn_open_wks("png","NUG_panel_vp")
 
 ;-- set resources for contour plots
   res                                  =  True

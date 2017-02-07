@@ -156,7 +156,7 @@ begin
   wks_type          = "png"
   wks_type@wkWidth  =  1024
   wks_type@wkHeight =  1024
-  wks = gsn_open_wks(wks_type,"plot_regrid_rectilinear_to_curvilinear_destgrid")
+  wks = gsn_open_wks(wks_type,"NUG_regrid_rectilinear_to_curvilinear_bilinear_wgts_destgrid_ESMF")
 
 ;-- set resources for contour plots
   res                      =  True
@@ -187,8 +187,9 @@ begin
   
 ;-- create the panel plot
   pres = True
-  pres@txString          = "Regridding"     ;-- panel title string
-  pres@gsnPanelLabelBar  =  True            ;-- turn on a common labelbar for the entire panel plot
+  pres@gsnPanelMainString = "Regridding"     ;-- panel title string (resource added in 6.4.0)
+; pres@txString           = "Regridding"     ;-- panel title string
+  pres@gsnPanelLabelBar   =  True            ;-- turn on a common labelbar for the entire panel plot
 
   gsn_panel(wks,(/plot0,plot1/),(/2,1/),pres)
   

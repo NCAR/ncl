@@ -34,7 +34,7 @@ begin
 ;-- compute the area mean without weighting
    fldmean = wgt_areaave_Wrap(var,1.0,1.0,1)
 
-   wks = gsn_open_wks("png","xy_plot_timeseries")
+   wks = gsn_open_wks("png","NUG_xy_plot_timeseries")
 
 ;-- set resources
    res                      =  True

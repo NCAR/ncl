@@ -26,7 +26,7 @@ begin
       exit
    end if
   
-   wks  = gsn_open_wks("png","plot_in_5_steps")
+   wks  = gsn_open_wks("png","NUG_plot_in_5_steps")
 
    res              =  True
    res@tiMainString = "NCL plot in 5 steps"

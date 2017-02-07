@@ -39,7 +39,7 @@ begin
 end
 
 begin
-;-- read file informations from GrADS descriptor file ctl
+;-- read file information from GrADS descriptor ctl file
   diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
   ctl  = "ps_grads_model.ctl" 
   
@@ -48,7 +48,7 @@ begin
   else
      file_ERROR(ctl)
   end if
-  
+  fin = diri + fin  
   if (.not. fileexists(fin)) then
      file_ERROR(fin)
   end if
@@ -104,7 +104,7 @@ begin
 
   variable = ps(0,:,:)
 
-  wks      =  gsn_open_wks("png","plot_grads_binary_data")
+  wks      =  gsn_open_wks("png","NUG_GrADS_binary_data")
 
   res                   = True
   res@cnFillOn          = True     ; turn off contour fill
@@ -113,6 +113,7 @@ begin
   res@gsnMaximize       = True     ; Maximize plot in frame
   res@gsnAddCyclic      = False     ; Don't add a cyclic point
 
+  res@tiMainString      = "NCL Doc Example: reading GrADS binary file"
   res@mpProjection      = "CylindricalEquidistant"
   res@mpLimitMode       = "Corners"
 

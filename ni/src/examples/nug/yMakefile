@@ -50,7 +50,8 @@ NCL_SCRIPTS =	NUG_GrADS_binary_data.ncl NUG_ICON_triangles_colored.ncl		\
 		NUG_write_ASCII_3.ncl NUG_write_ASCII_4.ncl NUG_write_ASCII_5.ncl	\
 		NUG_write_Binary_1.ncl NUG_write_Binary_2.ncl NUG_write_netCDF_1.ncl	\
 		NUG_write_netCDF_2.ncl NUG_xy_plot.ncl NUG_xy_plot_res.ncl		\
-		NUG_xy_plot_timeseries.ncl NUG_xy_plot_timeseries_2.ncl
+		NUG_xy_plot_timeseries.ncl NUG_xy_plot_timeseries_2.ncl			\
+		NUG_triangular_grid_ICON_640.ncl NUG_unstructured_grid_640.ncl
 
 PYNGL_SCRIPTS = NUG_curvilinear_contour_PyNGL.py NUG_rectilinear_contour_PyNGL.py \
 		NUG_rectilinear_slice_PyNGL.py NUG_rectilinear_vector_PyNGL.py \

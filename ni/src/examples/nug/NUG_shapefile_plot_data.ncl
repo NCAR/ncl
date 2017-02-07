@@ -66,7 +66,7 @@ begin
    var  =  g->tsurf(0,:,:)
 
 ;-- open workstation
-   wks = gsn_open_wks("png","plot_shapefile_plus_data")
+   wks = gsn_open_wks("png","NUG_shapefile_plot_data")
 
 ;-- set resources for the map
    res                     =  True

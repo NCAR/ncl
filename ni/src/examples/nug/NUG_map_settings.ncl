@@ -30,7 +30,7 @@ begin
   var  =  f->tsurf(0,:,:)
   
 ;-- define the workstation (plot type and name)
-  wks = gsn_open_wks("png","plot_map_settings")
+  wks = gsn_open_wks("png","NUG_map_settings")
 
 ;-- set resources
   res                       =  True

@@ -17,7 +17,7 @@ begin
    y2 = random_uniform(low, high, n)
    y3 = random_uniform(low, high, n)
 
-   wks = gsn_open_wks("png","plot_bar_chart_multi")
+   wks = gsn_open_wks("png","NUG_bar_chart_multi")
 
    res                       =  True
    res@gsnDraw               =  True

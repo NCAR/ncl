@@ -53,7 +53,7 @@ begin
   lbres@vpHeightF            =  0.10                ; height of labelbar
   lbres@lbLabelFontHeightF   =  0.015               ; label font height
   lbres@lbLabelAlignment     = "InteriorEdges"      ; where to label
-  lbres@lbMonoFillPattern    =  True                ; fill sold
+  lbres@lbMonoFillPattern    =  True                ; fill solid
   lbres@lbFillColors         =  colors              ; use colors
   lbid = gsn_create_labelbar (wks,nlevels+1,labels,lbres)
 
@@ -79,9 +79,9 @@ begin
   colormap     = "WhiteBlue"                         ;-- color map
   scale        =  100                                ;-- multiply by
 
-  varMin       =   10.                               ;-- minimum contour level
-  varMax       =   90.                               ;-- maximum contour level
-  varInt       =   10.                               ;-- interval between contours
+  varMin       =   10                                ;-- minimum contour level
+  varMax       =   90                                ;-- maximum contour level
+  varInt       =   10                                ;-- interval between contours
 
   lonMin       = -180                                ;-- longitude minimum
   lonMax       =  180                                ;-- longitude maximum
@@ -92,7 +92,7 @@ begin
 ;-- add data and grid file
 ;-------------------------------------------------------------------
   if (fileexists(diri+DataFileName)) then
-     File = addfile(diri+DataFileName, "r" )              ;-- add data file
+     VarFile = addfile(diri+DataFileName, "r" )              ;-- add data file
   else
      file_ERROR(DataFileName)
   end if
@@ -102,8 +102,8 @@ begin
      file_ERROR(gridinfofile)
   end if
   
-  var          = File->$VarName$(time|0,ncells|:)    ;-- set variable with dims: (time,ncell)
-  var          = var*scale                           ;-- scale factor (here 100 to get %)
+  var          = VarFile->$VarName$(time|0,ncells|:)    ;-- set variable with dims: (time,ncell)
+  var          = var*scale                              ;-- scale factor (here 100 to get %)
 
 ;-------------------------------------------------------------------
 ;-- define the x-, y-values and the polygon points
@@ -128,8 +128,7 @@ begin
 ;-------------------------------------------------------------------
 ;-- open workstation
 ;-------------------------------------------------------------------
-  wks = gsn_open_wks("png","plot_ICON_triangles_col")
-  gsn_define_colormap(wks,colormap)
+  wks = gsn_open_wks("png","NUG_ICON_triangles_colored")
 
 ;-------------------------------------------------------------------
 ;-- set map resources
@@ -146,50 +145,15 @@ begin
   mpres@mpCenterLonF         =  180                   ;-- map center lon
   mpres@mpFillOn             =  False                 ;-- don't draw filled map
 
-;-------------------------------------------------------------------
-;-- set contour resources
-;-------------------------------------------------------------------
-  cnres                      =  mpres                 ;-- based on mpres
-  cnres@gsnDraw              =  False                 ;-- don't draw the plot
-  cnres@gsnFrame             =  False                 ;-- don't advance the frame
-
-  cnres@sfXArray             =  x                     ;-- transform x to mesh scalar field
-  cnres@sfYArray             =  y                     ;-- transform y to mesh scalar field
-
-  cnres@cnLinesOn            =  False                 ;-- don't draw contour lines
-  cnres@cnInfoLabelOn        =  False                 ;-- switch off contour info label
-  cnres@cnFillOn             =  True                  ;-- contour fill on
-  cnres@cnFillMode           = "RasterFill"           ;-- set fill mode
-  cnres@cnRasterSmoothingOn  =  True                  ;-- smooth contouring
-  cnres@cnLevelSelectionMode = "ManualLevels"         ;-- set manual contouring levels on
-  cnres@cnLevelSpacingF      =  varInt                ;-- contouring interval
-  cnres@cnMinLevelValF       =  varMin                ;-- contouring minimum
-  cnres@cnMaxLevelValF       =  varMax                ;-- contouring maximum
-  cnres@gsnSpreadColors      =  True                  ;-- spread color across whole color map
-  cnres@gsnSpreadColorStart  =  15                    ;-- start color index
-  cnres@gsnSpreadColorEnd    =  220                   ;-- end color index
-
-  ;-- create the contour plot, but don't draw it
-  plot = gsn_csm_contour_map(wks,var,cnres)
-
-;-------------------------------------------------------------------
-;-- to plot the filled polygons we need the data levels and their 
-;-- colors
-;-------------------------------------------------------------------
-  getvalues plot@contour
-     "cnLevels"     :  levels                         ;-- retrieve the levels from plot@contour
-     "cnFillColors" :  colors                         ;-- retrieve the colors from plot@contour
-  end getvalues
-  nlevels = dimsizes(levels)                          ;-- number of levels
-
-;-------------------------------------------------------------------
-;-- create the map, but don't draw it yet
-;-------------------------------------------------------------------
   mpres@gsnLeftString        =  var@long_name         ;-- set left string
-  mpres@gsnRightString       =  var@units             ;-- set right string
+  mpres@gsnRightString       =  "%"                   ;-- set right string (var@units)
 
-  ;-- create the map, but don't draw it
+  ;-- create the map, but don't draw it; will use this to add filled polygons to
   map = gsn_csm_map(wks,mpres)
+
+  levels  = ispan(varMin,varMax,varInt)
+  nlevels = dimsizes(levels)                          ;-- number of levels
+  colors  = span_color_rgba (colormap,nlevels+1)
 
   ;-- attach a labelbar to the plot
   map = attach_labelbar(wks,map,levels+"",colors)
@@ -217,9 +181,9 @@ begin
         ;=== Fix vlon(vlow(i),:) so it doesn't wrap around
         vlon(vlow(i),:) = where(vlon(vlow(i),:).gt.180, vlon(vlow(i),:)-360, vlon(vlow(i),:))
      end if
-     pres@gsFillColor = colors(0)
+     pres@gsFillColor = colors(0,:)
      varstring = unique_string("gon")
-     plot@$varstring$ = gsn_add_polygon(wks,map,vlon(vlow(i),:), vlat(vlow(i),:),pres)
+     map@$varstring$ = gsn_add_polygon(wks,map,vlon(vlow(i),:), vlat(vlow(i),:),pres)
   end do
   print ("finished level  0  -- " + sprinti("%6.0i",dimsizes(vlow)) + " polygons considered")
 ;-------------------------------------------------------------------
@@ -234,7 +198,7 @@ begin
            ;=== Fix vlon(vind(j),:) so it doesn't wrap around
            vlon(vind(j),:) = where(vlon(vind(j),:).gt.180, vlon(vind(j),:)-360, vlon(vind(j),:))
         end if
-        pres@gsFillColor = colors(i+1)
+        pres@gsFillColor = colors(i+1,:)
         varstring = unique_string("gon")
         map@$varstring$ = gsn_add_polygon(wks,map,vlon(vind(j),:), vlat(vind(j),:),pres)
      end do
@@ -253,7 +217,7 @@ begin
         ;=== Fix vlon(vhgh(i),:) so it doesn't wrap around
         vlon(vhgh(i),:) = where(vlon(vhgh(i),:).gt.180, vlon(vhgh(i),:)-360, vlon(vhgh(i),:))
      end if
-     pres@gsFillColor = colors(nlevels)
+     pres@gsFillColor = colors(nlevels,:)
      varstring = unique_string("gon")
      map@$varstring$ = gsn_add_polygon(wks,map,vlon(vhgh(i),:), vlat(vhgh(i),:),pres)
   end do

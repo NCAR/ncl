@@ -82,7 +82,7 @@ begin
   end if  
   
   variable =  file1->tas(0,:,:)
-  wks      =  gsn_open_wks("png","plot_function_average_data")
+  wks      =  gsn_open_wks("png","NUG_function_procedure")
 
   res                   =  True
   res@tiMainString      = "Function: average_data~C~~C~   dim_avg_n_Wrap"

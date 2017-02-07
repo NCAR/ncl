@@ -46,7 +46,7 @@ begin
   nv      =  dimsizes(vlon(0,:))            ;-- number of points in polygon
 
 ;-- open a PNG file
-  wks = gsn_open_wks("png","plot_unstructured_ICON")
+  wks = gsn_open_wks("png","NUG_unstructured_grid_ICON")
 
 ;-- set resources for contour plots
   res                    =  True

@@ -59,7 +59,7 @@ begin
    date_str_i = getDate(time)
    labels     = (/ date_str_i/)
 
-   wks = gsn_open_wks("png","xy_plot_timeseries_2")
+   wks = gsn_open_wks("png","NUG_xy_plot_timeseries_2")
 
    res                        =  True
    res@tiMainString           = "NCL Doc Example: xy-plot timeseries"

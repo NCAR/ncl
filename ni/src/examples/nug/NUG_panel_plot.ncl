@@ -52,7 +52,7 @@ begin
   v     = f5->vas
 
 ;-- open a PNG file
-  wks = gsn_open_wks("png","plot_panel_plot")
+  wks = gsn_open_wks("png","NUG_panel_plot")
 
 ;-- create plot array
   plot = new(3,graphic)

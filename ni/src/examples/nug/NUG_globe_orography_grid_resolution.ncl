@@ -71,7 +71,7 @@ begin
   wks_type@wkBackgroundColor   = "grey18"
   wks_type@wkForegroundColor   = "white"
 
-  wks  = gsn_open_wks(wks_type, "plot_globe_orography_grid_resolution")
+  wks  = gsn_open_wks(wks_type, "NUG_globe_orography_grid_resolution")
 
 ;-- global resources 
   res                          = True

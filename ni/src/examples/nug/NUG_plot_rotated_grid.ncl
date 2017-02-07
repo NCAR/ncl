@@ -170,7 +170,7 @@ begin
   maxlon  =  max(var@lon2d)                             ;-- retrieve maximum longitude value
    
 ;-- open a workstation
-  wks = gsn_open_wks("png","plot_rotated_grid")
+  wks = gsn_open_wks("png","NUG_plot_rotated_grid")
 
 ;-- set resources
   res                       =  True

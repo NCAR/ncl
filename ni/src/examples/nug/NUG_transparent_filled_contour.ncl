@@ -17,7 +17,7 @@ begin
   u    = a->U(1,:,:)
 
 ;-- open a workstation
-  wks  = gsn_open_wks("png","plot_transparency")
+  wks  = gsn_open_wks("png","NUG_transparent_filled_contour")
 
 ;-- set resources
   res                        =  True

@@ -35,7 +35,7 @@ begin
            "Stereographic", "WinkelTripel" /)
 
 ;-- define the workstation (graphic will be written to a file)
-   wks      =  gsn_open_wks("png","plot_projections")
+   wks      =  gsn_open_wks("png","NUG_projections")
    gsn_define_colormap(wks,"rainbow")
    
 ;-- set plot resources

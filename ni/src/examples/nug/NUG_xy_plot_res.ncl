@@ -12,7 +12,7 @@ begin
    x = (/1,2,3,4,5,6,7,8,9,10/)
    y = (/3,7,4,9,2,1,8,8,4,2/)
 
-   wks = gsn_open_wks("png","xy_plot_res")
+   wks = gsn_open_wks("png","NUG_xy_plot_res")
 
    res                        =  True
    res@tiMainString           = "NCL Doc Example:~C~        xy-plot resources"

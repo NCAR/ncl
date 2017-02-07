@@ -28,7 +28,7 @@ begin
   t    =  f->tas
 
 ;-- open a PNG file
-  wks = gsn_open_wks("png","plot_panel_control")
+  wks = gsn_open_wks("png","NUG_panel_control")
 
 ;-- set resources for contour plots
   res                                  =  True
@@ -84,7 +84,8 @@ begin
   pnlres@gsnPanelXWhiteSpacePercent   =  0
   pnlres@gsnPanelXWhiteSpacePercent   =  30
   pnlres@txFontHeightF                =  0.020    ;-- text font size
-  pnlres@txString                     = "NCL Doc Example: panel control"
+  pnlres@gsnPanelMainString           = "NCL Doc Example: panel control"  ;-- resource added in 6.4.0
+; pnlres@txString                     = "NCL Doc Example: panel control"
   
 ;-- create panel plot
   gsn_panel(wks,(/plot_1,plot_2,plot_3,plot_4,plot_5/),(/3,2/),pnlres)

@@ -65,7 +65,7 @@ begin
   u  = f1->uas(0,:,:)
   v  = f2->vas(0,:,:)
 
-  wks  =  gsn_open_wks("png","plot_wind_mag")
+  wks  =  gsn_open_wks("png","NUG_wind_mag")
 
   res                   =  True
   res@gsnAddCyclic      =  True

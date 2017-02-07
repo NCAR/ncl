@@ -71,7 +71,7 @@ begin
   wks_type                 = "png"        ;-- plot output type
   wks_type@wkWidth         =  1600        ;-- wk width
   wks_type@wkHeight        =  1600        ;-- wk height
-  wks = gsn_open_wks(wks_type,"plot_color_country_user")
+  wks = gsn_open_wks(wks_type,"NUG_color_country_user")
 
 ;-- set resources
   res                       =  True  

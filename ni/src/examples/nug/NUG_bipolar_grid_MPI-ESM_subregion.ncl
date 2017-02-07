@@ -31,7 +31,7 @@ begin
    var         =  tos(0,:,:)                    ;-- select first time step
 
 ;-- define the workstation (plot type and name)
-   wks = gsn_open_wks("png","plot_bipolar_grid_MPI-ESM_subregion")
+   wks = gsn_open_wks("png","NUG_bipolar_grid_MPI-ESM_subregion")
 
 ;-- set resources
    res                       =  True

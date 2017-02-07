@@ -55,7 +55,7 @@ begin
   land_only = where(sftlf .ge.10, orog, orog@_FillValue)
 
 ;-- open a PNG file
-  wks = gsn_open_wks("png","plot_panel_3x2_plot")
+  wks = gsn_open_wks("png","NUG_panel_plot_3x2")
 
 ;-- create plot array (3 rows and 2 columns  3*2=6)
 
@@ -176,7 +176,8 @@ begin
 ;-- plot one title on top of the plot
 
   pnlres                              = True
-  pnlres@txString                     = "NCL Doc Example: panel 3x2"
+  pnlres@gsnPanelMainString           = "NCL Doc Example: panel 3x2"   ;-- resource added in 6.4.0
+; pnlres@txString                     = "NCL Doc Example: panel 3x2"
 
 ;-- create panel plot
 

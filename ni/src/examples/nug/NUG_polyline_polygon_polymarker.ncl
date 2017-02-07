@@ -23,7 +23,7 @@ end
 ;----------
 begin
 ;-- open a workstation and define colormap
-  wks = gsn_open_wks("png","plot_polyline_polygon_polymarker")
+  wks = gsn_open_wks("png","NUG_polyline_polygon_polymarker")
 
 ;-- set resources
   res                       =  True  

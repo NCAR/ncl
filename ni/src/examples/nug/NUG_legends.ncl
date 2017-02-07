@@ -37,7 +37,7 @@ begin
             " [" + temp&lev@units + "]"
 
 ;---- define the workstation (plot output type and name)
-   wks = gsn_open_wks("png","plot_legends")
+   wks = gsn_open_wks("png","NUG_legends")
 
 ;---- set resources
    res                        =  True

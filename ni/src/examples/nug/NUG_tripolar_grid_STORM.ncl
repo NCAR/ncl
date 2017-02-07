@@ -38,7 +38,7 @@ begin
    var@lon2d      =  f->lon
 
 ;-- define the workstation (plot type and name)
-   wks = gsn_open_wks("png","plot_tripolar_grid_STORM")
+   wks = gsn_open_wks("png","NUG_tripolar_grid_STORM")
 
    plot = new(2,graphic)
 

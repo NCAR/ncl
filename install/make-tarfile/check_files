@@ -1795,8 +1795,10 @@ lib/ncarg/nclex/nug/NUG_title_strings.ncl
 lib/ncarg/nclex/nug/NUG_transparent_filled_contour.ncl
 lib/ncarg/nclex/nug/NUG_transparent_land_sea_mask_Africa.ncl
 lib/ncarg/nclex/nug/NUG_triangular_grid_ICON.ncl
+lib/ncarg/nclex/nug/NUG_triangular_grid_ICON_640.ncl
 lib/ncarg/nclex/nug/NUG_tripolar_grid_STORM.ncl
 lib/ncarg/nclex/nug/NUG_unstructured_grid.ncl
+lib/ncarg/nclex/nug/NUG_unstructured_grid_640.ncl
 lib/ncarg/nclex/nug/NUG_unstructured_grid_ICON.ncl
 lib/ncarg/nclex/nug/NUG_use_Fortran_subroutines.ncl
 lib/ncarg/nclex/nug/NUG_vector_curly.ncl
