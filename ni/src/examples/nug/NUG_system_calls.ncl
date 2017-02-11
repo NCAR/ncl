@@ -3,9 +3,10 @@
 ;
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
-;======================================
+;============================================
 ;== define function my_pi()
-;======================================
+;== note: can use "get_pi" added in V6.4.0
+;============================================
 undef("my_pi")
 function my_pi()
 local lpi
@@ -22,6 +23,9 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
 begin
+  start_time = get_cpu_time
+  print("--------------------------------------")
+  print("Start CPU time: " + start_time + "s")
 
   print("")
   print("")
@@ -53,11 +57,8 @@ begin
   print(file_list)
   print("--------------------------------------")
 
-  print("Total CPU time: " + get_cpu_time() + "s")
-  print("--------------------------------------")
-
   print("Directory of NCL database files:  " + ncargpath("database"))
-  print("Directory of NCL documents:       " + ncargpath("bin"))
+  print("Directory of NCL binaries:        " + ncargpath("bin"))
   print("--------------------------------------")
 
   print("Sleep 1 seconds")
@@ -67,6 +68,12 @@ begin
   print("Call function my_pi()")
   x = my_pi()
   print(x)
+  print("--------------------------------------")
+
+  end_time = get_cpu_time
+  print("--------------------------------------")
+  print("End CPU time:   " + end_time + "s")
+  print("Total CPU time: " + (end_time-start_time) + "s")
   print("--------------------------------------")
 
 end

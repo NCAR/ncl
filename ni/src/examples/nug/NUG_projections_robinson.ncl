@@ -35,8 +35,10 @@ begin
 ;-- set resources
   res                       =  True
   res@gsnMaximize           =  True
-  res@lbLabelStride         =  2               ;-- label every other box
-  res@lbBoxMinorExtentF     =  0.15            ;-- decrease the height of the labelbar
+
+  res@mpProjection          = "Robinson"       ;-- change projection
+  res@mpGridAndLimbOn       =  True            ;-- plot grid lines
+
   res@cnFillOn              =  True            ;-- turn on contour fill
   res@cnLinesOn             =  False           ;-- turn off contour lines
   res@cnLineLabelsOn        =  False           ;-- turn off line labels
@@ -44,8 +46,8 @@ begin
   res@cnMinLevelValF        =    0.            ;-- minimum contour level
   res@cnMaxLevelValF        =   40.            ;-- maximum contour level
   res@cnLevelSpacingF       =    2             ;-- contour level spacing
-  res@mpProjection          = "Robinson"       ;-- change projection
-  res@mpGridAndLimbOn       =  True             ;-- plot grid lines
+  res@lbLabelStride         =  2               ;-- label every other box
+  res@lbBoxMinorExtentF     =  0.15            ;-- decrease the height of the labelbar
 
   res@tiMainString          = "NCL Doc Example: Robinson projection"   ;-- title string
   res@tiMainFontHeightF     =  0.02

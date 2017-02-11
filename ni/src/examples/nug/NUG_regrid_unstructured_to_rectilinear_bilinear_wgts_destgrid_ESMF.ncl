@@ -11,9 +11,16 @@
 ;----------------------------------------------------------
 load "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl"
 
-undef("file_ERROR")
-procedure file_ERROR(name)
+;-------------------------------------------
+;-- Check for existence of file and open it
+;-------------------------------------------
+undef("open_file")
+function open_file(dir[1]:string,name[1]:string)
 begin
+   if (fileexists(dir+name)) then
+      f = addfile(dir+name, "r")
+      return(f)
+   end if
    print("")
    print("You don't have the necessary data for this script. You can download it from:​")
    print("")
@@ -25,7 +32,6 @@ begin
    print("")
    exit
 end
-
   
 begin
   start_time = get_cpu_time()               ;-- get cpu time
@@ -38,20 +44,13 @@ begin
   fili = "triangular_grid_ICON.nc"
   grid = "tas_rectilinear_grid_2D.nc"       ;-- use grid from file
 
-  if (.not. fileexists(diri+fili)) then
-     file_ERROR(fili)
-  end if
-  if (.not. fileexists(diri+grid)) then
-     file_ERROR(grid)
-  end if
-  
 ;-- read destination grid data
-  g       =  addfile(diri+grid,"r")
+  g       =  open_file(diri,grid)
   dst_lat =  g->lat
   dst_lon =  g->lon
 
 ;-- read data
-  f       =  addfile(diri+fili,"r")
+  f       =  open_file(diri,fili)
   var     =  f->S(time|0,depth|0,ncells|:)  ;-- set variable with dims: (time,depth,ncells)
   printVarSummary(var)
 

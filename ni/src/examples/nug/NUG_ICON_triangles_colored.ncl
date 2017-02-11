@@ -12,7 +12,7 @@
 ;  modified:
 ;     - plot only one frame
 ;     - don't wrap lines around for 'low' and 'high' levels as well
-;          (original script regards only to 'middle' levels which  
+;          (original script checks only 'middle' levels which  
 ;           caused polygon line wrapping)
 ;
 ;  KMF 30.10.14
@@ -22,9 +22,16 @@
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 
-undef("file_ERROR")
-procedure file_ERROR(name)
+;-------------------------------------------
+;-- Check for existence of file and open it
+;-------------------------------------------
+undef("open_file")
+function open_file(dir[1]:string,name[1]:string)
 begin
+   if (fileexists(dir+name)) then
+      f = addfile(dir+name, "r")
+      return(f)
+   end if
    print("")
    print("You don't have the necessary data for this script. You can download it from:​")
    print("")
@@ -38,10 +45,41 @@ begin
 end
 
 ;---------------------------------------
+;-- function create_map
+;---------------------------------------
+undef("create_map")
+function create_map(wks,var,latmin,latmax,lonmin,lonmax)
+local mpres
+begin
+;-------------------------------------------------------------------
+;-- set map resources
+;-------------------------------------------------------------------
+  mpres                      =  True
+  mpres@gsnDraw              =  False                 ;-- don't draw the plot
+  mpres@gsnFrame             =  False                 ;-- don't advance the frame
+  mpres@gsnMaximize          =  True                  ;-- maximize plot output
+  mpres@mpLimitMode          = "LatLon"               ;-- map limits mode
+  mpres@mpMinLatF            =  latmin                ;-- latitude minimum
+  mpres@mpMaxLatF            =  latmax                ;-- latitude maximum
+  mpres@mpMinLonF            =  lonmin                ;-- longitude minimum
+  mpres@mpMaxLonF            =  lonmax                ;-- longitude maximum
+  mpres@mpCenterLonF         =  180                   ;-- map center lon
+  mpres@mpFillOn             =  False                 ;-- don't draw filled map
+
+  mpres@gsnLeftString        =  var@long_name         ;-- set left string
+  mpres@gsnRightString       =  "%"                   ;-- set right string (var@units)
+
+  ;-- create the map, but don't draw it; will use this to add filled polygons to
+  map = gsn_csm_map(wks,mpres)
+
+  return(map)
+end
+
+;---------------------------------------
 ;-- function attach_labelbar
 ;---------------------------------------
 undef("attach_labelbar")
-function attach_labelbar(wks,map,labels,colors)
+procedure attach_labelbar(wks,map,labels,colors)
 local lbres, nlevels, amres
 begin
   nlevels = dimsizes(labels)                        ; number of labels
@@ -60,103 +98,22 @@ begin
   amres                      =  True
   amres@amJust               = "TopCenter"          ; annotation alignment
   amres@amOrthogonalPosF     =  0.6                 ; move annotation downward
-  amres@gsnMaximize          =  True                ; be sure to remaxmize output
   map@annoid                 =  gsn_add_annotation(map,lbid,amres)
 
   return(map)
 end
 
-;==================================
-;-- main
-;==================================
+;-------------------------------------------------------------------
+; Given a map, triangular mesh, levels, and colors, add filled 
+; triangles to map depending on what levels they fall between. 
+;-------------------------------------------------------------------
+undef("add_filled_triangles")
+procedure add_filled_triangles(wks,plot,var[*]:numeric,vlat[*][*],\
+                               vlon[*][*],levels[*]:numeric,\
+                               colors[*][*]:numeric)
+local pres, eps, vlow, vhgh, vind, varstring, i, j, nlevels, nv
 begin
-  diri         = "$NCARG_ROOT/lib/ncarg/data/nug/"
-  DataFileName = "atm_phy_mag0004_1985.nc"           ;-- data file
-  dirg         = "./"
-  gridinfofile = "r2b4_amip.nc"                      ;-- grid info file
-  VarName      = "clt"                               ;-- variable name       
-
-  colormap     = "WhiteBlue"                         ;-- color map
-  scale        =  100                                ;-- multiply by
-
-  varMin       =   10                                ;-- minimum contour level
-  varMax       =   90                                ;-- maximum contour level
-  varInt       =   10                                ;-- interval between contours
-
-  lonMin       = -180                                ;-- longitude minimum
-  lonMax       =  180                                ;-- longitude maximum
-  latMin       =  -90                                ;-- latitude minimum
-  latMax       =   90                                ;-- latitude maximum
-
-;-------------------------------------------------------------------
-;-- add data and grid file
-;-------------------------------------------------------------------
-  if (fileexists(diri+DataFileName)) then
-     VarFile = addfile(diri+DataFileName, "r" )              ;-- add data file
-  else
-     file_ERROR(DataFileName)
-  end if
-  if (fileexists(dirg+gridinfofile)) then
-     GridInfoFile = addfile(dirg+gridinfofile, "r" )      ;-- add grid file (not contained in data file!!!)
-  else
-     file_ERROR(gridinfofile)
-  end if
-  
-  var          = VarFile->$VarName$(time|0,ncells|:)    ;-- set variable with dims: (time,ncell)
-  var          = var*scale                              ;-- scale factor (here 100 to get %)
-
-;-------------------------------------------------------------------
-;-- define the x-, y-values and the polygon points
-;-------------------------------------------------------------------
-  rad2deg =  45./atan(1.)                            ;-- radians to degrees
- 
-  x    = GridInfoFile->clon *rad2deg                 ;-- cell center, lon
-  y    = GridInfoFile->clat *rad2deg                 ;-- cell center, lat
-
-  vlon = GridInfoFile->clon_vertices * rad2deg       ;-- cell longitude vertices
-  vlon = where(vlon.lt.0, vlon + 360, vlon)          ;-- longitude: 0-360
-  vlat = GridInfoFile->clat_vertices * rad2deg       ;-- cell latitude vertices
-
-  nv   = dimsizes(vlon(0,:))                         ;-- number of points in polygon
-
-  print("")
-  print("Data longitude min/max: " + min(vlon) + "   " + max(vlon) + "   cell points = " + nv)
-  print("")
-  print("Plot area: "+lonMin+","+lonMax+" "+latMin+","+latMax)
-  print("")
-
-;-------------------------------------------------------------------
-;-- open workstation
-;-------------------------------------------------------------------
-  wks = gsn_open_wks("png","NUG_ICON_triangles_colored")
-
-;-------------------------------------------------------------------
-;-- set map resources
-;-------------------------------------------------------------------
-  mpres                      =  True
-  mpres@gsnDraw              =  False                 ;-- don't draw the plot
-  mpres@gsnFrame             =  False                 ;-- don't advance the frame
-  mpres@gsnMaximize          =  True                  ;-- maximize plot output
-  mpres@mpLimitMode          = "LatLon"               ;-- map limits mode
-  mpres@mpMinLatF            =  latMin                ;-- latitude minimum
-  mpres@mpMaxLatF            =  latMax                ;-- latitude maximum
-  mpres@mpMinLonF            =  lonMin                ;-- longitude minimum
-  mpres@mpMaxLonF            =  lonMax                ;-- longitude maximum
-  mpres@mpCenterLonF         =  180                   ;-- map center lon
-  mpres@mpFillOn             =  False                 ;-- don't draw filled map
-
-  mpres@gsnLeftString        =  var@long_name         ;-- set left string
-  mpres@gsnRightString       =  "%"                   ;-- set right string (var@units)
-
-  ;-- create the map, but don't draw it; will use this to add filled polygons to
-  map = gsn_csm_map(wks,mpres)
-
-  levels  = ispan(varMin,varMax,varInt)
-  nlevels = dimsizes(levels)                          ;-- number of levels
-  colors  = span_color_rgba (colormap,nlevels+1)
-
-  ;-- attach a labelbar to the plot
-  map = attach_labelbar(wks,map,levels+"",colors)
+  nv = dimsizes(vlon(0,:))                         ;-- number of vertices in polygon
 
 ;-------------------------------------------------------------------
 ;-- set polygon resources
@@ -183,7 +140,7 @@ begin
      end if
      pres@gsFillColor = colors(0,:)
      varstring = unique_string("gon")
-     map@$varstring$ = gsn_add_polygon(wks,map,vlon(vlow(i),:), vlat(vlow(i),:),pres)
+     plot@$varstring$ = gsn_add_polygon(wks,plot,vlon(vlow(i),:), vlat(vlow(i),:),pres)
   end do
   print ("finished level  0  -- " + sprinti("%6.0i",dimsizes(vlow)) + " polygons considered")
 ;-------------------------------------------------------------------
@@ -200,7 +157,7 @@ begin
         end if
         pres@gsFillColor = colors(i+1,:)
         varstring = unique_string("gon")
-        map@$varstring$ = gsn_add_polygon(wks,map,vlon(vind(j),:), vlat(vind(j),:),pres)
+        plot@$varstring$ = gsn_add_polygon(wks,plot,vlon(vind(j),:), vlat(vind(j),:),pres)
      end do
      print ("finished level " + sprinti("%2.0i",(i+1)) + "  -- " + sprinti("%6.0i",dimsizes(vind)) + \
             " polygons considered")
@@ -209,6 +166,7 @@ begin
 ;-------------------------------------------------------------------
 ;-- attach the polygons associated with the highest level; don't wrap lines around
 ;-------------------------------------------------------------------
+  nlevels = dimsizes(levels)                          ;-- number of levels
   vhgh = ind(var .ge. levels(nlevels-1))
   do i = 0, dimsizes(vhgh)-1
      ;=== This is a special test to make sure we don't get a polygon that wraps around.
@@ -219,16 +177,82 @@ begin
      end if
      pres@gsFillColor = colors(nlevels,:)
      varstring = unique_string("gon")
-     map@$varstring$ = gsn_add_polygon(wks,map,vlon(vhgh(i),:), vlat(vhgh(i),:),pres)
+     plot@$varstring$ = gsn_add_polygon(wks,plot,vlon(vhgh(i),:), vlat(vhgh(i),:),pres)
   end do
   print ("finished level " + sprinti("%2.0i",nlevels) + "  -- " + sprinti("%6.0i",dimsizes(vhgh)) + \
          " polygons considered")
   delete(vhgh)
 
+end
+
+;==================================
+;-- main
+;==================================
+begin
+  vdir         = "$NCARG_ROOT/lib/ncarg/data/nug/"
+  DataFile     = "atm_phy_mag0004_1985.nc"           ;-- data file
+  gdir         = "./"
+  GridInfoFile = "r2b4_amip.nc"                      ;-- grid info file
+  VarName      = "clt"                               ;-- variable name       
+
+  colormap     = "WhiteBlue"                         ;-- color map
+  scale        =  100                                ;-- multiply by
+
+  varMin       =   10                                ;-- minimum contour level
+  varMax       =   90                                ;-- maximum contour level
+  varInt       =   10                                ;-- interval between contours
+
+  levels       = ispan(varMin,varMax,varInt)           ;-- contour levels
+  nlevels      = dimsizes(levels)
+  colors       = span_color_rgba (colormap,nlevels+1)  ;-- colors between levels
+
+  lonMin       = -180                                ;-- longitude minimum
+  lonMax       =  180                                ;-- longitude maximum
+  latMin       =  -90                                ;-- latitude minimum
+  latMax       =   90                                ;-- latitude maximum
+
 ;-------------------------------------------------------------------
-  draw(map)             ;-- draw the map
-  frame(wks)            ;-- advance the frame
+;-- add data and grid file
 ;-------------------------------------------------------------------
+  vfile = open_file(vdir,DataFile)           ;-- add data file
+  gfile = open_file(gdir,GridInfoFile)       ;-- open lat/lon grid file (not contained in data file!!!)
+  
+  var = vfile->$VarName$(time|0,ncells|:)    ;-- set variable with dims: (time,ncell)
+  var = var*scale                            ;-- scale factor (here 100 to get %)
+
+;-------------------------------------------------------------------
+;-- get the vertices of the polygons
+;-------------------------------------------------------------------
+  rad2deg = get_r2d("float")
+ 
+  vlat = gfile->clat_vertices * rad2deg       ;-- cell latitude vertices
+  vlon = gfile->clon_vertices * rad2deg       ;-- cell longitude vertices
+  vlon = where(vlon.lt.0, vlon + 360, vlon)          ;-- longitude: 0-360
+  nv   = dimsizes(vlon(0,:))                         ;-- number of points in polygon
+
+  print("")
+  print("Data longitude min/max: " + min(vlon) + "   " + max(vlon) + "   cell points = " + nv)
+  print("")
+  print("Plot area: "+lonMin+","+lonMax+" "+latMin+","+latMax)
+  print("")
+
+  ;-- open workstation
+  wks = gsn_open_wks("png","NUG_ICON_triangles_colored")
+
+  ;-- create a map
+  map = create_map(wks,var,latMin,latMax,lonMin,lonMax)
+
+  ;-- add filled triangles to the plot
+  add_filled_triangles(wks,map,var,vlat,vlon,levels,colors)
+
+  ;-- attach a labelbar to the plot
+  attach_labelbar(wks,map,levels+"",colors)
+
+  ;-- draw the map, filled triangles, labelbar
+  draw(map)
+
+  ;-- advance the frame
+  frame(wks)
 end
 
 

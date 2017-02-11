@@ -9,13 +9,16 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 
 begin
+   qc    = str_get_dq()                          ; the quote character
+
    title = "Strings"
    fili  = "tas_AFR-44_MPI-ESM-LR_historical_r1i1p1_CCLM_4-8-17_mon_1961-1990.nc"
 
 ;-- get number of field elements of a given string and delimiter
    print("---")
-   print("File name:                        " + fili)
-   print("Number of elements in file name:  " + str_fields_count(fili,"_"))
+   split_char = "_"
+   print("File name: " + fili)
+   print("Number of fields split by '" + split_char + "' character: " + str_fields_count(fili,split_char))
    print("---")
 
 ;-- get field elements of given string
@@ -52,7 +55,7 @@ begin
 
 ;-- write with newline to stdout
    nl = str_get_nl()
-   print(nl +"Now, you can write text in a new line to stdout" + nl)
+   print(nl +"Now you can write text in a new line to stdout" + nl)
 
 ;-- delete leading and ending spaces and TABs
    str = "     abc        "
@@ -67,34 +70,35 @@ begin
    print("<" + new_string + ">" + nl)
 
 ;-- change to upper case or lower case
-  str_up  = "HELLO WORLD"
-  str_low = "good morning"
+    str_up  = "HELLO WORLD"
+    str_low = "good morning"
 
-  print("Original string:  " + str_up + "   converted to   " + str_lower(str_up))
-  print("Original string:  " + str_low + "  converted to   " + str_upper(str_low) + nl)
+    print("Original string:  " + str_up + "   converted to   " + str_lower(str_up))
+    print("Original string:  " + str_low + "  converted to   " + str_upper(str_low) + nl)
 
 ;-- capitalize all elemts of a string
 
-  str_line = "hello world - this is a test for string manipulations"
-  print("Capitalize the following text:  " + str_line)
-  print("                                " + str_capital(str_line))
+    str_line = "hello world - this is a test for string manipulations"
+    print("Capitalize the following text:  " + str_line)
+    print("                                " + str_capital(str_line))
 
 ;-- concatenation of strings
 
-  str_array = (/"Temperature", "Precipitation", "None", "Soil", "Cloud Cover", "Windspeed", "None"/)
-  str_array@_FillValue = "None"
-  print("Print the string array:               " + str_array)
-  print("Print the concatenated string array:  " + str_concat(str_array))
-  print("Print the concatenated string array with missing value:  " + \
-                          str_concat(where(ismissing(str_array)," ",str_array)))
+    str_array = (/"Temperature", "Precipitation", "None", "Soil", "Cloud Cover", "None", "Wind speed"/)
+    str_array@_FillValue = "None"
+    print("Original string array:      " + str_join(str_array,","))
+    print("Concatenated string array:  " + str_concat(str_array))
+    print("Concatenated string array w/'None' replaced with a space:" + str_get_nl() + \
+          "                                    " + str_concat(where(ismissing(str_array)," ",str_array)))
   
-  str = "Using NCL makes a lot of fun"
-  strlist = str_split(str, " ")
-  qc = str_get_dq()                          ; the quote character
-  print(qc + strlist + qc)
+    str     = "Using NCL makes a lot of fun"
+    str_new = str_split(str, " ")
+    print("Original single string      = " + qc + str + qc)
+    print("New strings split by spaces = " + qc + str_new + qc)
 
-  str = "20130101,000000,53.33,10.0,278.32,t2m,,,Near-Surface Air Temperature"
-  str_new = str_split_csv(str, ",", 0)
-  print(str_new)
+    str     = "20130101,000000,53.33,10.0,278.32,t2m,,,Near-Surface Air Temperature"
+    str_new := str_split_csv(str, ",", 0)
+    print("Original single string      = " + qc + str + qc)
+    print("New strings split by commas = " + qc+ str_new + qc) 
 
 end

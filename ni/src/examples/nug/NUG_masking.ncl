@@ -7,9 +7,16 @@
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
-undef("file_ERROR")
-procedure file_ERROR(name)
+;-------------------------------------------
+;-- Check for existence of file and open it
+;-------------------------------------------
+undef("open_file")
+function open_file(dir[1]:string,name[1]:string)
 begin
+   if (fileexists(dir+name)) then
+      f = addfile(dir+name, "r")
+      return(f)
+   end if
    print("")
    print("You don't have the necessary data for this script. You can download it from:​")
    print("")
@@ -28,20 +35,13 @@ begin
   fil1  = "tas_rectilinear_grid_2D.nc"
   fil2  = "sftlf_mod1_rectilinear_grid_2D.nc"
 
-  if (.not. fileexists(diri+fil1)) then
-     file_ERROR(fil1)
-  end if
-  if (.not. fileexists(diri+fil2)) then
-     file_ERROR(fil2)
-  end if
-  
-  file1          = addfile(diri+fil1,"r")
+  file1          = open_file(diri,fil1)
   var            =  file1->tas(0,:,:)
   var&lat@units  = "degrees_north"
   var&lon@units  = "degrees_east"
 
 ;---- read the land /sea mask data
-  mask1          =  addfile(diri+fil2,"r")
+  mask1          =  open_file(diri,fil2)
   lsm1           =  mask1->sftlf(:,:)
   lsm1&lat@units = "degrees_north"
   lsm1&lon@units = "degrees_east"

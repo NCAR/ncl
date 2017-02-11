@@ -6,9 +6,16 @@
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
-undef("file_ERROR")
-procedure file_ERROR(name)
+;-------------------------------------------
+;-- Check for existence of file and open it
+;-------------------------------------------
+undef("open_file")
+function open_file(dir[1]:string,name[1]:string)
 begin
+   if (fileexists(dir+name)) then
+      f = addfile(dir+name, "r")
+      return(f)
+   end if
    print("")
    print("You don't have the necessary data for this script. You can download it from:​")
    print("")
@@ -28,26 +35,10 @@ begin
   fil3 = "HSURF_regional_model_0.44deg.nc"
   fil4 = "FR-LAND_regional_model_0.44deg.nc"
   
-  if (fileexists(diri+fil1)) then
-     f1 = addfile(diri+fil1, "r")
-  else
-     file_ERROR(fil1)
-  end if
-  if (fileexists(diri+fil2)) then
-     mask1 = addfile(diri+fil2, "r")
-  else
-     file_ERROR(fil2)
-  end if
-  if (fileexists(diri+fil3)) then
-     f2 = addfile(diri+fil3, "r")
-  else
-     file_ERROR(fil3)
-  end if
-  if (fileexists(diri+fil4)) then
-     mask2 = addfile(diri+fil4, "r")
-  else
-     file_ERROR(fil4)
-  end if
+  f1 = open_file(diri,fil1)
+  mask1 = open_file(diri,fil2)
+  f2 = open_file(diri,fil3)
+  mask2 = open_file(diri,fil4)
   
   var1        = f1->HSURF(0,:,:)
   lsm1        = mask1->FR_LAND(0,:,:)
