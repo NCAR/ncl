@@ -26,7 +26,7 @@ NCL_SCRIPTS =	NUG_GrADS_binary_data.ncl NUG_ICON_triangles_colored.ncl		\
 		NUG_panel_plot_3x2.ncl NUG_panel_control.ncl NUG_panel_plot.ncl		\
 		NUG_panel_vp.ncl NUG_plot_in_5_steps.ncl NUG_plot_rotated_grid.ncl	\
 		NUG_polar_NH.ncl NUG_polyline_polygon_polymarker.ncl			\
-		NUG_polyline_polygon_polymarker_old.ncl NUG_projections.ncl		\
+		NUG_primitives.ncl NUG_projections.ncl		\
 		NUG_projections_mollweide.ncl NUG_projections_robinson.ncl		\
 		NUG_read_ASCII_1.ncl NUG_read_ASCII_2.ncl NUG_read_ASCII_3.ncl		\
 		NUG_read_Binary_1.ncl NUG_read_Binary_GrADS.ncl NUG_read_CSV_1.ncl	\
