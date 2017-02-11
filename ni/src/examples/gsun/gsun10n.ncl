@@ -1,5 +1,6 @@
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 
+undef("wigley")
 function wigley(time:integer)
 local i, j, k
 begin

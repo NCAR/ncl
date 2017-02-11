@@ -1,5 +1,6 @@
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 
+undef("addcyclic")
 function addcyclic(data[*][*]:float)
 ;
 ; Add a cyclic point in "x" to a 2D array
