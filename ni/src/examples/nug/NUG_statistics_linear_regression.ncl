@@ -49,7 +49,7 @@ begin
   y_stat2 = rc*(x-rc@xave) + rc@yave  ;-- rc@yave = y intercept; rc = slope
   
 ;-- open workstation
-  wks = gsn_open_wks("png","plot_stat_linear_regression")
+  wks = gsn_open_wks("png","NUG_statistics_linear_regression")
 
 ;-- set resources
   res                   =  True

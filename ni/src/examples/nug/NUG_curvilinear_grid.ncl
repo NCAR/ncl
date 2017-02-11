@@ -32,7 +32,7 @@ begin
 
   
 ;-- define the workstation (plot type and name)
-   wks = gsn_open_wks("png","plot_curvilinear_grid")
+   wks = gsn_open_wks("png","NUG_curvilinear_grid")
 
 ;-- set resources
    res                       =  True

@@ -30,7 +30,7 @@ begin
   var   =  file1->tsurf(0,:,:)
 
 ;---- define the workstation (plot output type and name)
-  wks = gsn_open_wks("png","plot_title_strings")
+  wks = gsn_open_wks("png","NUG_title_strings")
 
 ;---- set resources
   res                       =  True

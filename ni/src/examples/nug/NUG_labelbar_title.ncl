@@ -29,7 +29,7 @@ begin
   var = file1->tsurf(0,:,:)
 
 ;-- define the workstation (plot type and name)
-  wks = gsn_open_wks("png","plot_labelbar_title")
+  wks = gsn_open_wks("png","NUG_labelbar_title")
 
 ;-- set resources
   res                       =  True

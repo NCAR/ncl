@@ -6,23 +6,26 @@
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
-undef("file_ERROR")
-procedure file_ERROR(diri,names[*]:string)
+;-------------------------------------------
+;-- Check for existence of file and open it
+;-------------------------------------------
+undef("open_file")
+function open_file(dir[1]:string,name[1]:string)
 begin
-   files_exist = fileexists(diri+names)
-   if(any(.not.files_exist)) then
-     ii = ind(.not.files_exist)
-     print("")
-     print("You don't have the necessary data file(s) for this script. You can download them from:​")
-     print("")
-     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+names(ii))
-     print("")
-     print("or use the wget command:")
-     print("")
-     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+names(ii))
-     print("")
-     exit
-  end if
+   if (fileexists(dir+name)) then
+      f = addfile(dir+name, "r")
+      return(f)
+   end if
+   print("")
+   print("You don't have the necessary data for this script. You can download it from:​")
+   print("")
+   print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   print("or use the wget command:")
+   print("")
+   print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   exit
 end
 
 begin
@@ -43,13 +46,17 @@ begin
   msk2 = "sftlf_mod2_rectilinear_grid_2D.nc"
   msk3 = "sftlf_mod3_rectilinear_grid_2D.nc"  
 
-  file_ERROR(diri,(/fil1,fil2,fil3,msk1,msk2,msk3/))
+  file_1 = open_file(diri,fil1)
+  mask_1 = open_file(diri,msk1)
+  file_2 = open_file(diri,fil2)
+  mask_2 = open_file(diri,msk2)
+  file_3 = open_file(diri,fil3)
+  mask_3 = open_file(diri,msk3)
 
-  file_1    = addfile(diri+fil1, "r")
-  variable1 = file_1->orog(:,:)
+;-- first file
+  variable1 = file_1->orog
 
-  mask_1 = addfile(diri+msk1,"r")
-  lsm1   = mask_1->sftlf(:,:)
+  lsm1   = mask_1->sftlf
   lsm1   = lsm1/100                 ;-- do this cause data in percent
   lsm1   = where(lsm1.gt.0.5,-9999,lsm1)
 
@@ -58,12 +65,10 @@ begin
   land_only1  = mask(variable1,lsm1,-9999)
 
 ;-- second file
-  file_2     = addfile(diri+fil2, "r")
   variable2  = file_2->orog(0,{lat0:lat1-border1},{lon0+border1:lon1})
   variable2&rlat@units = "degrees_north"
   variable2&rlon@units = "degrees_east"
 
-  mask_2 = addfile(diri+msk2,"r")
   lsm2   = mask_2->sftlf(0,{lat0:lat1-border1},{lon0+border1:lon1})
   lsm2   = where(lsm2.gt.0.5,-9999,lsm2)
 
@@ -72,12 +77,10 @@ begin
   land_only2  = mask(variable2,lsm2,-9999)
 
 ;-- third file
-  file_3     = addfile(diri+fil3, "r")
   variable3  = file_3->orog(0,{lat0:lat1-border2},{lon0+border2:lon1})
   variable3&rlat@units = "degrees_north"
   variable3&rlon@units = "degrees_east"
 
-  mask_3 = addfile(diri+msk3,"r")
   lsm3   = mask_3->sftlf(0,{lat0:lat1-border2},{lon0+border2:lon1})
   lsm3   = where(lsm3.gt.0.5,-9999,lsm3)
 
@@ -86,7 +89,7 @@ begin
   land_only3  = mask(variable3,lsm3,-9999)
 
 ;-- open workstation
-  wks                    = gsn_open_wks("png","plot_grid_resolution_comparison")
+  wks                    = gsn_open_wks("png","NUG_grid_resolution_comparison")
   gsn_define_colormap(wks,"OceanLakeLandSnow")
 
 ;-- define the global resources for all plots

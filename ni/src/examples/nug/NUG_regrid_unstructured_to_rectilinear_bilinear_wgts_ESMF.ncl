@@ -136,7 +136,7 @@ begin
   wks_type          = "png"
   wks_type@wkWidth  =  1024
   wks_type@wkHeight =  1024
-  wks = gsn_open_wks(wks_type,"plot_regrid_unstructured_to_rectilinear")
+  wks = gsn_open_wks(wks_type,"NUG_regrid_unstructured_to_rectilinear_bilinear_wgts_ESMF")
 
 ;-- set resources for contour plots
   res                    =  True

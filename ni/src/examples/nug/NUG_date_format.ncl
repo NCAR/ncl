@@ -67,7 +67,7 @@ begin
   labels                     = (/ date_str_i(0::incr) /)
 
 ;-- define the workstation (plot type and name)
-  wks  = gsn_open_wks("png", "plot_date_format")
+  wks  = gsn_open_wks("png", "NUG_date_format")
 
 ;-- set resources
   res                        =  True

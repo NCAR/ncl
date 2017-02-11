@@ -30,7 +30,7 @@ begin
    var   =  f->T2M(0,:,:)
 
 ;-- define the workstation (graphic will be written to a file)
-   wks      =  gsn_open_wks("png","plot_labelbars")
+   wks      =  gsn_open_wks("png","NUG_labelbars")
 
 ;-- set plot resources
    res                  = True

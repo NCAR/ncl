@@ -27,7 +27,7 @@ begin
   ntext = dimsizes(data)
 
 ;-- open workstation
-  wks = gsn_open_wks("png","plot_text_settings")   
+  wks = gsn_open_wks("png","NUG_text_settings")   
 
 ;-- x, y start point for writing
   x   = 0.1

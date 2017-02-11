@@ -6,24 +6,26 @@
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
-undef("file_ERROR")
-procedure file_ERROR(diri,names[*]:string)
-local files_exist, ii
+;-------------------------------------------
+;-- Check for existence of file and open it
+;-------------------------------------------
+undef("open_file")
+function open_file(dir[1]:string,name[1]:string)
 begin
-   files_exist = fileexists(diri+names)
-   if(any(.not.files_exist)) then
-     ii = ind(.not.files_exist)
-     print("")
-     print("You don't have the necessary data file(s) for this script. You can download them from:​")
-     print("")
-     print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+names(ii))
-     print("")
-     print("or use the wget command:")
-     print("")
-     print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+names(ii))
-     print("")
-     exit
-  end if
+   if (fileexists(dir+name)) then
+      f = addfile(dir+name, "r")
+      return(f)
+   end if
+   print("")
+   print("You don't have the necessary data for this script. You can download it from:​")
+   print("")
+   print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   print("or use the wget command:")
+   print("")
+   print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+   print("")
+   exit
 end
 
 
@@ -37,13 +39,11 @@ begin
   fil4 = "uas_rectilinear_grid_2D.nc"
   fil5 = "vas_rectilinear_grid_2D.nc"
 
-  file_ERROR(diri,(/fil1,fil2,fil3,fil4,fil5/))
-
-  f1   =  addfile(diri+fil1, "r")
-  f2   =  addfile(diri+fil2, "r")
-  f3   =  addfile(diri+fil3, "r")
-  f4   =  addfile(diri+fil4, "r")
-  f5   =  addfile(diri+fil5, "r")
+  f1   =  open_file(diri,fil1)
+  f2   =  open_file(diri,fil2)
+  f3   =  open_file(diri,fil3)
+  f4   =  open_file(diri,fil4)
+  f5   =  open_file(diri,fil5)
 
   orog  = f1->orog
   sftlf = f2->sftlf
@@ -52,7 +52,7 @@ begin
   v     = f5->vas
 
 ;-- open a PNG file
-  wks = gsn_open_wks("png","plot_panel_plot")
+  wks = gsn_open_wks("png","NUG_panel_plot")
 
 ;-- create plot array
   plot = new(3,graphic)

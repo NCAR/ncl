@@ -19,7 +19,7 @@ begin
                      "orange","purple"/)
 
 ;-- define the workstation (plot type and name)
-  wks = gsn_open_wks("png","plot_map_select_countries")
+  wks = gsn_open_wks("png","NUG_map_selected_countries")
 
 ;-- set resources
   res                      =  True

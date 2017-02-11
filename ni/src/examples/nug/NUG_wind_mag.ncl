@@ -4,9 +4,16 @@
 ;  KMF 30.10.14
 ;-----------------------------------------------------------------
 
-undef("file_ERROR")
-procedure file_ERROR(name)
+;==========================================
+;== Check for existence of file and open it
+;==========================================
+undef("open_file")
+function open_file(dir[1]:string,name[1]:string)
 begin
+   if (fileexists(dir+name)) then
+      f = addfile(dir+name, "r")
+      return(f)
+   end if
    print("")
    print("You don't have the necessary data for this script. You can download it from:​")
    print("")
@@ -52,20 +59,12 @@ begin
   fil1 = "uas_rectilinear_grid_2D.nc"
   fil2 = "vas_rectilinear_grid_2D.nc"
 
-
-  if (.not. fileexists(diri+fil1)) then
-     file_ERROR(fil1)
-  end if
-  if (.not. fileexists(diri+fil2)) then
-     file_ERROR(fil2)
-  end if
-  
-  f1 = addfile(diri+fil1,"r")
-  f2 = addfile(diri+fil2,"r")
+  f1 = open_file(diri,fil1)
+  f2 = open_file(diri,fil2)
   u  = f1->uas(0,:,:)
   v  = f2->vas(0,:,:)
 
-  wks  =  gsn_open_wks("png","plot_wind_mag")
+  wks  =  gsn_open_wks("png","NUG_wind_mag")
 
   res                   =  True
   res@gsnAddCyclic      =  True

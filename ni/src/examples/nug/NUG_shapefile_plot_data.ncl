@@ -18,55 +18,52 @@
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
-undef("file_ERROR")
-procedure file_ERROR(name)
+;-------------------------------------------
+;-- Check for existence of file and open it
+;-------------------------------------------
+undef("open_file")
+function open_file(dir[1]:string,name[1]:string,type[1]:string)
 begin
-   print("")
-   print("You don't have the necessary data for this script. You can download it from:​")
-   print("")
-   print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
-   print("")
-   print("or use the wget command:")
-   print("")
-   print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
-   print("")
-   exit
-end
-
-undef("shp_file_ERROR")
-procedure shp_file_ERROR(name)
-begin
-   print("")
-   print("You don't have the necessary "+name+" shapefile data for this script. You can download it from:​")
-   print("")
-   print("http://www.gadm.org/country/")
-   print("")
-   print("Select 'Germany' from the country list and 'Shapefile' for the file format.")
-   print("")
-   exit
+   if (fileexists(dir+name)) then
+      f = addfile(dir+name, "r")
+      return(f)
+   end if
+   if(type.eq."shapefile") then
+      print("")
+      print("You don't have the necessary "+name+" shapefile data for this script. You can download it from:​")
+      print("")
+      print("http://www.gadm.org/country/")
+      print("")
+      print("Select 'Germany' from the country list and 'Shapefile' for the file format.")
+      print("")
+   else
+      print("")
+      print("You don't have the necessary data for this script. You can download it from:​")
+      print("")
+      print("http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+      print("")
+      print("or use the wget command:")
+      print("")
+      print("wget http://www.ncl.ucar.edu/Document/Manuals/NCL_User_Guide/Data/"+name)
+      print("")
+    end if
+    exit
 end
 
   
 begin
    diri    = "./"
    shpname = "DEU_adm/DEU_adm1.shp"
+   g       =  open_file(diri,shpname,"shapefile")
    
 ;-- read data to display
    fili = "rectilinear_grid_2D.nc"
    
-   if (.not. fileexists(diri+fili)) then
-      file_ERROR(fili)
-   end if
-   if (.not. fileexists(diri+shpname)) then
-      shp_file_ERROR(shpname)
-   end if
-  
-  
-   g    =  addfile(diri+fili,"r")
+   g    =  open_file(diri,fili,"")
    var  =  g->tsurf(0,:,:)
 
 ;-- open workstation
-   wks = gsn_open_wks("png","plot_shapefile_plus_data")
+   wks = gsn_open_wks("png","NUG_shapefile_plot_data")
 
 ;-- set resources for the map
    res                     =  True

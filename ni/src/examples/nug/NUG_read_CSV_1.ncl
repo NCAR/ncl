@@ -40,7 +40,7 @@ begin
 ;-- 4 timesteps, interval 6h
   x = ispan(0,18,6)
 
-  wks = gsn_open_wks("png","plot_csv")
+  wks = gsn_open_wks("png","NUG_read_CSV_1")
 
   res                        =  True
   res@tiMainString           = "NCL Doc Example: Read CSV data (delimiter = ;)"

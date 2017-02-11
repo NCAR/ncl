@@ -10,7 +10,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 begin
 
 ;-- define the workstation (plot type and name)
-  wks = gsn_open_wks("png","plot_map_countries")
+  wks = gsn_open_wks("png","NUG_map_countries")
 
 ;-- set resources
   res                      =  True

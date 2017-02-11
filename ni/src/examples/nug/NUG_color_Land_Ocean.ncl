@@ -31,7 +31,7 @@ begin
    var@lon2d =  f->nav_lon
   
 ;-- define the workstation (plot type and name)
-   wks = gsn_open_wks("png","plot_color_Land_Ocean")
+   wks = gsn_open_wks("png","NUG_color_Land_Ocean")
 
 ;-- set resources
    res                       =  True

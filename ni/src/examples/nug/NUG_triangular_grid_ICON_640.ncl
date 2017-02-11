@@ -44,9 +44,9 @@ begin
   lat_min  =  15.0                        ;-- minimum latitude
   lat_max  =  70.0                        ;-- maximum latitude
 
-  rad2deg = 45./atan(1.)                  ;-- radians to degrees
-  x = f->clon * rad2deg                   ;-- cell center, lon
-  y = f->clat * rad2deg                   ;-- cell center, lat
+  rad2deg   = 45./atan(1.)                ;-- radians to degrees
+  var@lon1d = f->clon * rad2deg                ;-- cell center, lon
+  var@lat1d = f->clat * rad2deg                ;-- cell center, lat
 
 ;-- if variable wet_c exist: create missing values with it:
   if (isfilevar(f,"wet_c")) then
@@ -62,7 +62,7 @@ begin
   vlon = where(vlon.lt.0, vlon + 360, vlon)       ;-- lon: 0 - 360
   vlat = f->clat_vertices * rad2deg
 
-  wks = gsn_open_wks("png", "NUG_triangular_grid_ICON")   ;-- open a workstation
+  wks = gsn_open_wks("png", "NUG_triangular_grid_ICON_640")   ;-- open a workstation
 
   res                        =  True
   res@gsnDraw                =  False             ;-- don't draw the plot yet
@@ -85,9 +85,6 @@ begin
   res@mpGreatCircleLinesOn   =  True              ;-- important
   res@pmTickMarkDisplayMode  = "Always"           ;-- set nicer map tickmarks
   
-  res@sfXArray               =  x                 ;-- longitude grid cell center
-  res@sfYArray               =  y                 ;-- latitude grid cell center
-  
   res@cnFillOn               =  True              ;-- contour fill
   res@cnFillPalette          = "BlueWhiteOrangeRed" ;-- choose color map
   res@cnLinesOn              =  False             ;-- don't draw contour lines
@@ -108,7 +105,7 @@ begin
   plot = setColorContourClear(plot,min(var),max(var)) ;-- clear plot, but keep all the information
 
 ;-- create color array for triangles
-  ntri     = dimsizes(y)                          ;-- Number of triangles
+  ntri     = dimsizes(var@lon1d)                  ;-- Number of triangles
   gscolors = new(ntri,integer)
   gscolors = -1                                   ;-- Initialize to transparent
 

@@ -9,7 +9,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
 begin
 ;-- define the workstation (plot type and name)
-  wks = gsn_open_wks("png","plot_map_grid_and_tickmark_settings")
+  wks = gsn_open_wks("png","NUG_map_grid_and_tickmark_settings")
 
 ;-- set resources
   res                         =  True

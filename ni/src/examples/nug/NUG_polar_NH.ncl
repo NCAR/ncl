@@ -67,7 +67,7 @@ begin
   u    =  f->tsurf(0,:,:)
 
 ;-- define the workstation (plot type and name)
-  wks = gsn_open_wks("png" ,"plot_polar_settings")
+  wks = gsn_open_wks("png" ,"NUG_polar_NH")
   gsn_define_colormap(wks,"ncl_default")
 
   res                          =  True

@@ -1765,7 +1765,7 @@ lib/ncarg/nclex/nug/NUG_plot_in_5_steps.ncl
 lib/ncarg/nclex/nug/NUG_plot_rotated_grid.ncl
 lib/ncarg/nclex/nug/NUG_polar_NH.ncl
 lib/ncarg/nclex/nug/NUG_polyline_polygon_polymarker.ncl
-lib/ncarg/nclex/nug/NUG_polyline_polygon_polymarker_old.ncl
+lib/ncarg/nclex/nug/NUG_primitives.ncl
 lib/ncarg/nclex/nug/NUG_projections.ncl
 lib/ncarg/nclex/nug/NUG_projections_mollweide.ncl
 lib/ncarg/nclex/nug/NUG_projections_robinson.ncl
@@ -1795,8 +1795,10 @@ lib/ncarg/nclex/nug/NUG_title_strings.ncl
 lib/ncarg/nclex/nug/NUG_transparent_filled_contour.ncl
 lib/ncarg/nclex/nug/NUG_transparent_land_sea_mask_Africa.ncl
 lib/ncarg/nclex/nug/NUG_triangular_grid_ICON.ncl
+lib/ncarg/nclex/nug/NUG_triangular_grid_ICON_640.ncl
 lib/ncarg/nclex/nug/NUG_tripolar_grid_STORM.ncl
 lib/ncarg/nclex/nug/NUG_unstructured_grid.ncl
+lib/ncarg/nclex/nug/NUG_unstructured_grid_640.ncl
 lib/ncarg/nclex/nug/NUG_unstructured_grid_ICON.ncl
 lib/ncarg/nclex/nug/NUG_use_Fortran_subroutines.ncl
 lib/ncarg/nclex/nug/NUG_vector_curly.ncl

@@ -31,7 +31,7 @@ begin
   var   =  file1->tsurf(0,:,:)
 
 ;-- define the workstation (plot type and name)
-   wks = gsn_open_wks("png","plot_colormaps")
+   wks = gsn_open_wks("png","NUG_colormaps")
 
 ;-- set resources
    res                       =  True

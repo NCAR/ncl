@@ -57,7 +57,7 @@ begin
   time2!0= "time"
   
 ;-- define the workstation (plot type and name)
-  wks  = gsn_open_wks("png","plot_NUG_read_CSV_2")
+  wks  = gsn_open_wks("png","NUG_read_CSV_2")
 
 ;-- set resources
   res                        =  True

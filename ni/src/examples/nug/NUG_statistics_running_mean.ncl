@@ -45,7 +45,7 @@ begin
                                          ;-- running average
   
 ;-- open workstation
-  wks = gsn_open_wks("png","plot_stat_running_mean")
+  wks = gsn_open_wks("png","NUG_statistics_running_mean")
 
 ;-- set resources
   res                   =  True

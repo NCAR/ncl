@@ -8,7 +8,7 @@
 <h1>How to build NCL and NCAR Graphics version 6.4.0 from source code</h1>
 <p>
 
-<i>January 27, 2016</i><p>
+<i>February 11, 2017</i><p>
 
 <b>The latest version of this document can be found at
 <a href="http://www.ncl.ucar.edu/Download/build_from_src.shtml">http://www.ncl.ucar.edu/Download/build_from_src.shtml</a>.</b>
@@ -33,9 +33,10 @@ NCL and NCAR Graphics can only be built on UNIX systems.
 
 <blockquote>
 
-<b>We highly recommend that you use a precompiled NCL binary rather
-than attempting a build from source code.  If you tried a precompiled
-binary and ran into problems, you can post your problem to
+<b>We highly recommend that you install NCL via conda or using a
+precompiled NCL binary, rather than attempting a build from source
+code. If you tried a precompiled binary and ran into problems, you
+can post your problem to
 the <a href="http://mailman.ucar.edu/mailman/listinfo/ncl-install">ncl-install</a>
 email list.</b>
 
@@ -47,9 +48,9 @@ If you decide to go forth with building from source code, good luck!
 
 <b>Note on building NCAR Graphics only:</b> you have the option during
 the build process to indicate you do not want to build NCL,
-effectively building just NCAR Graphics.  This simplifies the build
+effectively building just NCAR Graphics. This simplifies the build
 somewhat, since you can get by with not having to install most, if
-any, of the external software packages listed below.  If you are
+any, of the external software packages listed below. If you are
 already familiar with building NCAR Graphics from source code, then
 all the instructions you know from before are the same. When you run
 "./Configure", be sure to answer "n" when it asks if you want to build
@@ -59,7 +60,7 @@ NCL.
 Before you start building NCL/NCAR Graphics, look over this document
 to see what functionality you want to include. This will help you
 figure out what packages you'll need and what options they need to be
-built with.  Check if you already have any of these packages on your
+built with. Check if you already have any of these packages on your
 system <i>and if they were built with the correct options</i>.
 <p>
 
@@ -81,7 +82,7 @@ Cygwin.
 
 <a href="http://mailman.ucar.edu/mailman/listinfo/ncl-install">Email
 ncl-install</a> if you have any problems understanding this document
-or building any of this software.  We've included
+or building any of this software. We've included
 a <A HREF="#Troubleshooting">troubleshooting</A> section for common
 problems encountered when building NCL and/or NCAR Graphics.
 <p>
@@ -118,24 +119,24 @@ NCL</A>
 non-optional external software</A><br>
 
 <UL>
-<LI><A HREF="#JPEG">JPEG</A> (6b)
+<LI><A HREF="#JPEG">JPEG</A> (9b)
 <LI><A HREF="#ZLIB">ZLIB</A> (1.2.8)
 
-<LI><A HREF="#cairo">cairo</A> (1.12.18)
+<LI><A HREF="#cairo">cairo</A> (1.14.6)
 <UL>
-<LI><A HREF="#PNG">PNG</A> (1.2.52)
-<LI><A HREF="#pkgconfig">pkg-config</A> (0.28)
-<LI><A HREF="#freetype">FreeType</A> (2.5.5)
-<LI><A HREF="#pixman">pixman</A> (0.32.6)
+<LI><A HREF="#PNG">PNG</A> (1.2.56)
+<LI><A HREF="#pkgconfig">pkg-config</A> (0.29)
+<LI><A HREF="#freetype">FreeType</A> (2.6.5)
+<LI><A HREF="#pixman">pixman</A> (0.34.0)
 </UL>
 
-<LI><A HREF="#NetCDF">NetCDF</A> (4.3.3.1)
+<LI><A HREF="#NetCDF">NetCDF</A> (4.4.1.1)
 <UL>
 <LI><A HREF="#szip">szip</A> (2.1)
-<LI><A HREF="#HDF5">HDF-5</A> (1.8.14)
-<LI><A HREF="#libcurl">libcurl</a> (7.40.0)
+<LI><A HREF="#HDF5">HDF-5</A> (1.8.17)
+<LI><A HREF="#libcurl">libcurl</a> (7.49.1)
 </UL>
-<LI><A HREF="#HDF4">HDF-4</A> (4.2.11)
+<LI><A HREF="#HDF4">HDF-4</A> (4.2.12)
 
 </UL>
 
@@ -146,23 +147,23 @@ external software</A><br>
 <LI><A HREF="#GRIB2">GRIB2</A>
 <UL>
 <LI><A HREF="#Jasper">Jasper</a> (1.900.1)
-<LI><A HREF="#PNG">PNG</a> (1.2.52)
-<LI><A HREF="#g2clib">g2clib</a> (1.5.0-patch)
+<LI><A HREF="#PNG">PNG</a> (1.2.56)
+<LI><A HREF="#g2clib">g2clib</a> (1.6.0-patch)
 </UL>
 <LI><A HREF="#GDAL_PROJ4">GDAL/PROJ.4</A>
 <UL>
-<LI><A HREF="#PROJ4">PROJ.4</A> (4.8.0)
-<LI><A HREF="#GDAL">GDAL</A> (1.11.2)
+<LI><A HREF="#PROJ4">PROJ.4</A> (4.9.2)
+<LI><A HREF="#GDAL">GDAL</A> (2.1.1)
 </UL>
 <LI><A HREF="#HDFEOS2">HDF-EOS 2</A> (2.19)
 <LI><A HREF="#HDFEOS5">HDF-EOS 5</A> (1.15)
 <UL>
 <LI><A HREF="#szip">szip</A> (2.1)
-<LI><A HREF="#HDF5">HDF-5</A> (1.8.14)
+<LI><A HREF="#HDF5">HDF-5</A> (1.8.17)
 </UL>
 
 <LI><A HREF="#Triangle">Triangle</A>
-<LI><A HREF="#UDUNITS2">UDUNITS-2</A> (2.2.18)
+<LI><A HREF="#UDUNITS2">UDUNITS-2</A> (2.2.20)
 <LI><A HREF="#Vis5D">Vis5D+</A>
 </UL>
 
@@ -250,7 +251,7 @@ routines</A>
 <p>
 
 The instructions for building haven't changed much since version
-5.2.1.  Here's what's new about the source code instructions since
+5.2.1. Here's what's new about the source code instructions since
 version 6.0.0 of NCL:
 <p>
 
@@ -268,17 +269,10 @@ regridding software</a> in NCL uses an application called
 which is part of
 the <a href="http://www.earthsystemmodeling.org/">Earth System
 Modeling Framework</a>. A serial version of this application is
-included when you download a precompiled NCL binary.  If you want to
+included when you download a precompiled NCL binary. If you want to
 build a parallelized version of this application, then see the
 <a href="http://www.earthsystemmodeling.org/esmf_releases/public/last/ESMF_usrdoc/">Quick
 Start</a> section of the ESMF User Guide.
-<p>
-
-<li>Some external software packages have newer versions. For example,
-<a href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF</a> is
-at <a href="http://www.unidata.ucar.edu/downloads/netcdf/index.jsp">version
-4.3</a> and has split up its software into three separate packages (C,
-Fortran, and C++ interfaces).
 <p>
 
 <li>There are experimental calls to OpenMP code in NCL V6.2.0 and
@@ -300,7 +294,7 @@ Fortran 77 and 90 and an ANSI C compiler. If your system has native
 Fortran and C compilers (for example "xlf" on IBM/AIX systems), we
 recommend using these. To build the ESMF software (only required if
 you want a parallel version of ESMF_RegridWeightGen), you additionally
-need a C++ compiler.  In addition to native compilers, NCL has been
+need a C++ compiler. In addition to native compilers, NCL has been
 successfully built with a wide-range of compilers
 including <a href="http://gcc.gnu.org/">gcc</a>, <a href="http://gcc.gnu.org/wiki/GFortran">gfortran</a>, <a href="http://g95.org/">g95</a>, <a href="http://software.intel.com/en-us/articles/intel-compilers/">Intel
 Fortran/C</a>, and <a href="http://www.pgroup.com/">Portland
@@ -334,11 +328,11 @@ csh/tcsh:<br>
 <TR>
 <TD><b>CFLAGS</b>   <TD>C compile flags
 <TD>bash/ksh:<br>
-&nbsp;&nbsp;export CFLAGS='-O -ansi -fopenmp -fPIC'<br>
-&nbsp;&nbsp;export CFLAGS='-O -m64 -ansi -fopenmp -fPIC'<br>
+&nbsp;&nbsp;export CFLAGS='-O -ansi -std=c99 -fopenmp -fPIC'<br>
+&nbsp;&nbsp;export CFLAGS='-O -m64 -ansi -std=c99 -fopenmp -fPIC'<br>
 csh/tcsh:<br>
-&nbsp;&nbsp;setenv CFLAGS '-O -ansi -fopenmp -fPIC'<br>
-&nbsp;&nbsp;setenv CFLAGS '-O -m64 -ansi -fopenmp -fPIC'
+&nbsp;&nbsp;setenv CFLAGS '-O -ansi -std=c99 -fopenmp -fPIC'<br>
+&nbsp;&nbsp;setenv CFLAGS '-O -m64 -std=c99 -ansi -fopenmp -fPIC'
 
 <TR>
 <TD><b>FC</b></b>  <TD>Fortran compiler
@@ -380,11 +374,11 @@ csh/tcsh:<br>
 <TR>
 <TD><b>CXXFLAGS</b> <TD>C++ compile flags
 <TD>bash/ksh:<br>
-&nbsp;&nbsp;export CXXFLAGS='-O -ansi -fopenmp -fPIC'<br>
+&nbsp;&nbsp;export CXXFLAGS='-O -ansi -std=c99 -fopenmp -fPIC'<br>
 &nbsp;&nbsp;export CXXFLAGS='-O -m64 -ansi -fopenmp -fPIC'<br>
 csh/tcsh:<br>
-&nbsp;&nbsp;setenv CXXFLAGS '-O -ansi -fopenmp -fPIC'<br>
-&nbsp;&nbsp;setenv CXXFLAGS '-O -m64 -ansi -fopenmp -fPIC'
+&nbsp;&nbsp;setenv CXXFLAGS '-O -ansi -std=c99 -fopenmp -fPIC'<br>
+&nbsp;&nbsp;setenv CXXFLAGS '-O -m64 -ansi -std=c99 -fopenmp -fPIC'
 
 <TR>
 <TD><b>CPPFLAGS</b> <TD>preprocessor compile flags<br>
@@ -446,13 +440,13 @@ what NCL's license is.</i>
 
 <b>Note:</b> it makes things easier if you install all of the external
 software needed (with the exception of the X11 libraries and X11
-include files) to the same parent directory.  This will be important
+include files) to the same parent directory. This will be important
 later when you have to tell the NCL build system where all the
 external software has been installed.
 <p>
 
 We will use <i>/usr/local</i> in all of our examples below for
-installing external software.  You may need to be "root" in order to
+installing external software. You may need to be "root" in order to
 have permission to install software to /usr/local. If you don't have
 the "root" password, then you may want to use a directory other than
 /usr/local, like a directory under your home directory.
@@ -474,15 +468,14 @@ used for the retrieving the source code, where applicable.
 <ul>
 
 <A NAME="JPEG"></A>
-<li><a href="http://www.ijg.org/">JPEG</a> (6b) - not
+<li><a href="http://www.ijg.org/">JPEG</a> (9b) - not
 needed if you are only doing an NCAR Graphics build.<p>
 
-Download version 6b (jpeg-7 supposedly has some problems and we
-haven't tried jpeg-8b or later).
+Download version 9b
 <p>
 
 <pre>
-    wget http://www.ijg.org/files/jpegsr6b.zip
+    wget http://www.ijg.org/files/jpegsr9b.zip
 </pre>
 <p>
 
@@ -495,7 +488,7 @@ with:
   make all install
 </pre>
 
-If you downloaded version 6b, you will additionally need to do this:
+You may additionally need do this to install the libraries and include files:
 <p>
 
 <pre>
@@ -509,7 +502,7 @@ If you downloaded version 6b, you will additionally need to do this:
 but mostly likely already available on your system
 <p>
 
-Download version 1.2.6 or later.
+Download version 1.2.8 or later.
 <p>
 
 <pre>
@@ -532,11 +525,6 @@ with:
 <b>cairo software</b>
 <p>
 
-As of NCL V6.1.0, cairo is no longer an optional package.  Cairo and
-its supplemental packages are required for the new graphics display
-model introduced in NCL and NCAR Graphics V6.1.0.
-<p>
-
 Cairo and its supplemental packages may already be on your system
 (Linux, MacOSX, and Cygwin), so check this before you start building
 them.<p>
@@ -555,14 +543,14 @@ so check for this before you install all the packages.
 <ul>
 <A NAME="PNG"></A>
 <a href="http://www.libpng.org/pub/png/libpng.html">PNG</a> library
-(1.2.52) - required
+(1.2.56) - required
 <p>
 
 Download version 1.2.x (not 1.4.x or 1.5.x).
 <p>
 
 <pre>
-    wget http://sourceforge.net/projects/libpng/files/libpng12/1.2.52/libpng-1.2.52.tar.gz/download
+    wget http://sourceforge.net/projects/libpng/files/libpng12/1.2.56/libpng-1.2.56.tar.gz/download
 </pre>
 <p>
 
@@ -578,11 +566,11 @@ with:
 
 <a name="pkgconfig"></a>
 <li><a href="http://pkgconfig.freedesktop.org/releases/">pkg-config</a>
-(0.28) - Download version 0.25 or later.
+(0.29) - Download version 0.28 or later.
 <p>
 
 <pre>
-    wget http://pkgconfig.freedesktop.org/releases/pkg-config-0.28.tar.gz
+    wget http://pkgconfig.freedesktop.org/releases/pkg-config-0.29.tar.gz
 </pre>
 <p>
 
@@ -626,11 +614,11 @@ From ksh or bash:
 
 <a name="freetype"></a>
 <li><a href="http://freetype.sourceforge.net/index2.html">FreeType</a>
-(2.5.5) - Download version 2.5 or later.
+(2.6.5) - Download version 2.6 or later.
 <p>
 
 <pre>
-    wget http://download.savannah.gnu.org/releases/freetype/freetype-2.5.5.tar.gz
+    wget http://download.savannah.gnu.org/releases/freetype/freetype-2.6.5.tar.gz
 </pre>
 <p>
 
@@ -646,11 +634,11 @@ with:
 
 <a name="pixman"></a>
 <li><a href="http://cairographics.org/releases/">pixman</a>
-(0.32.6) - Download version 0.2x.x or later.
+(0.34.0) - Download version 0.2x.x or later.
 <p>
 
 <pre>
-    wget http://cairographics.org/releases/pixman-0.32.6.tar.gz
+    wget http://cairographics.org/releases/pixman-0.34.0.tar.gz
 </pre>
 <p>
 
@@ -675,12 +663,12 @@ Linux, Cygwin, others:<p>
 </pre>
 <p>
 
-<li><a href="http://cairographics.org/releases/">cairo</a> (1.12.18) -
-Download version 1.12.18 or later. Older versions have known bugs.
+<li><a href="http://cairographics.org/releases/">cairo</a> (1.14.6) -
+Download version 1.14.6 or later. Older versions have known bugs.
 <p>
 
 <pre>
-    wget http://cairographics.org/releases/cairo-1.12.18.tar.xz
+    wget http://cairographics.org/releases/cairo-1.14.6.tar.xz
 </pre>
 <p>
 
@@ -739,7 +727,7 @@ not install if you are only doing an NCAR Graphics build.
 <p>
 
 Download
-version <a href="http://www.unidata.ucar.edu/downloads/netcdf/index.jsp">4.3.3.1</a>. 
+version <a href="http://www.unidata.ucar.edu/downloads/netcdf/index.jsp">4.4.1.1</a>. 
 <p>
 
 Note that <glossary term="netCDFclassic">NetCDF classic</glossary>
@@ -753,11 +741,11 @@ actually written as HDF5 under the hood.<p>
 
 <glossary term="netCDF4classic">Classic NetCDF-4</glossary> is another
 supported format, which looks like NetCDF-3 files to the user, but
-they allow for compression for potentially smaller files.  Classic
+they allow for compression for potentially smaller files. Classic
 NetCDF-4 files cannot be read by programs that only support NetCDF-3.
 <p>
 
-NetCDF versions 4.1.1 and later support OPenDAP, and this is built in
+NetCDF versions 4.1.x and later support OPenDAP, and this is built in
 by default. Unidata recommends you use V4.3.3.1 or later. NetCDF 4.1.x also
 includes the UDUNITS-2 software, but the stand-alone UDUNITS-2 library
 is more up-to-date so we recommend this over the one that comes with
@@ -828,11 +816,11 @@ szip page.
 <A NAME="HDF5"></A>
 <li><a
 href="http://www.hdfgroup.org/HDF5/release/obtain5.html">HDF-5</a>
-(1.8.12) - Download version 1.8.12 or later.
+(1.8.17) - Download version 1.8.17 or later.
 <p>
 
 <pre>
-    wget http://www.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.8.12.tar.gz
+    wget http://www.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.8.17.tar.gz
 </pre>
 <p>
 
@@ -843,15 +831,15 @@ href="http://www.hdfgroup.org/HDF5/release/obtain5.html">HDF-5</a>
 <p>
 
 <A NAME="libcurl"></A>
-<li><a href="http://curl.haxx.se">libcurl</a> (7.40.0)
+<li><a href="http://curl.haxx.se">libcurl</a> (7.49.1)
 <p>
 
 <pre>
-    wget http://curl.haxx.se/download/curl-7.40.0.tar.gz
+    wget http://curl.haxx.se/download/curl-7.49.1.tar.gz
 </pre>
 <p>
 
-Download version 7.35.x or later.  Once you have the source code, you
+Download version 7.49.x or later. Once you have the source code, you
 can build and install it with:
 <p>
 
@@ -901,7 +889,7 @@ make[3]: *** [fort-attio.lo] Error 1
 </pre>
 
 then you need to "help" the NetCDF build recognize your system by
-adding the appropriate "-D" macro definition to your CPPFLAGS line.  The
+adding the appropriate "-D" macro definition to your CPPFLAGS line. The
 error message above suggests some of them for you, or you can go to
 the "<a
 href="http://www.unidata.ucar.edu/software/netcdf/docs/other-builds.html">Other
@@ -910,7 +898,7 @@ Builds of the NetCDF Package</a>" page for some tips.
 
 <A NAME="HDF4"></A>
 <li><a href="http://www.hdfgroup.org/products/hdf4/">HDF-4</a> -
-(4.2.11) if you want to build NCAR Graphics only, then HDF-4 is optional,
+(4.2.12) if you want to build NCAR Graphics only, then HDF-4 is optional,
 unless you need HDF support in <a
 href="http://www.ncl.ucar.edu/Document/Tools/ctrans.shtml">ctrans</a>,
 <a
@@ -924,7 +912,7 @@ different software package).
 <p>
 
 <pre>
-    wget http://www.hdfgroup.org/ftp/HDF/HDF_Current/src/hdf-4.2.11.tar.gz
+    wget http://www.hdfgroup.org/ftp/HDF/HDF_Current/src/hdf-4.2.12.tar.gz
 </pre>
 <p>
 
@@ -947,7 +935,7 @@ he used "gmake" instead.
 <p>
 
 The paths used for the "--with-zlib" and "--with-jpeg" options must be
-set to whatever you used above for these two software packages.  If
+set to whatever you used above for these two software packages. If
 you choose to build HDF-4 with the szip compression library, be sure
 to add "--with-szip=/usr/local" (or whatever location you used when
 building it) to the configuration process.
@@ -963,7 +951,7 @@ building it) to the configuration process.
 
 Again, as with the above section, it makes things easier if you
 install all of the external software needed to the same parent
-directory.  We will use <i>/usr/local</i> in all of our examples below
+directory. We will use <i>/usr/local</i> in all of our examples below
 for installing external software.
 <p>
 
@@ -1000,13 +988,13 @@ with:
 <a name="g2clib"></a>
 <li>g2clib - normally you would download this software
 from <a href="http://www.nco.ncep.noaa.gov/pmb/codes/GRIB2/">http://www.nco.ncep.noaa.gov/pmb/codes/GRIB2/</a>,
-but there were a few bugs we had to fix.  Download
-the <a href="http://www.ncl.ucar.edu/Download/files/g2clib-1.5.0-patch.tar.gz">g2clib-1.5.0-patch.tar.gz</a>
+but there were a few bugs we had to fix. Download
+the <a href="http://www.ncl.ucar.edu/Download/files/g2clib-1.6.0-patch.tar.gz">g2clib-1.6.0-patch.tar.gz</a>
 file instead.
 <p>
 
 <pre>
-    wget http://www.ncl.ucar.edu/Download/files/g2clib-1.5.0-patch.tar.gz
+    wget http://www.ncl.ucar.edu/Download/files/g2clib-1.6.0-patch.tar.gz
 </pre>
 <p>
 
@@ -1052,12 +1040,12 @@ two packages.
 <ul>
 
 <a name="PROJ4"></a>
-<li><a href="http://trac.osgeo.org/proj/">PROJ.4</a> (4.8.0) -
-Cartographic Projections Library - Download version 4.7.0 or later.
+<li><a href="http://trac.osgeo.org/proj/">PROJ.4</a> (4.9.2) -
+Cartographic Projections Library - Download version 4.9.0 or later.
 <p>
 
 <pre>
-    wget http://download.osgeo.org/proj/proj-4.8.0.tar.gz
+    wget http://download.osgeo.org/proj/proj-4.9.2.tar.gz
 </pre>
 <p>
 
@@ -1073,12 +1061,12 @@ with:
 
 
 <a name="GDAL"></a>
-<li><a href="http://www.gdal.org/">GDAL</a> (1.11.2) - Geospatial Data
+<li><a href="http://www.gdal.org/">GDAL</a> (2.1.1) - Geospatial Data
 Abstraction Library - Download version 1.11 or later.
 <p>
 
 <pre>
-    wget ftp://ftp.remotesensing.org/gdal/1.11.2/gdal-1.11.2.tar.gz
+    wget ftp://ftp.remotesensing.org/gdal/2.1.1/gdal-2.1.1.tar.gz
 </pre>
 <p>
 
@@ -1086,7 +1074,7 @@ Abstraction Library - Download version 1.11 or later.
 versions of the GRIB2 library (g2clib) and the HDF4/HDF5
 libraries. It's important that you do NOT compile these versions of
 the libraries, but rather the ones as instructed elsewhere on this
-page.  To turn off the build of these libraries inside of the GDAL
+page. To turn off the build of these libraries inside of the GDAL
 software requires including several "--without-<i>xxxx</i>" options:
 <p>
 
@@ -1098,6 +1086,7 @@ software requires including several "--without-<i>xxxx</i>" options:
       --with-hdf4=no --with-hdf5=no --with-pg=no --without-grib --disable-shared
       --with-freexl=no --with-geos=no --with-openjpeg=no --with-mysql=no 
       --with-ecw=no --with-fgdb=no --with-odbc=no --with-xml2=no --with-ogdi=no
+      --with-pcraster=no
 
   make all install
 </pre>
@@ -1121,7 +1110,7 @@ packages:
 
 <ul>
 <li><a href="ftp://edhs1.gsfc.nasa.gov/edhs/hdfeos/latest_release/">HDF-EOS
-2</a> (2.18) - Download version 2.18 or later.
+2</a> (2.19) - Download version 2.19 or later.
 <p>
 
 Once you have the HDF-EOS 2 source code, you can build and install it
@@ -1211,12 +1200,12 @@ to copy over the two files).
 
 Note that Triangle has a more restrictive license than NCL's license
 which disallows you from selling any source code or product that
-contains Triangle.  If you build NCL with Triangle included, you will
+contains Triangle. If you build NCL with Triangle included, you will
 be bound by Triangle's license.
 <p>
 
 <A NAME="UDUNITS2"></A>
-<b>UDUNITS-2</b> (2.2.18) - not needed if you are only doing an NCAR Graphics
+<b>UDUNITS-2</b> (2.2.20) - not needed if you are only doing an NCAR Graphics
 build.<p>
 
 Download
@@ -1224,7 +1213,7 @@ the <a href="http://www.unidata.ucar.edu/software/udunits/">Udunits</a>
 2.<i>x</i> (<b>not</b> 1.<i>x</i>!) source code.
 
 <pre>
-    wget ftp://ftp.unidata.ucar.edu/pub/udunits/udunits-2.2.18.tar.gz 
+    wget ftp://ftp.unidata.ucar.edu/pub/udunits/udunits-2.2.20.tar.gz 
 </pre>
 <p>
 
@@ -1258,7 +1247,7 @@ section of the NCL function list), then you need to install Vis5d+.
 <p>
 
 Download the <a href="http://vis5d.sourceforge.net/">vis5d+</a> source
-code.  We used 1.3.0-beta. Once you have the source code, you can
+code. We used 1.3.0-beta. Once you have the source code, you can
 build and install it with:
 <p>
 
@@ -1299,7 +1288,7 @@ untar the file as follows:<P>
   tar -zxvf ncl_ncarg-6.4.0.tar.gz
 </pre>
 
-The above steps will create a directory called "ncl_ncarg-6.4.0".  For
+The above steps will create a directory called "ncl_ncarg-6.4.0". For
 convenience, we'll use the notation $NCARG to mean the top level of
 the NCL/NCAR Graphics source tree. Set the environment variable NCARG
 to the full path of this directory.
@@ -1379,7 +1368,7 @@ your system. Then you can come back to this section.
 
 If no output is echoed to the screen from the "ymake" command in the
 previous section, then this most likely means that the NCL build
-environment recognizes your system.  Just to be certain, you can check
+environment recognizes your system. Just to be certain, you can check
 the name of the configuration file that the NCL build is going to use
 by typing (in the same directory):
 <p>
@@ -1892,10 +1881,10 @@ For a quick test, try the following:
 
 The first command will copy a file called <B>cpex08.f</B> into your
 current working directory, compile, link, and execute it, and create a
-graphics file called <B>cpex08.ncgm</B>.  The second command will
+graphics file called <B>cpex08.ncgm</B>. The second command will
 display the graphic on an X11 window on your screen. You must have
 your DISPLAY environment variable set correctly for this command to
-work.  Left-click on the X11 window to make the graphic go away.<P>
+work. Left-click on the X11 window to make the graphic go away.<P>
 <P>
 
 <A NAME="Troubleshooting"></A>
@@ -1960,7 +1949,7 @@ file, and then do the following to build a new flex:
 </pre>
 This should create a "flex" executable. Move this executable to
 somewhere that's on your search path already (like maybe
-$NCARG_ROOT/bin).  Make sure that you are getting this flex and not
+$NCARG_ROOT/bin). Make sure that you are getting this flex and not
 the system one by typing:
 <p>
 
@@ -1970,7 +1959,7 @@ the system one by typing:
 </pre>
 
 A user reported that he had trouble compiling flex with "gcc -O2", but
-that it worked with the Intel "icc" compiler, using "icc -O0 -g".  He
+that it worked with the Intel "icc" compiler, using "icc -O0 -g". He
 didn't try "gcc -O0", which you may want to try if flex is core
 dumping.
 <p>
@@ -2091,7 +2080,7 @@ step 2.<P>
 For the second step, cd to $NCARG/config and prepare a configuration
 file for your system that has the same name you used for the "sysincs"
 variable in the ymake file. Use one of the existing configuration
-files as a foundation (for example, "Sun4Solaris").  You will notice
+files as a foundation (for example, "Sun4Solaris"). You will notice
 several macros being defined in the configuration file. You only need
 to define a macro if you want it to be something different than what
 is defined in the "Template" file. The Template file is where all the
@@ -2105,7 +2094,7 @@ file:<P>
 </PRE>
 
 To see what other macros are available and what the default values are
-set to, see the Template file.  In particular, you may need to change
+set to, see the Template file. In particular, you may need to change
 the following macros:<P>
 
 <PRE>
@@ -2327,7 +2316,7 @@ IOR, and ISHIFT are also desirable.
 <HR>
 
 This section contains general information on building NCL
-that you may find useful.  It includes information on:
+that you may find useful. It includes information on:
 
 <UL>
 
@@ -2349,7 +2338,7 @@ routines</A>
 
 Configuration files contain make macros. At installation time, these
 macros are used by ymake to construct all of the Makefiles for
-building NCL and NCAR Graphics.  Any change you make in your
+building NCL and NCAR Graphics. Any change you make in your
 configuration file will cause a change in your Makefile(s), if you run
 something like "make Everything", "make Makefiles", or "make me" to
 regenerate the Makefile(s). Refer to the "<A HREF="#ymake">ymake</A>"
@@ -2397,9 +2386,9 @@ compiled a large number of files, you may first correct the problem and
 then restart the install process.
 
 To correct the problem, you need to first look carefully at the error
-message in the make-output file.  By looking at the last several lines
+message in the make-output file. By looking at the last several lines
 of the make-output file, you should be able to determine which
-directory the make stopped in.  For example, let's say see the
+directory the make stopped in. For example, let's say see the
 following in your make-output file:
 <p>
 
@@ -2425,7 +2414,7 @@ You can see from the:
 
 line that the make bombed in the directory
 "ncarview/src/lib/libncarg_ras". The error message here indicates that
-it can't find the HDF include files.  To fix this problem, then, you
+it can't find the HDF include files. To fix this problem, then, you
 would need to do one of three things:
 
 <OL>
@@ -2454,7 +2443,7 @@ file(s), you can restart the install process by typing:
 </PRE>
 
 In our example above with the HDF software, the fix involved something
-that would affect the Makefiles.  In this case, then, you need to
+that would affect the Makefiles. In this case, then, you need to
 regenerate the Makefiles. To do this, type:<P>
 
 <PRE>
@@ -2583,14 +2572,14 @@ the right). If N < 0, a right end-off shift is performed (all bits are
 shifted right by N bits, and the bits that are shifted out of the
 right of the word are lost)-if the leftmost bit is 0, then the vacated
 positions are filled with zeros; if the leftmost bit is 1, then the
-vacated positions are undefined.  The implementor may assume that
+vacated positions are undefined. The implementor may assume that
 IABS(N) .LE. word_length.<P>
 
 <B>FUNCTION IAND(K1,K2)</B><P>
 
 The bit-by-bit logical product of K1 and K2. If K3 = IAND(K1,K2), then
 the nth bit of K3 is 0 if the nth bit of either K1 or K2 is 0;
-otherwise the nth bit of K3 is 1.  FUNCTION IOR(K1,K2) The bit-by-bit
+otherwise the nth bit of K3 is 1. FUNCTION IOR(K1,K2) The bit-by-bit
 logical sum of K1 and K2. If K3 = IOR(K1,K2), then the nth bit of K3
 is 0 if and only if the nth bit of both K1 and K2 is 0.<P>
 
@@ -2690,17 +2679,17 @@ zero-fill.<P>
 <B>SUBROUTINE SBYTES(NPACK,ISAM,IBIT,NBITS,NSKIP,ITER)</B><P>
 
 This subroutine is the reverse of GBYTES as described above.
-NPACK-Address of first word of array to be packed.  ISAM-Array to be
+NPACK-Address of first word of array to be packed. ISAM-Array to be
 packed into NPACK. The rightmost NBITS bits of each word will be
-packed. ISAM should be dimensioned for at least ITER.  IBIT-A
+packed. ISAM should be dimensioned for at least ITER. IBIT-A
 bit-count offset to be used before the first bits are packed into
 NPACK.
 
 For example, if IBIT=3, and NBITS=5, 3 bits in NPACK will be skipped
-before the rightmost 5 bits of ISAM(1) are packed into it.  NBITS-The
+before the rightmost 5 bits of ISAM(1) are packed into it. NBITS-The
 number of bits in each word of ISAM to be unpacked. An error condition
-occurs if NBITS exceeds the word size on the machine.  NSKIP-The
-number of bits to skip between each bit chunk packed.  ITER-The number
+occurs if NBITS exceeds the word size on the machine. NSKIP-The
+number of bits to skip between each bit chunk packed. ITER-The number
 of bit chunks to be packed.<P>
 
 For example:<P>

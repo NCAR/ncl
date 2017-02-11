@@ -45,7 +45,7 @@ begin
 ;  var&lon@units             = "degrees_east"
 
 ;-- define the workstation (plot type and name)
-  wks = gsn_open_wks("png","plot_coastline_resolution")
+  wks = gsn_open_wks("png","NUG_map_resolutions")
   
 ;-- set resources
   res                       =  True

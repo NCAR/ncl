@@ -30,7 +30,7 @@ begin
    var@lat2d   =  f->lat
    var@lon2d   =  f->lon
 
-   wks = gsn_open_wks("png","plot_curvilinear_basic")  ;-- open a workstation
+   wks = gsn_open_wks("png","NUG_curvilinear_basic")  ;-- open a workstation
 
    res               =  True                  ;-- set resources
    res@gsnAddCyclic  =  False                 ;-- lon < 360 degrees
