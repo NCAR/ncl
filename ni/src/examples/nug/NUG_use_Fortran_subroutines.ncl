@@ -1,3 +1,14 @@
+;-----------------------------------------------------------------
+;  NCL User Guide Example:   NUG_use_Fortran_subroutines.ncl
+;
+; In order for this example to work, you must get the "ex01.f" 
+; file from http://www.ncl.ucar.edu/Document/Tools/WRAPIT.shtml
+; and run:
+;
+; WRAPIT ex01.f
+;
+; to generate the "ex01.so" file.
+;-----------------------------------------------------------------
 external EX01 "./ex01.so"
  
 begin

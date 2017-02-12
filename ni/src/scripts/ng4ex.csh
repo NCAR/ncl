@@ -439,7 +439,7 @@ set n_nug  = (NUG_GrADS_binary_data NUG_ICON_triangles_colored \
               NUG_panel_control NUG_panel_plot NUG_panel_vp \
               NUG_plot_in_5_steps NUG_plot_rotated_grid \
               NUG_polar_NH NUG_polyline_polygon_polymarker \
-              NUG_polyline_polygon_polymarker_old \
+              NUG_primitives \
               NUG_projections NUG_projections_mollweide \
               NUG_projections_robinson NUG_read_ASCII_1 \
               NUG_read_ASCII_2 NUG_read_ASCII_3 \
@@ -458,8 +458,10 @@ set n_nug  = (NUG_GrADS_binary_data NUG_ICON_triangles_colored \
               NUG_text_settings NUG_title_strings \
               NUG_transparent_filled_contour \
               NUG_transparent_land_sea_mask_Africa \
-              NUG_triangular_grid_ICON NUG_tripolar_grid_STORM \
-              NUG_unstructured_grid NUG_unstructured_grid_ICON \
+              NUG_triangular_grid_ICON NUG_triangular_grid_ICON_640 \
+              NUG_tripolar_grid_STORM \
+              NUG_unstructured_grid NUG_unstructured_grid_640 \
+              NUG_unstructured_grid_ICON \
               NUG_use_Fortran_subroutines NUG_vector_curly \
               NUG_vector_default NUG_vector_plot_colorized \
               NUG_vector_plot_overlay NUG_wind_mag \

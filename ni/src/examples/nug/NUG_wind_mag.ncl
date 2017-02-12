@@ -34,7 +34,7 @@ undef("wind_mag")
 function wind_mag(u,v)
 local ma
 begin
-  ma = u
+  ma = u                             ; Trick for copy metadata from u to ma
   ma@long_name = "wind magnitude"
   ma@standard_name = "magnitude_of_wind_velocity"
   if(isatt(ma,"cell_methods")) then
@@ -84,12 +84,12 @@ begin
   print("--------------------------------------")
 
 ;------------------------------------------------------------------
-;-- if you won't copy ma=u within the function wind_mag, there are
-;-- no dimension attributes at all. The user has to define the named
-;-- dimensions and attributes by himself.
+;-- if you don't copy ma=u within the function wind_mag, there are
+;-- no dimension names or coordinate arrays at all. The user has to
+;-- define the named dimensions and attributes by himself.
 ;------------------------------------------------------------------
-  show_flag = 0
-  if(show_flag.eq.1) then
+  show_flag = False
+  if(show_flag) then
     mm               = sqrt(u^2+v^2)
     mm!0             = "lat"
     mm!1             = "lon"
