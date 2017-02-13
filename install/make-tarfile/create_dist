@@ -222,7 +222,7 @@ while ($#argv > 0)
 end
 
 # Set directory to scp files to.
-set scpdir  = "/glade/u/ncldev/src/tarfiles/dist/ncl/$version"
+set scpdir  = "/glade/p/ncldev/src/tarfiles/dist/ncl/$version"
 
 #
 # If -1 and -2 were specified, which is the default, then unset
