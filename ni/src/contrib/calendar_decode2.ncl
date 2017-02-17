@@ -18,6 +18,11 @@
 ;			NCL version 5.1.1 or later is required.
 ;			Fix dimension mismatch bug in cal_proleptic.
 ;
+; 1.04	2017-feb-17	Replace ut_calendar with cd_calendar. This fixes
+;			the minute/second issue, in some cases, where
+;			you'd get "2000,12,31,18,59,60" instead of
+;			"2000,12,31,19,0,0".
+
 ; Usage:  result = calendar_decode2 (time, option)
 ;	  Same interface as for ut_calendar built-in function.
 ;	  See NCL documentation for ut_calendar:
@@ -341,7 +346,7 @@ begin
    min_time = min (tcopy)		; get earliest date in the coord array
    min_time@units = tcopy@units
 
-   ymd_min = ut_calendar (min_time, -5)	; get earliest year number; -5 = integer
+   ymd_min = cd_calendar (min_time, -5) ; get earliest year number; -5 = integer
    min_coord_year = ymd_min(0,0)
 
    min_year = min ((/ base_year, min_coord_year /))
@@ -350,7 +355,7 @@ begin
 ; If all are later than transition year, just revert to normal ut_calendar.
 
    if (min_year .gt. transition_year) then   ; translate with forced Gregorian;
-      out = ut_calendar (tcopy, option)      ; allow all NCL options
+      out = cd_calendar (tcopy, option)      ; allow all NCL options
       
       if (isatt (out, "calendar")) then		; remove misleading attribute
          delete (out@calendar)			; in this case
@@ -406,7 +411,7 @@ begin
 ; But only output options 0 and -5 are supported at this time,
 ; because of the need to readjust the output years.
 
-   ymd_mod = ut_calendar (tcopy, option)	; time s/b double up to here;
+   ymd_mod = cd_calendar (tcopy, option)	; time s/b double up to here;
 						; function works for any rank
       
    if (isatt (ymd_mod, "calendar")) then	; remove misleading attribute
@@ -458,7 +463,7 @@ begin
    if (cal_flag) then
       cal = str_lower (time@calendar)	; make calendar attrib CASE INSENSITIVE
       if (cal .eq. "gregorian" .or. cal .eq. "standard") then
-         return (ut_calendar (time, option))
+         return (cd_calendar (time, option))
       end if
    end if
 
@@ -478,7 +483,7 @@ begin
 ; present, then default to Gregorian calendar; pass control to ut_calendar.
 
    if (.not. cal_flag) then
-      return (ut_calendar (time, option))
+      return (cd_calendar (time, option))
    end if
 
 ; Check for supported alternative calendars, and set configuration.
