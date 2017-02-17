@@ -5482,7 +5482,7 @@ static NhlErrorTypes NC4AddVar(void* therec, NclQuark thevar,
                 NclQuark dim_name = NrmStringToQuark("ncl_scalar");
                 grpnode->has_scalar_dim = 1;
 
-                _addNclDimNode(&(grpnode->dim_rec), dim_name, -999, -5, 1);
+                _addNclDimNode(&(grpnode->dim_rec), dim_name, -999, 1, 0);
             }
             NclFree(the_data_type);
 
