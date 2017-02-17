@@ -1650,38 +1650,6 @@ void g2GDSArakawaRLLGrid
     return;
 }
 
-static void InitMapTrans
-#if NhlNeedProto
-(
-	char *proj,
-	double plat,
-	double plon,
-	double prot
-)
-#else
-(proj,plat,plon,prot)
-	char *proj;
-	double plat;
-	double plon;
-	double prot;
-
-#endif
-{
-	double rl[2] = {0,0};
-	double fl = 0.1,fr = 0.99 ,fb = 0.1 ,ft = 0.99;
-	int len;
-	NGstring str;
-
-	NGCALLF(mdppos,MDPPOS)(&fl,&fr,&fb,&ft);
-	len = NGSTRLEN(proj);
-	str = NGCstrToFstr(proj,len);
-	NGCALLF(mdproj,MDPROJ)(str,&plat,&plon,&prot);
-	len = NGSTRLEN("MA");
-	str = NGCstrToFstr("MA",len);
-	NGCALLF(mdpset,MDPSET)(str,&rl,&rl,&rl,&rl);
-	NGCALLF(mdpint,MDPINT)();
-}
-
 void g2GDSMEGrid
 # if NhlNeedProto
 (
@@ -1816,7 +1784,7 @@ void g2GDSMEGrid
     *lat = (float *) NclMalloc((unsigned)sizeof(float) * nlat);
     *lon = (float *) NclMalloc((unsigned)sizeof(float) * nlon);
 
-    InitMapTrans("ME",0,idir * (lo2 - lo1)/2.0,0.0);
+    _NclInitMapTrans("ME",0,idir * (lo2 - lo1)/2.0,0.0);
 
     if (lo1 == lo2) { /* global grid probably specified according to GRIB2 spec (lo1 and lo2 both must be positive - but this is too inconvenient for us)  */
 	    if (idir == 1) {
@@ -2308,10 +2276,10 @@ int* nrotatts;
 		earth_radius = Earth_Radius[lc->ep.shapeOfEarth];	
 
 	do_rot = 1;
+	_NclInitMapTrans("LC",latin1,lov,latin2);
 /*
 * Southern case
 */
-	InitMapTrans("LC",latin1,lov,latin2);
 	if((latin1 < 0)&&(latin2 < 0)) {
 		
 		if (latin1 == latin2) {

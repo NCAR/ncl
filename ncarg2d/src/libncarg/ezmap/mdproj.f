@@ -64,7 +64,15 @@ C
 C
         PLTO=MAX(-90.D0,MIN(90.D0,ARG2))
         PLNO=ARG3+(SIGN(180.D0,180.D0-ARG3)-SIGN(180.D0,ARG3+180.D0))
-        ROTA=ARG4+(SIGN(180.D0,180.D0-ARG4)-SIGN(180.D0,ARG4+180.D0))
+C
+C Fix for NCL-2558 -- dbrown -- 2/14/2016
+C If Lambert Conformal then ARG4 is a latitude so treat it like ARG2
+C
+        IF (JPRJ .EQ. 1) THEN
+          ROTA=MAX(-90.D0,MIN(90.D0,ARG4))
+        ELSE
+          ROTA=ARG4+(SIGN(180.D0,180.D0-ARG4)-SIGN(180.D0,ARG4+180.D0))
+        END IF
 C
         IF (JPRJ.EQ.3) THEN
           CALL MDSETD ('SA',0.D0)

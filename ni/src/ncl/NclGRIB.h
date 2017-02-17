@@ -1,6 +1,24 @@
 #include "NclMultiDValData.h"
 #include "NclOneDValCoordData.h"
 
+extern void NGCALLF(mdppos,MDPPOS)(double *, double *, double *, double *);
+extern void NGCALLF(mdproj,MDPROJ)(char *, double *, double *, double *, int);
+extern void NGCALLF(mdpset,MDPSET)(char *, double *, double *, double *, double *, int);
+extern void NGCALLF(mapbd,MAPBD)(void);
+extern void NGCALLF(mdpint,MDPINT)();
+extern void NGCALLF(gdswiz,GDSWIZ)(int *, int *, int *, float *,
+                                   float *, float *, float *, float *,
+                                   int *, int *, float *, float *);
+extern void NGCALLF(mdptrn,MDPTRN)(double *, double *, double *, double *);
+extern void NGCALLF(mdptri,MDPTRI)(double *, double *, double *, double *);
+extern void NGCALLF(qu2reg3,QU2REG3)(float *, int *, int *, int *, int *,
+                                     float *, int *, int *, int *, int *,
+                                     int *, float *, float *, float *);
+extern void NGCALLF(gaqdnio,GAQDNIO)(int *, double *, double *, double *, int *, int *);
+extern void NGCALLF(maptrn,MAPTRN)(float *, float*, float *, float *);
+extern void NGCALLF(maptri,MAPTRI)(float *, float*, float *, float *);
+extern void _NclInitMapTrans(char *, double, double, double);
+
 typedef struct tble2 {
         int  num;
         char *long_name;

@@ -21,24 +21,6 @@
 #include <math.h>
 #include <unistd.h>
 
-extern void NGCALLF(mdppos,MDPPOS)(double *, double *, double *, double *);
-extern void NGCALLF(mdproj,MDPROJ)(char *, double *, double *, double *);
-/*
-extern void NGCALLF(mdpset,MDPSET)(char *, double *, double *, double *, double *);
-*/
-extern void NGCALLF(mdpint,MDPINT)();
-extern void NGCALLF(gdswiz,GDSWIZ)(int *, int *, int *, float *,
-                                   float *, float *, float *, float *,
-                                   int *, int *, float *, float *);
-extern void NGCALLF(mdptrn,MDPTRN)(double *, double *, double *, double *);
-extern void NGCALLF(mdptri,MDPTRI)(double *, double *, double *, double *);
-extern void NGCALLF(qu2reg3,QU2REG3)(float *, int *, int *, int *, int *,
-                                     float *, int *, int *, int *, int *,
-                                     int *, float *, float *, float *);
-extern void NGCALLF(gaqdnio,GAQDNIO)(int *, double *, double *, double *, int *, int *);
-extern void NGCALLF(maptrn,MAPTRN)(float *, float*, float *, float *);
-extern void NGCALLF(maptri,MAPTRI)(float *, float*, float *, float *);
-
 static void GenAtts(
 #if     NhlNeedProto
 GribParamList* thevarrec, 
@@ -53,7 +35,7 @@ int *rotatts
 #endif
 );
 
-static void InitMapTrans
+void _NclInitMapTrans
 #if NhlNeedProto
 (
 	char *proj,
@@ -75,13 +57,14 @@ static void InitMapTrans
 	int len;
 	NGstring str;
 
+	NGCALLF(mapbd,MAPBD)();
 	NGCALLF(mdppos,MDPPOS)(&fl,&fr,&fb,&ft);
 	len = NGSTRLEN(proj);
 	str = NGCstrToFstr(proj,len);
-	NGCALLF(mdproj,MDPROJ)(str,&plat,&plon,&prot);
+	NGCALLF(mdproj,MDPROJ)(str,&plat,&plon,&prot,len);
 	len = NGSTRLEN("MA");
 	str = NGCstrToFstr("MA",len);
-	NGCALLF(mdpset,MDPSET)(str,&rl,&rl,&rl,&rl);
+	NGCALLF(mdpset,MDPSET)(str,rl,rl,rl,rl,len);
 	NGCALLF(mdpint,MDPINT)();
 }
 
@@ -542,7 +525,7 @@ int ny;
 	dlat0 = lat0;
 	dlat1 = lat1;
 
-	InitMapTrans("ME",0.0,(dlon1 - dlon0)/2.0,0.0);
+	_NclInitMapTrans("ME",0.0,(dlon1 - dlon0)/2.0,0.0);
 	
 	*lat = (float*)NclMalloc(sizeof(float)*ny);
 	*lon = (float*)NclMalloc(sizeof(float)*nx);
@@ -874,7 +857,7 @@ void GenLambert
 	int i,j;
 	double an;
 
-	InitMapTrans("LC",lat0,lon0,lat1);
+	_NclInitMapTrans("LC",lat0,lon0,lat1);
 
 	/* this has already been done now */
 	*lat = (float*)NclMalloc(sizeof(float)*nx*ny);
@@ -8228,7 +8211,7 @@ int* nrotatts;
         lat1 = la2 / 1000.0;
 	latin1 =  latin/1000.0;
 
-	InitMapTrans("ME",0,idir * (lon1 - lon0)/2.0,0.0);
+	_NclInitMapTrans("ME",0,idir * (lon1 - lon0)/2.0,0.0);
 
 	tmplon = (lon1-lon0) / 2.0;
 	tmplat = (lat1 - lat0) / 2.0;
@@ -9077,7 +9060,7 @@ int* nrotatts;
 	}
 	
 	if(north) {
-		InitMapTrans("ST",90.0,lov,0.0);
+		_NclInitMapTrans("ST",90.0,lov,0.0);
 /*
 * Northern case
 */
@@ -9108,7 +9091,7 @@ int* nrotatts;
 			}
 		}
 	} else {
-		InitMapTrans("ST",-90.0,lov,0.0);
+		_NclInitMapTrans("ST",-90.0,lov,0.0);
 /*
 * Southern case
 */
