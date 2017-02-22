@@ -49,9 +49,11 @@ OBJS = $(FOBJS) $(COBJS)
 
 LibraryTarget($(MYNAME),$(OBJS))
 
+triple2grid.o: triple2grid.f
+        $(F77) -g -c triple2grid.f
+
 calc_uh.o: calc_uh.f90
         $(F77) $(FFLAGS) -c calc_uh.f90
-
 
 plotgrids_var.o: plotgrids_var.f90
         $(F77) $(FFLAGS) -c plotgrids_var.f90
