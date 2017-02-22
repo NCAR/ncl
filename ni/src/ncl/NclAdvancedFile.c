@@ -1519,23 +1519,22 @@ NhlErrorTypes _addNclVarNodeToGrpNode(NclFileGrpNode *grpnode, NclQuark name,
     assert(var_node->dim_rec);
 
     dim_rec = grpnode->dim_rec;
-    if(NULL != dim_rec)
+    for(n = 0; n < n_dims; n++)
     {
-        for(n = 0; n < n_dims; n++)
-        {
             var_dim_node = &(var_node->dim_rec->dim_node[n]);
-            for(i = 0; i < dim_rec->n_dims; i++)
-            {
-                grp_dim_node = &(dim_rec->dim_node[i]);
-                if(grp_dim_node->name == dimnames[n])
-                {
-                     memcpy(var_dim_node, grp_dim_node, sizeof(NclFileDimNode));
-                     break;
-                }
-            }
+	    if (dim_rec != NULL) {
+		    for(i = 0; i < dim_rec->n_dims; i++)
+		    {
+			    grp_dim_node = &(dim_rec->dim_node[i]);
+			    if(grp_dim_node->name == dimnames[n])
+			    {
+				    memcpy(var_dim_node, grp_dim_node, sizeof(NclFileDimNode));
+				    break;
+			    }
+		    }
+	    }
             var_dim_node->name = dimnames[n];
             var_dim_node->size = dimsizes[n];
-        }
     }
 
     if(grpnode->is_chunked)
