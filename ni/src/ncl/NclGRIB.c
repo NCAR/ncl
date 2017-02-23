@@ -784,7 +784,7 @@ ENS *ens;
 			}
 		}
 	}
-	else if (ens->extension_type == 1) {  /* ECMWF local definition 1 */
+	else if (ens->extension_type == 1 || ens->extension_type == 36) {  /* ECMWF local definition # */
 		switch (ens->type) {
 		case 10:
 			sprintf(buf,"control forecast");
@@ -800,6 +800,9 @@ ENS *ens;
 			break;
 		case 18:
 			sprintf(buf,"ensemble standard deviation");
+			break;
+		case 2:
+			sprintf(buf,"ensemble analysis # %d",ens->id);
 			break;
 		default:
 			sprintf(buf,"type: %d, id: %d",ens->type,ens->id);
@@ -950,6 +953,7 @@ GribFileRecord *therec;
 				break;
 			}
 		}
+#if 1
 		if (step->time_range_indicator > 50) { /* climatological and other statistically processed data - not including simple averages and accumulations, etc. */
 			int tr_ix = -1;
 			int num, test_num, need_array = 0;
@@ -970,7 +974,8 @@ GribFileRecord *therec;
 					}
 				}
 			}
-			/* r in average -- AKA 'N" in the statistical process descriptors -- assumes that N may be different for different time periods, but that e.g. different levels will have the same N 
+			/* number in average -- AKA 'N" in the statistical process descriptors -- assumes that N may be different for different time periods, 
+			   but that e.g. different levels will have the same N 
 			   this may be proved wrong eventually */
 			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
 			att_list_ptr->next = step->theatts;
@@ -1043,6 +1048,8 @@ GribFileRecord *therec;
 					it_cmp = step->thelist[i].rec_inq->initial_time;
 					ft_cmp = step->thelist[i].rec_inq->time_offset;
 					found++;
+					if (found == count)
+						break;
 				}
 				tmp_dimsizes = found;
 				att_list_ptr->att_inq->thevalue = (NclMultiDValData)
@@ -1225,7 +1232,7 @@ GribFileRecord *therec;
 			step->theatts = att_list_ptr;
 			step->n_atts++;
 		}
-
+#endif
 /*
 * Handle coordinate attributes,  ensemble, level, initial_time, forecast_time
 */
@@ -7174,6 +7181,12 @@ int wr_status;
 								grib_rec->ens.type = grib_rec->pds[42];
 								grib_rec->ens.id = grib_rec->pds[49];
 							}
+							break;
+						case 36:
+							grib_rec->is_ensemble = 1;
+							grib_rec->ens.extension_type = grib_rec->pds[40];
+							grib_rec->ens.type = grib_rec->pds[42];
+							grib_rec->ens.id = grib_rec->pds[49];
 							break;
 						case 18:
 						case 26:
