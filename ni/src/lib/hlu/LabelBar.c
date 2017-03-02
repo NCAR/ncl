@@ -4546,10 +4546,11 @@ static NhlErrorTypes    LabelBarDraw
          * whenever the contours were drawn that way (i.e., in the case of cnFillMode = "RasterFill".
          *
          * However, DrawRasterBoxes() breaks the newly introduced triangular/rectangular labelbar endcap styles,
-         * causing *both* endcap styles to be drawn if a triangular endcap is intended. Note there is no color differences
-         * in drawing with cell-fill vs. polygon-fill with the cairo-based ps/eps drivers. So as this bit of 
-         * conditional logic addresses issues that may no longer be relevant, I am commenting it out, invoking only
-         * DrawFilledBoxes() to due the work, and this bit of code should likely be deleted at some future point.
+         * causing *both* endcap styles to be drawn if a triangular endcap is intended. The method used to draw 
+         * labelbar boxes should in principle be independent of how contours were filled, and indeed with the cairo-based
+         * ps/eps driver, DrawFilledBoxes() does the right thing with no color differences regardless of cnFillMode.
+         * So as this bit of  conditional logic addresses issues that may no longer be relevant, I am commenting it out, 
+         * invoking only DrawFilledBoxes() to do the work. 
          * --RLB 1/2017
          */
 #if 0        

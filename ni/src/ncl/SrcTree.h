@@ -790,6 +790,17 @@ NclSrcListNode * /*block_stmnt_list2*/
 #endif
 );
 
+extern void _NclAppendElseIfClause(
+    NclIfThenElse  *elseif,
+    void           *conditional_expr,
+    NclSrcListNode *block_stmnt_list
+);
+
+extern void _NclAppendElseIfElseClause(
+    NclIfThenElse  *elseif,
+    NclSrcListNode *block_stmnt_list
+);
+
 extern void *_NclMakeSGVis(
 #if	NhlNeedProto
 void * /*objname*/,

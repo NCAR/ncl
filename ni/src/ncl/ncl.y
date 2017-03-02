@@ -133,7 +133,7 @@ char *ncl_cur_func = NULL;
 %type <array> expr_list
 %type <listvar> list_expr_list
 %type <src_node> statement assignment reassignment
-%type <src_node> procedure function_def procedure_def fp_block block do conditional
+%type <src_node> procedure function_def procedure_def fp_block block do conditional elseif
 %type <src_node> visblk statement_list
 %type <src_node> declaration identifier expr v_parent 
 %type <src_node> subscript0 subscript2 break_cont vcreate list_subscript 
@@ -686,9 +686,40 @@ break_cont : BREAK  {
 	| CONTINUE {
 				$$ = _NclMakeBreakCont($1);
 		}
+;
 
-conditional : IF expr then block_statement_list END IF				{  $$ = _NclMakeIfThen($2,$4);  }
+elseif : elseif ELSEIF expr then block_statement_list       {  _NclAppendElseIfClause($1, $3, $5);
+                                                                $$ = $1;
+                                                            }
+        | ELSEIF expr then block_statement_list             {  $$ = _NclMakeIfThenElse($2,$4, NULL);  }
+;
+
+conditional : IF expr then block_statement_list elseif END IF {  
+            NclSrcListNode *tmp = NULL;	
+	    if($4 != NULL) {
+                tmp = _NclMakeNewListNode();
+		tmp->next = NULL;
+		tmp->node = $5;
+            }
+            $$ = _NclMakeIfThenElse($2,$4,tmp);  
+        }
+
+        | IF expr then block_statement_list elseif ELSE block_statement_list END IF {   
+            NclSrcListNode* tmp1 = _NclMakeNewListNode();
+            tmp1->node = $5;
+            tmp1->next = NULL;
+            _NclAppendElseIfElseClause($5, $7);
+            $$ = _NclMakeIfThenElse($2, $4, tmp1);
+        }
+        
+        | IF expr then block_statement_list END IF				{  $$ = _NclMakeIfThen($2,$4);  }
 	| IF expr then block_statement_list ELSE block_statement_list END IF	{  $$ = _NclMakeIfThenElse($2,$4,$6);  }
+        
+        /* The following rules appear to be superfluous for the purpose of parsing a conditional. That is, the parser
+         * always returns a block_statement_list object regardless of whether a single-statement or multiple statements,
+         * or even zero statements, are encountered. Commenting these out for now; eventually they should be removed.
+         */
+/**************************************************************************************************************
 	| IF expr then statement END IF						{  
 											NclSrcListNode *tmp = NULL;	
 											if($4 != NULL) {
@@ -734,7 +765,7 @@ conditional : IF expr then block_statement_list END IF				{  $$ = _NclMakeIfThen
 											$$ = _NclMakeIfThenElse($2,$4,tmp);  
 
 										}
-
+**************************************************************************************/
 ;
 
 then : 
