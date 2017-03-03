@@ -23,8 +23,8 @@ begin
     "vpHeightF" : h
   end getvalues
 
-  degrad  = 0.017453292519943
   degrees = ispan(0,360,1)
+  degrad  = get_d2r(degrees)
   xcos    = cos(degrad * degrees)
   xsin    = sin(degrad * degrees)
   xcenter = w/2 + x

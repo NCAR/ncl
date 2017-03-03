@@ -44,7 +44,7 @@ begin
   lat_min  =  15.0                        ;-- minimum latitude
   lat_max  =  70.0                        ;-- maximum latitude
 
-  rad2deg   = 45./atan(1.)                ;-- radians to degrees
+  rad2deg = get_r2d("float")              ;-- radians to degrees
   var@lon1d = f->clon * rad2deg                ;-- cell center, lon
   var@lat1d = f->clat * rad2deg                ;-- cell center, lat
 

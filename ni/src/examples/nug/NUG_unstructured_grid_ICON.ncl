@@ -10,7 +10,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
 begin
 ;-- read the data and define
-  rad2deg =  45./atan(1.)                              ;-- radians to degrees
+  rad2deg = get_r2d("float")                        ;-- radians to degrees
 
   diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fili = "triangular_grid_ICON.nc"

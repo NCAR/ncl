@@ -38,7 +38,7 @@ begin
 
   outputfile = "regridded_rectilinear_bilinear_ICON_S_ESMF_destgrid.nc"
   
-  rad2deg =  45./atan(1.)                   ;-- radians to degrees
+  rad2deg =  get_r2d("float")               ;-- radians to degrees
 
   diri = "$NCARG_ROOT/lib/ncarg/data/nug/"
   fili = "triangular_grid_ICON.nc"
