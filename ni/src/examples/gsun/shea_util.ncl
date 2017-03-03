@@ -3343,19 +3343,17 @@ begin
 
    if (iounit(0).eq.0) then                               ; degC
        pet = thornthwaite(t, lat, False, dim)
-   else if (iounit(0).eq.1) then                          ; degK
+   elseif (iounit(0).eq.1) then                          ; degK
        pet = thornthwaite((t-273.16), lat, False, dim)
-   else if (iounit(0).eq.2) then                          ; F
+   elseif (iounit(0).eq.2) then                          ; F
        pet = thornthwaite(((t-32)*0.5555556), lat, False, dim)
-   end if        ; F
-   end if        ; K 
-   end if        ; C  
+   end if
 
    pet@long_name = "PET: Thornthwaite"
 
    if (iounit(1).eq.0) then     
         pet@units = "mm/month"
-   else if (iounit(1).eq.1) then
+   elseif (iounit(1).eq.1) then
         dymo      = (/31,28,31,30,31,30,31,31,30,31,30,31/)
         dimt      = dimsizes(t)
         ntim      = dimt(dim)
@@ -3365,12 +3363,10 @@ begin
         end do
         pet       = pet/conform(t,DYMO,dim)
         pet@units = "mm/day"
-   else if (iounit(1).eq.2) then
+   elseif (iounit(1).eq.2) then
         pet       = pet*0.03937008
         pet@units = "inches/month"
-   end if        ; mm/month
-   end if        ; mm/day
-   end if        ; inches/month
+   end if
 
    copy_VarCoords(t, pet)
    return(pet)
@@ -4610,12 +4606,11 @@ begin
   var_rank = dimsizes(dimsizes(var_eta))
   if (var_rank.eq.4) then         ;  (Time, bottom_top, south_north, west_east) => (0,1,2,3)
       var_iso = int2p_n_Wrap (prs_eta,var_eta,prs_iso,linlog,1)
-  else if (var_rank.eq.3) then    ;  (bottom_top, south_north, west_east)       => (0,1,2)
-           var_iso = int2p_n_Wrap (prs_eta,var_eta,prs_iso,linlog,0)
-       else
-           print("eta2isop_wrf: unexpected rank; rank="+var_rank+"; code expects rank=3 or 4 only")
-           exit
-       end if 
+  elseif (var_rank.eq.3) then    ;  (bottom_top, south_north, west_east)       => (0,1,2)
+      var_iso = int2p_n_Wrap (prs_eta,var_eta,prs_iso,linlog,0)
+  else
+      print("eta2isop_wrf: unexpected rank; rank="+var_rank+"; code expects rank=3 or 4 only")
+      exit
   end if
 
   var_iso@tag = "NCL: Simple interpolation to isobaric levels via int2p_n_Wrap"

@@ -615,13 +615,12 @@ begin
   if(typeof(file_id).eq."file") then
     ISFILE  = True
     nc_file = file_id
-  else if(typeof(file_id).eq."list") then
+  elseif(typeof(file_id).eq."list") then
     ISFILE  = False
     nc_file = file_id[0]
   else
     print("_get_wrf_var: Invalid file id. Cannot extract requested variable.")
     exit
-  end if
   end if
 
   dims = getfilevardimsizes(nc_file,vname)
@@ -641,40 +640,30 @@ begin
     if(ISFILE) then                   ; Case 1
       if(rank.eq.1) then
         var = nc_file->$vname$(nt)
-      else if(rank.eq.2) then
+      elseif(rank.eq.2) then
         var = nc_file->$vname$(nt,:)
-      else if(rank.eq.3) then
+      elseif(rank.eq.3) then
         var = nc_file->$vname$(nt,:,:)
-      else if(rank.eq.4) then
+      elseif(rank.eq.4) then
         var = nc_file->$vname$(nt,:,:,:)
-      else if(rank.eq.5) then
+      elseif(rank.eq.5) then
         var = nc_file->$vname$(nt,:,:,:,:)
-      else if(rank.eq.6) then
+      elseif(rank.eq.6) then
         var = nc_file->$vname$(nt,:,:,:,:,:)
-      end if
-      end if
-      end if
-      end if
-      end if
       end if
     else                              ; Case 3
       if(rank.eq.1) then
         var = file_id[:]->$vname$(nt)
-      else if(rank.eq.2) then
+      elseif(rank.eq.2) then
         var = file_id[:]->$vname$(nt,:)
-      else if(rank.eq.3) then
+      elseif(rank.eq.3) then
         var = file_id[:]->$vname$(nt,:,:)
-      else if(rank.eq.4) then
+      elseif(rank.eq.4) then
         var = file_id[:]->$vname$(nt,:,:,:)
-      else if(rank.eq.5) then
+      elseif(rank.eq.5) then
         var = file_id[:]->$vname$(nt,:,:,:,:)
-      else if(rank.eq.6) then
+      elseif(rank.eq.6) then
         var = file_id[:]->$vname$(nt,:,:,:,:,:)
-      end if
-      end if
-      end if
-      end if
-      end if
       end if
     end if
   end if
@@ -707,13 +696,12 @@ begin
   if(typeof(file_id).eq."file") then
     ISFILE  = True
     nc_file = file_id
-  else if(typeof(file_id).eq."list") then
+  elseif(typeof(file_id).eq."list") then
     ISFILE  = False
     nc_file = file_id[0]
   else
     print("_get_wrf_var_level: Invalid file id. Cannot extract requested variable.")
     exit
-  end if
   end if
 
   dims = getfilevardimsizes(nc_file,vname)
@@ -727,68 +715,52 @@ begin
     if(ISFILE) then                        ; Case 2 
       if(rank.eq.2) then
         var = nc_file->$vname$(:,nl)
-      else if(rank.eq.3) then
+      elseif(rank.eq.3) then
         var = nc_file->$vname$(:,nl,:)
-      else if(rank.eq.4) then
+      elseif(rank.eq.4) then
         var = nc_file->$vname$(:,nl,:,:)
-      else if(rank.eq.5) then
+      elseif(rank.eq.5) then
         var = nc_file->$vname$(:,nl,:,:,:)
-      else if(rank.eq.6) then
+      elseif(rank.eq.6) then
         var = nc_file->$vname$(:,nl,:,:,:,:)
-      end if
-      end if
-      end if
-      end if
       end if
     else                                   ; Case 4 
       if(rank.eq.2) then
         var = file_id[:]->$vname$(:,nl)
-      else if(rank.eq.3) then
+      elseif(rank.eq.3) then
         var = file_id[:]->$vname$(:,nl,:)
-      else if(rank.eq.4) then
+      elseif(rank.eq.4) then
         var = file_id[:]->$vname$(:,nl,:,:)
-      else if(rank.eq.5) then
+      elseif(rank.eq.5) then
         var = file_id[:]->$vname$(:,nl,:,:,:)
-      else if(rank.eq.6) then
+      elseif(rank.eq.6) then
         var = file_id[:]->$vname$(:,nl,:,:,:,:)
-      end if
-      end if
-      end if
-      end if
       end if
     end if
   else
     if(ISFILE) then                       ; Case 1 
       if(rank.eq.2) then
         var = nc_file->$vname$(nt,nl)
-      else if(rank.eq.3) then
+      elseif(rank.eq.3) then
         var = nc_file->$vname$(nt,nl,:)
-      else if(rank.eq.4) then
+      elseif(rank.eq.4) then
         var = nc_file->$vname$(nt,nl,:,:)
-      else if(rank.eq.5) then
+      elseif(rank.eq.5) then
         var = nc_file->$vname$(nt,nl,:,:,:)
-      else if(rank.eq.6) then
+      elseif(rank.eq.6) then
         var = nc_file->$vname$(nt,nl,:,:,:,:)
-      end if
-      end if
-      end if
-      end if
       end if
     else                                  ; Case 3
       if(rank.eq.2) then
         var = file_id[:]->$vname$(nt,nl)
-      else if(rank.eq.3) then
+      elseif(rank.eq.3) then
         var = file_id[:]->$vname$(nt,nl,:)
-      else if(rank.eq.4) then
+      elseif(rank.eq.4) then
         var = file_id[:]->$vname$(nt,nl,:,:)
-      else if(rank.eq.5) then
+      elseif(rank.eq.5) then
         var = file_id[:]->$vname$(nt,nl,:,:,:)
-      else if(rank.eq.6) then
+      elseif(rank.eq.6) then
         var = file_id[:]->$vname$(nt,nl,:,:,:,:)
-      end if
-      end if
-      end if
-      end if
       end if
     end if
   end if
@@ -813,13 +785,12 @@ begin
   if(typeof(file_handle).eq."file") then
     ISFILE = True
     nc_file = file_handle
-  else if(typeof(file_handle).eq."list") then
+  elseif(typeof(file_handle).eq."list") then
     ISFILE = False
     nc_file = file_handle[0]
   else
     print("wrf_user_getvar: error: the first argument must be a file or a list of files opened with addfile or addfiles")
     return
-  end if
   end if
 
   variable = varin(0)
@@ -963,12 +934,11 @@ begin
        ;  U interpolated to mass points
        if(isfilevar(nc_file,"U")) then
          getTHIS = "U"
-       else if(isfilevar(nc_file,"UU")) then
+       elseif(isfilevar(nc_file,"UU")) then
          getTHIS = "UU"
        else
          print("wrf_user_getvar: error: cannot find 'U' or 'UU' on the file")
          return
-       end if
        end if
        var = _get_wrf_var(file_handle,getTHIS,time)
        ua  = wrf_user_unstagger(var,var@stagger)
@@ -981,12 +951,11 @@ begin
   if( variable .eq. "va" ) then
        if(isfilevar(nc_file,"V")) then
          getTHIS = "V" 
-       else if(isfilevar(nc_file,"VV")) then
+       elseif(isfilevar(nc_file,"VV")) then
          getTHIS = "VV"
        else
          print("wrf_user_getvar: error: cannot find 'V' or 'VV' on the file")
          return
-       end if
        end if
        var = _get_wrf_var(file_handle,getTHIS,time)
        va  = wrf_user_unstagger(var,var@stagger)
@@ -1012,13 +981,12 @@ begin
          var = _get_wrf_var(file_handle,"P",time)
          PB  = _get_wrf_var(file_handle,"PB",time)
          var = var + PB
-       else if(isfilevar(nc_file,"PRES")) then
+       elseif(isfilevar(nc_file,"PRES")) then
          ;; may be a met_em file - see if we can get PRES
          var = _get_wrf_var(file_handle,"PRES",time)
        else
          print("wrf_user_getvar: error: cannot find 'P' or 'PRES' on the file")
          return
-       end if
        end if
        var@description = "Pressure"
        if( variable .eq. "pressure" ) then
@@ -1038,7 +1006,7 @@ begin
          var = var + PHB
          z = wrf_user_unstagger(var,var@stagger)
          z@description = "Geopotential"
-       else if(isfilevar(nc_file,"GHT")) then
+       elseif(isfilevar(nc_file,"GHT")) then
          ;; may be a met_em file - see if we can get GHT - data in met_em file is Height in M
          z = _get_wrf_var(file_handle,"GHT",time)
          z = z * 9.81
@@ -1047,7 +1015,6 @@ begin
        else
          print("wrf_user_getvar: error: cannot find 'PH' or 'GHT' on the file")
          return
-       end if
        end if
 
        if( any( variable .eq. (/"z","height"/) ) ) then
@@ -1081,12 +1048,11 @@ begin
          t = wrf_tk( P , T )
          copy_VarAtts_except(T,t,"description")
          ;; may be a met_em file - see if we can get TT
-       else if(isfilevar(nc_file,"TT")) then
+       elseif(isfilevar(nc_file,"TT")) then
          t = _get_wrf_var(file_handle,"TT",time)
        else
          print("wrf_user_getvar: error: cannot find 'T' or 'TT' on the file")
          return
-       end if  
        end if  
        if( variable .eq. "tc" ) then
          t = t - 273.16
@@ -1162,13 +1128,12 @@ begin
          tk     = wrf_tk( P , T )    ; calculate TK
          slp    = wrf_slp( z, tk, P, QVAPOR )  ; calculate slp
          copy_VarAtts_except(T,slp,(/"description","units"/))
-       else if(isfilevar(nc_file,"PMSL")) then
+       elseif(isfilevar(nc_file,"PMSL")) then
          ;; may be a met_em file - see if we can get PMSL
          slp = _get_wrf_var(file_handle,"PMSL",time)
        else
          print("wrf_user_getvar: error: cannot find 'PMSL' or 'T' on the file")
          return
-       end if  
        end if  
 
        return(slp)
@@ -1190,13 +1155,12 @@ begin
          tk     = wrf_tk( P , T )
          rh     = wrf_rh( QVAPOR, P, tk )
          copy_VarAtts_except(T,rh,(/"description","units"/))
-       else if(isfilevar(nc_file,"RH")) then
+       elseif(isfilevar(nc_file,"RH")) then
          ;; may be a met_em file - see if we can get RH
          rh = _get_wrf_var(file_handle,"RH",time)
        else
          print("wrf_user_getvar: error: cannot find 'T' or 'RH' on the file")
          return
-       end if  
        end if  
        return(rh)
   end if
@@ -1213,14 +1177,13 @@ begin
          rh2  = wrf_rh( Q2, PSFC, T2 )
          copy_VarAtts_except(T2,rh2,(/"description","units"/))
          rh2@description = "2m Relative Humidity"           
-       else if(isfilevar(nc_file,"RH")) then
+       elseif(isfilevar(nc_file,"RH")) then
          ;; may be a met_em file - see if we can get RH
          print("Probably a met_em file - get lowest level from RH field")
          rh2 = _get_wrf_var_level(file_handle,"RH",time,0)
        else
          print("wrf_user_getvar: error: cannot find 'T2' or 'RH' on the file")
          return
-       end if
        end if  
        return(rh2)
   end if
@@ -1442,11 +1405,10 @@ begin
          if(rank_ph.eq.3) then
            pw_sfc_ptop!0 = PH!1
            pw_sfc_ptop!1 = PH!2
-         else if(rank_ph.eq.4) then
+         elseif(rank_ph.eq.4) then
            pw_sfc_ptop!0 = PH!0
            pw_sfc_ptop!1 = PH!2
            pw_sfc_ptop!2 = PH!3
-         end if
          end if
        end if
        pw_sfc_ptop@description = "Precipitable Water"
@@ -1459,13 +1421,12 @@ begin
        if(isfilevar(nc_file,"U")) then
          getU = "U" 
          getV = "V" 
-        else if(isfilevar(nc_file,"UU")) then
+        elseif(isfilevar(nc_file,"UU")) then
          getU = "UU"
          getV = "VV"
        else
          print("wrf_user_getvar: error: cannot find 'U' or 'UU' on the file")
          return
-       end if
        end if
        u_in   = _get_wrf_var(file_handle,getU,time)
        v_in   = _get_wrf_var(file_handle,getV,time)
@@ -1521,13 +1482,12 @@ begin
        if(isfilevar(nc_file,"U")) then
          getU = "U" 
          getV = "V" 
-        else if(isfilevar(nc_file,"UU")) then
+        elseif(isfilevar(nc_file,"UU")) then
          getU = "UU"
          getV = "VV"
        else
          print("wrf_user_getvar: error: cannot find 'U' or 'UU' on the file")
          return
-       end if
        end if
        u_in   = _get_wrf_var(file_handle,getU,time)
        v_in   = _get_wrf_var(file_handle,getV,time)
@@ -1952,13 +1912,12 @@ begin
   if(typeof(file_handle).eq."file") then
     ISFILE = True
     nc_file = file_handle
-  else if(typeof(file_handle).eq."list") then
+  elseif(typeof(file_handle).eq."list") then
     ISFILE = False
     nc_file = file_handle[0]
   else
     print("wrf_user_ll_to_ij: error: the first argument must be a file or a list of files opened with addfile or addfiles")
     return
-  end if
   end if
 
   opts = opts_args
@@ -2045,13 +2004,12 @@ begin
   if(typeof(file_handle).eq."file") then
     ISFILE = True
     nc_file = file_handle
-  else if(typeof(file_handle).eq."list") then
+  elseif(typeof(file_handle).eq."list") then
     ISFILE = False
     nc_file = file_handle[0]
   else
     print("wrf_user_ij_to_ll: error: the first argument must be a file or a list of files opened with addfile or addfiles")
     return
-  end if
   end if
 
   opts = opts_args
@@ -2138,13 +2096,12 @@ begin
   if(typeof(file_handle).eq."file") then
     ISFILE = True
     nc_file = file_handle
-  else if(typeof(file_handle).eq."list") then
+  elseif(typeof(file_handle).eq."list") then
     ISFILE = False
     nc_file = file_handle[0]
   else
     print("wrf_user_vert_interp: error: the first argument must be a file or a list of files opened with addfile or addfiles")
     return
-  end if
   end if
 
   rgas    = 287.04     ;J/K/kg
@@ -2620,11 +2577,10 @@ begin
     info_string = " Contours: $CMN$ to $CMX$ by $CIU$"
     if(isatt(opts,"FieldTitle")) then
         opts@cnInfoLabelString = opts@FieldTitle + info_string
-    else if(isatt(data,"description")) then
+    elseif(isatt(data,"description")) then
         opts@cnInfoLabelString = data@description + info_string
     else
         opts@cnInfoLabelString = info_string
-    end if
     end if
   end if
 
@@ -3161,11 +3117,10 @@ begin
             southern = False ; default to northern hemisphere
             if (in_file@POLE_LON .eq. 0.0) then
               southern = True
-            else if (in_file@POLE_LON .ne. 180) then
+            elseif (in_file@POLE_LON .ne. 180) then
               if (isatt(in_file,"CEN_LAT") .and. in_file@CEN_LAT .lt. 0.0) then
                 southern = True  ; probably but not necessarily true -- no way to tell for sure
               end if
-            end if
             end if
 
             if (.not. southern) then
@@ -3178,12 +3133,12 @@ begin
 
           end if
 
-        else if (isatt(in_file,"ref_lon") .and. isatt(in_file,"ref_lat")) then
+        elseif (isatt(in_file,"ref_lon") .and. isatt(in_file,"ref_lat")) then
           ;; this is definitely true for NMM grids but unlikely for ARW grids especially if ref_x and ref_y are set
           opts@mpCenterLatF = get_res_value_keep(opts, "mpCenterLatF", in_file@REF_LAT) 
           opts@mpCenterLonF = get_res_value_keep(opts, "mpCenterLonF", in_file@REF_LON) 
 
-        else if (isatt(in_file,"cen_lat") .and. isatt(in_file,"cen_lon")) then
+        elseif (isatt(in_file,"cen_lat") .and. isatt(in_file,"cen_lon")) then
           ;; these usually specifiy the center of the coarse domain --- not necessarily the center of the projection
           opts@mpCenterLatF  = get_res_value_keep(opts, "mpCenterLatF",in_file@CEN_LAT)
           opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
@@ -3193,8 +3148,6 @@ begin
           opts@mpCenterLatF  = get_res_value_keep(opts, "mpCenterLatF", 0.0)
           opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF", 180.0)
 
-        end if
-        end if
         end if
       end if
   
@@ -3620,11 +3573,10 @@ begin
             southern = False ; default to northern hemisphere
             if (opts@pole_lon .eq. 0.0) then
               southern = True
-            else if (opts@pole_lon .ne. 180) then
+            elseif (opts@pole_lon .ne. 180) then
               if (isatt(opts,"cen_lat") .and. opts@cen_lat .lt. 0.0) then
                 southern = True  ; probably but not necessarily true -- no way to tell for sure
               end if
-            end if
             end if
 
             if (.not. southern) then
@@ -3637,12 +3589,12 @@ begin
 
           end if
 
-        else if (isatt(opts,"ref_lon") .and. isatt(opts,"ref_lat")) then
+        elseif (isatt(opts,"ref_lon") .and. isatt(opts,"ref_lat")) then
           ;; this is definitely true for NMM grids but unlikely for ARW grids especially if ref_x and ref_y are set
           opts@mpCenterLatF = get_res_value_keep(opts, "mpCenterLatF", opts@ref_lat) 
           opts@mpCenterLonF = get_res_value_keep(opts, "mpCenterLonF", opts@ref_lon) 
 
-        else if (isatt(opts,"cen_lat") .and. isatt(opts,"cen_lon")) then
+        elseif (isatt(opts,"cen_lat") .and. isatt(opts,"cen_lon")) then
           ;; these usually specifiy the center of the coarse domain --- not necessarily the center of the projection
           opts@mpCenterLatF  = get_res_value_keep(opts, "mpCenterLatF",opts@cen_lat)
           opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",opts@cen_lon)
@@ -3651,9 +3603,6 @@ begin
           ;; default values for global grid
           opts@mpCenterLatF  = get_res_value_keep(opts, "mpCenterLatF", 0.0)
           opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF", 180.0)
-
-        end if
-        end if
         end if
       end if
 
@@ -3689,11 +3638,10 @@ begin
   ;grid_to_plot = mpres@grid_to_plot
   if(grid_to_plot.eq.0) then
   ; print("Plotting using corner mass grid points")
-  else if(grid_to_plot.eq.1) then
+  elseif(grid_to_plot.eq.1) then
   ; print("Plotting using edges of the corner grid cells")
   else
    print("ERROR: Invalid value for grid_to_plot = "+grid_to_plot)
-  end if
   end if
   ;BPR END
 
@@ -3752,12 +3700,11 @@ begin
   ;Determine adjustment needed to convert from mass grid to chosen grid
   if(grid_to_plot.eq.0) then
    adjust_grid = 0.0 
-  else if(grid_to_plot.eq.1) then
+  elseif(grid_to_plot.eq.1) then
    adjust_grid = 0.5 
   else 
    print("ERROR: Invalid value for grid_to_plot = "+grid_to_plot)
    adjust_grid = 0.0 
-  end if
   end if
 
   xx = 1.0 - adjust_grid
@@ -3831,13 +3778,12 @@ begin
         j_end = (mpres@e_sn(idom)-2)/(1.0*mpres@parent_grid_ratio(idom)) + j_start
         
         if(grid_to_plot.eq.0) then
-         adjust_grid = 0.0 
-        else if(grid_to_plot.eq.1) then
-         adjust_grid = 0.5/(1.0*mpres@parent_grid_ratio(idom))
+          adjust_grid = 0.0 
+        elseif(grid_to_plot.eq.1) then
+          adjust_grid = 0.5/(1.0*mpres@parent_grid_ratio(idom))
         else 
-         print("ERROR: Invalid value for grid_to_plot = "+grid_to_plot)
-         adjust_grid = 0.0 
-        end if
+          print("ERROR: Invalid value for grid_to_plot = "+grid_to_plot)
+          adjust_grid = 0.0 
         end if
         
         ;BPR END
@@ -3857,13 +3803,12 @@ begin
         ;aj_start = mpres@j_parent_start(idom)*1.0
 
         if(grid_to_plot.eq.0) then
-         adjust_grid = 0.0 
-        else if(grid_to_plot.eq.1) then
-         adjust_grid = 0.5/(1.0*mpres@parent_grid_ratio(idom)) 
+          adjust_grid = 0.0 
+        elseif(grid_to_plot.eq.1) then
+          adjust_grid = 0.5/(1.0*mpres@parent_grid_ratio(idom)) 
         else 
-         print("ERROR: Invalid value for grid_to_plot = "+grid_to_plot)
-         adjust_grid = 0.0 
-        end if
+          print("ERROR: Invalid value for grid_to_plot = "+grid_to_plot)
+          adjust_grid = 0.0 
         end if
 
         do while ( nd .gt. 1)
@@ -3879,13 +3824,12 @@ begin
           i_points = (i_points/(1.0*mpres@parent_grid_ratio(nd-1)))
           j_points = (j_points/(1.0*mpres@parent_grid_ratio(nd-1)))
           if(grid_to_plot.eq.0) then
-           adjust_grid = 0.0 
-          else if(grid_to_plot.eq.1) then
-           adjust_grid = adjust_grid/(1.0*mpres@parent_grid_ratio(nd-1))
+            adjust_grid = 0.0 
+          elseif(grid_to_plot.eq.1) then
+            adjust_grid = adjust_grid/(1.0*mpres@parent_grid_ratio(nd-1))
           else 
-           print("ERROR: Invalid value for grid_to_plot = "+grid_to_plot)
-           adjust_grid = 0.0 
-          end if
+            print("ERROR: Invalid value for grid_to_plot = "+grid_to_plot)
+            adjust_grid = 0.0 
           end if
 
           ;nd = nd - 1
@@ -4072,11 +4016,10 @@ begin
             southern = False ; default to northern hemisphere
             if (in_file@POLE_LON .eq. 0.0) then
               southern = True
-            else if (in_file@POLE_LON .ne. 180) then
+            elseif (in_file@POLE_LON .ne. 180) then
               if (isatt(in_file,"CEN_LAT") .and. in_file@CEN_LAT .lt. 0.0) then
                 southern = True  ; probably but not necessarily true -- no way to tell for sure
               end if
-            end if
             end if
 
             if (.not. southern) then
@@ -4089,12 +4032,12 @@ begin
 
           end if
 
-        else if (isatt(in_file,"ref_lon") .and. isatt(in_file,"ref_lat")) then
+        elseif (isatt(in_file,"ref_lon") .and. isatt(in_file,"ref_lat")) then
           ;; this is definitely true for NMM grids but unlikely for ARW grids especially if ref_x and ref_y are set
           map_args@mpCenterLatF = get_res_value_keep(map_args, "mpCenterLatF", in_file@REF_LAT) 
           map_args@mpCenterLonF = get_res_value_keep(map_args, "mpCenterLonF", in_file@REF_LON) 
 
-        else if (isatt(in_file,"cen_lat") .and. isatt(in_file,"cen_lon")) then
+        elseif (isatt(in_file,"cen_lat") .and. isatt(in_file,"cen_lon")) then
           ;; these usually specifiy the center of the coarse domain --- not necessarily the center of the projection
           map_args@mpCenterLatF  = get_res_value_keep(map_args, "mpCenterLatF",in_file@CEN_LAT)
           map_args@mpCenterLonF  = get_res_value_keep(map_args, "mpCenterLonF",in_file@CEN_LON)
@@ -4104,8 +4047,6 @@ begin
           map_args@mpCenterLatF  = get_res_value_keep(map_args, "mpCenterLatF", 0.0)
           map_args@mpCenterLonF  = get_res_value_keep(map_args, "mpCenterLonF", 180.0)
 
-        end if
-        end if
         end if
 
       end if
@@ -5029,11 +4970,10 @@ begin
           tmp_str = tmp_str + "/)"
         end if
       end do
-    else      if(typeof(x).eq."string") then
-        tmp_str = tmp_str + "'" + x + "'"
-      else
-        tmp_str = tmp_str + x
-      end if
+    elseif(typeof(x).eq."string") then
+      tmp_str = tmp_str + "'" + x + "'"
+    else
+      tmp_str = tmp_str + x
     end if
     print("" + tmp_str)
     delete(x)

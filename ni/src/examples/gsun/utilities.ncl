@@ -510,13 +510,12 @@ local vals1d, i, ii, vals_nomsg, nvals, nuniq_vals, count_only
 begin
   if(opt.eq.0) then
     count_only = False
-  else if(opt.eq.1) then
+  elseif(opt.eq.1) then
     count_only = True
   else
     print("unique_values_opt: Error: Don't recognize opt=" + opt)
     print("This is an internal function and may change")
     exit
-  end if
   end if
 
   if(isatt(vals,"_FillValue")) then
@@ -654,7 +653,7 @@ begin
       end do
     end do
 ;---Check if "n" is the leftmost dimension
-  else if(n.eq.0) then
+  elseif(n.eq.0) then
     do irgt=0,size_rgt_dims-1
       istrt = irgt
       iend  = istrt + size_rgt_n_m1_dims
@@ -672,7 +671,6 @@ begin
       return_count_1d(icount) = count_unique_values(vals_subset)
       icount = icount + 1
     end do
-  end if
   end if
   return(reshape(return_count_1d,return_dims))
 end
@@ -855,25 +853,21 @@ begin
   ; this logical taken directly from HLU code in "Palette.c"
   if (maxValue.le.1) then
       cmap(:,3) = where(cmap(:,3).lt.0, 1., cmap(:,3))
-  else if (maxValue.lt.256) then
+  elseif (maxValue.lt.256) then
       cmap(:,3) = where(cmap(:,3).lt.0, 255., cmap(:,3))
       cmap = cmap / 255.
-  else if (maxValue.eq.256) then
+  elseif (maxValue.eq.256) then
       cmap(:,3) = where(cmap(:,3).lt.0, 256., cmap(:,3))
       cmap = cmap / 256.
-  else if (maxValue.eq.65536) then
+  elseif (maxValue.eq.65536) then
       cmap(:,3) = where(cmap(:,3).lt.0, 65535., cmap(:,3))
       cmap = cmap / 65535. 
-  else if (maxValue.eq.65536) then
+  elseif (maxValue.eq.65536) then
       cmap(:,3) = where(cmap(:,3).lt.0, 65536., cmap(:,3))
       cmap = cmap / 65536.
   else
       cmap(:,3) = where(cmap(:,3).lt.0, maxValue, cmap(:,3))
       cmap = cmap / maxValue
-  end if
-  end if 
-  end if
-  end if
   end if
         
   return cmap
@@ -995,7 +989,7 @@ local ncols, fmin, fmax, fcols, icols, cmap
 begin
   if(isstring(cmapt)) then
      cmap = read_colormap_file(cmapt)
-  else if(isnumeric(cmapt)) then
+  elseif(isnumeric(cmapt)) then
     dims = dimsizes(cmapt)
    if(dimsizes(dims).ne.2.or.dims(0).lt.3.or.dims(0).gt.256.or.\
        .not.any(dims(1).ne.(/3,4/))) then
@@ -1005,7 +999,6 @@ begin
     cmap = cmapt
   else
     print ("Error: span_color_indexes: cmap must be an n x 3 or n x 4 array of RGB or RGBA values, or a valid color map name")
-  end if
   end if
 
   ncols  = dimsizes(cmap(:,0))
@@ -1053,15 +1046,15 @@ begin
     return(fmsg)
   end if
 
- if(isstring(cmapt)) then
-   cmap = read_colormap_file(cmapt)
-   icols = icols - 2                 ; read_colormap_file returns array 
+  if(isstring(cmapt)) then
+    cmap = read_colormap_file(cmapt)
+    icols = icols - 2                 ; read_colormap_file returns array 
                                      ; with indexes 0 and 1 dropped off
- else 
-   cmap = cmapt
- end if
+  else 
+    cmap = cmapt
+  end if
 
- return(cmap(icols,:))
+  return(cmap(icols,:))
 end
 
 ;***********************************************************************
@@ -1085,7 +1078,7 @@ begin
 
  if(isstring(cmapt)) then
     cmap = read_colormap_file(cmapt)
- else if(isnumeric(cmapt)) then
+ elseif(isnumeric(cmapt)) then
    dims = dimsizes(cmapt)
    if(dimsizes(dims).ne.2.or.dims(0).lt.3.or.dims(0).gt.256.or.\
        .not.any(dims(1).ne.(/3,4/))) then
@@ -1095,7 +1088,6 @@ begin
    cmap = cmapt
  else
    print ("get_color_index: Error: cmap must be an n x 3 or n x 4 array of RGB or RGBA values, or a valid color map name")
- end if
  end if
 
  ncn  = dimsizes (cnlvls)
@@ -1310,53 +1302,34 @@ begin
   dims_color = dimsizes(colors)
   rank_color = dimsizes(dims_color)
 
-  if(typeof(colors).eq."string".and.\
-     all(is_valid_colormap_names(colors))) then
+  if(typeof(colors).eq."string".and.all(is_valid_colormap_names(colors))) then
     return("colormap")
-  end if
-
-  if(typeof(colors).eq."string".and.\
-     all(is_valid_named_colors(colors))) then
+  elseif(typeof(colors).eq."string".and.all(is_valid_named_colors(colors))) then
     return("named")
-  end if
-
-  if(typeof(colors).eq."string".and.\
-     all(is_valid_special_colors(colors))) then
+  elseif(typeof(colors).eq."string".and.all(is_valid_special_colors(colors))) then
     return("special")
-  end if
-
 ;
 ; This test is different, because we have to make sure all
 ; of the colors are either a named color or a special color.
 ; If you have one bad one in the bunch, then we can't 
 ; claim it is "mixed".
 ;
-  if(typeof(colors).eq."string".and.\
-     (num(is_valid_named_colors(colors))+\
-      num(is_valid_special_colors(colors))).eq.product(dims_color))
+  elseif(typeof(colors).eq."string".and.(num(is_valid_named_colors(colors))+\
+         num(is_valid_special_colors(colors))).eq.product(dims_color))
     return("mixed")
-  end if
-
-  if(dims_color(rank_color-1).eq.3.and.isnumeric(colors).and.\
-     all(colors.ge.0.and.colors.le.1.0)) then
+  elseif(dims_color(rank_color-1).eq.3.and.isnumeric(colors).and.\
+         all(colors.ge.0.and.colors.le.1.0)) then
     return("rgb")
-  end if
-
-  if(dims_color(rank_color-1).eq.4.and.isnumeric(colors).and.\
-     all(colors.ge.0.and.colors.le.1.0)) then
+  elseif(dims_color(rank_color-1).eq.4.and.isnumeric(colors).and.\
+         all(colors.ge.0.and.colors.le.1.0)) then
     return("rgba")
+  elseif(isnumeric(colors).and.all(colors.ge.-1.and.colors.le.255)) then
+    return("index")
+  elseif(isnumeric(colors).and.all(colors.ge.(2^30).and.colors.le.((2^31)-1))) then
+    return("absolute")
+  else
+    return("unknown")
   end if
-
-  if(isnumeric(colors)) then
-    if(all(colors.ge.-1.and.colors.le.255)) then
-      return("index")
-    else if(all(colors.ge.(2^30).and.colors.le.((2^31)-1))) then
-      return("absolute")
-    end if
-    end if
-  end if
-
-  return("unknown")
 end
 
 ;***********************************************************************;
@@ -1384,26 +1357,19 @@ begin
     print("   Will return all missing")
     istrans = new(dims,logical)
     return(istrans)
-  end if
-  if(type.eq."special".or.type.eq."mixed") then
+  elseif(type.eq."special".or.type.eq."mixed") then
     return(str_lower(colors).eq."transparent")
-  end if
-  if(type.eq."index") then
+  elseif(type.eq."index") then
     return(colors.eq.-1)
-  end if
-  if(type.eq."absolute") then
+  elseif(type.eq."absolute") then
     colors_rgba = ndtotwod(color_index_to_rgba(colors))
     return(reshape(colors_rgba(:,3).eq.0.0,dims))
-  end if
-  if(type.eq."rgba") then
-    if(rank.eq.1) then
-      return(colors(3).eq.0.0)
-    else
-      colors2d = ndtotwod(colors)
-      return(reshape(colors2d(:,3).eq.0.0,dims(0:rank-2)))
-    end if
-  end if
-  if(any(type.eq.(/"named","rgb"/))) then
+  elseif(type.eq."rgba".and.rank.eq.1) then
+    return(colors(3).eq.0.0)
+  elseif(type.eq."rgba".and.rank.gt.1) then
+    colors2d = ndtotwod(colors)
+    return(reshape(colors2d(:,3).eq.0.0,dims(0:rank-2)))
+  else    ; better be "named" or "rgb"!
     istrans = new(dims,logical)
     istrans = False
     return(istrans)
@@ -1585,9 +1551,8 @@ begin
     if(.not.ismissing(color_indexes_1d(n))) then
       if(color_indexes_1d(n).ge.0.and.color_indexes_1d(n).lt.ncolors) then
         rgba_2d(n,:) = rgba_cmap(color_indexes_1d(n),:)
-      else if(color_indexes_1d(n).eq.-1) then
+      elseif(color_indexes_1d(n).eq.-1) then
         rgba_2d(n,:) = (/0.,0.,0.,0./)
-      end if
       end if
     end if
   end do
@@ -1719,7 +1684,23 @@ function convert_color_to_rgba(wks,colors)
 local color_type, dims, rank, new_dims
 begin
   color_type = get_color_type(colors)
-  if(color_type.eq."unknown")
+  if(color_type.eq."rgba") then
+    rgba_colors = colors
+  elseif(color_type.eq."index") then
+    rgba_colors = indexcolor2rgba(wks,colors)
+  elseif(color_type.eq."absolute") then
+    rgba_colors = color_index_to_rgba(colors)
+  elseif(color_type.eq."colormap") then
+    rgba_colors = read_colormap_files(colors)
+  elseif(color_type.eq."named") then
+    rgba_colors = namedcolor2rgba(colors)
+  elseif(color_type.eq."special") then
+    rgba_colors = specialcolor2rgba(wks,colors)
+  elseif(color_type.eq."mixed") then
+    rgba_colors = mixedcolor2rgba(wks,colors)
+  elseif(color_type.eq."rgb") then
+    rgba_colors = rgb2rgba(colors)
+  else    ; color_type.eq."unknown"
     dims = dimsizes(colors)
     rank = dimsizes(dims)
     new_dims = new(rank+1,typeof(dims))
@@ -1728,31 +1709,6 @@ begin
     print("convert_color_to_rgba: Error: unknown color type.")
     print("   Returning all missing values.")
     return(new(new_dims,float))
-  end if
-
-  if(color_type.eq."rgba") then
-    rgba_colors = colors
-  else if(color_type.eq."index") then
-    rgba_colors = indexcolor2rgba(wks,colors)
-  else if(color_type.eq."absolute") then
-    rgba_colors = color_index_to_rgba(colors)
-  else if(color_type.eq."colormap") then
-    rgba_colors = read_colormap_files(colors)
-  else if(color_type.eq."named") then
-    rgba_colors = namedcolor2rgba(colors)
-  else if(color_type.eq."special") then
-    rgba_colors = specialcolor2rgba(wks,colors)
-  else if(color_type.eq."mixed") then
-    rgba_colors = mixedcolor2rgba(wks,colors)
-  else if(color_type.eq."rgb") then
-    rgba_colors = rgb2rgba(colors)
-  end if
-  end if
-  end if
-  end if
-  end if
-  end if
-  end if
   end if
 
   rank = dimsizes(dimsizes(rgba_colors))
@@ -2019,29 +1975,21 @@ begin
 
 ;---Check for valid colors
   color_type = get_color_type(colors)
-
-  if(ismissing(color_type).or.color_type.eq."unknown")
-    print("draw_color_palette: Error: invalid color specification.")
-    return
-  end if
-
   if(color_type.eq."rgba") then
     rgba_colors = colors
-  end if
-  if(color_type.eq."index") then
+  elseif(color_type.eq."index") then
     rgba_colors = indexcolor2rgba(wks,colors)
-  end if
-  if(color_type.eq."absolute") then
+  elseif(color_type.eq."absolute") then
     rgba_colors = color_index_to_rgba(colors)
-  end if
-  if(color_type.eq."colormap") then
+  elseif(color_type.eq."colormap") then
     rgba_colors = read_colormap_files(colors)
-  end if
-  if(color_type.eq."named") then
+  elseif(color_type.eq."named") then
     rgba_colors = namedcolor2rgba(colors)
-  end if
-  if(color_type.eq."rgb") then
+  elseif(color_type.eq."rgb") then
     rgba_colors = rgb2rgba(colors)
+  else   ; ismissing(color_type).or.color_type.eq."unknown"
+    print("draw_color_palette: Error: invalid color specification.")
+    return
   end if
 
   ncolors = dimsizes(rgba_colors(:,0))

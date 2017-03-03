@@ -146,20 +146,18 @@ begin
 ;---Propagate X and Y to 2D if necessary.
   if(rankx.eq.1) then
     x2d = conform_dims((/ncurves,npts/),x,1)
-  else if(rankx.eq.2.and.nlines.ne.ncurvesxy) then    
+  elseif(rankx.eq.2.and.nlines.ne.ncurvesxy) then    
     x2d = reshape(x,(/ncurves,npts/))
   else
     x2d = x
   end if
-  end if
 
   if(ranky.eq.1) then
     y2d = conform_dims((/ncurves,npts/),y,1)
-  else if(ranky.eq.2.and.nlines.ne.ncurvesxy) then    
+  elseif(ranky.eq.2.and.nlines.ne.ncurvesxy) then    
     y2d = reshape(y,(/ncurves,npts/))
   else
     y2d = y
-  end if
   end if
 
 ;---Propagate ref_lines to 1D array if necessary
@@ -206,7 +204,7 @@ begin
           yinterp(j,i+num_crosses)   = ref1d(j)
           yinterp(j,i+num_crosses+1) = y2d(j,i)
           num_crosses = num_crosses + 1
-        else if((reftype.eq."x").and.\
+        elseif((reftype.eq."x").and.\
                 ((x2d(j,i-1).lt.ref1d(j).and.x2d(j,i).gt.ref1d(j)).or.\
                  (x2d(j,i-1).gt.ref1d(j).and.x2d(j,i).lt.ref1d(j)))) then
           yinterp(j,i+num_crosses) = xy_ref_interp(x2d(j,i-1),x2d(j,i),\
@@ -216,7 +214,6 @@ begin
           xinterp(j,i+num_crosses)   = ref1d(j)
           xinterp(j,i+num_crosses+1) = x2d(j,i)
           num_crosses = num_crosses + 1
-        end if
         end if
       end if
     end do
@@ -1418,12 +1415,10 @@ begin
 ;       is_valid_latlon2d_attr(data,"lon2d")) then
     if(is_valid_latlon2d_attr(data,"lon2d")) then
       res@$xarray_name$ = data@lon2d
-    else if(prefix.eq."sf".and.is_valid_latlon1d_attr(data,"lon1d")) then
+    elseif(prefix.eq."sf".and.is_valid_latlon1d_attr(data,"lon1d")) then
       res@$xarray_name$ = data@lon1d
-    else if(is_valid_coord(data,"x")) then
+    elseif(is_valid_coord(data,"x")) then
       res@$xarray_name$ = data&$data!1$
-    end if
-    end if
     end if
   end if
 
@@ -1433,12 +1428,10 @@ begin
 ;       is_valid_latlon2d_attr(data,"lat2d")) then
     if(is_valid_latlon2d_attr(data,"lat2d")) then
       res@$yarray_name$ = data@lat2d
-    else if(prefix.eq."sf".and.is_valid_latlon1d_attr(data,"lat1d")) then
+    elseif(prefix.eq."sf".and.is_valid_latlon1d_attr(data,"lat1d")) then
       res@$yarray_name$ = data@lat1d
-    else if(is_valid_coord(data,"y")) then
+    elseif(is_valid_coord(data,"y")) then
       res@$yarray_name$ = data&$data!0$
-    end if
-    end if
     end if
   end if
 
@@ -1836,9 +1829,9 @@ begin
 ;       is_valid_latlon2d_attr(data,"lat2d")) then
     if(is_valid_latlon2d_attr(data,"lat2d")) then
       res@$array_name$ = data@lat2d
-    else if(prefix.eq."sf".and.is_valid_latlon1d_attr(data,"lat1d")) then
+    elseif(prefix.eq."sf".and.is_valid_latlon1d_attr(data,"lat1d")) then
       res@$array_name$ = data@lat1d
-    else if(is_valid_latlon_coord(data,"y","lat",res))
+    elseif(is_valid_latlon_coord(data,"y","lat",res))
       res@$array_name$ = data&$data!0$
     else
       print("check_for_y_lat_coord: Warning: Data either does not contain")
@@ -1846,8 +1839,6 @@ begin
       print("A valid latitude coordinate array should have a 'units'")
       print("attribute equal to one of the following values: ")
       print("    " + cat_strings(get_allowed_lat_units))
-    end if
-    end if
     end if
   end if 
 
@@ -1912,9 +1903,9 @@ begin
 ;       is_valid_latlon2d_attr(data,"lat2d")) then
     if(is_valid_latlon2d_attr(data,"lat2d")) then
       res@$array_name$ = data@lat2d
-    else if(prefix.eq."sf".and.is_valid_latlon1d_attr(data,"lat1d")) then
+    elseif(prefix.eq."sf".and.is_valid_latlon1d_attr(data,"lat1d")) then
       res@$array_name$ = data@lat1d
-    else if(is_valid_latlon_coord(data,"x","lat",res))
+    elseif(is_valid_latlon_coord(data,"x","lat",res))
       res@$array_name$ = data&$data!1$
     else
       print("check_for_x_lat_coord: Warning: Data either does not contain")
@@ -1922,8 +1913,6 @@ begin
       print("A valid latitude coordinate array should have a 'units'")
       print("attribute equal to one of the following values: ")
       print("    " + cat_strings(get_allowed_lat_units))
-    end if
-    end if
     end if
   end if
 
@@ -1989,9 +1978,9 @@ begin
 ;       is_valid_latlon2d_attr(data,"lon2d")) then
     if(is_valid_latlon2d_attr(data,"lon2d")) then
       res@$array_name$ = data@lon2d
-    else if(prefix.eq."sf".and.is_valid_latlon1d_attr(data,"lon1d")) then
+    elseif(prefix.eq."sf".and.is_valid_latlon1d_attr(data,"lon1d")) then
       res@$array_name$ = data@lon1d
-    else if(is_valid_latlon_coord(data,"x","lon",res))
+    elseif(is_valid_latlon_coord(data,"x","lon",res))
       res@$array_name$ = data&$data!1$
     else
       print("check_for_lon_coord: Warning: Data either does not contain")
@@ -1999,8 +1988,6 @@ begin
       print("A valid longitude coordinate array should have a 'units'")
       print("attribute equal to one of the following values: ")
       print("    " + cat_strings(get_allowed_lon_units))
-    end if
-    end if
     end if 
   end if
 
@@ -2124,11 +2111,10 @@ begin
     strings(0) = left_string@sub_string
     if(isatt(left_string,"gsnLeftStringFontHeightF")) then
       fhghts(0) = get_res_value_keep(left_string,"gsnLeftStringFontHeightF",0.)
-    else if(isatt(left_string,"gsnStringFontHeightF")) then
+    elseif(isatt(left_string,"gsnStringFontHeightF")) then
       fhghts(0) = get_res_value_keep(left_string,"gsnStringFontHeightF",0.)
     else
       fhghts(0) = get_res_value_keep(txres,"txFontHeightF",0.0)
-    end if
     end if
     if(isatt(left_string,"gsnLeftStringFuncCode")) then
       fcodes(0) = get_res_value_keep(left_string,"gsnLeftStringFuncCode","~")
@@ -2148,11 +2134,10 @@ begin
     strings(1) = center_string@sub_string
     if(isatt(center_string,"gsnCenterStringFontHeightF")) then
       fhghts(1) = get_res_value_keep(center_string,"gsnCenterStringFontHeightF",0.)
-    else if(isatt(center_string,"gsnStringFontHeightF")) then
+    elseif(isatt(center_string,"gsnStringFontHeightF")) then
       fhghts(1) = get_res_value_keep(center_string,"gsnStringFontHeightF",0.)
     else
       fhghts(1) = get_res_value_keep(txres,"txFontHeightF",0.0)
-    end if
     end if
     if(isatt(center_string,"gsnCenterStringFuncCode")) then
       fcodes(1) = get_res_value_keep(center_string,"gsnCenterStringFuncCode","~")
@@ -2172,11 +2157,10 @@ begin
     strings(2) = right_string@sub_string
     if(isatt(right_string,"gsnRightStringFontHeightF")) then
       fhghts(2) = get_res_value_keep(right_string,"gsnRightStringFontHeightF",0.)
-    else if(isatt(right_string,"gsnStringFontHeightF")) then
+    elseif(isatt(right_string,"gsnStringFontHeightF")) then
       fhghts(2) = get_res_value_keep(right_string,"gsnStringFontHeightF",0.)
     else
       fhghts(2) = get_res_value_keep(txres,"txFontHeightF",0.0)
-    end if
     end if
     if(isatt(right_string,"gsnRightStringFuncCode")) then
       fcodes(2) = get_res_value_keep(right_string,"gsnRightStringFuncCode","~")
@@ -2259,12 +2243,11 @@ begin
   end if
   if(type.eq."polar")
     set_attr(r,"pmLabelBarOrthogonalPosF",0.05)
-  else if(type.eq."ce".and..not.\
+  elseif(type.eq."ce".and..not.\
           (check_attr_enum_value(r,"pmTickMarkDisplayMode","Always").or.\
            check_attr_enum_value(r,"pmTickMarkDisplayMode","Conditional").or.\
            check_attr_enum_value(r,"pmTickMarkDisplayMode","ForceAlways"))) then
     set_attr(r,"pmLabelBarOrthogonalPosF",0.08)
-  end if
   end if
 end
 
@@ -2486,7 +2469,7 @@ begin
       lbres@lbFillScaleF    = fill_scale
     end if
     lbres@lbFillOpacityF = fill_opacity     ; Added in NCL V6.4.0
-  else if(class_name.eq."vectorPlotClass") then
+  elseif(class_name.eq."vectorPlotClass") then
     getvalues the_plot
       "vcLevels"              : levels
       "vcLevelColors"         : colors
@@ -2501,7 +2484,6 @@ begin
       "stLabelBarEndLabelsOn" : end_labels_on
       "lbLabelStrings"        : lbstrings
     end getvalues
-  end if
   end if
 ;
 ; Vector and Streamline don't have the xxLabelBarEndStyle resource
@@ -2585,15 +2567,13 @@ begin
   if(class_name.eq."logLinPlotClass".or.class_name.eq."irregularPlotClass") then
     if(isatt(plot,"contour")) then
       the_plot = plot@contour
-    else if(isatt(plot,"vector")) then
+    elseif(isatt(plot,"vector")) then
       the_plot = plot@vector
-    else if(isatt(plot,"streamline")) then
+    elseif(isatt(plot,"streamline")) then
       the_plot = plot@streamline
     else
       print("Warning: fix_labelbar: invalid plot type, won't try to fix the labelbar.")
       exit      
-    end if
-    end if
     end if
   else
     the_plot = plot
@@ -2644,12 +2624,10 @@ begin
   if(res.and.any(isatt(res,(/"lbLabelAlignment","lbLabelStrings"/)))) then
     if(class_name.eq."contourPlotClass") then
       lbres@cnExplicitLabelBarLabelsOn = get_res_value_keep(res,"cnExplicitLabelBarLabelsOn",True)
-    else if(class_name.eq."vectorPlotClass") then
+    elseif(class_name.eq."vectorPlotClass") then
       lbres@vcExplicitLabelBarLabelsOn = get_res_value_keep(res,"vcExplicitLabelBarLabelsOn",True)
-    else if(class_name.eq."streamlinePlotClass") then
+    elseif(class_name.eq."streamlinePlotClass") then
       lbres@stExplicitLabelBarLabelsOn = get_res_value_keep(res,"stExplicitLabelBarLabelsOn",True)
-    end if
-    end if
     end if
   end if
   if(.not.res.or..not.isatt(res,"pmLabelBarHeightF"))
@@ -2908,7 +2886,7 @@ begin
             xgreater_gon(1:igon) = xgreater_line(0:igon-1)
             ygreater_gon(1:igon) = ygreater_line(0:igon-1)
             newgon = igon + 1
-          else if(reftype.eq."x".and.xgreater_line(0).ne.ref) then
+          elseif(reftype.eq."x".and.xgreater_line(0).ne.ref) then
             ygreater_gon(0) = ygreater_line(0)
             xgreater_gon(0) = ref
             ygreater_gon(1:igon) = ygreater_line(0:igon-1)
@@ -2919,16 +2897,14 @@ begin
             ygreater_gon(0:igon-1) = ygreater_line(0:igon-1)
             newgon = igon
           end if
-          end if
           if(reftype.eq."y".and.ygreater_line(igon-1).ne.ref) then
             xgreater_gon(newgon) = xgreater_line(igon-1)
             ygreater_gon(newgon) = ref
             newgon = newgon + 1
-          else if(reftype.eq."x".and.xgreater_line(igon-1).ne.ref) then
+          elseif(reftype.eq."x".and.xgreater_line(igon-1).ne.ref) then
             ygreater_gon(newgon) = ygreater_line(igon-1)
             xgreater_gon(newgon) = ref
             newgon = newgon + 1
-          end if
           end if
 
           polygons(ngons) = gsn_add_polygon(wks,xy,xgreater_gon(0:newgon-1),\
@@ -2982,7 +2958,7 @@ begin
             xless_gon(1:igon) = xless_line(0:igon-1)
             yless_gon(1:igon) = yless_line(0:igon-1)
             newgon = igon + 1
-          else if(reftype.eq."x".and.xless_line(0).ne.ref) then
+          elseif(reftype.eq."x".and.xless_line(0).ne.ref) then
             yless_gon(0) = yless_line(0)
             xless_gon(0) = ref
             yless_gon(1:igon) = yless_line(0:igon-1)
@@ -2993,16 +2969,14 @@ begin
             yless_gon(0:igon-1) = yless_line(0:igon-1)
             newgon = igon
           end if
-          end if
           if(reftype.eq."y".and.yless_line(igon-1).ne.ref) then
             xless_gon(newgon) = xless_line(igon-1)
             yless_gon(newgon) = ref
             newgon = newgon + 1
-          else if(reftype.eq."x".and.xless_line(igon-1).ne.ref) then
+          elseif(reftype.eq."x".and.xless_line(igon-1).ne.ref) then
             yless_gon(newgon) = yless_line(igon-1)
             xless_gon(newgon) = ref
             newgon = newgon + 1
-          end if
           end if
 
           polygons(ngons) = gsn_add_polygon(wks,xy,xless_gon(0:newgon-1), \
@@ -4366,21 +4340,19 @@ begin
   if(reftype.eq."y") then
     color_res1 = "gsnYRefLineColor"
     color_res2 = "gsnYRefLineColors"
-  else if(reftype.eq."x") then
+  elseif(reftype.eq."x") then
     color_res1 = "gsnXRefLineColor"
     color_res2 = "gsnXRefLineColors"
   else
     print("get_ref_line_color: fatal, invalid type for reference line color.")
     return
   end if
-  end if
   if(isatt(rfres,color_res2))
     ref_line_color = convert_color_to_rgba(wks,rfres@$color_res2$)
-  else if(isatt(rfres,color_res1))
+  elseif(isatt(rfres,color_res1))
     ref_line_color = convert_color_to_rgba(wks,rfres@$color_res1$)
   else
     ref_line_color = convert_color_to_rgba(wks,"foreground")
-  end if
   end if
   dims = dimsizes(ref_line_color)
   rank = dimsizes(dims)
@@ -4411,13 +4383,12 @@ begin
   if(reftype.eq."y") then
     pattern_res1 = "gsnYRefLineDashPattern"
     pattern_res2 = "gsnYRefLineDashPatterns"
-  else if(reftype.eq."x") then
+  elseif(reftype.eq."x") then
     pattern_res1 = "gsnXRefLineDashPattern"
     pattern_res2 = "gsnXRefLineDashPatterns"
   else
     print("get_ref_line_pattern: fatal, invalid type for reference line pattern.")
     return
-  end if
   end if
   if(isatt(rfres,pattern_res1)) then
     if(dimsizes(rfres@$pattern_res1$).gt.1) then
@@ -4425,11 +4396,10 @@ begin
       print("                      Use " + pattern_res2 + " if multiple patterns desired.")
     end if
     ref_line_pattern := rfres@$pattern_res1$(0)
-  else if(isatt(rfres,pattern_res2))
+  elseif(isatt(rfres,pattern_res2))
     ref_line_pattern := rfres@$pattern_res2$
   else  
     ref_line_pattern = 0
-  end if
   end if
 
   dims = dimsizes(ref_line_pattern)
@@ -4456,13 +4426,12 @@ begin
   if(reftype.eq."y") then
     thickness_res1 = "gsnYRefLineThicknessF"
     thickness_res2 = "gsnYRefLineThicknesses"
-  else if(reftype.eq."x") then
+  elseif(reftype.eq."x") then
     thickness_res1 = "gsnXRefLineThicknessF"
     thickness_res2 = "gsnXRefLineThicknesses"
   else
     print("get_ref_line_thickness: fatal, invalid type for reference line thickness.")
     return
-  end if
   end if
   if(isatt(rfres,thickness_res1)) then
     if(dimsizes(rfres@$thickness_res1$).gt.1) then
@@ -4470,11 +4439,10 @@ begin
       print("                        Use " + thickness_res2 + " if multiple thicknesses desired.")
     end if
     ref_line_thickness = rfres@$thickness_res1$(0)
-  else if(isatt(rfres,thickness_res2)) then
+  elseif(isatt(rfres,thickness_res2)) then
     ref_line_thickness = rfres@$thickness_res2$
   else
     ref_line_thickness = 1.0
-  end if
   end if
   dims = dimsizes(ref_line_thickness)
   rank = dimsizes(dims)
@@ -4499,18 +4467,15 @@ local tmpdims, color_res, msg_color
 begin
   if(location.eq."above") then
     color_res = "gsnAboveYRefLineColor"
-  else if(location.eq."below") then
+  elseif(location.eq."below") then
     color_res = "gsnBelowYRefLineColor"
-  else if(location.eq."right") then
+  elseif(location.eq."right") then
     color_res = "gsnRightXRefLineColor"
-  else if(location.eq."left") then
+  elseif(location.eq."left") then
     color_res = "gsnLeftXRefLineColor"
   else
     print("get_ref_line_fill_color: fatal, invalid type for reference fill color.")
     return
-  end if
-  end if
-  end if
   end if
 
   msg_color = new((/1,4/),float)
@@ -5465,11 +5430,10 @@ begin
   nfopacs = max((/nacol,nbcol/))
   if(isatt(res2,"gsnXYFillOpacityF")) then
     fill_opacs = conform_dims(nfopacs,get_res_value(res2,"gsnXYFillOpacityF",1.0),-1)
-  else if(isatt(res2,"gsnXYFillOpacities")) then
+  elseif(isatt(res2,"gsnXYFillOpacities")) then
     fill_opacs = get_res_value(res2,"gsnXYFillOpacities",1.0)
   else
     fill_opacs = conform_dims(nfopacs,1.0,-1)
-  end if
   end if
 ;
 ; Convert input arrays to double.
@@ -6611,7 +6575,7 @@ begin
         "pmTitleDisplayMode" : "Always"
         "pmTitleZone"        : main_zone    ; Zone for main title
       end create
-    else if(limit_mode.eq."corners") then
+    elseif(limit_mode.eq."corners") then
       map_object = create "map" mapPlotClass wks
         "vpXF"                : res2@vpXF
         "vpYF"                : res2@vpYF
@@ -6637,7 +6601,6 @@ begin
         "pmTitleZone"           : main_zone    ; Zone for main title
         "mpLimitMode"           : limit_mode
       end create
-    end if
     end if
 ; This section tests for regular resources.
 
@@ -7010,12 +6973,11 @@ begin
       if(isatt(res2,"gsnPolarLabelFont")) then
         set_text_font = True
         text_font     = get_res_value(res2,"gsnPolarLabelFont",1)
-      else if(isatt(res2,"txFont")) then
+      elseif(isatt(res2,"txFont")) then
         set_text_font = True
         text_font     = get_res_value_keep(res2,"txFont",1)
       else
         set_text_font = False
-      end if
       end if
 
 ; Create an array of TextItem objects that we'll use to label the

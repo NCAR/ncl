@@ -402,9 +402,8 @@ begin
             isfilevaratt(fid,VarNames(i),"units")) then
             if( isStrSubset(str_lower(fid->$VarNames(i)$@units),"north") ) then
                 OutPut(i)="latitude"
-            else if ( isStrSubset(str_lower(fid->$VarNames(i)$@units),"east") ) then
+            elseif ( isStrSubset(str_lower(fid->$VarNames(i)$@units),"east") ) then
                 OutPut(i)="longitude"
-            end if
             end if
         end if
     end do
@@ -480,7 +479,7 @@ begin
     if (isfilepresent(fname)) then
         if(isatt_logical_true(opt,"Overwrite")) then
             system("rm -rfi "+fname)
-        else if (isatt_logical_true(opt,"ForceOverwrite")) then
+        elseif (isatt_logical_true(opt,"ForceOverwrite")) then
             system("rm -rf "+fname)
         else
             print("check_for_file: the file '" + fname + "' already exists.")
@@ -488,7 +487,6 @@ begin
             print("                 or opt@ForceOverwrite = True")
             print("                 to override.")
             exit
-        end if
         end if
     end if
 end
@@ -521,48 +519,35 @@ begin
     Err="OK"
     if (outType.eq."double") then
         outVar=todouble(inVar)
-    else if (outType.eq."float") then
+    elseif (outType.eq."float") then
         outVar=tofloat(inVar)
-    else if (outType.eq."integer") then
+    elseif (outType.eq."integer") then
         outVar=tointeger(inVar)
-    else if (outType.eq."int64") then
+    elseif (outType.eq."int64") then
         outVar=toint64(inVar)
-    else if (outType.eq."uint64") then
+    elseif (outType.eq."uint64") then
         outVar=touint64(inVar)
-    else if (outType.eq."long") then
+    elseif (outType.eq."long") then
         outVar=tolong(inVar)
-    else if (outType.eq."ulong") then
+    elseif (outType.eq."ulong") then
         outVar=toulong(inVar)
-    else if (outType.eq."uint") then
+    elseif (outType.eq."uint") then
         outVar=touint(inVar)
-    else if (outType.eq."short") then
+    elseif (outType.eq."short") then
         outVar=toshort(inVar)
-    else if (outType.eq."ushort") then
+    elseif (outType.eq."ushort") then
         outVar=toushort(inVar)
-    else if (outType.eq."byte") then
+    elseif (outType.eq."byte") then
         outVar=tobyte(inVar)
-    else if (outType.eq."ubyte") then
+    elseif (outType.eq."ubyte") then
         outVar=toubyte(inVar)
-    else if (outType.eq."string") then
+    elseif (outType.eq."string") then
         outVar=tostring(inVar)
-    else if (outType.eq."character") then
+    elseif (outType.eq."character") then
         outVar=tocharacter(inVar)
     else
         print("totypeof: Error: conversion to the provided type is not supported.")
         exit
-    end if
-    end if
-    end if
-    end if
-    end if
-    end if
-    end if
-    end if
-    end if
-    end if
-    end if
-    end if
-    end if
     end if
     copy_VarAtts_except(inVar,outVar,"_FillValue")
     return(outVar)
@@ -1401,7 +1386,7 @@ begin
       end if
       ElementVertices = Opt@ElementVertices
 ;---Was a triangular mesh provided?
-    else if(Opt.and.isatt(Opt,"TriangularMesh")) then
+    elseif(Opt.and.isatt(Opt,"TriangularMesh")) then
       dims = dimsizes(Opt@TriangularMesh)
       if(dims(1).ne.3) then
         print("unstructured_to_ESMF: TriangularMesh must be an ncells x 3 array")
@@ -1412,7 +1397,7 @@ begin
       end if
       ElementVertices = Opt@TriangularMesh
 ;---Was a quadrilateral mesh provided?
-    else if(Opt.and.isatt(Opt,"QuadrilateralMesh")) then
+    elseif(Opt.and.isatt(Opt,"QuadrilateralMesh")) then
       dims = dimsizes(Opt@QuadrilateralMesh)
       if(dims(1).ne.4) then
         print("unstructured_to_ESMF: QuadrilateralMesh must be an ncells x 4 array")
@@ -1431,8 +1416,6 @@ begin
         print("                      'ElementVertices' option.")
       end if
       ElementVertices = csstri(lat,lon)       ; Triangulate
-    end if
-    end if
     end if
     if(DEBUG) then
       print("min/max ElementVertices = " + min(ElementVertices) + "/" + \
@@ -2031,7 +2014,7 @@ begin
             print("auto_to_SCRIP: can't read longitude information.")
             exit
         end if
-    else if (coordType.eq."coordinate") then
+    elseif (coordType.eq."coordinate") then
         nCoords = dimsizes(VarData)
         LonData = VarData&$LonDimName$
         LatData = VarData&$LatDimName$
@@ -2044,7 +2027,6 @@ begin
                                       LatAttName + " must be 2D.")
             exit
         end if
-    end if
     end if  ; end of getting coordinate variables names and data
             ; at this point lat/lon data is stored in LatData and LonData
         
@@ -2060,7 +2042,7 @@ begin
 ;---Generate the grid centers
     	grid_center_lat = conform_dims((/nlat, nlon/),LatData,0)
         grid_center_lon = conform_dims((/nlat, nlon/),LonData,1)
-    else if ((CoordDim.eq.2).and.((coordType.eq."attribute").or. \
+    elseif ((CoordDim.eq.2).and.((coordType.eq."attribute").or. \
                                   (coordType.eq."variable"))) then
         grid_center_lat = LatData
         grid_center_lon = LonData
@@ -2069,7 +2051,6 @@ begin
     else 
         print("auto_to_SCRIP: Can't help with recognizing the coordinates.")
         exit
-    end if
     end if
     
 ;---Get mask
@@ -2126,10 +2107,9 @@ begin
   if(grid_type.eq."degree") then
     dlat = grid_type@dlat
     dlon = grid_type@dlon
-  else if(grid_type.eq."gaussian") then
+  elseif(grid_type.eq."gaussian") then
     nlat = grid_type@nlat
     nlon = grid_type@nlon
-  end if
   end if
 
 ;---Check for Opt attributes
@@ -2199,11 +2179,10 @@ begin
 
     lat = fspan(0.0,BoxDiag(0),nlat)
     lon = fspan(0.0,BoxDiag(1),nlon)
-  else if(grid_type.eq."gaussian") then
+  elseif(grid_type.eq."gaussian") then
     gau_info = gaus(nlat/2)
     lat      = gau_info(:,0)  ; gaussian latitudes
     lon      = todouble((/lonGlobeFo(nlon,"","","")/))
-  end if
   end if
 
 ;---Generate the cell center Lat/Lon
@@ -3504,7 +3483,7 @@ begin
     lon_vals = opt2@$grid_lon_name$
 
 ;---Curvilinear grid?
-  else if(isatt(data,"lat2d").and.isatt(data,"lon2d")) then
+  elseif(isatt(data,"lat2d").and.isatt(data,"lon2d")) then
     if(.not.any(grid_type.eq.(/"unknown","curvilinear"/))) then
       print("get_src_grid_info: the lat/lon values provided don't match")
       print("                   the grid type (" + grid_type + ") specified.")
@@ -3517,7 +3496,7 @@ begin
     lon_vals  = data@lon2d
     
 ;---Rectilinear grid?
-  else if(var_rank.ge.2.and. \
+  elseif(var_rank.ge.2.and. \
           isdimnamed(data,var_rank-1).and. \
           isdimnamed(data,var_rank-2).and. \
           iscoord(data,data!(var_rank-1)).and. \
@@ -3534,7 +3513,7 @@ begin
     lat_vals  = data&$data!(var_rank-2)$
     lon_vals  = data&$data!(var_rank-1)$
 ;---Unstructured grid?
-  else if(isatt(data,"lat1d").and.isatt(data,"lon1d")) then
+  elseif(isatt(data,"lat1d").and.isatt(data,"lon1d")) then
     if(.not.any(grid_type.eq.(/"unknown","unstructured"/))) then
       print("get_src_grid_info: the lat/lon values provided don't match")
       print("                        the grid type (" + grid_type + \
@@ -3550,9 +3529,6 @@ begin
 ;---Better be a grid like "5deg" or "2x3"!
   else
     islatlon  = False      ; No lat/lon values specified
-  end if
-  end if
-  end if
   end if
 
   if(grid_type.eq."unknown".and..not.islatlon) then
@@ -3601,20 +3577,18 @@ begin
          var_dims(var_rank-1).eq.lon_dims) then
         grid_type = "rectilinear"
 ;---Test for curvilinear
-      else if(lat_rank.eq.2.and.lon_rank.eq.2.and.\
+      elseif(lat_rank.eq.2.and.lon_rank.eq.2.and.\
               all(lat_dims.eq.lon_dims)) then
         grid_type = "curvilinear"
 ;
 ; Test for unstructured (what a mess). The extra long test is to 
 ; make sure this is not possibly a rectilinear grid.
 ;
-      else if(lat_rank.eq.1.and.lon_rank.eq.1.and.lat_dims.eq.lon_dims.and.\
+      elseif(lat_rank.eq.1.and.lon_rank.eq.1.and.lat_dims.eq.lon_dims.and.\
               ((var_rank.eq.1.and.var_dims.eq.lat_dims).or.\
                (var_rank.gt.1.and.var_dims(var_rank-1).eq.lat_dims.and.\
                 var_dims(var_rank-2).ne.var_dims(var_rank-1)))) then
         grid_type = "unstructured"
-      end if
-      end if
       end if
     end if
   end if
@@ -3636,16 +3610,14 @@ begin
   if(grid_type.eq."rectilinear") then
     latlon_dims = (/lat_dims,lon_dims/)
     left_rank   = var_rank-2
-  else if(grid_type.eq."curvilinear") then
+  elseif(grid_type.eq."curvilinear") then
     latlon_dims = lat_dims
     left_rank   = var_rank-2
-  else if(grid_type.eq."unstructured") then
+  elseif(grid_type.eq."unstructured") then
     latlon_dims = lat_dims
     left_rank   = var_rank-1
   else
     return([/grid_type/])
-  end if
-  end if
   end if
 
   if(left_rank.ge.1)
@@ -3749,10 +3721,9 @@ begin
     if(grid_type.eq."unknown") then
       if(lat_rank.eq.1.and.lon_rank.eq.1.and.lat_dims.ne.lon_dims) then
         grid_type = "rectilinear"
-      else if(lat_rank.eq.2.and.lon_rank.eq.2.and.\
+      elseif(lat_rank.eq.2.and.lon_rank.eq.2.and.\
               all(lat_dims.eq.lon_dims)) then
         grid_type = "curvilinear"
-      end if
       end if
     end if
   end if
@@ -3774,9 +3745,8 @@ begin
 
   if(grid_type.eq."rectilinear") then
     latlon_dims = (/lat_dims,lon_dims/)
-  else if(grid_type.eq."curvilinear".or.grid_type.eq."unstructured") then
+  elseif(grid_type.eq."curvilinear".or.grid_type.eq."unstructured") then
     latlon_dims = lat_dims
-  end if
   end if
 
   if(islatlon) then
@@ -3816,12 +3786,11 @@ begin
   if(any(str_lower(which_grid).eq.valid_src_names)) then
     grid_string      = "Src"
     grid_long_string = "source"
-  else if(any(str_lower(which_grid).eq.valid_dst_names)) then
+  elseif(any(str_lower(which_grid).eq.valid_dst_names)) then
     grid_string      = "Dst"
     grid_long_string = "destination"
   else
     grid_string = ""
-  end if
   end if
   if(grid_string.eq."") then
     print("write_grid_description_file: don't recognize value for second " + \
@@ -3908,9 +3877,9 @@ begin
                                                "_grid_file.nc")
   if(grid_type.eq."rectilinear") then
     rectilinear_to_SCRIP(grid_file,lat_vals,lon_vals,opt_new)
-  else if(grid_type.eq."curvilinear") then
+  elseif(grid_type.eq."curvilinear") then
     curvilinear_to_SCRIP(grid_file,lat_vals,lon_vals,opt_new)
-  else if(grid_type.eq."unstructured") then
+  elseif(grid_type.eq."unstructured") then
 ;
 ; This extra code for writing a SCRIP unstructured file
 ; file was added Feb 10, 2015. I'm not sure it's robust
@@ -3939,8 +3908,6 @@ begin
   else
     latlon_to_SCRIP(grid_file,grid_type,opt_new)
     opt@$grid_type_name$ = "rectilinear"
-  end if
-  end if
   end if
 
 ;---Save the name of the description file and grid type
@@ -4067,21 +4034,19 @@ begin
 ;
     if(isatt_logical_true(opt,"SkipSrcGrid").and.isatt(opt,"SrcFileName")) then
       src_grid_file = opt@SrcFileName
-    else if(.not.isatt_logical_true(opt,"SkipSrcGrid").and.isatt(opt2,"SrcFileName")) then
+    elseif(.not.isatt_logical_true(opt,"SkipSrcGrid").and.isatt(opt2,"SrcFileName")) then
       src_grid_file = opt2@SrcFileName
     else
       print("ESMF_regrid: need the name of the source grid file (SrcFileName)")
       exit
     end if
-    end if
     if(isatt_logical_true(opt,"SkipDstGrid").and.isatt(opt,"DstFileName")) then
       dst_grid_file = opt@DstFileName
-    else if(.not.isatt_logical_true(opt,"SkipDstGrid").and.isatt(opt2,"DstFileName")) then
+    elseif(.not.isatt_logical_true(opt,"SkipDstGrid").and.isatt(opt2,"DstFileName")) then
       dst_grid_file = opt2@DstFileName
     else
       print("ESMF_regrid: need the name of the destination grid file (DstFileName)")
       exit
-    end if
     end if
     ESMF_regrid_gen_weights(src_grid_file, dst_grid_file, wgt_file_name, opt2)
   else

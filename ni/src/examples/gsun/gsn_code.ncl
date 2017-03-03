@@ -279,13 +279,11 @@ begin
     print("_fix_labelbar_resources: Warning: " + end_on_res + " is deprecated.")
     if(isatt(cres,end_res_name)) then
       print("  Your setting of " + end_res_name + " will override it.")
-    else if(cres@$end_on_res$) then
+    elseif(cres@$end_on_res$) then
       print("  Will remove it and set " + end_res_name + " to 'IncludeMinMaxLabels'.")
       cres@$end_res_name$ = "IncludeMinMaxLabels"
-    else if(.not.cres@$end_on_res$) then
+    elseif(.not.cres@$end_on_res$) then
       print("  Will remove it.")
-    end if
-    end if
     end if
     delete(cres@$end_on_res$)
   end if
@@ -1324,10 +1322,10 @@ begin
     if(isatt(plot,"contour")) then
       new_plot = plot@contour
       new_plot@plot_type = "contour"
-    else if(isatt(plot,"vector")) then
+    elseif(isatt(plot,"vector")) then
       new_plot = plot@vector
       new_plot@plot_type = "vector"
-    else if(isatt(plot,"streamline")) then
+    elseif(isatt(plot,"streamline")) then
       new_plot = plot@streamline
       new_plot@plot_type = "streamline"
     else
@@ -1344,21 +1342,18 @@ begin
             new_plot = base_ids(i)
             new_plot@plot_type = "contour"
             found = True
-          else if(bclass.eq."vectorPlotClass") then
+          elseif(bclass.eq."vectorPlotClass") then
             new_plot = base_ids(i)
             new_plot@plot_type = "vector"
             found = True
-          else if(bclass.eq."streamlinePlotClass") then
+          elseif(bclass.eq."streamlinePlotClass") then
             new_plot = base_ids(i)
             new_plot@plot_type = "streamline"
             found = True
-          else if(bclass.eq."xyPlotClass") then
+          elseif(bclass.eq."xyPlotClass") then
             new_plot = base_ids(i)
             new_plot@plot_type = "xy"
             found = True
-          end if
-          end if
-          end if
           end if
           i = i + 1
         end do
@@ -1367,24 +1362,19 @@ begin
         new_plot = plot(0)
       end if
     end if
-    end if
-    end if
   else
     if(class(0).eq."contourPlotClass") then
       new_plot = plot(0)
       new_plot@plot_type = "contour"
-    else if(class(0).eq."vectorPlotClass") then
+    elseif(class(0).eq."vectorPlotClass") then
       new_plot = plot(0)
       new_plot@plot_type = "vector"
-    else if(class(0).eq."streamlinePlotClass") then
+    elseif(class(0).eq."streamlinePlotClass") then
       new_plot = plot(0)
       new_plot@plot_type = "streamline"
-    else if(class(0).eq."xyPlotClass") then
+    elseif(class(0).eq."xyPlotClass") then
       new_plot = plot(0)
       new_plot@plot_type = "xy"
-    end if
-    end if
-    end if
     end if
   end if
   return(new_plot)
@@ -6071,7 +6061,7 @@ begin
     else
       panel_labelbar = False
     end if
-  else if(plot@plot_type.eq."streamline") then
+  elseif(plot@plot_type.eq."streamline") then
     getvalues plot
       "stMonoLineColor"  : mono_line_color
     end getvalues
@@ -6091,7 +6081,6 @@ begin
       panel_labelbar = False
     end if
   else
-  end if
   end if
   if(.not.isvar("fill_scales")) then
     fill_scales = -1
@@ -6267,11 +6256,10 @@ begin
     if(y_top.eq.1.) then
       if(isatt(res,"gsnPanelMainPosYF"))
         y_top = min((/1.,res@gsnPanelMainPosYF - 0.03/))
-      else if(isatt(res,"txPosYF"))
+      elseif(isatt(res,"txPosYF"))
         y_top = min((/1.,res@txPosYF - 0.03/))
       else
         y_top = min((/1.,0.96-main_font_hgt/))
-      end if
       end if
     end if
   else
@@ -6434,16 +6422,16 @@ begin
       getvalues new_plot
         "cnInfoLabelFontHeightF" : font_height
       end getvalues
-    else if(new_plot@plot_type.eq."vector") then
+    elseif(new_plot@plot_type.eq."vector") then
       getvalues new_plot
         "vcRefAnnoFontHeightF" : font_height
       end getvalues
-    else if(new_plot@plot_type.eq."xy") then
+    elseif(new_plot@plot_type.eq."xy") then
       getvalues new_plot
         "tiXAxisFontHeightF" : font_height
       end getvalues
       font_height = 0.6*font_height
-    else if(new_plot@plot_type.eq."streamline") then
+    elseif(new_plot@plot_type.eq."streamline") then
 ;
 ; There's no equivalent font height resource for streamline to 
 ; retrieve, so just set it here.
@@ -6451,9 +6439,6 @@ begin
       font_height = 0.01
     else
       font_height = 0.01
-    end if
-    end if
-    end if
     end if
 ;
 ; Use this font height for the panel figure strings, if any, unless
@@ -8253,9 +8238,8 @@ begin
   do i = 0, nbars - 1
     if(col_rank.eq.1) then
       gsres@gsFillColor = rgba_arr
-    else if(col_rank.eq.2) then
+    elseif(col_rank.eq.2) then
       gsres@gsFillColor = rgba_arr(i % ncolors,:)
-    end if
     end if
     if(multibars) 
 ;
@@ -12145,11 +12129,10 @@ begin
      ii_dims = dimsizes(ii)
      if(shade_type.eq."pattern") then
        colist(ii) = shaden
-     else if(ii_dims.eq.1) then
+     elseif(ii_dims.eq.1) then
        colist(ii,:) = shaden
      else
        colist(ii,:) = conform(colist(ii,:),shaden,1)
-     end if
      end if
    end if
 
@@ -12158,12 +12141,11 @@ begin
      ii_dims = dimsizes(ii)
      if(shade_type.eq."pattern") then
        colist(ii) = shadep
-     else if(ii_dims.eq.1) then
+     elseif(ii_dims.eq.1) then
        colist(ii,:) = shadep
      else
        colist(ii,:) = conform(colist(ii,:),shadep,1)
      end if
-   end if
    end if
 
    if (shadem_set.and.any(cnlvls.ge.lowval.and.cnlvls.le.highval)) then
@@ -12171,11 +12153,10 @@ begin
      ii_dims = dimsizes(ii)
      if(shade_type.eq."pattern") then
        colist(ii) = shadem
-     else if (ii_dims.ge.2) then
+     elseif (ii_dims.ge.2) then
        colist(ii(1:),:) = conform(colist(ii(1:),:),shadem,1)
      else
        print("gsn_contour_shade: 1 contour level or less found between "+lowval+" and "+highval+", not color filling")
-     end if
      end if
    end if
 
