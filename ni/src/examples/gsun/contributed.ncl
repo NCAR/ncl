@@ -19102,3 +19102,139 @@ begin
   gradLatLon = [/ cgy, cgx /]   ; return two variables as a type 'list'
   return( gradLatLon )
 end
+;-----------------
+undef("regline_weight")
+function regline_weight(x[*]:numeric,y[*]:numeric,SIGY[*]:numeric, mwt[1]:integer)
+;
+; Weighted linear regression: NCL-2568: Fortran=>NCL translation
+;
+; Written     :	Donald G. Luttermoser, ETSU/Physics, 2 October 2013.
+; Based on the FIT subroutine of Numerical Recipes for FORTRAN 77
+; http://faculty.etsu.edu/lutter/courses/phys4007/f77/fit.txt
+; -------------------------------------------------------
+;Input       :	x,y     data
+;               SIGY    individual measurement errors (uncertainties) for y
+;                       weights=[1/SIGY^2]
+;                       must be same size as x or y
+;                     or
+;                       a scalar: set SIGY=1.0 (unweighted)
+;               mwt     flag: mwt=0 mean no weighting (set SIGY=1.0) 
+;                             else
+;                             mwt.ne.0 mean weight observations
+; -------------------------------------------------------
+;Output      :	a:      The y-intercept of the fitted straight line.
+;               a==>    yintercept
+;               b:      The slope of the fitted straight line.
+;               b ==>   regression coef
+;               siga:   The uncertainty in the value of A:  A+/-SIGA.
+;                       siga <==> std error of y-intercept
+;               sigb:   The uncertainty in the value of B:  B+/-SIGB.
+;                       sigb <==> std error of 'slope' (regression coef)
+;               chi2:   The chi-square of the goodness-of-fit.
+;               q:      The probability that the goodness-of-fit of the data to  
+;                       a straight line is believable.  Note that if 
+;
+;                       q > 0.1:    The goodness-of-fit is believable.
+;                       0.001 < q < 0.1:  The fit may be acceptable if the errors 
+;                                   are non-normal or have been moderately 
+;                                   underestimated.
+;                       q < 0.001:  The goodness-of-fit is questionable.
+; -------------------------------------------------------
+; The chi-squared statistic can be used to  test the null hypothesis: 
+; H0: There is *no relationship* between two variables.
+; -------------------------------------------------------
+local nxy, yType, one, wt, ss, sx, sy, t, st2, a, b, siga, sigb, chi2, q 
+begin
+  nx = dimsizes(x)
+  ny = dimsizes(y)
+  if (ny.ne.nx) then
+      print("regline_weight: nx, ny: nx="+nx+" ny="+ny)
+      exit
+  end if
+
+  nxy    = ny
+  if (nxy.lt.3) then
+      print("regline_weight: nxy must be > 2:  nxy="+nxy)
+      exit
+  end if
+
+  ns = dimsizes(SIGY)
+  if (ns.ne.1 .and. ns.ne.nxy) then 
+      print("regline_weight: ns="+ns+": ns must be 1 or ns=nxy")
+      exit
+  end if
+
+  yType= typeof(y)
+  if (yType.eq."float" .or. yType.eq."double") then
+      one  = totype(1, yType)
+  else
+      one = 1.0
+  end if
+
+  if (mwt.ne.0) then
+      sigy = SIGY
+  else
+      sigy = conform_dims(ny, one, -1)   ; equal weighting; sigy(:)=1.0
+  end if
+
+  if (mwt.ne.0) then
+      wt = one/sigy^2
+      ss = sum(wt)            
+      sx = sum(x*wt)
+      sy = sum(y*wt)
+  else
+      ss = totype(nxy, typeof(one)) 
+      sx = sum(x)
+      sy = sum(y)
+  end if
+  
+  sxoss = sx / ss
+ 
+  if (mwt .ne. 0) then
+     t   = (x-sxoss)/sigy
+     b   = sum(t*y/sigy)
+  else
+     t   = x-sxoss
+     b   = sum(t*y)
+  end if 
+  st2 = sum(t^2)
+
+; solve for a, b, siga, sigb
+
+  b    = b/st2
+  a    = (sy-sx*b)/ss
+  siga = sqrt((one+sx*sx/(ss*st2))/ss)
+  sigb = sqrt(one/st2)
+
+; calculate chi-square
+; gammaq ==> gammainc: argument order is reversed
+; http://www.ncl.ucar.edu/Document/Functions/Built-in/gammainc.shtml
+
+  resid = y-a-b*x                              ; residuals[*]
+  if (mwt .eq. 0) then
+      chi2   = sum(resid^2)
+      sigdat = sqrt(chi2/(nxy-2))
+      siga   = siga * sigdat
+      sigb   = sigb * sigdat
+      q      = 1.0
+  else
+      chi2   = sum(resid/sigy)^2                ; chi-square merit function; pg504       
+      if (nxy.gt.2) then
+         ;q  = gammq(0.5*(nxy-2)), 0.5*chi2)    ; Num. Recipes
+          q  = gammainc( 0.5*chi2, 0.5*(nxy-2)) ; NCL  
+      else
+          q  = -999.0
+      end if
+  end if 
+            
+  rc            = b      ; linear regression coef
+  rc@yintercept = a      ; y-intercept of the fitted straight line.
+  rc@residuals  = resid  ; residuals
+  rc@std_yi     = siga   ; standard error of y-intercept
+  rc@std_rc     = sigb   ; standard error of regression coefficient
+  rc@chi2       = chi2
+  rc@p_value    = q      ; p-value
+  rc@nxy        = nxy
+
+  return(rc )
+end
