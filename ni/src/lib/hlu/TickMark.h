@@ -372,6 +372,9 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlNtmYRMaxLabelLenF		"tmYRMaxLabelLenF"
 #define NhlNtmYRMinLabelSpacingF	"tmYRMinLabelSpacingF"
 
+#define NhlNtmGridDrawOrder             "tmGridDrawOrder"
+#define NhlCtmGridDrawOrder             "TmGridDrawOrder"
+
 /*
 * -------------> Still need to come up with resources for 
 * IRREGULAR STYLE

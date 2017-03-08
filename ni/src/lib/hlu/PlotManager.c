@@ -1758,6 +1758,7 @@ static NhlErrorTypes PlotManagerPreDraw
 	int			i,j;
 	NhlBoolean		flags[4];
 	int			max_zone;
+	NhlBoolean		tickmarks_done = False;
 
 /*
  * Update the annotation data 
@@ -1833,6 +1834,55 @@ static NhlErrorTypes PlotManagerPreDraw
 			}
 		}
 	}
+	for (i = 0; i < ovp->overlay_count; i++) {
+		NhlAnnoRec	*anlp = ovp->pm_recs[i]->anno_list;
+
+                if (! _NhlViewOn((NhlLayer) ovp->pm_recs[i]->plot))
+                        continue;
+		for ( ; anlp != NULL; anlp = anlp->next) {
+
+			NhlLayer view;
+			if (! anlp->viewable)
+				continue;
+			if (anlp->type != ovTICKMARK)
+				continue;
+			else if (anlp->status == NhlCONDITIONAL) {
+				switch (anlp->type) {
+				case ovTICKMARK:
+					if (tickmarks_done) continue;
+					break;
+				default:
+					break;
+				}
+			}
+                        if (anlp->track_data && anlp->out_of_range)
+                                continue;
+			if (anlp->plot_id == NhlNULLOBJID)
+				continue;
+			view = _NhlGetLayer(anlp->plot_id);
+			if (view == NULL || ! _NhlIsView(view)) {
+				e_text = "%s: invalid annotation";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return(NhlFATAL);
+			}
+			subret = _NhlPreDraw(view);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				e_text = "%s: error drawing annotation";
+				NhlPError(ret,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return(ret);
+			}
+			switch (anlp->type) {
+			case ovTICKMARK:
+				tickmarks_done = True;
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
 	return ret;
 }
 
@@ -1865,6 +1915,7 @@ static NhlErrorTypes PlotManagerDraw
 	NhlPlotManagerLayer		ovl = (NhlPlotManagerLayer) layer;
 	NhlPlotManagerLayerPart	*ovp = &(ovl->plotmanager);
 	int			i;
+	NhlBoolean		tickmarks_done = False;
 
 /*
  * Set the overlay trans.
@@ -1910,6 +1961,54 @@ static NhlErrorTypes PlotManagerDraw
 				NhlPError(NhlFATAL,
 					  NhlEUNKNOWN,e_text, entry_name);
 				return(ret);
+			}
+		}
+	}
+	for (i = 0; i < ovp->overlay_count; i++) {
+		NhlAnnoRec	*anlp = ovp->pm_recs[i]->anno_list;
+
+                if (! _NhlViewOn((NhlLayer) ovp->pm_recs[i]->plot))
+                        continue;
+		for ( ; anlp != NULL; anlp = anlp->next) {
+
+			NhlLayer view;
+			if (! anlp->viewable)
+				continue;
+			if (anlp->type != ovTICKMARK)
+				continue;
+			else if (anlp->status == NhlCONDITIONAL) {
+				switch (anlp->type) {
+				case ovTICKMARK:
+					if (tickmarks_done) continue;
+					break;
+				default:
+					break;
+				}
+			}
+                        if (anlp->track_data && anlp->out_of_range)
+                                continue;
+			if (anlp->plot_id == NhlNULLOBJID)
+				continue;
+			view = _NhlGetLayer(anlp->plot_id);
+			if (view == NULL || ! _NhlIsView(view)) {
+				e_text = "%s: invalid annotation";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return(NhlFATAL);
+			}
+			subret = _NhlDraw(view);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				e_text = "%s: error drawing annotation";
+				NhlPError(ret,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return(ret);
+			}
+			switch (anlp->type) {
+			case ovTICKMARK:
+				tickmarks_done = True;
+				break;
+			default:
+				break;
 			}
 		}
 	}
@@ -2039,7 +2138,12 @@ static NhlErrorTypes PlotManagerPostDraw
 					  NhlEUNKNOWN,e_text,entry_name);
 				return(NhlFATAL);
 			}
-			subret = _NhlPlotManagerDraw(view);
+			if (anlp->type == ovTICKMARK) {
+				subret = _NhlPostDraw(view);
+			}
+			else {
+				subret = _NhlPlotManagerDraw(view);
+			}
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				e_text = "%s: error drawing annotation";
 				NhlPError(ret,

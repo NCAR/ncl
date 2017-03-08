@@ -36,6 +36,7 @@
 typedef struct _NhlTickMarkLayerPart {
 	/* Publically setable resources */
 	int		sci_note_cutoff;
+	NhlDrawOrder    grid_draw_order;
 	NhlBoolean	equalize_xy_sizes;
 	NhlBoolean	label_auto_stride;
 	NhlBoolean	x_use_bottom;
