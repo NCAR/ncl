@@ -1541,13 +1541,23 @@ static NhlErrorTypes	TickMarkSetValues
 	if (_NhlArgIsSet(args,num_args,NhlNtmYRTickEndF)) 
 		tnew->tick.y_r_tick_end_set = True;
 
-	if (num_args > view_args ||
-            ! _NhlSegmentSpansArea(tnew->tick.trans_dat,
+	if (num_args > view_args)
+		tnew->tick.new_draw_req = True;
+	else if (tnew->view.use_segments) {
+		NhlTransDat *trans_dat = NULL;
+		if (tnew->tick.draw_dat)
+			trans_dat = tnew->tick.draw_dat;
+		else if (tnew->tick.postdraw_dat)
+			trans_dat = tnew->tick.postdraw_dat;
+		else if (tnew->tick.predraw_dat)
+			trans_dat = tnew->tick.predraw_dat;
+		if (! _NhlSegmentSpansArea(trans_dat,
                                    tnew->view.x,
                                    tnew->view.x + tnew->view.width,
                                    tnew->view.y - tnew->view.height,
                                    tnew->view.y))
-	    tnew->tick.new_draw_req = True;
+			tnew->tick.new_draw_req = True;
+	}
 /*
 * for resources that represent size THAT HAVE NOT been set in the current
 * setvalues call will be scalled proportionally to the move and resize. Values
@@ -1912,7 +1922,9 @@ static NhlErrorTypes	TickMarkInitialize
 		tnew->tick.y_r_tick_end = 0.0;
 
 	tnew->tick.new_draw_req = True;
-	tnew->tick.trans_dat = NULL;
+	tnew->tick.draw_dat = NULL;
+	tnew->tick.predraw_dat = NULL;
+	tnew->tick.postdraw_dat = NULL;
 	ScaleValuesForMove(tnew,NULL,args,num_args,CREATE);
 
 
@@ -2299,8 +2311,12 @@ static NhlErrorTypes	TickMarkDestroy
 	NhlFree(tinst->tick.y_l_format.fstring);
 	NhlFree(tinst->tick.y_r_format.fstring);
 
-	if (tinst->tick.trans_dat != NULL)
-		_NhlDeleteViewSegment(inst,tinst->tick.trans_dat);
+	if (tinst->tick.draw_dat != NULL)
+		_NhlDeleteViewSegment(inst,tinst->tick.draw_dat);
+	if (tinst->tick.predraw_dat != NULL)
+		_NhlDeleteViewSegment(inst,tinst->tick.predraw_dat);
+	if (tinst->tick.postdraw_dat != NULL)
+		_NhlDeleteViewSegment(inst,tinst->tick.postdraw_dat);
 	
 	return(NhlNOERROR);
 }
@@ -2377,144 +2393,10 @@ static NhlErrorTypes	TickMarkClassInitialize
 
 
 /*
- * Function:	TickMarkDraw
- *
- * Description: Draws labels, ticks, grids and borders in that order. Each
- *		of these has special function thats called that actually does
- *		the drawing.
- *
- * In Args:	layer	the actuall instance of the TickMark object
- *
- * Out Args:	NONE
- *
- * Return Values:	Error Conditions
- *
- * Side Effects:	GKS state changes 
- */
-static NhlErrorTypes	TickMarkDraw
-#if	NhlNeedProto
-(NhlLayer layer)
-#else
-(layer)
-	NhlLayer layer;
-#endif
-{
-	NhlTickMarkLayer tlayer = (NhlTickMarkLayer) layer;
-	NhlErrorTypes ret = NhlNOERROR;
-	NhlErrorTypes realret = NhlNOERROR;
-        float	fl,fr,fb,ft,ul,ur,ub,ut;
-	int ll;
-	Gint		err_ind;
-	Gint		save_linecolor;
-	Gint		save_linetype;
-	Gdouble		save_linewidth;
-
-	if (! tlayer->tick.x_b_on && ! tlayer->tick.x_t_on &&
-	    ! tlayer->tick.y_l_on && ! tlayer->tick.y_r_on  &&
-	    ! tlayer->tick.x_b_border_on && ! tlayer->tick.x_t_border_on &&
-	    ! tlayer->tick.y_l_border_on && ! tlayer->tick.y_r_border_on)
-		return ret;
-
-	if (tlayer->view.use_segments && ! tlayer->tick.new_draw_req &&
-	    tlayer->tick.trans_dat &&
-	    tlayer->tick.trans_dat->id != NgNOT_A_SEGMENT) {
-                ret = _NhlActivateWorkstation(tlayer->base.wkptr);
-		if ((realret = MIN(realret,ret)) < NhlWARNING) return realret;
-                ret = _NhlDrawSegment(tlayer->tick.trans_dat,
-				_NhlWorkstationId(tlayer->base.wkptr));
-		if ((realret = MIN(realret,ret)) < NhlWARNING) return realret;
-                ret = _NhlDeactivateWorkstation(tlayer->base.wkptr);
-		return MIN(ret,realret);
-	}
-	tlayer->tick.new_draw_req = False;
-	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
-	ginq_line_colr_ind(&err_ind, &save_linecolor);
-	ginq_linewidth(&err_ind, &save_linewidth);
-	ginq_linetype(&err_ind, &save_linetype);
-
-	if (tlayer->view.use_segments) {
-		ret = _NhlActivateWorkstation(tlayer->base.wkptr);
-		if(ret < NhlWARNING) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: An error has occurred while activating the workstation, can not continue");
-			return(ret);
-		}
-		if (tlayer->tick.trans_dat != NULL)
-			_NhlDeleteViewSegment(layer, tlayer->tick.trans_dat);
-		if ((tlayer->tick.trans_dat = 
-		     _NhlNewViewSegment(layer)) == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  "%s: error opening segment", "TickMarkDraw");
-			return(ret);
-		}
-		ret = _NhlStartSegment(tlayer->tick.trans_dat);
-		if ((realret = MIN(ret,realret)) < NhlWARNING)
-			return ret;
-	}
-#if 0
-	ret = DrawLabels(tlayer);
-	if(ret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: NhlFATAL error has occurred while drawing TickMark labels, can not continue");
-		return(ret);
-	}
-	if(ret < realret)
-		realret = ret;
-#endif
-	if (! tlayer->view.use_segments) {
-		ret = _NhlActivateWorkstation(tlayer->base.wkptr);
-		if(ret < NhlWARNING) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: An error has occurred while activating the workstation, can not continue");
-			return(ret);
-		}
-	}
-#if 0
-	ret = DrawTicks(tlayer);
-	if(ret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: NhlFATAL error has occurred while drawing Tick Marks , can not continue");
-		return(ret);
-	}
-	if(ret < realret)
-		realret = ret;
-#endif
-	if (tlayer->tick.grid_draw_order == NhlDRAW) {
-		ret = DrawGrid(tlayer);
-		if(ret < NhlWARNING) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: NhlFATAL error has occurred while drawing TickMark grid , can not continue");
-			return(ret);
-		}
-		if(ret < realret)
-			realret = ret;
-	}
-#if 0
-	ret = DrawBorder(tlayer);
-	if(ret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: NhlFATAL error has occurred while drawing TickMark border, can not continue");
-		return(ret);
-	}
-#endif
-	if (tlayer->view.use_segments) {
-		_NhlEndSegment(tlayer->tick.trans_dat);
-	}
-	ret = _NhlDeactivateWorkstation(tlayer->base.wkptr);
-	if(ret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: An error has occurred while deactivating the workstation, can not continue");
-	}
-
-	gset_line_colr_ind(save_linecolor);
-	gset_linewidth(save_linewidth);
-	gset_linetype(save_linetype);
-	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
-	if(ret < realret)
-		realret = ret;
-	return(realret);
-
-}
-
-/*
  * Function:	TickMarkPreDraw
  *
- * Description: Draws labels, ticks, grids and borders in that order. Each
- *		of these has special function thats called that actually does
- *		the drawing.
+ * Description: Only the TickMark grid supports draw order. Like most annotations, the labels, ticks 
+ *              and borders are only drawn during postdraw. 
  *
  * In Args:	layer	the actuall instance of the TickMark object
  *
@@ -2552,17 +2434,16 @@ static NhlErrorTypes	TickMarkPreDraw
 		return ret;
 
 	if (tlayer->view.use_segments && ! tlayer->tick.new_draw_req &&
-	    tlayer->tick.trans_dat &&
-	    tlayer->tick.trans_dat->id != NgNOT_A_SEGMENT) {
+	    tlayer->tick.predraw_dat &&
+	    tlayer->tick.predraw_dat->id != NgNOT_A_SEGMENT) {
                 ret = _NhlActivateWorkstation(tlayer->base.wkptr);
 		if ((realret = MIN(realret,ret)) < NhlWARNING) return realret;
-                ret = _NhlDrawSegment(tlayer->tick.trans_dat,
+                ret = _NhlDrawSegment(tlayer->tick.predraw_dat,
 				_NhlWorkstationId(tlayer->base.wkptr));
 		if ((realret = MIN(realret,ret)) < NhlWARNING) return realret;
                 ret = _NhlDeactivateWorkstation(tlayer->base.wkptr);
 		return MIN(ret,realret);
 	}
-	tlayer->tick.new_draw_req = False;
 	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
 	ginq_line_colr_ind(&err_ind, &save_linecolor);
 	ginq_linewidth(&err_ind, &save_linewidth);
@@ -2574,27 +2455,18 @@ static NhlErrorTypes	TickMarkPreDraw
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkPreDraw: An error has occurred while activating the workstation, can not continue");
 			return(ret);
 		}
-		if (tlayer->tick.trans_dat != NULL)
-			_NhlDeleteViewSegment(layer, tlayer->tick.trans_dat);
-		if ((tlayer->tick.trans_dat = 
+		if (tlayer->tick.predraw_dat != NULL)
+			_NhlDeleteViewSegment(layer, tlayer->tick.predraw_dat);
+		if ((tlayer->tick.predraw_dat = 
 		     _NhlNewViewSegment(layer)) == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: error opening segment", "TickMarkPreDraw");
 			return(ret);
 		}
-		ret = _NhlStartSegment(tlayer->tick.trans_dat);
+		ret = _NhlStartSegment(tlayer->tick.predraw_dat);
 		if ((realret = MIN(ret,realret)) < NhlWARNING)
 			return ret;
 	}
-#if 0
-	ret = DrawLabels(tlayer);
-	if(ret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkPreDraw: NhlFATAL error has occurred while drawing TickMark labels, can not continue");
-		return(ret);
-	}
-	if(ret < realret)
-		realret = ret;
-#endif
 	if (! tlayer->view.use_segments) {
 		ret = _NhlActivateWorkstation(tlayer->base.wkptr);
 		if(ret < NhlWARNING) {
@@ -2602,15 +2474,6 @@ static NhlErrorTypes	TickMarkPreDraw
 			return(ret);
 		}
 	}
-#if 0
-	ret = DrawTicks(tlayer);
-	if(ret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkPreDraw: NhlFATAL error has occurred while drawing Tick Marks , can not continue");
-		return(ret);
-	}
-	if(ret < realret)
-		realret = ret;
-#endif
 	if (tlayer->tick.grid_draw_order == NhlPREDRAW) {
 		ret = DrawGrid(tlayer);
 		if(ret < NhlWARNING) {
@@ -2620,15 +2483,8 @@ static NhlErrorTypes	TickMarkPreDraw
 		if(ret < realret)
 			realret = ret;
 	}
-#if 0
-	ret = DrawBorder(tlayer);
-	if(ret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkPreDraw: NhlFATAL error has occurred while drawing TickMark border, can not continue");
-		return(ret);
-	}
-#endif
 	if (tlayer->view.use_segments) {
-		_NhlEndSegment(tlayer->tick.trans_dat);
+		_NhlEndSegment(tlayer->tick.predraw_dat);
 	}
 	ret = _NhlDeactivateWorkstation(tlayer->base.wkptr);
 	if(ret < NhlWARNING) {
@@ -2642,6 +2498,118 @@ static NhlErrorTypes	TickMarkPreDraw
 	if(ret < realret)
 		realret = ret;
 	return(realret);
+}
+
+
+/*
+ * Function:	TickMarkDraw
+ *
+ * Description: Draws labels, ticks, grids and borders in that order. Each
+ *		of these has special function thats called that actually does
+ *		the drawing.
+ *
+ * In Args:	layer	the actuall instance of the TickMark object
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:	GKS state changes 
+ */
+static NhlErrorTypes	TickMarkDraw
+#if	NhlNeedProto
+(NhlLayer layer)
+#else
+(layer)
+	NhlLayer layer;
+#endif
+{
+	NhlTickMarkLayer tlayer = (NhlTickMarkLayer) layer;
+	NhlErrorTypes ret = NhlNOERROR;
+	NhlErrorTypes realret = NhlNOERROR;
+        float	fl,fr,fb,ft,ul,ur,ub,ut;
+	int ll;
+	Gint		err_ind;
+	Gint		save_linecolor;
+	Gint		save_linetype;
+	Gdouble		save_linewidth;
+
+	if (tlayer->tick.grid_draw_order != NhlDRAW) {
+		return NhlNOERROR;
+	}
+
+	if (! tlayer->tick.x_b_on && ! tlayer->tick.x_t_on &&
+	    ! tlayer->tick.y_l_on && ! tlayer->tick.y_r_on  &&
+	    ! tlayer->tick.x_b_border_on && ! tlayer->tick.x_t_border_on &&
+	    ! tlayer->tick.y_l_border_on && ! tlayer->tick.y_r_border_on)
+		return ret;
+
+	if (tlayer->view.use_segments && ! tlayer->tick.new_draw_req &&
+	    tlayer->tick.draw_dat &&
+	    tlayer->tick.draw_dat->id != NgNOT_A_SEGMENT) {
+                ret = _NhlActivateWorkstation(tlayer->base.wkptr);
+		if ((realret = MIN(realret,ret)) < NhlWARNING) return realret;
+                ret = _NhlDrawSegment(tlayer->tick.draw_dat,
+				_NhlWorkstationId(tlayer->base.wkptr));
+		if ((realret = MIN(realret,ret)) < NhlWARNING) return realret;
+                ret = _NhlDeactivateWorkstation(tlayer->base.wkptr);
+		return MIN(ret,realret);
+	}
+	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
+	ginq_line_colr_ind(&err_ind, &save_linecolor);
+	ginq_linewidth(&err_ind, &save_linewidth);
+	ginq_linetype(&err_ind, &save_linetype);
+
+	if (tlayer->view.use_segments) {
+		ret = _NhlActivateWorkstation(tlayer->base.wkptr);
+		if(ret < NhlWARNING) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: An error has occurred while activating the workstation, can not continue");
+			return(ret);
+		}
+		if (tlayer->tick.draw_dat != NULL)
+			_NhlDeleteViewSegment(layer, tlayer->tick.draw_dat);
+		if ((tlayer->tick.draw_dat = 
+		     _NhlNewViewSegment(layer)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error opening segment", "TickMarkDraw");
+			return(ret);
+		}
+		ret = _NhlStartSegment(tlayer->tick.draw_dat);
+		if ((realret = MIN(ret,realret)) < NhlWARNING)
+			return ret;
+	}
+	if (! tlayer->view.use_segments) {
+		ret = _NhlActivateWorkstation(tlayer->base.wkptr);
+		if(ret < NhlWARNING) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: An error has occurred while activating the workstation, can not continue");
+			return(ret);
+		}
+	}
+	if (tlayer->tick.grid_draw_order == NhlDRAW) {
+		ret = DrawGrid(tlayer);
+		if(ret < NhlWARNING) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: NhlFATAL error has occurred while drawing TickMark grid , can not continue");
+			return(ret);
+		}
+		if(ret < realret)
+			realret = ret;
+	}
+	if (tlayer->view.use_segments) {
+		_NhlEndSegment(tlayer->tick.draw_dat);
+	}
+	ret = _NhlDeactivateWorkstation(tlayer->base.wkptr);
+	if(ret < NhlWARNING) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: An error has occurred while deactivating the workstation, can not continue");
+	}
+
+	gset_line_colr_ind(save_linecolor);
+	gset_linewidth(save_linewidth);
+	gset_linetype(save_linetype);
+	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
+	if(ret < realret)
+		realret = ret;
+	return(realret);
+
 }
 
 /*
@@ -2684,11 +2652,11 @@ static NhlErrorTypes	TickMarkPostDraw
 		return ret;
 
 	if (tlayer->view.use_segments && ! tlayer->tick.new_draw_req &&
-	    tlayer->tick.trans_dat &&
-	    tlayer->tick.trans_dat->id != NgNOT_A_SEGMENT) {
+	    tlayer->tick.postdraw_dat &&
+	    tlayer->tick.postdraw_dat->id != NgNOT_A_SEGMENT) {
                 ret = _NhlActivateWorkstation(tlayer->base.wkptr);
 		if ((realret = MIN(realret,ret)) < NhlWARNING) return realret;
-                ret = _NhlDrawSegment(tlayer->tick.trans_dat,
+                ret = _NhlDrawSegment(tlayer->tick.postdraw_dat,
 				_NhlWorkstationId(tlayer->base.wkptr));
 		if ((realret = MIN(realret,ret)) < NhlWARNING) return realret;
                 ret = _NhlDeactivateWorkstation(tlayer->base.wkptr);
@@ -2706,15 +2674,15 @@ static NhlErrorTypes	TickMarkPostDraw
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkPostDraw: An error has occurred while activating the workstation, can not continue");
 			return(ret);
 		}
-		if (tlayer->tick.trans_dat != NULL)
-			_NhlDeleteViewSegment(layer, tlayer->tick.trans_dat);
-		if ((tlayer->tick.trans_dat = 
+		if (tlayer->tick.postdraw_dat != NULL)
+			_NhlDeleteViewSegment(layer, tlayer->tick.postdraw_dat);
+		if ((tlayer->tick.postdraw_dat = 
 		     _NhlNewViewSegment(layer)) == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: error opening segment", "TickMarkPostDraw");
 			return(ret);
 		}
-		ret = _NhlStartSegment(tlayer->tick.trans_dat);
+		ret = _NhlStartSegment(tlayer->tick.postdraw_dat);
 		if ((realret = MIN(ret,realret)) < NhlWARNING)
 			return ret;
 	}
@@ -2759,7 +2727,7 @@ static NhlErrorTypes	TickMarkPostDraw
 	}
 
 	if (tlayer->view.use_segments) {
-		_NhlEndSegment(tlayer->tick.trans_dat);
+		_NhlEndSegment(tlayer->tick.postdraw_dat);
 	}
 	ret = _NhlDeactivateWorkstation(tlayer->base.wkptr);
 	if(ret < NhlWARNING) {

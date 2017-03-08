@@ -355,7 +355,9 @@ typedef struct _NhlTickMarkLayerPart {
 	float		y_r_ndc_label_x;
 
 	NhlBoolean	new_draw_req;	
-        NhlTransDat	*trans_dat;	/* segment transform data */
+        NhlTransDat	*draw_dat;	/* segment transform data */
+        NhlTransDat	*predraw_dat;	/* segment transform data */
+        NhlTransDat	*postdraw_dat;	/* segment transform data */
 }NhlTickMarkLayerPart;
 
 typedef struct _NhlTickMarkLayerRec {
