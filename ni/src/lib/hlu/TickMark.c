@@ -2611,13 +2611,15 @@ static NhlErrorTypes	TickMarkPreDraw
 	if(ret < realret)
 		realret = ret;
 #endif
-	ret = DrawGrid(tlayer);
-	if(ret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkPreDraw: NhlFATAL error has occurred while drawing TickMark grid , can not continue");
-		return(ret);
+	if (tlayer->tick.grid_draw_order == NhlPREDRAW) {
+		ret = DrawGrid(tlayer);
+		if(ret < NhlWARNING) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkPreDraw: NhlFATAL error has occurred while drawing TickMark grid , can not continue");
+			return(ret);
+		}
+		if(ret < realret)
+			realret = ret;
 	}
-	if(ret < realret)
-		realret = ret;
 #if 0
 	ret = DrawBorder(tlayer);
 	if(ret < NhlWARNING) {
