@@ -2394,6 +2394,7 @@ begin
       "cnMonoFillColor"       : mono_fill_col
       "cnLabelBarEndStyle"    : end_labelbar_style
       "cnLabelBarEndLabelsOn" : end_labels_on
+      "cnLineLabelFormat"     : line_format    ; default is "*+^sg"
       "lbLabelStrings"        : lbstrings
     end getvalues
 ;
@@ -2470,6 +2471,7 @@ begin
     end if
     lbres@lbFillOpacityF = fill_opacity     ; Added in NCL V6.4.0
   elseif(class_name.eq."vectorPlotClass") then
+    line_format = "*+^sg"    ; VectorPlot doesn't have an equivalent "cnLineLabelFormat" resource
     getvalues the_plot
       "vcLevels"              : levels
       "vcLevelColors"         : colors
@@ -2477,6 +2479,7 @@ begin
       "lbLabelStrings"        : lbstrings
     end getvalues
   else
+    line_format = "*+^sg"    ; StreamlinePlot doesn't have an equivalent "cnLineLabelFormat" resource
 ;---Better be a streamline plot!
     getvalues the_plot
       "stLevels"              : levels
@@ -2518,6 +2521,9 @@ begin
       if(end_labelbar_style.eq.get_enum_value("IncludeMinMaxLabels")) then
         lbres@lbLabelStrings = lbstrings
       end if
+    end if
+    if(line_format.ne."*+^sg") then
+      lbres@lbLabelStrings = lbstrings
     end if
   end if  
   if(end_labels_on) then
