@@ -190,8 +190,8 @@ begin
   do j=0, ncurves-1
     num_crosses = 0
     do i=1, npts-1
-      xinterp(j,i+num_crosses) = x2d(j,i)
-      yinterp(j,i+num_crosses) = y2d(j,i)
+      xinterp(j,i+num_crosses) = (/x2d(j,i)/)    ; Use (/.../) to make sure coordinate
+      yinterp(j,i+num_crosses) = (/y2d(j,i)/)    ; arrays don't get needlessly copied.
       if(.not.ismissing(y2d(j,i)).and..not.ismissing(x2d(j,i)).and.\
          .not.ismissing(y2d(j,i-1)).and..not.ismissing(x2d(j,i-1)))
         if((reftype.eq."y").and.\
@@ -200,9 +200,9 @@ begin
           xinterp(j,i+num_crosses) = xy_ref_interp(x2d(j,i-1),x2d(j,i),\
                                                    y2d(j,i-1),y2d(j,i),\
                                                    ref1d(j),reftype)
-          xinterp(j,i+num_crosses+1) = x2d(j,i)
-          yinterp(j,i+num_crosses)   = ref1d(j)
-          yinterp(j,i+num_crosses+1) = y2d(j,i)
+          xinterp(j,i+num_crosses+1) = (/x2d(j,i)/)
+          yinterp(j,i+num_crosses)   = (/ref1d(j)/)
+          yinterp(j,i+num_crosses+1) = (/y2d(j,i)/)
           num_crosses = num_crosses + 1
         elseif((reftype.eq."x").and.\
                 ((x2d(j,i-1).lt.ref1d(j).and.x2d(j,i).gt.ref1d(j)).or.\
@@ -210,9 +210,9 @@ begin
           yinterp(j,i+num_crosses) = xy_ref_interp(x2d(j,i-1),x2d(j,i),\
                                                    y2d(j,i-1),y2d(j,i),\
                                                    ref1d(j),reftype)
-          yinterp(j,i+num_crosses+1) = y2d(j,i)
-          xinterp(j,i+num_crosses)   = ref1d(j)
-          xinterp(j,i+num_crosses+1) = x2d(j,i)
+          yinterp(j,i+num_crosses+1) = (/y2d(j,i)/)
+          xinterp(j,i+num_crosses)   = (/ref1d(j)/)
+          xinterp(j,i+num_crosses+1) = (/x2d(j,i)/)
           num_crosses = num_crosses + 1
         end if
       end if
