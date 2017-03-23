@@ -2883,6 +2883,14 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 	NhlFormatRec *frec;
 	int *fwidth, *sig_digits, *left_sig_digit, *point_pos, *exp_switch_len, *exp_field_width;
 
+/*
+ * For documentation on how this function is used see the LLU documentation for the Conpack routine CPCHHL.
+ * Note for bux fix NCL-2577: it appears that setting the line width for text drawing using Plotchar routines must
+ * use the PLCHHQ parameter 'CL'. Linewidth set using gset_linewidth is over-ridden inside PLCHHQ. On the other hand,
+ * the border linewidth can only be set using gset_linewidth. The parameters that are documented ('BL' and/or 'OL') 
+ * seem to have no effect. 
+ */
+
 	if (Cnp == NULL) {
 		_NHLCALLF(cpchhl,CPCHHL)(iflg);
 		return;
@@ -3047,7 +3055,6 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		break;
 	case 6:
 		if (! Cnp->low_lbls.on) return;
-		c_pcsetr("BL",(float)Cnp->low_lbls.perim_lthick);
 		if (Cnp->hlb_val > 1) {
 			if (Cnp->low_lbls.gks_bcolor == NhlTRANSPARENT) 
 				_NhlSetFillOpacity(Cnl, 0.0); 
@@ -3104,7 +3111,6 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 			_NhlSetLineOpacity(Cnl, 0.0); 
 		else {
 			gset_line_colr_ind(Cnp->low_lbls.gks_plcolor);
-			c_pcsetr("BL",(float)Cnp->low_lbls.perim_lthick);
 			gset_linewidth((float)Cnp->low_lbls.perim_lthick);
 		}
 		break;
@@ -3149,7 +3155,13 @@ void   (_NHLCALLF(hlucpchll,HLUCPCHLL))
 
 	int pai;
 	static int llcol;
-
+/*
+ * For documentation on how this function is used see the LLU documentation for the Conpack routine CPCHLL.
+ * Note for bux fix NCL-2577: it appears that setting the line width for text drawing using Plotchar routines must
+ * use the PLCHHQ parameter 'CL'. Linewidth set using gset_linewidth is over-ridden inside PLCHHQ. On the other hand,
+ * the border linewidth can only be set using gset_linewidth. The parameters that are documented ('BL' and/or 'OL') 
+ * seem to have no effect. 
+ */
 	if (Cnp == NULL) {
 		_NHLCALLF(cpchll,CPCHLL)(iflg);
 		return;
@@ -3165,10 +3177,8 @@ void   (_NHLCALLF(hlucpchll,HLUCPCHLL))
 		c_pcseti("QU",Cnp->line_lbls.quality);
 		c_pcsetc("FC",Cnp->line_lbls.fcode);
                 c_pcsetr("CL",(float)Cnp->line_lbls.thickness);
-		c_pcsetr("BL",(float)Cnp->line_lbls.perim_lthick);
 	}
 	else if (*iflg == 2) {
-		c_pcsetr("BL",(float)Cnp->line_lbls.perim_lthick);
 		if (Cnp->line_lbls.gks_bcolor > NhlTRANSPARENT)
 			gset_fill_colr_ind(Cnp->line_lbls.gks_bcolor);
 	}
@@ -3195,13 +3205,11 @@ void   (_NHLCALLF(hlucpchll,HLUCPCHLL))
 			c_pcseti("QU",Cnp->line_lbls.quality);
 			c_pcsetc("FC",Cnp->line_lbls.fcode);
                         c_pcsetr("CL",(float)Cnp->line_lbls.thickness);
-			c_pcsetr("BL",(float)Cnp->line_lbls.perim_lthick);
 		}
 		Cnp->line_lbls.count++;
 	}
 	else if (*iflg == 4) {
 		gset_line_colr_ind(Cnp->line_lbls.gks_plcolor);
-		c_pcsetr("BL",(float)Cnp->line_lbls.perim_lthick);
 		gset_linewidth((float)Cnp->line_lbls.perim_lthick);
 	}
 
