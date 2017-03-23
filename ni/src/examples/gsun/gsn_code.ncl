@@ -11966,22 +11966,26 @@ end
 ;                                                                       ;
 ; This function was written by Adam Phillips, 2006                      ;
 ;                                                                       ;
-; This function was updated July 2013 to allow any combination of       ;
-; gsnShadeLow, gsnShadeMid, and gsnShadeHigh to be set.                 ;
+; Updated July 2013 to allow any combination of gsnShadeLow,            ; 
+; gsnShadeMid, and gsnShadeHigh to be set.                              ;
 ;                                                                       ;
-; This function was updated July 2014 to allow RGB and RGBA values for  ;
-; color. The following are now valid for colors:                        ;    
+; Updated July 2014 to allow RGB and RGBA values for color.             ;
+;    The following types of color specificiations are now allowed:      ;
+;        Color index value:  opt@gsnShadeLow  = 5                       ;
+;        Named color:        opt@gsnShadeHigh = "blue"                  ;
+;        RGB color:          opt@gsnShadeHigh = (/1.,0.,0.5/)           ;
+;        RGBA color:         opt@gsnShadeHigh = (/1.,0.,0.5,0.5/)       ;
 ;                                                                       ;
-;  Color index value:  opt@gsnShadeLow  = 5                             ;
-;  Named color:        opt@gsnShadeHigh = "blue"                        ;
-;  RGB color:          opt@gsnShadeHigh = (/1.,0.,0.5/)                 ;
-;  RGBA color:         opt@gsnShadeHigh = (/1.,0.,0.5,0.5/)             ;
+; Updated March 2017 to added resources to control pattern density and  ;
+; fill dot size.                                                        ;
+;                                                                       ;
 ;***********************************************************************;
 undef("gsn_contour_shade")
 function gsn_contour_shade(plot:graphic,lowval:numeric,highval:numeric,\
                            opt:logical) 
 local shaden_set, shadem_set, shadep_set, shaden, shadep, shadem, ovrly_ids, \
-idstringcnlvls, colist, i, N, tmp_wks
+idstring, cnlvls, colors, patterns, lmh_fill_scales, fill_scales,i, nlevels, tmp_wks, \
+def_fill_scale, def_dot_size, dot_size
 begin
    if (.not.opt) then
      print("gsn_contour_shade: Options list must be used as one of the following option resources must be set: opt@gsnShadeLow, opt@gsnShadeHigh, opt@gsnShadeMid.")
@@ -11995,6 +11999,73 @@ begin
      print("gsn_contour_shade: gsnShadeFillType can only be 'pattern' or 'color'.")
      print("   Returning without making any changes to plot.")
      return(plot)
+   end if
+
+   debug = get_res_value_keep(opt,"debug",False)
+
+;
+; Get the contour plot object so we can retrieve and set
+; resource information for it. I'm not sure why 
+; a contour plot has an overlay contour plot?  That is,
+; why does this code work when you call gsn_csm_contour,
+; because I would think gsn_csm_contour would not have an
+; overlay id that is another contour plot. Need to check
+; with Dave on this.
+;
+   getvalues plot
+     "pmOverlaySequenceIds" : ovrly_ids
+   end getvalues
+   do n=0,dimsizes(ovrly_ids)-1
+     if(NhlClassName(ovrly_ids(n)).eq."contourPlotClass") then
+       idstring = ovrly_ids(n)
+       break
+    end if
+   end do
+
+;---Get default values of fill pattern resources
+   getvalues idstring
+      "cnFillScaleF"   : def_fill_scale
+      "cnFillDotSizeF" : def_dot_size
+      "cnLevels"       : cnlvls
+   end getvalues
+
+;---Make sure we have contour levels
+   nlevels = dimsizes(cnlvls)
+   if (ismissing(nlevels) .or. nlevels.le.0) then
+       print ("gsn_contour_shade: dimsizes(cnlvls)="+nlevels+" return (non-fatal)")
+       return (plot)
+   end if
+
+   if(debug)
+     print("def_fill_scale = " + def_fill_scale)
+     print("def_dot_size   = " + def_dot_size)
+     print("cnlvls         = " + str_join(""+cnlvls,","))
+  end if
+
+  if(check_attr(opt,"printcnlevels",True,True))
+    print(cnlvls)
+  end if
+
+;
+; gsnShadeFillScales allows you to set the fill scale for the low, mid, or high
+; contour levels. This resource must be set to three elements to represent
+; the three levels. Otherwise, you can set the single gsnShadeFillScaleF if
+; you want the same fill scale to be applied to one or more levels.
+;
+   dot_size = get_res_value_keep(opt,"gsnShadeFillDotSizeF",def_dot_size)
+   if(opt.and.isatt(opt,"gsnShadeFillScales")) then
+     lmh_fill_scales = opt@gsnShadeFillScales
+     scale_dims = dimsizes(lmh_fill_scales)
+     scale_rank = dimsizes(scale_dims)
+     if(scale_rank.ne.1.or.(scale_dims.ne.1.and.scale_dims.ne.3))
+       print("gsn_contour_shade: gsnShadeFillScales can either be a scalar")
+       print("     or an array of three elements representing the fill scales")
+       print("     for gsnShadeLow, gsnShadeMid, and gsnShadeHigh fill patterns.")
+       print("     Will default to " + def_fill_scale)
+       lmh_fill_scales := conform_dims(3,def_fill_scale,-1)
+     end if
+   else
+     lmh_fill_scales = conform_dims(3,get_res_value_keep(opt,"gsnShadeFillScaleF",def_fill_scale),-1)
    end if
 
 ;----------------------------------------------------------------------
@@ -12086,53 +12157,28 @@ begin
      return(plot)
    end if
 
-   getvalues plot
-      "pmOverlaySequenceIds" : ovrly_ids
-   end getvalues
-   if (.not.any(ismissing(ovrly_ids))) then
-     do i=0,dimsizes(ovrly_ids)-1
-         if (NhlClassName(ovrly_ids(i)).eq."contourPlotClass")
-            idstring = ovrly_ids(i)
-	    end if
-      end do
-   end if 
-   getvalues idstring
-     "cnLevels"  : cnlvls
-   end getvalues
-
-   if ((isatt(opt,"printcnlevels"))) then
-      if (opt@printcnlevels) then
-	    print(cnlvls)
-	 end if
-   end if
-
-;---Make sure we have contour levels
-   N = dimsizes(cnlvls)
-   if (ismissing(N) .or. N.le.0) then
-       print ("gsn_contour_shade: dimsizes(cnlvls)="+N+" return (non-fatal)")
-       return (plot)
-   end if
-
 ;---Create array for fill, set all to transparent or white
    if(shade_type.eq."color") then
-     colist      = new((/N+1,4/),double)
-     colist      = 1.d     ; initialize to all white so no missing values are used
-     colist(:,3) = 0.      ; now set all colors to transparent.
+     colors      = new((/nlevels+1,4/),double)
+     colors      = 1.d     ; initialize to all white so no missing values are used
+     colors(:,3) = 0.      ; now set all colors to transparent.
    else
-     colist = new(N+1,integer)
-     colist = -1
+     patterns    = new(nlevels+1,integer)
+     patterns    = -1
+     fill_scales = new(nlevels+1,float)
    end if
 
-;---Start filling colist
+;---Start filling colors or patterns
    if (shaden_set.and.any(cnlvls.le.lowval)) then
      ii := ind(cnlvls.le.lowval)
      ii_dims = dimsizes(ii)
      if(shade_type.eq."pattern") then
-       colist(ii) = shaden
+       patterns(ii)    = shaden
+       fill_scales(ii) = lmh_fill_scales(0)
      elseif(ii_dims.eq.1) then
-       colist(ii,:) = shaden
+       colors(ii,:) = shaden
      else
-       colist(ii,:) = conform(colist(ii,:),shaden,1)
+       colors(ii,:) = conform(colors(ii,:),shaden,1)
      end if
    end if
 
@@ -12140,11 +12186,12 @@ begin
      ii := ind(cnlvls.ge.highval)+1
      ii_dims = dimsizes(ii)
      if(shade_type.eq."pattern") then
-       colist(ii) = shadep
+       patterns(ii)    = shadep
+       fill_scales(ii) = lmh_fill_scales(2)
      elseif(ii_dims.eq.1) then
-       colist(ii,:) = shadep
+       colors(ii,:) = shadep
      else
-       colist(ii,:) = conform(colist(ii,:),shadep,1)
+       colors(ii,:) = conform(colors(ii,:),shadep,1)
      end if
    end if
 
@@ -12152,9 +12199,10 @@ begin
      ii := ind(cnlvls.ge.lowval.and.cnlvls.le.highval)
      ii_dims = dimsizes(ii)
      if(shade_type.eq."pattern") then
-       colist(ii) = shadem
+       patterns(ii)    = shadem
+       fill_scales(ii) = lmh_fill_scales(1)
      elseif (ii_dims.ge.2) then
-       colist(ii(1:),:) = conform(colist(ii(1:),:),shadem,1)
+       colors(ii(1:),:) = conform(colors(ii(1:),:),shadem,1)
      else
        print("gsn_contour_shade: 1 contour level or less found between "+lowval+" and "+highval+", not color filling")
      end if
@@ -12165,18 +12213,22 @@ begin
 	    "cnFillOn"          : True
             "cnMonoFillPattern" : True
             "cnMonoFillColor"   : False
-            "cnFillColors"      : colist			   
+            "cnFillColors"      : colors			   
 	 end setvalues
    else
 	 setvalues idstring               
 	    "cnFillOn"          : True
             "cnMonoFillColor"   : True
             "cnMonoFillPattern" : False
-            "cnFillPatterns"    : colist	   
+            "cnMonoFillScale"   : False
+            "cnFillPatterns"    : patterns	   
+            "cnFillDotSizeF"    : dot_size
+            "cnFillScales"      : fill_scales
 	 end setvalues
    end if
    return (plot)
 end
+
 undef("fill_res")
 procedure fill_res(res1:logical,res2:logical,ncr[2]:integer,attnames[*]:string)
 local natts, i, dsizes, rank, success, nrows, ncols
