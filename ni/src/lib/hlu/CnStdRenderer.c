@@ -2929,7 +2929,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		c_pcseti("FN",Cnp->high_lbls.font);
 		c_pcseti("QU",Cnp->high_lbls.quality);
 		c_pcsetc("FC",Cnp->high_lbls.fcode);
-		gset_linewidth(Cnp->high_lbls.thickness);
+                c_pcsetr("CL",(float)Cnp->high_lbls.thickness);
 
 		strcpy(buf,(char *)Cnp->high_lbls.text);
 		if ((sub = strstr(buf,"$ZDV$")) == NULL) {
@@ -2957,6 +2957,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		break;
 	case -2:
 		if (! Cnp->high_lbls.on) return;
+		c_pcsetr("BL",(float)Cnp->high_lbls.perim_lthick);
 		if (Cnp->hlb_val > 1 && Cnp->high_lbls.gks_bcolor == NhlTRANSPARENT)
 			_NhlSetFillOpacity(Cnl, 1.0); 
 		break;
@@ -2980,7 +2981,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		c_pcseti("FN",Cnp->high_lbls.font);
 		c_pcseti("QU",Cnp->high_lbls.quality);
 		c_pcsetc("FC",Cnp->high_lbls.fcode);
-		gset_linewidth((float)Cnp->high_lbls.thickness);
+                c_pcsetr("CL",(float)Cnp->high_lbls.thickness);
 
 		Cnp->high_lbls.count++;
 		strcpy(buf,(char *)Cnp->high_lbls.text);
@@ -3004,7 +3005,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 			_NhlSetLineOpacity(Cnl, 0.0); 
 		else {
 			gset_line_colr_ind(Cnp->high_lbls.gks_plcolor);
-			gset_linewidth(Cnp->high_lbls.perim_lthick);
+			gset_linewidth((float)Cnp->high_lbls.perim_lthick);
 		}
 		break;
 	case -4:
@@ -3028,7 +3029,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		c_pcseti("FN",Cnp->low_lbls.font);
 		c_pcseti("QU",Cnp->low_lbls.quality);
 		c_pcsetc("FC",Cnp->low_lbls.fcode);
-		gset_linewidth((float)Cnp->low_lbls.thickness);
+		c_pcsetr("CL",(float)Cnp->low_lbls.thickness);
 		strcpy(buf,(char *)Cnp->low_lbls.text);
 		if ((sub = strstr(buf,"$ZDV$")) == NULL) {
 			return;
@@ -3046,6 +3047,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		break;
 	case 6:
 		if (! Cnp->low_lbls.on) return;
+		c_pcsetr("BL",(float)Cnp->low_lbls.perim_lthick);
 		if (Cnp->hlb_val > 1) {
 			if (Cnp->low_lbls.gks_bcolor == NhlTRANSPARENT) 
 				_NhlSetFillOpacity(Cnl, 0.0); 
@@ -3078,7 +3080,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		c_pcseti("FN",Cnp->low_lbls.font);
 		c_pcseti("QU",Cnp->low_lbls.quality);
 		c_pcsetc("FC",Cnp->low_lbls.fcode);
-		gset_linewidth((float)Cnp->low_lbls.thickness);
+		c_pcsetr("CL",(float)Cnp->low_lbls.thickness);
 
 		Cnp->low_lbls.count++;
 		strcpy(buf,(char *)Cnp->low_lbls.text);
@@ -3102,7 +3104,8 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 			_NhlSetLineOpacity(Cnl, 0.0); 
 		else {
 			gset_line_colr_ind(Cnp->low_lbls.gks_plcolor);
-			gset_linewidth(Cnp->low_lbls.perim_lthick);
+			c_pcsetr("BL",(float)Cnp->low_lbls.perim_lthick);
+			gset_linewidth((float)Cnp->low_lbls.perim_lthick);
 		}
 		break;
 	case -8:
@@ -3161,9 +3164,11 @@ void   (_NHLCALLF(hlucpchll,HLUCPCHLL))
 		c_pcseti("FN",Cnp->line_lbls.font);
 		c_pcseti("QU",Cnp->line_lbls.quality);
 		c_pcsetc("FC",Cnp->line_lbls.fcode);
-		gset_linewidth((float)Cnp->line_lbls.thickness);
+                c_pcsetr("CL",(float)Cnp->line_lbls.thickness);
+		c_pcsetr("BL",(float)Cnp->line_lbls.perim_lthick);
 	}
 	else if (*iflg == 2) {
+		c_pcsetr("BL",(float)Cnp->line_lbls.perim_lthick);
 		if (Cnp->line_lbls.gks_bcolor > NhlTRANSPARENT)
 			gset_fill_colr_ind(Cnp->line_lbls.gks_bcolor);
 	}
@@ -3189,13 +3194,15 @@ void   (_NHLCALLF(hlucpchll,HLUCPCHLL))
 			c_pcseti("FN",Cnp->line_lbls.font);
 			c_pcseti("QU",Cnp->line_lbls.quality);
 			c_pcsetc("FC",Cnp->line_lbls.fcode);
-			gset_linewidth((float)Cnp->line_lbls.thickness);
+                        c_pcsetr("CL",(float)Cnp->line_lbls.thickness);
+			c_pcsetr("BL",(float)Cnp->line_lbls.perim_lthick);
 		}
 		Cnp->line_lbls.count++;
 	}
 	else if (*iflg == 4) {
 		gset_line_colr_ind(Cnp->line_lbls.gks_plcolor);
-		gset_linewidth(Cnp->line_lbls.perim_lthick);
+		c_pcsetr("BL",(float)Cnp->line_lbls.perim_lthick);
+		gset_linewidth((float)Cnp->line_lbls.perim_lthick);
 	}
 
 	return;
