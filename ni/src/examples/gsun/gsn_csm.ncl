@@ -4543,6 +4543,44 @@ begin
 ;;  end if
 end
 
+
+;**********************************************************************
+; This function returns true if a reference line is set and any
+; of the above/below/left/right fill resources are set.
+; 
+; It also checks if both X/Y ref line fill is set, because this is
+; not allowed currently (maybe never?).
+;**********************************************************************
+undef("is_ref_line_fill_set")
+function is_ref_line_fill_set(reftype,rfres)
+local xref_line_name,xgrt_res_name,xlss_res_name,yref_line_name,ygrt_res_name,ylss_res_name
+begin
+  yref_line_name = "gsnYRefLine"
+  ygrt_res_name  = "gsnAboveYRefLineColor"
+  ylss_res_name  = "gsnBelowYRefLineColor"
+  xref_line_name = "gsnXRefLine"
+  xgrt_res_name  = "gsnRightXRefLineColor"
+  xlss_res_name  = "gsnLeftXRefLineColor"
+
+  if((isatt(rfres,yref_line_name).and.(isatt(rfres,ygrt_res_name).or.\
+                                       isatt(rfres,ylss_res_name))).and.\
+     (isatt(rfres,xref_line_name).and.(isatt(rfres,xgrt_res_name).or.\
+                                       isatt(rfres,xlss_res_name)))) then
+    print("is_ref_line_fill_set: Error: you cannot set color fill around both")
+    print("           gsnXRefLine and gsnYRefLine in the same plot.")
+    exit
+  elseif( (reftype.eq."y".and.isatt(rfres,yref_line_name).and.\
+                             (isatt(rfres,ygrt_res_name).or.\
+                              isatt(rfres,ylss_res_name))).or.\
+          (reftype.eq."x".and.isatt(rfres,xref_line_name).and.\
+                             (isatt(rfres,xgrt_res_name).or.\
+                              isatt(rfres,xlss_res_name)))) then
+    return(True)          ; Only fill for this ref line is set
+  else
+    return(False)         ; Neither X nor Y ref line fill is set
+  end if
+end
+
 ;**********************************************************************
 ; This function sets a bunch of variables for drawing an X or Y 
 ; reference line and/or filling curves above/below or to the right/left
@@ -4589,8 +4627,12 @@ begin
              ref_line_thickness,ref_grtr_curve_fill_on,\
              ref_less_curve_fill_on,ref_fill_color_g,ref_fill_color_l/])
   end if
-  if(bar_outline_only.or.(reftype.eq."x".and..not.isatt(rfres,"gsnXRefLine").or.\
-                          reftype.eq."y".and..not.isatt(rfres,"gsnYRefLine"))) then
+
+;---Check for the case where we just want a reference line, and no fill.
+  ref_fill_on = is_ref_line_fill_set(reftype,rfres)
+  if(bar_outline_only.or.(.not.bar_chart.and..not.bar_outline_only.and..not.ref_fill_on).or.\
+      (reftype.eq."x".and..not.isatt(rfres,"gsnXRefLine").or.\
+       reftype.eq."y".and..not.isatt(rfres,"gsnYRefLine"))) then
     if( (reftype.eq."y".and.isatt(rfres,"gsnYRefLine")).or.\
         (reftype.eq."x".and.isatt(rfres,"gsnXRefLine"))) then
       ref_line_on        = True
@@ -4605,6 +4647,7 @@ begin
              ref_less_curve_fill_on,ref_fill_color_g,ref_fill_color_l/])
   end if
 
+;---If we've made it to here, then we're looking at either filled curves or a bar chart.
   if(reftype.eq."y") then
     fill_string_g = "above"
     fill_string_l = "below"
@@ -5981,8 +6024,8 @@ begin
 ;----------------------------------------------------------------------
     if(.not.bar_chart.and.xref_fill_on) then
       interp_list = ref_line_interp(x,y,xref_line,"x")
-      xinterp  = interp_list[0]
-      yinterp  = interp_list[1]
+      xinterp  := interp_list[0]
+      yinterp  := interp_list[1]
       new_xref_line = interp_list[2]
       new_npts = interp_list[3]
       delete(interp_list)
