@@ -407,10 +407,14 @@ int utInvCalendar2_cal_calcalcs( int year, int month, int day, int hour, int min
 		if( prev_user_unit_str != NULL ) {
 			free( prev_user_unit_str );
 			ut_free( prev_units );
+			prev_user_unit_str = NULL;
+			prev_units = NULL;
 			}
 
-		if( prev_calendar != NULL )
+		if( prev_calendar != NULL ) {
 			free( prev_calendar );
+			prev_calendar = NULL;
+			}
 		if( conv_days_to_user_units != NULL )
 			cv_free( conv_days_to_user_units );
 
