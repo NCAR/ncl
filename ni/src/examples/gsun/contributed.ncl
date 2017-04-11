@@ -19398,3 +19398,41 @@ begin
 
   return(stats_taylor)
 end
+;----
+undef("isconstant_1d")             
+function isconstant_1d(x1d[*])
+begin
+  if (all(x1d.eq.x1d(0))) then
+      return(1)                   ; all constant
+  else
+      return(0)                   ; multiple values
+  end if
+end
+;----
+undef("isconstant")               ; Requires: NCL 6.4.1  due to 'elseif'
+function isconstant(x)
+local dimx, rankx, i, x1d
+begin
+
+  dimx  = dimsizes(x)
+  rankx = dimsizes(dimx)
+
+  if (isatt(x,"_FillValue")) then
+      if (all(ismissing(x))) then
+          return( -1 )                        ; all _FillValue
+      elseif (rankx.eq.1) then
+          i = ind(.not.ismissing(x))
+          return(isconstant_1d(x(i)))         ; pass input x[*]
+      else
+          x1d = ndtooned(x)
+          i   = ind(.not.ismissing(x1d))
+          return(isconstant_1d(x1d(i)))       ; transform x(?,?,...) to [*]
+      end if
+  else                                        ; no _FillValue
+      if (rankx.eq.1 .and. all(x.eq.x(0))) then
+          return(1)
+      else
+          return(isconstant_1d(ndtooned(x)))
+      end if
+  end if
+end
