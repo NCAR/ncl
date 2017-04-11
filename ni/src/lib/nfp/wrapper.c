@@ -6311,8 +6311,7 @@ void NclAddUserFuncs(void)
     args = NewArgs(2);
 
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    dimsizes[0] = 0;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterFunc(dim_kde_W,args,"dim_kde",nargs);
 

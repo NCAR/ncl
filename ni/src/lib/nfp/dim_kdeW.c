@@ -34,7 +34,7 @@ NhlErrorTypes dim_kde_W( void )
   void *kde;
   double *tmp_kde = NULL;
   int       ndims_kde;
-  ng_size_t dsizes_kde;
+  ng_size_t *dsizes_kde;
   int has_missing_kde;
   NclScalar missing_kde, missing_flt_kde, missing_dbl_kde;
   NclBasicDataTypes type_kde;
@@ -73,7 +73,9 @@ NhlErrorTypes dim_kde_W( void )
   coerce_missing(type_x,has_missing_x,&missing_x,
                  &missing_dbl_x,&missing_flt_x);
 
-  n = dsizes_x[ndims_x-1];
+  n = 1;
+  for(i = 0; i < ndims_x; i++)
+    n *= dsizes_x[i];
 /*
  * Get argument # 1
  */
