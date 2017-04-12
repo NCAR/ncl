@@ -13,11 +13,12 @@ C NCLEND
 c NCL:   function bin_avg(zlon[*],zlat[*],z[*], glon[*], glat[*], opt )
 
       INTEGER K,NL,ML,IFLAG
-      DOUBLE PRECISION DLAT,DLON
+      DOUBLE PRECISION DLAT,DLON,DEPS,DLO,DHI
       DOUBLE PRECISION GLATBND1,GLATBND2
       DOUBLE PRECISION GLONBND1,GLONBND2
 
-      IER = 0
+      IER  = 0
+      DEPS = 0.0001          ! good enough
 
 c                            ; monotonically {in/de}creasing
       DLAT = GLAT(2)-GLAT(1)
@@ -26,27 +27,33 @@ c                            ; monotonically {in/de}creasing
       ELSEIF (DLAT.LT.0.0D0) THEN
           IFLAG = -1
       ELSE
-          IER = 1
+          IER = 1            ! 0 difference: FATAL            
       END IF
       DLAT = ABS(DLAT)
+      DLO  = DLAT-DEPS
+      DHI  = DLAT+DEPS
 
 c                            check for equal lat spacing
       DO NL = 1,NLAT - 1
-          IF (ABS(GLAT(NL+1)-GLAT(NL)).NE.DLAT) THEN
+          IF (ABS(GLAT(NL+1)-GLAT(NL)).LT.DLO .OR. 
+     +        ABS(GLAT(NL+1)-GLAT(NL)).GT.DHI) THEN
               IER = IER + 10
               GO TO 10
           END IF
       END DO
    10 CONTINUE
-
 c                            check for equal lon spacing
       DLON = GLON(2)-GLON(1)
+      DLON = ABS(DLON)
+      DLO  = DLON-DEPS
+      DHI  = DLON+DEPS
       IF (DLON.LE.0.0D0) THEN
           IER = 1
       END IF
 
       DO ML = 1,MLON - 1
-          IF (ABS(GLON(ML+1)-GLON(ML)).NE.DLON) THEN
+          IF (ABS(GLON(ML+1)-GLON(ML)).LT.DLO .OR. 
+     +        ABS(GLON(ML+1)-GLON(ML)).GT.DHI) THEN
               IER = IER + 100
               GO TO 20
           END IF

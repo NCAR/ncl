@@ -2673,7 +2673,9 @@ begin
  end if
      return(plot)
 end
-; ---------------------------------
+;----------------------------------------------------------------------------
+;----------------------- Unsupported: DJS -----------------------------------
+;----------------------------------------------------------------------------
 undef("SPECX_ANAL")
 function SPECX_ANAL(X[*]:numeric, iopt[1]:integer, jave[1]:integer, pct[1]:numeric)
 ;
@@ -2739,7 +2741,94 @@ begin
   
    return( sdof )
 end
-; ----------------------------------------------
+;----------------------------------------------------------------------------
+;----------------------- Unsupported: DJS -----------------------------------
+;----------------------------------------------------------------------------
+undef("SPECX_ENSEMBLE")
+function SPECX_ENSEMBLE(X[*][*]:numeric, iopt[1]:integer, jave[1]:integer, pct[1]:numeric)
+local dimX, x, nens, N, xVari, xVaro, cf, cr, ci, px, spcx, total_area, df, frq
+    , wgts, sclVar, sdof, r1, tapcf, ens_vari, ens_varo, ens_r1, ens_px
+begin
+   dimX  = dimsizes(X)
+   nens  = dimX(0)
+   N     = dimX(1)
+
+   ens_vari = 0.0                        ; ensemble mean input  variance
+   ens_varo = 0.0                        ; ensemble mean output variance (after detrend)
+   ens_r1   = 0.0                        ; ensemble mean lag-1 auto correlation
+
+ do ne=0,nens-1
+   xVari = variance(X(ne,:))*(N-1.)/N  ; input variance
+  
+   if (iopt.ge.0) then                 ; remove mean
+       x = X(ne,:) - avg(X(ne,:))
+   else
+       x = X(ne,:)
+   end if
+
+   if (iopt.ge.1) then
+       x = dtrend(x,False)             ; step 1: detrend
+   end if
+                                       ; step 2: Calculate input sample variance 
+   xVaro = variance(x)*(N-1.)/N        ; population variance after pre-whitening
+
+   x     = taper (x,pct,0)             ; step 3: taper the series
+                                       ; tapering correction factor
+   tapcf = 0.5*(128-93*pct)/(8-5*pct)^2; Bloomfield
+  
+   cf    = ezfftf(x)                   ; step 4: perform forward FFT
+   cr    = cf(0,:)                     ; clarity ... real coef
+   ci    = cf(1,:)                     ;             imag coef
+
+   px    = cr^2 + ci^2                 ; step 5: periodogram of "x"
+   if (ne.eq.0) then
+       ens_px = new (dimsizes(px), typrof(px), "No_FillValue")
+       ens_px = 0
+   end if
+
+   r1       = esacr(x,1)               ; auto correlation at lag-1
+   ens_r1   = ens_r1 + 0.5*log((1+r1)/(1-r1))  ; Fischer z-transform
+   ens_px   = ens_px+px
+   ens_vari = ens_vari+xVari
+   ens_varo = ens_varo+xVaro
+  end do                               ; end ensemble loop
+
+   xVari = ens_vari/nens                ; ensemble mean
+   xVaro = ens_varo/nens   
+   px    = ens_px/nens
+   ens_r1= ens_r1/nens
+  
+   wgts         = fspan(1,1,jave)
+   wgts(0)      = 0.5                  ; not sure why I did this
+   wgts(jave-1) = 0.5
+   wgts         = wgts/sum(wgts)       ; normalize sum of wgts to one 
+
+   spcx  = wgt_runave(px,wgts,1)       ; weighted run ave of 
+
+  ;step 7: normalize the area under the curve [6] to the variance.
+  ;       Remember the first and last bandwidths are only 0.5*df
+   
+   df         = 1./N 
+   total_area = (spcx(0) + spcx(N/2-1))*(df/2) + sum(spcx(1:N/2-2))*df
+   sclVar     = ens_varo/total_area
+   spcx       = spcx*sclVar
+  
+   frq        = fspan(df,0.5,N/2)
+  
+   sdof       = 2/(tapcf*sum(wgts^2))  ; sum squares of normalized wgts 
+                                       ; to calculate dof 
+   sdof@bw    = 0.5*sdof*df            ; bw: jones pg 202: murphy+katz
+   sdof@xvari = xVari
+   sdof@xvaro = xVaro
+   sdof@frq   = frq
+   sdof@spcx  = spcx
+   sdof@xlag1 = (exp(2*ens_r1)-1)/(exp(2*ens_r1)+1)  ; back transform
+  
+   return( sdof )
+end
+;----------------------------------------------------------------------------
+;----------------------- Unsupported: DJS -----------------------------------
+;----------------------------------------------------------------------------
 undef("SPECXY_ANAL")
 function SPECXY_ANAL(X[*]:numeric, Y[*]:numeric   \
                     ,iopt[1]:integer, jave[1]:integer, pct[1]:numeric)
@@ -2855,7 +2944,9 @@ begin
 
    return(sdof)
 end
-; -----------------------------------
+;----------------------------------------------------------------------------
+;----------------------- Unsupported: DJS -----------------------------------
+;----------------------------------------------------------------------------
 undef("FILWGTS")
 procedure FILWGTS (nwgt[*]:integer, ihp[1]:integer \
                   ,fca[1]:numeric , fcb[1]:numeric , sigma[1]:numeric \
