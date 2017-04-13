@@ -2494,7 +2494,7 @@ int upordown;
 	xdist = x - x_last;
 	if (xdist > 180.0)
 		x -= 360.0;
-	else if (xdist < -180)
+	else if (xdist < -180.0)
 		x += 360.0;
        
 	xdist = x - x_last;			
@@ -2539,7 +2539,12 @@ int upordown;
 		c_mapitd(yc,xc,1);
 	}
 	c_mapitd(y,x,2);
-	x_last = fmod(x + 180, 360) - 180;
+	/*x_last = fmod(x + 180, 360) - 180;*/
+	x_last = x;
+	if (x_last > 180.0)
+		x_last -= 360.0;
+	else if (x_last < -180.0)
+		x_last += 360.0;
 	y_last = y;
 	xw_last = xw;
 	yw_last = yw;
