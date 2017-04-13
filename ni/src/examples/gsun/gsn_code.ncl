@@ -6412,6 +6412,12 @@ begin
 ;
   new_plot     = get_plot_not_loglin(plot(valid_plot))
   new_plot_lab = get_plot_labelbar(plot(valid_plot))
+
+;---If plot type is unknown or xy, then we can't create a labelbar.
+  if(panel_labelbar.and.(new_plot@plot_type.eq."unknown".or.new_plot@plot_type.eq."xy")) then
+    print("Warning: gsn_panel: unrecognized plot type for getting labelbar information. Ignoring labelbar request.")
+    panel_labelbar = False
+  end if
 ;
 ; Get the font height of a particular plot element, so we can
 ; use this for panel plot elements, like the size of the 
@@ -6783,87 +6789,80 @@ begin
   if(panel_labelbar) then
     lbres@EndStyle = lb_end_style
 ;
-; If plot type is unknown or xy, then we can't get labelbar information.
-;
-    if(new_plot@plot_type.ne."unknown".and.new_plot@plot_type.ne."xy") then
-;
 ; Set labelbar height, width, and font height.
 ;
-      labelbar_height      = scale * labelbar_height
-      labelbar_width       = scale * labelbar_width
-      labelbar_font_height = font_height
+    labelbar_height      = scale * labelbar_height
+    labelbar_width       = scale * labelbar_width
+    labelbar_font_height = font_height
 ;
 ; Set some labelbar resources.  If pmLabelBarWidth/Height are set,
 ; use these no matter what, for the labelbar width and height. Otherwise,
 ; use vpWidth/Height if they are set.
 ;
-      lbres = True
-      if(isatt(lbres,"pmLabelBarWidthF")) then
-        lbres@vpWidthF = get_res_value(lbres,"pmLabelBarWidthF",labelbar_width)
-      else
-        set_attr(lbres,"vpWidthF", labelbar_width)
-      end if
+    lbres = True
+    if(isatt(lbres,"pmLabelBarWidthF")) then
+      lbres@vpWidthF = get_res_value(lbres,"pmLabelBarWidthF",labelbar_width)
+    else
+      set_attr(lbres,"vpWidthF", labelbar_width)
+    end if
         
-      if(isatt(lbres,"pmLabelBarHeightF")) then
-        lbres@vpHeightF = get_res_value(lbres,"pmLabelBarHeightF",labelbar_height)
-      else
-        set_attr(lbres,"vpHeightF",labelbar_height)
-      end if
+    if(isatt(lbres,"pmLabelBarHeightF")) then
+      lbres@vpHeightF = get_res_value(lbres,"pmLabelBarHeightF",labelbar_height)
+    else
+      set_attr(lbres,"vpHeightF",labelbar_height)
+    end if
 ;
 ; Set position of labelbar depending on whether it's horizontal or
 ; vertical.
 ;
-      if(lbhor)
-        set_attr(lbres,"vpYF",max ((/ywsp+labelbar_height,bot-ywsp/)))
-        if(ncols.eq.1.and.lbres@vpWidthF.le.scaled_width)
-          set_attr(lbres,"vpXF",min_xpos + (scaled_width-lbres@vpWidthF)/2.)
-        else
-          tmp_range = x_rgt - x_lft
-          set_attr(lbres,"vpXF",x_lft + (tmp_range - lbres@vpWidthF)/2.)
-        end if
-        lbres@vpYF = lbres@vpYF + get_res_value(lbres,"pmLabelBarOrthogonalPosF",0.)
-        lbres@vpXF = lbres@vpXF + get_res_value(lbres,"pmLabelBarParallelPosF",0.)
+    if(lbhor)
+      set_attr(lbres,"vpYF",max ((/ywsp+labelbar_height,bot-ywsp/)))
+      if(ncols.eq.1.and.lbres@vpWidthF.le.scaled_width)
+        set_attr(lbres,"vpXF",min_xpos + (scaled_width-lbres@vpWidthF)/2.)
       else
-        set_attr(lbres,"vpXF",min ((/1.-(xwsp+labelbar_width),max_rgt+xwsp/)))
-        if(nrows.eq.1.and.lbres@vpHeightF.le.scaled_height)
-          set_attr(lbres,"vpYF",max_ypos-(scaled_height - lbres@vpHeightF)/2.)
-        else
-          tmp_range = y_top - y_bot
-          set_attr(lbres,"vpYF",y_top-(tmp_range - lbres@vpHeightF)/2.)
-        end if
-        lbres@vpXF = lbres@vpXF + get_res_value(lbres,"pmLabelBarOrthogonalPosF",0.)
-        lbres@vpYF = lbres@vpYF + get_res_value(lbres,"pmLabelBarParallelPosF",0.)
+        tmp_range = x_rgt - x_lft
+        set_attr(lbres,"vpXF",x_lft + (tmp_range - lbres@vpWidthF)/2.)
       end if
-      set_attr(lbres,"lbLabelFontHeightF",labelbar_font_height)
+      lbres@vpYF = lbres@vpYF + get_res_value(lbres,"pmLabelBarOrthogonalPosF",0.)
+      lbres@vpXF = lbres@vpXF + get_res_value(lbres,"pmLabelBarParallelPosF",0.)
+    else
+      set_attr(lbres,"vpXF",min ((/1.-(xwsp+labelbar_width),max_rgt+xwsp/)))
+      if(nrows.eq.1.and.lbres@vpHeightF.le.scaled_height)
+        set_attr(lbres,"vpYF",max_ypos-(scaled_height - lbres@vpHeightF)/2.)
+      else
+        tmp_range = y_top - y_bot
+        set_attr(lbres,"vpYF",y_top-(tmp_range - lbres@vpHeightF)/2.)
+      end if
+      lbres@vpXF = lbres@vpXF + get_res_value(lbres,"pmLabelBarOrthogonalPosF",0.)
+      lbres@vpYF = lbres@vpYF + get_res_value(lbres,"pmLabelBarParallelPosF",0.)
+    end if
+    set_attr(lbres,"lbLabelFontHeightF",labelbar_font_height)
 ;
 ; Check if we want different fill patterns or fill scales.  If so, we
 ; have to pass these on to the labelbar.
 ;
-      set_attr(lbres,"lbMonoFillColor",lb_mono_fill_color)
-      if(.not.lb_mono_fill_pattern)
-        set_attr(lbres,"lbMonoFillPattern", False)
-        set_attr(lbres,"lbFillPatterns", lb_fill_patterns)
-      end if
-      if(.not.lb_mono_fill_scale)
-        set_attr(lbres,"lbMonoFillScale", False)
-        set_attr(lbres,"lbFillScales", lb_fill_scales)
-      end if
-      if(isvar("lb_cap_style"))
-        set_attr(lbres,"lbBoxEndCapStyle",lb_cap_style)
-      end if
-      set_attr(lbres,"lbLabelAlignment",lb_label_alignment)
-;      if(isvar("lb_levels"))
-;        lb_label_strings = fix_zero_contour(lb_levels)   ; Make sure level 0 is not something like 1e-8
-;      end if
-      lbres@SubsetStuff = lb_subset_stuff
+    set_attr(lbres,"lbMonoFillColor",lb_mono_fill_color)
+    if(.not.lb_mono_fill_pattern)
+      set_attr(lbres,"lbMonoFillPattern", False)
+      set_attr(lbres,"lbFillPatterns", lb_fill_patterns)
+    end if
+    if(.not.lb_mono_fill_scale)
+      set_attr(lbres,"lbMonoFillScale", False)
+      set_attr(lbres,"lbFillScales", lb_fill_scales)
+    end if
+    if(isvar("lb_cap_style"))
+      set_attr(lbres,"lbBoxEndCapStyle",lb_cap_style)
+    end if
+    set_attr(lbres,"lbLabelAlignment",lb_label_alignment)
+;   if(isvar("lb_levels"))
+;     lb_label_strings = fix_zero_contour(lb_levels)   ; Make sure level 0 is not something like 1e-8
+;   end if
+    lbres@SubsetStuff = lb_subset_stuff
 
 ;---Create the labelbar.
-      newplots(nplot) = create_labelbar(wks,dimsizes(lb_fill_colors),lb_fill_colors, \
-                                        lb_label_strings,lbres)
-      nplot = nplot + 1
-    else
-       print("gsn_panel: Warning: unrecognized plot type for getting labelbar information. Ignoring labelbar request.")
-    end if
+    newplots(nplot) = create_labelbar(wks,dimsizes(lb_fill_colors),lb_fill_colors, \
+                                      lb_label_strings,lbres)
+    nplot = nplot + 1
   end if
 ;
 ; Create the main string, if exists.
