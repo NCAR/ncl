@@ -1321,8 +1321,6 @@ int wr_status;
 				for(j = 0; j < ndims; j++) {
 					HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),dim_hdf_names[j],dim_ncl_names[j],
 							dimsizes[j],gd_hdf_names[i],gd_ncl_names[i],the_file->file_path_q);
-					dim_names[j] = dim_hdf_names[j];
-					dim_sizes[j] = dimsizes[j];
 					if (dim_hdf_names[j] == NrmStringToQuark("XDim")) 
 						has_xdim = 1;
 					if (dim_hdf_names[j] == NrmStringToQuark("YDim")) 
