@@ -125,25 +125,27 @@ c calculate 'dp'; check if dpsum.eq.(psfc-ptop) within peps then return
       else 
           kflag  = 1
 
-          klStrt = 1
-          if (ptop.ge.plvl(1)) then
-             do kl=1,klvl 
-                if (ptop.le.plvl(kl)) then
-                    klStrt = kl
-                    exit
-                end if
-             end do
-          end if
+c The klvl pressure levels in plvl define (klvl-1) layers.  There is
+c  one fewer layer than pressure levels.
+c Find klStrt and klLast so they define the smallest possible 
+c  interval [plev(klLast), plev(klStrt)] that contains all 
+c  layer mid-points within the interval [ptop, psfc].
+c
+c Starting with the bottom and moving up, find the first layer whose
+c  midpoint is at or above ptop. klStrt is the bottom of this layer. 
+          do klStrt=klvl,2,-1
+             if ((plvl(klStrt-1)+plvl(klStrt))/2.lt.ptop) then
+                 exit
+             end if
+          end do
 
-          klLast = klvl
-          if (psfc.le.plvl(klvl)) then
-             do kl=1,klvl 
-                if (psfc.le.plvl(kl)) then
-                    klLast = kl-1
-                    exit
-                end if
-             end do
-          end if
+c Starting the top layer and moving downward, find the first layer whose
+c midpoint is at or below psfc. klLast is the top of this layer. 
+          do klLast=1,klvl-1
+             if ((plvl(klLast+1)+plvl(klLast))/2.gt.psfc) then
+                 exit
+             end if
+          end do
 
 cdebugprint *,"klStrt=",klStrt," klLast=",klLast," ptop=",ptop
 cdebugprint *,"plvl(klStrt)=",plvl(klStrt)," plvl(klLast)=",plvl(klLast)
