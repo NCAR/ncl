@@ -127,6 +127,7 @@ OGRFieldType type;
         case OFTInteger:  return NCL_int;
         case OFTReal:     return NCL_double;
         case OFTString:   return NCL_string;
+        case OFTInteger64: return NCL_int64;
         default:      return NCL_none;
     }
 
@@ -381,6 +382,18 @@ static void _getFieldAsInteger(OGRFeatureH feature, int fieldNum, void* storage,
 {
     int fieldVal = OGR_F_GetFieldAsInteger(feature, fieldNum);
     *( (int*)(storage)+offset) = fieldVal;
+}
+
+
+/*
+ * _getFieldAsInteger64()
+ *
+ * A FieldExtractor for integer64 fields.
+ */
+static void _getFieldAsInteger64(OGRFeatureH feature, int fieldNum, void* storage, long offset)
+{
+    int fieldVal = OGR_F_GetFieldAsInteger(feature, fieldNum);
+    *( (long*)(storage)+offset) = fieldVal;
 }
 
 
@@ -736,6 +749,9 @@ static void *_getFieldVariable(NclFileGrpNode *grpnode, NclQuark thevar,
                  break;
             case NCL_string:
                  helper = &_getFieldAsString;
+                 break;
+            case NCL_int64:
+                 helper = &_getFieldAsInteger64;
                  break;
             default:
                  return NULL;
