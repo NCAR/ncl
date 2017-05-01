@@ -6308,10 +6308,11 @@ void NclAddUserFuncs(void)
  * Create private argument array
  */
     nargs = 0;
-    args = NewArgs(2);
+    args = NewArgs(3);
 
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
     NclRegisterFunc(dim_kde_W,args,"dim_kde",nargs);
 

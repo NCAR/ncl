@@ -13,7 +13,7 @@ C NCLEND
 C                                   ! work array
       nn = 0 
       do k=1,n 
-         if (x(n).ne.xmsg) then
+         if (x(k).ne.xmsg) then
              nn = nn+1
              work(nn) = x(k)
          end if
