@@ -493,7 +493,7 @@ c       if (PEE1sum_asy(n,t).ne.dmiss) then
             STC(N,T,11)   = PHAS_SYM(N,T)  
             STC(N,T,12)   = PHAS_ASY(N,T)  
             STC(N,T,13)   = V1_SYM(N,T)  
-            STC(N,T,14)   = V1_SYM(N,T)  
+            STC(N,T,14)   = V1_ASY(N,T)  
             STC(N,T,15)   = V2_SYM(N,T)  
             STC(N,T,16)   = V2_ASY(N,T)  
          END DO
