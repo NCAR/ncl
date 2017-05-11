@@ -146,6 +146,7 @@ if ("$hasdash" == "-") then
     goto USAGE
 endif
 
+    
 #
 # Collect the file arguments, check them later -- need the "-i" ("dirin")
 # argument prior to checking for unqualified full/partial pathnames.  
@@ -156,18 +157,38 @@ endif
 #
 # NOTE: Bogus filenames are still *kept* at this point.
 #
+# Modified to work with filenames with spaces (somewhat tricky in csh) 
+# two loops seem to be required: the first to create the right number of
+# array elements by assigning "easy" small integer values, the second to assign
+# the "difficult" strings with possible spaces and other special chars 
+# to now-defined elements of the array
+# this idiom is repeated later in this script
+#
 set nfiles = 0
-set ifiles_t = ()
-while ($#argv > 0)
-    set hasdash = `echo "$1" | awk '{print substr($0, 1, 1)}'`
-    if ("$hasdash" != "-") then
-        if ( x"$ifiles_t"x == "xx") then
-	    set ifiles_t = ( "$1" )
-	else
-	    set ifiles_t = ( "$ifiles_t" "$1" )
-        endif
+set first = "$1"
+set ifiles_t = ( )
+while  ( $nfiles < $#argv )
+    @ i = $nfiles + 1
+    set hasdash = `echo "$argv[$i]" | awk '{print substr($0, 1, 1)}'`
+    if ( "$hasdash" != "-" ) then
         @ nfiles += 1
-        shift
+	if ($nfiles == 1) then
+	    set ifiles_t = ( $nfiles )
+	else 
+	    set ifiles_t = ( $ifiles_t $nfiles )
+	endif
+    else
+        break
+    endif
+end
+
+set i = 0
+while  ($#argv > 0)
+   set hasdash = `echo "$1" | awk '{print substr($0, 1, 1)}'`
+    if ("$hasdash" != "-") then
+        @ i += 1
+        set ifiles_t[$i] = "$argv[1]"
+	shift
     else
         break
     endif
@@ -516,6 +537,26 @@ set ifiles_r = ()
 set ofiles = ()
 set ftypes = ()
 
+# first populate all the arrays with a "simple" value
+
+while ($n <= $nfiles)
+    if ($n == 1) then
+       set idirs = ( $n )
+       set ifiles = ( $n )
+       set ifiles_r = ( $n )
+       set ofiles = ( $n )
+       set ftypes = ( $n )
+    else
+       set idirs = ( $idirs $n )
+       set ifiles = ( $ifiles $n )
+       set ifiles_r = ( $ifiles_r $n )
+       set ofiles = ( $ofiles $n )
+       set ftypes = ( $ftypes $n )
+    endif
+    @ n += 1
+end
+
+set n = 1
 while ($n <= $nfiles)
     #
     # Was a URL provided?  This requires an OPeNDAP-enabled NCL.  If
@@ -528,30 +569,14 @@ while ($n <= $nfiles)
         set if = `basename "$ifiles_t[$n]"`
         set of = "$if:r"
 
-        if ( x"$idirs"x == "xx") then
-            set idirs = ( "$dir" )
-	else
-	    set idirs = ( "$idirs" "$dir" )
-        endif
-        if ( x"$ifiles"x == "xx") then
-	    set ifiles = ( "$if" )
-	else
-	    set ifiles = ( "$ifiles" "$if" )
-        endif
-        if ( x"$ofiles"x == "xx") then
-	    set ofiles = ( "$of" )
-	else
-	    set ofiles = ( "$ofiles" "$of" )
-        endif
-        # No definitive way to verify file type
-        set ftypes = ( $ftypes "OPeNDAP" )
+	set idirs[$n] = "$dir"
+	set ifiles[$n] = "$if"
+	set ofiles[$n] = "$of"
+	set ftypes[$n] = "OPenDAP"
 
         # Keep the name of the file actually specified on the command line
-        if (x"$ifiles_r"x == "xx") then
-	    set ifiles_r = ( "$ifiles_t[$n]" )
-	else
-	    set ifiles_r = ( "$ifiles_r" "$ifiles_t[$n]" )
-        endif
+
+	set ifiles_r[$n] = "$ifiles_t[$n]"
         @ n += 1
 
         continue
@@ -599,7 +624,8 @@ while ($n <= $nfiles)
                 goto VALID_FILE
             endif
         else
-            set psfx = "$fil:e"
+	    set psfx = "$fil"
+            set psfx = "$psfx:e"
         endif
 
         # Does the file have a suffix (delineated by a ".") or
@@ -881,37 +907,22 @@ VALID_FILE:
         continue
     else
         if (($haspath == 1) || ($relpath == 1)) then
-            if ( x"$idirs"x == "xx") then
-	        set idirs = ( "$dir" )
-	    else
-	        set idirs = ( "$idirs" "$dir" )
-            endif
+	    set idirs[$n] = "$dir"
         else
-            if ( x"$idirs"x == "xx") then
-	        set idirs = ( "$dirin" )
-	    else
-	        set idirs = ( "$idirs" "$dir" )
-            endif
+	    set idirs[$n] = "$dirin"
 	endif
-        if ( x"$ifiles"x == "xx") then
-	    set ifiles = ( "$if" )
-	else
-	    set ifiles = ( "$ifiles" "$if" )
-        endif
-        if ( x"$ofiles"x == "xx") then
-	    set ofiles = ( "$of" )
-	else
-	    set ofiles = ( "$ofiles" "$of" )
-        endif
+
+	set ifiles[$n] = "$if"
+	set ofiles[$n] = "$of"
+	set ftypes[$n] = "$ftype"
+
+        # Keep the name of the file actually specified on the command line
+
         set ftypes = ( $ftypes $ftype )
     endif
 
     # Keep the name of the file actually specified on the command line
-    if (x"$ifiles_r"x == "xx") then
-	set ifiles_r = ( "$ifiles_t[$n]" )
-    else
-        set ifiles_r = ( "$ifiles_r" "$ifiles_t[$n]" )
-    endif
+    set ifiles_r[$n] = "$ifiles_t[$n]"
 
     @ n += 1
 end
@@ -1199,8 +1210,9 @@ begin
     end if
 
     ncFileName = diro + filo + osuffix 
-    ofile_i = str_get_field(systemfunc("ls -iL " + ncFileName + " 2>/dev/null"),1," ")
-    ifile_i = str_get_field(systemfunc("ls -iL " + iFileName  + " 2>/dev/null" ),1," ")
+
+    ofile_i = str_get_field(systemfunc("ls -iL '" + ncFileName + "' 2>/dev/null"),1," ")
+    ifile_i = str_get_field(systemfunc("ls -iL '" + iFileName  + "' 2>/dev/null" ),1," ")
     if (.not. ismissing(ofile_i) .and. .not. ismissing(ifile_i) .and. ofile_i .eq. ifile_i) then
 	ncFileName = ncFileName + ".nc"
     end if
