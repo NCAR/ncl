@@ -915,10 +915,6 @@ VALID_FILE:
 	set ifiles[$n] = "$if"
 	set ofiles[$n] = "$of"
 	set ftypes[$n] = "$ftype"
-
-        # Keep the name of the file actually specified on the command line
-
-        set ftypes = ( $ftypes $ftype )
     endif
 
     # Keep the name of the file actually specified on the command line
