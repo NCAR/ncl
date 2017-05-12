@@ -29,6 +29,7 @@
 #include "Symbol.h"
 #include "NclMdInc.h"
 #include "NclVar.h"
+#include "NclBuiltInSupport.h"
 #include "Machine.h"
 #include "DataSupport.h"
 #include "VarSupport.h"

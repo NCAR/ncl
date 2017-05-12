@@ -675,6 +675,9 @@ void
 #endif
 );
 
+extern NhlErrorTypes _Nclsubprocess(void);
+extern NhlErrorTypes _NclsubprocessWait(void);
+
 extern NhlErrorTypes _Nclstrlen(
 #if NhlNeedProto
 void
@@ -1198,6 +1201,19 @@ void _NclAddBuiltIns
 	dimsizes[0] = 1;
 	SetArgTemplate(args,0,"string",1,dimsizes);nargs++;
 	NclRegisterFunc(_Nclsystemfunc,args,"systemfunc",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,nargs++,"string",1,dimsizes);
+	NclRegisterFunc(_Nclsubprocess,args,"subprocess",nargs);
+
+	nargs = 0;
+	args = NewArgs(2);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,nargs++,"integer",1,dimsizes);
+	SetArgTemplate(args,nargs++,"logical",1,dimsizes);
+	NclRegisterFunc(_NclsubprocessWait,args,"subprocess_wait",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);

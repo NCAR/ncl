@@ -418,7 +418,8 @@ STATIC_SRCS	=	AddBuiltIns.c AddHLUObjs.c \
 			complete.c editline.c sysunix.c ListSupport.c \
 			NclList.c NclMultiDVallistData.c \
 			NclProf.c NclTime.c \
-			NclDriver.c PrintToken.c
+			NclDriver.c PrintToken.c \
+			subprocess.c
 
 
 FSRCS		=	qu2reg3.f rowina3.f scm0.f ncepcode.f
@@ -464,7 +465,8 @@ STATIC_OBJS	=	AddBuiltIns.o AddHLUObjs.o \
 			HLUFunctions.o yywrap.o craybin.o \
 			complete.o editline.o sysunix.o ListSupport.o \
 			NclList.o NclMultiDVallistData.o \
-			NclProf.o NclTime.o PrintToken.o
+			NclProf.o NclTime.o PrintToken.o \
+			subprocess.o
 
 
 FOBJS		=	qu2reg3.o rowina3.o scm0.o ncepcode.o
