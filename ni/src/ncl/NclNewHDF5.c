@@ -35,6 +35,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#define H5_USE_18_API
+
 #include <hdf5.h>
 
 #ifdef NIO_LIB_ONLY
