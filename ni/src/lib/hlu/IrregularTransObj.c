@@ -1398,10 +1398,10 @@ static NhlBoolean compare_check
 	int xmndif,xmxdif,ymndif,ymxdif;
 
 	if (type == NhlirDATA) {
-		if ((xmndif = _NhlCmpF(*x,irp->xmin_dat)) < 0 ||
-		    (xmxdif = _NhlCmpF(*x,irp->xmax_dat)) > 0 ||
-		    (ymndif = _NhlCmpF(*y,irp->ymin_dat)) < 0 ||
-		    (ymxdif = _NhlCmpF(*y,irp->ymax_dat)) > 0) {
+		if ((xmndif = _NhlCmpDAny2(*x,irp->x_min,8,1e-6)) < 0 ||
+		    (xmxdif = _NhlCmpDAny2(*x,irp->x_max,8,1e-6)) > 0 ||
+		    (ymndif = _NhlCmpDAny2(*y,irp->y_min,8,1e-6)) < 0 ||
+		    (ymxdif = _NhlCmpDAny2(*y,irp->y_max,8,1e-6)) > 0) {
 			return False;
 		}
 		if (xmndif == 0) {
@@ -1418,10 +1418,10 @@ static NhlBoolean compare_check
 		}
 	}
 	else {
-		if ((xmndif = _NhlCmpF(*x,irp->compc_xmin_dat)) < 0 ||
-		    (xmxdif = _NhlCmpF(*x,irp->compc_xmax_dat)) > 0 ||
-		    (ymndif = _NhlCmpF(*y,irp->compc_ymin_dat)) < 0 ||
-		    (ymxdif = _NhlCmpF(*y,irp->compc_ymax_dat)) > 0) {
+		if ((xmndif = _NhlCmpDAny2(*x,irp->compc_x_min,8,1e-6)) < 0 ||
+		    (xmxdif = _NhlCmpDAny2(*x,irp->compc_x_max,8,1e-6)) > 0 ||
+		    (ymndif = _NhlCmpDAny2(*y,irp->compc_y_min,8,1e-6)) < 0 ||
+		    (ymxdif = _NhlCmpDAny2(*y,irp->compc_y_max,8,1e-6)) > 0) {
 			return False;
 		}
 		if (xmndif == 0) {
@@ -2008,7 +2008,7 @@ float *yc;
 {
 	NhlIrregularTransObjLayerPart *irp = 
 		(NhlIrregularTransObjLayerPart *) &irinst->irtrans;
-	float xt,yt;
+	double xt,yt;
 	int i,status = 1;
 
 	xt = xclip;
@@ -2017,23 +2017,23 @@ float *yc;
 	for (i=0; i < 2; i++) {
 
 		if (x != xclip) {
-			if (_NhlCmpF(xt,irp->xmin_dat) < 0.0) {
+			if (_NhlCmpDAny2(xt,(double)irp->x_min,8,1e-6) < 0.0) {
 				*xd = irp->x_min;
-				*yd = yclip +(y-yclip) * (*xd-xclip)/(x-xclip);
+				*yd = yt +(y-yt) * (*xd-xt)/(x-xt);
 			}
-			else if (_NhlCmpF(xt,irp->xmax_dat) > 0.0) {
+			else if (_NhlCmpDAny2((double)xt,(double)irp->x_max,8,1e-6) > 0.0) {
 				*xd = irp->x_max;
-				*yd = yclip +(y-yclip) * (*xd-xclip)/(x-xclip);
+				*yd = yt +(y-yt) * (*xd-xt)/(x-xt);
 			}
 		}
 		if (y != yclip) {
-			if (_NhlCmpF(yt,irp->ymin_dat) < 0.0) {
+			if (_NhlCmpDAny2((double)yt,(double)irp->y_min,8,1e-6) < 0.0) {
 				*yd = irp->y_min;
-				*xd = xclip +(x-xclip) * (*yd-yclip)/(y-yclip);
+				*xd = xt +(x-xt) * (*yd-yt)/(y-yt);
 			}
-			else if (_NhlCmpF(yt,irp->ymax_dat) > 0.0) {
+			else if (_NhlCmpDAny2((double)yt,(double)irp->y_max,8,1e-6) > 0.0) {
 				*yd = irp->y_max;
-				*xd = xclip +(x-xclip) * (*yd-yclip)/(y-yclip);
+				*xd = xt +(x-xt) * (*yd-yt)/(y-yt);
 			}
 		}
 		IrDataToCompc((NhlLayer)irinst,xd,yd,1,
@@ -2111,6 +2111,15 @@ int upordown;
 		call_frstd = 1;
 		return(NhlNOERROR);
 	}
+	else if (_NhlCmpDAny2((double)lastx,(double)currentx,8,1e-6) == 0 &&
+		 _NhlCmpDAny2((double)lasty,(double)currenty,8,1e-6) == 0) {
+		
+/*
+ * line has not moved
+ */
+		return (NhlNOERROR);
+	}
+
 /*
  * sample the line and draw
  */ 
