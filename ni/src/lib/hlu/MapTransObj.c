@@ -1371,7 +1371,8 @@ static NhlErrorTypes MapWinToData
 			c_maptri(x[i],y[i],&(yout[i]),&(xout[i]));
 			if (yout[i] == minstance->trobj.out_of_range) {
 				*status = 1;
-				xout[i]=yout[i]=minstance->trobj.out_of_range;
+				xout[i]= xmissing != NULL ? *xmissing : minstance->trobj.out_of_range;
+				yout[i]= ymissing != NULL ? *ymissing : minstance->trobj.out_of_range;
 			}
 			else if (xout[i] < mtp->data_xmin) {
 				if (xout[i] + 360 <= mtp->data_xmax + mpDATAEPS) {
