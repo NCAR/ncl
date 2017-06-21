@@ -23,6 +23,7 @@
 #include <ncarg/hlu/VecAnnoP.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/WorkstationI.h>
+#include <ncarg/hlu/color.h>
 #include <math.h>
 
 /* Resources */
@@ -833,6 +834,7 @@ VecAnnoDraw
 			line_color = NhlFOREGROUND;
 		}
 
+                _NhlSetLineOpacity(val, 1.0);  /* the line_color may still override this */
 		if (line_color > NhlTRANSPARENT)
 			gset_line_colr_ind((Gint)
 				      _NhlGetGksCi(l->base.wkptr,line_color));
@@ -840,7 +842,7 @@ VecAnnoDraw
 			gset_fill_colr_ind((Gint)
 			      _NhlGetGksCi(l->base.wkptr,vap->vec_fill_color));
 		gset_linewidth(vap->ah_line_thickness);
-		
+
 		xb = vap->vxb;
 		yb = vap->vyb;
 		xe = vap->vxe;
