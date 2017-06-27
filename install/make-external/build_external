@@ -1073,7 +1073,7 @@ then
     echo "Building $NETCDF4_FORTRAN_DIR..."
     export CPPFLAGS="-I$PREFIX/include"
     export LDFLAGS="-L$PREFIX/lib"
-    export LIBS="-lnetcdf -lhdf5_hl -lhdf5 -lz -lcurl -ldl"
+    export LIBS="-lnetcdf -lhdf5_hl -lhdf5 -lsz -lz $CURL_LIBS"
     ./configure --disable-shared --prefix\=$PREFIX
     make all install
     if [ $? ] ; then
@@ -1533,9 +1533,12 @@ if [ $INSTALL_ESMF ] ; then
       echo "Cleaning $ESMF_DIR before building non-OPeNDAP version..."
       export ESMF_INSTALL_PREFIX=$PREFIX_NODAP
       export ESMF_LAPACK_LIBPATH=$PREFIX_NODAP/lib
-      export ESMF_CXXLINKPATHS="-L$NCARG_ROOT/lib"
-      export ESMF_CXXCOMPILEPATHS="-I$PREFIX_NODAP/include"
+      export ESMF_CXXLINKPATHS="-L$NCARG_ROOT/lib -L$PREFIX_NODAP/lib -L$PREFIX/lib"
+      export ESMF_CXXCOMPILEPATHS="-I$PREFIX_NODAP/include -I$PREFIX/include"
       export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz"
+      if [ "$os" = "Darwin" ] ; then
+        export ESMF_F90LINKLIBS="-lstdc++ -lc++ -llapack_ncl -lblas_ncl -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz"
+      fi
       make distclean
       make clean
     fi
@@ -1545,6 +1548,9 @@ if [ $INSTALL_ESMF ] ; then
     export ESMF_NETCDF_INCLUDE=$PREFIX/include
     export ESMF_LAPACK_LIBS="-llapack_ncl -lblas_ncl"
     export ESMF_F90LINKPATHS="-L$NCARG_ROOT/lib"
+    if [ "$os" = "Darwin" ] ; then
+      export ESMF_CXXLINKLIBS="-lstdc++ -lc++"
+    fi
     export ESMF_NETCDF="split"
     export ESMF_LAPACK="netlib"
     export ESMF_COMM=mpiuni
@@ -1563,6 +1569,9 @@ if [ $INSTALL_ESMF ] ; then
     elif [ "$un" = "yellowstone_intel1215" ] || [ "$un" = "yellowstone_intel1701" ] ; then
       export ESMF_COMPILER=intel
       export ESMF_OS=Linux
+    elif [ "$os" = "Darwin" ] ; then
+      export ESMF_COMPILER=gfortranclang
+      export ESMF_OS=Darwin
     else
       export ESMF_COMPILER=gfortran
     fi
@@ -1611,8 +1620,11 @@ if [ $INSTALL_ESMF ] ; then
     export ESMF_INSTALL_PREFIX=$PREFIX
     export ESMF_LAPACK_LIBPATH=$NCARG_ROOT/lib
     export ESMF_CXXCOMPILEPATHS="-I$PREFIX/include"
+    if [ "$os" = "Darwin" ] ; then
+      export ESMF_F90LINKLIBS="-lstdc++ -lc++ -llapack_ncl -lblas_ncl -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz $CURL_LIBS"
+    fi
     export ESMFREGRIDFILE="$ESMF_INSTALL_PREFIX/bin/binO/$ESMFBUILDDIR/ESMF_RegridWeightGen"
-    unset ESMF_CXXLINKPATHS
+    export ESMF_CXXLINKPATHS="-L$NCARG_ROOT/lib -L$PREFIX/lib"
     export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz $CURL_LIBS"
     echo "Building OPeNDAP version of $ESMF_DIR..."
     make all install
