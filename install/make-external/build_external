@@ -86,6 +86,13 @@
 #
 # PREFIX is the parent location for installing external software.
 #
+# PREFIX_NODAP is the parent location for installing a version
+# of NetCDF that is not opendap-enabled.  This is done because
+# the OPeNDAP version can have a lot of dependencies that make it
+# hard for a user who doesn't have the correct shared libraries on
+# their system. If you don't want to build the non-opendap version
+# of NetCDF (and ESMF), then set BUILD_NON_OPENDAP to 0.
+#
 ### CHANGE THE NEXT TWO LINES AS NEEDED
 PREFIX=/usr/local
 NCARG_ROOT=/usr/local
@@ -95,7 +102,7 @@ NCARG_ROOT=/usr/local
 # If you don't want to build the non-opendap version
 # of NetCDF (and ESMF), then set BUILD_NON_OPENDAP to 0.
 
-BUILD_NON_OPENDAP=0
+BUILD_NON_OPENDAP=1
 PREFIX_NODAP=$PREFIX/nodap
 
 # Set up file to hold build output.
@@ -111,7 +118,7 @@ os=`uname -s`
 # 4.4.7 and 4.7.2, and the intel compiler 12.1.5.
 # You may need to update as necessary.
 # 
-# Use one of these eval command to set the compiler version. It seems to work!
+# On yellowstone, use one of these eval command to set the compiler version.
 #eval `/glade/apps/opt/lmod/lmod/libexec/lmod sh swap intel gnu/4.4.7`
 #eval `/glade/apps/opt/lmod/lmod/libexec/lmod sh swap intel gnu/4.7.2`
 #eval `/glade/apps/opt/lmod/lmod/libexec/lmod sh swap intel gnu/4.8.3`
@@ -126,7 +133,7 @@ if [ -n "$COMPILER_VERSION" ] ; then
     export LD_LIBRARY_PATH=/glade/apps/opt/gnu/4.7.2/lib64:/glade/apps/opt/gnu/lib:/ncar/opt/lsf/8.3/linux2.6-glibc2.3-x86_64/lib
     un="yellowstone_gnu472"
   elif [ "$COMPILER_VERSION" = "4.4.7" ] ; then
-    export PATH=$PREFIX/bin:$NCARG_ROOT/bin:/usr/lib64/qt-3.3/bin:/glade/apps/opt/usr/bin:/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/etc:/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/openssh/5.7p1krb/bin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/ncar/opt/hpss
+    export PATH=$PREFIX/bin:$NCARG_ROOT/bin:/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/etc:/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/bin:/usr/lib64/qt-3.3/bin:/glade/apps/opt/netcdf/4.3.0/intel/12.1.5/bin:/ncar/opt/intel/12.1.0.233/composer_xe_2011_sp1.11.339/bin/intel64:/glade/apps/opt/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/openssh/5.7p1krb/bin:/usr/lpp/mmfs/bin:/opt/ibutils/bin:/ncar/opt/hpss:/usr/lpp/mmfs/bin
     export LD_LIBRARY_PATH=/ncar/opt/lsf/9.1/linux2.6-glibc2.3-x86_64/lib
     un="yellowstone_gnu447"
   else
@@ -143,6 +150,7 @@ if [ "$os" = "Darwin" ] ; then
   os_version=`sw_vers -productVersion`
 fi
 
+# Set environment variables for building software
 ### Change to indicate what options you want for compilation.
 if [ "$os" = "Darwin" ] ; then
   export CC=gcc
@@ -168,7 +176,7 @@ elif [ "$un" = "yellowstone_gnu447" ] ; then
   export FC=/usr/bin/gfortran
   export F77=/usr/bin/gfortran
   export F90=/usr/bin/gfortran
-elif [ "$un" = "yellowstone_intel1215" ] ; then
+elif [ "$un" = "yellowstone_intel1215" ] || [ "$un" = "yellowstone_intel1701" ]; then
   export CC=icc
   export CXX=icpc
   export FC=ifort
@@ -220,6 +228,10 @@ echo "which $FC is"
 which $FC
 echo "$FC --version is"
 $FC --version
+echo "which libtool is"
+which libtool
+echo "libtool --version is"
+libtool --version
 echo "=================================================="
 
 #--------------------------------------------------------------------
@@ -230,28 +242,31 @@ echo "=================================================="
 # Note that this build script expects the directory for this software
 # to be called exactly by these names, i.e. the netCDF software better
 # be in a directory called "netcdf-4.4.0".
-CAIRO_DIR="cairo-1.14.6"
-CURL_DIR="curl-7.49.1"
-ESMF_DIR="esmf-6.3.0rp1"
-EXPAT_DIR="expat-2.2.0"
-FREETYPE_DIR="freetype-2.6.5"
+AUTOMAKE_DIR="automake-1.15"
+AUTOCONF_DIR="autoconf-2.69"
+CAIRO_DIR="cairo-1.14.10"
+CURL_DIR="curl-7.54.1"
+ESMF_DIR="esmf-7.0.1"
+EXPAT_DIR="expat-2.2.1"
+FREETYPE_DIR="freetype-2.8"
 G2CLIB_DIR="g2clib-1.6.0-patch"
-GDAL_DIR="gdal-2.1.1"
-GSL_DIR="gsl-2.2.1"
+GDAL_DIR="gdal-2.2.0"
+GSL_DIR="gsl-2.4"
 HDF4_DIR="hdf-4.2.12"
 HDF5_DIR="hdf5-1.8.17"
 HDFEOS_DIR="hdfeos-2.19"
 HDFEOS5_DIR="hdfeos5-1.15"
 JASPER_DIR="jasper-1.900.1"
 JPEG_DIR="jpeg-9b"
-NETCDF4_DIR="netcdf-4.4.1.1"
+LIBTOOL_DIR="libtool-2.4.6"
+NETCDF4_DIR="netcdf-4.5.0-rc1"
 NETCDF4_FORTRAN_DIR="netcdf-fortran-4.4.4"
 PIXMAN_DIR="pixman-0.34.0"
 PKGCONFIG_DIR="pkg-config-0.29"
-PNG_DIR="libpng-1.2.56"
-PROJ4_DIR="proj-4.9.2"
+PNG_DIR="libpng-1.2.57"
+PROJ4_DIR="proj-4.9.3"
 SZIP_DIR="szip-2.1"
-UDUNITS_DIR="udunits-2.2.20"
+UDUNITS_DIR="udunits-2.2.25"
 VIS5DPLUS_DIR="vis5d+-1.3.0-beta"
 ZLIB_DIR="zlib-1.2.8"
 PYTHON_DIR="Python-2.7.8"
@@ -267,6 +282,9 @@ INSTALL_PYTHON_DIR="$PREFIX/$PYTHON_DIR-$NUMPY_DIR"
 ### Change to indicate which packages you want to build.
 # Any packages that are already built should have the line commented out.
 # The packages are listed in the order they get built in.
+#INSTALL_AUTOCONF=1
+#INSTALL_AUTOMAKE=1
+#INSTALL_LIBTOOL=1
 INSTALL_PKGCONFIG=1
 INSTALL_ZLIB=1
 INSTALL_PNG=1
@@ -337,6 +355,18 @@ if [ ! -d "$PREFIX/man" ] ; then
 fi
 if [ ! -d "$PREFIX/man/man1" ] ; then
   mkdir $PREFIX/man/man1
+fi
+if [ $INSTALL_AUTOCONF ] && [ ! -d $AUTOCONF_DIR ] ; then
+  echo "$AUTOCONF_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_AUTOMAKE ] && [ ! -d $AUTOMAKE_DIR ] ; then
+  echo "$AUTOMAKE_DIR does not exist"
+  exit
+fi
+if [ $INSTALL_LIBTOOL ] && [ ! -d $LIBTOOL_DIR ] ; then
+  echo "$LIBTOOL_DIR does not exist"
+  exit
 fi
 if [ $INSTALL_PKGCONFIG ] && [ ! -d $PKGCONFIG_DIR ] ; then
   echo "$PKGCONFIG_DIR does not exist"
@@ -457,6 +487,99 @@ fi
 #
 
 #--------------------------------------------------------------------
+# autoconf (sometimes this is needed for systems with old versions)
+#--------------------------------------------------------------------
+if [ $INSTALL_AUTOCONF ]
+then
+  if [ -d "$AUTOCONF_DIR" ]
+  then
+    cd $AUTOCONF_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $AUTOCONF_DIR before making..."
+      make distclean
+      make clean
+    fi
+    echo "Building $AUTOCONF_DIR..."
+    ./configure --prefix\=$PREFIX
+    make all install
+    if [ $CLEAN_AFTER ]
+    then
+      echo "Cleaning $AUTOCONF_DIR after making..."
+      make distclean
+      make clean
+    fi
+    cd ..
+  else
+    echo "Directory $AUTOCONF_DIR doesn't exist"
+  fi
+else
+  echo "Not building AUTOCONF..."
+fi
+
+#--------------------------------------------------------------------
+# automake (sometimes this is needed for systems with old versions)
+#--------------------------------------------------------------------
+if [ $INSTALL_AUTOMAKE ]
+then
+  if [ -d "$AUTOMAKE_DIR" ]
+  then
+    cd $AUTOMAKE_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $AUTOMAKE_DIR before making..."
+      make distclean
+      make clean
+    fi
+    echo "Building $AUTOMAKE_DIR..."
+    ./configure --prefix\=$PREFIX
+    make all install
+    if [ $CLEAN_AFTER ]
+    then
+      echo "Cleaning $AUTOMAKE_DIR after making..."
+      make distclean
+      make clean
+    fi
+    cd ..
+  else
+    echo "Directory $AUTOMAKE_DIR doesn't exist"
+  fi
+else
+  echo "Not building AUTOMAKE..."
+fi
+
+#--------------------------------------------------------------------
+# libtool (sometimes this is needed for systems with old versions)
+#--------------------------------------------------------------------
+if [ $INSTALL_LIBTOOL ]
+then
+  if [ -d "$LIBTOOL_DIR" ]
+  then
+    cd $LIBTOOL_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $LIBTOOL_DIR before making..."
+      make distclean
+      make clean
+    fi
+    echo "Building $LIBTOOL_DIR..."
+    ./configure --prefix\=$PREFIX
+    make all install
+    if [ $CLEAN_AFTER ]
+    then
+      echo "Cleaning $LIBTOOL_DIR after making..."
+      make distclean
+      make clean
+    fi
+    cd ..
+  else
+    echo "Directory $LIBTOOL_DIR doesn't exist"
+  fi
+else
+  echo "Not building LIBTOOL..."
+fi
+
+#--------------------------------------------------------------------
 # pkg-config
 #--------------------------------------------------------------------
 if [ $INSTALL_PKGCONFIG ] ; then
@@ -468,17 +591,14 @@ if [ $INSTALL_PKGCONFIG ] ; then
       make clean
     fi
     echo "Building $PKGCONFIG_DIR..."
-    if [ "$os" = "Darwin" ] ; then
-      export PKG_CONFIG_PATH="/opt/local/lib/pkgconfig"
-    fi
 # You shouldn't need --with-internal-glib if you set PKG_CONFIG_PATH
 # to point to directory containing the glib-2.0.pc file.
 #   ./configure --with-internal-glib --prefix\=$PREFIX
+# Mac systems may need the "--with-internal-glib"
+# if using gcc/gfortran.
+#    ./configure --prefix\=$PREFIX  --with-internal-glib
     ./configure --prefix\=$PREFIX
     make all install
-    if [ "$os" = "Darwin" ] ; then
-      export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
-    fi
     if [ $? ] ; then
       echo "$PKGCONFIG_DIR build successful."
       export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
@@ -588,8 +708,8 @@ if [ $INSTALL_JPEG ] ; then
     ./configure --disable-shared --prefix\=$PREFIX
     make all install
 # Need this for jpeg-6b
-#    make install-lib
-#    make install-headers
+    make install-lib
+    make install-headers
     if [ $? ] ; then
       echo "$JPEG_DIR build successful."
       if [ $CLEAN_AFTER ] ; then
@@ -620,6 +740,12 @@ if [ $INSTALL_JASPER ] ; then
       make clean
     fi
     echo "Building $JASPER_DIR..."
+## Use this possibly for jasper V2 and greater
+##    export SOURCE_DIR=`pwd`
+##    export BUILD_DIR=$JASPER_DIR/tmp
+##    export INSTALL_DIR=$PREFIX
+##    cmake -G "Unix Makefiles" -H$SOURCE_DIR -B$BUILD_DIR  -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR
+## Use this for jasper V1.900
 # Need --includedir to point to jpeg include files.      
     ./configure --prefix\=$PREFIX --includedir\=$PREFIX/include
     make all install
@@ -634,6 +760,9 @@ if [ $INSTALL_JASPER ] ; then
       echo "$JASPER_DIR build NOT successful."
     fi
     cd ..
+##    unset SOURCE_DIR
+##    unset BUILD_DIR
+##    unset INSTALL_DIR
   else
     echo "Directory $JASPER_DIR doesn't exist"
   fi
@@ -705,6 +834,19 @@ if [ $INSTALL_CURL ] ; then
 else
   echo "Not building libcurl..."
 fi
+
+# Needed for NetCDF and OPeNDAP
+if which curl-config > /dev/null 2>&1; then
+  CURL_LIBS=`curl-config --libs`
+else
+  echo "Can't find curl-config."
+  exit
+fi
+
+echo "=================================================="
+echo "CURL_LIBS = $CURL_LIBS"
+which curl-config
+echo "=================================================="
 
 #--------------------------------------------------------------------
 # HDF-5
@@ -876,13 +1018,7 @@ then
         make clean
       fi
       echo "Cleaning $NETCDF4_DIR to do OPeNDAP build"
-      if [ "$os_version" = "10.8.4" ] ; then
-        export LIBS="-lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
-      elif [ "$un" = "cisl-denton.local" ] || [ "$un" = "cisl-denton.scd.ucar.edu" ] || [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ] || [ "$os_version" = "10.9.4" ] || [ "$os_version" = "10.9.5" ]; then
-        export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
-      else
-        export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lldap -lssl"
-      fi
+      export LIBS="-lhdf5_hl -lhdf5 -lsz -lz $CURL_LIBS"
       ./configure --enable-netcdf-4 --enable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
       make all install
     else
@@ -899,21 +1035,7 @@ then
         make clean
       fi
       echo "Cleaning $NETCDF4_DIR to do OPeNDAP build"
-      if [ "$un" = "k5" ] || [ "$un" = "k6" ] || [ "$un" = "k7" ] || [ "$un" = "k8" ] ; then
-        export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lldap -lrt -lssl"
-      elif [ "$un" = "k9" ] ; then
-        export LIBS="-lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lssl -lldap -lrt -lssh2 -lrtmp"
-      elif [ "$un" = "logan.cgd.ucar.edu" ] ; then
-        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lz -lidn -lrt -ldl"
-      elif [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
-        export LIBS="-lhdf5_hl -lhdf5 -lsz -lcurl -lidn -lssl -lcrypto -lz -lrt"
-      elif [ "$un" = "yellowstone_gnu483" ] ; then
-        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl -lz -lrt -lssl -lidn -lldap"
-      elif [ "$un" = "yellowstone_intel1215" ] ; then
-        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lssl -lidn -lrt -ldl"
-      else
-        export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -lcurl -ldl"
-      fi
+      export LIBS="-lhdf5_hl -lhdf5 -lsz -lz $CURL_LIBS"
       ./configure --enable-netcdf-4 --enable-dap --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
       make all install
       unset LIBS
@@ -1438,7 +1560,7 @@ if [ $INSTALL_ESMF ] ; then
     elif [ "$un" = "yellowstone_gnu483" ] || [ "$un" = "yellowstone_gnu472" ] ; then
       export ESMF_COMPILER=gfortran
       export ESMF_OS=Linux
-    elif [ "$un" = "yellowstone_intel1215" ] ; then
+    elif [ "$un" = "yellowstone_intel1215" ] || [ "$un" = "yellowstone_intel1701" ] ; then
       export ESMF_COMPILER=intel
       export ESMF_OS=Linux
     else
@@ -1491,26 +1613,7 @@ if [ $INSTALL_ESMF ] ; then
     export ESMF_CXXCOMPILEPATHS="-I$PREFIX/include"
     export ESMFREGRIDFILE="$ESMF_INSTALL_PREFIX/bin/binO/$ESMFBUILDDIR/ESMF_RegridWeightGen"
     unset ESMF_CXXLINKPATHS
-
-    if [ "$os_version" = "10.8.4" ] ; then
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lcrypto -lldap -lssl -lsz -lz -lquadmath"
-    elif [ "$un" = "cisl-denton.local" ] || [ "$un" = "cisl-denton.scd.ucar.edu" ] || [ "$un" = "riley.local" ] || [ "$os_version" = "10.9.2" ] || [ "$os_version" = "10.9.4" ] || [ "$os_version" = "10.9.5" ] ; then
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lssl -lcrypto -llber"
-    elif [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] ; then
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lcrypto -lz -lrt -ldl -lssl -lidn -lsz -lz"
-    elif [ "$un" = "yellowstone_gnu483" ] ; then
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz -lcurl -lz -lrt -lssl -lidn -lldap"
-    elif [ "$un" = "yellowstone_intel1215" ] ; then
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz -lrt -lcurl -lssl -lidn -lrt -ldl"
-    elif [ "$un" = "k5" ] || [ "$un" = "k6" ] || [ "$un" = "k7" ] ; then
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lldap -lrt -lssl"
-    elif [ "$un" = "k9" ] ; then
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lm -lz -lcurl -lcrypto -lidn -lldap -lrt -lssl"
-    elif [ "$un" = "logan.cgd.ucar.edu" ] ; then
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lz -lidn -lrt -ldl -lsz -lz"
-    else
-      export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lcurl -lsz -lz"
-    fi
+    export ESMF_NETCDF_LIBS="-lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lsz -lz $CURL_LIBS"
     echo "Building OPeNDAP version of $ESMF_DIR..."
     make all install
 
