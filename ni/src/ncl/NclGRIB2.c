@@ -3889,7 +3889,6 @@ Grib2FileRecord *therec;
 				att_list_ptr->next = step->theatts;
 				att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
 				att_list_ptr->att_inq->name = NrmStringToQuark("type_of_spatial_processing");
-				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 				if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
 						       "4.15.table",grib_rec->spatial_proc,-1,ct) < NhlWARNING) {
 					return;
@@ -6789,8 +6788,6 @@ static void _g2SetFileDimsAndCoordVars
 					sprintf(buffer,"%s lower limits",NrmQuarkToString(step->var_info.long_name_q));
 					tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 					*tmp_string = NrmStringToQuark(buffer);
-					tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-					*tmp_string = NrmStringToQuark(buffer);
 					Grib2PushAtt(&tmp_att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
 					sprintf(name_buffer,"%s%s",NrmQuarkToString(tmp->dim_name),"_lower");
 
@@ -8717,6 +8714,8 @@ static void Grib2FreeGrib2Rec
 
                 NclFree(sec4_p[j]->prod_params);
             }
+            if (sec4_p[j]->coord_list != NULL)
+                NclFree(sec4_p[j]->coord_list);
 
             if (sec4_p[j]->prod_def_name != NULL)
                 NclFree(sec4_p[j]->prod_def_name);
@@ -9292,6 +9291,7 @@ void _g2_seekgb(FILE *lugb,size_t iseek,size_t mseek,size_t *lskip,g2int *lgrib)
 		}
 		ipos=ipos+lim;
 		if (ipos > max_bytes)
+			free(cbuf);
 			return;
 	}
 
