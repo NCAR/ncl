@@ -4269,9 +4269,8 @@ begin
 
 ;---We can't use this routine to plot point data
   if(.not.any(f@geometry_type.eq.(/"polygon","polyline"/))) then
-    print("Error: gsn_shapefile_polylines: geometry_type attribute must be 'polygon' or 'polyline'")
-    print("       No shapefile information will be added.")
-    return(new(1,graphic))
+    print("Warning: gsn_shapefile_polylines: geometry_type attribute is not 'polygon' or 'polyline'.")
+    print("         Will attempt to add shapefile information anyway.")
   end if
 
 ;---Read data off the shapefile
@@ -4382,9 +4381,8 @@ begin
 
 ;---We can't use this routine to plot point data
   if(.not.any(f@geometry_type.eq.(/"polygon","polyline"/))) then
-    print("Error: gsn_add_shapefile_polylines: geometry_type attribute must be 'polygon' or 'polyline'")
-    print("       No shapefile information will be added.")
-    return(new(1,graphic))
+    print("Warning: gsn_add_shapefile_polylines: geometry_type attribute is not 'polygon' or 'polyline'.")
+    print("         Will attempt to add shapefile information anyway.")
   end if
 
   if(lnres) then
@@ -4514,16 +4512,15 @@ begin
 
 ;---We can't use this routine to plot point data
   if(f@geometry_type.ne."polygon") then
-    print("Error: gsn_add_shapefile_polygon: geometry_type attribute must be 'polygon'")
-    print("       No shapefile information will be added.")
-    return(new(1,graphic))
+    print("Warning: gsn_add_shapefile_polygons: geometry_type attribute is not 'polygon'.")
+    print("         Will attempt to add shapefile information anyway.")
   end if
 
 ;---Read data off the shapefile
   geomDims    = getfilevardimsizes(f,"geometry")
   numFeatures = geomDims(0)
   if(numFeatures.eq.0) then
-    print("Error: gsn_add_shapefile_polygon: the number of features in this file is 0.")
+    print("Error: gsn_add_shapefile_polygons: the number of features in this file is 0.")
     print("       No shapefile information will be added.")
     return(new(1,graphic))
   end if
@@ -4660,9 +4657,8 @@ begin
 
 ;---We can't use this routine to plot point data
   if(f@geometry_type.ne."point") then
-    print("Error: gsn_add_shapefile_polymarkers: geometry_type attribute must be 'point'")
-    print("       No shapefile information will be added.")
-    return(new(1,graphic))
+    print("Warning: gsn_add_shapefile_polymarkers: geometry_type attribute is not 'point'.")
+    print("         Will attempt to add shapefile information anyway.")
   end if
 
 ;---Read data off the shapefile
