@@ -6990,7 +6990,8 @@ end
 
 ; ******************************************************************
 ; Dennis Shea
-
+;
+; Note: natgrid returns lon x lat, not lat x lon.
 undef("natgrid_Wrap")
 function natgrid_Wrap (xi[*]:numeric,yi[*]:numeric, fi:numeric \
                       ,xo[*]:numeric,yo[*]:numeric)
@@ -7011,20 +7012,20 @@ begin
 
   dNam = getvardims( yo )
   if (.not.ismissing(dNam)) then
-      fo!(nDimo-2) = dNam
+      fo!(nDimo-1) = dNam
       fo&$dNam$    = yo
   else
-      fo!(nDimo-2) = "y"
+      fo!(nDimo-1) = "y"
       fo&y         = yo
   end if
   delete(dNam)
 
   dNam = getvardims( xo )
   if (.not.ismissing(dNam)) then
-      fo!(nDimo-1) = dNam
+      fo!(nDimo-2) = dNam
       fo&$dNam$    = xo
   else
-      fo!(nDimo-1) = "x"
+      fo!(nDimo-2) = "x"
       fo&x         = xo
   end if
 
