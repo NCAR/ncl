@@ -4229,17 +4229,117 @@ begin
 end
 
 ;***********************************************************************;
+; This function is used by the gsn_add_shapefile_polyxxxx routines to   ;
+; check if a given file is a valid shapefile for plotting. The          ;
+; exp_geom_type must be a string set to point, polyline, or polygon.    ;
+;***********************************************************************;
+undef("is_valid_shapefile")
+function is_valid_shapefile(fin[1]:file,exp_geom_type[1]:string)
+local req_vars, nreqv, n, geom_dims, num_features
+begin
+  if(.not.any(exp_geom_type.eq.(/"polygon","polyline","point"/))) then
+    print("is_valid_shapefile: Error: an internal error has occurred.")
+    print("     Not sure how to check validity of shapefile.")
+    print("     No shapefile information will be added.")
+    return(False)
+  end if
+
+;----------------------------------------------------------------------
+; Test for required variables on shapefile
+;----------------------------------------------------------------------
+  req_vars = (/"x","y","segments","geometry"/)
+  nreqv    = dimsizes(req_vars)
+  do n=0,nreqv-1
+    if(.not.isfilevar(fin,req_vars(n))) then
+      print("is_valid_shapefile: Error: shapefile doesn't have the required '" + req_vars(n) + "'")
+      print("     variable. No shapefile information will be added.")
+      return(False)
+    end if
+  end do
+;----------------------------------------------------------------------
+; Test that we actually have some features in the file.
+;----------------------------------------------------------------------
+  geom_dims    = getfilevardimsizes(fin,"geometry")
+  num_features = geom_dims(0)
+  if(num_features.le.0) then
+    print("is_valid_shapefile: Error: the number of features in the shapefile is <= 0.")
+    print("     No shapefile information will be added.")
+    return(False)
+  end if
+
+;----------------------------------------------------------------------
+; Test "geometry_type" global attribute.
+;----------------------------------------------------------------------
+  if(.not.isatt(fin,"geometry_type")) then
+    if(exp_geom_type.eq."polygon") then
+      print("is_valid_shapefile: Error: shapefile has no 'geometry_type' attribute.")
+      print("     No shapefile polygons will be added.")
+      return(False)
+    elseif(exp_geom_type.eq."polyline") then
+      print("is_valid_shapefile: Warning: shapefile has no 'geometry_type' attribute.")
+      print("     Will attempt to add shapefile polylines anyway.")
+    elseif(exp_geom_type.eq."point") then
+      print("is_valid_shapefile: Warning: shapefile has no 'geometry_type' attribute.")
+      print("     Will attempt to add shapefile markers anyway.")
+    end if
+  elseif(.not.any(fin@geometry_type.eq.(/"point","polygon","polyline"/)))
+    if(exp_geom_type.eq."point") then
+      print("is_valid_shapefile: Warning: geometry_type attribute in shapefile is")
+      print("     not recognized ('" + fin@geometry_type + "').")
+      print("     Will attempt to add shapefile markers anyway.")
+    else
+      print("is_valid_shapefile: Error: geometry_type attribute in shapefile is")
+      print("     not recognized ('" + fin@geometry_type + "').")
+      print("     Will attempt to add shapefile markers anyway.")
+      print("       Perhaps use gsn_add_shapefile_polymarkers to plot this data.")
+      return(False)
+    end if
+  elseif(fin@geometry_type.eq."point".and.any(exp_geom_type.eq.(/"polyline","polygon"/))) then
+    print("is_valid_shapefile: Error: geometry_type attribute in shapefile is")
+    print("     equal to 'point'. Cannot add shapefile polylines or polygons.")
+    print("     Use gsn_add_shapefile_polymarkers to plot this data.")
+    return(False)
+  elseif(any(fin@geometry_type.eq.(/"point","polyline"/)).and.exp_geom_type.eq."polygon") then
+    print("is_valid_shapefile: Error: geometry_type attribute in shapefile is equal")
+    print("     to '" + fin@geometry_type + "'. Cannot add shapefile polygons. Use")
+    print("     gsn_add_shapefile_polymarkers or gsn_add_shapefile_polylines")
+    print("     to plot this data.")
+    return(False)
+  end if
+;----------------------------------------------------------------------
+; Extra tests needed if plotting points. We don't need this for 
+; polylines or polygons, because we can just use gsSegments.
+;----------------------------------------------------------------------
+  if(exp_geom_type.eq."point") then
+    req_gatts = (/"geom_segIndex","geom_numSegs","segs_xyzIndex","segs_numPnts"/)
+    nreqa     = dimsizes(req_gatts)
+    do n=0,nreqa-1
+      if(.not.isatt(fin,req_gatts(n))) then
+        print("is_valid_shapefile: Error: shapefile doesn't have the required")
+        print("     '" + req_gatts(n) + "' global attribute for plotting markers.")
+        print("     No shapefile markers will be added.")
+        return(False)
+      end if
+    end do
+  end if
+
+;---If we've made it this far, then we should have a valid shapefile.
+  return(True)
+end
+
+;***********************************************************************;
 ; Procedure : gsn_shapefile_polylines                                   ;
 ;                   wks: workstation object                             ;
 ;                plotid: plot object                                    ;
 ;                 fname: Name of shapefile ("xxxx.shp")                 ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
+; This code is deprecated. gsn_add_shapefile_polylines should be used.  ;
 ; ANY CHANGES MADE TO THIS CODE SHOULD POTENTIALLY BE MADE TO           ;
 ; gsn_add_shapefile_polylines BELOW!! Note that in V6.2.0, the "add"    ;
 ; version of this code was sped up significantly, so this procedure is  ;
 ; not needed so much anymore.                                           ;
-;
+;                                                                       ;
 ; This function draws shapefile polylines on the plot "plotid".         ;
 ; See gsn_add_shapefile_polylines if you want to add them instead (this ;
 ; can be much slower).                                                  ;
@@ -4261,16 +4361,20 @@ begin
 
 ;---Error checking
   if(ismissing(f)) then
-    print("Error: gsn_shapefile_polylines: Can't open shapefile '" + \
-           fname + "'")
+    print("Error: gsn_shapefile_polylines: Can't open shapefile '" + fname + "'")
     print("       No shapefile information will be added.")
     return(new(1,graphic))
-  end if
-
-;---We can't use this routine to plot point data
-  if(.not.any(f@geometry_type.eq.(/"polygon","polyline"/))) then
-    print("Warning: gsn_shapefile_polylines: geometry_type attribute is not 'polygon' or 'polyline'.")
-    print("         Will attempt to add shapefile information anyway.")
+  elseif(.not.isatt(f,"geometry_type")) then
+    print("Error: gsn_shapefile_polylines: this shapefile has no 'geometry_type' attribute.")
+    print("       No shapefile information will be added.")
+    return(new(1,graphic))
+  elseif(f@geometry_type.eq."point") then
+    print("Error: gsn_shapefile_polylines: geometry_type attribute is equal to 'point'.")
+    print("       Use gsn_add_shapefile_polymarkers to plot this data.")
+    return(new(1,graphic))
+  elseif(.not.any(f@geometry_type.eq.(/"polygon","polyline"/))) then
+    print("Warning: gsn_shapefile_polylines: geometry_type attribute is not equal to 'polygon'")
+    print("         or 'polyline'. Will attempt to add shapefile outlines anyway.")
   end if
 
 ;---Read data off the shapefile
@@ -4366,38 +4470,20 @@ end
 ;***********************************************************************;
 undef("gsn_add_shapefile_polylines")
 function gsn_add_shapefile_polylines(wks,plots[*]:graphic,fname:string,lnres)
-local f, geomDims, numFeatures, lnres2
+local f, geomDims, numFeatures, lnres2, valid_shapefile
 begin
 ;---Open the shapefile
   f = addfile(fname,"r")
 
-;---Error checking
-  if(ismissing(f)) then
-    print("Error: gsn_add_shapefile_polylines: Can't open shapefile '" + \
-           fname + "'")
-    print("       No shapefile information will be added.")
+  valid_shapefile = is_valid_shapefile(f,"polyline")
+  if(.not.valid_shapefile) then
     return(new(1,graphic))
-  end if
-
-;---We can't use this routine to plot point data
-  if(.not.any(f@geometry_type.eq.(/"polygon","polyline"/))) then
-    print("Warning: gsn_add_shapefile_polylines: geometry_type attribute is not 'polygon' or 'polyline'.")
-    print("         Will attempt to add shapefile information anyway.")
   end if
 
   if(lnres) then
     lnres2 = lnres      ; Make a copy so that we don't keep gsSegments
   else
     lnres2 = True
-  end if
-
-;---Read data off the shapefile
-  geomDims    = getfilevardimsizes(f,"geometry")
-  numFeatures = geomDims(0)
-  if(numFeatures.eq.0) then
-    print("Error: gsn_add_shapefile_polylines: the number of features in this file is 0.")
-    print("       No shapefile information will be added.")
-    return(new(1,graphic))
   end if
 
 ;;  segments = f->segments
@@ -4502,18 +4588,9 @@ begin
 ;---Open the shapefile
   f = addfile(fname,"r")
 
-;---Error checking
-  if(ismissing(f)) then
-    print("Error: gsn_add_shapefile_polygons: Can't open shapefile '" + \
-           fname + "'")
-    print("       No shapefile information will be added.")
+  valid_shapefile = is_valid_shapefile(f,"polygon")
+  if(.not.valid_shapefile) then
     return(new(1,graphic))
-  end if
-
-;---We can't use this routine to plot point data
-  if(f@geometry_type.ne."polygon") then
-    print("Warning: gsn_add_shapefile_polygons: geometry_type attribute is not 'polygon'.")
-    print("         Will attempt to add shapefile information anyway.")
   end if
 
 ;---Read data off the shapefile
@@ -4647,18 +4724,9 @@ begin
 ;---Open the shapefile
   f = addfile(fname,"r")
 
-;---Error checking
-  if(ismissing(f)) then
-    print("Error: gsn_add_shapefile_polymarkers: Can't open shapefile '" + \
-           fname + "'")
-    print("       No shapefile information will be added.")
+  valid_shapefile = is_valid_shapefile(f,"point")
+  if(.not.valid_shapefile) then
     return(new(1,graphic))
-  end if
-
-;---We can't use this routine to plot point data
-  if(f@geometry_type.ne."point") then
-    print("Warning: gsn_add_shapefile_polymarkers: geometry_type attribute is not 'point'.")
-    print("         Will attempt to add shapefile information anyway.")
   end if
 
 ;---Read data off the shapefile
