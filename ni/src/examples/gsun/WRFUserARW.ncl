@@ -619,14 +619,22 @@ begin
     ISFILE  = False
     nc_file = file_id[0]
   else
-    print("_get_wrf_var: Invalid file id. Cannot extract requested variable.")
+    print("_get_wrf_var: Error: Invalid file id. Cannot extract requested variable.")
     exit
   end if
 
+  if(.not.isfilevar(nc_file,vname)) then
+    print("_get_wrf_var: Error: Variable '" + vname + \
+          "' does not exist on the requested file(s).")
+    print("   Make sure you have a proper WRF output file that contains the")
+    print("   required variables for the diagnostic you want, or the")
+    print("   variable you want. Use 'ncl_filedump' to look at the file.")
+    exit
+  end if
   dims = getfilevardimsizes(nc_file,vname)
   rank = dimsizes(dims)
   if(rank.gt.6) then
-    print("_get_wrf_var: Cannot extract requested variable " + vname + " with rank="+rank)
+    print("_get_wrf_var: Error: Cannot extract requested variable " + vname + " with rank="+rank)
     exit
   end if
 
@@ -700,14 +708,15 @@ begin
     ISFILE  = False
     nc_file = file_id[0]
   else
-    print("_get_wrf_var_level: Invalid file id. Cannot extract requested variable.")
+    print("_get_wrf_var_level: Error: Invalid file id. Cannot extract requested")
+    print(    " variable ("+vname+")")
     exit
   end if
 
   dims = getfilevardimsizes(nc_file,vname)
   rank = dimsizes(dims)
   if(rank.lt.2.or.rank.gt.6) then
-    print("_get_wrf_var_level: Cannot extract requested variable " + vname + " with rank="+rank)
+    print("_get_wrf_var_level: Error: Cannot extract requested variable " + vname + " with rank="+rank)
     exit
   end if
 
@@ -789,7 +798,7 @@ begin
     ISFILE = False
     nc_file = file_handle[0]
   else
-    print("wrf_user_getvar: error: the first argument must be a file or a list of files opened with addfile or addfiles")
+    print("wrf_user_getvar: Error: the first argument must be a file or a list of files opened with addfile or addfiles")
     return
   end if
 
@@ -834,7 +843,7 @@ begin
          end if  
        end if  
        if(.not.all(isvar((/"u","v","u_in","v_in"/)))) then
-         print("wrf_user_getvar: error: couldn't find variables needed to calculate 'uvmet'")
+         print("wrf_user_getvar: Error: couldn't find variables needed to calculate 'uvmet'")
          return
        end if
 
@@ -937,7 +946,7 @@ begin
        elseif(isfilevar(nc_file,"UU")) then
          getTHIS = "UU"
        else
-         print("wrf_user_getvar: error: cannot find 'U' or 'UU' on the file")
+         print("wrf_user_getvar: Error: cannot find 'U' or 'UU' on the file")
          return
        end if
        var = _get_wrf_var(file_handle,getTHIS,time)
@@ -954,7 +963,7 @@ begin
        elseif(isfilevar(nc_file,"VV")) then
          getTHIS = "VV"
        else
-         print("wrf_user_getvar: error: cannot find 'V' or 'VV' on the file")
+         print("wrf_user_getvar: Error: cannot find 'V' or 'VV' on the file")
          return
        end if
        var = _get_wrf_var(file_handle,getTHIS,time)
@@ -985,7 +994,7 @@ begin
          ;; may be a met_em file - see if we can get PRES
          var = _get_wrf_var(file_handle,"PRES",time)
        else
-         print("wrf_user_getvar: error: cannot find 'P' or 'PRES' on the file")
+         print("wrf_user_getvar: Error: cannot find 'P' or 'PRES' on the file")
          return
        end if
        var@description = "Pressure"
@@ -1013,7 +1022,7 @@ begin
          z@description = "Geopotential"
          z@units       = "m2 s-2"
        else
-         print("wrf_user_getvar: error: cannot find 'PH' or 'GHT' on the file")
+         print("wrf_user_getvar: Error: cannot find 'PH' or 'GHT' on the file")
          return
        end if
 
@@ -1051,7 +1060,7 @@ begin
        elseif(isfilevar(nc_file,"TT")) then
          t = _get_wrf_var(file_handle,"TT",time)
        else
-         print("wrf_user_getvar: error: cannot find 'T' or 'TT' on the file")
+         print("wrf_user_getvar: Error: cannot find 'T' or 'TT' on the file")
          return
        end if  
        if( variable .eq. "tc" ) then
@@ -1132,7 +1141,7 @@ begin
          ;; may be a met_em file - see if we can get PMSL
          slp = _get_wrf_var(file_handle,"PMSL",time)
        else
-         print("wrf_user_getvar: error: cannot find 'PMSL' or 'T' on the file")
+         print("wrf_user_getvar: Error: cannot find 'PMSL' or 'T' on the file")
          return
        end if  
 
@@ -1159,7 +1168,7 @@ begin
          ;; may be a met_em file - see if we can get RH
          rh = _get_wrf_var(file_handle,"RH",time)
        else
-         print("wrf_user_getvar: error: cannot find 'T' or 'RH' on the file")
+         print("wrf_user_getvar: Error: cannot find 'T' or 'RH' on the file")
          return
        end if  
        return(rh)
@@ -1182,7 +1191,7 @@ begin
          print("Probably a met_em file - get lowest level from RH field")
          rh2 = _get_wrf_var_level(file_handle,"RH",time,0)
        else
-         print("wrf_user_getvar: error: cannot find 'T2' or 'RH' on the file")
+         print("wrf_user_getvar: Error: cannot find 'T2' or 'RH' on the file")
          return
        end if  
        return(rh2)
@@ -1425,7 +1434,7 @@ begin
          getU = "UU"
          getV = "VV"
        else
-         print("wrf_user_getvar: error: cannot find 'U' or 'UU' on the file")
+         print("wrf_user_getvar: Error: cannot find 'U' or 'UU' on the file")
          return
        end if
        u_in   = _get_wrf_var(file_handle,getU,time)
@@ -1486,7 +1495,7 @@ begin
          getU = "UU"
          getV = "VV"
        else
-         print("wrf_user_getvar: error: cannot find 'U' or 'UU' on the file")
+         print("wrf_user_getvar: Error: cannot find 'U' or 'UU' on the file")
          return
        end if
        u_in   = _get_wrf_var(file_handle,getU,time)
@@ -1855,7 +1864,7 @@ begin
 
 ;---As of NCL V6.0.0, wrf_user_getvar can now handle a file or a list of files.
   if(all(typeof(nc_file).ne.(/"file","list"/))) then
-    print("wrf_user_list_times: error: the input argument must be a file or a list of files opened with addfile or addfiles")
+    print("wrf_user_list_times: Error: the input argument must be a file or a list of files opened with addfile or addfiles")
     return
   end if
 
@@ -1916,7 +1925,7 @@ begin
     ISFILE = False
     nc_file = file_handle[0]
   else
-    print("wrf_user_ll_to_ij: error: the first argument must be a file or a list of files opened with addfile or addfiles")
+    print("wrf_user_ll_to_ij: Error: the first argument must be a file or a list of files opened with addfile or addfiles")
     return
   end if
 
@@ -2008,7 +2017,7 @@ begin
     ISFILE = False
     nc_file = file_handle[0]
   else
-    print("wrf_user_ij_to_ll: error: the first argument must be a file or a list of files opened with addfile or addfiles")
+    print("wrf_user_ij_to_ll: Error: the first argument must be a file or a list of files opened with addfile or addfiles")
     return
   end if
 
@@ -2100,7 +2109,7 @@ begin
     ISFILE = False
     nc_file = file_handle[0]
   else
-    print("wrf_user_vert_interp: error: the first argument must be a file or a list of files opened with addfile or addfiles")
+    print("wrf_user_vert_interp: Error: the first argument must be a file or a list of files opened with addfile or addfiles")
     return
   end if
 
@@ -2356,7 +2365,7 @@ begin
   if(first_time) then
     if(fileexists(cdf_debug_file).or.fileexists(ncl_debug_file).or.\
        fileexists(res_debug_file)) then
-      print("write_wrf_debug_info: error: debug files '" + cdf_debug_file + "',")
+      print("write_wrf_debug_info: Error: debug files '" + cdf_debug_file + "',")
       print("'" + ncl_debug_file + "' and/or " + res_debug_file + " exist.")
       print("Please remove file(s) and start script again.")
       exit
@@ -3043,7 +3052,7 @@ begin
           if(isatt(in_file,"CEN_LON"))
             opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
           else
-           print("ERROR: Found neither STAND_LON or CEN_LON in file")
+           print("set_mp_wrf_map_resources: Error: Found neither STAND_LON or CEN_LON in file")
           end if
         end if
       end if
@@ -3060,7 +3069,7 @@ begin
           if(isatt(in_file,"CEN_LON"))
             opts@mpLambertMeridianF  = get_res_value_keep(opts, "mpLambertMeridianF",in_file@CEN_LON)
           else
-           print("ERROR: Found neither STAND_LON or CEN_LON in file")
+           print("set_mp_wrf_map_resources: error: Found neither STAND_LON or CEN_LON in file")
           end if
         end if
       end if
@@ -3076,7 +3085,7 @@ begin
           if(isatt(in_file,"CEN_LON"))
             opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
           else
-           print("ERROR: Found neither STAND_LON or CEN_LON in file")
+           print("set_mp_wrf_map_resources: Error: Found neither STAND_LON or CEN_LON in file")
           end if
         end if
       end if
@@ -3092,7 +3101,7 @@ begin
           if(isatt(in_file,"CEN_LON"))
             opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
           else
-           print("ERROR: Found neither STAND_LON or CEN_LON in file")
+           print("set_mp_wrf_map_resources: Error: Found neither STAND_LON or CEN_LON in file")
           end if
         end if
       end if
@@ -3641,7 +3650,7 @@ begin
   elseif(grid_to_plot.eq.1) then
   ; print("Plotting using edges of the corner grid cells")
   else
-   print("ERROR: Invalid value for grid_to_plot = "+grid_to_plot)
+   print("wrf_wps_dom: Error: Invalid value for grid_to_plot = "+grid_to_plot)
   end if
   ;BPR END
 
@@ -3703,7 +3712,7 @@ begin
   elseif(grid_to_plot.eq.1) then
    adjust_grid = 0.5 
   else 
-   print("ERROR: Invalid value for grid_to_plot = "+grid_to_plot)
+   print("wrf_wps_dom: Error: Invalid value for grid_to_plot = "+grid_to_plot)
    adjust_grid = 0.0 
   end if
 
@@ -3782,7 +3791,7 @@ begin
         elseif(grid_to_plot.eq.1) then
           adjust_grid = 0.5/(1.0*mpres@parent_grid_ratio(idom))
         else 
-          print("ERROR: Invalid value for grid_to_plot = "+grid_to_plot)
+          print("wrf_wps_dom : Error: Invalid value for grid_to_plot = "+grid_to_plot)
           adjust_grid = 0.0 
         end if
         
@@ -3807,7 +3816,7 @@ begin
         elseif(grid_to_plot.eq.1) then
           adjust_grid = 0.5/(1.0*mpres@parent_grid_ratio(idom)) 
         else 
-          print("ERROR: Invalid value for grid_to_plot = "+grid_to_plot)
+          print("wrf_wps_dom: Error: Invalid value for grid_to_plot = "+grid_to_plot)
           adjust_grid = 0.0 
         end if
 
@@ -3828,7 +3837,7 @@ begin
           elseif(grid_to_plot.eq.1) then
             adjust_grid = adjust_grid/(1.0*mpres@parent_grid_ratio(nd-1))
           else 
-            print("ERROR: Invalid value for grid_to_plot = "+grid_to_plot)
+            print("wrf_wps_dom: Error: Invalid value for grid_to_plot = "+grid_to_plot)
             adjust_grid = 0.0 
           end if
 
@@ -3938,7 +3947,7 @@ begin
           if(isatt(in_file,"CEN_LON"))
             map_args@mpCenterLonF  = get_res_value_keep(map_args, "mpCenterLonF",in_file@CEN_LON)
           else
-           print("ERROR: Found neither STAND_LON or CEN_LON in file")
+           print("wrf_map_resources: Error: Found neither STAND_LON or CEN_LON in file")
           end if
         end if
       end if
@@ -3954,7 +3963,7 @@ begin
           if(isatt(in_file,"CEN_LON"))
             map_args@mpLambertMeridianF  = get_res_value_keep(map_args, "mpLambertMeridianF",in_file@CEN_LON)
           else
-           print("ERROR: Found neither STAND_LON or CEN_LON in file")
+           print("wrf_map_resources: Error: Found neither STAND_LON or CEN_LON in file")
           end if
         end if
       end if
@@ -3969,7 +3978,7 @@ begin
           if(isatt(in_file,"CEN_LON"))
             map_args@mpCenterLonF  = get_res_value_keep(map_args, "mpCenterLonF",in_file@CEN_LON)
           else
-           print("ERROR: Found neither STAND_LON or CEN_LON in file")
+           print("wrf_map_resources: Error: Found neither STAND_LON or CEN_LON in file")
           end if
         end if
       end if
@@ -3984,7 +3993,7 @@ begin
           if(isatt(in_file,"CEN_LON"))
             map_args@mpCenterLonF  = get_res_value_keep(map_args, "mpCenterLonF",in_file@CEN_LON)
           else
-           print("ERROR: Found neither STAND_LON or CEN_LON in file")
+           print("wrf_map_resources: Error: Found neither STAND_LON or CEN_LON in file")
           end if
         end if
       end if
