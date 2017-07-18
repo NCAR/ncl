@@ -199,29 +199,41 @@ static char* _mapOGRGeom2Ncl
 OGRwkbGeometryType type;
 #endif
 {
-        switch (type) {
-                case wkbPoint:  
-                case wkbMultiPoint:
-                case wkbPoint25D:
-                case wkbMultiPoint25D:
-                        return "point";
+    switch (type) {
+        case wkbPoint:
+        case wkbMultiPoint:
+        case wkbPoint25D:
+        case wkbMultiPoint25D:
+        case wkbPointM:
+        case wkbPointZM:
+        case wkbMultiPointM:
+        case wkbMultiPointZM:
+            return "point";
 
-                case wkbLineString:
-                case wkbMultiLineString:
-                case wkbLineString25D:
-                case wkbMultiLineString25D:
-                        return "polyline";
-  
-                case wkbPolygon:
-                case wkbMultiPolygon:
-                case wkbPolygon25D:
-                case wkbMultiPolygon25D:
-                        return "polygon";
-	        default:
-			return "unknown";
-        }
+        case wkbLineString:
+        case wkbMultiLineString:
+        case wkbLineString25D:
+        case wkbMultiLineString25D:
+        case wkbLineStringM:
+        case wkbLineStringZM:
+        case wkbMultiLineStringM:
+        case wkbMultiLineStringZM:
+            return "polyline";
 
-        return "unknown";            
+        case wkbPolygon:
+        case wkbMultiPolygon:
+        case wkbPolygon25D:
+        case wkbMultiPolygon25D:
+        case wkbPolygonM:
+        case wkbPolygonZM:
+        case wkbMultiPolygonM:
+        case wkbMultiPolygonZM:
+            return "polygon";
+        default:
+            return "unknown";
+    }
+
+    return "unknown";            
 }
 
 /*
