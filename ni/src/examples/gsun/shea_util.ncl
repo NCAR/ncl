@@ -5039,7 +5039,6 @@ begin
   end getvalues
   yrange = ymax - ymin
   xrange = xmax - xmin
-
   if (.not.isatt(genres,"ItemSpacePercent")) then
      genres@ItemSpacePercent = 5.
   end if
@@ -5064,11 +5063,11 @@ begin
 
   if (isatt(genres,"YPosPercent")) then
      YPos = genres@YPosPercent/100.
-     if (genres@Position.eq."Bottom") then  ; modify YPosPercent when doing bottom label so that first label is on top
+     if (str_lower(genres@Position).eq."bottom") then  ; modify YPosPercent when doing bottom label so that first label is on top
         YPos = YPos+((numItems-1)*(genres@ItemSpacePercent/100.))
      end if
   else
-     if (genres@Position.eq."Bottom") then
+     if (str_lower(genres@Position).eq."bottom") then
         YPos = 0.05   ; set default
      else
         YPos = 0.95   ; set default
@@ -5100,12 +5099,15 @@ begin
         x_text_start = x_line_end+(xrange*0.03)    ; set default
      end if
      if (isatt(lineres,"lgLineColors")) then
-        if (dimsizes(lineres@lgLineColors).eq.1.or.dimsizes(lineres@lgLineColors).ne.dimsizes(labelres@lgLabels)) then
-           zres@gsLineColor = lineres@lgLineColors(0)
-        else
-           zres@gsLineColor = lineres@lgLineColors(gg)
-        end if
+       colors = convert_color_to_rgba(wksp,lineres@lgLineColors)
+       if (dimsizes(colors(:,0)).eq.1.or.\
+           dimsizes(colors(:,0)).ne.dimsizes(labelres@lgLabels)) then
+         zres@gsLineColor = colors(0,:)
+       else
+         zres@gsLineColor = colors(gg,:)
+       end if
      end if
+
      if (isatt(lineres,"lgLineOpacity")) then
         if (dimsizes(lineres@lgLineOpacity).eq.1.or.dimsizes(lineres@lgLineOpacity).ne.dimsizes(labelres@lgLabels)) then
            zres@gsLineOpacityF = lineres@lgLineOpacity(0)
@@ -5139,10 +5141,11 @@ begin
         end if
      end if
      if (isatt(labelres,"lgLabelColors")) then
-        if (dimsizes(labelres@lgLabelColors).eq.1.or.dimsizes(labelres@lgLabelColors).ne.dimsizes(labelres@lgLabels)) then
-           txres@txFontColor = labelres@lgLabelColors(0)
+        colors := convert_color_to_rgba(wksp,labelres@lgLineColors)
+        if (dimsizes(colors(:,0)).eq.1.or.dimsizes(colors(:,0)).ne.dimsizes(labelres@lgLabels)) then
+           txres@txFontColor = colors(0,:)
         else
-           txres@txFontColor = labelres@lgLabelColors(gg)
+           txres@txFontColor = colors(gg,:)
         end if
      end if
      if (isatt(labelres,"lgLabelOpacity")) then
