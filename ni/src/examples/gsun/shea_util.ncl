@@ -5026,11 +5026,26 @@ end
 ;; Adam Phillips
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 undef("simple_legend") 
-function simple_legend(wksp:graphic,xyplot:graphic,genres:logical,lineres:logical,labelres:logical)
+function simple_legend(wksp:graphic,xyplot:graphic,genres_orig:logical,\
+                       lineres_orig:logical,labelres_orig:logical)
 local wksp,xyplot,genres,lineres,labelres,XPos,YPos,numitems,xrange,yrange,incr,y_pos,x_line_start,\
-      x_line_end,x_text_start,x_text_end
+      x_line_end,x_text_start,x_text_end,genres,lineres,labelres
 
 begin
+;---Make copies of these so we don't change original resource lists.
+  genres   = genres_orig
+  lineres  = lineres_orig
+  labelres = labelres_orig
+
+  if (isatt(labelres,"lgLabels")) then
+     numItems = dimsizes(labelres@lgLabels)
+  else
+     print("simple_legend: Fatal: Legend labels must be set using lgLabels.")
+     print("  If empty labels are required, set lgLabels resource to an empty")
+     print("  string array dimensioned equal to the number of legend lines.")
+     exit
+  end if
+
   getvalues xyplot
     "trYMinF" : ymin
     "trYMaxF" : ymax
@@ -5039,27 +5054,16 @@ begin
   end getvalues
   yrange = ymax - ymin
   xrange = xmax - xmin
-  if (.not.isatt(genres,"ItemSpacePercent")) then
-     genres@ItemSpacePercent = 5.
-  end if
+
+;---Set some defaults
+  genres@ItemSpacePercent           = get_res_value_keep(genres,"ItemSpacePercent",5.)
+  genres@Position                   = get_res_value_keep(genres,"Position","Top")
+  genres@XPosPercent                = get_res_value_keep(genres,"XPosPercent",5.)
+  genres@LineLabelWhiteSpacePercent = get_res_value_keep(genres,"LineLabelWhiteSpacePercent",3.)
+  lineres@LineLengthPercent         = get_res_value_keep(lineres,"LineLengthPercent",7.)
+
   incr = (genres@ItemSpacePercent/100.)*yrange*-1.
-
-  if (.not.isatt(genres,"Position")) then   ; set default
-     genres@Position = "Top"
-  end if
-
-  if (isatt(labelres,"lgLabels")) then
-     numItems = dimsizes(labelres@lgLabels)
-  else
-     print("simple_legend: Fatal: Legend labels must be set using lgLabels. If empty labels are required set lgLabels resource to an empty string array dimenensioned equal to the number of legend lines.")
-     exit
-  end if
-
-  if (isatt(genres,"XPosPercent")) then
-     XPos = genres@XPosPercent/100.
-  else
-     XPos = 0.05     ; set default
-  end if
+  XPos = genres@XPosPercent/100.
 
   if (isatt(genres,"YPosPercent")) then
      YPos = genres@YPosPercent/100.
@@ -5079,7 +5083,6 @@ begin
   txres@txFontHeightF = 0.015
 
   zres = True
-
   polyres = True
   do gg = 0,numItems-1
      if (gg.eq.0) then
@@ -5088,16 +5091,8 @@ begin
         y_pos = y_pos+incr
      end if
      x_line_start = xmin+(XPos*xrange)   ; position of start of legend line
-     if (isatt(lineres,"LineLengthPercent")) then
-        x_line_end = x_line_start+(xrange*(lineres@LineLengthPercent/100.))
-     else
-        x_line_end = x_line_start+(xrange*.07)    ; set default
-     end if
-     if (isatt(genres,"LineLabelWhiteSpacePercent")) then
-        x_text_start = x_line_end+(xrange*(genres@LineLabelWhiteSpacePercent/100.))
-     else
-        x_text_start = x_line_end+(xrange*0.03)    ; set default
-     end if
+     x_line_end   = x_line_start+(xrange*(lineres@LineLengthPercent/100.))
+     x_text_start = x_line_end+(xrange*(genres@LineLabelWhiteSpacePercent/100.))
      if (isatt(lineres,"lgLineColors")) then
        colors = convert_color_to_rgba(wksp,lineres@lgLineColors)
        if (dimsizes(colors(:,0)).eq.1.or.\
@@ -5141,7 +5136,7 @@ begin
         end if
      end if
      if (isatt(labelres,"lgLabelColors")) then
-        colors := convert_color_to_rgba(wksp,labelres@lgLineColors)
+        colors := convert_color_to_rgba(wksp,labelres@lgLabelColors)
         if (dimsizes(colors(:,0)).eq.1.or.dimsizes(colors(:,0)).ne.dimsizes(labelres@lgLabels)) then
            txres@txFontColor = colors(0,:)
         else
