@@ -3858,6 +3858,12 @@ static NhlErrorTypes mpSetUpDataHandler
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNmpDataResolution,mpp->data_resolution);
 		}
+/* added 7/13/17 */
+		else if (mpp->database_version == NhlNCARG4_1) {
+			if (mpp->data_set_name != ompp->data_set_name)
+				NhlSetSArg(&sargs[nargs++], NhlNmpDataSetName, mpp->data_set_name);
+		}
+/* end addition */
 		subret = NhlALSetValues(mpp->map_data_handler->base.id,
                                         sargs,nargs);
 	}
