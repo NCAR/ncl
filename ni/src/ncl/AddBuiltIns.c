@@ -1858,7 +1858,7 @@ void _NclAddBuiltIns
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"snumeric",0,NclANY); nargs++;
 	NclRegisterFunc( _Nclproduct,args,"product",nargs);
 
 	nargs = 0;
