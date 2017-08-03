@@ -1062,7 +1062,7 @@ end
 ; value, this function returns an index value into the colormap
 ; to use for representing the single value
 ;
-; This function is very similar to the get_color_rgb function,
+; This function is very similar to the get_color_rgba function,
 ; except it returns the index value into the color map, rather
 ; than an RGBA value.
 ;
@@ -1070,10 +1070,12 @@ end
 ; of RGB (n,3) or RGBA (n,4).
 ;
 ; This function replaces the deprecated GetFillColor.
+;
+; This function was updated in 6.5.0 to allow values to be an array.
 ;***********************************************************************
 undef("get_color_index")
-function get_color_index(cmapt,cnlvls[*]:numeric,value[1]:numeric)
-local cmap, dims, ncn, nclr, color, n, col_indexes, ncoli
+function get_color_index(cmapt,cnlvls[*]:numeric,values:numeric)
+local cmap, dims, ncn, nclr, color, n, col_indexes, values1d, indexes
 begin
 
  if(isstring(cmapt)) then
@@ -1098,29 +1100,51 @@ begin
    print ("get_color_index: Warning: Not enough colors in colormap for number of requested levels")
    print ("         Colors will be repeated")
  end if
- if (ismissing(value)) then
-   print ("get_color_index: Error: Input value is missing")
+ if (any(ismissing(values))) then
+   print ("get_color_index: Error: More or more input values are missing.")
+   print("    Returning missing.")
    return (imsg)
  end if
  if (any(ismissing(cnlvls))) then
-   print ("get_color_index: Error: One or more input contour levels are missing")
+   print ("get_color_index: Error: One or more input contour levels are missing.")
+   print("    Returning missing.")
    return (imsg)
  end if
 
 ;---Get nice span of indexes throughout the color map
- col_indexes = span_color_indexes(cmap,dimsizes(cnlvls)+1)
- ncoli       = dimsizes(col_indexes)    ; should be ncn+1
+ col_indexes = span_color_indexes(cmap,ncn+1)
 
- do n = 0, ncn-1
-   if (value .lt. cnlvls(n)) then
-     break
+;
+; Convert values array to 1D so we can work with it easier. Will 
+; convert back to nD when done.
+;
+ values1d    = ndtooned(values)
+ values_dims = dimsizes(values)
+ nvals       = dimsizes(values1d)
+ indexes     = new(nvals,integer)
+
+;---first level
+ ii = ind(values1d .lt. cnlvls(0))
+ if(.not.ismissing(ii(0))) then
+    indexes(ii) = 0
+ end if
+;---middle levels
+ do n = 1, ncn-1
+   ii := ind(values1d .ge. cnlvls(n-1) .and. values1d .lt. cnlvls(n))
+   if(.not.ismissing(ii(0))) then
+     indexes(ii) = n
    end if
  end do
- if(isstring(cmapt)) then
-   return(col_indexes(n)+2)    ; Account for 0/1 index being dropped
-  else
-   return(col_indexes(n))
+;---last level
+ ii := ind(values1d .ge. cnlvls(ncn-1))
+ if(.not.ismissing(ii(0))) then
+    indexes(ii) = ncn
  end if
+
+ if(isstring(cmapt)) then
+   col_indexes(indexes) = col_indexes(indexes)+2    ; Account for 0/1 index being dropped
+ end if
+ return(reshape(col_indexes(indexes),values_dims))
 end
 
 ;***********************************************************************
@@ -1134,25 +1158,51 @@ end
 ;
 ; The colormap can be a named colormap, like "rainbow", or an array
 ; of RGB (n,3) or RGBA (n,4).
+;
+; This function was updated in 6.5.0 to allow values to be an array.
 ;***********************************************************************
 undef("get_color_rgba")
-function get_color_rgba(cmapt,cnlvls[*]:numeric,value[1]:numeric)
-local fmsg, icol, cmap
+function get_color_rgba(cmapt,cnlvls[*]:numeric,values:numeric)
+local fmsg, icol, cmap, values_dims, values_rank, return_dims, rgb_rank
 begin
  fmsg = new(4,float)          ; missing value
- icol = get_color_index(cmapt,cnlvls,value)
+ icol = get_color_index(cmapt,cnlvls,ndtooned(values))
 
- if (ismissing(icol)) then
+ if (any(ismissing(icol))) then
+   print("get_color_rgba: error: invalid input values. Returning missing.")
    return (fmsg)
+ end if
+
+
+ dims = dimsizes(cmapt)
+ if(isstring(cmapt)) then
+   rgb_rank = 4
+ else
+   if(dimsizes(dims).ne.2.or..not.any(dims(1).eq.(/3,4/))) then
+     print("get_color_rgba: error: input color map must be a predefined color map name")
+     print("     or a 2D array of RGB or RGBA values. Returning missing.")
+     return (fmsg)
+   end if
+   rgb_rank = dims(1)
+ end if
+   
+ if(isscalar(values)) then
+   return_dims = rgb_rank
+ else
+   values_dims = dimsizes(values)
+   values_rank = dimsizes(values_dims)
+   return_dims = new(values_rank+1,typeof(values_dims))
+   return_dims(0:values_rank-1) = values_dims
+   return_dims(values_rank)     = rgb_rank
  end if
 
  if(isstring(cmapt)) then
    cmap = read_colormap_file(cmapt)
-   return(cmap(icol-2,:))    ; Indexes start at 2
+   icol = icol-2    ; Indexes returned by get_color_index start at 2
  else
    cmap = cmapt
-   return(cmap(icol,:))
  end if
+ return(reshape(cmap(icol,:),return_dims))
 end
 
 
