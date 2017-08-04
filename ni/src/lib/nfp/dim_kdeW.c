@@ -16,7 +16,6 @@ NhlErrorTypes dim_kde_W( void )
  */
   void *x;
   double *tmp_x = NULL;
-  double *tmp_input = NULL;
   int       ndims_x;
   ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
   int has_missing_x;
@@ -55,17 +54,22 @@ NhlErrorTypes dim_kde_W( void )
  * Attribute variables
  */
   int att_id;
-  NclMultiDValData att_md;
+  double *tmp_h = NULL;
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+  int ndims_h;
+  ng_size_t *dsizes_h;
 
 /*
  * Various
  */
   int size_total, m;
   int index_x, index_kde;
-  double h;
+  double *h;
   int i, j, k, size_output, ret;
   int ndims_leftover, size_leftover;
-  ng_size_t *dsizes_leftover;
+/*  ng_size_t *dsizes_leftover; */
   int ndims_leftmost, size_leftmost;
   ng_size_t *dsizes_leftmost;
   int ndims_rightmost, size_rightmost;
@@ -130,75 +134,82 @@ NhlErrorTypes dim_kde_W( void )
            DONT_CARE);
 
 /*
+ * Determine dims
+ */
+  ndims_dims = dsizes_dims[0];
+  int first_dim = ((int *)dims)[0];
+  int last_dim;
+  if(ndims_dims == 1)
+    last_dim = first_dim;
+  else
+    last_dim = ((int *)dims)[ndims_dims - 1];
+  if(first_dim < 0 || first_dim >= ndims_x || last_dim < 0 || last_dim >= ndims_x) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: invalid dims");
+    return(NhlFATAL);
+  }
+
+/*
  * Calculate size of leftmost dimensions.
  */
   int dim;
   int previous_dim = -1;
   for(i = 0; i < dsizes_dims[0]; i++) {
     dim = ((int *)dims)[i];
-    if((dim != previous_dim + 1) && (previous_dim != -1))
+    if((dim != previous_dim + 1) && (previous_dim != -1)) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: dims must be consecutive and monotonically increasing");
+      return(NhlFATAL);
+    }
     previous_dim = dim;
   }
 
-  ndims_dims = dsizes_dims[0];
-  int first_dim = ((int *)dims)[0];
-  int last_dim;
-  printf("ndims_dims: %d\n", ndims_dims);
-  if(ndims_dims == 1) 
-    last_dim = first_dim;
-  else
-    last_dim = ((int *)dims)[ndims_dims - 1];
+  if (ndims_x == ndims_dims) {
+    ndims_h = 1;
+  } else {
+    ndims_h = ndims_x - ndims_dims;
+  }
+  /* make this float eventually */
+  dsizes_h = (ng_size_t *)calloc(ndims_h,sizeof(ng_size_t));
+  if(dsizes_h == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: Unable to allocate memory for attribute dsizes array");
+    return(NhlFATAL);
+  }
+  /* initialize to 1 in case h is a scalar */
+  dsizes_h[0] = 1;
 
-  if(first_dim < 0 || first_dim >= ndims_x)
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: invalid dims");
-  else {
-    size_leftmost = 1;
-    ndims_leftmost = 0;
-    for(i = 0; i < first_dim; i++) {
-      size_leftmost *= dsizes_x[i];
-      ndims_leftmost++;
-    }
+  size_leftmost = 1;
+  ndims_leftmost = 0;
+  for(i = 0; i < first_dim; i++) {
+    size_leftmost *= dsizes_x[i];
+    dsizes_h[i] = dsizes_x[i];
+    ndims_leftmost++;
   }
 
-  if(last_dim < 0 || last_dim >= ndims_x)
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: invalid dims");
-  else {
-    size_rightmost = 1;
-    ndims_rightmost = 0;
-    for(i = last_dim + 1; i < ndims_x; i++) {
-      size_rightmost *= dsizes_x[i];
-      ndims_rightmost++;
-    }
+  size_rightmost = 1;
+  ndims_rightmost = 0;
+  for(i = last_dim + 1; i < ndims_x; i++) {
+    size_rightmost *= dsizes_x[i];
+    dsizes_h[i - ndims_dims] = dsizes_x[i];
+    ndims_rightmost++;
   }
 
   size_leftover = size_leftmost * size_rightmost;
   ndims_leftover = ndims_leftmost + ndims_rightmost;
   size_middle = size_total / size_leftover;
 
-  printf("size_leftmost: %d\n", size_leftmost);
-  printf("ndims_leftmost: %d\n", ndims_leftmost);
-  printf("size_rightmost: %d\n", size_rightmost);
-  printf("ndims_rightmost: %d\n", ndims_rightmost);
-  printf("size_leftover: %d\n", size_leftover);
-  printf("ndims_leftover: %d\n", ndims_leftover);
-
-  printf("first_dim: %d\n", first_dim);
-  printf("last_dim: %d\n", last_dim);
-
-/* assume size_leftmost and ndims_leftmost =1 for now
-  ndims_leftmost = ndims_x-1;
-  for(i = 0; i < ndims_leftmost; i++) {
-    size_leftmost *= dsizes_x[i];
-  }
-*/
-
-/* 
+/*
  * Allocate space for coercing input arrays.  If any of the input
  * is already double, then we don't need to allocate space for
  * temporary arrays, because we'll just change the pointer into
  * the void array appropriately.
  */
+/*
+ * Allocate space for h.
+ */
+  h = (double *)calloc(size_leftover,sizeof(double));
+  if(h == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: Unable to allocate memory for attribute array");
+    return(NhlFATAL);
+  }
 /*
  * Allocate space for tmp_x.
  */
@@ -208,16 +219,6 @@ NhlErrorTypes dim_kde_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
     }
-/*
- * Allocate space for tmp_input.
- */
-/*
-  tmp_input = (double *)calloc(size_leftover,sizeof(double));
-  if(tmp_input == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_input: Unable to allocate memory for temporary input array");
-    return(NhlFATAL);
-  }
-*/
 /*
  * The output type defaults to float, unless this input array is double.
  */
@@ -234,15 +235,13 @@ NhlErrorTypes dim_kde_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: Unable to allocate memory for coercing input array to double");
     return(NhlFATAL);
   }
-for(i = 0; i < m; i++) printf("%f\n", ((float *)bin) + i);
-for(i = 0; i < m; i++) printf("%f\n", tmp_bin + i);
 
 /*
  * Calculate size of output array.
  */
   size_output = size_leftover * m;
 
-/* 
+/*
  * Allocate space for output array.
  */
   if(type_kde != NCL_double) {
@@ -268,11 +267,11 @@ for(i = 0; i < m; i++) printf("%f\n", tmp_bin + i);
     missing_dbl_kde = missing_dbl_x;
   }
 
-/* 
+/*
  * Allocate space for output dimension sizes and set them.
  */
   ndims_kde = ndims_leftover + 1;
-  dsizes_kde = (ng_size_t*)calloc(ndims_kde,sizeof(ng_size_t));  
+  dsizes_kde = (ng_size_t*)calloc(ndims_kde,sizeof(ng_size_t));
   if( dsizes_kde == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
@@ -289,89 +288,42 @@ for(i = 0; i < m; i++) printf("%f\n", tmp_bin + i);
   }
   dsizes_kde[ndims_kde-1] = m;
 
-
-  for(i = 0; i < ndims_kde; i++) printf("%d\n", dsizes_kde[i]);
-
-
 /*
  * Loop across leftover dimensions and call the Fortran routine for each
  * subsection of the input arrays.
  */
   index_x = index_kde = 0;
 
-#ifdef DEBUG
-/*
-      printf("size_leftover: %d\n", size_leftover);
-*/
-#endif
+int index_h = 0;
+int index_nr;
+int index_nrx;
 
   for(i = 0; i < size_leftmost; i++) {
-    offset_to_major_chunk = i * size_rightmost * size_middle;
+    index_nrx = i * size_rightmost * size_middle;
+    index_nr = i * size_rightmost;
     for(j = 0; j < size_rightmost; j++) {
-      index_kde = m * (i + j);
-      offset_to_minor_chunk = j * size_middle;
+      index_x = index_nrx + j;
+      index_kde = (i + j) * m;
 
 /*
  * Coerce subsection of x (tmp_x) to double if necessary.
  */
-      for(k = 0; k < size_middle; k++) {
-        // read size_middle/mult(middle_dims) at  j * size_rightmost
-        if(type_x != NCL_double) {
-          /*coerce_subset_input_double(x,tmp_x,offset_to_major_chunk + offset_to_minor_chunk,type_x,size_leftover,0,NULL,NULL);*/
-          /*coerce_subset_input_double(x,tmp_x + k,offset_to_major_chunk + offset_to_minor_chunk + k * size_rightmost,type_x,1,0,NULL,NULL);*/
-          coerce_subset_input_double(x,tmp_x + k,offset_to_major_chunk + offset_to_minor_chunk + k,type_x,1,0,NULL,NULL);
-/*
-          printf("maj min: %d %d\n", offset_to_major_chunk, offset_to_minor_chunk);
-          printf("x[%d]: %f\n", offset_to_major_chunk + offset_to_minor_chunk + k, *((float *)x + offset_to_major_chunk + offset_to_minor_chunk + k));
-          printf("tmp_x[%d]: %f\n", k, *(tmp_x + k));
-          printf("combined_offset: %d\n", k + offset_to_major_chunk + offset_to_minor_chunk);
-*/
-        }
-        else {
-          /*tmp_x = memcpy(tmp_x + k * size_middle, x + offset_to_major_chunk + offset_to_minor_chunk, size_leftover);*/
-          tmp_x = memcpy(tmp_x + k * size_middle, x + offset_to_major_chunk + offset_to_minor_chunk, sizeof(double));
-        }
-      }
+      coerce_subset_input_double_step(x,tmp_x,index_x,size_rightmost,type_x,size_middle,0,NULL,NULL);
 
-/*
-      if(type_x != NCL_double) {
-        coerce_subset_input_double(x,tmp_x,index_x,type_x,n,0,NULL,NULL);
-      }
-      else {
-        tmp_x = &((double*)x)[index_x];
-      }
-*/ 
 /*
  * Point temporary output array to void output array if appropriate.
  */
       if(type_kde == NCL_double) tmp_kde = &((double*)kde)[index_kde];
-    
-    
+
 /*
  * Call the Fortran routine.
  */
-      NGCALLF(kerdeni,KERDENI)(tmp_x, &size_middle, &missing_dbl_x.doubleval, tmp_bin, &m, tmp_kde, &h);
-int a;
-for(a = 0; a < size_middle; a ++) printf("%f\n", tmp_x[a]);
-for(a = 0; a < m; a ++) printf("%f\n", tmp_kde[a]);
-for(a = 0; a < m; a ++) printf("%f\n", tmp_bin[a]);
+      NGCALLF(kerdeni,KERDENI)(tmp_x, &size_middle, &missing_dbl_x.doubleval, tmp_bin, &m, tmp_kde, &h[index_h++]);
 
-/*
-printf("size_middle: %d\n", size_middle);
-printf("m: %d\n", m);
-printf("h: %d\n", h);
-*/
 /*
  * Coerce output back to float if necessary.
  */
-      if(type_kde == NCL_float) {
-        coerce_output_float_only(kde,tmp_kde,m,index_kde);
-      }
-/*      index_x += n; // don't need this, will index manually */
-/*      index_kde += m * size_leftmost; */
-/*      index_kde += m * (size_leftmost + size_rightmost); */
-/*      index_kde = m * (i * size_leftmost + j * size_rightmost); */
-      index_kde = m * (i + j);
+      coerce_output_float_or_double(kde,tmp_kde,type_kde,m,index_kde);
     }
   }
 
@@ -383,21 +335,53 @@ printf("h: %d\n", h);
   if(type_kde != NCL_double) NclFree(tmp_kde);
 
 /*
- * Set binwidth attribute
- */ 
-  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+ * Set up return structure
+ */
+  if(type_kde == NCL_float) {
+    return_md = _NclCreateVal(
+                              NULL,
+                              NULL,
+                              Ncl_MultiDValData,
+                              0,
+                              kde,
+                              NULL,
+                              ndims_kde,
+                              dsizes_kde,
+                              TEMPORARY,
+                              NULL,
+                              (NclObjClass)nclTypefloatClass
+                              );
+  } else {
+    return_md = _NclCreateVal(
+                              NULL,
+                              NULL,
+                              Ncl_MultiDValData,
+                              0,
+                              kde,
+                              NULL,
+                              ndims_kde,
+                              dsizes_kde,
+                              TEMPORARY,
+                              NULL,
+                              (NclObjClass)nclTypedoubleClass
+                              );
+  }
 
+
+/*
+ * Set bandwidth attribute
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
   ng_size_t dsizes[1];
-  dsizes[0] = 1;
   att_md = _NclCreateVal(
                          NULL,
                          NULL,
                          Ncl_MultiDValData,
                          0,
-                         (void*)&h,
+                         (void*)h,
                          NULL,
-                         1,
-                         dsizes,
+                         ndims_h,
+                         dsizes_h,
                          TEMPORARY,
                          NULL,
                          (NclObjClass)nclTypedoubleClass
@@ -405,10 +389,30 @@ printf("h: %d\n", h);
 
   _NclAddAtt(
              att_id,
-             "binwidth",
+             "bandwidth",
              att_md,
              NULL
              );
+
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
 
 
 /*

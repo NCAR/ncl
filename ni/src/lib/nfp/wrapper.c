@@ -6314,7 +6314,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
-    NclRegisterFunc(dim_kde_W,args,"dim_kde",nargs);
+    NclRegisterFunc(dim_kde_W,args,"dim_kde_test",nargs);
 
 /*
  * Register "dim_spi_n".
