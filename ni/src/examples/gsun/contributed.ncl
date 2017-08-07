@@ -1998,7 +1998,7 @@ begin
            ,"Intercept", "intercept", "add_off", "ADD_OFF"/)
  sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor", "factor"    \
            ,"Scale_factor", "Slope" , "slope", "ScaleFactor", "Scale_Factor" \
-           ,"SCALING_FACTOR" /)
+           ,"SCALING_FACTOR", "Scaling_factor"  /)
 
  offset = 0.0   ; establish as type float
  scale  = 1.0
@@ -2188,8 +2188,7 @@ begin
  sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor"   \
            ,"Scale_factor", "Slope" , "slope", "ScaleFactor"      \
            ,"Scale_Factor", "scalingSlope", "SCALING_FACTOR"      \
-           ,"SCALE_FACTOR", "SLOPE"                             /)
-
+           ,"SCALE_FACTOR", "SLOPE", "Scaling_factor"             /)
 
  offset = 0.0   ; establish as type float
  scale  = 1.0
@@ -19289,7 +19288,7 @@ function taylor_stats(t[*][*]:numeric, r[*][*]:numeric, w:numeric, opt[1]:intege
 ;      rmse      - area weighted root mean square of grid-point differences
 ;
 local dimt, dimr, dimw, rankr, rankt, rankw, tmean, rmean, tdiff, rdiff, rmse \
-    , rmsdiff, tw, wsum, tvar, rvar, ratio, bias, stats_taylor
+    , rmsdiff, tw, wsum, tvar, rvar, ratio, bias, stats_taylor, nt_Fill, nr_Fill
 
 begin
   dimt  = dimsizes(t)
@@ -19325,6 +19324,16 @@ begin
       print("taylor_ratio: rank(w) must be <=2 : rank(w)="+rankw)
       exit
   end if
+
+  if (isatt(t,"_FillValue") .and. isatt(r,"_FillValue")) then
+      nt_Fill = num(ismissing(t))
+      nr_Fill = num(ismissing(r))
+      if (nt_Fill .ne. nr_Fill) then
+          print("taylor_stats: WARNING: Number of _FillValue are different")
+          print("taylor_stats: nt_Fill="+nt_Fill+"  nr_Fill="+nr_Fill)
+         ;exit
+      end if
+  end if
  
 ; centered pattern correlation: pc
 ; centered areal weighted means: tmean, rmean
@@ -19358,8 +19367,9 @@ begin
        rmse    = wgt_arearmse(t,r, w, 1.0, 0)     ; area weighted individual grid point differences
 
   else                                            ; CURVILINEAR GRID: w[*][*]
-       tmean   = wgt_areaave2(t, w, 1)            ; area weighted means
-       rmean   = wgt_areaave2(r, w, 1)
+                                                  ; opt=1 was changed opt=0 on 7/28/2017 for 6.5.0
+       tmean   = wgt_areaave2(t, w, 0)            ; area weighted means
+       rmean   = wgt_areaave2(r, w, 0)
 
        wsum    = sum(w)
 
@@ -19437,3 +19447,4 @@ begin
       end if
   end if
 end
+;----
