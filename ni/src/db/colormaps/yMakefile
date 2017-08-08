@@ -288,7 +288,8 @@ RANDOM_FILES = \
 		lithology.rgb \
 		circular_0.rgb \
 		circular_1.rgb \
-		circular_2.rgb
+		circular_2.rgb \
+		srip_reanalysis.rgb
 
 FILES = $(ORIG_FILES) $(GFDL_FILES) $(GMT_FILES) $(GRADS_FILES) $(MPL_FILES) $(NCVIEW_FILES) $(SVG_FILES) $(COLORBREWER_FILES) $(RANDOM_FILES)
 
