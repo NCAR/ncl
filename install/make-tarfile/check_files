@@ -690,6 +690,7 @@ lib/ncarg/colormaps/so4_21.rgb
 lib/ncarg/colormaps/so4_23.gp
 lib/ncarg/colormaps/so4_23.rgb
 lib/ncarg/colormaps/spread_15lev.rgb
+lib/ncarg/colormaps/srip_reanalysis.rgb
 lib/ncarg/colormaps/sunshine_9lev.rgb
 lib/ncarg/colormaps/sunshine_diff_12lev.rgb
 lib/ncarg/colormaps/t2m_29lev.rgb
