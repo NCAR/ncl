@@ -54,7 +54,6 @@ NhlErrorTypes dim_kde_W( void )
  * Attribute variables
  */
   int att_id;
-  double *tmp_h = NULL;
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -66,7 +65,8 @@ NhlErrorTypes dim_kde_W( void )
  */
   int size_total, m;
   int index_x, index_kde;
-  double *h;
+  void *h;
+  double tmp_h;
   int i, j, k, size_output, ret;
   int ndims_leftover, size_leftover;
 /*  ng_size_t *dsizes_leftover; */
@@ -213,15 +213,15 @@ NhlErrorTypes dim_kde_W( void )
 /*
  * Allocate space for tmp_x.
  */
-  if(type_x != NCL_double) {
-    tmp_x = (double *)calloc(size_middle,sizeof(double));
-    if(tmp_x == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: Unable to allocate memory for coercing input array to double");
-      return(NhlFATAL);
-    }
+  tmp_x = (double *)calloc(size_middle,sizeof(double));
+  if(tmp_x == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: Unable to allocate memory for coercing input array to double");
+    return(NhlFATAL);
+  }
 /*
  * The output type defaults to float, unless this input array is double.
  */
+  if(type_x != NCL_double) {
     type_kde = NCL_float;
   }
   else {
@@ -245,6 +245,7 @@ NhlErrorTypes dim_kde_W( void )
  * Allocate space for output array.
  */
   if(type_kde != NCL_double) {
+    h = (void *)calloc(size_leftover,sizeof(float));
     kde = (void *)calloc(size_output, sizeof(float));
     tmp_kde = (double *)calloc(m,sizeof(double));
     if(tmp_kde == NULL) {
@@ -253,10 +254,15 @@ NhlErrorTypes dim_kde_W( void )
     }
   }
   else {
+    h = (void *)calloc(size_leftover,sizeof(double));
     kde = (void *)calloc(size_output, sizeof(double));
   }
   if(kde == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+  if(h == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: Unable to allocate memory for output attribute");
     return(NhlFATAL);
   }
   if(has_missing_x) {
@@ -305,6 +311,7 @@ int index_nrx;
       index_x = index_nrx + j;
       index_kde = (i + j) * m;
 
+printf("tmp_x: %p\n", tmp_x);
 /*
  * Coerce subsection of x (tmp_x) to double if necessary.
  */
@@ -318,12 +325,13 @@ int index_nrx;
 /*
  * Call the Fortran routine.
  */
-      NGCALLF(kerdeni,KERDENI)(tmp_x, &size_middle, &missing_dbl_x.doubleval, tmp_bin, &m, tmp_kde, &h[index_h++]);
+      NGCALLF(kerdeni,KERDENI)(tmp_x, &size_middle, &missing_dbl_x.doubleval, tmp_bin, &m, tmp_kde, &tmp_h);
 
 /*
  * Coerce output back to float if necessary.
  */
       coerce_output_float_or_double(kde,tmp_kde,type_kde,m,index_kde);
+      coerce_output_float_or_double(h,&tmp_h,type_kde,1,index_h++);
     }
   }
 
@@ -335,8 +343,9 @@ int index_nrx;
   if(type_kde != NCL_double) NclFree(tmp_kde);
 
 /*
- * Set up return structure
+ * Set up return structure and set bandwidth attribute
  */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
   if(type_kde == NCL_float) {
     return_md = _NclCreateVal(
                               NULL,
@@ -351,6 +360,19 @@ int index_nrx;
                               NULL,
                               (NclObjClass)nclTypefloatClass
                               );
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           h,
+                           NULL,
+                           ndims_h,
+                           dsizes_h,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypefloatClass
+                           );
   } else {
     return_md = _NclCreateVal(
                               NULL,
@@ -365,27 +387,20 @@ int index_nrx;
                               NULL,
                               (NclObjClass)nclTypedoubleClass
                               );
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           h,
+                           NULL,
+                           ndims_h,
+                           dsizes_h,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypedoubleClass
+                           );
   }
-
-
-/*
- * Set bandwidth attribute
- */
-  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
-  ng_size_t dsizes[1];
-  att_md = _NclCreateVal(
-                         NULL,
-                         NULL,
-                         Ncl_MultiDValData,
-                         0,
-                         (void*)h,
-                         NULL,
-                         ndims_h,
-                         dsizes_h,
-                         TEMPORARY,
-                         NULL,
-                         (NclObjClass)nclTypedoubleClass
-                         );
 
   _NclAddAtt(
              att_id,
