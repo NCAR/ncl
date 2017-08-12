@@ -293,7 +293,6 @@ int index_nrx;
       index_x = index_nrx + j;
       index_kde = (i + j) * m;
 
-printf("tmp_x: %p\n", tmp_x);
 /*
  * Coerce subsection of x (tmp_x) to double if necessary.
  */
