@@ -425,7 +425,7 @@ extern NhlErrorTypes dim_avg_wgt_n_W(void);
 extern NhlErrorTypes dim_sum_wgt_W(void);
 extern NhlErrorTypes dim_sum_wgt_n_W(void);
 extern NhlErrorTypes dim_acumrun_n_W(void);
-extern NhlErrorTypes dim_kde_W(void);
+extern NhlErrorTypes kde_n_W(void);
 extern NhlErrorTypes esacr_W(void);
 extern NhlErrorTypes esacv_W(void);
 extern NhlErrorTypes esccr_W(void);
@@ -6303,7 +6303,7 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(dim_acumrun_n_W,args,"dim_acumrun_n",nargs);
 
 /*
- * Register "dim_kde".
+ * Register "kde_n".
  *
  * Create private argument array
  */
@@ -6314,7 +6314,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
-    NclRegisterFunc(dim_kde_W,args,"dim_kde_test",nargs);
+    NclRegisterFunc(kde_n_W,args,"kde_n_test",nargs);
 
 /*
  * Register "dim_spi_n".

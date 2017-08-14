@@ -5,7 +5,7 @@
 
 extern void NGCALLF(kerdeni,KERDENI)(double *, int *, double *, double *, int *, double *, double *);
 
-NhlErrorTypes dim_kde_W( void )
+NhlErrorTypes kde_n_W( void )
 {
 
 /*
@@ -136,7 +136,7 @@ NhlErrorTypes dim_kde_W( void )
   else
     last_dim = ((int *)dims)[ndims_dims - 1];
   if(first_dim < 0 || first_dim >= ndims_x || last_dim < 0 || last_dim >= ndims_x) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: invalid dims");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"kde_n: invalid dims");
     return(NhlFATAL);
   }
 
@@ -148,7 +148,7 @@ NhlErrorTypes dim_kde_W( void )
   for(i = 0; i < dsizes_dims[0]; i++) {
     dim = ((int *)dims)[i];
     if((dim != previous_dim + 1) && (previous_dim != -1)) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: dims must be consecutive and monotonically increasing");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"kde_n: dims must be consecutive and monotonically increasing");
       return(NhlFATAL);
     }
     previous_dim = dim;
@@ -162,7 +162,7 @@ NhlErrorTypes dim_kde_W( void )
   /* make this float eventually */
   dsizes_h = (ng_size_t *)calloc(ndims_h,sizeof(ng_size_t));
   if(dsizes_h == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: Unable to allocate memory for attribute dsizes array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"kde_n: Unable to allocate memory for attribute dsizes array");
     return(NhlFATAL);
   }
   /* initialize to 1 in case h is a scalar */
@@ -199,7 +199,7 @@ NhlErrorTypes dim_kde_W( void )
  */
   h = (double *)calloc(size_leftover,sizeof(double));
   if(h == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: Unable to allocate memory for attribute array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"kde_n: Unable to allocate memory for attribute array");
     return(NhlFATAL);
   }
 /*
@@ -207,7 +207,7 @@ NhlErrorTypes dim_kde_W( void )
  */
   tmp_x = (double *)calloc(size_middle,sizeof(double));
   if(tmp_x == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: Unable to allocate memory for coercing input array to double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"kde_n: Unable to allocate memory for coercing input array to double");
     return(NhlFATAL);
   }
 /*
@@ -224,7 +224,7 @@ NhlErrorTypes dim_kde_W( void )
  */
   tmp_bin = coerce_input_double(bin,type_bin,m,0,NULL,NULL);
   if(tmp_bin == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: Unable to allocate memory for coercing input array to double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"kde_n: Unable to allocate memory for coercing input array to double");
     return(NhlFATAL);
   }
 
@@ -241,7 +241,7 @@ NhlErrorTypes dim_kde_W( void )
     kde = (void *)calloc(size_output, sizeof(float));
     tmp_kde = (double *)calloc(m,sizeof(double));
     if(tmp_kde == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: Unable to allocate memory for temporary output array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"kde_n: Unable to allocate memory for temporary output array");
       return(NhlFATAL);
     }
   }
@@ -250,11 +250,11 @@ NhlErrorTypes dim_kde_W( void )
     kde = (void *)calloc(size_output, sizeof(double));
   }
   if(kde == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: Unable to allocate memory for output array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"kde_n: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
   if(h == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: Unable to allocate memory for output attribute");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"kde_n: Unable to allocate memory for output attribute");
     return(NhlFATAL);
   }
 
@@ -264,7 +264,7 @@ NhlErrorTypes dim_kde_W( void )
   ndims_kde = ndims_leftover + 1;
   dsizes_kde = (ng_size_t*)calloc(ndims_kde,sizeof(ng_size_t));
   if( dsizes_kde == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_kde: Unable to allocate memory for holding dimension sizes");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"kde_n: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
   }
   index_kde = 0;
