@@ -2234,4 +2234,47 @@ begin
   return(r_g_b(cmap_len|:,rgb|:))
 end
 
+;***********************************************************************;
+; str_match_bool.ncl                                                    ;
+;                                                                       ;
+; Description:                                                          ;
+; Returns True for all n-dimensional array elements of 'str' that       ;
+; contain 'substr', False otherwise.                                    ;
+;                                                                       ;
+; Prototype:                                                            ;
+;  function str_match_bool ( str : string, substr[1] : string )         ;
+;  return_val [dimsizes(str)] : logical                                 ;
+;                                                                       ;
+; Arguments:                                                            ;
+; 'str'                                                                 ;
+; An n-dimensional array of strings.                                    ;
+; 'substr'                                                              ;
+; A single-value substring to search for in 'str'.                      ;
+;                                                                       ;
+; Return value:                                                         ;
+; An array with elements of the same dimensionality as 'str',           ;
+; with True for all elements that match 'substr', False otherwise.      ;
+;                                                                       ;
+; Written by: Jared A. Lee                                              ;
+;             jaredlee@ucar.edu                                         ;
+; Written on: 05 Apr 2017                                               ;
+;***********************************************************************;
+
+undef("str_match_bool")
+function str_match_bool(str:string, substr[1]:string)
+begin
+    dims = dimsizes(str)
+    bool = new(dims, logical)
+    bool_1d = ndtooned(bool)
+    if (all(ismissing(str_match(str, substr)))) then
+        bool = False
+    else
+        inds = str_match_ind(str, substr)   ; this function converts 'str' into a 1-D array
+        bool_1d = False
+        bool_1d(inds) = True
+        bool = onedtond(bool_1d, dims)
+    end if
+
+    return bool
+end
 
