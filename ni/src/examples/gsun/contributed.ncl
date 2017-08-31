@@ -19448,3 +19448,73 @@ begin
   end if
 end
 ;----
+undef("exponential_curve_fit")
+function exponential_curve_fit(x[*]:numeric, y[*]:numeric, ndim[*]:integer, opt[1]:logical)
+; 
+; Simple Fit: y = A*exp(B*x) 
+;
+; Reference:
+; Weisstein, Eric W. "Least Squares Fitting--Exponential." 
+; From MathWorld--A Wolfram Web Resource
+;
+; http://mathworld.wolfram.com/LeastSquaresFittingExponential.html
+;
+local dimx, dimy, rankx, ranky, nxmsg, nymsg \
+    , logy, sumy, sumxy, sumx2y, sumx2y, sumyly, sumxyly \
+    , numer, denom, anum, bnum, a, A, B, param
+begin
+ dimx  = dimsizes(x)
+ dimy  = dimsizes(y)
+ rankx = dimsizes(dimx)
+ ranky = dimsizes(dimy)
+
+; error check
+
+ if (.not.(rankx.eq.ranky)) then
+     print("exponential_curve_fit: rankx.ne.ranky")
+     print("exponential_curve_fit: rankx"+rankx+" , ranky="+ranky)
+     exit
+ end if
+
+ if (.not.all(dimx.eq.dimy)) then
+     print("exponential_curve_fit: dimension sizes are not equal")
+     print("exponential_curve_fit: dimx="+dimx)
+     print("exponential_curve_fit: dimy="+dimy)
+     exit
+ end if
+
+ if (any(ismissing(x)) .or. any(ismissing(y))) then
+     nxmsg = num(ismissing(x))
+     nymsg = num(ismissing(y))
+     print("exponential_curve_fit: missing values currently not allowed")
+     print("exponential_curve_fit: nxmsg="+nxmsg+" , nymsg="+nymsg)
+     exit
+ end if
+
+ if (any(y.le.0)) then  ; method used requires taking the log(y)
+     print("exponential_curve_fit: y <= 0 not allowed")
+     exit
+ end if
+     
+; intermediate quantities: convenience
+
+  logy    = log(y)                   
+  sumy    = dim_sum_n(y       , ndim)
+  sumxy   = dim_sum_n(x*y     , ndim)
+  sumx2y  = dim_sum_n(x^2*y   , ndim)
+  sumyly  = dim_sum_n(y*logy  , ndim) 
+  sumxyly = dim_sum_n(x*y*logy, ndim) 
+
+  denom   = (sumy*sumx2y) - sumxy^2        ; denominator
+  anum    = sumx2y*sumyly - sumxy*sumxyly  ; a_numerator
+  bnum    = sumy*sumxyly  - sumxy*sumyly   ; b_numerator
+
+  a       = anum/denom
+  B       = bnum/denom    
+  A       = exp(a)
+
+  param   = (/A, B/)
+  param@long_name = "Best fit exponential parameters: A, B"
+  param@info      = "Simple Fit: y = A*exp(B*x)" 
+  return(param)
+end
