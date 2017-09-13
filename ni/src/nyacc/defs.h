@@ -273,6 +273,7 @@ extern short final_state;
 extern char *allocate();
 extern bucket *lookup();
 extern bucket *make_bucket();
+extern void  write_section();
 
 
 /* system variables */
@@ -283,7 +284,7 @@ extern int errno;
 /* system functions */
 
 extern void free();
-extern char *calloc();
-extern char *malloc();
-extern char *realloc();
+extern void *calloc();
+extern void *malloc();
+extern void *realloc();
 extern char *strcpy();

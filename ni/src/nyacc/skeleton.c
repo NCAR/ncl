@@ -128,6 +128,7 @@ char *body[] =
     "                    YYPREFIX, yystate, yychar, yys);",
     "        }",
     "#endif",
+    "        if (yychar == 0) goto yyaccept;",
     "    }",
     "    if ((yyn = yysindex[yystate]) && (yyn += yychar) >= 0 &&",
     "            yyn <= YYTABLESIZE && yycheck[yyn] == yychar)",
@@ -293,6 +294,7 @@ char *trailer[] =
 };
 
 
+void
 write_section(section)
 char *section[];
 {

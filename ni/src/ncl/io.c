@@ -126,7 +126,7 @@ FILE *fp;
 				return(*ncl_input_buffer.ptr++);
 			}
 		} else  {
-			return((char)0);
+			return((char)EOF);
 		}
 	} else {
 		return(getc(fp));
