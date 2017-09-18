@@ -2253,7 +2253,8 @@ end
 ;                                                                       ;
 ; Return value:                                                         ;
 ; An array with elements of the same dimensionality as 'str',           ;
-; with True for all elements that match 'substr', False otherwise.      ;
+; with True for all elements that match 'substr', "Missing" for any     ;
+; indices that were missing in the input array, and False otherwise.    ;
 ;                                                                       ;
 ; Written by: Jared A. Lee                                              ;
 ;             jaredlee@ucar.edu                                         ;
@@ -2262,19 +2263,30 @@ end
 
 undef("str_match_bool")
 function str_match_bool(str:string, substr[1]:string)
+local bool, dims, inds
 begin
     dims = dimsizes(str)
-    bool = new(dims, logical)
-    bool_1d = ndtooned(bool)
-    if (all(ismissing(str_match(str, substr)))) then
-        bool = False
-    else
-        inds = str_match_ind(str, substr)   ; this function converts 'str' into a 1-D array
-        bool_1d = False
-        bool_1d(inds) = True
-        bool = onedtond(bool_1d, dims)
-    end if
+    bool = new(product(dims), logical)
+    bool = where(.not.ismissing(str), False, bool)
 
-    return bool
+    inds = str_match_ind(str, substr)   ; this function converts 'str' into a 1-D array
+    if(.not.any(ismissing(inds))) then
+        bool(inds) = True
+    end if
+    return onedtond(bool, dims)
 end
 
+undef("str_match_bool_ic")
+function str_match_bool_ic(str:string, substr[1]:string)
+local bool, dims, inds
+begin
+    dims = dimsizes(str)
+    bool = new(product(dims), logical)
+    bool = where(.not.ismissing(str), False, bool)
+
+    inds = str_match_ind_ic(str, substr)   ; this function converts 'str' into a 1-D array
+    if(.not.any(ismissing(inds))) then
+        bool(inds) = True
+    end if
+    return onedtond(bool, dims)
+end
