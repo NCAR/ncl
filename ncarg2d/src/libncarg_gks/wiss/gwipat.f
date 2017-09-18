@@ -167,6 +167,8 @@ C
 C  FILL AREA INTERIOR STYLE
 C
   380 CONTINUE
+C  Patch for Jira1667: intercept code for SOLID_TEXT_FILL, replace by SOLID_FILL
+      IF (ID(1).eq.4) ID(1) = 1
       CALL GWPDVI (ID, IVFAIS, 4)
       RETURN
 C
