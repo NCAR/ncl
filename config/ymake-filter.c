@@ -150,13 +150,27 @@ char *
 getcppline()
 {
 	int		c;
-	static char	buf[2048];
-	char 		*p;
+	static char    *buf = NULL;
+	static int      s = 0;
+        static int      growS = 2048;
+	char 	       *p = buf;
 
-	p = buf;
 
 	do
 	{
+	        /* Jira ticket NCL-2658. Changed from statically allocated, fixed-size buffer to one 
+                 * that grows dynamically as needed. Patch contributed by Michael Kuhn.
+                 */
+	        if (p >= buf + s)
+	        {
+		  char *old = buf;
+
+                  /* Need to increase the size of buf. */
+                  s += growS;
+                  buf = realloc(buf, s);
+                  p = buf + (p - old);
+                }
+	        
 		switch(c = getchar())
 		{
 			/*
