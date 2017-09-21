@@ -114,7 +114,7 @@ do n=0, dimsizes(instring)-1
            if(pm_code .eq. "J")
                doy = toint(str_get_cols(instring(n), strm, strm+2 ) )
                doy@used = True
-               strm = strm+2
+               strm = strm+3
            end if
         end if
     end do
