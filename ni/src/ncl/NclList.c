@@ -479,13 +479,12 @@ NclObj theobj;
                 {
                         tmp_obj = theobj;
                 }
-#endif
                 else if (theobj->obj.obj_type_mask & Ncl_MultiDValData)
                 {
                         tmp_obj = (NclObj)_NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,(NclMultiDValData)theobj,
                                                          NULL,-1,NULL,NORMAL,NULL,PERMANENT);
                 }
-
+#endif
 		else
 		{
 			NclObj tmp_parent_obj;

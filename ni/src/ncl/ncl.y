@@ -32,6 +32,10 @@ extern int last_line_length;
 extern char *cur_line_text;
 extern int ok_to_start_vsblk;
 extern void ResetCurLine(void);
+extern NhlErrorTypes _NclPreLoadScript(char *path, int status);
+extern int _NclTranslate(void *root, FILE *fp);
+extern int yylex (void);
+
 #define ERROR(x)  NhlPError(NhlFATAL,NhlEUNKNOWN,"%s",(x))
 #define PRINTLOCATION(errlev)	\
 	if (loading > 0) \
@@ -96,7 +100,7 @@ char *ncl_cur_func = NULL;
 %token <sym> GROUP GROUPTYPE COMPOUND UNDEFFILEGROUP
 %token <sym> UNDEF VAR WHILE DO QUIT  NPROC PIPROC IPROC UNDEFFILEVAR BREAK NOPARENT NCLNULL LIST
 %token <sym> BGIN END NFUNC IFUNC FDIM IF THEN VBLKNAME CONTINUE
-%token <sym> DFILE KEYFUNC KEYPROC ELSE EXTERNAL NCLEXTERNAL RETURN VSBLKGET NEW
+%token <sym> DFILE KEYFUNC KEYPROC ELSE ELSEIF EXTERNAL NCLEXTERNAL RETURN VSBLKGET NEW
 %token <sym> OBJVAR OBJTYPE RECORD VSBLKCREATE VSBLKSET LOCAL STOP NCLTRUE NCLFALSE NCLMISSING DLIB
 %token '='
 %token REASSIGN
@@ -140,7 +144,7 @@ char *ncl_cur_func = NULL;
 %type <src_node> subscript3 subscript1 subexpr primary function array listvar error filevarselector coordvarselector attributeselector 
 %type <src_node> filegroupselector
 %type <list> the_list arg_dec_list subscript_list opt_arg_list named_subscript_list normal_subscript_list
-%type <list> block_statement_list resource_list dim_size_list  
+%type <list> block_statement_list cond_block_list resource_list dim_size_list  
 %type <list> arg_list do_stmnt resource vset vget get_resource get_resource_list
 %type <sym> datatype pfname vname
 %type <sym> func_identifier proc_identifier anysym
@@ -372,6 +376,19 @@ statement_list :  statement eoln			{
 
 							}
 ;
+
+/* This was added 9/2017 to handle single-statement/single-line conditional statements */
+cond_block_list : statement { 					
+                                                           NclSrcListNode *tmp = NULL;	
+                                                            if($1 != NULL) {
+                                                                $$ = _NclMakeNewListNode();
+                                                                $$->next = NULL;
+                                                                $$->node = $1;
+                                                            } 
+                            }
+   | block_statement_list                                   {$$ = $1;}
+   ;
+   
 block_statement_list : statement eoln { 	
 
 								
@@ -688,13 +705,13 @@ break_cont : BREAK  {
 		}
 ;
 
-elseif : elseif ELSEIF expr then block_statement_list       {  _NclAppendElseIfClause($1, $3, $5);
+elseif : elseif ELSEIF expr then cond_block_list       {  _NclAppendElseIfClause($1, $3, $5);
                                                                 $$ = $1;
                                                             }
-        | ELSEIF expr then block_statement_list             {  $$ = _NclMakeIfThenElse($2,$4, NULL);  }
+        | ELSEIF expr then cond_block_list             {  $$ = _NclMakeIfThenElse($2,$4, NULL);  }
 ;
 
-conditional : IF expr then block_statement_list elseif END IF {  
+conditional : IF expr then cond_block_list elseif END IF {  
             NclSrcListNode *tmp = NULL;	
 	    if($4 != NULL) {
                 tmp = _NclMakeNewListNode();
@@ -704,7 +721,7 @@ conditional : IF expr then block_statement_list elseif END IF {
             $$ = _NclMakeIfThenElse($2,$4,tmp);  
         }
 
-        | IF expr then block_statement_list elseif ELSE block_statement_list END IF {   
+        | IF expr then cond_block_list elseif ELSE cond_block_list END IF {   
             NclSrcListNode* tmp1 = _NclMakeNewListNode();
             tmp1->node = $5;
             tmp1->next = NULL;
@@ -712,9 +729,20 @@ conditional : IF expr then block_statement_list elseif END IF {
             $$ = _NclMakeIfThenElse($2, $4, tmp1);
         }
         
-        | IF expr then block_statement_list END IF				{  $$ = _NclMakeIfThen($2,$4);  }
-	| IF expr then block_statement_list ELSE block_statement_list END IF	{  $$ = _NclMakeIfThenElse($2,$4,$6);  }
+        | IF expr then cond_block_list END IF				{  $$ = _NclMakeIfThen($2,$4);  }
+	| IF expr then cond_block_list ELSE cond_block_list END IF	{  $$ = _NclMakeIfThenElse($2,$4,$6);  }
         
+        /* NCL-2655 */
+        /* When I added the elseif construct, I commented the following rules out because they appeared to be
+         * superfluous. Indeed they were for "properly" formatted if-then-else's. But in turns out they were intended
+         * to handle if-then-elses written on a single line. "block_statement_lists" expect EOLN terminated "statement"s,
+         * whereas the "statement" rule does not have the EOLN built in.  I created a new rule, cond_block_list, which
+         * now comprises the body of conditional statements; it expects either a "statement" or a block_statement_list.
+         * The following rules are now indeed superfluous with the addition of the cond_block_list rule.
+         * They should eventually be removed --RLB 9/2017 
+         */
+        
+        /* NCL-95 (original comment, superceded by above) */
         /* The following rules appear to be superfluous for the purpose of parsing a conditional. That is, the parser
          * always returns a block_statement_list object regardless of whether a single-statement or multiple statements,
          * or even zero statements, are encountered. Commenting these out for now; eventually they should be removed.
