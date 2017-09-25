@@ -154,10 +154,13 @@ function satvpr_mean_fao56(tmin:numeric, tmax:numeric, iounit[2]:integer)
 ;         Do *not* return 0.0 because other eqns take log(satvpr)
 ;         t could have no _FillValue BUT values <0 hence svp@_FillValue
  
-local svp
+local svpmin, svpmax, svp
 begin
-   svp = (satvpr_temp_fao56(tmin, iounit) + satvpr_temp_fao56(tmax, iounit))*0.5
+   svpmin =  satvpr_temp_fao56(tmin, iounit)
+   svpmax =  satvpr_temp_fao56(tmax, iounit)
+   svp    = (svpmin+svpmax)*0.5
    svp@long_name = "mean saturation vapor pressure"
+   svp@units     = svpmin@units
    svp@url       = "http://www.fao.org/docrep/X0490E/x0490e07.htm"
    svp@info      = "FAO 56; EQN 12; satvpr_mean_fao56"
 
@@ -1963,6 +1966,114 @@ begin
        evt@units = "cal/(cm2-day)"
    end if
    
+   return(evt)
+end
+;-----
+undef("refevt_hamon")
+function refevt_hamon(tmean:numeric, daylight:numeric, iounit[2]:integer)
+;
+; This is not in FAO-56 but is bundled within the FAO-56 library for convenience.
+;
+; Use the simple Hamon method to derive reference evapotranspiration (ETo; here, evt)
+; All input arrays (tmean, daylight, es) must be the same size (conform).
+
+; nomenclature:
+;   tmean         - maean temperature at 2-meters (reference height)
+;   daylight      - effective number of hours of sunlight 
+;                   eg: with (say) 30% cloudy: (1-0.3)*max_daylight_hours
+;   iounit        - option for input [iounit(0), iounit(1] and returned units [iounit(2)]
+;                   iounit(0) =0: degC          ;  units: tmean
+;                             =1: degK    
+;                             =2: deg farenheit
+; 
+;                   iounit(1) =0: mm/day        ;  output (returned) units
+;                             =1: MJ/(M2-day)
+;                             =2: W/m2
+;                             =3: cal/(cm2-day)
+;
+; Reference: Haith, D. A. and Shoemaker, L. L., 1987
+;            Generalized watershed loading functions for stream flow nutrients.
+;            Water Resources Bulletin, 23:471-478.
+;
+local dimt, dimd, rankt, rankd, conu, evt, tk0, tCrit, es, TMEAN
+begin
+   if (.not.(isscalar(tmean) .and. isscalar(daylight)) ) then
+       dimt   = dimsizes(tmean)
+       dimd   = dimsizes(daylight)
+       rankt  = dimsizes(dimt)
+       rankd  = dimsizes(dimd)
+    
+       if (rankt.ne.rankd) then
+           print("refevt_hamon: tmean and daylight must have the same rank")
+           print("              conform or conform_dims could be used prior to call")
+           exit
+       end if
+    
+       if (.not.all(dimt.eq.dimd)) then
+           print("refevt_hamon: tmean must be the same shape and size")
+           print("              conform or conform_dims could be used prior to call")
+           exit
+       end if
+   end if
+   
+   if (any(iounit.lt.0) .or. any(iounit.gt.3)) then               ; iounit error check
+       if (iounit(0).lt.0 .or. iounit(0).gt.2) then             
+           print("refevt_hamon: unrecognized iounit(0) argument: iounit(0)="+iounit(0))
+       end if
+       if (iounit(1).lt.0 .or. iounit(1).gt.3) then               
+           print("refevt_hamon: unrecognized iounit(1) argument: iounit(1)="+iounit(1))
+       end if
+       exit
+   end if
+
+   if (isatt(tmean,"_FillValue")) then
+       tFill = tmean@_FillValue
+   else
+       tFill = 1e20
+   end if
+
+   conu  = 2.1
+   tk0   = 273.16                             ; degK 
+   tCrit = 0.0                                ; degC
+
+   es    = satvpr_temp_fao56(tmean, (/iounit(0), 2/) ) ; kPa
+
+   if (iounit(0).eq.0) then
+       evt = where(tmean.gt.tCrit  \ ; standard formula (degC, hPa)
+                  ,conu*es*(daylight^2)/(tmean+tk0), tFill)
+   else
+       if (iounit(0).eq.1) then
+           TMEAN = tmean-tk0                  ; degK -> degC
+       else                   
+           TMEAN = (tmean-32)*0.5555556       ; F -> degC
+       end if
+       evt = where(TMEAN.gt.tCrit  \ ; standard formula (degC, hPa)
+                  ,conu*es*(daylight^2)/(TMEAN+tk0), tFill)
+   end if
+
+   evt@long_name = "reference evapotranspiration: Hamon "
+   evt@units     = "mm/day"
+
+   if (iounit(1).eq.1) then            ; 1 mm/day = 2.45 MJ/(m2-day)
+       evt = (/ evt*2.45098 /)         ;   mm/day => MJ/(m2-day)
+       evt@units = "MJ/(m2-day)"
+   end if
+
+   if (iounit(1).eq.2) then            ; 1 mm/day = 28.4 W/m2
+       evt = (/ evt*28.4 /)            ;   mm/day => W/m2
+       evt@units = "W/m2"
+   end if
+
+   if (iounit(1).eq.3) then            ; 1 mm/day =  58.5 cal/(cm2-day)
+       evt = (/ evt*58.5 /)            ;   mm/day => cal/(cm2-day)  
+       evt@units = "cal/(cm2-day)"
+   end if
+
+   if (.not.isatt(evt,"_FillValue") .and. any(evt.eq.tFill) ) then
+       evt@_FillValue = tFill
+   end if
+
+   copy_VarCoords(tmean, evt)
    return(evt)
 end
 ;-----
