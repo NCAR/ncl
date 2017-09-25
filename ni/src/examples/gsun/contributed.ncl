@@ -1998,7 +1998,7 @@ begin
            ,"Intercept", "intercept", "add_off", "ADD_OFF"/)
  sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor", "factor"    \
            ,"Scale_factor", "Slope" , "slope", "ScaleFactor", "Scale_Factor" \
-           ,"SCALING_FACTOR" /)
+           ,"SCALING_FACTOR", "Scaling_factor"  /)
 
  offset = 0.0   ; establish as type float
  scale  = 1.0
@@ -2188,8 +2188,7 @@ begin
  sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor"   \
            ,"Scale_factor", "Slope" , "slope", "ScaleFactor"      \
            ,"Scale_Factor", "scalingSlope", "SCALING_FACTOR"      \
-           ,"SCALE_FACTOR", "SLOPE"                             /)
-
+           ,"SCALE_FACTOR", "SLOPE", "Scaling_factor"             /)
 
  offset = 0.0   ; establish as type float
  scale  = 1.0
@@ -19289,7 +19288,7 @@ function taylor_stats(t[*][*]:numeric, r[*][*]:numeric, w:numeric, opt[1]:intege
 ;      rmse      - area weighted root mean square of grid-point differences
 ;
 local dimt, dimr, dimw, rankr, rankt, rankw, tmean, rmean, tdiff, rdiff, rmse \
-    , rmsdiff, tw, wsum, tvar, rvar, ratio, bias, stats_taylor
+    , rmsdiff, tw, wsum, tvar, rvar, ratio, bias, stats_taylor, nt_Fill, nr_Fill
 
 begin
   dimt  = dimsizes(t)
@@ -19325,6 +19324,16 @@ begin
       print("taylor_ratio: rank(w) must be <=2 : rank(w)="+rankw)
       exit
   end if
+
+  if (isatt(t,"_FillValue") .and. isatt(r,"_FillValue")) then
+      nt_Fill = num(ismissing(t))
+      nr_Fill = num(ismissing(r))
+      if (nt_Fill .ne. nr_Fill) then
+          print("taylor_stats: WARNING: Number of _FillValue are different")
+          print("taylor_stats: nt_Fill="+nt_Fill+"  nr_Fill="+nr_Fill)
+         ;exit
+      end if
+  end if
  
 ; centered pattern correlation: pc
 ; centered areal weighted means: tmean, rmean
@@ -19358,8 +19367,9 @@ begin
        rmse    = wgt_arearmse(t,r, w, 1.0, 0)     ; area weighted individual grid point differences
 
   else                                            ; CURVILINEAR GRID: w[*][*]
-       tmean   = wgt_areaave2(t, w, 1)            ; area weighted means
-       rmean   = wgt_areaave2(r, w, 1)
+                                                  ; opt=1 was changed opt=0 on 7/28/2017 for 6.5.0
+       tmean   = wgt_areaave2(t, w, 0)            ; area weighted means
+       rmean   = wgt_areaave2(r, w, 0)
 
        wsum    = sum(w)
 
@@ -19436,4 +19446,75 @@ begin
           return(isconstant_1d(ndtooned(x)))
       end if
   end if
+end
+;----
+undef("exponential_curve_fit")
+function exponential_curve_fit(x[*]:numeric, y[*]:numeric, ndim[*]:integer, opt[1]:logical)
+; 
+; Simple Fit: y = A*exp(B*x) 
+;
+; Reference:
+; Weisstein, Eric W. "Least Squares Fitting--Exponential." 
+; From MathWorld--A Wolfram Web Resource
+;
+; http://mathworld.wolfram.com/LeastSquaresFittingExponential.html
+;
+local dimx, dimy, rankx, ranky, nxmsg, nymsg \
+    , logy, sumy, sumxy, sumx2y, sumx2y, sumyly, sumxyly \
+    , numer, denom, anum, bnum, a, A, B, param
+begin
+ dimx  = dimsizes(x)
+ dimy  = dimsizes(y)
+ rankx = dimsizes(dimx)
+ ranky = dimsizes(dimy)
+
+; error check
+
+ if (.not.(rankx.eq.ranky)) then
+     print("exponential_curve_fit: rankx.ne.ranky")
+     print("exponential_curve_fit: rankx"+rankx+" , ranky="+ranky)
+     exit
+ end if
+
+ if (.not.all(dimx.eq.dimy)) then
+     print("exponential_curve_fit: dimension sizes are not equal")
+     print("exponential_curve_fit: dimx="+dimx)
+     print("exponential_curve_fit: dimy="+dimy)
+     exit
+ end if
+
+ if (any(ismissing(x)) .or. any(ismissing(y))) then
+     nxmsg = num(ismissing(x))
+     nymsg = num(ismissing(y))
+     print("exponential_curve_fit: missing values currently not allowed")
+     print("exponential_curve_fit: nxmsg="+nxmsg+" , nymsg="+nymsg)
+     exit
+ end if
+
+ if (any(y.le.0)) then  ; method used requires taking the log(y)
+     print("exponential_curve_fit: y <= 0 not allowed")
+     exit
+ end if
+     
+; intermediate quantities: convenience
+
+  logy    = log(y)                   
+  sumy    = dim_sum_n(y       , ndim)
+  sumxy   = dim_sum_n(x*y     , ndim)
+  sumx2y  = dim_sum_n(x^2*y   , ndim)
+  sumyly  = dim_sum_n(y*logy  , ndim) 
+  sumxyly = dim_sum_n(x*y*logy, ndim) 
+
+  denom   = (sumy*sumx2y) - sumxy^2        ; denominator
+  anum    = sumx2y*sumyly - sumxy*sumxyly  ; a_numerator
+  bnum    = sumy*sumxyly  - sumxy*sumyly   ; b_numerator
+
+  a       = anum/denom
+  B       = bnum/denom    
+  A       = exp(a)
+
+  param   = (/A, B/)
+  param@long_name = "Best fit exponential parameters: A, B"
+  param@info      = "Simple Fit: y = A*exp(B*x)" 
+  return(param)
 end

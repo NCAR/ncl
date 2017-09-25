@@ -5154,4 +5154,370 @@ begin
   end do
   return(xyplot)
 end
+;-------------------------------------------------------------------------------
+; Library of 'hybrid' related  functions
+;
+; Most of these are interfaces to the built-in pres_hybrid_ccm & dpres_hybrid_ccm functions.
+;
+; They change the input to match the 'ccm' method.
+;
+; _ecmwf -> HYA(p)    + HB(p)*ps       where HYA(p) = A(p)*p0 
+; _sb81  -> complicated for actual conserving pressure values
+;
+; _ccm   -> hyai(p)*p0  + hybi(p)*ps    
+; _ccm   -> HA(p)*p0    + HB(p)*ps    
+;
+; The *_reference_* functions create a 'reference' or 'nominal' vertical coordinate variable. 
+; This is created by setting the surface pressure (ps) equal to the reference pressure: ps=p0.
+; Thvertical corrdinate variable is analogous to the 'lev' coordinate variable on CECM-CAM files.
+; Really, it is just a placeholder.
+;------------------------------------------------------------------------------
+undef("pres_hybrid_reference_sb81")
+function pres_hybrid_reference_sb81(ps:numeric, p0[1]:numeric, hyai[*]:numeric, hybi[*]:numeric)
+;*********************
+;   NOT FULLY TESTED
+;*********************
+;
+; This function creates a reference (nominal) coordinate variable for the SB81 formulation..
+; The reference pressure, p0, is 100000 (Pa) or 1000 (hPa)
+;
+; This is an interface to NCL function  'pres_hybrid_jra55'
+; See function "pres_hybrid_sb81" for more documentation.
+;
+; Nomenclature:
+;   ps - surface pressure: (lat,lon), (time,lat,lon), (ncase,time,lat,lon)
+;   p0 - reference surface pressure: 1000 if ps units are hPa; 100000 if ps units are Pa
+;   hyai, hybi - hybrid interface coefficients
+; ----------------------------------------------------------------
+;
+local pbase, bot2top, pnom, pref, pName
+begin
 
+;---pres_hybrid_jra55 requires  at least 2D [historical reason]
+  pbase = new((/1,1/), typeof(ps), "No_FillValue")
+  pbase = p0
+
+;---Check vertical order: pres_hybrid_jra55 requires bottom-to-top (near surface to top)
+  if (hybi(0).le.hybi(1)) then
+      bot2top = False      ; data ordered top-to-bottom. Must reverse order.
+      pnom    = pres_hybrid_jra55(pbase,hyai(::-1),hybi(::-1)) ; nominal pres level
+  else
+      bot2top = True
+      pnom    = pres_hybrid_jra55(pbase,hyai,hybi)             ; nominal pres level
+  end if
+
+;---Create reference (nominal) pressure coordinate variable
+  pName  = "pref"
+  pref   = pnom(:,0,0)
+  pref!0 = pName
+  pref@long_name = "reference (nominal) pressure level: p0="+p0
+  if (isatt(ps,"units")) then
+      pref@units = ps@units
+  end if
+  pref&$pName$   = pref
+
+  pref@long_name  = "reference (nominal) pressure levels"
+  if (isatt(ps,"units")) then
+      pref@units = ps@units
+  end if
+
+  if (.not.bot2top) then
+      pref = pref(::-1)
+  end if
+
+  return(pref)
+end
+;-------------------------------------------------------------------
+undef("pres_hybrid_sb81")
+function pres_hybrid_sb81(ps:numeric, p0[1]:numeric,  hyai[*]:numeric, hybi[*]:numeric)
+;*********************
+;   NOT FULLY TESTED
+;*********************
+;
+; This is an interface to NCL function  'pres_hybrid_jra55'
+; The 'pres_hybrid_jra55' function implements the Simmons and Burridge (1981) 
+; hybrid pressure formulation.
+;
+; If necessary this function will reorder the vertical hybrid coefficients
+; so they can be input to NCL's pres_hybrid_jra55 function. As a value-added
+; feature, it will also associate a reference level coordinate variable.
+;
+; Nomenclature:
+;   ps - surface pressure: (lat,lon), (time,lat,lon), (ncase,time,lat,lon)
+;   p0 - reference surface pressure: 1000 if ps units are hPa; 100000 if ps units are Pa 
+;   hyai, hybi - hybrid interface coefficients
+;
+; Reference:
+;   Simmons. A.J., and D. M. Burridge:
+;   An Energy and Angular-Momentum Conserving Vertical Finite-Difference Scheme 
+;      and Hybrid Vertical Coordinates 
+;   MON WEATHER REV , vol. 109, no. 4, 1981
+;   http://dx.doi.org/10.1175/1520-0493(1981)109<0758:AEAAMC>2.0.CO;2
+;   See equations (17) and (18)
+;
+; sb81 - Simmons and Burridge (1981)
+; ----------------------------------------------------------------
+; The pres_hybrid_jra55 implements the sb81 equations (17) and (18).
+; However, at this time,  pres_hybrid_jra55 requires data ordered 
+; *bottom-to-top* of atmosphere.
+;
+; Nominally, the Simmons/Burridge formula is:
+;
+;    p(k) = exp( (1/dp(k))*(p(k-0.5)*log(p(k-0.5)) - p(k+0.5)*log(p(k+0.5))-1.0))
+;
+; where the p(k-05) and p(k+0.5) represent the interface coefficients. 
+; ----------------------------------------------------------------
+;
+local dim_ps, rank_ps, pbase, bot2top, pres, pnom, pref, pName
+begin
+  dim_ps  = dimsizes(ps)
+  rank_ps = dimsizes(dim_ps)
+  if (rank_ps.eq.1) then
+      print("pres_hybrid_sb81: Currently this function does not allow one-dim arrays")
+      exit
+  end if
+
+;---pres_hybrid_jra55 requires  at least 2D [historical reason]
+  pbase = new((/1,1/), typeof(ps), "No_FillValue")
+  pbase = p0       
+
+;---Check vertical order: pres_hybrid_jra55 requires bottom-to-top (near surface to top)
+  if (hybi(0).le.hybi(1)) then
+      bot2top = False      ; data ordered top-to-bottom. Must reverse order.
+      pres    = pres_hybrid_jra55(ps   ,hyai(::-1),hybi(::-1)) 
+      pnom    = pres_hybrid_jra55(pbase,hyai(::-1),hybi(::-1)) ; nominal pres level
+  else
+      bot2top = True
+      pres    = pres_hybrid_jra55(ps   ,hyai, hybi) 
+      pnom    = pres_hybrid_jra55(pbase,hyai,hybi)             ; nominal pres level
+  end if
+
+;---Create reference (nominal) pressure coordinate variable
+  pName  = "pref"
+  pref   = pnom(:,0,0)
+  pref!0 = pName
+  pref@long_name = "reference (nominal) pressure level: p0="+p0
+  if (isatt(ps,"units")) then
+      pref@units = ps@units
+  end if
+  pref&$pName$   = pref
+
+;---Add meta data; if necessary, reverse vertical order to match the source
+  if (rank_ps.eq.3) then
+      copy_VarCoords(ps, pres(:,0,:,:))       
+      pres!1 = pName
+      pres&$pName$ = pref
+      if (.not.bot2top) then
+          pres   = pres(:,::-1,:,:)
+      end if
+  else if (rank_ps.eq.2) then                     ; (lat,lon)
+           copy_VarCoords(ps, pres(0,:,:))       
+           pres!0 = pName
+           pres&$pName$ = pref
+           if (.not.bot2top) then
+               pres = pres(::-1,:,:)
+           end if
+  else if (rank_ps.eq.4) then                     ; (ncase,time,lat,lon)
+           copy_VarCoords(ps, pres(:,:,0,:,:))       
+           pres!2 = pName
+           pres&$pName$ = pref
+           if (.not.bot2top) then
+               pres = pres(:,:,::-1,:,:)
+           end if
+    end if     ; 4 
+   end if      ; 2
+  end if       ; 3
+
+
+  pres@long_name  = "pressure"
+  if (isatt(ps,"units")) then
+      pres@units = ps@units
+  end if
+
+  return(pres)
+end
+;--------------------------
+undef("pres_hybrid_reference_ecmwf")
+function pres_hybrid_reference_ecmwf(ps:numeric, p0[1]:numeric, am[*]:numeric, bm[*]:numeric)
+;*********************
+;   NOT FULLY TESTED
+;*********************
+;
+; For historical reason: the _ecmwf refers to the ECMWF formulation for hybrid pressure values
+;
+; pref = A(p) +hyb(p)*p0    ; where A(p)=hya(p)*p0  
+;      = am   + bm*p0
+;
+; Nomenclature:
+;   ps - surface pressure: (lat,lon), (time,lat,lon), (ncase,time,lat,lon)
+;   p0 - reference surface pressure: 1000 if ps units are hPa; 100000 if ps units are Pa 
+;   am, bm - hybrid mid-level coefficients
+
+local pName, pref
+begin
+   pref   = am + bm*p0
+   pref@long_name  = "reference (nominal) pressure levels"
+   if (isatt(ps,"units")) then
+       pref@units = ps@units
+   end if
+   pName        = getvardims(am)
+   pref!0       = pName                    
+   pref&$pName$ = pref                   
+   return(pref)
+end
+;--------------------------
+undef("pres_hybrid_ecmwf")
+function pres_hybrid_ecmwf(ps:numeric, p0:numeric, am[*]:numeric, bm[*]:numeric)
+;*********************
+;   NOT FULLY TESTED
+;*********************
+;
+; For historical reason: the _ecmwf refers to the ECMWF formulation for hybrid pressure values
+;
+; pres = A(p) +B(p)*PSFC    ; where A(p) = hya(p)*p0
+;      = am   + bm*ps
+;
+; Nomenclature:
+;   ps - surface pressure: (lat,lon), (time,lat,lon), (ncase,time,lat,lon)
+;   p0 - reference surface pressure: 1000 if ps units are hPa; 100000 if ps units are Pa 
+;   am - hybrid 'A'  mid-level coef of the form: am = hya(:)*p0
+;   bm - hybrid 'B'  mid-level coef: same as CCM hybrid 'B' coefficient
+;
+local hyam, pres, plev, pName, dim_ps, rank_ps
+begin
+   dim_ps  = dimsizes(ps)
+   rank_ps = dimsizes(dim_ps)
+   if (rank_ps.eq.1) then
+       print("pres_hybrid_ecmwf: Currently this function does not allow one-dim arrays")
+       exit
+   end if
+
+   hyam  = am/p0                          ; convert to that expected by pres_hybrid_ccm
+ ;;hybm  = bm                             ; same
+
+                                          ; use 'classic' pres_hybrid_ccm function
+   pres  = pres_hybrid_ccm(ps, p0, hyam, bm)  
+  ;pName = "prefm"
+   pName = getvardims(am)                 ; original dimension name
+
+   pref  = pres_hybrid_reference_ecmwf(ps, p0, am, bm)
+   pref!0= pName
+   pref&$pName$ = pref
+
+   if (rank_ps.eq.3) then
+       copy_VarCoords(ps, pres(:,0,:,:))       
+       pres!1 = pName
+   else if (rank_ps.eq.2) then
+            copy_VarCoords(ps, pres(0,:,:))       
+            pres!0 = pName
+   else if (rank_ps.eq.4) then
+            copy_VarCoords(ps, pres(:,:,0,:,:))       
+            pres!2 = pName
+   end if   
+   end if 
+   end if 
+   pres&$pName$ = pref
+
+   pres@long_name  = "pressure"
+   pres@units      = ps@units
+
+   return(pres)
+end
+;--------------------------
+undef("dpres_hybrid_ecmwf")
+function dpres_hybrid_ecmwf(ps:numeric, p0[1]:numeric, ai[*]:numeric, bi[*]:numeric)
+local dim_ps, rank_ps, hyai,  dpres
+begin
+  dim_ps  = dimsizes(ps)
+  rank_ps = dimsizes(dim_ps)
+  if (rank_ps.eq.1) then
+      print("dpres_hybrid_ecmwf: Currently this function does not allow one-dim arrays")
+      exit
+  end if
+
+;---Use classic dpres_hybrid_ccm functiom
+  hyai   = ai/p0                          ; convert to that expected by dpres_hybrid_ccm
+;;hybi   = bi                             ; same
+  dpres  = dpres_hybrid_ccm(ps, p0, hyai, bi)  ; use 'classic' pres_hybrid_ccm function
+
+  mlvl  = dimsizes(hyai)
+  am    = (  ai(0:mlvl-2)+  ai(1:mlvl-1))*0.5  ; ECMWF 'a' coef
+  bm    = (  bi(0:mlvl-2)+  bi(1:mlvl-1))*0.5
+  pref  = pres_hybrid_reference_ecmwf(ps, p0, am, bm)
+
+  pName = getvardims(pref)
+
+;---Add horizontal spatial and temporal  meta data
+  if (rank_ps.eq.3) then
+      copy_VarCoords(ps, dpres(:,0,:,:))
+      dpres!1 = pName
+      else if (rank_ps.eq.2) then
+            copy_VarCoords(ps, dpres(0,:,:))
+            dpres!0 = pName
+      else if (rank_ps.eq.4) then
+            copy_VarCoords(ps, pres(:,:,0,:,:))
+            dpres!2 = pName
+      end if   ; 4
+    end if     ; 2
+   end if      ; 3
+   dpres&$pName$ = pref
+
+  dpres@long_name  = "pressure layer thickness"
+  if (isatt(ps,"units")) then
+      dpres@units = ps@units
+  end if
+
+  return(dpres)
+end
+;--------------------------
+undef("dpres_hybrid_sb81")
+function dpres_hybrid_sb81(ps:numeric, p0[1]:numeric, ai[*]:numeric, bi[*]:numeric)
+local dim_ps, rank_ps, hyai,  dpres
+begin
+  dim_ps  = dimsizes(ps)
+  rank_ps = dimsizes(dim_ps)
+  if (rank_ps.eq.1) then
+      print("dpres_hybrid_sb81_v0: Currently this function does not allow one-dim arrays")
+      exit
+  end if
+
+  if (bi(0).le.bi(1)) then
+      bot2top = False      ; data ordered top-to-bottom. Must reverse order.
+  else
+      bot2top = True
+  end if
+
+;---Use classic dpres_hybrid_ccm functiom
+  hyai   = ai/p0                          ; convert to that expected by dpres_hybrid_ccm
+;;hybi   = bi                             ; same
+  dpres  = dpres_hybrid_ccm(ps, p0, hyai, bi)  ; use 'classic' pres_hybrid_ccm function
+
+;---Create vertical meta data; associate the conservative values
+   pref  = pres_hybrid_reference_sb81(ps, p0, hyai, bi)
+printVarSummary(pref)
+
+   pName = getvardims(pref)
+
+;---Add horizontal spatial and temporal  meta data
+  if (rank_ps.eq.3) then
+      copy_VarCoords(ps, dpres(:,0,:,:))
+      dpres!1 = pName
+      else if (rank_ps.eq.2) then
+            copy_VarCoords(ps, dpres(0,:,:))
+            dpres!0 = pName
+      else if (rank_ps.eq.4) then
+            copy_VarCoords(ps, pres(:,:,0,:,:))
+            dpres!2 = pName
+      end if   ; 4
+    end if     ; 2
+   end if      ; 3
+   dpres&$pName$ = pref
+
+
+  dpres@long_name  = "pressure layer thickness"
+  if (isatt(ps,"units")) then
+      dpres@units = ps@units
+  end if
+
+  return(dpres)
+end
