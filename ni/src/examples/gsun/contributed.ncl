@@ -14882,19 +14882,22 @@ begin
    end if
 
 ; check
-   if (all(x.eq.y)) then
-       print("regline_stats: x and y are exactly the same: will lead to division by 0")
-       rc = 1e10
-       rc@_FillValue = rc
-       rc@info = "regline_stats: x and y are identical"
-       return(rc)
-   end if
 
    if (all(ismissing(x)) .or. all(ismissing(y))) then
        print("regline_stats: Warning: x and/or y has all missing values.")
        rc = 1e10
        rc@_FillValue = rc
-       rc@info = "regline_stats: x and/or y has all missing values"
+      ;rc@b95        = (/ rc@_FillValue, rc@_FillValue /)
+       rc@info = "regline_stats: Warning: x and/or y has all missing values"
+       return(rc)
+   end if
+
+   if (all(x.eq.y)) then
+       print("regline_stats: x and y are exactly the same: will lead to division by 0")
+       rc = 1e10
+       rc@_FillValue = rc
+      ;rc@b95        = (/ rc@_FillValue, rc@_FillValue /)
+       rc@info = "regline_stats: Warning: x and y are identical"
        return(rc)
    end if
 

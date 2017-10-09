@@ -779,7 +779,7 @@ begin
                  arg  = where(arg.lt.-argtst, -argval, arg)
                  arg  = where(arg.gt. argtst,  argval, arg)
                  ws   = acos(arg)                  ; acos(-tan(latrad(nl,ml))*tan(sdec)) ; eq 25 [ntim] 
-                 daylightmax(:,nl) = con*ws        ; eq 34
+                 daylightmax(:,nl,ml) = con*ws     ; eq 34
               end do			       
             end do			       
                                                    ; handle meta data
