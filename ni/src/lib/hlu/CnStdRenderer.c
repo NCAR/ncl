@@ -2161,6 +2161,7 @@ static NhlIsoLine *CnStdGetIsoLines
  * problems otherwise. (Not sure yet whether it is needed in some cases
  * though, and perhaps not needed in certain Ezmap cases.
  */
+	cnp->out_of_range_val = 1e30;
 	if (cnp->trans_obj->base.layer_class->base_class.class_name ==
 	    NhlmapTransObjClass->base_class.class_name) {
 		NhlVAGetValues(cnp->trans_obj->base.id, 
@@ -2272,7 +2273,7 @@ static NhlIsoLine *CnStdGetIsoLines
 		ilp->x = ilp->y = NULL;
 		ilp->start_point = ilp->n_points = NULL;
 		while (! done) {
-			float out_of_range = 1e30;
+			float out_of_range = cnp->out_of_range_val;
 			int mystatus;
 			subret = _NhlCpcltr(cnp->data,cnp->fws,cnp->iws,clvp[i],
 					    &flag,&xloc,&yloc,&npoints,entry_name);
@@ -2306,7 +2307,8 @@ static NhlIsoLine *CnStdGetIsoLines
 				save_yloc = yloc[npoints-1];
 			}
 			
-			if ((! tfp->overlay_trans_obj) || (tfp->overlay_trans_obj == tfp->trans_obj)) {
+			if ((! tfp->overlay_trans_obj) || (tfp->overlay_trans_obj == tfp->trans_obj) ||
+			    (tfp->do_ndc_overlay == NhlNDCVIEWPORT)) {
 				subret = _NhlWinToData(tfp->trans_obj,xloc,yloc,npoints,xloc,yloc,
 						       &mystatus,&out_of_range,&out_of_range);
 			}

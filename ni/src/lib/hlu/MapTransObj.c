@@ -1357,32 +1357,32 @@ static NhlErrorTypes MapWinToData
 	*status = 0;
 	for(i=0; i< n; i++) {
 		if(((xmissing != NULL)&&(*xmissing == x[i]))
-			||((ymissing != NULL)&&(*ymissing == y[i]))
-			||(x[i] < xmin)
-			||(x[i] > xmax)
-			||(y[i] < ymin)
-			||(y[i] > ymax)) {
-
+		   ||((ymissing != NULL)&&(*ymissing == y[i]))) {
 			*status = 1;
 			xout[i]=yout[i]=minstance->trobj.out_of_range;
-	
-
-		} else {
-			c_maptri(x[i],y[i],&(yout[i]),&(xout[i]));
-			if (yout[i] == minstance->trobj.out_of_range) {
+			continue;
+		}	
+		else if  ((x[i] < xmin)||(x[i] > xmax)||(y[i] < ymin)||(y[i] > ymax)) {
+			if (! win_compare_check(mtp,&(x[i]),&(y[i]),xmin,xmax,ymin,ymax)) {
 				*status = 1;
-				xout[i]= xmissing != NULL ? *xmissing : minstance->trobj.out_of_range;
-				yout[i]= ymissing != NULL ? *ymissing : minstance->trobj.out_of_range;
+				xout[i]=yout[i]=minstance->trobj.out_of_range;
+				continue;
 			}
-			else if (xout[i] < mtp->data_xmin) {
-				if (xout[i] + 360 <= mtp->data_xmax + mpDATAEPS) {
-					xout[i] += 360.0;
-				}
+		}
+		c_maptri(x[i],y[i],&(yout[i]),&(xout[i]));
+		if (yout[i] == minstance->trobj.out_of_range) {
+			*status = 1;
+			xout[i]= xmissing != NULL ? *xmissing : minstance->trobj.out_of_range;
+			yout[i]= ymissing != NULL ? *ymissing : minstance->trobj.out_of_range;
+		}
+		else if (xout[i] < mtp->data_xmin) {
+			if (xout[i] + 360 <= mtp->data_xmax + mpDATAEPS) {
+				xout[i] += 360.0;
 			}
-			else if (xout[i] > mtp->data_xmax) {
-				if (xout[i] - 360.0 >= mtp->data_xmin - mpDATAEPS) {
-					xout[i] -= 360.0;
-				}
+		}
+		else if (xout[i] > mtp->data_xmax) {
+			if (xout[i] - 360.0 >= mtp->data_xmin - mpDATAEPS) {
+				xout[i] -= 360.0;
 			}
 		}
 	}

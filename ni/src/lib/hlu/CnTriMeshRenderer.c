@@ -4688,6 +4688,7 @@ static NhlIsoLine *CnTriMeshGetIsoLines
  * problems otherwise. (Not sure yet whether it is needed in some cases
  * though, and perhaps not needed in certain Ezmap cases.
  */
+	cnp->out_of_range_val = 1e30;
 	if (cnp->trans_obj->base.layer_class->base_class.class_name ==
 	    NhlmapTransObjClass->base_class.class_name) {
 		NhlVAGetValues(cnp->trans_obj->base.id, 
