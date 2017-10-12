@@ -11,6 +11,6 @@
 9:9:Initial fire spread index (Canadian Forest Service):Numeric:INFSINX
 10:10:Fire build up index (Canadian Forest Service):Numeric:FBUPINX
 11:11:Fire daily severity rating (Canadian Forest Service):Numeric:FDSRTE
-# 11-191:11-191:Reserved:-:
+# 12-191:12-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 255:255:Missing:-:

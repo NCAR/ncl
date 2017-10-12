@@ -1,0 +1,331 @@
+COMMON CODE TABLE C–8: Satellite instruments
+10:10:BNSC:Advanced along track scanning radiometer:Radiometer:AATSR					  
+11:11:BNSC:Along track scanning radiometer:Radiometer:ATSR					  
+12:12:BNSC:Along track scanning radiometer-2:Radiometer:ATSR-2					  
+13:13:BNSC:Microwave radiometer:Radiometer:MWR					  
+30:30:CNES:ARGOS:Communications:ARGOS					  
+40:40:CNES:Laser reflectors:Lidar:Laser reflectors			  
+41:41:CNES:Doppler orbitography and radio-positioning integrated by satellite:Lidar:DORIS					  
+42:42:CNES:Doppler orbitography and radio-positioning integrated by satellite-NG:Lidar:DORIS-NG				  
+47:47:CNES:Positioning ocean, solid Earth, ice dynamics orbiting navigator (single frequency solid state radar altimeter):Radar altimeter:POSEIDON-1 (SSALT1)			  
+48:48:CNES:Positioning ocean, solid Earth, ice dynamics orbiting navigator (double frequency solid state radar altimeter):Radar altimeter:POSEIDON-2 (SSALT2)			  
+49:49:CNES:Positioning ocean, solid Earth, ice dynamics orbiting navigator (double frequency solid state radar altimeter):Radar altimeter:POSEIDON-3 (SSALT3)			  
+50:50:CNES:ATSR/M:Imaging radiometer:ATSR/M					  
+51:51:CNES:HRG:High-resolution optical imager:HRG					  
+52:52:CNES:High-resolution visible:Radiometer:HRV					  
+53:53:CNES:High-resolution visible and infrared:Radiometer:HRVIR 					  
+54:54:CNES:Scanner for Earth's radiation budget:Radiometer:ScaRaB/MV2				  
+55:55:CNES:POLDER:Radiometer:POLDER					  
+56:56:CNES:Imaging Infrared Radiometer:Imaging multi-spectral radiometer:IIR					  
+60:60:CNES:VEGETATION:Spectrometer:VEGETATION				  
+61:61:CNES:WINDII:Spectrometer:WINDII					  
+62:62:CNES:Ka band Radar Altimeter:Altimeter:AltiKa 					  
+80:80:CSA:RADARSAT DTT:Communications:RADARSAT DTT				  
+81:81:CSA:RADARSAT TTC:Communications:RADARSAT TTC 				  
+85:85:CSA:Synthetic aperture radar (CSA):Radar:SAR (CSA)				  
+90:90:CSA:Measurements of pollution in the troposphere:Radiometer:MOPITT					  
+91:91:CSA:Optical spectrograph and Infrared imaging system:Atmospheric chemistry instrument:OSIRIS					  
+92:92:CSA:Atmospheric Chemistry Experiment – Fourier Transform Spectrometer:Limb-scanning sounder:ACE-FTS					  
+97:97:CSIRO:Panchromatic imager:Radiometer:Panchromatic imager			  
+98:98:CRCSS:GPS receiver:Atmospheric temperature and humidity sounder:GPS receiver				  
+102:102:DLR:GPS turborogue space receiver (TRSR):Radiometer:CHAMP GPS sounder			  
+103:103:DLR:Integrated GPS and Occultation Receiver:Radiometer:IGOR					  
+116:116:DLR:STAR accelerometer:Magnetometer:CHAMP gravity package (Accelerometer+GPS) 
+117:117:DLR:Overhauser magnetometer (OVM) and fluxgate magnetometer (FGM):Magnetometer:CHAMP magnetometry package (1 scalar+2 vector magnetometer)
+120:120:ESA:Communications package on ENVISAT:Communications:ENVISAT Comms
+121:121:ESA:Communication package for ERS:Communications:ERS Comms
+130:130:ESA:Atmospheric laser Doppler instrument:Lidar:ALADIN
+131:131:ESA:Atmospheric lidar:Lidar:ATLID
+140:140:ESA:Active microwave instrumentation image mode:Radar:AMI/SAR/image
+141:141:ESA:Active microwave instrumentation wave mode:Radar:AMI/SAR/wave
+142:142:ESA:Active microwave instrumentation wind mode:Radar:AMI/scatterometer
+143:143:ESA:ASAR:Radar:ASAR
+144:144:ESA:Advanced synthetic aperture radar (image mode):Imaging microwave:ASAR
+145:145:ESA:Advanced synthetic aperture radar (wave mode):Imaging microwave:ASAR
+146:146:ESA:Cloud radar:Cloud profile and rain radar:CPR
+147:147:ESA:Radar altimeter-2:Radar:RA-2/MWR
+148:148:ESA:Radar altimeter:Radar:RA/MWR
+150:150:ESA:Scatterometer:Scatterometer:SCATTEROMETER
+151:151:ESA:Synthetic Aperture Radar (C-band):Imaging radar:SAR-C
+152:152:ESA:Sounder TROPOMI Tropospheric Monitoring Instrument:Cross-nadir scanning:SW
+161:161:ESA:Michelson interferometric passive atmosphere sounder:Radiometer:MIPAS
+162:162:ESA:Microwave radiometer-2:Imaging multi-spectral radiometer (passive microwave):MWR-2
+163:163:ESA:Sub-milimetre observation of processes in the absorption noteworthy for ozone:Atmospheric chemistry instrument:SOPRANO
+170:170:ESA:Global ozone monitoring experiment:Atmospheric chemistry instrument:GOME
+172:172:ESA:Global ozone monitoring by occultation of stars:Spectrometer:GOMOS
+174:174:ESA:Medium resolution imaging spectrometer:Spectrometer:MERIS
+175:175:ESA:Scanning imaging absorption spectrometer for atmospheric cartography:Spectrometer:SCIAMACHY
+176:176:ESA:Microwave imaging radiometer using aperture synthesis:Radiometer:MIRAS
+177:177:ESA:SAR/Interferometric Radar Altimeter:Radar Altimeter:SIRAL
+178:178:ESA:Synthetic aperture radar altimeter:Radar altimeter:SRAL
+179:179:ESA:Ocean and land colour imager:Moderate resolution optical imager:OLCI
+180:180:ESA:Sea and land surface temperature radiometer:Moderate resolution optical imager:SLSTR
+181:181:EUMETSAT:Communications package for METEOSAT:Communications:METEOSAT Comms
+182:182:EUMETSAT:Communications package for MSG:Communications:MSG Comms
+190:190:ESA/EUMETSAT:Advanced scatterometer:Scatterometer:ASCAT
+200:200:EUMETSAT:Geostationary Earth radiation budget:Radiometer:GERB
+202:202:ESA/EUMETSAT:GNSS receiver for atmospheric sounding:Radiometer:GRAS
+203:203:EUMETSAT:Microwave humidity sounder:Radiometer:MHS
+205:205:EUMETSAT:METEOSAT visible and infrared imager:Radiometer:MVIRI
+207:207:EUMETSAT:Spinning enhanced visible and infrared imager:Radiometer:SEVIRI
+208:208:EUMETSAT:VIRI:Imaging multi-spectral radiometer (vis/IR):VIRI
+220:220:ESA/EUMETSAT:Global ozone monitoring experiment-2:Spectrometer:GOME-2
+221:221:CNES/EUMETSAT:Infrared atmospheric sounding interferometer:Atmospheric temperature and humidity sounder:IASI
+240:240:CAST:Data-collection platform transponder:Communications:DCP
+245:245:CAST:High-resolution CCD camera:Radiometer:CCD
+246:246:INPE:Humidity sounder/Brazil:Atmospheric temperature and humidity sounder:HSB
+248:248:INPE:Observador Brasileiro da Amazonia:Imaging multi-spectral radiometer (vis/IR):OBA
+250:250:CAST:Wide field imager:Radiometer:WFI
+255:255:CAST:Infrared multispectral scanner:Spectrometer:IRMSS
+260:260:ISRO:BSS & FSS transponders:Precision orbit:BSS & FSS transponders
+261:261:ISRO:DRT-S&R:Precision orbit:DRT-S&R
+262:262:ISRO:Communications package for INSAT:Communications:INSAT Comms
+268:268:ISRO:High-resolution panchromatic camera:High-resolution optical imager:HR-PAN
+269:269:ISRO:Multifrequency scanning microwave radiometer:Imaging multi-spectral radiometer (passive microwave):MSMR
+270:270:ISRO:Very high-resolution radiometer:Imaging multi-spectral radiometer (vis/IR):VHRR
+271:271:ISRO:Wide field sensor:Imaging multi-spectral radiometer (vis/IR):WiFS
+275:275:ISRO:Advanced wide field sensor:High-resolution optical imager:AWiFS
+276:276:ISRO:Linear imaging self scanner-I:High-resolution optical imager:LISS-I
+277:277:ISRO:Linear imaging self scanner-II:High-resolution optical imager:LISS-II
+278:278:ISRO:Linear imaging self scanner-III:High-resolution optical imager:LISS-III
+279:279:ISRO:Linear imaging self scanner-IV:High-resolution optical imager:LISS-IV
+284:284:ISRO:Panchromatic sensor:High-resolution optical imager:PAN
+285:285:ISRO:Modular opto-electronic scanner:Imaging multi-spectral radiometer (vis/IR):MOS
+286:286:ISRO:Ocean colour monitor:Ocean colour Instrument:OCM
+287:287:ASI:Radio Occultation Sounder of the Atmosphere:Radio occulation sounder:ROSA
+288:288:ISRO:Scatterometer:Scatterometer:SCAT
+290:290:JMA:Communications package for MTSAT:Communications:MTSAT Comms
+291:291:JMA:Communications package for Himawari:Communications:Himawari Comms
+294:294:JMA:Japanese Advanced Meteorological Imager:Imaging multi-spectral radiometer:JAMI
+295:295:JMA:Imager/MTSAT-2:Imaging multi-spectral radiometer:IMAGER/MTSAT-2
+296:296:JMA:Visible and infrared spin scan radiometer:Imaging multi-spectral radiometer:VISSR
+297:297:JMA:Advanced Himawari Imager:Imaging multi-spectral radiometer:AHI
+300:300:NASA:Geoscience laser altimeter system:Lidar:GLAS
+301:301:NASA:Laser retroreflector array:Precision orbit:LRA
+302:302:NASA:Multi-beam laser altimeter:Lidar:MBLA
+303:303:NASA:Cloud-aerosol lidar with orthogonal polarization:Lidar:CALIOP
+309:309:NASA:Cloud profiling radar:Cloud profile and rain radar:CPR (Cloudsat)
+312:312:NASA:NASA scatterometer:Radar:NSCAT
+313:313:NASA:ADEOS II – NASA scatterometer:Radar:SeaWinds
+314:314:NASA:RapidScat scatterometer:Radar:RapidScat
+330:330:NASA:Active cavity radiometer irradiance monitor:Earth radiation budget radiometer:ACRIM
+334:334:NASA:Backscatter ultraviolet instrument:Total and profile ozone:BUV
+336:336:NASA:Advanced land imager:High-resolution optical imager:ALI
+347:347:NASA:Advanced spaceborne thermal emission and reflection radiometer:High-resolution optical imager:ASTER
+348:348:NASA:Cloud and the Earth's radiant energy system:Earth radiation budget radiometer:CERES-2
+351:351:NASA:GPS demonstration receiver:Atmospheric temperature and humidity sounder:GPSDR
+353:353:NASA:High-resolution dynamics limb sounder:Total and profile ozone:HiRDLS
+354:354:NASA:High-resolution Doppler imager:Total and profile ozone:HRDI
+356:356:NASA:Lightning imaging sensor:Radiometer:LIS
+358:358:NASA:Particle environment monitor:Magnetic field, auroal imagery scintillation boundary:PEM
+359:359:NASA:Sea-viewing wide field-of-view sensor:Ocean colour instrument:SeaWiFS
+360:360:NASA:Solar ultraviolet irradiance monitor:Earth radiation budget radiometer:SUSIM (UARS)
+363:363:NASA:Solar backscatter ultraviolet 1 instrument:Total and profile ozone:SBUV/1
+365:365:NASA:TRMM microwave imager:Imaging multi-spectral radiometer (passive microwave):TMI
+366:366:NASA:JASON-1 microwave radiometer:Imaging multi-spectral radiometer (passive microwave):JMR
+367:367:NASA:Advanced microwave radiometer:Imaging multi-spectral radiometer:AMR
+369:369:NASA:Limb infrared monitor of the stratosphere:Total and profile ozone:LIMS
+370:370:NASA:Limb radiance inversion radiometer instrument:Total and profile ozone:LRIR
+371:371:NASA:Earth polychromatic imaging camera:Total and profile ozone:EPIC
+372:372:NASA:NIST advanced radiometer:Earth radiation budget radiometer:NISTAR
+373:373:NASA:Plasma-Mag:Magnetic field, auroal imagery scintillation boundary:Plasma-Mag
+374:374:NASA:XUV photometer system:Other:XPS
+375:375:NASA:Visible infrared scanner:Imaging multi-spectral radiometer (vis/IR):VIRS
+376:376:CNES:Polarization and directionality of the Earth's reflectance-II:Multiple direction/polarization radiometer:POLDER II
+377:377:NASA:Total irradiance monitor:Earth radiation budget radiometer:TIM
+379:379:NASA:Wide field camera:Imaging multi-spectral radiometer (vis/IR):WFC
+382:382:NASA:Cryogenic limb array etalon spectrometer:Spectro-radiometer:CLAES
+383:383:NASA:Halogen occultation experiment:Spectro-radiometer:HALOE
+384:384:NASA:Improved stratospheric and mesospheric sounder:Spectro-radiometer:ISAMS
+385:385:NASA:Multi-angle imaging spectroradiometer:Spectro-radiometer:MISR
+386:386:NASA:Microwave limb sounder:Spectro-radiometer:MLS
+387:387:NASA:Microwave limb sounder (EOS-Aura):Spectro-radiometer:MLS (EOS-Aura)
+389:389:NASA:Moderate-resolution imaging spectroradiometer:Spectro-radiometer:MODIS
+393:393:NASA:High accuracy inter-satellite ranging system:Gravity:HAIRS
+394:394:NASA:Ozone measuring instrument:Total and profile ozone:OMI
+395:395:NASA:Atmospheric corrector:Radiometer:Atmospheric corrector
+396:396:NASA:Hyperspectral imager:Radiometer:Hyperion
+399:399:NASA:Stratospheric aerosol and gas experiment-I:Spectro-radiometer:SAGE I
+400:400:NASA:Stratospheric aerosol and gas experiment-II:Spectro-radiometer:SAGE II
+401:401:NASA:Stratospheric aerosol and gas experiment-III:Spectro-radiometer:SAGE III
+402:402:NASA:Stratospheric and mesospheric sounder:Spectro-radiometer:SAMS
+403:403:NASA:Stratospheric aerosol measurement-II:Spectro-radiometer:SAM-II
+404:404:NASA:Infrared interferometer spectrometer:Spectro-radiometer:IRIS
+405:405:NASA:Geosynchronous imaging Fourier transform spectrometer:Atmospheric temperature and Humidity sounder:GIFTS
+420:420:NASA:Atmospheric Infrared sounder:Spectrometer:AIRS
+426:426:NASA:Solar stellar irradiance comparison experiment:Spectrometer:SOLSTICE
+430:430:NASA:Tropospheric emission spectrometer:Spectrometer:TES
+431:431:NASA:Total ozone mapping spectrometer:Spectrometer:TOMS
+432:432:NASA:Orbiting carbon observatory:Spectrometer:OCO
+450:450:JAXA:Communications package for ADEOS:Communications:ADEOS Comms
+451:451:JAXA:Data-collection system (JAXA):Communications:DCS (JAXA)
+453:453:NASDA:Communications package on GMS:Communications:GMS Comms
+454:454:NASDA:Communications package for JERS-1:Communications:JERS-1 Comms
+460:460:NASDA:Retroreflector in space:Lidar:RIS
+461:461:NASDA:Precipitation radar:Radar:PR
+462:462:NASDA:Synthetic aperture radar:Imaging microwave radar:SAR
+470:470:JAXA:Phased array type L-band synthetic aperture radar:Imaging microwave radar:PALSAR
+478:478:JAXA:Advanced Microwave Scanning Radiometer 2:Imaging multi- spectral radiometer (passive microwave):AMSR2
+479:479:JAXA:Advanced microwave scanning radiometer – EOS:Imaging multi- spectral radiometer (passive microwave):AMSR-E
+480:480:JAXA:Panchromatic remote-sensing instrument for stereo mapping:High-resolution optical imager:PRISM (ALOS)
+481:481:JAXA:Advanced microwave scanning radiometer:Radiometer:AMSR
+482:482:NASDA:Advanced visible and near infrared radiometer:High-resolution optical imager:AVNIR
+483:483:JAXA:Advanced visible and near infrared radiometer type 2:High-resolution optical imager:AVNIR-2
+484:484:JAXA:Global imager:Imager:GLI
+485:485:NASDA:Multispectral electronic self scanning radiometer:Radiometer:MESSR
+486:486:NASDA:Microwave scanning radiometer:Radiometer:MSR
+487:487:NASDA:Ocean colour and temperature scanner:Radiometer:OCTS
+488:488:NASDA:Optical sensor:Radiometer:OPS
+489:489:NASDA:Visible and infrared spin scan radiometer (GMS-5):Radiometer:VISSR (GMS-5)
+490:490:NASDA:Visible and thermal infrared radiometer:Radiometer:VTIR
+510:510:NASDA:Improved limb atmospheric spectrometer:Spectrometer:ILAS-I
+511:511:NASDA:Improved limb atmospheric spectrometer:Spectrometer:ILAS-II
+512:512:NASDA:Inferometric monitor of greenhouse gases:Spectrometer:IMG
+514:514:NASDA:Space environment monitor (NASDA):Space environment:SEM
+515:515:JAXA:Solar occultation Fourier transform spectrometer for inclined orbit satellite:Total and profile ozone:SOFIS
+516:516:JAXA:Thermal and Near infrared Sensor for carbon Observations (TANSO) Fourier Transform Spectrometer (FTS):Spectrometer:TANSO-FTS
+517:517:JAXA:Thermal and Near infrared Sensor for carbon Observations (TANSO) Cloud and Aerosol Imager (CAI):Imager:TANSO-CAI
+518:518:JAXA:Dual-frequency precipitation radar:Cloud and precipitation radar:DPR
+519:519:NASA:GPM microwave imager:MW imaging/sounding radiometer, conical scanning:GMI
+540:540:NOAA:Data-collection system (NOAA):Communications:DCS (NOAA)
+541:541:NOAA:Communications package on GOES:Communications:GOES Comms
+542:542:NOAA:Communications package for LANDSAT:Communications:LANDSAT Comms
+543:543:NOAA:Communications package for NOAA:Communications:NOAA Comms
+544:544:NOAA:Search and rescue:Communications:S&R (GOES)
+545:545:NOAA:Search and rescue:Communications:S&R (NOAA)
+546:546:NOAA:Weather facsimile:Communications:WEFAX
+547:547:NOAA:Space environment monitor:Spectrometer:SEM (GOES)
+550:550:NOAA:Special sensor magnetometer:Magnetic field:SSM
+551:551:NOAA:Special sensor precipitating plasma monitor:Magnetic field:SSJ/4
+552:552:NOAA:Special sensor ionospheric plasma drift/scintillation meter:Space environment:SSIES-2
+553:553:NOAA:Special sensor gamma ray particle detector:Space environment:SSB/X-2
+570:570:NOAA:Advanced microwave sounding unit-A:Radiometer:AMSU-A
+574:574:NOAA:Advanced microwave sounding unit-B:Radiometer:AMSU-B
+580:580:NOAA:Advanced TIROS operational vertical sounder:Radiometer:ATOVS (HIRS/3 + AMSU + AVHRR/3)
+590:590:NOAA:Advanced very high-resolution radiometer/2:Radiometer:AVHRR/2
+591:591:NOAA:Advanced very high-resolution radiometer/3:Radiometer:AVHRR/3
+592:592:NOAA:Advanced very high-resolution radiometer/4:Radiometer:AVHRR/4
+600:600:NOAA:Earth's radiation budget experiment:Radiometer:ERBE
+601:601:NOAA:Enhanced thematic mapper:Radiometer:ETM+
+605:605:NOAA:High-resolution infrared sounder/2:Radiometer:HIRS/2
+606:606:NOAA:High-resolution infrared sounder/3:Radiometer:HIRS/3
+607:607:NOAA:High-resolution infrared sounder/4:Radiometer:HIRS/4
+615:615:NOAA:Imager:Radiometer:IMAGER
+616:616:NOAA:Visible/infrared imager radiometer suite:Imaging multi-spectral radiometer (vis/IR):VIIRS
+620:620:NOAA:Cross-track infrared sounder/NPOESS:Atmospheric temperature and humidity sounder:CrIRS/NP
+621:621:NOAA:Advanced technology microwave sounder:Atmospheric temperature and humidity sounder:ATMS
+622:622:NOAA:Multispectral scanning system:Radiometer:MSS
+623:623:NOAA:Microwave sounding unit:Radiometer:MSU
+624:624:NOAA:Solar backscatter ultraviolet instrument/2:Radiometer:SBUV/2
+625:625:NOAA:Solar backscatter ultraviolet instrument/3:Radiometer:SBUV/3
+626:626:NOAA:SOUNDER:Radiometer:SOUNDER
+627:627:NOAA:Stratospheric sounding unit:Radiometer:SSU
+628:628:NOAA:Thematic mapper:Radiometer:TM
+629:629:NOAA:TIROS operational vertical sounder (MSU + SSU):Radiometer:TOVS (HIRS/2 +
+630:630:NOAA:VISSR atmospheric sounder:Radiometer:VAS
+631:631:NOAA:SSZ:Radiometer:SSZ
+645:645:NOAA:Space environment monitor:Spectrometer:SEM
+650:650:NRSCC:Multispectral visible and infrared scan radiometer:Radiometer:MVIRSR (10 channel)
+651:651:NRSCC:Multispectral visible and infrared scan radiometer:Radiometer:MVIRSR (3 channel)
+652:652:NRSCC:Multispectral visible and infrared scan radiometer:Radiometer:MVIRSR (5 channel)
+670:670:NSAU:Side looking microwave radar:Radar:RLSBO
+680:680:NSAU:Multispectral radiometer with high resolution:High-resolution optical imager:MSU-EU
+681:681:NSAU:Visible multispectral radiometer:Imaging multi-spectral radiometer (vis/IR):MSU-UM
+682:682:NSAU:Imaging microwave radiometer:Radiometer:RM-08
+683:683:NSAU:Stereo radiometer with high resolution:High-resolution optical imager:SU-UMS
+684:684:NSAU:Visible radiometer with high resolution:High-resolution optical imager:SU-VR
+685:685:NSAU:TRASSER:Radiometer:TRASSER
+686:686:SOA:Scatterometer:Scatterometer:SCAT
+687:687:SOA:Radar altimeter:Radar altimeter:ALT
+688:688:SOA:Microwave radiometer:Microwave radiometer:MWI
+700:700:ROSCOSMOS:Data-collection and transmission system:Communications:KONDOR-2
+701:701:ROSCOSMOS:BRK:Communications:BRK
+710:710:ROSCOSMOS:Backscatter lidar:Lidar:ALISSA
+712:712:ROSCOSMOS:Balkan-2 lidar:Lidar:Balkan-2 lidar
+715:715:ROSCOSMOS:MK-4:Lidar:MK-4
+716:716:ROSCOSMOS:MK-4M:Lidar:MK-4M
+730:730:ROSCOSMOS:Radar altimeter:Radar:Greben
+731:731:ROSCOSMOS:Synthetic aperture radar:Radar:SAR-10
+732:732:ROSCOSMOS:Synthetic aperture radar:Radar:SAR-3
+733:733:ROSCOSMOS:Synthetic aperture radar:Radar:SAR-70
+740:740:ROSCOSMOS:Side looking radar:Radar:SLR-3
+745:745:ROSCOSMOS:Travers SAR:Radar:Travers SAR
+750:750:ROSCOSMOS:Temperature and humidity profiler:Radiometer:174-K
+751:751:ROSCOSMOS:Scanning television radiometer:Radiometer:BTVK
+752:752:ROSCOSMOS:Scanning infrared radiometer:Radiometer:Chaika
+753:753:ROSCOSMOS:Multispectral microwave scanner:Radiometer:DELTA-2
+755:755:ROSCOSMOS:Multispectral microwave scanner:Radiometer:IKAR-D
+756:756:ROSCOSMOS:Multispectral microwave scanner:Radiometer:IKAR-N
+757:757:ROSCOSMOS:Multispectral microwave scanner:Radiometer:IKAR-P
+760:760:ROSCOSMOS:ISP:Radiometer:ISP
+761:761:ROSCOSMOS:Photographic camera:Radiometer:KFA-1000
+762:762:ROSCOSMOS:Photographic camera:Radiometer:KFA-200
+763:763:ROSCOSMOS:Photographic camera:Radiometer:KFA-3000
+770:770:ROSCOSMOS:Scanning infrared radiometer:Radiometer:Klimat
+771:771:ROSCOSMOS:Scanning infrared radiometer:Radiometer:Klimat-2
+775:775:ROSCOSMOS:MIRAS:Radiometer:MIRAS
+776:776:ROSCOSMOS:MIVZA:Radiometer:MIVZA
+777:777:ROSCOSMOS:Microwave scanning radiometer:Radiometer:MIVZA-M
+780:780:ROSCOSMOS:MR-2000:Radiometer:MR-2000
+781:781:ROSCOSMOS:MR-2000M:Radiometer:MR-2000M
+785:785:ROSCOSMOS:Scanning telephotometer:Radiometer:MR-900
+786:786:ROSCOSMOS:Scanning visual band telephotometer:Radiometer:MR-900B
+790:790:ROSCOSMOS:Multispectral high-resolution electronic scanner:Radiometer:MSU-E
+791:791:ROSCOSMOS:Multispectral high-resolution electronic scanner:Radiometer:MSU-E1
+792:792:ROSCOSMOS:Multispectral high-resolution electronic scanner:Radiometer:MSU-E2
+793:793:ROSCOSMOS:MSU-M:Radiometer:MSU-M
+794:794:ROSCOSMOS:Multispectral medium-resolution scanner:Radiometer:MSU-S
+795:795:ROSCOSMOS:Multispectral medium-resolution conical scanner:Radiometer:MSU-SK
+796:796:ROSCOSMOS:Multispectral high-resolution conical scanner:Radiometer:MSU-V
+810:810:ROSCOSMOS:Scanning microwave radiometer:Radiometer:MTZA
+815:815:ROSCOSMOS:Scanning microwave radiometer:Imaging multi- spectral radiometer (passive microwave):MZOAS
+820:820:ROSCOSMOS:Single channel microwave radiometer:Imaging multi-spectral radiometer (passive microwave):R-225
+821:821:ROSCOSMOS:R-400:Radiometer:R-400
+822:822:ROSCOSMOS:Single channel microwave radiometer:Radiometer:R-600
+830:830:ROSCOSMOS:Radiation measurement system:Radiometer:RMS
+835:835:ROSCOSMOS:TV camera:Radiometer:TV camera
+836:836:ROSCOSMOS:SILVA:Radiometer:SILVA
+840:840:ROSCOSMOS:Spectroradiometer for ocean monitoring:Spectro-radiometer:SROSMO
+850:850:ROSCOSMOS:Backscatter spectrometer/2:Spectrometer:BUFS-2
+851:851:ROSCOSMOS:Backscatter spectrometer/4:Spectrometer:BUFS-4
+855:855:ROSCOSMOS:Infrared spectrometer:Spectrometer:ISTOK-1
+856:856:ROSCOSMOS:Spectrometer to measure direct solar radiation:Spectrometer:SFM-2
+857:857:ROSCOSMOS:DOPI:Spectrometer:DOPI
+858:858:ROSCOSMOS:KGI-4:Spectrometer:KGI-4
+859:859:ROSCOSMOS:Ozon-M:Spectrometer:Ozon-M
+860:860:ROSCOSMOS:RMK-2:Spectrometer:RMK-2
+900:900:NOAA:Magnetospheric atmospheric X-ray imaging experiment:Radiometer:MAXIE
+901:901:NOAA:Operational linescan system:Radiometer:OLS
+905:905:NOAA:Mission sensor microwave imager:Radiometer:SSM/I
+906:906:NOAA:Mission sensor microwave temperature sounder:Radiometer:SSM/T-1
+907:907:NOAA:Mission sensor microwave water vapour sounder:Radiometer:SSM/T-2
+908:908:NOAA:Special sensor microwave imager sounder:Radiometer:SSMIS
+910:910:NOAA:Solar X-ray imager:Radiometer:SXI
+930:930:NOAA:Energetic heavy ion composition experiment:Spectrometer:EHIC
+931:931:NOAA:X-ray astronomy payload:Spectrometer:X-ray astronomy payload
+932:932:NRSCC:Improved multispectral visible and Infrared scan radiometer (5 channels):Imaging multi-spectral radiometer (vis/IR):IVISSR (FY-2)
+933:933:NRSCC:Infrared atmospheric sounder:Atmospheric temperature and humidity sounder:IRAS
+934:934:NRSCC:Microwave atmospheric sounder:Atmospheric temperature and humidity sounder:MWAS
+935:935:NRSCC:Improved Microwave atmospheric sounder:Atmospheric temperature and humidity sounder:IMWAS
+936:936:NRSCC:Microwave humidity sounder:Atmospheric temperature and humidity sounder:MWHS
+937:937:NRSCC:Moderate resolution visible and infrared imaging spectroradiometer:Imaging multi-spectral radiometer (vis/IR):MVIRS
+938:938:NRSCC:Microwave radiation imager:Imaging multi-spectral radiometer (passive microwave):MWRI
+940:940:ROSCOSMOS:Scanning microwave radiometer:Atmospheric temperature and humidity sounder:MTVZA-OK
+941:941:CNES:SAPHIR:Atmospheric temperature and humidity sounder:SAPHIR
+942:942:CNES:Microwave Analysis and Detection of Rain and Atmospheric Structures:Microwave imager:MADRAS
+944:944:NOAA:Altimeter:Radar altimeter:ALT
+945:945:NOAA:Total solar irradiance sensor:Earth radiation budget radiometer:TSIS
+946:946:NOAA:Conical-scanning microwave imager/sounder:Imaging multi-spectral radiometer (passive microwave):CMIS
+947:947:NOAA:Ozone mapping and profiler suite:Total and profile ozone:OMPS
+948:948:NOAA:Global positioning system occultation sensor:Space environment atmospheric temperature and humidity sounder:GPSOS
+949:949:NOAA:Space environmental sensor suite:Magnetic field, auroal imagery scintillation boundary:SESS
+950:950:NRSCC:Multispectral visible and infrared scan radiometer (10 channels):Imaging multi-spectral radiometer (vis/IR):VIRR
+951:951:NRSCC:Total ozone mapper:Total and profile ozone:TOM
+952:952:NRSCC:Ozone profiler:Total and profile ozone:OP
+953:953:CMA:Microwave humidity sounder-2:Microwave sounding radiometer, crosstrack scanning:MWHS-2
+954:954:CMA:Microwave temperature sounder-2:Microwave sounding radiometer, crosstrack scanning:MWTS-2
+955:955:CMA:Hyperspectral infrared atmospheric sounder:Cross-nadir scanning IR sounder:HIRAS
+956:956:CMA:Solar backscatter ultraviolet sounder:Spectrometer:SBUS
+957:957:CMA:Total ozone unit:Spectrometer:TOU
+958:958:CMA:Global navigation satellite system occultation sounder:GNSS occultation sounder:GNOS
+959:959:SNSB:Sub-millimetre radiometer:Limb-scanning sounder:SMR

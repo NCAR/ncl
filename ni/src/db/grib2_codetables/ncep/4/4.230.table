@@ -37,7 +37,7 @@
 35:35:Hydrogen Bromide:HBr
 36:36:Hypobromous Acid:HBrO
 37:37:Bromine Nitrate:BrONO2
-#38:38:Reserved
+38:38:Oxygen:O2
 10000:10000:Hydroxyl Radical:OH
 10001:10001:Methyl Peroxy Radical:CH3O2
 10002:10002:Methyl Hydroperoxide:CH3O2H
@@ -83,6 +83,7 @@
 20019:20019:Hexachlorocyclohexane (HCH)
 20020:20020:Alpha Hexachlorocyclohexane
 20021:20021:Hexachlorobiphenyl (PCB-153)
+30000:30000:Radioactive Pollutant (Tracer, defined by originating centre)
 60000:60000:HOx Radical (OH+HO2)
 60001:60001:Total Inorganic and Organic Peroxy Radicals (HO2+RO2):RO2
 60002:60002:Passive Ozone

@@ -37,7 +37,7 @@
 35:35:Hydrogen Bromide:HBr
 36:36:Hypobromous Acid:HBrO
 37:37:Bromine Nitrate:BrONO2
-#38:38:Reserved
+38:38:Oxygen:O2
 10000:10000:Hydroxyl Radical:OH
 10001:10001:Methyl Peroxy Radical:CH3O2
 10002:10002:Methyl Hydroperoxide:CH3O2H
@@ -114,6 +114,17 @@
 62010:62010:Particulate Organic Matter Dry
 62011:62011:Primary Particulate Organic Matter Dry
 62012:62012:Secondary Particulate Organic Matter Dry
+62013:62013:Black carbon hydrophilic dry	
+62014:62014:Black carbon hydrophobic dry	
+62015:62015:Particulate organic matter hydrophilic dry	
+62016:62016:Particulate organic matter hydrophobic dry	
+62017:62017:Nitrate hydrophilic dry	
+62018:62018:Nitrate hydrophobic dry	
+62020:62020:Smoke - high absorption	
+62021:62021:Smoke - low absorption	
+62022:62022:Aerosol - high absorption	
+62023:62023:Aerosol - low absorption	
+62025:62025:Volcanic ash
 65535:65535:Missing
 
 

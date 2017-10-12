@@ -586,7 +586,15 @@ typedef struct _Grib2VarTraits {
 	int second_level_type;
 	int aerosol_type;
 	int aerosol_size_interval_type;
+        int aerosol_size_first_scale_factor;
+	int aerosol_size_first_scale_value;
+	int aerosol_size_second_scale_factor;
+	int aerosol_size_second_scale_value;
 	int aerosol_wavelength_interval_type;
+	int aerosol_wavelength_first_scale_factor;
+	int aerosol_wavelength_first_scale_value;
+	int aerosol_wavelength_second_scale_factor;
+	int aerosol_wavelength_second_scale_value;
 } Grib2VarTraits;
 
 struct _Grib2ParamList {

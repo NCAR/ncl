@@ -3778,7 +3778,7 @@ static NrmQuark ForecastTimeUnitsToQuark
 static void _g2SetAttributeLists
 #if 	NhlNeedProto
 (Grib2FileRecord *therec)
-#else
+#else _g2SetAttributeLists
 (therec)
 Grib2FileRecord *therec;
 #endif
@@ -3816,16 +3816,27 @@ Grib2FileRecord *therec;
 		if (! grib_rec)
 			continue;
 
-		/* Handle coordinate attributes,  level, initial_time, forecast_time */
 		if (step->traits.aerosol_type != 65535) {
+			sprintf(buf,"%s_A%d",NrmQuarkToString(step->var_info.var_name_quark),step->traits.aerosol_type);
+			step->var_info.var_name_quark = NrmStringToQuark(buf);
 			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
 			att_list_ptr->next = step->theatts;
 			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-			att_list_ptr->att_inq->name = NrmStringToQuark("aerosol_type");
-			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-			if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
-					       "4.233.table",step->traits.aerosol_type,-1,ct) < NhlWARNING) {
-				return;
+			if (step->traits.pds_template >= 40 && step->traits.pds_template <= 43) {
+				att_list_ptr->att_inq->name = NrmStringToQuark("atmospheric_chemical_constituent_type");
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
+						       "4.230.table",step->traits.aerosol_type,-1,ct) < NhlWARNING) {
+					return;
+				}
+			}
+			else {
+				att_list_ptr->att_inq->name = NrmStringToQuark("aerosol_type");
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
+						       "4.233.table",step->traits.aerosol_type,-1,ct) < NhlWARNING) {
+					return;
+				}
 			}
 			if (ct->descrip) {
 				*tmp_string = NrmStringToQuark(ct->descrip);
@@ -3840,7 +3851,182 @@ Grib2FileRecord *therec;
 					      PERMANENT, NULL, nclTypestringClass);
 			step->theatts = att_list_ptr;
 			step->n_atts++;
+			if (step->traits.aerosol_size_interval_type != 255) {
+				float first_value = -9999.0, second_value = -9999.0;
+				att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+				att_list_ptr->next = step->theatts;
+				att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+				att_list_ptr->att_inq->name = NrmStringToQuark("aerosol_size");
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				if (step->traits.aerosol_size_first_scale_factor == 0) {
+					first_value = step->traits.aerosol_size_first_scale_value;
+				}
+				else {
+					first_value = step->traits.aerosol_size_first_scale_value *
+						pow(0.1,step->traits.aerosol_size_first_scale_factor);
+				}
+				if (step->traits.aerosol_size_second_scale_factor == 0) {
+					second_value = step->traits.aerosol_size_second_scale_value;
+				}
+				else {
+					second_value = step->traits.aerosol_size_second_scale_value *
+						pow(0.1,step->traits.aerosol_size_second_scale_factor);
+				}
+				switch (step->traits.aerosol_size_interval_type) {
+				case 0:
+					sprintf(buf,"< %g",first_value);
+					break;
+				case 1:
+					sprintf(buf,"> %g",second_value);
+					break;
+				case 2:
+					sprintf(buf,">= %g and < %g",first_value,second_value);
+					break;
+				case 3:
+					sprintf(buf,"> %g",first_value);
+					break;
+				case 4:
+					sprintf(buf,"< %g",second_value);
+					break;
+				case 5:
+					sprintf(buf,"<= %g",first_value);
+					break;
+ 				case 6:
+					sprintf(buf,">= %g",second_value);
+					break;
+ 				case 7:
+					sprintf(buf,">= %g and <= %g",first_value,second_value);
+					break;
+ 				case 8:
+					sprintf(buf,">= %g ",first_value);
+					break;
+ 				case 9:
+					sprintf(buf,"<= %g",second_value);
+					break;
+ 				case 10:
+					sprintf(buf,"> %g and <= %g",first_value,second_value);
+					break;
+ 				case 11:
+					sprintf(buf,"%g",first_value);
+					break;
+				}
+				*tmp_string = NrmStringToQuark(buf);
+				att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+					_NclCreateVal(NULL, NULL,
+						      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
+						      PERMANENT, NULL, nclTypestringClass);
+				step->theatts = att_list_ptr;
+				step->n_atts++;
+			}
+			if (step->traits.aerosol_wavelength_interval_type != 255) {
+				float first_value = -9999.0, second_value = -9999.0;
+				att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+				att_list_ptr->next = step->theatts;
+				att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+				att_list_ptr->att_inq->name = NrmStringToQuark("aerosol_wavelength");
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				if (step->traits.aerosol_wavelength_first_scale_factor == 0) {
+					first_value = step->traits.aerosol_wavelength_first_scale_value;
+				}
+				else {
+					first_value = step->traits.aerosol_wavelength_first_scale_value *
+						pow(0.1,step->traits.aerosol_wavelength_first_scale_factor);
+				}
+				if (step->traits.aerosol_wavelength_second_scale_factor == 0) {
+					second_value = step->traits.aerosol_wavelength_second_scale_value;
+				}
+				else {
+					second_value = step->traits.aerosol_wavelength_second_scale_value *
+						pow(0.1,step->traits.aerosol_wavelength_second_scale_factor);
+				}
+				switch (step->traits.aerosol_wavelength_interval_type) {
+				case 0:
+					sprintf(buf,"< %g",first_value);
+					break;
+				case 1:
+					sprintf(buf,"> %g",second_value);
+					break;
+				case 2:
+					sprintf(buf,">= %g and < %g",first_value,second_value);
+					break;
+				case 3:
+					sprintf(buf,"> %g",first_value);
+					break;
+				case 4:
+					sprintf(buf,"< %g",second_value);
+					break;
+				case 5:
+					sprintf(buf,"<= %g",first_value);
+					break;
+ 				case 6:
+					sprintf(buf,">= %g",second_value);
+					break;
+ 				case 7:
+					sprintf(buf,">= %g and <= %g",first_value,second_value);
+					break;
+ 				case 8:
+					sprintf(buf,">= %g ",first_value);
+					break;
+ 				case 9:
+					sprintf(buf,"<= %g",second_value);
+					break;
+ 				case 10:
+					sprintf(buf,"> %g and <= %g",first_value,second_value);
+					break;
+ 				case 11:
+					sprintf(buf,"%g",first_value);
+					break;
+				}
+#if 0
+				case 0:
+					sprintf(buf,"smaller than %g",first_value);
+					break;
+				case 1:
+					sprintf(buf,"greater than %g",second_value);
+					break;
+				case 2:
+					sprintf(buf,"greater than or equal to %g and smaller than %g",first_value,second_value);
+					break;
+				case 3:
+					sprintf(buf,"greater than %g",first_value);
+					break;
+				case 4:
+					sprintf(buf,"smaller than %g",second_value);
+					break;
+				case 5:
+					sprintf(buf,"smaller or equal to %g",first_value);
+					break;
+ 				case 6:
+					sprintf(buf,"greater than or equal to %g",second_value);
+					break;
+ 				case 7:
+					sprintf(buf,"greater than or equal to %g and smaller than or equal to %g",first_value,second_value);
+					break;
+ 				case 8:
+					sprintf(buf,"greater than or equal to %g",first_value);
+					break;
+ 				case 9:
+					sprintf(buf,"smaller than or equal to %g",second_value);
+					break;
+ 				case 10:
+					sprintf(buf,"greater than %g and smaller than or equal to %g",first_value,second_value);
+					break;
+ 				case 11:
+					sprintf(buf,"%g",first_value);
+					break;
+				}
+#endif
+				*tmp_string = NrmStringToQuark(buf);
+				att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+					_NclCreateVal(NULL, NULL,
+						      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
+						      PERMANENT, NULL, nclTypestringClass);
+				step->theatts = att_list_ptr;
+				step->n_atts++;
+			}
+					
 		}
+		/* Handle coordinate attributes,  level, initial_time, forecast_time */
 		if (step->yymmddhh_isatt) {
 			att_list_ptr = (Grib2AttInqRecList *) NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
 			att_list_ptr->next = step->theatts;
@@ -10228,9 +10414,6 @@ static void *Grib2OpenFile
                     NhlFree(g2rec);
                     return NULL;
             }
-	    g2rec[nrecs]->sec4[i]->prod_params->aerosol_type = 65535;
-	    g2rec[nrecs]->sec4[i]->prod_params->size_interval_type = 255;
-	    g2rec[nrecs]->sec4[i]->prod_params->wavelength_interval_type = 255;
 
             switch (g2rec[nrecs]->sec4[i]->pds_num) {
 		    int offset;
@@ -10262,7 +10445,14 @@ static void *Grib2OpenFile
 			    offset = 11;
 			    break;
 		    case 48:
+		    case 49:
 			    offset = 16;
+			    break;
+		    case 70:
+		    case 71:
+		    case 72:
+		    case 73:
+			    offset = 8;
 			    break;
 		    default:
 			    offset = 5;
@@ -10302,6 +10492,7 @@ static void *Grib2OpenFile
 	    default:
 		    switch (g2rec[nrecs]->sec4[i]->pds_num) {
 		    case 48:
+		    case 49:
 			    level_off = 20;
 			    break;
 		    case 47:
@@ -10315,6 +10506,12 @@ static void *Grib2OpenFile
 		    case 41:
 		    case 40:
 			    level_off = 10;
+			    break;
+		    case 70:
+		    case 71:
+		    case 72:
+		    case 73:
+			    level_off = 12;
 			    break;
 		    default: 
 			    level_off = 9;
@@ -10370,40 +10567,33 @@ static void *Grib2OpenFile
 			    NhlFree(g2rec);
 			    return NULL;
 		    }
-#if 0
-		    switch (g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc) {
-		    case 1: /* ground or water surface */
-		    case 9: /* sea bottom */
-			    g2rec[nrecs]->sec4[i]->prod_params->level = -1;
-			    break;
-
-		    default:
-			    g2rec[nrecs]->sec4[i]->prod_params->level = -1;
-			    if (g2fld->ipdtmpl != NULL) {
-				    if (g2rec[nrecs]->sec4[i]->prod_params->scale_factor_first_fixed_sfc < 100)
-					    g2rec[nrecs]->sec4[i]->prod_params->level = g2fld->ipdtmpl[1];
-				    else
-					    g2rec[nrecs]->sec4[i]->prod_params->level = g2fld->ipdtmpl[1] / 100;
-			    } else {
-				    NhlPError(NhlFATAL, NhlEUNKNOWN,
-					      "NclGRIB2: Invalid Product Definition Template.");
-				    NhlFree(g2rec);
-				    return NULL;
-			    }
-
-			    break;
-		    }
-#endif
 	    }
             /*
              * Depending on type of product, there may or may not be more info
              * available that what's been extracted to this point.  This is determined
              * by the Product Definition Templates (PDTs).
              */
+	    /* initialize some parameter defaults */
             g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc = -1;
 	    g2rec[nrecs]->sec4[i]->prod_params->spatial_proc = -1;
             g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done = 0;
+	    g2rec[nrecs]->sec4[i]->prod_params->aerosol_type = 65535;
+	    g2rec[nrecs]->sec4[i]->prod_params->size_interval_type = 255;
+	    g2rec[nrecs]->sec4[i]->prod_params->wavelength_interval_type = 255;
+	    g2rec[nrecs]->sec4[i]->prod_params->aerosol_type = 65535;
+	    g2rec[nrecs]->sec4[i]->prod_params->size_interval_type = 255;
+	    g2rec[nrecs]->sec4[i]->prod_params->size_first_scale_factor = 255;
+	    g2rec[nrecs]->sec4[i]->prod_params->size_first_scale_value = 65535;
+	    g2rec[nrecs]->sec4[i]->prod_params->size_second_scale_factor = 255;
+	    g2rec[nrecs]->sec4[i]->prod_params->size_second_scale_value = 65535;
+	    g2rec[nrecs]->sec4[i]->prod_params->wavelength_interval_type = 255;
+	    g2rec[nrecs]->sec4[i]->prod_params->wavelength_first_scale_factor = 255;
+	    g2rec[nrecs]->sec4[i]->prod_params->wavelength_first_scale_value = 65535;
+	    g2rec[nrecs]->sec4[i]->prod_params->wavelength_second_scale_factor = 255;
+	    g2rec[nrecs]->sec4[i]->prod_params->wavelength_second_scale_value = 65535;
+
             switch (g2rec[nrecs]->sec4[i]->pds_num) {
+	        int offset;
                 case 0:
                     /*
                      * Analysis or forecast at a horizontal level or in a
@@ -10512,6 +10702,7 @@ static void *Grib2OpenFile
                     break;
 
                 case 8:
+	        case 72:
                     /*
                      * Average, accumulation, extreme values or other
                      * statistically processed values at a horizontal level
@@ -10519,33 +10710,34 @@ static void *Grib2OpenFile
                      * non-continuous time interval.
                      */
 		    valid_end_time_set = 1;
+		    offset = (g2rec[nrecs]->sec4[i]->pds_num == 72) ? 3 : 0;
 
                     g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.year
-                            = g2fld->ipdtmpl[15];
+                            = g2fld->ipdtmpl[15+offset];
                     g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.mon
-                            = g2fld->ipdtmpl[16];
+                            = g2fld->ipdtmpl[16+offset];
                     g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.day
-                            = g2fld->ipdtmpl[17];
+                            = g2fld->ipdtmpl[17+offset];
                     g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.hour
-                            = g2fld->ipdtmpl[18];
+                            = g2fld->ipdtmpl[18+offset];
                     g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.min
-                            = g2fld->ipdtmpl[19];
+                            = g2fld->ipdtmpl[19+offset];
                     g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.sec
-                            = g2fld->ipdtmpl[20];
+                            = g2fld->ipdtmpl[20+offset];
                     g2rec[nrecs]->sec4[i]->prod_params->num_timerange_spec_time_interval_calc
-                            = g2fld->ipdtmpl[21];
+                            = g2fld->ipdtmpl[21+offset];
 
                     g2rec[nrecs]->sec4[i]->prod_params->total_num_missing_data_vals
-                            = g2fld->ipdtmpl[22];
+                            = g2fld->ipdtmpl[22+offset];
 
                     /* table 4.10: Type of Statistical Processing */
 		    if (g2rec[nrecs]->sec4[i]->prod_params->num_timerange_spec_time_interval_calc == 2 && 
-			    g2fld->ipdtmpl[23] > 191) {
+			    g2fld->ipdtmpl[23+offset] > 191) {
 			    g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc = 
-				    g2fld->ipdtmpl[23] != 255 ? g2fld->ipdtmpl[23] : g2fld->ipdtmpl[29];
+				    g2fld->ipdtmpl[23+offset] != 255 ? g2fld->ipdtmpl[23+offset] : g2fld->ipdtmpl[29+offset];
 		    }
 		    else {
-			    g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc = g2fld->ipdtmpl[23];
+			    g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc = g2fld->ipdtmpl[23+offset];
 		    }
                     g2rec[nrecs]->sec4[i]->prod_params->stat_proc = NULL;
 #if 0
@@ -10564,71 +10756,29 @@ static void *Grib2OpenFile
 #endif
 		    if (g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc > 191 && g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc != 255) {
 			    /* local NCEP definition */
-			    g2rec[nrecs]->sec4[i]->prod_params->n_grids = g2fld->ipdtmpl[26];
-			    g2rec[nrecs]->sec4[i]->prod_params->p2 = g2fld->ipdtmpl[28];
-			    g2rec[nrecs]->sec4[i]->prod_params->p1 = g2fld->ipdtmpl[28] - g2fld->ipdtmpl[32];
+			    g2rec[nrecs]->sec4[i]->prod_params->n_grids = g2fld->ipdtmpl[26+offset];
+			    g2rec[nrecs]->sec4[i]->prod_params->p2 = g2fld->ipdtmpl[28+offset];
+			    g2rec[nrecs]->sec4[i]->prod_params->p1 = g2fld->ipdtmpl[28+offset] - g2fld->ipdtmpl[32+offset];
 		    }
 		    else {
 
 			    /* table 4.11: Type of Time Intervals */
 			    g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields
-				    = g2fld->ipdtmpl[24];
+				    = g2fld->ipdtmpl[24+offset];
 			    g2rec[nrecs]->sec4[i]->prod_params->incr_betw_fields = NULL;
-#if 0		    
-			    table = "4.11.table";
-			    cterr = Grib2ReadCodeTable(center, secid, table,
-						       g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields,-1,ct);
-			    if (cterr < NhlWARNING) {
-				    NhlFree(g2rec);
-				    return NULL;
-			    }
-
-			    g2rec[nrecs]->sec4[i]->prod_params->incr_betw_fields
-				    = NclMalloc(strlen(ct->descrip) + 1);
-			    (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->incr_betw_fields,
-					  ct->descrip);
-#endif
     
 			    /* table 4.4: Indicator of Unit of Time Range */
 			    g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done
-				    = g2fld->ipdtmpl[25];
+				    = g2fld->ipdtmpl[25+offset];
 			    g2rec[nrecs]->sec4[i]->prod_params->itr_unit = NULL;
-#if 0
-			    table = "4.4.table";
-			    cterr = Grib2ReadCodeTable(center, secid, table,
-						       g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done,-1,ct);
-			    if (cterr < NhlWARNING) {
-				    NhlFree(g2rec);
-				    return NULL;
-			    }
-
-			    g2rec[nrecs]->sec4[i]->prod_params->itr_unit
-				    = NclMalloc(strlen(ct->descrip) + 1);
-			    (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->itr_unit,
-					  ct->descrip);
-#endif
 			    g2rec[nrecs]->sec4[i]->prod_params->len_time_range_unit_stat_proc_done
-				    = g2fld->ipdtmpl[26];
+				    = g2fld->ipdtmpl[26+offset];
 
 			    g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields
-				    = g2fld->ipdtmpl[27];
+				    = g2fld->ipdtmpl[27+offset];
 			    g2rec[nrecs]->sec4[i]->prod_params->itr_succ_unit = NULL;
-#if 0
-			    table = "4.4.table";
-			    cterr = Grib2ReadCodeTable(center, secid, table,
-						       g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields,-1,ct);
-			    if (cterr < NhlWARNING) {
-				    NhlFree(g2rec);
-				    return NULL;
-			    }
-
-			    g2rec[nrecs]->sec4[i]->prod_params->itr_succ_unit
-				    = NclMalloc(strlen(ct->descrip) + 1);
-			    (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->itr_succ_unit,
-					  ct->descrip);
-#endif
 			    g2rec[nrecs]->sec4[i]->prod_params->time_incr_betw_fields
-				    = g2fld->ipdtmpl[28];
+				    = g2fld->ipdtmpl[28+offset];
 		    }
 
                     break;
@@ -10643,6 +10793,8 @@ static void *Grib2OpenFile
                     break;
 
                 case 1:
+	        case 60:
+	        case 71:
                     /*
                      * Individual ensemble forecast, control and perturbed, at a
                      * horizontal level or in a horizontal layer at a point in time.
@@ -10650,6 +10802,8 @@ static void *Grib2OpenFile
                      */
 
                 case 11:
+	        case 61:
+	        case 73:
                     /*
                      * Individual ensemble forecast, control and perturbed, at a
                      * horizontal level or in a horizontal layer, in a continuous
@@ -10657,57 +10811,65 @@ static void *Grib2OpenFile
                      */
 
                     /* table 4.6: Type of Ensemble Forecast */
-                    g2rec[nrecs]->sec4[i]->prod_params->typeof_ensemble_fx = g2fld->ipdtmpl[15];
+		    offset = (g2rec[nrecs]->sec4[i]->pds_num == 71 || g2rec[nrecs]->sec4[i]->pds_num == 73 ) ? 3 : 0;
+                    g2rec[nrecs]->sec4[i]->prod_params->typeof_ensemble_fx = g2fld->ipdtmpl[15+offset];
                     g2rec[nrecs]->sec4[i]->prod_params->ensemble_fx_type = NULL;
                     
-                    g2rec[nrecs]->sec4[i]->prod_params->perturb_num = g2fld->ipdtmpl[16];
-                    g2rec[nrecs]->sec4[i]->prod_params->num_fx_ensemble = g2fld->ipdtmpl[17];
+                    g2rec[nrecs]->sec4[i]->prod_params->perturb_num = g2fld->ipdtmpl[16+offset];
+                    g2rec[nrecs]->sec4[i]->prod_params->num_fx_ensemble = g2fld->ipdtmpl[17+offset];
 
-                    if (g2rec[nrecs]->sec4[i]->pds_num == 1) 
+                    if (g2rec[nrecs]->sec4[i]->pds_num == 1 || g2rec[nrecs]->sec4[i]->pds_num == 60 || g2rec[nrecs]->sec4[i]->pds_num == 71) 
                         break;
+
+		    offset = 0;
+		    if (g2rec[nrecs]->sec4[i]->pds_num == 61) 
+			    offset = 6;
+		    else if (g2rec[nrecs]->sec4[i]->pds_num == 73)
+			    offset = 3;
 
                     /* statistical processing */
 		    valid_end_time_set = 1;
+
                     g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.year
-                            = g2fld->ipdtmpl[18];
+                            = g2fld->ipdtmpl[18 + offset];
                     g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.mon
-                            = g2fld->ipdtmpl[19];
+                            = g2fld->ipdtmpl[19 + offset];
                     g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.day
-                            = g2fld->ipdtmpl[20];
+                            = g2fld->ipdtmpl[20 + offset];
                     g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.hour
-                            = g2fld->ipdtmpl[21];
+                            = g2fld->ipdtmpl[21 + offset];
                     g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.min
-                            = g2fld->ipdtmpl[22];
+                            = g2fld->ipdtmpl[22 + offset];
                     g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.sec
-                            = g2fld->ipdtmpl[23];
+                            = g2fld->ipdtmpl[23 + offset];
                     g2rec[nrecs]->sec4[i]->prod_params->num_timerange_spec_time_interval_calc
-                            = g2fld->ipdtmpl[24];
+                            = g2fld->ipdtmpl[24 + offset];
 
                     g2rec[nrecs]->sec4[i]->prod_params->total_num_missing_data_vals
-                            = g2fld->ipdtmpl[25];
+                            = g2fld->ipdtmpl[25 + offset];
 
                     /* table 4.10: Type of Statistical Processing */
                     g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc
-                            = g2fld->ipdtmpl[26];
+                            = g2fld->ipdtmpl[26 + offset];
                     g2rec[nrecs]->sec4[i]->prod_params->stat_proc = NULL;
     
                     /* table 4.11: Type of Time Intervals */
                     g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields
-                            = g2fld->ipdtmpl[27];
+                            = g2fld->ipdtmpl[27 + offset];
                     g2rec[nrecs]->sec4[i]->prod_params->incr_betw_fields = NULL;
     
                     /* table 4.4: Indicator of Unit of Time Range */
                     g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done
-                            = g2fld->ipdtmpl[28];
+                            = g2fld->ipdtmpl[28 + offset];
                     g2rec[nrecs]->sec4[i]->prod_params->itr_unit = NULL;
                     g2rec[nrecs]->sec4[i]->prod_params->len_time_range_unit_stat_proc_done
-                            = g2fld->ipdtmpl[29];
+                            = g2fld->ipdtmpl[29 + offset];
 
                     g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields
-                            = g2fld->ipdtmpl[30];
+                            = g2fld->ipdtmpl[30 + offset];
                     g2rec[nrecs]->sec4[i]->prod_params->itr_succ_unit = NULL;
                     g2rec[nrecs]->sec4[i]->prod_params->time_incr_betw_fields
-                            = g2fld->ipdtmpl[31];
+                            = g2fld->ipdtmpl[31 + offset];
                     break;
 
                 case 12:
@@ -10803,6 +10965,16 @@ static void *Grib2OpenFile
                      * also forecast time is not relevant to observational data
                      */
                     break;
+	        case 31:
+                    /*
+                     * Revised and (recommended) Satellite product.
+                     */
+		    break;
+	        case 32:
+                    /*
+                     * Revised and (recommended) Satellite product.
+                     */
+		    break;
 
                 case 40:
                     /*
@@ -10810,21 +10982,22 @@ static void *Grib2OpenFile
                      * layer at a point in time for atmospheric chemical or physical
                      * constituents
                      */
+		    g2rec[nrecs]->sec4[i]->prod_params->aerosol_type = g2fld->ipdtmpl[2];
                     break;
 
                 case 41:
-                    /* FALLTHROUGH */
                 case 43:
                     /*
                      * Individual ensemble forecast, control and perturbed, at a horizontal
                      * level or in a horizontal layer at a point in time for atmospheric
                      * chemical or physical constituents
                      */
-                    g2rec[nrecs]->sec4[i]->prod_params->typeof_ensemble_fx = g2fld->ipdtmpl[15];
+		    g2rec[nrecs]->sec4[i]->prod_params->aerosol_type = g2fld->ipdtmpl[2];
+                    g2rec[nrecs]->sec4[i]->prod_params->typeof_ensemble_fx = g2fld->ipdtmpl[16];
                     g2rec[nrecs]->sec4[i]->prod_params->ensemble_fx_type = NULL;
                     
-                    g2rec[nrecs]->sec4[i]->prod_params->perturb_num = g2fld->ipdtmpl[16];
-                    g2rec[nrecs]->sec4[i]->prod_params->num_fx_ensemble = g2fld->ipdtmpl[17];
+                    g2rec[nrecs]->sec4[i]->prod_params->perturb_num = g2fld->ipdtmpl[17];
+                    g2rec[nrecs]->sec4[i]->prod_params->num_fx_ensemble = g2fld->ipdtmpl[18];
 
                     if (g2rec[nrecs]->sec4[i]->pds_num == 41) 
                         break;
@@ -10832,45 +11005,45 @@ static void *Grib2OpenFile
                     /* statistical processing */
 		    valid_end_time_set = 1;
                     g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.year
-                            = g2fld->ipdtmpl[18];
-                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.mon
                             = g2fld->ipdtmpl[19];
-                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.day
+                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.mon
                             = g2fld->ipdtmpl[20];
-                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.hour
+                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.day
                             = g2fld->ipdtmpl[21];
-                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.min
+                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.hour
                             = g2fld->ipdtmpl[22];
-                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.sec
+                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.min
                             = g2fld->ipdtmpl[23];
-                    g2rec[nrecs]->sec4[i]->prod_params->num_timerange_spec_time_interval_calc
+                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.sec
                             = g2fld->ipdtmpl[24];
+                    g2rec[nrecs]->sec4[i]->prod_params->num_timerange_spec_time_interval_calc
+                            = g2fld->ipdtmpl[25];
 
                     g2rec[nrecs]->sec4[i]->prod_params->total_num_missing_data_vals
-                            = g2fld->ipdtmpl[25];
+                            = g2fld->ipdtmpl[26];
 
                     /* table 4.10: Type of Statistical Processing */
                     g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc
-                            = g2fld->ipdtmpl[26];
+                            = g2fld->ipdtmpl[27];
                     g2rec[nrecs]->sec4[i]->prod_params->stat_proc = NULL;
     
                     /* table 4.11: Type of Time Intervals */
                     g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields
-                            = g2fld->ipdtmpl[27];
+                            = g2fld->ipdtmpl[28];
                     g2rec[nrecs]->sec4[i]->prod_params->incr_betw_fields = NULL;
     
                     /* table 4.4: Indicator of Unit of Time Range */
                     g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done
-                            = g2fld->ipdtmpl[28];
+                            = g2fld->ipdtmpl[29];
                     g2rec[nrecs]->sec4[i]->prod_params->itr_unit = NULL;
                     g2rec[nrecs]->sec4[i]->prod_params->len_time_range_unit_stat_proc_done
-                            = g2fld->ipdtmpl[29];
+                            = g2fld->ipdtmpl[30];
 
                     g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields
-                            = g2fld->ipdtmpl[30];
+                            = g2fld->ipdtmpl[31];
                     g2rec[nrecs]->sec4[i]->prod_params->itr_succ_unit = NULL;
                     g2rec[nrecs]->sec4[i]->prod_params->time_incr_betw_fields
-                            = g2fld->ipdtmpl[31];
+                            = g2fld->ipdtmpl[32];
                     break;
 
                 case 42:
@@ -10881,71 +11054,152 @@ static void *Grib2OpenFile
                      * chemical or physical constituents
                      */
 		    valid_end_time_set = 1;
+		    g2rec[nrecs]->sec4[i]->prod_params->aerosol_type = g2fld->ipdtmpl[2];
                     g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.year
-                            = g2fld->ipdtmpl[15];
-                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.mon
                             = g2fld->ipdtmpl[16];
-                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.day
+                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.mon
                             = g2fld->ipdtmpl[17];
-                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.hour
+                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.day
                             = g2fld->ipdtmpl[18];
-                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.min
+                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.hour
                             = g2fld->ipdtmpl[19];
-                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.sec
+                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.min
                             = g2fld->ipdtmpl[20];
-                    g2rec[nrecs]->sec4[i]->prod_params->num_timerange_spec_time_interval_calc
+                    g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.sec
                             = g2fld->ipdtmpl[21];
+                    g2rec[nrecs]->sec4[i]->prod_params->num_timerange_spec_time_interval_calc
+                            = g2fld->ipdtmpl[22];
 
                     g2rec[nrecs]->sec4[i]->prod_params->total_num_missing_data_vals
-                            = g2fld->ipdtmpl[22];
+                            = g2fld->ipdtmpl[23];
 
                     /* table 4.10: Type of Statistical Processing */
                     g2rec[nrecs]->sec4[i]->prod_params->stat_proc = NULL;
                     g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc
-                            = g2fld->ipdtmpl[23];
+                            = g2fld->ipdtmpl[24];
 		    if (g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc > 191 && g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc != 255) {
 			    /* local NCEP definition */
-			    g2rec[nrecs]->sec4[i]->prod_params->n_grids = g2fld->ipdtmpl[26];
-			    g2rec[nrecs]->sec4[i]->prod_params->p2 = g2fld->ipdtmpl[28];
-			    g2rec[nrecs]->sec4[i]->prod_params->p1 = g2fld->ipdtmpl[28] - g2fld->ipdtmpl[32];
+			    g2rec[nrecs]->sec4[i]->prod_params->n_grids = g2fld->ipdtmpl[27];
+			    g2rec[nrecs]->sec4[i]->prod_params->p2 = g2fld->ipdtmpl[29];
+			    g2rec[nrecs]->sec4[i]->prod_params->p1 = g2fld->ipdtmpl[29] - g2fld->ipdtmpl[33];
 		    }
 		    else {
     			    /* table 4.11: Type of Time Intervals */
 			    g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields
-				    = g2fld->ipdtmpl[24];
+				    = g2fld->ipdtmpl[26];
 			    g2rec[nrecs]->sec4[i]->prod_params->incr_betw_fields = NULL;
 			    
 			    /* table 4.4: Indicator of Unit of Time Range */
 			    g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done
-				    = g2fld->ipdtmpl[25];
+				    = g2fld->ipdtmpl[27];
 			    g2rec[nrecs]->sec4[i]->prod_params->itr_unit = NULL;
 			    g2rec[nrecs]->sec4[i]->prod_params->len_time_range_unit_stat_proc_done
-				    = g2fld->ipdtmpl[26];
+				    = g2fld->ipdtmpl[28];
 
 			    g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields
-				    = g2fld->ipdtmpl[27];
+				    = g2fld->ipdtmpl[29];
 			    g2rec[nrecs]->sec4[i]->prod_params->itr_succ_unit = NULL;
 			    g2rec[nrecs]->sec4[i]->prod_params->time_incr_betw_fields
-				    = g2fld->ipdtmpl[28];
+				    = g2fld->ipdtmpl[30];
 		    }
                     break;
 
-                case 48:
-			/* aerosols -- leave the interval_type params set to missing (255)
-			   until we can implement size and wavelength dimensions */
-
+	        case 44:
+	        case 45:
+	        case 46:
+	        case 47:
+			offset = 2;
+			if (g2rec[nrecs]->sec4[i]->pds_num == 47)
+				offset = 3;
+			g2rec[nrecs]->sec4[i]->prod_params->aerosol_type = g2fld->ipdtmpl[offset];
+			g2rec[nrecs]->sec4[i]->prod_params->size_interval_type = g2fld->ipdtmpl[offset+1];
+                        g2rec[nrecs]->sec4[i]->prod_params->size_first_scale_factor = g2fld->ipdtmpl[offset+2];
+                        g2rec[nrecs]->sec4[i]->prod_params->size_first_scale_value = g2fld->ipdtmpl[offset+3];
+                        g2rec[nrecs]->sec4[i]->prod_params->size_second_scale_factor = g2fld->ipdtmpl[offset+4];
+                        g2rec[nrecs]->sec4[i]->prod_params->size_second_scale_value = g2fld->ipdtmpl[offset+5];
+			if (g2rec[nrecs]->sec4[i]->pds_num == 44)
+				break;
+			if (g2rec[nrecs]->sec4[i]->pds_num == 47 || g2rec[nrecs]->sec4[i]->pds_num == 45) {
+				g2rec[nrecs]->sec4[i]->prod_params->typeof_ensemble_fx = g2fld->ipdtmpl[21];
+				g2rec[nrecs]->sec4[i]->prod_params->ensemble_fx_type = NULL;
+				g2rec[nrecs]->sec4[i]->prod_params->perturb_num = g2fld->ipdtmpl[22];
+				g2rec[nrecs]->sec4[i]->prod_params->num_fx_ensemble = g2fld->ipdtmpl[23];
+				if (g2rec[nrecs]->sec4[i]->pds_num == 45)
+					break;
+			}
+			/* templates 46 and 47 have statistical elements */
+			offset = g2rec[nrecs]->sec4[i]->pds_num == 46 ? 21 : 24;
+			valid_end_time_set = 1;
 			g2rec[nrecs]->sec4[i]->prod_params->aerosol_type = g2fld->ipdtmpl[2];
-			/*g2rec[nrecs]->sec4[i]->prod_params->size_interval_type = g2fld->ipdtmpl[3];*/
+			g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.year
+				= g2fld->ipdtmpl[offset];
+			g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.mon
+				= g2fld->ipdtmpl[offset+1];
+			g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.day
+				= g2fld->ipdtmpl[offset+2];
+			g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.hour
+				= g2fld->ipdtmpl[offset+3];
+			g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.min
+				= g2fld->ipdtmpl[offset+4];
+			g2rec[nrecs]->sec4[i]->prod_params->end_overall_time_interval.sec
+				= g2fld->ipdtmpl[offset+5];
+			g2rec[nrecs]->sec4[i]->prod_params->num_timerange_spec_time_interval_calc
+				= g2fld->ipdtmpl[offset+6];
+
+			g2rec[nrecs]->sec4[i]->prod_params->total_num_missing_data_vals
+				= g2fld->ipdtmpl[offset+7];
+
+			/* table 4.10: Type of Statistical Processing */
+			g2rec[nrecs]->sec4[i]->prod_params->stat_proc = NULL;
+			g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc
+				= g2fld->ipdtmpl[offset+8];
+			if (g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc > 191 && g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc != 255) {
+				/* local NCEP definition */
+				g2rec[nrecs]->sec4[i]->prod_params->n_grids = g2fld->ipdtmpl[offset+26];
+				g2rec[nrecs]->sec4[i]->prod_params->p2 = g2fld->ipdtmpl[offset+28];
+				g2rec[nrecs]->sec4[i]->prod_params->p1 = g2fld->ipdtmpl[offset+28] - g2fld->ipdtmpl[offset+32];
+			}
+			else {
+				/* table 4.11: Type of Time Intervals */
+				g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields
+					= g2fld->ipdtmpl[offset+9];
+				g2rec[nrecs]->sec4[i]->prod_params->incr_betw_fields = NULL;
+			    
+				/* table 4.4: Indicator of Unit of Time Range */
+				g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done
+					= g2fld->ipdtmpl[offset+10];
+				g2rec[nrecs]->sec4[i]->prod_params->itr_unit = NULL;
+				g2rec[nrecs]->sec4[i]->prod_params->len_time_range_unit_stat_proc_done
+					= g2fld->ipdtmpl[offset+11];
+
+				g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields
+					= g2fld->ipdtmpl[offset+12];
+				g2rec[nrecs]->sec4[i]->prod_params->itr_succ_unit = NULL;
+				g2rec[nrecs]->sec4[i]->prod_params->time_incr_betw_fields
+					= g2fld->ipdtmpl[offset+13];
+			}
+			break;
+
+                case 48:
+	        case 49:
+			g2rec[nrecs]->sec4[i]->prod_params->aerosol_type = g2fld->ipdtmpl[2];
+			g2rec[nrecs]->sec4[i]->prod_params->size_interval_type = g2fld->ipdtmpl[3];
 			g2rec[nrecs]->sec4[i]->prod_params->size_first_scale_factor = g2fld->ipdtmpl[4];
 			g2rec[nrecs]->sec4[i]->prod_params->size_first_scale_value = g2fld->ipdtmpl[5];
 			g2rec[nrecs]->sec4[i]->prod_params->size_second_scale_factor = g2fld->ipdtmpl[6];
 			g2rec[nrecs]->sec4[i]->prod_params->size_second_scale_value = g2fld->ipdtmpl[7];
-			/*g2rec[nrecs]->sec4[i]->prod_params->wavelength_interval_type = g2fld->ipdtmpl[8];*/
+			g2rec[nrecs]->sec4[i]->prod_params->wavelength_interval_type = g2fld->ipdtmpl[8];
 			g2rec[nrecs]->sec4[i]->prod_params->wavelength_first_scale_factor = g2fld->ipdtmpl[9];
 			g2rec[nrecs]->sec4[i]->prod_params->wavelength_first_scale_value = g2fld->ipdtmpl[10];
 			g2rec[nrecs]->sec4[i]->prod_params->wavelength_second_scale_factor = g2fld->ipdtmpl[11];
 			g2rec[nrecs]->sec4[i]->prod_params->wavelength_second_scale_value = g2fld->ipdtmpl[12];
-
+			if (g2rec[nrecs]->sec4[i]->pds_num == 48)
+				break;
+			g2rec[nrecs]->sec4[i]->prod_params->typeof_ensemble_fx = g2fld->ipdtmpl[26];
+			g2rec[nrecs]->sec4[i]->prod_params->ensemble_fx_type = NULL;
+			g2rec[nrecs]->sec4[i]->prod_params->perturb_num = g2fld->ipdtmpl[27];
+			g2rec[nrecs]->sec4[i]->prod_params->num_fx_ensemble = g2fld->ipdtmpl[28];
+			
 		    break;
                 case 254:
                     /*
@@ -11296,9 +11550,17 @@ static void *Grib2OpenFile
 	    g2inqrec->traits.stat_proc_type = g2rec[i]->sec4[j]->prod_params->typeof_stat_proc;
 	    g2inqrec->traits.first_level_type = g2rec[i]->sec4[j]->prod_params->typeof_first_fixed_sfc;
 	    g2inqrec->traits.second_level_type =  g2rec[i]->sec4[j]->prod_params->typeof_second_fixed_sfc;
-	    g2inqrec->traits.aerosol_type =  g2rec[i]->sec4[j]->prod_params->aerosol_type;
+	    g2inqrec->traits.aerosol_type = g2rec[i]->sec4[j]->prod_params->aerosol_type;
 	    g2inqrec->traits.aerosol_size_interval_type = g2rec[i]->sec4[j]->prod_params->size_interval_type;
-            g2inqrec->traits.aerosol_wavelength_interval_type = g2rec[i]->sec4[j]->prod_params->wavelength_interval_type;
+	    g2inqrec->traits.aerosol_size_first_scale_factor = g2rec[i]->sec4[j]->prod_params->size_first_scale_factor;
+	    g2inqrec->traits.aerosol_size_first_scale_value = g2rec[i]->sec4[j]->prod_params->size_first_scale_value;
+	    g2inqrec->traits.aerosol_size_second_scale_factor =	g2rec[i]->sec4[j]->prod_params->size_second_scale_factor;
+	    g2inqrec->traits.aerosol_size_second_scale_value = g2rec[i]->sec4[j]->prod_params->size_second_scale_value;
+	    g2inqrec->traits.aerosol_wavelength_interval_type = g2rec[i]->sec4[j]->prod_params->wavelength_interval_type;
+	    g2inqrec->traits.aerosol_wavelength_first_scale_factor = g2rec[i]->sec4[j]->prod_params->wavelength_first_scale_factor;
+	    g2inqrec->traits.aerosol_wavelength_first_scale_value = g2rec[i]->sec4[j]->prod_params->wavelength_first_scale_value;
+	    g2inqrec->traits.aerosol_wavelength_second_scale_factor = g2rec[i]->sec4[j]->prod_params->wavelength_second_scale_factor;
+	    g2inqrec->traits.aerosol_wavelength_second_scale_value = g2rec[i]->sec4[j]->prod_params->wavelength_second_scale_value;
 
 	    g2inqrec->qcenter_name = NrmStringToQuark(g2rec[i]->sec1.center_name);
 

@@ -1,0 +1,33 @@
+# BUFR code table 0 02 020 Satellite classification
+0:0:Nimbus
+1:1:VTPR
+2:2:Tiros 1 (Tiros, NOAA-6 to NOAA-13)
+3:3:Tiros 2 (NOAA-14 onwards)
+10:10:EOS
+20:20:GPM-core
+31:31:DMSP
+61:61:EUMETSAT Polar System (EPS)
+91:91:ERS
+92:92:Sentinel-3
+121:121:ADEOS
+122:122:GCOM
+241:241:GOES
+261:261:JASON
+271:271:GMS
+272:272:MTSAT
+273:273:Himawari
+281:281:COMS
+301:301:INSAT
+331:331:METEOSAT Operational Programme (MOP)
+332:332:METEOSAT Transitional Programme (MTP)
+333:333:METEOSAT Second Generation Programme (MSG)
+351:351:GOMS
+380:380:FY-1
+381:381:FY-2
+382:382:FY-3
+401:401:GPS
+402:402:GLONASS
+403:403:GALILEO
+404:404:BDS (BeiDou navigation satellite system) Reserved
+511:511:Missing value
+

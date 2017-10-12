@@ -11,11 +11,18 @@
 9:9:Climatological
 10:10:Probability-weighted forecast
 11:11:Bias-corrected ensemble forecast
-#12-13 Reserved
-14:14 Nowcast
+12:12:Post-processed Analysis
+13:13:Post-processed Forecast
+14:14:Nowcast
+15:15:Hindcast
+16:16:Physical Retrieval
+17:17:Regression Analysis
+18:18:Difference Between Two Forecasts
 # 15-191 Reserved
 # 192-254  Reserved for local use
 192:192:Forecast confidence indicator
 193:193:Probability-matched mean
 194:194:Neighborhood probability
+195:195:Bias-Corrected and Downscaled Ensemble Forecast
+196:196:Perturbed Analysis for Ensemble Initialization
 255:255:Missing
