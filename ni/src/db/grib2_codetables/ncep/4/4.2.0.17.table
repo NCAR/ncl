@@ -1,5 +1,6 @@
 # GRIBv2 - Table 4.2-0-17 Meteorological - Electrodynamics
 0:0:Lightning strike density:m-2 s-1:LTNGSD
+1:1:Lightning Potential Index (LPI):J kg-1:LTPINX
 # 1-191:1-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:Lightning:non-dim:LTNG

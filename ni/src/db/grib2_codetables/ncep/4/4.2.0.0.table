@@ -27,6 +27,8 @@
 25:25:Temperature tendency due to long-wave radiation, clear sky:K s-1:TTLWRCS
 26:26:Temperature tendency due to parameterizations:K s-1:TTPARM
 27:27:Wet bulb temperature:K:WETBT
+28:28:Unbalanced Component of Temperature:K:UCTMP
+29:29:Temperature Advection:K s-1:TMPADV
 # 27-191:27-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:Snow phase change heat flux:W m-2:SNOHF

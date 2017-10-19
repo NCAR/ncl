@@ -27,8 +27,10 @@
 57:57:Total yearly average burden of the atmosphere:mol:TYABA
 58:58:Total yearly average atmospheric loss:mol s-1:TYAAL
 59:59:Aerosol number concentration:m-3:ANCON
-# 60 - 99:60 - 99:Reserved:-:
-
+60:60:Aerosol Specific Number Concentration:kg-1:ASNCON
+61:61:Maximum of Mass Density:kg m-3:MXMASSD
+62:62:Height of Mass Density:m:HGTMD
+63:63:Column-Averaged Mass Density in Layer:kg m-3:CAVEMDL
 100:100:Surface area density (aerosol):m-1:SADEN
 101:101:Atmosphere optical thickness:m:AOTK
 102:102:Aerosol optical thickness:Numeric:AOTK
@@ -40,6 +42,8 @@
 108:108:Aerosol lidar backscatter from the ground:m-1sr-1:ALBGRD
 109:109:Aerosol lidar extinction from satellite:m-1:ALESAT
 110:110:Aerosol lidar extinction from the ground:m-1:ALEGRD
+111:111:Angstrom exponent:Numeric:ANGSTEXP
+112:112:Scattering aerosol optical thickness:Numeric:SCTAOTK
 # 111-130:111 - 130:Reserved:-:
 
 131:131:Nitrogen dioxide (NO2) tropospheric column:mol cm-2:NO2TROP

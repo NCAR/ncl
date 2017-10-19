@@ -30,6 +30,7 @@
 28:28:Downdraught mass flux:kg m-2 s-1:DMFLX
 29:29:Updraught detrainment rate:kg m-3 s-1:UDRATE
 30:30:Downdraught detrainment rate:kg m-3 s-1:DDRATE
+31:31:Unbalanced Component of Logarithm of Surface Pressure:Numeric:UCLSPRS
 # 31-191:31-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:MSLP (ETA model reduction):Pa:MSLET

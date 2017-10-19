@@ -9,5 +9,7 @@
 7:7:Covariance (Temporal variance)
 8:8:Difference (Value at the start of time range minus value at the end)
 9:9:Ratio
+10:10:Standardized anomaly
+11:11:Summation
 # 192 254  Reserved for local use
 255:255:Missing

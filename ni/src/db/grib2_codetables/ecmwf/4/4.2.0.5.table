@@ -7,6 +7,8 @@
 4:4:Upward long-wave rad. flux:W m-2:ULWRF
 5:5:Net long-wave radiation flux:W m-2:NLWRF
 6:6:Net long-wave radiation flux, clear sky:W m-2:NLWRCS
+7:7:Brightness temperature:K:BRTEMP
+8:8:Downward long-wave radiation flux, clear sky:W m-2:DLWRFCS
 # 7-191:7-191:Reserved:-:
 
 # 192-254:192-254:Reserved for Local Use:-:

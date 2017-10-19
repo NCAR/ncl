@@ -18,9 +18,18 @@
 15:15:Virtual potential temperature:K:VPTMP
 16:16:Snow phase change heat flux:Wm-2:SNOHF
 17:17:Skin temperature:K:SKINT
-18:18:Snow temperature (top of snow):K:
-19:19:Turbulent transfer coefficient for heat:Numeric:
-20:20:Turbulent diffusion coefficient for heat:m2s-1:
+18:18:Snow temperature (top of snow):K:SNOT
+19:19:Turbulent transfer coefficient for heat:Numeric:TTCHT
+20:20:Turbulent diffusion coefficient for heat:m2 s-1:TDCHT
+21:21:Apparent temperature:K:APTMP
+22:22:Temperature tendency due to short-wave radiation:K s-1:TTSWR
+23:23:Temperature tendency due to long-wave radiation:K s-1:TTLWR
+24:24:Temperature tendency due to short-wave radiation, clear sky:K s-1:TTSWRCS
+25:25:Temperature tendency due to long-wave radiation, clear sky:K s-1:TTLWRCS
+26:26:Temperature tendency due to parameterizations:K s-1:TTPARM
+27:27:Wet bulb temperature:K:WETBT
+28:28:Unbalanced Component of Temperature:K:UCTMP
+29:29:Temperature Advection:K s-1:TMPADV
 # 21-191:21-191:Reserved:-:
 
 # 192-254:192-254:Reserved for Local Use:-:

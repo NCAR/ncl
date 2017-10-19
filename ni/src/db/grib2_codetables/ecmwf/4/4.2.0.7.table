@@ -14,6 +14,11 @@
 11:11:Best (4 layer) lifted index:K:4LFTX
 12:12:Richardson number:Numeric:RI
 13:13:Showalter index:K:
+15:15:Updraft helicity:m2 s-2:UPHL
+16:16:Bulk richardson number:Numeric:BULKRN
+17:17:Gradient richardson number:Numeric:GRDRN
+18:18:Flux richardson number:Numeric:FLUXRN
+19:19:Convective Available Potential Energy Shear:m2 s-2:CONAPES
 # 14-191:14-191:Reserved:-:
 
 # 192-254:192-254:Reserved for Local Use:-:

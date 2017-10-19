@@ -25,6 +25,10 @@
 57:57:Total yearly average burden of the atmosphere:mol:TYABA
 58:58:Total yearly average atmospheric loss:mol s-1:TYAAL
 59:59:Aerosol number concentration:m-3:ANCON
+60:60:Aerosol Specific Number Concentration:kg-1:ASNCON
+61:61:Maximum of Mass Density:kg m-3:MXMASSD
+62:62:Height of Mass Density:m:HGTMD
+63:63:Column-Averaged Mass Density in Layer:kg m-3:CAVEMDL
 100:100:Surface area density (aerosol):m-1:SADEN
 101:101:Vertical visual range:m:ATMTK
 102:102:Aerosol optical thickness:Numeric:AOTK

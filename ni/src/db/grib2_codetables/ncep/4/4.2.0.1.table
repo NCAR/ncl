@@ -115,6 +115,9 @@
 115:115:Mass density of liquid water coating on snow expressed as mass of liquid water per unit volume of air:kg m-3:MDLWSVA
 116:116:Specific mass of liquid water coating on snow expressed as mass of liquid water per unit mass of moist air:kg kg-1:SMLWSMA
 117:117:Mass mixing ratio of liquid water coating on snow expressed as mass of liquid water per unit mass of dry air:kg kg-1:MMLWSDA
+118:118:Unbalanced Component of Specific Humidity:kg kg-1:UNCSH
+119:119:Unbalanced Component of Specific Cloud Liquid Water content:kg kg-1:UCSCLW
+120:120:Unbalanced Component of Specific Cloud Ice Water content:kg kg-1:UCSCIW
 # 117-191:117-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:Categorical rain (yes=1; no=0):non-dim:CRAIN

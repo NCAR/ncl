@@ -7,7 +7,16 @@
 5:5:Baseflow-groundwater runoff:kg m-2:BGRUN
 6:6:Storm surface runoff:kg m-2:SSRUN
 7:7:Discharge from rivers or streams:m3 s-1:DISRS
-# 8-191:8-191:Reserved:-:
+8:Group Water Upper Storage:kg m-2:GWUPS
+9:9:Group Water Lower Storage:kg m-2:GWLOWS
+10:10:Side Flow into River Channel:m3 s-1 m-1:SFLORC
+11:11:River Storage of Water:m3:RVERSW
+12:12:Flood Plain Storage of Water:m3:FLDPSW
+13:13:Depth of Water on Soil Surface:kg m-2:DEPWSS
+14:14:Upstream Accumulated Precipitation:kg m-2:UPAPCP
+15:15:Upstream Accumulated Snow Melt:kg m-2:UPASM
+16:16:Percolation Rate:kg m-2 s-1:PERRATE
+
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:Baseflow-groundwater runoff:kg m-2:BGRUN
 193:193:Storm surface runoff:kg m-2:SSRUN

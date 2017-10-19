@@ -32,6 +32,20 @@
 30:30:Frictional velocity:m s-1:FRICV
 31:31:Turbulent diffusion coefficient for momentum:m2s-1:
 32:32:Eta coordinate vertical velocity:s-1:ETACVV
+33:33:Wind Fetch:m:WINDF
+34:34:Normal Wind Component:m s-1:NWIND
+35:35:Tangential Wind Component:m s-1:TWIND
+36:36:Amplitude Function for Rossby Wave Envelope for Meridional Wind:m s-1:AFRWE
+37:37:Northward Turbulent Surface Stress:N m-2 s:NTSS
+38:38:Eastward Turbulent Surface Stress:N m-2 s:ETSS
+39:39:Eastward Wind Tendency Due to Parameterizations:m s-2:EWTPARM
+40:40:Northward Wind Tendency Due to Parameterizations:m s-2:NWTPARM
+41:41:U-Component of Geostrophic Wind:m s-1:UGWIND
+42:42:V-Component of Geostrophic Wind:m s-1:VGWIND
+43:43:Geostrophic Wind Direction:degree true:GEOWD
+44:44:Geostrophic Wind Speed:m s-1:GEOWS
+45:45:Unbalanced Component of Divergence:s-1:UNDIV
+46:46:Vorticity Advection:s-2:VORTADV
 # 33-191:33-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 255:255:Missing:-:

@@ -11,6 +11,11 @@
 11:11:Wet deposition:Bq m-2:WETDEP
 12:12:Dry deposition:Bq m-2:DRYDEP
 13:13:Total deposition (wet + dry):Bq m-2:TOTLWD
+14:14:Specific Activity Concentration:Bq kg-1:SACON
+15:15:Maximum of Air Concentration in Layer:Bq m-3:MAXACON
+16:16:Height of Maximum of Air Concentration:m:HMXACON
+17:17:Column-Integrated Air Concentration:Bq m-2:CIAIRC
+18:18:Column-Averaged Air Concentration in Layer:Bq m-3:CAACL
 # 14-191:14-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 255:255:Missing:-:

@@ -13,11 +13,12 @@
 10:10:Photosynthetically active radiation:W m-2:PHOTAR
 11:11:Net short-wave radiation flux, clear sky:W m-2:NSWRFCS
 12:12:Downward UV radiation:W m-2:DWUVR
-# 13-49:13-49:Reserved:-:
-
+13:13:Direct Short Wave Radiation Flux:W m-2:DSWRFLX
+14:14:Diffuse Short Wave Radiation Flux:W m-2:DIFSWRF
 50:50:UV index (under clear sky):Numeric:UVIUCS
 51:51:UV index:W m-2:UVI
-# 52-191:52-191:Reserved:-:
+52:52:Downward short-wave radiation flux, clear sky:W m-2:DSWRFCS
+53:53:Upward short-wave radiation flux, clear sky:W m-2:USWRFCS
 
 # 192-254:192-254:Reserved for Local Use:-:
 

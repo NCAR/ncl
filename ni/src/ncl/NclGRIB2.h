@@ -422,6 +422,14 @@ typedef struct _g2prodParams {
     int wavelength_first_scale_value;
     int wavelength_second_scale_factor;
     int wavelength_second_scale_value;
+	/* satellite */
+    int satellite_number_of_contributing_spectral_bands;
+    int satellite_series_1;
+    int satellite_series_2;
+    int satellite_instrument_type;
+    int satellite_central_wave_number_scale_factor;
+    int satellite_central_wave_number;
+
 } G2prodParams;
 
 /* Product Def Template (PDS) */
@@ -595,6 +603,12 @@ typedef struct _Grib2VarTraits {
 	int aerosol_wavelength_first_scale_value;
 	int aerosol_wavelength_second_scale_factor;
 	int aerosol_wavelength_second_scale_value;
+        int satellite_number_of_contributing_spectral_bands;
+	int satellite_series_1;
+	int satellite_series_2;
+	int satellite_instrument_type;
+	int satellite_central_wave_number_scale_factor;
+	int satellite_central_wave_number;
 } Grib2VarTraits;
 
 struct _Grib2ParamList {

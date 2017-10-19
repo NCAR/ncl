@@ -34,7 +34,16 @@
 31:31:Number density of cloud ice:m-3:
 32:32:Fraction of cloud cover:Numeric:
 33:33:Sunshine duration:s:SUNSD
-# 34-191:34-191:Reserved:-:
+34:34:Surface long wave effective total cloudiness:Numeric:SLWTC
+35:35:Surface short wave effective total cloudiness:Numeric:SSWTC
+36:36:Fraction of stratiform precipitation cover:Proportion:FSTRPC
+37:37:Fraction of convective precipitation cover:Proportion:FCONPC
+38:38:Mass density of cloud droplets:kg m-3:MASSDCD
+39:39:Mass density of cloud ice:kg m-3:MASSDCI
+40:40:Mass density of convective cloud water droplets:kg m-3:MDCCWD
+47:47:Volume fraction of cloud water droplets:Numeric:VFRCWD
+48:48:Volume fraction of cloud ice particles:Numeric:VFRCICE
+49:49:Volume fraction of cloud (ice and/or water):Numeric:VFRCIW
 
 # 192-254:192-254:Reserved for Local Use:-:
 

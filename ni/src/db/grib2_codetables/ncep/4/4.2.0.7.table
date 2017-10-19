@@ -18,6 +18,7 @@
 16:16:Bulk richardson number:Numeric:BULKRN
 17:17:Gradient richardson number:Numeric:GRDRN
 18:18:Flux richardson number:Numeric:FLUXRN
+19:19:Convective Available Potential Energy Shear:m2 s-2:CONAPES
 # 19-191:19-191:Reserved:-:
 192:192:Surface lifted index:K:LFTX
 193:193:Best (4 layer) lifted index:K:4LFTX

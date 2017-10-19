@@ -44,6 +44,8 @@
 42:42:V-component of geostrophic wind:m s-1:VGWIND
 43:43:Geostrophic wind direction:degree true:GEOWD
 44:44:Geostrophic wind speed:m s-1:GEOWS
+45:45:Unbalanced Component of Divergence:s-1:UNDIV
+46:46:Vorticity Advection:s-2:VORTADV
 # 45-191:45-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 192:192:Vertical speed shear:s-1:VWSH

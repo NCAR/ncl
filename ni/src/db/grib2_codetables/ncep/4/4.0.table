@@ -19,7 +19,8 @@
 30:30:Satellite product
 31:31:Satellite product
 32:32:Analysis or forecast at a horizontal level or in a horizontal layer at a point in time for simulate (synthetic) satellite data
-#33-39: reserved
+33:33:Individual Ensemble Forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for simulated (synthetic) satellite data 
+34:34:Individual Ensemble Forecast, control and perturbed, at a horizontal level or in a horizontal layer, in a continuous or non-continuous interval for simulated (synthetic) satellite data
 40:40:Analysis or forecast at a horizontal level or in a horizontal layer at a point in time for atmospheric chemical constituents.
 41:41:Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for atmospheric chemical constituents.
 42:42:Average, accumulation, and/or extreme values or other statistically processed values at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval for atmospheric chemical constituents.
@@ -28,9 +29,26 @@
 45:45:Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer, in a continuous or non-continuous time interval for aerosol.
 46:46:Average, accumulation, and/or extreme values or other statistically processed values at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval for aerosol.
 47:47:Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer, in a continuous or non-continuous time interval for aerosol.
-50:50:Analysis or forecast of a multi component parameter or matrix element at error at a point in time.
+48:48:Analysis or forecast at a horizontal level or in a horizontal layer at a point in time for aerosol.
+49:49:Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for optical properties of aerosol.
 51:51:Categorical forecast at a horizontal level or in a horizontal layer at a point in time.
 91:91:Categorical forecast at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval.
+53:53:Partitioned parameters at a horizontal level or horizontal layer at a point in time. 
+54:54:Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for partitioned parameters. 
+55:55:Spatio-temporal changing tiles at a horizontal level or horizontal layer at a point in time.
+56:56:Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for spatio-temporal changing tile parameters.
+57:57:Analysis or forecast at a horizontal level or in a horizontal layer at a point in time for atmospheric chemical constituents based on a distribution function.
+58:58:Analysis or forecast at a horizontal level or in a horizontal layer at a point in time for atmospheric chemical constituents based on a distribution function.
+59:59:Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for spatio-temporal changing tile parameters.
+60:60:Individual Ensemble Reforecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time. 
+61:61:Individual Ensemble Reforecast, control and perturbed, at a horizontal level or in a horizontal layer, in a continuous or non-continuous time interval.
+67:67:Average, accumulation and/or extreme values or other statistically processed values at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval for atmospheric chemical constituents based on a distribution function.
+68:68:Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval for atmospheric chemical constituents based on a distribution function.
+70:70:Post-processing analysis or forecast at a horizontal level or in a horizontal layer at a point in time.
+71:71:Post-processing individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time.
+72:72:Post-processing average, accumulation, extreme values or other statistically processed values at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval.
+73:73:Post-processing individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer, in a continuous or non-continuous time interval.
+91:91:Categorical forecast at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval. 
 254:254:CCITT IA5 character string
 1000:1000:Cross section of analysis and forecast at a point in time
 1001:1001:Cross section of averaged or otherwise statistically processed analysis or forecast over a range of time
