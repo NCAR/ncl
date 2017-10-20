@@ -1287,9 +1287,17 @@ begin
   nfiles = 0
   do i=0,ndirs-1
     tmp_files := systemfunc("ls -1 " + cmap_dirs(i))
+;---Skip directory if empty
+    if(ismissing(tmp_files(0))) then
+      continue
+    end if
     nt = dimsizes(tmp_files)
     do j=0,nt-1
+;---Only look for files with xxxx.yyy names. They are not valid color map files otherwise.
       tmp_names     := str_split(tmp_files(j),".")
+      if(dimsizes(tmp_names).lt.2) then
+        continue
+      end if
       cmaps(nfiles) = str_join(tmp_names(0:dimsizes(tmp_names)-2),".")
       nfiles = nfiles + 1
       if(nfiles.ge.max_files) then
