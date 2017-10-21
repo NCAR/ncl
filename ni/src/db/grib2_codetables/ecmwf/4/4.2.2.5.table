@@ -1,0 +1,5 @@
+# GRIBv2 - Table 4.2-2-5 Land Surface - Glaciers and Inland Ice
+1:1:Glacier temperature:K:GLACTMP
+# 2-191:2-191:Reserved:-:
+# 192-254:192-254:Reserved for Local Use:-:
+255:255:Missing:-:

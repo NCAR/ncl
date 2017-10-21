@@ -3997,71 +3997,73 @@ Grib2FileRecord *therec;
 			sprintf(buf,"%s_I%d",NrmQuarkToString(step->var_info.var_name_quark),instrument_type);
 			step->var_info.var_name_quark = NrmStringToQuark(buf);
 
-			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-			att_list_ptr->next = step->theatts;
-			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-			if (step->traits.satellite_number_of_contributing_spectral_bands > 1)
- 				att_list_ptr->att_inq->name = NrmStringToQuark("first_central_wavelength_in_meters");
-			else
- 				att_list_ptr->att_inq->name = NrmStringToQuark("central_wavelength_in_meters");
-			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-			if (step->traits.satellite_central_wave_number_scale_factor == 0) {
-				wave_number = 1.0 / step->traits.satellite_central_wave_number;
+			if (step->traits.satellite_central_wave_number != -1) {
+				att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+				att_list_ptr->next = step->theatts;
+				att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+				if (step->traits.satellite_number_of_contributing_spectral_bands > 1)
+					att_list_ptr->att_inq->name = NrmStringToQuark("first_central_wavelength_in_meters");
+				else
+					att_list_ptr->att_inq->name = NrmStringToQuark("central_wavelength_in_meters");
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				if (step->traits.satellite_central_wave_number_scale_factor == 0) {
+					wave_number = 1.0 / step->traits.satellite_central_wave_number;
+				}
+				else {
+					wave_number = step->traits.satellite_central_wave_number *
+						pow(0.1,step->traits.satellite_central_wave_number_scale_factor);
+					wave_number = 1.0 / wave_number;
+				}
+				sprintf(buf,"%g",wave_number);
+				*tmp_string = NrmStringToQuark(buf);
+				att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+					_NclCreateVal(NULL, NULL,
+						      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
+						      PERMANENT, NULL, nclTypestringClass);
+				step->theatts = att_list_ptr;
+				step->n_atts++;
 			}
-			else {
-				wave_number = step->traits.satellite_central_wave_number *
-					pow(0.1,step->traits.satellite_central_wave_number_scale_factor);
-				wave_number = 1.0 / wave_number;
+                        if (polarization > 0) {
+				att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+				att_list_ptr->next = step->theatts;
+				att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+				if (step->traits.satellite_number_of_contributing_spectral_bands > 1)
+					att_list_ptr->att_inq->name = NrmStringToQuark("first_instrument_polarization");
+				else
+					att_list_ptr->att_inq->name = NrmStringToQuark("instrument_polarization");
+				switch (polarization) {
+				case 0:
+					sprintf(buf,"%s","polarization unknown or missing");
+					break;
+				case 1:
+					sprintf(buf,"%s","unpolarized");
+					break;
+				case 2:
+					sprintf(buf,"%s","horizontal linear polarization");
+					break;
+				case 3:
+					sprintf(buf,"%s","vertical linear polarization");
+					break;
+				case 4:
+					sprintf(buf,"%s","right circular polarization");
+					break;
+				case 5:
+					sprintf(buf,"%s","left circular polarization");
+					break;
+				default:
+					sprintf(buf,"%d",polarization);
+					break;
+				}
+
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				*tmp_string = NrmStringToQuark(buf);
+				att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+					_NclCreateVal(NULL, NULL,
+						      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
+						      PERMANENT, NULL, nclTypestringClass);
+				step->theatts = att_list_ptr;
+				step->n_atts++;
 			}
-			sprintf(buf,"%g",wave_number);
-			*tmp_string = NrmStringToQuark(buf);
-			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
-				_NclCreateVal(NULL, NULL,
-					      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
-					      PERMANENT, NULL, nclTypestringClass);
-			step->theatts = att_list_ptr;
-			step->n_atts++;
-
-			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-			att_list_ptr->next = step->theatts;
-			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-			if (step->traits.satellite_number_of_contributing_spectral_bands > 1)
- 				att_list_ptr->att_inq->name = NrmStringToQuark("first_instrument_polarization");
-			else
- 				att_list_ptr->att_inq->name = NrmStringToQuark("instrument_polarization");
-			switch (polarization) {
-			case 0:
-				sprintf(buf,"%s","polarization unknown or missing");
-				break;
-			case 1:
-				sprintf(buf,"%s","unpolarized");
-				break;
-			case 2:
-				sprintf(buf,"%s","horizontal linear polarization");
-				break;
-			case 3:
-				sprintf(buf,"%s","vertical linear polarization");
-				break;
-			case 4:
-				sprintf(buf,"%s","right circular polarization");
-				break;
-			case 5:
-				sprintf(buf,"%s","left circular polarization");
-				break;
-			default:
-				sprintf(buf,"%d",polarization);
-				break;
-			}
-
-			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-			*tmp_string = NrmStringToQuark(buf);
-			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
-				_NclCreateVal(NULL, NULL,
-					      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
-					      PERMANENT, NULL, nclTypestringClass);
-			step->theatts = att_list_ptr;
-			step->n_atts++;
-
 			if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
 					       "cc.c8.table",instrument_type,-1,ct) < NhlWARNING) {
 				return;
@@ -11095,7 +11097,7 @@ static void *Grib2OpenFile
                      * but for sure the level types are not applicable to satellite data,
                      * also forecast time is not relevant to observational data
                      */
-                    break;
+		     /* fall through */
 	        case 31:
                     /*
                      * Revised and (recommended) Satellite product.
@@ -11107,7 +11109,7 @@ static void *Grib2OpenFile
                     /*
                      * Revised and (recommended) Satellite product.
                      */
-		    offset = (g2rec[nrecs]->sec4[i]->pds_num == 31) ? 5 : 10;
+		    offset = (g2rec[nrecs]->sec4[i]->pds_num == 31 || g2rec[nrecs]->sec4[i]->pds_num == 30) ? 5 : 10;
 		    g2rec[nrecs]->sec4[i]->prod_params->satellite_number_of_contributing_spectral_bands = g2fld->ipdtmpl[offset - 1];
 		    g2rec[nrecs]->sec4[i]->prod_params->satellite_series_1 = g2fld->ipdtmpl[offset];
 		    g2rec[nrecs]->sec4[i]->prod_params->satellite_series_2 = g2fld->ipdtmpl[offset + 1];

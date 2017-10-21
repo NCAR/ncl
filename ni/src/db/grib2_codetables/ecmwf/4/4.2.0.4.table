@@ -7,8 +7,8 @@
 4:4:Brightness temperature:K:BRTMP
 5:5:Radiance (with respect to wave number):W m-1 sr-1:LWRAD
 6:6:Radiance (with respect to wavelength):W m-3 sr-1:SWRAD
-7:7:Downward short-wave rad. flux:W m-2:DSWRF
-8:8:Upward short-wave rad. flux:W m-2:USWRF
+7:7:Downward short-wave radiation flux:W m-2:DSWRF
+8:8:Upward short-wave radiation flux:W m-2:USWRF
 9:9:Net short wave radiation flux:W m-2:NSWRF
 10:10:Photosynthetically active radiation:W m-2:PHOTAR
 11:11:Net short-wave radiation flux, clear sky:W m-2:NSWRFCS
@@ -22,3 +22,4 @@
 
 # 192-254:192-254:Reserved for Local Use:-:
 
+255:255:Missing:-:

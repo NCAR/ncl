@@ -33,6 +33,11 @@
 #Product Discipline 3, Space products
 3:0:Image format products
 3:1:Quantitative products
+3:2:Cloud properties
+3:3:Flight rules conditions
+3:4:Volcanic ash
+3:5:Sea-surface temperature
+3:6:Solar radiation
 3:192:Forecast satellite imagery
 #Product Discipline 4, Space Weather products
 4:0:Temperature

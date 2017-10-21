@@ -24,17 +24,17 @@
 22:22:Wind speed (gust):m s-1:GUST
 23:23:U-component of wind (gust):m s-1:UGUST
 24:24:V-component of wind (gust):m s-1:VGUST
-25:25:Vertical speed sheer:s-1:VWSH
+25:25:Vertical speed shear:s-1:VWSH
 26:26:Horizontal momentum flux:N m-2:MFLX
 27:27:U-component storm motion:m s-1:USTM
 28:28:V-component storm motion:m s-1:VSTM
 29:29:Drag coefficient:Numeric:CD
 30:30:Frictional velocity:m s-1:FRICV
-31:31:Turbulent diffusion coefficient for momentum:m2s-1:
+31:31:Turbulent diffusion coefficient for momentum:m2s-1:TCDMOM
 32:32:Eta coordinate vertical velocity:s-1:ETACVV
-33:33:Wind Fetch:m:WINDF
-34:34:Normal Wind Component:m s-1:NWIND
-35:35:Tangential Wind Component:m s-1:TWIND
+33:33:Wind fetch:m:WINDF
+34:34:Normal wind component:m s-1:NWIND
+35:35:Tangential wind component:m s-1:TWIND
 36:36:Amplitude Function for Rossby Wave Envelope for Meridional Wind:m s-1:AFRWE
 37:37:Northward Turbulent Surface Stress:N m-2 s:NTSS
 38:38:Eastward Turbulent Surface Stress:N m-2 s:ETSS

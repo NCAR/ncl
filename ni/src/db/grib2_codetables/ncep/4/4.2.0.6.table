@@ -16,7 +16,7 @@
 14:14:Non-convective cloud cover:%:CDLYR
 15:15:Cloud work function:J kg-1:CWORK
 16:16:Convective cloud efficiency:Proportion:CUEFI
-17:17:Total condensate :kg kg-1:TCOND
+17:17:Total condensate:kg kg-1:TCOND
 18:18:Total column-integrated cloud water:kg m-2:TCOLW
 19:19:Total column-integrated cloud ice:kg m-2:TCOLI
 20:20:Total column-integrated condensate:kg m-2:TCOLC

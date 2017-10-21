@@ -12,6 +12,7 @@
 0:14:Trace gases (e.g. ozone, CO2)
 0:15:Radar
 0:16:Forecast radar imagery
+0:17:Electrodynamics
 0:18:Nuclear/radiology
 0:19:Physical atmospheric properties
 0:20:Atmospheric chemical constituents
@@ -21,11 +22,14 @@
 #Product Discipline 1, Hydrologic products
 1:0:Hydrology basic products
 1:1:Hydrology probabilities
+1:2:Inland water and sediment properties
 #Product Discipline 2, Land Surface products
 2:0:Vegetation/biomass
 2:1:Agricultural/aquacultural special products
 2:2:Transportation related products
 2:3:Soil products
+2:4:Fire weather products
+2:5:Glaciers and inland ice products
 2:192:Fire weather
 #Product Discipline 3, Space products
 3:0:Image format products

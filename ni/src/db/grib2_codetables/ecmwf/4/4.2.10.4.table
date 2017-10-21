@@ -4,7 +4,16 @@
 1:1:Main thermocline anomaly:m:MTHA
 2:2:Transient thermocline depth:m:TTHDP
 3:3:Salinity:kg kg-1:SALTY
-# 4-191:4-191:Reserved:-:
+4:4:Ocean vertical heat diffusivity:m2 s-1:OVHD 
+5:5:Ocean vertical salt diffusivity:m2 s-1:OVSD 
+6:6:Ocean vertical momentum diffusivity:m2 s-1:OVMD
+7:7:Bathymetry:m:
+11:11:Shape factor with respect to salinity profile:-:SFSALP
+12:12:Shape factor with respect to temperature profile in thermocline:-:SFTMPP
+13:13:Attenuation coefficient of water with respect to solar radiation:m-1:ACWSRD
+14:14:Water depth:m:WDEPTH
+15:15:Water temperature:K:WTMPSS
+
 
 # 192-254:192-254:Reserved for Local Use:-:
-
+255:255:Missing:-:

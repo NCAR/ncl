@@ -1,6 +1,6 @@
 # GRIBv2 - Table 4.2-0-4 Meteorological - Short-Wave Radiation
 0:0:Net short-wave radiation flux (surface):W m-2:NSWRS
-1:1:Net short-wave radiation flux (top of atmosphere):W m-3:NSWRT
+1:1:Net short-wave radiation flux (top of atmosphere):W m-2:NSWRT
 2:2:Short-wave radiation flux:W m-2:SWAVR
 3:3:Global radiation flux:W m-2:GRAD
 4:4:Brightness temperature:K:BRTMP

@@ -6,6 +6,7 @@
 4:4:Ground deposition of iodine 131:Bq m-2:GDIOD
 5:5:Ground deposition of radioactive pollutant:Bq m-2:GDRADP
 6:6:Time integrated air concentration of cesium pollutant:Bq s m-3:TIACCP
+7:7:Time integrated air concentration of iodine pollutant:Bq s m-3:TIACIP
 8:8:Time integrated air concentration of radioactive pollutant:Bq s m-3:TIACRP
 10:10:Air concentration:Bq m-3:AIRCON
 11:11:Wet deposition:Bq m-2:WETDEP

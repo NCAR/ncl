@@ -2,7 +2,9 @@
 
 0:0:Seconds prior to initial reference time (defined in section 1):s:TSEC
 1:1:Meridional overturning stream function:m3s-1:MOSF
-# 2-191:2-191:Reserved:-:
+# 2 reserved
+3:3:Days since last observation:d:DSLOBSO
 
 # 192-254:192-254:Reserved for Local Use:-:
+255:255:Missing:-:
 

@@ -1,0 +1,5 @@
+# GRIBv2 - Table 4.2-3-3 Space - Flight Rules Conditions category
+0:0:Probability of Encountering Marginal Visual Flight Rules Conditions:%:PBMVFRC
+1:1:Probability of Encountering Low Instrument Flight Rules Conditions:%:PBLIFRC
+2:2:Probability of Encountering Instrument Flight Rules Conditions:%:PBINFRC
+255:255:Missing:-:

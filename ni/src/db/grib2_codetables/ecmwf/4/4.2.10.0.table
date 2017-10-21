@@ -16,7 +16,38 @@
 13:13:Secondary wave mean period:s:PERSW
 14:14:Direction of combined wind waves and swell:Degree True:WWSDIR
 15:15:Mean period of combined wind waves and swell:s:MWSPER
-# 16-191:16-191:Reserved:-:
+16:16:Coefficient of drag with waves:-:CDWW
+17:17:Friction velocity:m s-1:FRICV
+18:18:Wave stress:N m-2:WSTR
+19:19:Normalised waves stress:-:NWSTR
+20:20:Mean square slope of waves:-:MSSW
+21:21:U-component surface stokes drift:m s-1:USSD
+22:22:V-component surface stokes drift:m s-1:VSSD
+23:23:Period of maximum individual wave height:s:PMAXWH
+24:24:Maximum individual wave height:m:MAXWH
+25:25:Inverse mean wave frequency:s:IMWF
+26:26:Inverse mean frequency of the wind waves:s:IMFWW
+27:27:Inverse mean frequency of the total swell:s:IMFTSW
+28:28:Mean zero-crossing wave period:s:MZWPER
+29:29:Mean zero-crossing period of the wind waves:s:MZPWW
+30:30:Mean zero-crossing period of the total swell:s:MZPTSW
+31:31:Wave directional width:-:WDIRW
+32:32:Directional width of the wind waves:-:DIRWWW
+33:33:Directional width of the total swell:-:DIRWTS
+34:34:Peak wave period:s:PWPER
+35:35:Peak period of the wind waves:s:PPERWW
+36:36:Peak period of the total swell:s:PPERTS
+37:37:Altimeter wave height:m:ALTWH
+38:38:Altimeter corrected wave height:m:ALCWH
+39:39:Altimeter range relative correction:-:ALRRC
+40:40:10 metre neutral wind speed over waves:m s-1:MNWSOW
+41:41:10 metre wind direction over waves:degree true:MWDIRW
+42:42:Wave engery spectrum:m-2 s rad-1:WESP
+43:43:Kurtosis of the sea surface elevation due to waves:-:KSSEW
+44:44:Benjamin-Feir index:-:BENINX
+45:45:Spectral peakedness factor:s-1:SPFTR
+
 
 # 192-254:192-254:Reserved for Local Use:-:
 
+255:255:Missing:-:

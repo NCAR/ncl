@@ -2,6 +2,15 @@
 0:0:Fire outlook:Code table 4.224:FIREOLK
 1:1:Fire outlook due to dry thunderstorm:Code table 4.224:FIREODT
 2:2:Haines index:Numeric:HINDEX
+3:3:Fire burned area:%:FBAREA
+4:4:Fosberg index:Numeric:FOSINDX
+5:5:Fire weather index (Canadian Forest Service):Numeric:FWINX
+6:6:Fine fuel moisture code (Canadian Forest Service):Numeric:FFMCODE
+7:7:Duff moisture code (Canadian Forest Service):Numeric:DUFMCODE
+8:8:Drought code (Canadian Forest Service):Numeric:DRTCODE
+9:9:Initial fire spread index (Canadian Forest Service):Numeric:INFSINX
+10:10:Fire build up index (Canadian Forest Service):Numeric:FBUPINX
+11:11:Fire daily severity rating (Canadian Forest Service):Numeric:FDSRTE
 # 3-191:3-191:Reserved:-:
 # 192-254:192-254:Reserved for Local Use:-:
 255:255:Missing:-:

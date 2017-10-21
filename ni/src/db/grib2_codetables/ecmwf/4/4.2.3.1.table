@@ -24,7 +24,10 @@
 21:21:Aerosol optical thickness at 0.810 micrometer:non-dim:AOT08
 22:22:Aerosol optical thickness at 1.640 micrometer:non-dim:AOT16
 23:23:Angstrom coefficient:non-dim:ANGCOE
-# 24-191:24-191:Reserved:-:
+27:27:Bidirectional reflectance factor:Numeric:BRFLF
+28:28:brightness temperture:K:SPBRT
+29:29:Scaled radiance:Numeric:SRAD
 
 # 192-254:192-254:Reserved for Local Use:-:
 
+255:255:Missing:-:

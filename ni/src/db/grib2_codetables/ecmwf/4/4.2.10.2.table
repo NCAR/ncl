@@ -8,8 +8,12 @@
 5:5:V-component of ice drift:m s-1:VICE
 6:6:Ice growth rate:m s-1:ICEG
 7:7:Ice divergence:s-1:ICED
-8:8:Ice temperature:K:ICET
-# 9-191:9-191:Reserved:-:
+8:8:Ice temperature:K:ICETMP
+9:9:Ice internal pressure:Pa m:ICEPRS
+10:10:Zonal vector component of vertically integrated ice internal pressure:Pa m:ZVCICEP
+11:11:Meridional vector component of vertically integrated ice internal pressure:Pa m:MVCICEP
+12:12:Compressive ice strength:N m-1:CICES
 
 # 192-254:192-254:Reserved for Local Use:-:
 
+255:255:Missing:-:

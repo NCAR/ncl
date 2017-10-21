@@ -13,3 +13,5 @@
 12:12:Covariance between specific humidity and specific humidity;  defined as [qq]-[q][q], where "[]" indicates the mean over the indicated time span.:kg kg-1 kg-1 kg-1:COVQQ
 13:13:Covariance between vertical and vertical components of the wind; defined as [{omega}{omega}-[{omega}][{omega}], where "[]" indicates the mean over the indicated time span.:Pa2 s-2:COVVVVV
 14:14:Covariance between temperature and temperature; defined as [tt]-[t][t], where "[]" indicates the mean over the indicated time span.:K K:COVTT
+
+255:255:Missing:-:

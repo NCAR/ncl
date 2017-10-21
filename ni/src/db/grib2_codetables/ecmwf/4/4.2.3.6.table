@@ -1,0 +1,8 @@
+# GRIBv2 - Table 4.2-3-6 Space - Solar Radiation
+0:0:Global Solar Irradiance:W m-2:SOLIRR
+1:1:Global Solar Exposure:J m-2:GSOLEXP
+2:2:Direct Solar Irradiance:W m-2:DIRSOLIR
+3:3:Direct Solar Exposure:J m-2:DIRSOLEX
+4:4:Diffuse Solar Irradiance:W m-2:DIFSOLIR
+5:5:Diffuse Solar Exposure:J m-2:DIFSOLEX
+255:255:Missing:-:

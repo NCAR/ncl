@@ -1,0 +1,17 @@
+# GRIBv2 - Table 4.2-3-2 Space - Cloud Properties
+0:0:Clear Sky Probability:%:CSKPROB
+1:1:Cloud Top Temperature:K:CTOPTMP
+2:2:Cloud Top Pressure:Pa:CTOPRES
+3:3:Cloud Type:Code table 4.218:CLDTYPE
+4:4:Cloud Phase:Code table 4.218:CLDPHAS
+5:5:Cloud Optical Depth:Numeric:CLDODEP
+6:6:Cloud Particle Effective Radius:m:CLDPER
+7:7:Cloud Liquid Water Path:kg m-2:CLDLWP
+8:8:Cloud Ice Water Path:kg m-2:CLDIWP
+9:9:Cloud Albedo:Numeric:CLDALB
+10:10:Cloud Emissivity:Numeric:CLDEMISS
+11:11:Effective Absorption Optical Depth Ratio:Numeric:EAODR
+
+#192-254	Reserved for Local Use	
+
+255:255:Missing:-:

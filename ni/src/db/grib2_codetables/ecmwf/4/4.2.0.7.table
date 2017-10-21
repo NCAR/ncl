@@ -1,7 +1,7 @@
 # GRIBv2 - Table 4.2-0-7 Meteorological - Thermodynamic Stability
 
-0:0:Parcel lifted index (to 500 mb):K:PLI
-1:1:Best lifted index (to 500 mb):K:BLI
+0:0:Parcel lifted index (to 500 hPa):K:PLI
+1:1:Best lifted index (to 500 hPa):K:BLI
 2:2:K index:K:KX
 3:3:KO index:K:KOX
 4:4:Total totals index:K:TOTALX
@@ -13,7 +13,7 @@
 10:10:Surface lifted index:K:LFTX
 11:11:Best (4 layer) lifted index:K:4LFTX
 12:12:Richardson number:Numeric:RI
-13:13:Showalter index:K:
+13:13:Showalter index:K:SHWINX
 15:15:Updraft helicity:m2 s-2:UPHL
 16:16:Bulk richardson number:Numeric:BULKRN
 17:17:Gradient richardson number:Numeric:GRDRN
@@ -23,3 +23,4 @@
 
 # 192-254:192-254:Reserved for Local Use:-:
 
+255:255:Missing:-:

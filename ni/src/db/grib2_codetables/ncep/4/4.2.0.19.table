@@ -3,7 +3,7 @@
 1:1:Albedo:%:ALBDO
 2:2:Thunderstorm probability:%:TSTM
 3:3:Mixed layer depth:m:MIXHT
-4:4:Volcanic ash:Code Table 4.20:VOLASH
+4:4:Volcanic ash:Code Table 4.206:VOLASH
 5:5:Icing top:m:ICIT
 6:6:Icing base:m:ICIB
 7:7:Icing:Code Table 4.207:ICI

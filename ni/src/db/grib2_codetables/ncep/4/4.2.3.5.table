@@ -1,0 +1,8 @@
+# GRIBv2 - Table 4.2-3-5 Space - Sea-Surface Temperature
+0:0:Interface Sea-Surface Temperature:K:ISSTMP
+1:1:Skin Sea-Surface Temperature:K:SKSSTMP
+2:2:Sub-Skin Sea-Surface Temperature:K:SSKSSTMP
+3:3:Foundation Sea-Surface Temperature:K:FDNSSTMP
+4:4:Estimated bias between Sea-Surface Temperature and Standard:K:EBSSTSTD
+5:5:Estimated bias Standard Deviation between Sea-Surface Temperature and Standard:K:EBSDSSTS
+255:255:Missing:-:

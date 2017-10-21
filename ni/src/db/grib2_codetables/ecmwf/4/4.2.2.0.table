@@ -28,12 +28,19 @@
 25:25:Volumetric soil moisture:m3m-3:VSOILM
 26:26:Wilting point:kg m-3:WILT
 27:27:Volumetric wilting moisture:m3m-3:VWILTM
-28:28:Leaf Area Index:Numeric:
-29:29:Evergreen Forest:Numeric:
-30:30:Deciduous Forest:Numeric:
-31:31:Normalized Differential Vegetation Index (NDVI):Numeric:
-32:32:Root Depth of Vegetation:m:
+28:28:Leaf area index:Numeric:LEAINX
+29:29:Evergreen forest:Proportion:EVGFC
+30:30:Deciduous forest:Proportion:DECFC
+31:31:Normalized differential vegetation index (NDVI):Numeric:NDVINX
+32:32:Root depth of vegetation:m:RDVEG
+33:33:Water runoff and drainage:kg m-2:WROD
+34:34:Surface water runoff:kg m-2:SFCWRO
+35:35:Tile class:Code Table 4.243:TCLASS
+36:36:Tile fraction:Proportion:TFRCT
+37:37:Tile percentage:%:TPERCT
+38:38:Soil volumetric ice content (water equivalent):m3 m-3:SOILVIC
 # 28-191:28-191:Reserved:-:
 
 # 192-254:192-254:Reserved for Local Use:-:
 
+255:255:Missing:-:

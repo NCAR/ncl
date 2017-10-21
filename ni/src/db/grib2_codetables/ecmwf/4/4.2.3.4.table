@@ -1,0 +1,11 @@
+# GRIBv2 - Table 4.2-3-4 Space - Volcanic Ash
+0:0:Volcanic Ash Probability:%:VOLAPROB
+1:1:Volcanic Ash Cloud Top Temperature:K:VOLACDTT
+2:2:Volcanic Ash Cloud Top Pressure:Pa:VOLACDTP
+3:3:Volcanic Ash Cloud Top Height:m:VOLACDTH
+4:4:Volcanic Ash Cloud Emissity:Numeric:VOLACDEM
+5:5:Volcanic Ash Effective Absorption Depth Ratio:Numeric:VOLAEADR
+6:6:Volcanic Ash Cloud Optical Depth:Numeric:VOLACDOD
+7:7:Volcanic Ash Column Density:kg m-2:VOLACDEN
+8:8:Volcanic Ash Particle Effective Radius:m:VOLAPER
+255:255:Missing:-:
