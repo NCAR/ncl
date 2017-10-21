@@ -1,36 +1,36 @@
 COMMON CODE TABLE C–8: Satellite instruments
-10:10:BNSC - Advanced along track scanning radiometer:Radiometer:AATSR					  
-11:11:BNSC - Along track scanning radiometer:Radiometer:ATSR					  
-12:12:BNSC - Along track scanning radiometer-2:Radiometer:ATSR-2					  
-13:13:BNSC - Microwave radiometer:Radiometer:MWR					  
-30:30:CNES - ARGOS:Communications:ARGOS					  
-40:40:CNES - Laser reflectors:Lidar:Laser reflectors			  
-41:41:CNES - Doppler orbitography and radio-positioning integrated by satellite:Lidar:DORIS					  
-42:42:CNES - Doppler orbitography and radio-positioning integrated by satellite-NG:Lidar:DORIS-NG				  
-47:47:CNES - Positioning ocean, solid Earth, ice dynamics orbiting navigator (single frequency solid state radar altimeter):Radar altimeter:POSEIDON-1 (SSALT1)			  
-48:48:CNES - Positioning ocean, solid Earth, ice dynamics orbiting navigator (double frequency solid state radar altimeter):Radar altimeter:POSEIDON-2 (SSALT2)			  
-49:49:CNES - Positioning ocean, solid Earth, ice dynamics orbiting navigator (double frequency solid state radar altimeter):Radar altimeter:POSEIDON-3 (SSALT3)			  
-50:50:CNES - ATSR/M:Imaging radiometer:ATSR/M					  
-51:51:CNES - HRG:High-resolution optical imager:HRG					  
-52:52:CNES - High-resolution visible:Radiometer:HRV					  
-53:53:CNES - High-resolution visible and infrared:Radiometer:HRVIR 					  
-54:54:CNES - Scanner for Earth's radiation budget:Radiometer:ScaRaB/MV2				  
-55:55:CNES - POLDER:Radiometer:POLDER					  
-56:56:CNES - Imaging Infrared Radiometer:Imaging multi-spectral radiometer:IIR					  
-60:60:CNES - VEGETATION:Spectrometer:VEGETATION				  
-61:61:CNES - WINDII:Spectrometer:WINDII					  
-62:62:CNES - Ka band Radar Altimeter:Altimeter:AltiKa 					  
-80:80:CSA - RADARSAT DTT:Communications:RADARSAT DTT				  
-81:81:CSA - RADARSAT TTC:Communications:RADARSAT TTC 				  
-85:85:CSA - Synthetic aperture radar (CSA):Radar:SAR (CSA)				  
-90:90:CSA - Measurements of pollution in the troposphere:Radiometer:MOPITT					  
-91:91:CSA - Optical spectrograph and Infrared imaging system:Atmospheric chemistry instrument:OSIRIS					  
-92:92:CSA - Atmospheric Chemistry Experiment – Fourier Transform Spectrometer:Limb-scanning sounder:ACE-FTS					  
-97:97:CSIRO - Panchromatic imager:Radiometer:Panchromatic imager			  
-98:98:CRCSS - GPS receiver:Atmospheric temperature and humidity sounder:GPS receiver				  
-102:102:DLR - GPS turborogue space receiver (TRSR):Radiometer:CHAMP GPS sounder			  
-103:103:DLR - Integrated GPS and Occultation Receiver:Radiometer:IGOR					  
-116:116:DLR - STAR accelerometer:Magnetometer:CHAMP gravity package (Accelerometer+GPS) 
+10:10:BNSC - Advanced along track scanning radiometer:Radiometer:AATSR
+11:11:BNSC - Along track scanning radiometer:Radiometer:ATSR
+12:12:BNSC - Along track scanning radiometer-2:Radiometer:ATSR-2
+13:13:BNSC - Microwave radiometer:Radiometer:MWR
+30:30:CNES - ARGOS:Communications:ARGOS
+40:40:CNES - Laser reflectors:Lidar:Laser reflectors
+41:41:CNES - Doppler orbitography and radio-positioning integrated by satellite:Lidar:DORIS
+42:42:CNES - Doppler orbitography and radio-positioning integrated by satellite-NG:Lidar:DORIS-NG
+47:47:CNES - Positioning ocean, solid Earth, ice dynamics orbiting navigator (single frequency solid state radar altimeter):Radar altimeter:POSEIDON-1 (SSALT1)
+48:48:CNES - Positioning ocean, solid Earth, ice dynamics orbiting navigator (double frequency solid state radar altimeter):Radar altimeter:POSEIDON-2 (SSALT2)
+49:49:CNES - Positioning ocean, solid Earth, ice dynamics orbiting navigator (double frequency solid state radar altimeter):Radar altimeter:POSEIDON-3 (SSALT3)
+50:50:CNES - ATSR/M:Imaging radiometer:ATSR/M
+51:51:CNES - HRG:High-resolution optical imager:HRG
+52:52:CNES - High-resolution visible:Radiometer:HRV
+53:53:CNES - High-resolution visible and infrared:Radiometer:HRVIR
+54:54:CNES - Scanner for Earth's radiation budget:Radiometer:ScaRaB/MV2
+55:55:CNES - POLDER:Radiometer:POLDER
+56:56:CNES - Imaging Infrared Radiometer:Imaging multi-spectral radiometer:IIR
+60:60:CNES - VEGETATION:Spectrometer:VEGETATION
+61:61:CNES - WINDII:Spectrometer:WINDII
+62:62:CNES - Ka band Radar Altimeter:Altimeter:AltiKa
+80:80:CSA - RADARSAT DTT:Communications:RADARSAT DTT
+81:81:CSA - RADARSAT TTC:Communications:RADARSAT TTC
+85:85:CSA - Synthetic aperture radar (CSA):Radar:SAR (CSA)
+90:90:CSA - Measurements of pollution in the troposphere:Radiometer:MOPITT
+91:91:CSA - Optical spectrograph and Infrared imaging system:Atmospheric chemistry instrument:OSIRIS
+92:92:CSA - Atmospheric Chemistry Experiment – Fourier Transform Spectrometer:Limb-scanning sounder:ACE-FTS
+97:97:CSIRO - Panchromatic imager:Radiometer:Panchromatic imager
+98:98:CRCSS - GPS receiver:Atmospheric temperature and humidity sounder:GPS receiver
+102:102:DLR - GPS turborogue space receiver (TRSR):Radiometer:CHAMP GPS sounder
+103:103:DLR - Integrated GPS and Occultation Receiver:Radiometer:IGOR
+116:116:DLR - STAR accelerometer:Magnetometer:CHAMP gravity package (Accelerometer+GPS)
 117:117:DLR - Overhauser magnetometer (OVM) and fluxgate magnetometer (FGM):Magnetometer:CHAMP magnetometry package (1 scalar+2 vector magnetometer)
 120:120:ESA - Communications package on ENVISAT:Communications:ENVISAT Comms
 121:121:ESA - Communication package for ERS:Communications:ERS Comms
