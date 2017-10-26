@@ -12,8 +12,16 @@
 10:10:Entire Atmosphere:none:EATM
 11:11:Cumulonimbus Base:m:CB
 12:12:Cumulonimbus Top:m:CT
-# 13-19 Reserved
+13:13:Lowest level where vertically integrated cloud cover exceeds the specified percentage (cloud base for a given percentage cloud cover):%:BCC
+14:14:Level of free convection:none:LFC
+15:15:Convection condensation level:none:CCL
+16:16:Level of neutral buoyancy or equilibrium:LNB
+# 17-19 Reserved
 20:20:Isothermal level:K:TMPL
+21:21:Lowest level where mass density exceeds the specified value (base for a given threshold of mass density):kg m-3:BMD
+22:22:Highest level where mass density exceeds the specified value (top for a given threshold of mass density):kg m-3:TMD
+23:23:Lowest level where air concentration exceeds the specified value (base for a given threshold of air concentration:Bq m-3:BAC
+24:24:Highest level where air concentration exceeds the specified value (top for a given threshold of air concentration):Bq m-3:TAC
 #21-99 Reserved
 100:pl:Isobaric surface:Pa:ISBL
 101:sfc:Mean sea level:Pa:MSL
@@ -27,10 +35,37 @@
 109:pv:Potential vorticity:K m2 kg-1 s-1:PVL
 110:110:Reserved
 111:111:Eta level:Eta value:ETAL
-# 112-116 Reserved
+# 112 Reserved
+113:113:Logarithmic hybrid level:none:LHBYL
+114:114:Snow level:Numeric:SNOWL
+115:115:Sigma height level:Numeric:SHL
+#116 reserved
 117:117:Mixed layer depth:m:MIXL
-# 118-159 Reserved
+118:118:Hybrid Height Level:numeric:HHL
+119:119:Hybrid Pressure Level:numeric:HPL
+# 120-149 Reserved
+150:150:Generalized Vertical Height Coordinate:numeric:GVHC
+151:151:Soil level:numeric:SL
 160:160:Depth below sea level:m:DBSL
+161:161:Depth Below Water Surface:m:DBWS
+162:162:Lake or River Bottom:none:LRB
+163:163:Bottom Of Sediment Layer:none:BSL
+164:164:Bottom Of Thermally Active Sediment Layer:none:BTASL
+165:165:Bottom Of Sediment Layer Penetrated By Thermal Wave:none:BSLPTW
+166:166:Maxing Layer:none:MXL
+167:167:Bottom of Root Zone:none:BRZ
+168-173	Reserved
+174:174:Top Surface of Ice on Sea, Lake or River:none:TSI
+175:175:Top Surface of Ice, under Snow, on Sea, Lake or River:none:TSIUS
+176:176:Bottom Surface (underside) Ice on Sea, Lake or River:none:BSI
+177:177:Deep Soil (of indefinite depth):none:DSOIL
+178:178:Reserved
+179:179:Top Surface of Glacier Ice and Inland Ice:none:TSGII
+180:180:Deep Inland or Glacier Ice (of indefinite depth):none:DIGI
+181:181:Grid Tile Land Fraction as a Model Surface:none:GTLF
+182:182:Grid Tile Water Fraction as a Model Surface:none:GTWF
+183:183:Grid Tile Ice Fraction on Sea, Lake or River as a Model Surface:none:GTIF
+184:184:Grid Tile Glacier Ice and Inland Ice Fraction as a Model Surface:none:GTGIIF
 #161-191 Reserved
 #192-254 Reserved for local use
 200:200:Entire atmosphere (considered as a single layer):none:EATM

@@ -5659,12 +5659,14 @@ int g2ens_equal(G2_ENS *ens1, G2_ENS *ens2)
 			ens1->lower_limit_value == ens2->lower_limit_value) {
 			    return 1;
 		    }
+		    break;
 	    case 1:
 	    case 4:
 		    if (ens1->upper_limit_scale == ens2->upper_limit_scale &&
 			ens1->upper_limit_value == ens2->upper_limit_value) {
 			    return 1;
 		    }
+		    break;
 	    case 2:
 		    if (ens1->lower_limit_scale == ens2->lower_limit_scale &&
 			ens1->lower_limit_value == ens2->lower_limit_value &&
@@ -5672,12 +5674,13 @@ int g2ens_equal(G2_ENS *ens1, G2_ENS *ens2)
 			ens1->upper_limit_value == ens2->upper_limit_value) {
 			    return 1;
 		    }
+		    break;
 
 	    }
     }
 		
     return 0;
-}
+ }
 
 int g2it_comp (G2_GIT *it1, G2_GIT* it2)
 {
@@ -10644,7 +10647,8 @@ static void *Grib2OpenFile
 
 		    /* table 4.5: Fixed Surface Types and Units */
 		    if (g2fld->ipdtmpl != NULL)
-			    g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc = g2fld->ipdtmpl[level_off];
+			    g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc = g2fld->ipdtmpl[level_off] == 0 ? 
+				    255 : g2fld->ipdtmpl[level_off];
 		    else {
 			    NhlPError(NhlFATAL, NhlEUNKNOWN,
 				      "NclGRIB2: Invalid Product Definition Template.");
@@ -10656,7 +10660,7 @@ static void *Grib2OpenFile
 
                     if (g2fld->ipdtmpl != NULL) {
                             g2rec[nrecs]->sec4[i]->prod_params->scale_factor_first_fixed_sfc = g2fld->ipdtmpl[level_off + 1];
-	    	    	if (g2fld->ipdtmpl[level_off + 1] == -127)
+			    if (g2fld->ipdtmpl[level_off + 1] == -127)
 		    		    g2rec[nrecs]->sec4[i]->prod_params->scaled_val_first_fixed_sfc = 0;
 		        	else
 			        	g2rec[nrecs]->sec4[i]->prod_params->scaled_val_first_fixed_sfc
@@ -10669,7 +10673,8 @@ static void *Grib2OpenFile
             	    }
 
 		    if (g2fld->ipdtmpl != NULL)
-			    g2rec[nrecs]->sec4[i]->prod_params->typeof_second_fixed_sfc = g2fld->ipdtmpl[level_off +3];
+			    g2rec[nrecs]->sec4[i]->prod_params->typeof_second_fixed_sfc = g2fld->ipdtmpl[level_off +3] == 0 ?
+				    255 : g2fld->ipdtmpl[level_off +3];
 		    else {
 			    NhlPError(NhlFATAL, NhlEUNKNOWN,
 				      "NclGRIB2: Invalid Product Definition Template.");
