@@ -5521,3 +5521,91 @@ printVarSummary(pref)
 
   return(dpres)
 end
+;--------------------------
+undef("dim_pad")
+function dim_pad(x:numeric, N[1]:integer,  dims[1]:integer)   
+;
+; Pad (expand) the specified dimensions to get a SIZE such that SIZE%N=0 
+; Only 'dims' 0 or 1 is supported.
+; Coordinate values (if any) along 'dims' dimension are lost
+;
+; TEST: /Users/shea/ncld/test/PDSI/tst.dim_pad.ncl 
+;
+; Examples: N=12
+;           x[1]  ===> dim_pad(x, N, 0) ===> x[12]
+;           x[ 1,nlat,mlon] ===> dim_pad(x, N, 0) ===> x[12][nlat][mlon]]
+;           x[17,nlat,mlon] ===> dim_pad(x, N, 0) ===> x[24][nlat][mlon]]
+;           x[ncase,17,nlat,mlon] ===> dim_pad(x, N, 1) ===> x[ncase][24][nlat][mlon]]
+;
+local dimx, ntim, rankx, NTIM, X
+begin
+  if (dims.gt.1) then
+      print("dim_pad: dims>1 is not supported: dims="+dims)
+      exit
+  end if
+
+  dimx  = dimsizes(x)
+  rankx = dimsizes(dimx)
+  ntim  = dimx(dims)
+  
+  if (ntim%N.eq.0) then
+      return(x)
+  end if
+
+  if (ntim.lt.N) then
+      NTIM = N
+  else
+      NTIM = ntim + (ntim%N)
+  end if
+
+  dimx(dims) = NTIM
+  X    = new( dimx, typeof(x), getVarFillValue(x))
+  copy_VarAtts(x,X)
+
+  if (rankx.eq.1) then
+      X(0:ntim-1)     = (/ x /) 
+      X!0 = x!0
+  elseif (rankx.eq.2) then
+      if (dims.eq.0) then
+          X(0:ntim-1,:)   = (/ x /)
+          copy_VarCoords(x(0,:), X(0,:))
+          X!0 = x!0
+      else
+          X(:,0:ntim-1)   = (/ x /)
+          copy_VarCoords(x(:,0), X(:,0))
+          X!1 = x!1
+      end if
+  elseif (rankx.eq.3) then
+      if (dims.eq.0) then
+          X(0:ntim-1,:,:)   = (/ x /)
+          copy_VarCoords(x(0,:,:), X(0,:,:))
+          X!0 = x!0
+      else
+          X(:,0:ntim-1,:)   = (/ x /)
+          copy_VarCoords(x(:,0,:), X(:,0,:))
+          X!1 = x!1
+      end if
+  elseif (rankx.eq.4) then
+      if (dims.eq.0) then
+          X(0:ntim-1,:,:,:)   = (/ x /)
+          copy_VarCoords(x(0,:,:,:), X(0,:,:,:))
+          X!0 = x!0
+      else
+          X(:,0:ntim-1,:,:)   = (/ x /)
+          copy_VarCoords(x(:,0,:,:), X(:,0,:,:))
+          X!1 = x!1
+      end if
+  elseif (rankx.eq.5) then
+      if (dims.eq.0) then
+          X(0:ntim-1,:,:,:,:)   = (/ x /)
+          copy_VarCoords(x(0,:,:,:,:), X(0,:,:,:,:))
+          X!0 = x!0
+      else
+          X(:,0:ntim-1,:,:,:)   = (/ x /)
+          copy_VarCoords(x(:,0,:,:,:), X(:,0,:,:,:))
+          X!1 = x!1
+      end if
+  end if
+
+  return(X)
+end
