@@ -21,6 +21,27 @@
 19:19:Total column-integrated cloud ice:kg m-2:TCOLI
 20:20:Total column-integrated condensate:kg m-2:TCOLC
 21:21:Ice fraction of total condensate:Proportion:FICE
+22:22:Cloud cover:%:CDCC
+23:23:Cloud ice mixing ratio:kg kg-1:CDCIMR
+24:24:Sunshine:Numeric:SUNS
+25:25:Horizontal extent of cumulonimbus (CB):%:CBHE
+26:26:Height of convective cloud base:m:HCONCB
+28:28:Number concentration of cloud droplets:kg-1:NCONCD
+29:29:Number concentration of cloud ice:kg-1:NCCICE
+30:30:Number density of cloud droplets:m-3:NDENCD
+31:31:Number density of cloud ice:m-3:NDCICE
+32:32:Fraction of cloud cover:Numeric:FRACCC
+33:33:Sunshine duration:s:SUNSD
+34:34:Surface long wave effective total cloudiness:Numeric:SLWTC
+35:35:Surface short wave effective total cloudiness:Numeric:SSWTC
+36:36:Fraction of stratiform precipitation cover:Proportion:FSTRPC
+37:37:Fraction of convective precipitation cover:Proportion:FCONPC
+38:38:Mass density of cloud droplets:kg m-3:MASSDCD
+39:39:Mass density of cloud ice:kg m-3:MASSDCI
+40:40:Mass density of convective cloud water droplets:kg m-3:MDCCWD
+47:47:Volume fraction of cloud water droplets:Numeric:VFRCWD
+48:48:Volume fraction of cloud ice particles:Numeric:VFRCICE
+49:49:Volume fraction of cloud (ice and/or water):Numeric:VFRCIW
 # 22-191 Reserved
 24:24:Sunshine duration (ECMWF proposal, not WMO approved):s:SUND
 # 192-254 Reserved for local use

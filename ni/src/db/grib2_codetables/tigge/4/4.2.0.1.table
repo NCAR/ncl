@@ -42,16 +42,28 @@
  39:39:Percent frozen precipitation:%:CPOFP
  40:40:Potential evaporation:kg m-2:PEVAP
  41:41:Potential evaporation rate:W m-2:PEVPR
- 42:42:Snow cover:%:SNOWC
- 43:43:Rain fraction of total cloud water:Proportion:FRAIN
- 44:44:Rime factor:Numeric:RIME
- 45:45:Total column integrated rain:kg m-2:TCOLR
- 46:46:Total column integrated snow:kg m-2:TCOLS
-#47-191 Reserved
- 51:51:Total column water:kg m-2:TCW
- 52:52:total precipitation:kg m-2:TP
- 53:53:Snow fall water equivalent:kg m-2:SF
- 60:60:Snow fall depth equivalent:kg m-2:SD
+42:42:Snow cover:%:SNOWC
+43:43:Rain fraction of total cloud water:Proportion:FRAIN
+44:44:Rime factor:Numeric:RIME
+45:45:Total column integrated rain:kg m-2:TCOLR
+46:46:Total column integrated snow:kg m-2:TCOLS
+47:47:Large scale water precipitation (non-convective):kg m-2:LSWP
+48:48:Convective water precipitation:kg m-2:CWP
+49:49:Total water precipitation:kg m-2:TWATP
+50:50:Total snow precipitation:kg m-2:TSNOWP
+51:51:Total column water - vertically integrated total water (vapour+cloud water/ice):kg m-2:TCWAT
+52:52:total precipitation:kg m-2:TP
+53:53:Snow fall water equivalent:kg m-2:SF
+54:54:Large scale precipitation rate:kg m-2s-1:LSPRATE
+55:55:Convective snowfall rate water equivalent:kg m-2s-1:CSRWE
+56:56:Large scale snowfall rate water equivalent:kg m-2s-1:LSSRWE
+57:57:Total snowfall rate:m s-1:TSRATE
+58:58:Convective snowfall rate:m s-1:CSRATE
+59:59:Large scale snowfall rate:m s-1:LSSRATE
+60:60:Snow depth water equivalent:kg m-2:SDWE
+61:61:Snow density:kg m-3:SDEN
+62:62:Snow evaporation:kg m-2:SEVAP
+
 #192-254 Reserved for local use
 192:192:Categorical Rain:non-dim:CRAIN
 193:193:Categorical Freezing Rain:non-dim:CFRZR
