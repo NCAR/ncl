@@ -161,18 +161,7 @@ OpenCL_OBJS = openclAddProto.o openclAddFuncs.o
 #endif
 
 #if defined(BuildGDAL)
-#if defined(sun)
-CC_LD		= g\+\+ -R/opt/SUNWspro/lib -L/opt/SUNWspro/lib
-CCOPTIONS	= $(EXTRA_CCOPTIONS)
-#elif defined(AIX)
-CC_LD		= xlC_r
-#elif defined(Darwin)
-CC_LD		= g\+\+
-#elif defined(linux)
-CC_LD		= g\+\+
-#else
-CC_LD		= g\+\+
-#endif
+CC_LD		= $(CXX)
 #endif
 
 #ifdef  HPUX

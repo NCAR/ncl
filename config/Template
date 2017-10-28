@@ -312,11 +312,11 @@ NGCOMM########################################################################
 #endif	/* MakeProgram */
 
 #ifndef	CCompiler
-#define	CCompiler	cc
+#define	CCompiler	gcc
 #endif	/* CCompiler */
 
 #ifndef	CxxCompiler
-#define	CxxCompiler	c++
+#define	CxxCompiler	g\+\+
 #endif	/* CCompiler */
 
 #ifndef CLoader
@@ -424,7 +424,7 @@ NGCOMM########################################################################
 #endif	/* FCppCommand */
 
 #ifndef	FCompiler
-#define	FCompiler	f77
+#define	FCompiler	gfortran
 #endif	/* FCompiler */
 
 #ifndef	FLoader
@@ -705,6 +705,7 @@ MAKE		= MakeProgram
 MFLAGS		= -$(MAKEFLAGS)
 #endif
 CC		= CCompiler
+CXX		= CxxCompiler
 CC_LD		= CLoader
 CDYNAMIC	= Cdynamic
 CSTATIC		= Cstatic
