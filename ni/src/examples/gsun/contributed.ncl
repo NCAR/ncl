@@ -9500,6 +9500,29 @@ function hyi2hyo_Wrap(p0,hyai,hybi,psfc,xi,hyao,hybo,option)
 ;
 local xo, dName, nDim, P0, lev, n
 begin
+   if (isatt(p0,"units") .and. isatt(psfc,"units")) then
+       if (p0@units.ne.psfc@units) then
+           print("hyi2hyo_Wrap: p0/psfc units mismatch:")
+           print("              p0@units="+p0@units)
+           print("            psfc@units="+psfc@units)
+           exit
+       end if
+   elseif (.not.isatt(p0,"units") .and. isatt(psfc,"units")) then
+           p0@units = psfc@units
+   elseif (isatt(p0,"units") .and. .not.isatt(psfc,"units")) then
+           psfc@units = p0@units
+   else
+           print("hyi2hyo_Wrap: Neither p0 or psfc have units attribute: Guess")
+           if (p0.gt.1200) then
+               p0@units = "Pa"
+           else
+               p0@units = "hPa"
+           end if
+           psfc@units = p0@units
+   end if
+
+; p0, psfc have the same units
+
    xo = hyi2hyo(p0,hyai,hybi,psfc,xi,hyao,hybo,option)
 
    copy_VarAtts(xi,xo) 
@@ -9516,7 +9539,7 @@ begin
       xo!n = dName(n)
      ;print("dName: "+n+": "+dName(n))
    end do
-
+   
    if (isatt(p0,"units") .and. \
       (p0@units.eq."Pa" .or. p0@units.eq."Pascals") .or. \
       (p0.eq.100000.))  then
