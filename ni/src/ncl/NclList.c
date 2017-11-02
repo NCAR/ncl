@@ -474,21 +474,11 @@ NclObj theobj;
 			tmp_obj= (NclObj)_NclHLUVarCreate(NULL,NULL,Ncl_HLUVar,0,NULL,
 							  (NclMultiDValData)theobj,NULL,-1,NULL,NORMAL,NULL,PERMANENT);
 		}
-#if 0
-                else if (theobj->obj.obj_type_mask & Ncl_MultiDVallistData)
-                {
-                        tmp_obj = theobj;
-                }
-                else if (theobj->obj.obj_type_mask & Ncl_MultiDValData)
-                {
-                        tmp_obj = (NclObj)_NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,(NclMultiDValData)theobj,
-                                                         NULL,-1,NULL,NORMAL,NULL,PERMANENT);
-                }
-#endif
 		else
 		{
 			NclObj tmp_parent_obj;
 			NclRefList *p;
+			short need_created_var = 1;
 			if (theobj->obj.parents) {  
 				tmp_obj = theobj;
 				for (p = theobj->obj.parents; p; p = p->next) {
@@ -498,11 +488,12 @@ NclObj theobj;
 									       NULL,-1,NULL,ATTVALLINK,NULL,PERMANENT);
 						((NclVar)tmp_obj)->var.att_cb = _NclAddCallback((NclObj)theobj,(NclObj)tmp_obj,
 												ListAttDestroyNotify,DESTROYED,NULL);
+						need_created_var = 0;
 						break;
 					}
 				}
 			}
-			else {
+			if (need_created_var) {
 				tmp_obj= (NclObj)_NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,
 							       (NclMultiDValData)theobj, NULL,-1,NULL,NORMAL,NULL,PERMANENT);
 			}
