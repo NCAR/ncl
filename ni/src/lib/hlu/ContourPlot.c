@@ -12615,6 +12615,7 @@ void _NHLCALLF(checkareamap,CHECKAREAMAP)(int *amap)
                                             /*&& anode->left_id > 0 && anode->right_id > 0 && anode->left_id != anode->right_id*/ ) {
 						if (anode->left_id != anode->gid && anode->right_id != anode->gid &&
 						    anode->left_id != anode->right_id &&
+                                                    anode->left_id > 0 && anode->right_id > 0 &&
 						    amap[anode->left_id-1] != 19999  && amap[anode->right_id-1] != 19999 )  /* this maps to area id 999 used to draw a boundary around the edge */
 							return;
 					}
