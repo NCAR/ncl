@@ -6758,7 +6758,8 @@ calldraw, callframe, left_string, center_string, right_string, yoffset, \
 min_lat, max_lat, center_lat, main_offset, \
 side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
 vpxf, vpyf, vphf, vpwf, plon, plat, xndc, yndc, polar_type, center_lon, \
-center_lat, rel_c_lon, rel_c_lat, set_text_font
+center_lat, rel_c_lon, rel_c_lat, set_text_font, \
+names
 begin
 
 ; Initialize.
