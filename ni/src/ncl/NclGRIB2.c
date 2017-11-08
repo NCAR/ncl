@@ -42,7 +42,8 @@ int secid,
 char *table, 
 int oct, 
 int cat,
-g2codeTable *ct
+g2codeTable *ct,
+int suppress
 #endif
 );
 
@@ -3828,7 +3829,7 @@ Grib2FileRecord *therec;
 				att_list_ptr->att_inq->name = NrmStringToQuark("atmospheric_chemical_constituent_type");
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 				if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
-						       "4.230.table",step->traits.aerosol_type,-1,ct) < NhlWARNING) {
+						       "4.230.table",step->traits.aerosol_type,-1,ct,False) < NhlWARNING) {
 					return;
 				}
 			}
@@ -3836,7 +3837,7 @@ Grib2FileRecord *therec;
 				att_list_ptr->att_inq->name = NrmStringToQuark("aerosol_type");
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 				if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
-						       "4.233.table",step->traits.aerosol_type,-1,ct) < NhlWARNING) {
+						       "4.233.table",step->traits.aerosol_type,-1,ct,False) < NhlWARNING) {
 					return;
 				}
 			}
@@ -4065,7 +4066,7 @@ Grib2FileRecord *therec;
 				step->n_atts++;
 			}
 			if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
-					       "cc.c8.table",instrument_type,-1,ct) < NhlWARNING) {
+					       "cc.c8.table",instrument_type,-1,ct,False) < NhlWARNING) {
 				return;
 			}
 			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
@@ -4128,7 +4129,7 @@ Grib2FileRecord *therec;
 			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
 			att_list_ptr->att_inq->name = NrmStringToQuark("satellite_identifier");
 			if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
-					       "cc.c5.table",step->traits.satellite_series_2,-1,ct) < NhlWARNING) {
+					       "cc.c5.table",step->traits.satellite_series_2,-1,ct,False) < NhlWARNING) {
 				return;
 			}
 			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -4199,7 +4200,7 @@ Grib2FileRecord *therec;
 				att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
 				att_list_ptr->att_inq->name = NrmStringToQuark("type_of_spatial_processing");
 				if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
-						       "4.15.table",grib_rec->spatial_proc,-1,ct) < NhlWARNING) {
+						       "4.15.table",grib_rec->spatial_proc,-1,ct,False) < NhlWARNING) {
 					return;
 				}
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -4324,7 +4325,7 @@ Grib2FileRecord *therec;
 			att_list_ptr->att_inq->name = NrmStringToQuark("type_of_statistical_processing");
 			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 			if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
-					       "4.10.table",step->traits.stat_proc_type, -1,ct) < NhlWARNING) {
+					       "4.10.table",step->traits.stat_proc_type, -1,ct,False) < NhlWARNING) {
 				return;
 			}
 			if (ct->descrip) {
@@ -4467,7 +4468,7 @@ Grib2FileRecord *therec;
 			}
 			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 			Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
-					   "4.5.table",step->traits.first_level_type,-1,ct);
+					   "4.5.table",step->traits.first_level_type,-1,ct,False);
 			if (ct->descrip) {
 				if (ct->units && strcmp("none",ct->units)) {
 					sprintf(buf,"%s (%s)",ct->descrip,ct->units);
@@ -4497,7 +4498,7 @@ Grib2FileRecord *therec;
 			att_list_ptr->att_inq->name = NrmStringToQuark("second_level_type");
 			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 			Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
-					   "4.5.table",step->traits.second_level_type,-1,ct);
+					   "4.5.table",step->traits.second_level_type,-1,ct,False);
 			if (ct->descrip) {
 				if (ct->units && strcmp("none",ct->units)) {
 					sprintf(buf,"%s (%s)",ct->descrip,ct->units);
@@ -4549,7 +4550,7 @@ Grib2FileRecord *therec;
 		att_list_ptr->att_inq->name = NrmStringToQuark("parameter_discipline_and_category");
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		if (Grib2ReadCodeTable(step->ref_rec->table_source, 0, 
-				       "0.0.table",step->traits.discipline,-1,ct) < NhlWARNING) {
+				       "0.0.table",step->traits.discipline,-1,ct,False) < NhlWARNING) {
 			return;
 		}
 		if (ct->descrip) {
@@ -4560,7 +4561,7 @@ Grib2FileRecord *therec;
 			sprintf(buf,"%d, ",step->traits.discipline);
 		}
 		if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, 
-				       "4.2.table",step->traits.discipline,step->traits.param_cat,ct) < NhlWARNING) {
+				       "4.2.table",step->traits.discipline,step->traits.param_cat,ct,False) < NhlWARNING) {
 			return;
 		}
 		if (ct->descrip) {
@@ -4588,7 +4589,7 @@ Grib2FileRecord *therec;
 		att_list_ptr->att_inq->name = NrmStringToQuark("grid_type");
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		if (Grib2ReadCodeTable(step->ref_rec->table_source, 3, 
-				       "3.1.table",grib_rec->grid_number,-1,ct) < NhlWARNING) {
+				       "3.1.table",grib_rec->grid_number,-1,ct,False) < NhlWARNING) {
 			return;
 		}
 		if (step->gds->is_thinned_grid) {
@@ -4710,7 +4711,7 @@ Grib2FileRecord *therec;
 		att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
 		att_list_ptr->att_inq->name = NrmStringToQuark("production_status");
 
-		if (Grib2ReadCodeTable(grib_rec->table_source, 1, "1.3.table", grib_rec->traits.prod_status,-1,ct) < NhlWARNING) {
+		if (Grib2ReadCodeTable(grib_rec->table_source, 1, "1.3.table", grib_rec->traits.prod_status,-1,ct,False) < NhlWARNING) {
 			return;
 		}
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -5040,17 +5041,9 @@ static void _g2AddGenProcAtt(Grib2ParamList *step)
 	att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
 	att_list_ptr->att_inq->name = NrmStringToQuark("generating_process_type");
 
-	{
-		int error_id;
-		NhlErrorTypes err_level;
-		error_id = NhlGetErrorObjectId();
-		NhlVAGetValues(error_id, NhlNerrLevel,&err_level,NULL);
-		NhlVASetValues(error_id, NhlNerrLevel,NhlFATAL,NULL);
-		if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, "4.3.table", 
-				       step->traits.gen_process_type,-1,ct) < NhlWARNING) {
-			return;
-		}
-		NhlVASetValues(error_id, NhlNerrLevel,err_level,NULL);
+	if (Grib2ReadCodeTable(step->ref_rec->table_source, 4, "4.3.table", 
+			       step->traits.gen_process_type,-1,ct,True) < NhlWARNING) {
+		return;
 	}
 		
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -7378,7 +7371,7 @@ static void _g2SetFileDimsAndCoordVars
 		if (dstep == NULL) {
 			/* Need a new dimension entry name and number */
 			Grib2ReadCodeTable(g2inqrec->table_source, 4, 
-					   "4.5.table",g2inqrec->level_indicator,-1,ct);
+					   "4.5.table",g2inqrec->level_indicator,-1,ct,False);
 			tmp = (Grib2DimInqRec *) NclMalloc((unsigned)sizeof(Grib2DimInqRec));
 			tmp->gds = NULL;
 			tmp->dim_number = therec->total_dims;
@@ -7464,7 +7457,7 @@ static void _g2SetFileDimsAndCoordVars
 		if (dstep == NULL) {
 			/* Need a new dimension entry w name and number */
 			Grib2ReadCodeTable(g2inqrec->table_source, 4, 
-					   "4.5.table",g2inqrec->level_indicator,-1,ct);
+					   "4.5.table",g2inqrec->level_indicator,-1,ct,False);
 			tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
 			tmp->gds = NULL;
 			tmp->dim_number = therec->total_dims;
@@ -8621,7 +8614,7 @@ static void Grib2FreeCodeTableRec
 
 static NhlErrorTypes Grib2ReadCodeTable
 # if NhlNeedProto
-(char *center, int secid, char *table, int oct, int cat, g2codeTable *ct)
+(char *center, int secid, char *table, int oct, int cat, g2codeTable *ct, int suppress)
 # else
 (center, secid, table, oct, cat, ct)
     char    *center;
@@ -8630,6 +8623,7 @@ static NhlErrorTypes Grib2ReadCodeTable
     int oct;
     int cat;
     g2codetable *ct;
+    int suppress;
 # endif
 {
     FILE    *fp = NULL;
@@ -8698,10 +8692,12 @@ static NhlErrorTypes Grib2ReadCodeTable
 			  " NclGRIB2: codetable directory \"%s\" invalid",grib2_codetable_dir);
 		return err = NhlFATAL;
 	}
-        NhlPError(NhlWARNING, NhlEUNKNOWN,
-            " NclGRIB2: codetable file \"%s\" not a valid GRIB2 code table.",ctf);
-        NclFree(ctf);
-        return err = NhlWARNING;
+	if (! suppress) {
+		NhlPError(NhlWARNING, NhlEUNKNOWN,
+			  " NclGRIB2: codetable file \"%s\" not a valid GRIB2 code table.",ctf);
+		NclFree(ctf);
+		return err = NhlWARNING;
+	}
     } else {
         while (fgets(s, 256, fp)) {
 	    int go_to_outer_loop = 0;
@@ -8813,8 +8809,10 @@ static NhlErrorTypes Grib2ReadCodeTable
         }
 
         /* didn't find entry in the table */
-        NhlPError(NhlWARNING, NhlEUNKNOWN,
-		  " Entry (%d) not found in code table file %s", oct, ctf);
+	if (! suppress) {
+		NhlPError(NhlWARNING, NhlEUNKNOWN,
+			  " Entry (%d) not found in code table file %s", oct, ctf);
+	}
         ct->oct = -1;
         ct->cat = -1;
         ct->descrip = NULL;
@@ -9449,7 +9447,7 @@ Grib2ParamList  *g2plist;
 	}
 	memset(ct,0,sizeof(g2codeTable));
 	sprintf(buf, "4.2.%d.%d.table", trp->discipline,trp->param_cat);
-	cterr = Grib2ReadCodeTable(g2inqrec->table_source, 4, buf,trp->param_number,-1,ct);
+	cterr = Grib2ReadCodeTable(g2inqrec->table_source, 4, buf,trp->param_number,-1,ct,False);
 	if (cterr < NhlWARNING) {
 		return;
 	}
@@ -9836,7 +9834,7 @@ static void *Grib2OpenFile
                 g2rec[nrecs]->sec1.subcenter_name = NULL;
             }
         } else {
-		cterr = Grib2ReadCodeTable("", -1, "centers.table", g2rec[nrecs]->sec1.centerID,-1,ct);
+		cterr = Grib2ReadCodeTable("", -1, "centers.table", g2rec[nrecs]->sec1.centerID,-1,ct,False);
             if (cterr < NhlWARNING) {
                 NhlFree(g2rec);
                 return NULL;
@@ -9943,24 +9941,6 @@ static void *Grib2OpenFile
         /* table 1.2: Significance of Reference Time */
         g2rec[nrecs]->sec1.ref_time = sec1[4];
         g2rec[nrecs]->sec1.sig_ref_time = NULL;
-#if 0
-        table = "1.2.table";
-        cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec1.ref_time,-1,ct);
-        if (cterr < NhlWARNING) {
-            NhlFree(g2rec);
-            return NULL;
-        }
-
-        g2rec[nrecs]->sec1.sig_ref_time = NclMalloc(strlen(ct->descrip) + 1);
-        if (g2rec[nrecs]->sec1.sig_ref_time == NULL) {
-            NhlPError(NhlFATAL, NhlEUNKNOWN,
-                "Could not allocate memory for GRIB v2 data entry.");
-                NhlFree(g2rec);
-                return NULL;
-        }
-
-        (void) strcpy(g2rec[nrecs]->sec1.sig_ref_time, ct->descrip);
-#endif
 
         g2rec[nrecs]->sec1.date_time.year = sec1[5];
         g2rec[nrecs]->sec1.date_time.mon = sec1[6];
@@ -9976,36 +9956,10 @@ static void *Grib2OpenFile
         /* table 1.3: Production Status of Data */
         g2rec[nrecs]->sec1.prod_status = sec1[11];
         g2rec[nrecs]->sec1.proc_prod_status = NULL;
-#if 0
-        table = "1.3.table";
-        cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec1.prod_status, -1,ct);
-        if (cterr < NhlWARNING) {
-            NhlFree(g2rec);
-            return NULL;
-        }
-
-        g2rec[nrecs]->sec1.proc_prod_status = NclMalloc(strlen(ct->descrip) + 1);
-        (void) strcpy(g2rec[nrecs]->sec1.proc_prod_status, ct->descrip);
-#endif
 
         /* table 1.4: Type of Data */
         g2rec[nrecs]->sec1.data_type = sec1[12];
         g2rec[nrecs]->sec1.proc_data_type = NULL;
-#if 0
-        table = "1.4.table";
-        cterr = Grib2ReadCodeTable(center,secid,table, g2rec[nrecs]->sec1.data_type,-1,ct);
-        if (cterr < NhlWARNING) {
-            NhlFree(g2rec);
-            return NULL;
-        }
-
-        if (ct->descrip) {
-            g2rec[nrecs]->sec1.proc_data_type = NclMalloc(strlen(ct->descrip) + 1);
-            (void) strcpy(g2rec[nrecs]->sec1.proc_data_type, ct->descrip);
-        } else {
-            g2rec[nrecs]->sec1.proc_data_type = NULL;
-        }
-#endif
 
         /*
          * Get GRIB v2 sections 2 thru 7.  These sections may be repeated
@@ -10212,72 +10166,13 @@ static void *Grib2OpenFile
             secid = 3;
             g2rec[nrecs]->sec3[i]->secid = 3;
 
-#if 0
-	    /* not much reason to read this table since we just using the octet number anyway
-	       to figure out what to do next */
-            /* table 3.0: Source of Grid Defn */
-            table = "3.0.table";
-            cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec3[i]->grid_def_src,-1,ct);
-            if (cterr < NhlWARNING) {
-                NhlFree(g2rec);
-                return;
-            }
-#endif
-
             g2rec[nrecs]->sec3[i]->grid_def_src = g2fld->griddef;
             g2rec[nrecs]->sec3[i]->grid_def_name = NULL;
             g2rec[nrecs]->sec3[i]->grid_num = g2fld->igdtnum;
-#if 0
-            switch ( g2fld->griddef) {
-                case 0:
-                    /* table 3.1: Grid Defn Template Num */
-                    table = "3.1.table";
-                    cterr = Grib2ReadCodeTable(center, secid, table, g2fld->igdtnum,-1,ct);
-                    if (cterr < NhlWARNING) {
-                        NhlFree(g2rec);
-                        return NULL;
-                    }
-
-                    g2rec[nrecs]->sec3[i]->grid_def_name = NclMalloc(strlen(ct->descrip) + 1);
-                    (void) strcpy(g2rec[nrecs]->sec3[i]->grid_def_name, ct->descrip);
-                    break;
-
-                case 1:
-                    /* grid def det'd by originating center */
-                    break;
-
-                case 255:
-                    /* grid defn doesn't apply */
-                    g2rec[nrecs]->sec3[i]->grid_num = ct->oct;  /* 255 */
-                    g2rec[nrecs]->sec3[i]->grid_def_name
-                            = NclMalloc(strlen("A grid definition doesn't apply.") + 1);
-                    (void) strcpy(g2rec[nrecs]->sec3[i]->grid_def_name,
-                            "A grid definition doesn't apply.");
-
-                    /* FALLTHROUGH */
-                default:
-                    /* grid def doesn't apply */
-                    break;
-            }
-#endif
 
             g2rec[nrecs]->sec3[i]->num_grid_data_pts = g2fld->ngrdpts;
             g2rec[nrecs]->sec3[i]->num_oct_opt = g2fld->numoct_opt;
 
-#if 0
-            /* table 3.11: Interpretation of List of Numbers Defining Number of Pts */
-            g2rec[nrecs]->sec3[i]->interp_opt_num_pts = g2fld->interp_opt;
-            table = "3.11.table";
-            cterr = Grib2ReadCodeTable(center, secid, table,
-				       g2rec[nrecs]->sec3[i]->interp_opt_num_pts,-1,ct);
-            if (cterr < NhlWARNING) {
-                NhlFree(g2rec);
-                return NULL;
-            }
-
-            g2rec[nrecs]->sec3[i]->interp_opt_name = NclMalloc(strlen(ct->descrip) + 1);
-            (void) strcpy(g2rec[nrecs]->sec3[i]->interp_opt_name, ct->descrip);
-#endif
 
             g2rec[nrecs]->sec3[i]->grid_def_templ_num = g2fld->igdtnum;
 
@@ -10305,119 +10200,12 @@ static void *Grib2OpenFile
             g2rec[nrecs]->sec3[i]->scan_mode_offset = -1; /* this is determined later */
 	    
 
-#if 0
-            /* table 3.2: Shape of Earth */
-            g2rec[nrecs]->sec3[i]->shape_of_earth = NclMalloc(sizeof(G2shapeOfEarth));
-            g2rec[nrecs]->sec3[i]->res_comp = NclMalloc(sizeof(G2resComponentFlags));
-            g2rec[nrecs]->sec3[i]->scan_mode = NclMalloc(sizeof(G2scanModeFlags));
-
-            g2rec[nrecs]->sec3[i]->shape_of_earth->shapeOfEarth = g2fld->igdtmpl[0];
-
-/* this info not used/necessary */
-#if 0
-            table = "3.2.table";
-            cterr = Grib2ReadCodeTable(center, secid, table,
-				       g2rec[nrecs]->sec3[i]->shape_of_earth->shapeOfEarth,-1,ct);
-            if (cterr < NhlWARNING) {
-                NhlFree(g2rec);
-                return NULL;
-            }
-
-            g2rec[nrecs]->sec3[i]->shape_of_earth->earthShape = NclMalloc(strlen(ct->descrip) + 1);
-            (void) strcpy(g2rec[nrecs]->sec3[i]->shape_of_earth->earthShape, ct->descrip);
-#endif
-            g2rec[nrecs]->sec3[i]->shape_of_earth->scale_factor_rad_sph_earth
-                    = (int) g2fld->igdtmpl[1];
-            g2rec[nrecs]->sec3[i]->shape_of_earth->scaled_val_rad_sph_earth
-                    = (int) g2fld->igdtmpl[2];
-            g2rec[nrecs]->sec3[i]->shape_of_earth->scale_factor_maj_axis_obl_sph_earth
-                    = (int) g2fld->igdtmpl[3];
-            g2rec[nrecs]->sec3[i]->shape_of_earth->scaled_val_maj_axis_obl_sph_earth
-                    = (int) g2fld->igdtmpl[4];
-            g2rec[nrecs]->sec3[i]->shape_of_earth->scale_factor_min_axis_obl_sph_earth
-                    = (int) g2fld->igdtmpl[5];
-            g2rec[nrecs]->sec3[i]->shape_of_earth->scaled_val_min_axis_obl_sph_earth
-                    = (int) g2fld->igdtmpl[6];
-            g2rec[nrecs]->sec3[i]->shape_of_earth->npts_along_parallel = (int) g2fld->igdtmpl[7];
-            g2rec[nrecs]->sec3[i]->shape_of_earth->npts_along_meridian = (int) g2fld->igdtmpl[8];
-            g2rec[nrecs]->sec3[i]->shape_of_earth->angl_init_prod_domain = (int) g2fld->igdtmpl[9];
-            g2rec[nrecs]->sec3[i]->shape_of_earth->subdiv_basic_angle = (int) g2fld->igdtmpl[10];
-
-            g2rec[nrecs]->sec3[i]->shape_of_earth->lat_first_gridpt = g2fld->igdtmpl[11];
-            g2rec[nrecs]->sec3[i]->shape_of_earth->lon_first_gridpt = g2fld->igdtmpl[12];
-
-            g2rec[nrecs]->sec3[i]->res_comp->idir_given = g2getbits(g2fld->igdtmpl[13], 4, 1);
-            g2rec[nrecs]->sec3[i]->res_comp->jdir_given = g2getbits(g2fld->igdtmpl[13], 5, 1);
-            g2rec[nrecs]->sec3[i]->res_comp->uv_vectors
-                    = (short) g2getbits(g2fld->igdtmpl[13], 6, 1);
-
-            g2rec[nrecs]->sec3[i]->shape_of_earth->lat_last_gridpt = g2fld->igdtmpl[14];
-            g2rec[nrecs]->sec3[i]->shape_of_earth->lon_last_gridpt = g2fld->igdtmpl[15];
-
-            if (g2rec[nrecs]->sec3[i]->shape_of_earth->subdiv_basic_angle != 0 &&
-                    g2rec[nrecs]->sec3[i]->shape_of_earth->angl_init_prod_domain != 0) {
-                scale_factor = g2rec[nrecs]->sec3[i]->shape_of_earth->angl_init_prod_domain /
-                (double) g2rec[nrecs]->sec3[i]->shape_of_earth->subdiv_basic_angle;
-            }
-            else {
-                scale_factor = 1.0 / (double) G2_SCALE_FACTOR;
-            }
-
-            g2rec[nrecs]->sec3[i]->lat_first_gridpt = g2fld->igdtmpl[11] * scale_factor;
-            g2rec[nrecs]->sec3[i]->lon_first_gridpt = g2fld->igdtmpl[12] * scale_factor;
-            g2rec[nrecs]->sec3[i]->lat_last_gridpt = g2fld->igdtmpl[14]  * scale_factor;
-            g2rec[nrecs]->sec3[i]->lon_last_gridpt = g2fld->igdtmpl[15]  * scale_factor;
-
-
-
-            g2rec[nrecs]->sec3[i]->shape_of_earth->idir_incr = (int) g2fld->igdtmpl[16];
-            g2rec[nrecs]->sec3[i]->shape_of_earth->jdir_incr = (int) g2fld->igdtmpl[17];
-            g2rec[nrecs]->sec3[i]->shape_of_earth->idir_incr_scaled
-                    = (float) g2fld->igdtmpl[16] * scale_factor;
-            g2rec[nrecs]->sec3[i]->shape_of_earth->jdir_incr_scaled
-                    = (float) g2fld->igdtmpl[17] * scale_factor;
-
-            g2rec[nrecs]->sec3[i]->scan_mode->idir
-                    = g2getbits(g2fld->igdtmpl[18], 7, 1);
-            g2rec[nrecs]->sec3[i]->scan_mode->jdir
-                    = g2getbits(g2fld->igdtmpl[18], 6, 1);
-
-            /*
-             * Set idir/jdir directional values.  Need these later for
-             * computing non-regular ("quasi") grid lat/lon increments.
-             */
-            if (g2rec[nrecs]->sec3[i]->scan_mode->idir == 0)
-                g2rec[nrecs]->sec3[i]->scan_mode->idir = 1;
-            else
-                g2rec[nrecs]->sec3[i]->scan_mode->idir = -1;
-
-            if (g2rec[nrecs]->sec3[i]->scan_mode->jdir == 0)
-                g2rec[nrecs]->sec3[i]->scan_mode->jdir = -1;
-            else
-                g2rec[nrecs]->sec3[i]->scan_mode->jdir = 1;
-
-            g2rec[nrecs]->sec3[i]->scan_mode->adj_ijdir_consec
-                    = g2getbits(g2fld->igdtmpl[18], 5, 1);
-            g2rec[nrecs]->sec3[i]->scan_mode->scan_dir = g2getbits(g2fld->igdtmpl[18], 4, 1);
-#endif
-
             /* GRIB2 section 4   PDS */
             secid = 4;
             g2rec[nrecs]->sec4[i]->secid = 4;
             /* table 4.0: Product Defn Template Number */
             g2rec[nrecs]->sec4[i]->pds_num = g2fld->ipdtnum;
             g2rec[nrecs]->sec4[i]->prod_def_name = NULL;
-#if 0
-            table = "4.0.table";
-            cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec4[i]->pds_num,-1, ct);
-            if (cterr < NhlWARNING) {
-                NhlFree(g2rec);
-                return NULL;
-            }
-
-            g2rec[nrecs]->sec4[i]->prod_def_name = NclMalloc(strlen(ct->descrip) + 1);
-            (void) strcpy(g2rec[nrecs]->sec4[i]->prod_def_name, ct->descrip);
-#endif
 
             /* table 4.1: Parameter Category by Product Discipline */
             g2rec[nrecs]->sec4[i]->prod_params = NclMalloc(sizeof(G2prodParams));
@@ -10431,84 +10219,18 @@ static void *Grib2OpenFile
                     return NULL;
             }
             g2rec[nrecs]->sec4[i]->prod_params->param_cat_name = NULL;
-#if 0
-            table = "4.1.table";
-            cterr = Grib2ReadCodeTable(center, secid, table,
-				       g2rec[nrecs]->sec4[i]->prod_params->param_cat,-1, ct);
-            if (cterr < NhlWARNING) {
-                NhlFree(g2rec);
-                return NULL;
-            }
-
-            g2rec[nrecs]->sec4[i]->prod_params->param_cat_name
-                    = NclMalloc(strlen(ct->descrip) + 1);
-            (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->param_cat_name, ct->descrip);
-#endif
-
-            /*
+	    /*
              * table 4.2.x.y: Product Discipline
              * use sec0.discipline to form table name
              */
             if (g2fld->ipdtmpl != NULL)
-                g2rec[nrecs]->sec4[i]->prod_params->param_num = g2fld->ipdtmpl[1];
-            else {
-                NhlPError(NhlFATAL, NhlEUNKNOWN,
-                    "NclGRIB2: Invalid Product Definition Template.");
-                    NhlFree(g2rec);
-                    return NULL;
-            }
-#if 0
-            memset(fnam, '\0', 256);
-            (void) sprintf(fnam, "4.2.%d.%d.table", g2rec[nrecs]->sec0.discipline,
-                    g2rec[nrecs]->sec4[i]->prod_params->param_cat);
-            cterr = Grib2ReadCodeTable(center, secid, fnam,
-				       g2rec[nrecs]->sec4[i]->prod_params->param_num,-1, ct);
-            if (cterr < NhlWARNING) {
-                NhlFree(g2rec);
-                return NULL;
-            }
-
-            if (ct->oct != -1) {
-                /* found parameter in table */
-		    g2rec[nrecs]->sec4[i]->prod_params->param_name
-			    = NclMalloc(strlen(ct->descrip) + 1);
-		    (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->param_name, ct->descrip);
-
-		    if (ct->shname != NULL) {
-			    g2rec[nrecs]->sec4[i]->prod_params->short_name = NclMalloc(
-				    strlen(ct->shname) + 1);
-			    (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->short_name, ct->shname);
-		    } else {
-			    g2rec[nrecs]->sec4[i]->prod_params->short_name = NclMalloc(18 * sizeof(char));
-			    (void) sprintf(g2rec[nrecs]->sec4[i]->prod_params->short_name, "VAR_%d_%d_%d",
-					   g2rec[nrecs]->sec0.discipline,
-					   g2rec[nrecs]->sec4[i]->prod_params->param_cat,
-					   g2rec[nrecs]->sec4[i]->prod_params->param_num);
-				   
-		    }
-		    if (ct->units != NULL) {
-			    g2rec[nrecs]->sec4[i]->prod_params->units = NclMalloc(strlen(ct->units) + 1);
-			    (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->units, ct->units);
-		    } else {
-			    g2rec[nrecs]->sec4[i]->prod_params->units = NclMalloc(strlen("unknown") + 1);
-			    (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->units, "unknown");
-		    }
-            } else {
-                /* parameter not found */
-                g2rec[nrecs]->sec4[i]->prod_params->param_name
-                        = NclMalloc(strlen("Unknown Variable Name") + 1);
-                (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->param_name,
-                        "Unknown Variable Name");
-
-		g2rec[nrecs]->sec4[i]->prod_params->short_name = NclMalloc(18 * sizeof(char));
-		(void) sprintf(g2rec[nrecs]->sec4[i]->prod_params->short_name, "VAR_%d_%d_%d",
-			       g2rec[nrecs]->sec0.discipline,
-			       g2rec[nrecs]->sec4[i]->prod_params->param_cat,
-			       g2rec[nrecs]->sec4[i]->prod_params->param_num);
-                g2rec[nrecs]->sec4[i]->prod_params->units = NclMalloc(strlen("unknown") + 1);
-                (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->units, "unknown");
-            }
-#endif
+		    g2rec[nrecs]->sec4[i]->prod_params->param_num = g2fld->ipdtmpl[1];
+	    else {
+		    NhlPError(NhlFATAL, NhlEUNKNOWN,
+			      "NclGRIB2: Invalid Product Definition Template.");
+		    NhlFree(g2rec);
+		    return NULL;
+	    }
 
             /* table 4.3: Type of Generating Process */
             if (g2fld->ipdtmpl != NULL)
@@ -10520,18 +10242,7 @@ static void *Grib2OpenFile
                     return NULL;
             }
             g2rec[nrecs]->sec4[i]->prod_params->gen_proc_name = NULL;
-#if 0
-	    table = "4.3.table";
-            cterr = Grib2ReadCodeTable(center, secid, table,
-				       g2rec[nrecs]->sec4[i]->prod_params->gen_process,-1,ct);
-            if (cterr < NhlWARNING) {
-                NhlFree(g2rec);
-                return NULL;
-            }
 
-            g2rec[nrecs]->sec4[i]->prod_params->gen_proc_name = NclMalloc(strlen(ct->descrip) + 1);
-            (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->gen_proc_name, ct->descrip);
-#endif
             if (g2fld->ipdtmpl != NULL) {
                 g2rec[nrecs]->sec4[i]->prod_params->bkgd_gen_process = g2fld->ipdtmpl[3];
                 g2rec[nrecs]->sec4[i]->prod_params->gen_processID = g2fld->ipdtmpl[4];
@@ -10878,20 +10589,7 @@ static void *Grib2OpenFile
 			    g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc = g2fld->ipdtmpl[23+offset];
 		    }
                     g2rec[nrecs]->sec4[i]->prod_params->stat_proc = NULL;
-#if 0
-                    table = "4.10.table";
-                    cterr = Grib2ReadCodeTable(center, secid, table,
-					       g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc,-1,ct);
-                    if (cterr < NhlWARNING) {
-                        NhlFree(g2rec);
-                        return NULL;
-                    }
 
-                    g2rec[nrecs]->sec4[i]->prod_params->stat_proc
-                            = NclMalloc(strlen(ct->descrip) + 1);
-                    (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->stat_proc,
-                            ct->descrip);
-#endif
 		    if (g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc > 191 && g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc != 255) {
 			    /* local NCEP definition */
 			    g2rec[nrecs]->sec4[i]->prod_params->n_grids = g2fld->ipdtmpl[26+offset];
@@ -11460,17 +11158,6 @@ static void *Grib2OpenFile
             /* table 5.0: Data Representation Template Number */
             g2rec[nrecs]->sec5[i]->drt_templ_num = g2fld->idrtnum;
             g2rec[nrecs]->sec5[i]->drt_desc = NULL;
-#if 0
-            table = "5.0.table";
-            cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec5[i]->drt_templ_num,-1,ct);
-            if (cterr < NhlWARNING) {
-                NhlFree(g2rec);
-                return NULL;
-            }
-
-            g2rec[nrecs]->sec5[i]->drt_desc = NclMalloc(strlen(ct->descrip) + 1);
-            (void) strcpy(g2rec[nrecs]->sec5[i]->drt_desc, ct->descrip);
-#endif
 
             /*
              * the data repr applies only to data rep template 0-3 -- totally wrong for
@@ -11517,18 +11204,6 @@ static void *Grib2OpenFile
             g2rec[nrecs]->sec5[i]->data_repr->typeof_field_vals = g2fld->idrtmpl[4];
             g2rec[nrecs]->sec5[i]->data_repr->typeof_field_vals = 0; /* always float */
             g2rec[nrecs]->sec5[i]->data_repr->field_vals = NULL;
-#if 0
-            table = "5.1.table";
-            cterr = Grib2ReadCodeTable(center, secid, table,
-				       g2rec[nrecs]->sec5[i]->data_repr->typeof_field_vals,-1,ct);
-            if (cterr < NhlWARNING) {
-                NhlFree(g2rec);
-                return NULL;
-            }
-
-            g2rec[nrecs]->sec5[i]->data_repr->field_vals = NclMalloc(strlen(ct->descrip) + 1);
-            (void) strcpy(g2rec[nrecs]->sec5[i]->data_repr->field_vals, ct->descrip);
-#endif
 
             /* type allocated is based on value read from table/template */
             g2rec[nrecs]->sec5[i]->ndpts = g2fld->ndpts;
@@ -11542,17 +11217,6 @@ static void *Grib2OpenFile
             /* table 6.0: Bitmap Indicator */
             g2rec[nrecs]->sec6[i]->bmap_ind = g2fld->ibmap;
             g2rec[nrecs]->sec6[i]->bmap_desc = NULL;
-#if 0
-            table = "6.0.table";
-            cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec6[i]->bmap_ind,-1,ct);
-            if (cterr < NhlWARNING) {
-                NhlFree(g2rec);
-                return NULL;
-            }
-
-            g2rec[nrecs]->sec6[i]->bmap_desc = NclMalloc(strlen(ct->descrip) + 1);
-            (void) strcpy(g2rec[nrecs]->sec6[i]->bmap_desc, ct->descrip);
-#endif
 
             if (g2fld->ibmap == 255) {
                 /* no bitmap specified */
@@ -11574,65 +11238,6 @@ static void *Grib2OpenFile
 ***/
 
             g2_free(g2fld);
-#if 0
-	    if (valid_end_time_set) {
-		    int itime[6],etime[6], difftime[6], convert[6];
-		    int mon[12] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
-		    int ix;
-
-		    convert[0] = 1;
-		    convert[1] = 12;
-		    convert[2] = 31;
-		    convert[3] = 24;
-		    convert[4] = 60;
-		    convert[5] = 60;
-		    itime[0] = g2rec[i]->sec1.date_time.year;
-		    itime[1] = g2rec[i]->sec1.date_time.mon;
-		    itime[2] = g2rec[i]->sec1.date_time.day;
-		    itime[3] = g2rec[i]->sec1.date_time.hour;
-		    itime[4] = g2rec[i]->sec1.date_time.min;
-		    itime[5] = g2rec[i]->sec1.date_time.sec;
-
-		    etime[0] = g2rec[i]->sec4[0]->prod_params->end_overall_time_interval.year;
-		    etime[1] = g2rec[i]->sec4[0]->prod_params->end_overall_time_interval.mon;
-		    etime[2] = g2rec[i]->sec4[0]->prod_params->end_overall_time_interval.day;
-		    etime[3] = g2rec[i]->sec4[0]->prod_params->end_overall_time_interval.hour;
-		    etime[4] = g2rec[i]->sec4[0]->prod_params->end_overall_time_interval.min;
-		    etime[5] = g2rec[i]->sec4[0]->prod_params->end_overall_time_interval.sec;
-
-		    if (memcmp(etime,itime,sizeof(itime)) <= 0) {
-			    printf("end time less than or equal to initial time\n");
-		    }
-		    else {
-			    for (ix = 5; ix >= 0; ix--) {
-				    if (ix == 0) {
-					    difftime[ix] = etime[ix] - itime[ix]; 
-				    }
-				    else if (ix == 2) { /* days */
-					    while (etime[ix] < itime[ix]) {
-						    etime[ix] += mon[etime[ix-1]];
-						    if (HeisLeapYear(etime[0]) && etime[ix-1] == 1) {
-							    etime[ix]++;
-						    }
-						    etime[ix -1]--;
-					    }
-					    difftime[ix] = etime[ix] - itime[ix]; 
-				    }
-				    else {
-					    while (etime[ix] < itime[ix]) {
-						    etime[ix] += convert[ix];
-						    etime[ix -1]--;
-					    }
-					    difftime[ix] = etime[ix] - itime[ix]; 
-				    }
-			    }
-			    printf("valid-time - initial-time: %dy %dmo %dd %dh %dmi %ds\n", difftime[0],difftime[1],difftime[2],difftime[3],difftime[4],difftime[5]);
-			    
-		    }
-		    printf("forecast time: %d, duration %d\n",g2rec[i]->sec4[0]->prod_params->forecast_time,
-			   g2rec[i]->sec4[0]->prod_params->len_time_range_unit_stat_proc_done);
-	    }		    
-#endif
         }
 	++nrecs;
         NclFree(g2buf);
@@ -13588,7 +13193,7 @@ static void _g2UpdateGridTypeAttribute
 				}
 				tmp_string = (NrmQuark *) step_att->att_inq->thevalue->multidval.val;
 				if (Grib2ReadCodeTable(step->ref_rec->table_source, 3, 
-						       "3.1.table",step->grid_number,-1,ct) < NhlWARNING) {
+						       "3.1.table",step->grid_number,-1,ct,False) < NhlWARNING) {
 					return;
 				}
 				if (ct->descrip) {
