@@ -33,6 +33,7 @@
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/hluutil.h>
+#include <ncarg/hlu/color.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <limits.h>
@@ -2506,10 +2507,15 @@ static NhlErrorTypes mpDraw
 		NULL);
 
 	NGCALLF(setdashchar,SETDASHCHAR)();
-
+        
+        /* Reset line and fill opacities. Currently, we have no opacity resources for maps; eventually, we
+         * may want to add some.  --RLB 11/2017  NCL-2663.
+         */
+        _NhlSetLineOpacity(mp, 1.0);
+        _NhlSetFillOpacity(mp, 1.0);
+        
+        
 	c_mpsetr("OT",0.0);
-
-
 
 /* Do the fill first */
 
