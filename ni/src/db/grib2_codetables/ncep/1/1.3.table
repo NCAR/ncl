@@ -3,8 +3,12 @@
 1:1:Operational test products
 2:2:Research products
 3:3:Re-analysis products
-4:4:TIGGE Operational products
-5:5:TIGGE test products
+4:4:THORPEX Interactive Grand Global Ensemble (TIGGE)
+5:5:THORPEX Interactive Grand Global Ensemble (TIGGE) test
+6:6:S2S Operational Products
+7:7:S2S Test Products
+8:8:Uncertainties in ensembles of regional reanalysis project (UERRA)
+9:9:Uncertainties in ensembles of regional reanalysis project (UERRA) Test
 # 4-191 Reserved
 # 192-254  Reserved for local use
 255:255:Missing
