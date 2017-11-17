@@ -802,7 +802,7 @@ begin
        daylightmax = where (isnan_ieee(daylightmax), daylightmax@_FillValue , daylightmax) 
    end if
 
-   daylightmax@long_name = "maximum day light hours: FAO_56"
+   daylightmax@long_name = "maximum daylight: FAO_56"
    daylightmax@units     = "hours/day"
    daylightmax@url       = "http://www.fao.org/docrep/X0490E/x0490e07.htm"
    daylightmax@info      = "FAO 56; EQN 34; daylight_fao56"
