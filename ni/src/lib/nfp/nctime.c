@@ -83,7 +83,10 @@ calendar_type(const char *calstr) {
     int itype;
     ctype = cdMixed;  /* default mixed Gregorian/Julian ala udunits */
     for(itype = 0; itype < ncals; itype++) {
-      if(strcmp(calstr, calmap[itype].attname) == 0) {
+/*
+ * Mods for NCL: allow for upper or lower case calendar. Changed strcmp to strcasecmp
+ */
+      if(strcasecmp(calstr, calmap[itype].attname) == 0) {
 	ctype = calmap[itype].type;
 	break;
       }
