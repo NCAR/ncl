@@ -5521,3 +5521,310 @@ printVarSummary(pref)
 
   return(dpres)
 end
+;----------------------------------------------------------------------------
+;----------------------- Unsupported: DJS -----------------------------------
+;----------------------------------------------------------------------------
+undef("dim_pad")
+function dim_pad(x:numeric, N[1]:integer,  ndim[1]:integer)   
+
+; Pad (expand) the 'size' of the user specified dimension to get a 'SIZE' such that (SIZE % N)=0 
+; Only 'ndim' 0 or 1 is supported.
+; 
+; Coordinate values (if any) along 'dims' dimension are lost. All other coordinate data maintained.
+; A created dimension name will be given to the expanded dimension.  
+;           (a) If a dimension name exists (eg" "time"), a new dimension name ("TIME") id created.
+;               The case of the bname is 'switched.'
+;           (b) If no dimension name exist, a name is created: "modulo_N" (eg: N=12, "modulo_12")
+;
+; NCL :  6.4.0 or higher
+; TEST: /Users/shea/ncld/test/PAD/tst.dim_pad.ncl 
+;
+; Examples: N=12
+;           x[1]  ===> dim_pad(x, N, 0) ===> x[12]
+;           x[ 1,nlat,mlon] ===> dim_pad(x, N, 0) ===> x[12][nlat][mlon]]
+;           x[43,nlat,mlon] ===> dim_pad(x, N, 0) ===> x[48][nlat][mlon]]
+;           x[ncase,17,nlat,mlon] ===> dim_pad(x, N, 1) ===> x[ncase][24][nlat][mlon]]
+;
+local dimx, ntim, rankx, NTIM, X, DNAM
+begin
+  if (ndim.gt.1) then
+      print("dim_pad: ndim>1 is not supported: ndim="+ndim)
+      exit
+  end if
+
+  dimx  = dimsizes(x)
+  rankx = dimsizes(dimx)
+  ntim  = dimx(ndim)      ; usually the time dimension
+  
+  if (ntim%N.eq.0) then
+      return(x)
+  end if
+
+  if (ntim.lt.N) then
+      NTIM = N
+  else
+      NTIM = ntim + (ntim%N)
+  end if
+
+  dimx(ndim) = NTIM
+  X    = new( dimx, typeof(x), getVarFillValue(x))
+  copy_VarAtts(x,X)
+
+  if (rankx.eq.1) then
+      if (ndim.ne.0) then
+          print("dim_pad: For a rank-one array ndim must be 0: ndim="+ndim)
+          exit
+      end if
+      X(0:ntim-1)     = (/ x /) 
+  elseif (rankx.eq.2) then
+      if (ndim.eq.0) then
+          X(0:ntim-1,:)   = (/ x /)
+          copy_VarCoords(x(0,:), X(0,:))
+      else
+          X(:,0:ntim-1)   = (/ x /)
+          copy_VarCoords(x(:,0), X(:,0))
+      end if
+  elseif (rankx.eq.3) then
+      if (ndim.eq.0) then
+          X(0:ntim-1,:,:)   = (/ x /)
+          copy_VarCoords(x(0,:,:), X(0,:,:))
+      else
+          X(:,0:ntim-1,:)   = (/ x /)
+          copy_VarCoords(x(:,0,:), X(:,0,:))
+      end if
+  elseif (rankx.eq.4) then
+      if (ndim.eq.0) then
+          X(0:ntim-1,:,:,:)   = (/ x /)
+          copy_VarCoords(x(0,:,:,:), X(0,:,:,:))
+      else
+          X(:,0:ntim-1,:,:)   = (/ x /)
+          copy_VarCoords(x(:,0,:,:), X(:,0,:,:))
+      end if
+  elseif (rankx.eq.5) then
+      if (ndim.eq.0) then
+          X(0:ntim-1,:,:,:,:)   = (/ x /)
+          copy_VarCoords(x(0,:,:,:,:), X(0,:,:,:,:))
+      else
+          X(:,0:ntim-1,:,:,:)   = (/ x /)
+          copy_VarCoords(x(:,0,:,:,:), X(:,0,:,:,:))
+      end if
+  end if
+
+  if (isdimnamed(x,ndim)) then 
+      DNAM   = str_switch( x!ndim ) 
+  else
+      DNAM   = "modulo_"+N
+  end if
+  X!ndim     = DNAM
+
+  return(X)
+end
+;----------------------------------------------------------------------------
+;----------------------- Unsupported: DJS -----------------------------------
+;----------------------------------------------------------------------------
+; Calculate the "joint PDF" of arrays "x", "y" and "z"
+;----------------------------------------------------------------------------
+undef("PDFXYZ")
+function PDFXYZ(x:numeric, y:numeric, z:numeric \
+               ,nbinx[1]:integer, nbiny[1]:integer, nbinz[1]:integer, opt:logical)
+local nGood_x, nbinsx, xMin, xMax, xSpacet, binx, binxBound, binxCenter, nbx \
+     ,nGood_y, nbinsy, yMin, yMax, ySpace , biny, binyBound, binyCenter, nby \
+     ,nGood_z, nbinsz, zMin, zMax, zSpace , binz, binzBound, binzCenter, nbz \
+     ,outside, mnmxint,pdf3, nTot, nTOT   , dbinx,    dbiny, dbinz
+begin
+
+  if (nbinx.le.2) then
+      nbinsx = 25             ; default
+  else
+      nbinsx = nbinx
+  end if
+
+  if (nbiny.le.2) then
+      nbinsy = 25             ; default
+  else
+      nbinsy = nbiny
+  end if
+
+  if (nbinz.le.2) then
+      nbinsz = 25             ; default
+  else
+      nbinsz = nbinz
+  end if
+
+  nGood_x = num(.not.ismissing(x))
+  if (nGood_x.lt.3) then
+      print("PDFXYZ: nGood(x)="+nGood_x+" : Need more non-missing points")
+  end if
+
+  nGood_y = num(.not.ismissing(y))
+  if (nGood_y.lt.3) then
+      print("PDFXYZ: nGood(y)="+nGood_y+" : Need more non-missing points")
+  end if
+
+  nGood_z = num(.not.ismissing(z))
+  if (nGood_z.lt.3) then
+      print("PDFXYZ: nGood(z)="+nGood_z+" : Need more non-missing points")
+  end if
+
+  if (nGood_x.lt.3 .or. nGood_y.lt.3 .or. nGood_z.lt.3) then
+      pdf3 = new( (/nbinsz,nbinsy,nbinsx/), "double", 1d20)
+      return( pdf3 )
+  end if
+
+  xMin = 0.0d     ; prototype as "double"    
+  xMax = 0.0d
+  yMin = 0.0d     ; prototype as "double"    
+  yMax = 0.0d
+  zMin = 0.0d     ; prototype as "double"    
+  zMax = 0.0d
+
+  if (opt .and. isatt(opt,"binx_min")) then  
+      xMin = opt@binx_min                   ; user set
+  else
+      xMin = min(x)                         ; calculate
+  end if
+
+  if (opt .and. isatt(opt,"binx_max")) then  
+      xMax = opt@binx_max                   ; user set
+  else
+      xMax = max(x)                         ; calculate
+  end if
+
+  if (opt .and. isatt(opt,"biny_min")) then  
+      yMin = opt@biny_min                   ; user set
+  else
+      yMin = min(y)                         ; calculate
+  end if
+
+  if (opt .and. isatt(opt,"biny_max")) then  
+      yMax = opt@biny_max                   ; user set
+  else
+      yMax = max(y)                         ; calculate
+  end if
+
+  if (opt .and. isatt(opt,"binz_min")) then  
+      zMin = opt@binz_min                   ; user set
+  else
+      zMin = min(z)                         ; calculate
+  end if
+
+  if (opt .and. isatt(opt,"binz_max")) then  
+      zMax = opt@binz_max                   ; user set
+  else
+      zMax = max(z)                         ; calculate
+  end if
+
+  if (opt .and. isatt(opt,"binx_nice")) then ; nice xMin, xMax
+      outside = True
+      if (isatt(opt,"binx_nice_outside")) then
+          outside = opt@binx_nice_outside
+      end if
+     ;mnmxint = nice_mnmxintvl( min(x), max(x), nbinsx, outside)
+      mnmxint = nice_mnmxintvl( xMin  , xMax  , nbinsx, outside)
+      xMin    = mnmxint(0)
+      xMax    = mnmxint(1)
+      xSpace  = mnmxint(2)
+      nbinsx  = round( (xMax-xMin)/xSpace , 3) 
+      delete(mnmxint)
+  end if
+
+  if (opt .and. isatt(opt,"biny_nice")) then ; nice yMin, yMax
+      outside = True
+      if (isatt(opt,"biny_nice_outside")) then
+          outside = opt@biny_nice_outside
+      end if
+     ;mnmxint = nice_mnmxintvl( min(y), max(y), nbinsy, outside)
+      mnmxint = nice_mnmxintvl( yMin  , yMax  , nbinsy, outside)
+      yMin    = mnmxint(0)
+      yMax    = mnmxint(1)
+      ySpace  = mnmxint(2)
+      nbinsy  = round( (yMax-yMin)/ySpace , 3) 
+      delete(mnmxint)
+  end if
+
+  if (opt .and. isatt(opt,"binz_nice")) then ; nice zMin, zMax
+      outside = True
+      if (isatt(opt,"binz_nice_outside")) then
+          outside = opt@binz_nice_outside
+      end if
+     ;mnmxint = nice_mnmxintvl( min(z), max(z), nbinsz, outside)
+      mnmxint = nice_mnmxintvl( zMin  , zMax  , nbinsz, outside)
+      zMin    = mnmxint(0)
+      zMax    = mnmxint(1)
+      zSpace  = mnmxint(2)
+      nbinsz  = round( (zMax-zMin)/zSpace , 3) 
+      delete(mnmxint)
+  end if
+
+  dbinx       = (xMax-xMin)/(nbinsx-1)
+  binxBound   = xMin + ispan(0,nbinsx,1)*dbinx
+  binxCenter  = (binxBound(0:nbinsx-1) + binxBound(1:nbinsx))*0.5d 
+
+  dbiny       = (yMax-yMin)/(nbinsy-1)
+  binyBound   = yMin + ispan(0,nbinsy,1)*dbiny
+  binyCenter  = (binyBound(0:nbinsy-1) + binyBound(1:nbinsy))*0.5d 
+
+  dbinz       = (zMax-zMin)/(nbinsz-1)
+  binzBound   = zMin + ispan(0,nbinsz,1)*dbinz
+  binzCenter  = (binzBound(0:nbinsz-1) + binzBound(1:nbinsz))*0.5d 
+
+  pdf3        = new( (/nbinsz,nbinsy,nbinsx/), "double", 1d20)
+  pdf3        = 0.0d
+
+  do nbz=0,nbinsz-1
+    do nby=0,nbinsy-1
+      do nbx=0,nbinsx-1
+         pdf3(nbz,nby,nbx) = num(x.ge.binxBound(nbx) .and. x.lt.binxBound(nbx+1) .and.\
+                                 y.ge.binyBound(nby) .and. y.lt.binyBound(nby+1) .and.\
+                                 z.ge.binzBound(nbz) .and. z.lt.binzBound(nbz+1) )
+      end do
+    end do
+  end do
+
+  pdf3!0   = "z"         ; arbitrary name
+  pdf3!1   = "y"
+  pdf3!2   = "x"
+  pdf3&z   =  binzCenter
+  pdf3&y   =  binyCenter
+  pdf3&x   =  binxCenter
+
+  pdf3_sum = sum(pdf3)
+ 
+  nTot = toint(pdf3_sum)                     ; those within bin boundaries
+  pdf3 = pdf3/nTot                           ; frequency
+ ;pdf3@units          = "frequency"
+
+ ;pdf3 = pdf3*100
+ ;pdf3@units          = "%"
+
+  pdf3@nTOT            = nGood_x + nGood_y +nGood_z
+  pdf3@nTot            = nTot                ; Used in Bins
+
+  pdf3@binx_center     = binxCenter
+  pdf3@binx_bounds     = binxBound
+  pdf3@biny_center     = binyCenter
+  pdf3@biny_bounds     = binyBound
+  pdf3@binz_center     = binzCenter
+  pdf3@binz_bounds     = binzBound
+
+  pdf3@binx_bound_min  = min(binxBound)
+  pdf3@binx_bound_max  = max(binxBound)
+  pdf3@binx_spacing    = binxBound(2)-binxBound(1)
+  pdf3@biny_bound_min  = min(binyBound)
+  pdf3@biny_bound_max  = max(binyBound)
+  pdf3@biny_spacing    = binyBound(2)-binyBound(1)
+  pdf3@binz_bound_min  = min(binzBound)
+  pdf3@binz_bound_max  = max(binzBound)
+  pdf3@binz_spacing    = binzBound(2)-binzBound(1)
+
+  pdf3@nbinsx          = nbinsx
+  pdf3@nbinsy          = nbinsy
+  pdf3@nbinsz          = nbinsz
+
+ ;pdf3@long_name      = "Joint PDF: 3D"
+ ;if (isatt(x,"long_name") .and. isatt(y,"long_name" .and. isatt(z,"long_name")) then
+ ;    pdf3@long_name  = "Joint PDF: "+x@long_name+"/"+y@long_name+"/"+z@long_name
+ ;end if
+  
+  return( pdf3 )
+end
