@@ -4,6 +4,9 @@
 ; If you make changes to this function, be sure to change cd_string in
 ; the same fashion, if appropriate.
 ;
+; 11/27/2017: This routine was supposed to call ut_calendar_fix in NCL
+; V6.4.0 but this didn't happen. Fixed this for NCL V6.5.0.
+;
 ; Carl Schreck (carl@atmos.albany.edu)
 ; Based on time_axis_labels (originally "tTick") by Arindam Chakraborty.
 ; Obtained from http://www.ncl.ucar.edu/Support/talk_archives/2007/0763.html
@@ -92,7 +95,7 @@ begin
     return
   end if
 
-  ymdhms0 = ut_calendar(time,0)
+  ymdhms0 = ut_calendar_fix(time,0)
   nt = dimsizes(time)
 
   if (typeof(ymdhms0) .eq. "float") then
