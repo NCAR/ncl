@@ -48,6 +48,10 @@ extern void coerce_subset_input_double_step(void *,double *,ng_size_t,ng_size_t,
 					    NclBasicDataTypes,ng_size_t,int,
 					    NclScalar*,NclScalar*);
 
+extern void coerce_subset_input_float_step(void *,float *,ng_size_t,ng_size_t,
+					   NclBasicDataTypes,ng_size_t,int,
+					   NclScalar*,NclScalar*);
+
 extern double *copy_scalar_to_array(double *, int, ng_size_t *, ng_size_t);
 
 extern float *coerce_output_float(double *, void *, ng_size_t, int);
@@ -68,6 +72,8 @@ extern void coerce_output_float_or_double_ind(void *,double *,
 
 extern void coerce_output_float_or_double_step(void *,double *,
 					       NclBasicDataTypes,ng_size_t,ng_size_t,ng_size_t);
+
+extern void coerce_output_float_step(void *,float *,ng_size_t,ng_size_t,ng_size_t);
 
 extern void coerce_output_step(void *,double *,NclBasicDataTypes,
 			       ng_size_t,ng_size_t,ng_size_t);

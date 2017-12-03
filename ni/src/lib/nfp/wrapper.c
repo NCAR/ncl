@@ -68,6 +68,7 @@ extern NhlErrorTypes snindex_yrmo_W(void);
 #ifdef BuildEEMD
 extern NhlErrorTypes ceemdan_W(void);
 extern NhlErrorTypes eemd_W(void);
+extern NhlErrorTypes meemd_W(void);
 extern NhlErrorTypes emd_num_imfs_W(void);
 #endif
 extern NhlErrorTypes x_skewt_W(void);
@@ -1398,6 +1399,22 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
     NclRegisterFunc(eemd_W,args,"eemd",nargs);
+
+/*
+ * Register "meemd"
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(6);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    NclRegisterFunc(meemd_W,args,"meemd",nargs);
 
 /*
  * Register "emd_num_imfs".
@@ -9532,6 +9549,63 @@ NclScalar         *missing_dx
 }
 
 /*
+ * Coerce a non-contiguous subset of the data to float.
+ */
+void coerce_subset_input_float_step(
+void              *x,
+float             *tmp_x,
+ng_size_t         index_x,
+ng_size_t         step_x,
+NclBasicDataTypes type_x,
+ng_size_t         size_x,
+int               has_missing_x,
+NclScalar         *missing_x,
+NclScalar         *missing_fx
+)
+{
+  ng_size_t i, ii;
+  NclTypeClass typeclass_x;
+  
+/*
+ * typeclass_x is what allows us to get the size of the type of x.
+ */
+  typeclass_x = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_x)));
+/*
+ * Coerce x to float.
+ */
+  if(has_missing_x) {
+/*
+ * Coerce subset to double, with missing values.
+ */
+    for(i = 0; i < size_x; i++ ) {
+      ii = step_x*i;
+      _Nclcoerce((NclTypeClass)nclTypefloatClass,
+                 &tmp_x[i],
+                 (void*)((char*)x+(index_x+ii)*(typeclass_x->type_class.size)),
+                 1,
+                 missing_x,
+                 missing_fx,
+                 typeclass_x);
+    }
+  }
+  else {
+/*
+ * Coerce subset to float, with no missing values.
+ */
+    for(i = 0; i < size_x; i++ ) {
+      ii = step_x*i;
+      _Nclcoerce((NclTypeClass)nclTypefloatClass,
+                 &tmp_x[i],
+                 (void*)((char*)x+(index_x+ii)*(typeclass_x->type_class.size)),
+                 1,
+                 NULL,
+                 NULL,
+                 typeclass_x);
+    }
+  }
+}
+
+/*
  * Checks if a variable is a scalar or not.
  * Returns 1 if it is, and a 0 if it isn't.
  */
@@ -9961,6 +10035,25 @@ ng_size_t step_x
   else {
     for( i = 0; i < size_x; i++ ) ((float*)x)[index_x+(step_x*i)]  = (float)dx[i];
   }
+}
+
+
+/*
+ * Copy float data back to float non-contiguous array, using a void array. 
+ * This was created for the meemd wrapper, which was interfacing to a F90
+ * routine that only handles floats. We hope to replace this routine with
+ * doubles. We can then get rid of this routine if nobody else is using it.
+ */
+void coerce_output_float_step(
+void   *x,
+float  *fx,
+ng_size_t size_x,
+ng_size_t index_x,
+ng_size_t step_x
+)
+{
+  ng_size_t i;
+  for( i = 0; i < size_x; i++ ) ((float*)x)[index_x+(step_x*i)]  = fx[i];
 }
 
 
