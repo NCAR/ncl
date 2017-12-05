@@ -740,15 +740,20 @@ if [ $INSTALL_JASPER ] ; then
       make clean
     fi
     echo "Building $JASPER_DIR..."
-## Use this possibly for jasper V2 and greater
-##    export SOURCE_DIR=`pwd`
-##    export BUILD_DIR=$JASPER_DIR/tmp
-##    export INSTALL_DIR=$PREFIX
-##    cmake -G "Unix Makefiles" -H$SOURCE_DIR -B$BUILD_DIR  -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR
+## Use this for Jasper V2 and greater
+##  export SOURCE_DIR=`pwd`
+##  export BUILD_DIR=$SOURCE_DIR/tmp
+##  export INSTALL_DIR=$PREFIX
+##  rm -rf $BUILD_DIR
+##  mkdir $BUILD_DIR
+##  cd $BUILD_DIR
+##  cmake -G "Unix Makefiles" -H$SOURCE_DIR -B$BUILD_DIR  -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR -DJAS_ENABLE_SHARED=OFF
+##  make all install
 ## Use this for jasper V1.900
 # Need --includedir to point to jpeg include files.      
     ./configure --prefix\=$PREFIX --includedir\=$PREFIX/include
     make all install
+    cd ..
     if [ $? ] ; then
       echo "$JASPER_DIR build successful."
       if [ $CLEAN_AFTER ] ; then
@@ -760,6 +765,7 @@ if [ $INSTALL_JASPER ] ; then
       echo "$JASPER_DIR build NOT successful."
     fi
     cd ..
+## Use this for Jasper V2 and greater
 ##    unset SOURCE_DIR
 ##    unset BUILD_DIR
 ##    unset INSTALL_DIR
