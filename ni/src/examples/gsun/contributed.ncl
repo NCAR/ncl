@@ -4345,7 +4345,6 @@ begin
     copy_VarCoords(x, xAnom)
     return(xAnom)
 end
-
 ; =====================================
 undef("clmDayTLLL")
 function clmDayTLLL (x[*][*][*][*]:numeric, yyyyddd:integer)   
@@ -4390,15 +4389,15 @@ begin
        if (yyyyddd@calendar.eq."360_day" .or. yyyyddd@calendar.eq."360") then
            ndys = 360
        end if
-       if (yyyy@calendar.eq."365_day" .or. yyyy@calendar.eq."365"      .or. \
-           yyyy@calendar.eq."noleap"  .or. yyyy@calendar.eq."no_leap") then
+       if (yyyyddd@calendar.eq."365_day" .or. yyyyddd@calendar.eq."365"      .or. \
+           yyyyddd@calendar.eq."noleap"  .or. yyyyddd@calendar.eq."no_leap") then
            ndys  = 365
        end if
-       if (yyyy@calendar.eq."366_day" .or. yyyy@calendar.eq."366"      .or. \
-           yyyy@calendar.eq."allleap" .or. yyyy@calendar.eq."all_leap") then
+       if (yyyyddd@calendar.eq."366_day" .or. yyyyddd@calendar.eq."366"      .or. \
+           yyyyddd@calendar.eq."allleap" .or. yyyyddd@calendar.eq."all_leap") then
            ndys  = 366
        end if
-       if (yyyy@calendar.eq."standard" .or. yyyy@calendar.eq."gregorian") then
+       if (yyyyddd@calendar.eq."standard" .or. yyyyddd@calendar.eq."gregorian") then
            ndys  = 366
        end if
    else
