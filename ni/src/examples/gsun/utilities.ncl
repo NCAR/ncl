@@ -2275,7 +2275,7 @@ local bool, dims, inds
 begin
     dims = dimsizes(str)
     bool = new(product(dims), logical)
-    bool = where(.not.ismissing(str), False, bool)
+    bool = where(.not.ismissing(ndtooned(str)), False, bool)
 
     inds = str_match_ind(str, substr)   ; this function converts 'str' into a 1-D array
     if(.not.any(ismissing(inds))) then
@@ -2290,7 +2290,7 @@ local bool, dims, inds
 begin
     dims = dimsizes(str)
     bool = new(product(dims), logical)
-    bool = where(.not.ismissing(str), False, bool)
+    bool = where(.not.ismissing(ndtooned(str)), False, bool)
 
     inds = str_match_ind_ic(str, substr)   ; this function converts 'str' into a 1-D array
     if(.not.any(ismissing(inds))) then
