@@ -257,14 +257,14 @@ HDF4_DIR="hdf-4.2.13"
 HDF5_DIR="hdf5-1.8.20"
 HDFEOS_DIR="hdfeos-2.19"
 HDFEOS5_DIR="hdfeos5-1.15"
-JASPER_DIR="jasper-1.900.1"
+JASPER_DIR="jasper-2.0.14"
 JPEG_DIR="jpeg-9b"
 LIBTOOL_DIR="libtool-2.4.6"
 NETCDF4_DIR="netcdf-4.5.0"
 NETCDF4_FORTRAN_DIR="netcdf-fortran-4.4.4"
 PIXMAN_DIR="pixman-0.34.0"
 PKGCONFIG_DIR="pkg-config-0.29.2"
-PNG_DIR="libpng-1.2.57"
+PNG_DIR="libpng-1.2.59"
 PROJ4_DIR="proj-4.9.3"
 SZIP_DIR="szip-2.1.1"
 UDUNITS_DIR="udunits-2.2.25"
@@ -754,8 +754,6 @@ if [ $INSTALL_JASPER ] ; then
 # Need --includedir to point to jpeg include files.      
     ./configure --prefix\=$PREFIX --includedir\=$PREFIX/include
     make all install
-## Be sure to do this for Jasper V2 and greater
-#   cd ..
     if [ $? ] ; then
       echo "$JASPER_DIR build successful."
       if [ $CLEAN_AFTER ] ; then
@@ -766,11 +764,12 @@ if [ $INSTALL_JASPER ] ; then
     else
       echo "$JASPER_DIR build NOT successful."
     fi
-    cd ..
-## Use this for Jasper V2 and greater
+## Be sure to do this for Jasper V2 and greater
 ##  unset SOURCE_DIR
 ##  unset BUILD_DIR
 ##  unset INSTALL_DIR
+##  cd ..
+    cd ..
   else
     echo "Directory $JASPER_DIR doesn't exist"
   fi
@@ -1185,6 +1184,8 @@ if [ $INSTALL_GDAL ] ; then
       export CPPFLAGS="-I/opt/X11/include"
       export LDFLAGS="-L/opt/X11/lib"
     fi
+# Some systems don't have all these extra libraries!
+##  ./configure --with-static-proj4\=$PREFIX --prefix\=$PREFIX --without-pam --with-png\=$PREFIX --with-gif=internal --with-libtiff=internal --with-geotiff=internal --with-jpeg\=$PREFIX --with-libz\=$PREFIX --with-sqlite3=no --with-expat=no --with-curl=no --without-ld-shared --with-hdf4=no --with-hdf5=no --with-pg=no --without-grib --disable-shared --with-freexl=no --with-geos=no --with-openjpeg=no --with-mysql=no --with-ecw=no --with-fgdb=no --with-odbc=no --with-xml2=no --with-ogdi=no --with-pcraster=no --with-xerces=no --with-libkml=no --with-libjson-c=no
     ./configure --with-static-proj4\=$PREFIX --prefix\=$PREFIX --without-pam --with-png\=$PREFIX --with-gif=internal --with-libtiff=internal --with-geotiff=internal --with-jpeg\=$PREFIX --with-libz\=$PREFIX --with-sqlite3=no --with-expat=no --with-curl=no --without-ld-shared --with-hdf4=no --with-hdf5=no --with-pg=no --without-grib --disable-shared --with-freexl=no --with-geos=no --with-openjpeg=no --with-mysql=no --with-ecw=no --with-fgdb=no --with-odbc=no --with-xml2=no --with-ogdi=no --with-pcraster=no --with-xerces=no
     make all install
     make install
