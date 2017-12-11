@@ -276,7 +276,13 @@ file_grp_var_compound_alnum   [_a-zA-Z0-9/.]
 white	[\t ]
 digit	[0-9]
 inttype [bBChHiIlLqQ]
-
+        
+/* add support to detect UTF-8 characters and issue warning -- ncl-2702 */        
+U   [\x80-\xbf]
+U2  [\xc2-\xdf]
+U3  [\xe0-\xef]
+U4  [\xf0-\xf4]
+        
 %x incl
 %x IN_COMMENT
 %%
@@ -935,3 +941,7 @@ inttype [bBChHiIlLqQ]
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return REASSIGN;
 }
+{U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U} {
+        NhlPError(NhlWARNING,NhlEUNKNOWN,"unicode character encountered (%s)", yytext);
+        return(NCLNULL);
+}        
