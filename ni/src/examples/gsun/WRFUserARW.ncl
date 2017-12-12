@@ -174,14 +174,14 @@ begin
   dx = x1 - x0
   dy = y1 - y0
   distance = (dx*dx + dy*dy)^0.5
-  npts = tointeger(distance)
+  npts = tointeger(distance) + 1
   dxy = new(1,typeof(distance))
   dxy = distance/npts
 
   xy = new((/ npts, 2 /),typeof(x1))
 
-  dx = dx/npts
-  dy = dy/npts
+  dx = dx/(npts-1)
+  dy = dy/(npts-1)
 
   do i=0,npts-1
     xy(i,0) = x0 + i*dx
