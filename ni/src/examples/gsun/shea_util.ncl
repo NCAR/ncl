@@ -5563,7 +5563,7 @@ begin
   if (ntim.lt.N) then
       NTIM = N
   else
-      NTIM = ntim + (ntim%N)
+      NTIM = (ntim/N)*N + N
   end if
 
   dimx(ndim) = NTIM
