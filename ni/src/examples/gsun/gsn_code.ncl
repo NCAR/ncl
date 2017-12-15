@@ -5383,6 +5383,9 @@ end
 ; "y" are the x and y locations of each text string, and should be      ;
 ; specified in the same data space as the data space of "plotid".       ;
 ; "resources" is an optional list of resources.                         ;
+;                                                                       ;
+; This function was fixed for NCL V6.5.0 so that missing strings are    ;
+; not displayed.                                                        ;
 ;***********************************************************************;
 undef("gsn_text")
 procedure gsn_text(wks:graphic,plotid:graphic,texto:string,xo:numeric, \
@@ -5400,13 +5403,13 @@ begin
   xrank  = dimsizes(xsizes)
   yrank  = dimsizes(ysizes)
   trank  = dimsizes(tsizes)
-  if(xrank.gt.1.and.yrank.gt.1.and..not.all(xsizes.eq.ysizes)) then
+  if(xrank.gt.1.and.yrank.gt.1.and.((xrank.ne.yrank).or.(.not.all(xsizes.eq.ysizes)))) then
     print("Error: gsn_text: x and y must have the same dimension sizes, or either be a single value.")
     return
   end if
   if(trank.gt.1.and. \
-     (xrank.gt.1.and..not.all(xsizes.eq.tsizes)) .or. \
-     (yrank.gt.1.and..not.all(ysizes.eq.tsizes))) then
+     ((xrank.gt.1.and.((xrank.ne.trank).or.(.not.all(xsizes.eq.tsizes)))) .or. \
+      (yrank.gt.1.and.((yrank.ne.trank).or.(.not.all(ysizes.eq.tsizes)))))) then
     print("Error: gsn_text: text must be a single string or the same dimension size as x and/or y.")
     return
   end if
@@ -5414,26 +5417,28 @@ begin
 ; Convert to 1-dimensional arrays of all the same length.
 ;
   if(xrank.gt.1) then
-    x    = ndtooned(new(xsizes, typeof(xo)))
-    y    = ndtooned(new(xsizes, typeof(yo)))
-    text = ndtooned(new(xsizes, typeof(texto)))
+    new_dims = xsizes
+  elseif(yrank.gt.1) then
+    new_dims = ysizes
   else
-    if(yrank.gt.1) then
-      x    = ndtooned(new(ysizes, typeof(xo)))
-      y    = ndtooned(new(ysizes, typeof(yo)))
-      text = ndtooned(new(ysizes, typeof(texto)))
-    else
-      x    = new(xsizes > ysizes, typeof(xo))
-      y    = new(xsizes > ysizes, typeof(yo))
-      text = new(xsizes > ysizes, typeof(texto))
-    end if
+    new_dims = xsizes > ysizes
   end if
-
-  x    = ndtooned(xo)
-  y    = ndtooned(yo)
-  text = ndtooned(texto)
-  len  = dimsizes(x)
-
+  x    = ndtooned(conform_dims(new_dims,xo,-1))
+  y    = ndtooned(conform_dims(new_dims,yo,-1))
+  text = ndtooned(conform_dims(new_dims,texto,-1))
+  contains_missing = False
+  if(any(ismissing(x)).or.any(ismissing(y)).or.any(ismissing(text)))
+    contains_missing = True
+    ind_nomsg = ind(.not.ismissing(x).and..not.ismissing(y).and..not.ismissing(text))
+    if(any(ismissing(ind_nomsg)))
+      print("Error: gsn_text: no valid strings to add, input data is all missing")
+      dummy = new(1,graphic)
+      return(dummy)
+    end if
+  else
+    ind_nomsg = ispan(0,dimsizes(x)-1,1)
+  end if
+  len  = dimsizes(ind_nomsg)
   res2 = get_resources(resources)
 
   calldraw  = get_res_value(res2,"gsnDraw", True)
@@ -5463,11 +5468,12 @@ begin
   txres = get_res_eq(res2,"tx")  ; Get text resources.
 
   if(res2.and.isatt(res2,"txFuncCode")) then
+    ii = ind_nomsg(i)
     do i=0,len-1
-      txid = create wksname + "_text"+i textItemClass wks
-        "txString"   : text(i)
-        "txPosXF"    : x2(i)
-        "txPosYF"    : y2(i)
+      txid(i) = create wksname + "_text"+i textItemClass wks
+        "txString"   : text(ii)
+        "txPosXF"    : x2(ii)
+        "txPosYF"    : y2(ii)
         "txFuncCode" : res2@txFuncCode
       end create
       attsetvalues_check(txid(i),txres)            ; Set text resources.
@@ -5475,10 +5481,11 @@ begin
     end do
   else 
     do i=0,len-1
-      txid(i) = create wksname + "_text"+i textItemClass wks
-        "txString"   : text(i)
-        "txPosXF"    : x2(i)
-        "txPosYF"    : y2(i)
+      ii = ind_nomsg(i)
+      txid(i) = create wksname + "_text"+ii textItemClass wks
+        "txString"   : text(ii)
+        "txPosXF"    : x2(ii)
+        "txPosYF"    : y2(ii)
       end create
       attsetvalues_check(txid(i),txres)            ; Set text resources.
       draw_and_frame(wks,txid(i),calldraw,callframe,0,maxbb)
@@ -5503,11 +5510,14 @@ end
 ; This function is different from gsn_text because it actually attaches ;
 ; the text to the plot. This means that if you resize or move the plot, ;
 ; the text will stay with the plot.                                     ;
+;                                                                       ;
+; This function was fixed for NCL V6.5.0 so that missing strings are    ;
+; not displayed.                                                        ;
 ;***********************************************************************;
 undef("gsn_add_text")
 function gsn_add_text(wks:graphic,plotid:graphic,texto:string, \
                       xo:numeric,yo:numeric, resources:logical )
-local txid, txres, amres, just, res2, wksname, am_ids
+local txid, txres, amres, just, res2, wksname, am_ids, new_dims, contains_missing
 begin
 ;
 ; Any one of xo, yo, and texto can just be one element, but if two or more
@@ -5519,14 +5529,14 @@ begin
   xrank  = dimsizes(xsizes)
   yrank  = dimsizes(ysizes)
   trank  = dimsizes(tsizes)
-  if(xrank.gt.1.and.yrank.gt.1.and..not.all(xsizes.eq.ysizes)) then
+  if(xrank.gt.1.and.yrank.gt.1.and.((xrank.ne.yrank).or.(.not.all(xsizes.eq.ysizes)))) then
     print("Error: gsn_add_text: x and y must have the same dimension sizes, or either be a single value.")
     dummy = new(1,graphic)
     return(dummy)
   end if
   if(trank.gt.1.and. \
-     (xrank.gt.1.and..not.all(xsizes.eq.tsizes)) .or. \
-     (yrank.gt.1.and..not.all(ysizes.eq.tsizes))) then
+     ((xrank.gt.1.and.((xrank.ne.trank).or.(.not.all(xsizes.eq.tsizes)))) .or. \
+      (yrank.gt.1.and.((yrank.ne.trank).or.(.not.all(ysizes.eq.tsizes)))))) then
     print("Error: gsn_add_text: text must be a single string or the same dimension size as x and/or y.")
     dummy = new(1,graphic)
     return(dummy)
@@ -5535,26 +5545,29 @@ begin
 ; Convert to 1-dimensional arrays of all the same length.
 ;
   if(xrank.gt.1) then
-    x    = ndtooned(new(xsizes, typeof(xo)))
-    y    = ndtooned(new(xsizes, typeof(yo)))
-    text = ndtooned(new(xsizes, typeof(texto)))
+    new_dims = xsizes
+  elseif(yrank.gt.1) then
+    new_dims = ysizes
   else
-    if(yrank.gt.1) then
-      x    = ndtooned(new(ysizes, typeof(xo)))
-      y    = ndtooned(new(ysizes, typeof(yo)))
-      text = ndtooned(new(ysizes, typeof(texto)))
-    else
-      x    = new(xsizes > ysizes, typeof(xo))
-      y    = new(xsizes > ysizes, typeof(yo))
-      text = new(xsizes > ysizes, typeof(texto))
-    end if
+    new_dims = xsizes > ysizes
   end if
+  x    = ndtooned(conform_dims(new_dims,xo,-1))
+  y    = ndtooned(conform_dims(new_dims,yo,-1))
+  text = ndtooned(conform_dims(new_dims,texto,-1))
 
-  x    = ndtooned(xo)
-  y    = ndtooned(yo)
-  text = ndtooned(texto)
-  len  = dimsizes(x)
-
+  contains_missing = False
+  if(any(ismissing(x)).or.any(ismissing(y)).or.any(ismissing(text)))
+    contains_missing = True
+    ind_nomsg = ind(.not.ismissing(x).and..not.ismissing(y).and..not.ismissing(text))
+    if(any(ismissing(ind_nomsg)))
+      print("Error: gsn_add_text: no valid strings to add, input data is all missing")
+      dummy = new(1,graphic)
+      return(dummy)
+    end if
+  else
+    ind_nomsg = ispan(0,dimsizes(x)-1,1)
+  end if
+  len  = dimsizes(ind_nomsg)
   res2 = get_resources(resources)
 ;
 ; The "txFuncCode" can't be set during a setvalues call. It must be
@@ -5567,16 +5580,18 @@ begin
 
   if(res2.and.isatt(res2,"txFuncCode")) then
     do i=0,len-1
-      txid(i) = create wksname + "_text"+i textItemClass wks
-        "txString"   : text(i)
+      ii = ind_nomsg(i)
+      txid(i) = create wksname + "_text"+ii textItemClass wks
+        "txString"   : text(ii)
         "txFuncCode" : res2@txFuncCode
       end create
       attsetvalues_check(txid(i),txres)          ; Set text resources.
     end do
   else
     do i=0,len-1
-      txid(i) = create wksname + "_text"+i textItemClass wks
-        "txString" : text(i)
+      ii = ind_nomsg(i)
+      txid(i) = create wksname + "_text"+ii textItemClass wks
+        "txString" : text(ii)
       end create
       attsetvalues_check(txid(i),txres)          ; Set text resources.
     end do
@@ -5616,9 +5631,10 @@ begin
   just      = get_res_value(res2,"amJust",tmp_just)
 
   do i=0,len-1
+    ii = ind_nomsg(i)
     setvalues am_ids(i)
-      "amDataXF"       : x(i)
-      "amDataYF"       : y(i)
+      "amDataXF"       : x(ii)
+      "amDataYF"       : y(ii)
       "amResizeNotify" : True
       "amTrackData"    : True
       "amJust"         : just
@@ -5628,10 +5644,10 @@ begin
   amres = get_res_eq(res2,"am")           ; Get annomanager resources.
   attsetvalues_check(am_ids(0),amres)     ; Set annomanager resources.
 
-  if(xrank.gt.1) then
-    return(onedtond(am_ids(0:len-1),xsizes))
+  if(contains_missing) then
+    return(am_ids(0:len-1))
   else
-    return(onedtond(am_ids(0:len-1),ysizes))
+    return(onedtond(am_ids(0:len-1),new_dims))
   end if
 end
 
