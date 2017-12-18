@@ -8,9 +8,10 @@ C The use of this Software is governed by a License Agreement.
 C
 C
       SUBROUTINE map_next_point (rlat, rlon, u, v, pval, status, init)
-
+      implicit none
       real rlat, rlon, u, v
       double precision pval
+      double precision lpeps, pold, pnew
 C
 C status is 0 for a normal next point that falls within the map boundary
 C           1 for a point that is not projectable
