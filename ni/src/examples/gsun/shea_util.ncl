@@ -5154,6 +5154,154 @@ begin
   end do
   return(xyplot)
 end
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Description: Create a legend using calls to gsn_polyline_ndc/gsn_text_ndc
+;; to draw legend anywhere within the NDC space on a page. Resources are used
+;; to set the position of upper-left corner of the legend, the legend labels,
+;; the spacing of the legend items, and the appearance of
+;; the lines and labels.
+;; Adam Phillips, added in NCL V6.5.0
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+undef("simple_legend_ndc")
+procedure simple_legend_ndc(wksp:graphic,genres_orig:logical,lineres_orig:logical,labelres_orig:logical)
+local wksp,genres,lineres,labelres,XPos,YPos,numitems,xrange,yrange,incr,y_pos,x_line_start,\
+      x_line_end,x_text_start,x_text_end,colors
+
+begin
+;---Make copies of these so we don't change original resource lists.
+  genres   = genres_orig
+  lineres  = lineres_orig
+  labelres = labelres_orig
+
+  ymin = 0.0
+  ymax = 1.0
+  xmin = 0.0
+  xmax = 1.0
+  yrange = ymax - ymin
+  xrange = xmax - xmin
+
+  if (.not.isatt(genres,"ItemSpacePercent")) then
+     genres@ItemSpacePercent = 5.
+  end if
+  incr = (genres@ItemSpacePercent/100.)*yrange*-1.
+
+  if (.not.isatt(genres,"Position")) then   ; set default
+     genres@Position = "Top"
+  end if
+
+  if (isatt(labelres,"lgLabels")) then
+     numItems = dimsizes(labelres@lgLabels)
+  else
+     print("simple_legend_ndc Fatal: Legend labels must be set using lgLabels. If empty labels are required set lgLabels resource to an empty string array dimenensioned equal to the number of legend lines.")
+     exit
+  end if
+
+  if (isatt(genres,"XPosPercent")) then
+     XPos = genres@XPosPercent/100.
+  else
+     XPos = 0.05     ; set default
+  end if
+
+  if (isatt(genres,"YPosPercent")) then
+     YPos = genres@YPosPercent/100.
+     if (genres@Position.eq."Bottom") then  ; modify YPosPercent when doing bottom label so that first label is on top
+        YPos = YPos+((numItems-1)*(genres@ItemSpacePercent/100.))
+     end if
+  else
+     if (genres@Position.eq."Bottom") then
+        YPos = 0.05   ; set default
+     else
+        YPos = 0.95   ; set default
+     end if
+  end if
+
+  txres = True
+  txres@txJust = "CenterLeft"
+  txres@txFontHeightF = 0.015
+
+  zres = True
+
+  polyres = True
+  do gg = 0,numItems-1
+     if (gg.eq.0) then
+        y_pos = (YPos*yrange)+ymin
+     else
+        y_pos = y_pos+incr
+     end if
+     x_line_start = xmin+(XPos*xrange)   ; position of start of legend line
+     if (isatt(lineres,"LineLengthPercent")) then
+        x_line_end = x_line_start+(xrange*(lineres@LineLengthPercent/100.))
+     else
+        x_line_end = x_line_start+(xrange*.07)    ; set default
+     end if
+     if (isatt(genres,"LineLabelWhiteSpacePercent")) then
+        x_text_start = x_line_end+(xrange*(genres@LineLabelWhiteSpacePercent/100.))
+     else
+        x_text_start = x_line_end+(xrange*0.03)    ; set default
+     end if
+
+     if (isatt(lineres,"lgLineColors")) then
+       colors = convert_color_to_rgba(wksp,lineres@lgLineColors)
+       if (dimsizes(colors(:,0)).eq.1.or.\
+           dimsizes(colors(:,0)).ne.dimsizes(labelres@lgLabels)) then
+         zres@gsLineColor = colors(0,:)
+       else
+         zres@gsLineColor = colors(gg,:)
+       end if
+     end if
+     if (isatt(lineres,"lgLineOpacity")) then
+        if (dimsizes(lineres@lgLineOpacity).eq.1.or.dimsizes(lineres@lgLineOpacity).ne.dimsizes(labelres@lgLabels)) then
+           zres@gsLineOpacityF = lineres@lgLineOpacity(0)
+        else
+           zres@gsLineOpacityF = lineres@lgLineOpacity(gg)
+        end if
+     end if
+     if (isatt(lineres,"lgLineThicknesses")) then
+        if (dimsizes(lineres@lgLineThicknesses).eq.1.or.dimsizes(lineres@lgLineThicknesses).ne.dimsizes(labelres@lgLabels)) then
+           zres@gsLineThicknessF = lineres@lgLineThicknesses(0)
+        else
+           zres@gsLineThicknessF = lineres@lgLineThicknesses(gg)
+        end if
+     end if
+     if (isatt(lineres,"lgDashIndexes")) then
+        if (dimsizes(lineres@lgDashIndexes).eq.1.or.dimsizes(lineres@lgDashIndexes).ne.dimsizes(labelres@lgLabels)) then
+           zres@gsLineDashPattern = lineres@lgDashIndexes(0)
+        else
+           zres@gsLineDashPattern = lineres@lgDashIndexes(gg)
+        end if
+     else
+        zres@gsLineDashPattern = 0
+     end if
+     gsn_polyline_ndc(wksp,(/x_line_start,x_line_end/),(/y_pos,y_pos/),zres)
+
+     if (isatt(labelres,"lgLabelFontHeights")) then
+        if (dimsizes(labelres@lgLabelFontHeights).eq.1.or.dimsizes(labelres@lgLabelFontHeights).ne.dimsizes(labelres@lgLabels)) then
+           txres@txFontHeightF = labelres@lgLabelFontHeights(0)
+        else
+           txres@txFontHeightF = labelres@lgLabelFontHeights(gg)
+        end if
+     end if
+     if (isatt(labelres,"lgLabelColors")) then
+        colors := convert_color_to_rgba(wksp,labelres@lgLabelColors)
+        if (dimsizes(colors(:,0)).eq.1.or.dimsizes(colors(:,0)).ne.dimsizes(labelres@lgLabels)) then
+           txres@txFontColor = colors(0,:)
+        else
+           txres@txFontColor = colors(gg,:)
+        end if
+     end if
+     if (isatt(labelres,"lgLabelOpacity")) then
+        if (dimsizes(labelres@lgLabelOpacity).eq.1.or.dimsizes(labelres@lgLabelOpacity).ne.dimsizes(labelres@lgLabels)) then
+           txres@txFontOpacityF = labelres@lgLabelOpacity(0)
+        else
+            txres@txFontOpacityF = labelres@lgLabelOpacity(gg)
+        end if
+     end if
+     gsn_text_ndc(wksp,labelres@lgLabels(gg),x_text_start,y_pos,txres)
+  end do
+end
+
 ;-------------------------------------------------------------------------------
 ; Library of 'hybrid' related  functions
 ;
