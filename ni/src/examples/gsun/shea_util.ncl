@@ -5828,3 +5828,106 @@ begin
   
   return( pdf3 )
 end
+;-------
+undef("unwrap_phase_matlab")
+function unwrap_phase_matlab(p[*]:numeric)    ; p <==> wrapped phase
+;
+; Near One-to-One translation of Matlab's 'unwrap': See bottom for Matlab code
+; This handles _FillValue.
+; ---
+; Source:
+; https://www.ljmu.ac.uk/~/media/files/ljmu/about-us/faculties-and-schools/tae/geri/onedimensionalphaseunwrapping_finalpdf
+;
+begin
+;---NCL (currently) does not have an 'eps' (machine epsilon)
+;---The following is more than good enough for our purposes.
+
+  if (typeof(p).eq."double") then    
+      eps = 5d-15
+  else
+      eps = 5e-6
+  end if
+
+  pi  = get_pi(p)
+  N   = dimsizes(p)
+  up  = new( N, typeof(p), getVarFillValue(p))
+
+  po    = totype(0, typeof(p))
+  thr   = pi - eps
+  pi2   = 2*pi
+
+  if (any(ismissing(p))) then
+      ii    = ind(.not.ismissing(p))
+      nii   = dimsizes(ii)
+      iStrt = ii(0)+1
+      iLast = ii(nii-1)
+  else
+      iStrt = 1             ; NCL is 0-based
+      iLast = N-1
+  end if
+
+  pm1   = p(iStrt)          ; NCL is 0-based
+  up(0) = p(iStrt-1)
+  
+  do i=iStrt,iLast
+     cp = p(i) + po
+     dp = cp - pm1
+     pm1= cp
+
+     if (dp.gt.thr) then
+         do while (dp.gt.thr)
+            po = po - pi2
+            dp = dp - pi2
+         end do
+     end if
+
+     if (dp.lt.(-thr)) then
+         do while (dp.lt.(-thr))
+            po = po + pi2
+            dp = dp + pi2
+         end do
+     end if
+
+     cp    = p(i) + po
+     pm1   = cp
+     up(i) = cp
+  end do
+
+  up@long_name = "umwrapped phase"
+  up@units     = "radians"
+  copy_VarCoords(p,up)
+  return(up)
+;;
+;; Matlab is 1-based
+;;
+;; function up = unwrap(p)
+;; %UNWRAP unwrap phase
+;;   N = length(p);
+;;   up = zeros(size(p));
+;;   pm1 = p(1);
+;;   up(1) = pm1;
+;;   po = 0;
+;;   thr = pi - eps;
+;;   pi2 = 2*pi;
+;;   for i=2:N
+;;     cp = p(i) + po;
+;;     dp = cp- pm1;
+;;     pm1 = cp;
+;;     if dp>thr
+;;       while dp>thr
+;;         po = po - pi2
+;;         dp = dp - pi2;
+;;       end
+;;     end
+;;     if dp<- thr
+;;       while dp<- thr
+;;         po = po + pi2
+;;         dp = dp + pi2;
+;;       end
+;;     end
+;;     cp = p(i) + po;
+;;     pm1 = cp;
+;;     up(i) = cp;
+;;   end
+  
+end

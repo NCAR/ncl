@@ -16959,104 +16959,149 @@ begin
   var@NCL = "function time_reassign_cv2var used to reassign time coordinate variable to mid-value of bounds"
   return(var)
 end
-;----
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+undef("unwrap_phase")
+function unwrap_phase(pha[*]:numeric)    ; pha <==> wrapped phase
+;
+; This should replicate the Matlab function: unwrap
+;
+;---This function is based on Matlab code at: 
+;---https://www.ljmu.ac.uk/~/media/files/ljmu/about-us/faculties-and-schools/tae/geri/onedimensionalphaseunwrapping_finalpdf
+
+local N, K, increments, i, ii, nii, iStrt, iLast, diff, pha2, pi, pi2
+begin
+  N    = dimsizes(pha)
+  K    = totype( 0, typeof(pha))
+  increments = new( N, typeof(pha), getVarFillValue(pha))  
+  increments = totype( 0, typeof(pha))
+
+  if (any(ismissing(pha))) then
+      ii    = ind(.not.ismissing(pha))
+      nii   = dimsizes(ii)
+      iStrt = ii(0)+1
+      iLast = ii(nii-1)
+  else
+      iStrt = 1             ; NCL is 0-based
+      iLast = N-1
+  end if
+
+  pi  = get_pi(pha)         ; NCL 6.4.0
+  pi2 = 2*pi
+
+  do i=iStrt,iLast
+     diff = pha(i)-pha(i-1)
+     if (diff.gt.pi) then
+         K = K - pi2
+     elseif (diff.lt.(-pi)) then
+         K = K + pi2
+     end if
+     increments(i) = K
+  end do
+
+  pha2              = pha + increments
+  pha2@long_name    = "unwrapped phase"
+  pha2@units        = "radians"
+  pha2@NCL_function = "unwrap_phase"
+  return(pha2)
+end
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+
 undef("demod_cmplx")
-function demod_cmplx(y:numeric, frqdem[1]:numeric, frqcut[1]:numeric, nwt[1]:integer,  ndim[1]:integer,  opt[1]:logical)
+function demod_cmplx(y[*]:numeric, frqdem[1]:numeric, frqcut[1]:numeric \
+                    ,nwt[1]:integer,  ndim[1]:integer,  opt[1]:logical)
 ;
 ; Simple complex demodulation 
-; Extract approximately periodic components (ie, slowly varying) from a time series
-; The data Y(t) is taken to be a nearly-periodic signal plus everything else, Z(t).
-; The amplitude (A) and phase of the periodic signal are allowed to be time-dependent 
-; but assumed to vary slowly compared to the frequency 'omega'.
+; Extract approximately periodic components (ie, SLOWLY VARYING) from a time series
 ;
 ; Source: http://www.uni-muenster.de/ZIV.BennoSueselbeck/s-html/helpfiles/demod.html
 ;   Complex demodulation is a technique for analyzing nonstationary time series by estimating 
-;   the instantaneous amplitude and phase of a given harmonic component. To better understand 
-;   the results of complex demodulation several lowpass filters should be tried: the smaller 
-;   the pass band, the less instantaneous in time but more specific in frequency is the result.
+;   the instantaneous amplitude and phase of a given harmonic component. 
 ;
-; Nice summary:
+;   ***To better understand the results of complex demodulation, SEVERAL lowpass filters 
+;      should be tried: the smaller the pass band, the less instantaneous in time but 
+;      more specific in frequency is the result.***
+;
+; Nice summaries:
 ; http://faculty.washington.edu/kessler/generals/complex-demodulation.pdf
+; http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2007/pdfHMANlJLqCE.pdf
 ;
-; This technique fails when the frequency of oscillation differs from the modulation 
-; frequency by more than the cutoff frequency of the low-pass filter. 
+; Bloomfield (2000):
+; https://iujfk.files.wordpress.com/2013/04/bloomfield-2000-fourier-analysis-of-time-series-an-introduction-2ed.pdf
 ;
-local dimy, ranky, pi, zero, one, frqdem25, frqdem50, ny, arg, ARG, yr, ys \
-    , delf, ihp, nsigma, fcb, wgt, amp, pha
+local ny, pi, pi2, zero, one, arg, yreal, yimag \
+    , delf, ihp, nsigma, fcb, wgt, amp, pha, pha2     
 begin
-   if (typeof(y).eq."double" .or. typeof(frqdem).eq."double" \
-                             .or. typeof(frqcut).eq."double" ) then
-       pi       = 4d0*atan(1d0)
-       zero     = 0.0d
-       one      = 1.0d
-       frqdem25 = 0.25d
-       frqdem50 = 0.50d
-   else
-       pi       = 4.0*atan(1.0)
-       zero     = 0.0 
-       one      = 1.0 
-       frqdem25 = 0.25 
-       frqdem50 = 0.50 
-   end if
-   pi2 = 2*pi
-
-   dimy  = dimsizes(y)
-   ranky = dimsizes(dimy) 
-   ny    = dimy(ndim) 
-   delf  = one/ny
-
-; error check
-
-   if (frqcut.le.delf .or. frqcut.gt.frqdem50 .or. \
-       frqdem.le.delf .or. frqdem.gt.frqdem50      ) then
-       print("demod_cmplx: illegal value(s): frqcut="+frqcut+" : frqdem="+frqdem)
+   if (ndim.ne.0) then
+       print("demod_cmplx: ndim must be zero: ndim="+ndim)
        exit
    end if
 
-; demodulate (primary): Bloomfield, 1976: page 148
+   ny    = dimsizes(y) 
+   if (typeof(y).eq."double" .or. typeof(frqdem).eq."double" \
+                             .or. typeof(frqcut).eq."double" ) then
+       zero     = 0.0d
+       one      = 1.0d
+   else
+       zero     = 0.0 
+       one      = 1.0 
+   end if
+   pi  = get_pi(y)
+   pi2 = 2*pi
 
-   arg = ispan(0,ny-1,1)*frqdem*2*pi
-   ARG = conform(y, arg, ndim)     ; all dimensions
-                                   ; complex demodulate 
-   yr  =  y*cos(ARG)*2             ; 'real' series
-   yi  = -y*sin(ARG)*2             ; 'imaginary'       
+   delf  = one/ny
 
-;---Create weights for Lanczos low pass filter
+; demodulate (primary): Bloomfield, 1976: page 147
+
+   arg = ispan(0,ny-1,1)*frqdem*pi2
+                                      ; complex demodulate 
+   yreal  =  y*cos(arg)*2             ; 'real' series
+   yimag  = -y*sin(arg)*2             ; 'imaginary'       
+
+;---Create weights for Lanczos low pass filter with 'frqcut' being the cut-off frequency
+
+   ihp    = 0                      ; low pass 
+   nsigma = one                    ; sigma factor(s); 1,2,3,...                       
+   if (opt .and. isatt(opt, "nsigma")) then
+       nsigma := totype(opt@nsigma, typeof(pi))
+   end if 
+
+   fcb    = totype(-999, typeof(pi))
+   wgt    = filwgts_lanczos (nwt, ihp, frqcut, fcb, nsigma)  
+
 ;---Apply filter weights to raw demodulated series (nwt/2 point 'lost; at start/end)
 
-   if (opt .and. isatt(opt,"NoFilter") .and. opt@NoFilter) then
-      print("demod_cmplx: no low pass filter applied")
-
-   else                            ; default is low pass filter
-      ihp    = 0                  
-      nsigma = one                       
-      if (opt .and. isatt(opt, "nsigma")) then
-          nsigma := totype(opt@nsigma, typeof(pi))
-      end if 
-   
-      fcb    = totype(-999, typeof(pi))
-      wgt    = filwgts_lanczos (nwt, ihp, frqcut, fcb, nsigma)  
-   
-      yr     = wgt_runave_n_Wrap ( yr, wgt, 0, 0) 
-      yi     = wgt_runave_n_Wrap ( yi, wgt, 0, 0) 
-   end if
+   yreal = wgt_runave_n_Wrap ( yreal, wgt, 0, ndim) 
+   yimag = wgt_runave_n_Wrap ( yimag, wgt, 0, ndim) 
   
-;---Calculate the amplitudes
+;---Use the low pass filtered values
    
-   amp = sqrt(yr^2 + yi^2)
-   pha = where(amp.eq.zero, zero, atan2(yi, yr)) 
+   amp  =  sqrt(yreal^2 + yimag^2)
+   pha  = atan2(yimag, yreal)            ; primary phase (wrapped)
 
-   amp@long_name = "amplitude"
-   pha@long_name = "phase"         
+;---The following 'unwrap' function was derived from:
+;---https://www.ljmu.ac.uk/~/media/files/ljmu/about-us/faculties-and-schools/tae/geri/onedimensionalphaseunwrapping_finalpdf
+
+   pha2 = unwrap_phase(pha)
+
+;---Meta data
+
+   amp@long_name  = "amplitude"
+   pha@long_name  = "wrapped phase"         
+   pha2@long_name = "unwrapped phase"         
+   pha@units      = "radians"
+   pha2@units     = "radians"
+
    if (isatt(y,"units")) then
        amp@units = y@units
    end if
+   amp@NCL_function = "demod_cmplx"
 
-   copy_VarCoords(y, amp)
-   copy_VarCoords(y, pha)
+   copy_VarCoords(y, amp )
+   copy_VarCoords(y, pha )
+   copy_VarCoords(y, pha2)
 
-   return([/ amp, pha /])           ; return as a list
+;---Return 3 variables
+   return([/ amp, pha, pha2 /])     ; return as a list
 end
 ;=================================================
 undef("epflux4")
