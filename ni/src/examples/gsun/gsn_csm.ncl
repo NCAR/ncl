@@ -6757,8 +6757,7 @@ calldraw, callframe, left_string, center_string, right_string, yoffset, \
 min_lat, max_lat, center_lat, main_offset, \
 side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
 vpxf, vpyf, vphf, vpwf, plon, plat, xndc, yndc, polar_type, center_lon, \
-center_lat, rel_c_lon, rel_c_lat, set_text_font, \
-names
+center_lat, rel_c_lon, rel_c_lat, set_text_font, names
 begin
 
 ; Initialize.
@@ -12121,7 +12120,7 @@ begin
 
 ; Create a labelbar.
 
-    if(lbar_on.and.use_old_lbar)
+    if(use_old_lbar)
       if(.not.infolabel_on)
         lbar_zone = 2
       else
