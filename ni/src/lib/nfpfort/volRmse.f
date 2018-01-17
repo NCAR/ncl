@@ -61,7 +61,7 @@ c                                      return if user desired
 c                            wgt vertical mean square difference
 c                            by areal wgts x/lon and y/lat
               IF (SUMWZ.GT.0.0D0) THEN
-                  VARTQ = (SUMTQ/SUMWZ)**2
+                  VARTQ = (SUMTQ/SUMWZ)
                   WGTXY = WGTX(ML)*WGTY(NL)
                   SUMD  = SUMD + WGTXY*VARTQ
                   SUMW = SUMW + WGTXY
