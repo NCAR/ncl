@@ -4603,7 +4603,6 @@ begin
   ref_less_curve_fill_on = False
   ref_fill_color_g       = cmsg   ; greater than
   ref_fill_color_l       = cmsg   ; less than
-
 ;
 ; If neither gsnYRefLine or gsnXRefLine are set, but gsnXYBarChart has 
 ; been set, then assume the user wants a Y reference line, and return 
@@ -4613,7 +4612,7 @@ begin
   bar_outline_only = get_res_value_keep(rfres,"gsnXYBarChartOutlineOnly",False)
   if(.not.isatt(rfres,"gsnYRefLine").and..not.isatt(rfres,"gsnXRefLine")) then
     if(reftype.eq."y".and.bar_chart.and..not.bar_outline_only) then
-      ref_line = get_res_value_keep(rfres,"trYMinF",min(y))
+      ref_line := get_res_value_keep(rfres,"trYMinF",min(y))
 ;      print("get_ref_line_options: warning: you've set gsnXYBarChart=True, but haven't")
 ;      print("    specified an X or Y reference line. Will assume a default Y reference")
 ;      print("    line of " + ref_line)
