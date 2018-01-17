@@ -870,8 +870,6 @@ NhlErrorTypes lspoly_W( void )
  */
   index_y = index_coef = 0;
 
-  eps = 0.0;
-
 /*
  * Allocate space for removing missing values from x and y arrays if necessary.
  */
@@ -886,6 +884,12 @@ NhlErrorTypes lspoly_W( void )
   }
 
   for( i = 0; i < size_leftmost; i++ ) {
+/*  
+ * Set this inside the loop, because the Fortran routine is
+ * changing it. 
+ */
+    eps = 0.0;   
+
     if(ndims_x > 1 || (ndims_x == 1 && i == 0)) { 
       if(type_x != NCL_double) {
 /*
@@ -1233,7 +1237,6 @@ NhlErrorTypes lspoly_n_W( void )
  */
   nrny = size_rightmost * npts;
   nrnc = size_rightmost * *ncoef;
-  eps = 0.0;
 
 /*
  * Allocate space for collapsing x and y arrays if necessary.
@@ -1252,6 +1255,12 @@ NhlErrorTypes lspoly_n_W( void )
     index_nry = i*nrny;
     index_nrc = i*nrnc;
     for( j = 0; j < size_rightmost; j++ ) {
+/*  
+ * Set this inside the loop, because the Fortran routine is
+ * changing it. 
+ */
+
+      eps = 0.0;   
       index_y    = index_nry + j;
       index_coef = index_nrc + j;
 /*
