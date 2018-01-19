@@ -11,16 +11,19 @@ int quark_comp(const void *q1, const void *q2)
 	return(strcmp((const char*)NrmQuarkToString(*(NrmQuark *)q1),(const char*)NrmQuarkToString(*(NrmQuark *) q2)));
 }
 
-static int numberOfPreloadedScripts = 8;
+static int numberOfPreloadedScripts = 11;
 
-char *preload_scripts[8] = {"$NCARG_ROOT/lib/ncarg/nclscripts/utilities.ncl",
-                            "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl",
-                            "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl",
-                            "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl",
-                            "$NCARG_ROOT/lib/ncarg/nclscripts/csm/shea_util.ncl",
-                            "$NCARG_ROOT/lib/ncarg/nclscripts/csm/bootstrap.ncl",
-                            "$NCARG_ROOT/lib/ncarg/nclscripts/csm/extval.ncl",
-                            "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl"};
+char *preload_scripts[11] = {"$NCARG_ROOT/lib/ncarg/nclscripts/utilities.ncl",
+                             "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl",
+                             "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl", /* must be loaded after gsn_code.ncl */
+                             "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl",
+                             "$NCARG_ROOT/lib/ncarg/nclscripts/csm/shea_util.ncl", /* must be loaded after contributed.ncl */
+                             "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl",
+                             "$NCARG_ROOT/lib/ncarg/nclscripts/csm/bootstrap.ncl",
+                             "$NCARG_ROOT/lib/ncarg/nclscripts/csm/extval.ncl",
+                             "$NCARG_ROOT/lib/ncarg/nclscripts/csm/crop.ncl",
+                             "$NCARG_ROOT/lib/ncarg/nclscripts/csm/heat_stress.ncl",
+                             "$NCARG_ROOT/lib/ncarg/nclscripts/wrf/WRFUserARW.ncl" /* must be loaded after contributed.ncl */};
 
 int NclDriver(int argc, char **argv)
 {
