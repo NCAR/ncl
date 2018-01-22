@@ -12316,8 +12316,15 @@ begin
    return (plot)
 end
 
-undef("fill_res")
-procedure fill_res(res1:logical,res2:logical,ncr[2]:integer,attnames[*]:string)
+;----------------------------------------------------------------------
+; This procedure is currently only used by gsn_table, and is meant
+; to propagate scalar resources to nrows x ncols sets of resources
+; for drawing each cell of a table. We really only want to do this for
+; txXXXX and gsFill resources and not gsLine.
+;----------------------------------------------------------------------
+undef("table_fill_res")
+procedure table_fill_res(res1:logical,res2:logical,ncr[2]:integer,\
+                         attnames[*]:string)
 local natts, i, dsizes, rank, success, nrows, ncols
 begin
   nrows = ncr(0)
@@ -12332,7 +12339,7 @@ begin
 ; have to check each attribute for the right size.
 ;
     do i=0,natts-1
-      if(isatt(res1,attnames(i))) then
+      if(isatt(res1,attnames(i)).and..not.isStrSubset(attnames(i),"gsLine")) then
 ;
 ; Get the dimension size and rank of this attribute.
 ;
@@ -12469,7 +12476,7 @@ begin
 ;
   res2     = False
   attnames = getvaratts(res)
-  fill_res(res,res2,ncr,attnames)
+  table_fill_res(res,res2,ncr,attnames)
   delete(attnames)                    ; We're going to use this later.
 
 ;
@@ -12478,8 +12485,6 @@ begin
   xsize = (x(1) - x(0))/ncols         ; width of grid cell
   ysize = (y(1) - y(0))/nrows         ; height of grid cell
 
-  lnres = get_res_eq(res2,"gs")       ; Resource list for lines.
-
 ;
 ; Check for a box fill color.
 ;
@@ -12487,6 +12492,10 @@ begin
   if(isatt(res2,"gsFillColor").or.isatt(res2,"gsFillIndex")) then
     fill_on = True
   end if
+
+  gsres_tmp = get_res_eq(res2,"gs")           ; Get resource list for lines. Remove gsFill
+  lnres     = get_res_ne(gsres_tmp,"gsFill")  ; resources so they don't get passed to gsn_polyline.
+  delete(gsres_tmp)
 
 ;
 ; Check for desired filling of each grid cell. Do this before drawing
@@ -12516,8 +12525,10 @@ begin
   end if
 
 ; Draw horizontal lines, top to bottom.
+
   do nr = 0,nrows
     ypos = y(1) - (nr * ysize)
+    ii = nr*ncols
     gsn_polyline_ndc(wks,(/x(0),x(1)/),(/ypos,ypos/),lnres)
 
     if(debug) then

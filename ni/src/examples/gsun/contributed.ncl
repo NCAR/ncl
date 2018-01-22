@@ -9176,65 +9176,6 @@ begin
   end if
 end
 
-undef("isStrSubset")
-function isStrSubset(S[1]:string, s[1]:string)
-; return True or False is "s" is a subset of "S" 
-local SC, sc, nsc, nSC, n, sTF
-begin
-
-   SC  = stringtochar(S)     ; main
-   sc  = stringtochar(s)     ; subset
-
-   nSC = dimsizes( SC ) - 1  ; extra 'end of char' at end
-   nsc = dimsizes( sc ) - 1
-
-   sTF = False
-   if (nsc.le.nSC) then      ; nsc must be <= nSC
-       do n=0,nSC-nsc
-          if (all(SC(n:n+nsc-1).eq.sc(0:nsc-1)) ) then
-              sTF = True
-              return (sTF)
-          end if
-       end do
-   end if
-   
-   return (sTF)
-end
-; ----------------------
-undef("indStrSubset")
-function indStrSubset(S[1]:string, s[1]:string)
-; return the indices of the characters
-; of "S" of which "s" is a subset. 
-local SC, sc, nsc, nSC, n, ii
-begin
-
-   if (ismissing(S) .or. ismissing(s)) then
-       print("indStrSubset: missing string")
-       imsg = default_fillvalue("integer")
-       ii = (/imsg,imsg/)
-       ii@_FillValue = imsg
-       return(ii)
-   end if
-
-   SC  = stringtochar(S)     ; main
-   sc  = stringtochar(s)     ; subset
-
-   nSC = dimsizes( SC ) - 1  ; extra 'end of char' at end
-   nsc = dimsizes( sc ) - 1
-
-   if (nsc.le.nSC) then      ; nsc must be <= nSC
-       do n=0,nSC-nsc
-          if (all(SC(n:n+nsc-1).eq.sc(0:nsc-1)) ) then
-              ii  = ispan(n,n+nsc-1,1)
-              return( ii )
-          end if
-       end do
-   end if
-
-   ii = new ( 1, integer)
-   return (ii)
-end
-
 undef ("getSubString")
 function getSubString (s[*]:string, iStrt:integer, iLast:integer)
 ;*************************************************************************
