@@ -4411,7 +4411,7 @@ begin
 ; Compute averages for each sequential day of the year. 
 ; This uses dimension swapping.
 ;
-   do ndy=0,ndys-2                                 ; ndy=0->364 ==> day of year 1->365       
+   do ndy=0,ndys-1                                 ; ndy=0->364 ==> day of year 1->365       
       indx = ind( days.eq.(ndy+1) )                ; indx:indx Mar 2012, handle 1 element
       if (.not.ismissing(indx(0))) then
           nindx = dimsizes(indx)
