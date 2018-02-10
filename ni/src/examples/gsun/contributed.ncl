@@ -19833,3 +19833,90 @@ begin
 
    return(value) 
 end
+;----
+undef("geolocation_circle")
+function geolocation_circle (locLat[*]:numeric, locLon[*]:numeric   \
+                            ,RADII[*]:numeric , radUnits[1]:integer \
+                            ,N[1]:integer, opt[1]:logical)
+;=========================================================================
+; Location(s) of circle(s) of points surrounding a geographic location 
+; The locations could be (say) station, grid point, ...
+;=========================================================================
+; On a sphere with radius 6371 km, one degree is approximately 110.57 km.
+; Of course, the earth is an oblate spheroid:
+;      http://www.longitudestore.com/how-big-is-one-gps-degree.html
+;=========================================================================
+; This function uses:
+;      https://www.ncl.ucar.edu/Document/Functions/Built-in/nggcog.shtml
+;=========================================================================
+; Input Nomenclature:
+; locLat, locLon: latitude & longitude(s) of the center location(s)
+;                 degrees_north and degrees_east
+; RADII         : Radial distances from the center (great_circle_degrees or km)
+; radUnits      : =0 for great_circle_degrees; =1 for km
+; N             ; Number of points for circle
+; opt           ; Not used; set to False
+;
+; Return        ; A variable of type list containing the latitudes and longitudes 
+;               ; for each location and radii: 
+;               ; Rlat(location,radii,N), Rlon(location,radii,circle)
+;=========================================================================
+local RADII_type, radii, conUnits, Nrad, Nloc, Rlat, Rlon
+begin
+  if (radUnits.lt.0 .or. radUnits.gt.1) then
+      print("geolocation_circle: illegal radUnits="+radUnits+" : expected 0 or 1" )
+      exit  
+  end if 
+
+  RADII_type = typeof(RADII)
+  if (RADII_type.eq."float" .or. RADII_type.eq."double") then
+      radii = RADII
+  else
+      radii = RADII*1.0                          ; convert integer, short, ...  to float
+  end if
+
+  if (radUnits.eq.1) then                        ; degrees
+      conUnits = 1/totype(110.57, typeof(radii)) ; conversion factor: deg ==> km
+      radii    = radii*conUnits                  ; km ==>degrees
+  end if
+  radii@units = "great_circle_degrees"
+  
+  Nrad = dimsizes(radii)                         ; # of radii
+  Nloc = dimsizes(locLat)                        ; # locations
+   
+  Rlat = new((/Nloc, Nrad, N/), "float")         ; lat at each radius  
+  Rlon = Rlat                                    ; --- same size and dimensions ----
+  
+  do nl=0,Nloc-1
+    do nr=0,Nrad-1
+       nggcog(locLat(nl), locLon(nl), radii(nr), Rlat(nl,nr,:), Rlon(nl,nr,:))
+    end do
+  end do
+
+;---Meta data; 
+
+  Rlat!0 = "location"       
+  Rlat!1 = "radii"
+  Rlat!2 = "circle"
+
+  if (all(radii.eq.RADII)) then                  ; input must be degrees
+      Rlat@radii_units_input  = radii@units
+      Rlat@radii_input_values = radii
+  else
+      Rlat@radii_input_units  = "km"
+      Rlat@radii_input_values = RADII
+
+      Rlat@radii_converted_units  = "great_circle_degrees"
+      Rlat@radii_converted_values = radii
+  end if
+
+  copy_VarMeta(Rlat, Rlon)
+
+  Rlat@long_name = "circle latitudes"
+  Rlat@units     = "degrees_north"
+
+  Rlon@long_name = "circle longitudes"
+  Rlon@units     = "degrees_east"
+
+  return( [/ Rlat, Rlon /] )  ; Rlat(location,radii,circle), Rlon(location,radii,circle)
+end
