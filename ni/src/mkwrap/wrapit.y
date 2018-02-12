@@ -564,6 +564,7 @@ interface : function_def odata_defs
                 }
 		lower[i] = '\0';
 		upper[i] = '\0';
+		fprintf(stdout,"extern void NGCALLF(%s,%s)();\n",lower,upper);
 		sprintf(buffer,"NGCALLF(%s,%s)",lower,upper);
 		thecall->callstring = malloc(strlen(buffer)+1);
 		strcpy(thecall->callstring,buffer);
