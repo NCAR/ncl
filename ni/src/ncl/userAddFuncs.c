@@ -4728,10 +4728,6 @@ NhlErrorTypes _Nclprint_table(void)
 
     FILE *fp = _NclGetOutputStream();
 
-  /*
-   *fprintf(stderr, "\nEnter _Nclprint_table, file: %s, line: %d\n", __FILE__, __LINE__);
-   */
-
     list_id = (obj *)NclGetArgValue(
                0,
                2,
@@ -4762,9 +4758,6 @@ NhlErrorTypes _Nclprint_table(void)
     process_list(fp, list_id, format, ndvdl, 0);
     process_list(fp, list_id, format, ndvdl, 1);
 
-  /*
-   *fprintf(stderr, "Leave _Nclprint_table, file: %s, line: %d\n\n", __FILE__, __LINE__);
-   */
     return(NhlNOERROR);
 }
 
@@ -4784,10 +4777,6 @@ NhlErrorTypes _Nclwrite_table(void)
 
     int ndvdl[MAX_LIST_ELEMENT];
 
-  /*
-   *fprintf(stderr, "\nEnter _Nclwrite_table, file: %s, line: %d\n", __FILE__, __LINE__);
-   */
-
     qfilename = (NclQuark *)NclGetArgValue(
               0,
               4,
@@ -4804,11 +4793,6 @@ NhlErrorTypes _Nclwrite_table(void)
         NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclwrite_table: unknown filename.\n");
         return(NhlFATAL);
     }
-
-  /*
-   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tfilename = <%s>\n", filename);
-   */
 
     qoption = (NclQuark *)NclGetArgValue(
               1,
@@ -4860,20 +4844,19 @@ NhlErrorTypes _Nclwrite_table(void)
         return(NhlFATAL);
     }
 
-  /*
-   *fprintf(stderr, "\tfile: %s, line: %d\n", __FILE__, __LINE__);
-   *fprintf(stderr, "\tformat = <%s>\n", format);
-   */
-
-    fp = fopen(filename, option);
+    const char* pathname = _NGResolvePath(filename);  // _NGResolvePath owns the memory returned.
+    fp = fopen(pathname, option);
+    if(NULL == fp)
+    {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclwrite_table: unable to open file %s, errno=%d.\n", filename, errno);
+        return(NhlFATAL);
+    }
 
     process_list(fp, list_id, format, ndvdl, 0);
     process_list(fp, list_id, format, ndvdl, 1);
 
     fclose(fp);
-  /*
-   *fprintf(stderr, "Leave _Nclwrite_table, file: %s, line: %d\n\n", __FILE__, __LINE__);
-   */
+
     return(NhlNOERROR);
 }
 
