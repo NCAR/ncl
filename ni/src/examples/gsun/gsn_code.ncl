@@ -6184,6 +6184,23 @@ begin
 ; routine, telling it to remove the first and last colors.
 ;
   subset_stuff = True
+
+;---If no panel labelbar is possible, then the return values are meaningless.
+  if(.not.panel_labelbar) then
+    print("get_panel_labelbar_info_from_plot: warning: a panel labelbar has been requested,")
+    print("but this doesn't appear to be a color plot. No labelbar will be drawn.")
+    label_strings = ""
+    colors = -1
+    fill_patterns = -1
+    mono_fill_pat = False
+    mono_fill_scl = False
+    mono_fill_col = False
+    end_style = -1
+    cap_style = -1
+    label_align = -1
+    subset_stuff = False
+  end if
+
   return([/panel_labelbar,label_strings,colors,fill_patterns,fill_scales,\
            mono_fill_col,mono_fill_pat,mono_fill_scl,end_style,cap_style,\
            label_align,subset_stuff/])
