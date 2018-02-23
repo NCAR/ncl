@@ -401,6 +401,9 @@ void _NclAddIntrinsics
 	args[0].arg_data_type = NULL;
 	args[0].is_dimsizes = 0;
 	_NclRegisterFunc(_NclIDimSizes,args,"dimsizes",1,IFUNC);
+	/* Alias added in 6.5.0 to match other getfile*** and
+           getvar*** aliased functions added. */
+	_NclRegisterFunc(_NclIDimSizes,args,"getvardimsizes",1,IFUNC);
 
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("logical");
