@@ -5513,7 +5513,6 @@ printVarSummary(pref)
    end if      ; 3
    dpres&$pName$ = pref
 
-
   dpres@long_name  = "pressure layer thickness"
   if (isatt(ps,"units")) then
       dpres@units = ps@units
@@ -5589,18 +5588,20 @@ begin
       end if
   end if
 
-  DNAM   = "extend_"+NTIM
+  DNAM   = "extend_"+Next
   if (isdimnamed(x,ndim)) then 
       DNAM   = x!ndim +"_"+DNAM  
   end if
   X!ndim     = DNAM
+  X@Next     = Next
 
   return(X)
 end
 ;======================================================
 undef("dim_pad_modulo")
 function dim_pad_modulo(x:numeric, Nmod[1]:integer,  ndim[1]:integer, opt[1]:logical)   
-
+;
+; This is useful for functions 
 ; Pad (expand) the 'size' of the user specified dimension to get a 'SIZE' such that (SIZE % N)=0 
 ; Only 'ndim' 0 or 1 is supported.
 ; 
@@ -5677,6 +5678,7 @@ begin
       DNAM   = x!ndim +"_"+DNAM  
   end if
   X!ndim     = DNAM
+  X@Nmod     = Nmod
 
   return(X)
 end
