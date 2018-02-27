@@ -1062,12 +1062,13 @@ begin
 ; Calculate the cell center of the extended grid, which 
 ; would be the corner coordinates for the original grid.
 ;
-    tmp = Extlat2d(:,1:nlonp1)+Extlat2d(:,0:nlon)
-    ExtGridCenter_lat       = ndtooned((tmp(1:nlatp1,:)+tmp(0:nlat,:))*delta)
+    tmp_lat = Extlat2d(:,1:nlonp1)+Extlat2d(:,0:nlon)
+    ExtGridCenter_lat = ndtooned((tmp_lat(1:nlatp1,:)+tmp_lat(0:nlat,:))*delta)
+    delete(tmp_lat)
 
-    tmp = Extlon2d(:,1:nlonp1)+Extlon2d(:,0:nlon)
-    ExtGridCenter_lon       = ndtooned((tmp(1:nlatp1,:)+tmp(0:nlat,:))*delta)
-    delete(tmp)
+    tmp_lon = Extlon2d(:,1:nlonp1)+Extlon2d(:,0:nlon)
+    ExtGridCenter_lon = ndtooned((tmp_lon(1:nlatp1,:)+tmp_lon(0:nlat,:))*delta)
+    delete(tmp_lon)
 
     if(DEBUG) then
       print("calc_SCRIP_corners_noboundaries")
