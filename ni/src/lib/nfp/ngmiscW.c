@@ -123,26 +123,23 @@ NhlErrorTypes nggcog_W(void)
  * Coerce input scalars to float.
  */
   
-  if(type_lat == NCL_float || type_lat == NCL_double) {
+  if(type_lat == NCL_double) {
     tmp_lat = (float*)calloc(1,sizeof(float));
-    if(type_lat == NCL_double) *tmp_lat = (float)((double*)lat)[0];
-    else                       *tmp_lat = ((float*)lat)[0];
+    *tmp_lat = (float)((double*)lat)[0];
   }
   else {
     tmp_lat = coerce_input_float(lat,type_lat,1,0,NULL,NULL);
   }
-  if(type_lon == NCL_float || type_lon == NCL_double) {
+  if(type_lon == NCL_double) {
     tmp_lon = (float*)calloc(1,sizeof(float));
-    if(type_lon == NCL_double) *tmp_lon = (float)((double*)lon)[0];
-    else                       *tmp_lon = ((float*)lon)[0];
+    *tmp_lon = (float)((double*)lon)[0];
   }
   else {
     tmp_lon = coerce_input_float(lon,type_lon,1,0,NULL,NULL);
   }
-  if(type_rad == NCL_float || type_rad == NCL_double) {
+  if(type_rad == NCL_double) {
     tmp_rad = (float*)calloc(1,sizeof(float));
-    if(type_rad == NCL_double) *tmp_rad = (float)((double*)rad)[0];
-    else                       *tmp_rad = ((float*)rad)[0];
+    *tmp_rad = (float)((double*)rad)[0];
   }
   else {
     tmp_rad = coerce_input_float(rad,type_rad,1,0,NULL,NULL);
@@ -172,15 +169,10 @@ NhlErrorTypes nggcog_W(void)
     for( i = 0; i < num_points; i++ ) ((double*)olon)[i]  = (double)tmp_olon[i];
     NclFree(tmp_olon);
   }
-  if(type_lat == NCL_float || type_lat == NCL_double) {
-    NclFree(tmp_lat);
-  }
-  if(type_lon == NCL_float || type_lon == NCL_double) {
-    NclFree(tmp_lon);
-  }
-  if(type_rad == NCL_float || type_rad == NCL_double) {
-    NclFree(tmp_rad);
-  }
+  if(type_lat != NCL_float) NclFree(tmp_lat);
+  if(type_lon != NCL_float) NclFree(tmp_lon);
+  if(type_rad != NCL_float) NclFree(tmp_rad);
+
   return(NhlNOERROR);
 }
 
