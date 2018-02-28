@@ -4,101 +4,110 @@
 
 NhlErrorTypes nggcog_W(void)
 {
-
 /*
  *  Input variables
  */
 
-  float     *clat, *clon, *crad;
+  void     *lat, *lon, *rad;
+  float     *tmp_lat, *tmp_lon, *tmp_rad;
+  NclBasicDataTypes type_lat, type_lon, type_rad;
 
 /*
  *  Output variables
  */
-  float     *alat, *alon;
-  ng_size_t  dsizes_alat[1];
-  ng_size_t  dsizes_alon[1];
+  void      *olat, *olon;
+  float     *tmp_olat, *tmp_olon;
+  ng_size_t  dsizes_olat[1];
+  ng_size_t  dsizes_olon[1];
+  NclBasicDataTypes type_olat, type_olon;
 
 /*
  *  Local variables.
  */
-  ng_size_t num_points;
+  ng_size_t i, num_points;
   int       inum_points;
 
 /*
  *  Retrieve argument #1 (input)
  */
-  clat = (float *) NclGetArgValue(
+  lat = (void *) NclGetArgValue(
       0,
       5,
       NULL,
       NULL,
       NULL,
       NULL,
-      NULL,
+      &type_lat,
       DONT_CARE);
 
 /*
  *  Retrieve argument #2 (input)
  */
-  clon = (float *) NclGetArgValue(
+  lon = (void *) NclGetArgValue(
       1,
       5,
       NULL,
       NULL,
       NULL,
       NULL,
-      NULL,
+      &type_lon,
       DONT_CARE);
 
 /*
  *  Retrieve argument #3 (input)
  */
-  crad = (float *) NclGetArgValue(
+  rad = (void *) NclGetArgValue(
       2,
       5,
       NULL,
       NULL,
       NULL,
       NULL,
-      NULL,
+      &type_rad,
       DONT_CARE);
 
 /*
  *  Retrieve argument #4 (output)
  */
-  alat = (float *) NclGetArgValue(
+  olat = (void *) NclGetArgValue(
        3,
        5,
        NULL,
-       dsizes_alat,
+       dsizes_olat,
        NULL,
        NULL,
-       NULL,
+       &type_olat,
        1);
 
 /*
  *  Retrieve argument #5 (output)
  */
-  alon = (float *) NclGetArgValue(
+  olon = (void *) NclGetArgValue(
        4,
        5,
        NULL,
-       dsizes_alon,
+       dsizes_olon,
        NULL,
        NULL,
-       NULL,
+       &type_olon,
        1);
 
 /*
  *  Check that the two output arrays are of the same size.
  */
-  if (dsizes_alat[0] != dsizes_alon[0]) {
+  if (dsizes_olat[0] != dsizes_olon[0]) {
          NhlPError(NhlFATAL,NhlEUNKNOWN,
             "nggcog: output arrays must be of the same size");
          return(NhlFATAL);
   }
   else {
-        num_points = dsizes_alat[0];
+        num_points = dsizes_olat[0];
+  }
+
+  if((type_olat != NCL_float && type_olat != NCL_double) ||
+     (type_olon != NCL_float && type_olon != NCL_double)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"nggcog: The output arrays must be float or double");
+    return(NhlFATAL);
   }
 
 /*
@@ -111,10 +120,68 @@ NhlErrorTypes nggcog_W(void)
   inum_points = (int) num_points;
 
 /*
- *  Make the call to c_nggcog.
+ * Coerce input scalars to float.
  */
-    c_nggcog(*clat, *clon, *crad, alat, alon, inum_points);
-    return(NhlNOERROR);
+  
+  if(type_lat == NCL_float || type_lat == NCL_double) {
+    tmp_lat = (float*)calloc(1,sizeof(float));
+    if(type_lat == NCL_double) *tmp_lat = (float)((double*)lat)[0];
+    else                       *tmp_lat = ((float*)lat)[0];
+  }
+  else {
+    tmp_lat = coerce_input_float(lat,type_lat,1,0,NULL,NULL);
+  }
+  if(type_lon == NCL_float || type_lon == NCL_double) {
+    tmp_lon = (float*)calloc(1,sizeof(float));
+    if(type_lon == NCL_double) *tmp_lon = (float)((double*)lon)[0];
+    else                       *tmp_lon = ((float*)lon)[0];
+  }
+  else {
+    tmp_lon = coerce_input_float(lon,type_lon,1,0,NULL,NULL);
+  }
+  if(type_rad == NCL_float || type_rad == NCL_double) {
+    tmp_rad = (float*)calloc(1,sizeof(float));
+    if(type_rad == NCL_double) *tmp_rad = (float)((double*)rad)[0];
+    else                       *tmp_rad = ((float*)rad)[0];
+  }
+  else {
+    tmp_rad = coerce_input_float(rad,type_rad,1,0,NULL,NULL);
+  } 
+
+/*
+ * Create temp arrays to hold temporary output float arrays, if necessary.
+ */
+  if(type_olat == NCL_double)  tmp_olat = (float*)calloc(num_points,sizeof(float));
+  else                         tmp_olat = (float*)olat;
+  if(type_olon == NCL_double)  tmp_olon = (float*)calloc(num_points,sizeof(float));
+  else                         tmp_olon = (float*)olon;
+
+/*
+ * Make the call to c_nggcog.
+ */
+  c_nggcog(*tmp_lat,*tmp_lon,*tmp_rad, tmp_olat, tmp_olon, inum_points);
+
+/*
+ * Coerce output to double if needed
+ */
+  if(type_olat == NCL_double) {
+    for( i = 0; i < num_points; i++ ) ((double*)olat)[i]  = (double)tmp_olat[i];
+    NclFree(tmp_olat);
+  }
+  if(type_olon == NCL_double) {
+    for( i = 0; i < num_points; i++ ) ((double*)olon)[i]  = (double)tmp_olon[i];
+    NclFree(tmp_olon);
+  }
+  if(type_lat == NCL_float || type_lat == NCL_double) {
+    NclFree(tmp_lat);
+  }
+  if(type_lon == NCL_float || type_lon == NCL_double) {
+    NclFree(tmp_lon);
+  }
+  if(type_rad == NCL_float || type_rad == NCL_double) {
+    NclFree(tmp_rad);
+  }
+  return(NhlNOERROR);
 }
 
 
@@ -469,5 +536,3 @@ NhlErrorTypes ngritd_W(void)
   c_ngritd(*iaxs, *angl, ucrd, vcrd, wcrd);
   return(NhlNOERROR);
 }
-
-

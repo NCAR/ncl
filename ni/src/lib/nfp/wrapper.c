@@ -3817,11 +3817,11 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(5);
     dimsizes[0] = 1;
-    SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
     NclRegisterProc(nggcog_W, args, "nggcog", nargs);
 
 /*
@@ -10095,7 +10095,9 @@ ng_size_t step_x
 
 /*
  * Coerce data to float, or just return a pointer to it if
- * it is already float.
+ * it is already float. NOTE: this function does not work
+ * for coercing double to float. You must use it on a float
+ * type or lower (int, short, byte, etc).
  */
 float *coerce_input_float(
 void              *x,
@@ -10142,7 +10144,9 @@ NclScalar         *missing_fx)
 
 /*
  * Coerce data to int, or just return a pointer to it if
- * it is already int.
+ * it is already int. NOTE: this function does not work
+ * for coercing double/float to int. You must use it on
+ * an int type or lower (short, byte, etc).
  */
 int *coerce_input_int(
 void              *x,
