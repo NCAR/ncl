@@ -5661,7 +5661,6 @@ printVarSummary(pref)
    end if      ; 3
    dpres&$pName$ = pref
 
-
   dpres@long_name  = "pressure layer thickness"
   if (isatt(ps,"units")) then
       dpres@units = ps@units
@@ -5670,49 +5669,28 @@ printVarSummary(pref)
   return(dpres)
 end
 ;----------------------------------------------------------------------------
-;----------------------- Unsupported: DJS -----------------------------------
+; array padding
 ;----------------------------------------------------------------------------
-undef("dim_pad")
-function dim_pad(x:numeric, N[1]:integer,  ndim[1]:integer)   
+undef("dim_pad_extend")
+function dim_pad_extend(x:numeric, Next[1]:integer,  ndim[1]:integer, opt[1]:logical)   
 
-; Pad (expand) the 'size' of the user specified dimension to get a 'SIZE' such that (SIZE % N)=0 
+; Pad (extend) the 'size' of the user specified dimension to  size 'N'
 ; Only 'ndim' 0 or 1 is supported.
 ; 
-; Coordinate values (if any) along 'dims' dimension are lost. All other coordinate data maintained.
+; Coordinate values (if any) along 'dims' dimension are lost.
 ; A created dimension name will be given to the expanded dimension.  
-;           (a) If a dimension name exists (eg" "time"), a new dimension name ("TIME") id created.
-;               The case of the bname is 'switched.'
-;           (b) If no dimension name exist, a name is created: "modulo_N" (eg: N=12, "modulo_12")
 ;
-; NCL :  6.4.0 or higher
-; TEST: /Users/shea/ncld/test/PAD/tst.dim_pad.ncl 
-;
-; Examples: N=12
-;           x[1]  ===> dim_pad(x, N, 0) ===> x[12]
-;           x[ 1,nlat,mlon] ===> dim_pad(x, N, 0) ===> x[12][nlat][mlon]]
-;           x[43,nlat,mlon] ===> dim_pad(x, N, 0) ===> x[48][nlat][mlon]]
-;           x[ncase,17,nlat,mlon] ===> dim_pad(x, N, 1) ===> x[ncase][24][nlat][mlon]]
-;
-local dimx, ntim, rankx, NTIM, X, DNAM
+local dimx, ntim, N, rankx, NTIM, X, DNAM
 begin
   if (ndim.gt.1) then
-      print("dim_pad: ndim>1 is not supported: ndim="+ndim)
+      print("dim_pad_extend: ndim>1 is not supported: ndim="+ndim)
       exit
   end if
 
   dimx  = dimsizes(x)
   rankx = dimsizes(dimx)
-  ntim  = dimx(ndim)      ; usually the time dimension
-  
-  if (ntim%N.eq.0) then
-      return(x)
-  end if
-
-  if (ntim.lt.N) then
-      NTIM = N
-  else
-      NTIM = ntim + (ntim%N)
-  end if
+  ntim  = dimx(ndim) 
+  NTIM  = ntim + Next
 
   dimx(ndim) = NTIM
   X    = new( dimx, typeof(x), getVarFillValue(x))
@@ -5720,7 +5698,7 @@ begin
 
   if (rankx.eq.1) then
       if (ndim.ne.0) then
-          print("dim_pad: For a rank-one array ndim must be 0: ndim="+ndim)
+          print("dim_pad_extend: For a rank-one array ndim must be 0: ndim="+ndim)
           exit
       end if
       X(0:ntim-1)     = (/ x /) 
@@ -5758,12 +5736,97 @@ begin
       end if
   end if
 
+  DNAM   = "extend_"+Next
   if (isdimnamed(x,ndim)) then 
-      DNAM   = str_switch( x!ndim ) 
-  else
-      DNAM   = "modulo_"+N
+      DNAM   = x!ndim +"_"+DNAM  
   end if
   X!ndim     = DNAM
+  X@Next     = Next
+
+  return(X)
+end
+;======================================================
+undef("dim_pad_modulo")
+function dim_pad_modulo(x:numeric, Nmod[1]:integer,  ndim[1]:integer, opt[1]:logical)   
+;
+; This is useful for functions 
+; Pad (expand) the 'size' of the user specified dimension to get a 'SIZE' such that (SIZE % N)=0 
+; Only 'ndim' 0 or 1 is supported.
+; 
+; Coordinate values (if any) along 'ndim' dimension are lost.
+; A created dimension name will be given to the expanded dimension.  
+;
+local dimx, ntim, rankx, NTIM, X, DNAM
+begin
+  if (ndim.gt.1) then
+      print("dim_pad_modulo: ndim>1 is not supported: ndim="+ndim)
+      exit
+  end if
+
+  dimx  = dimsizes(x)
+  rankx = dimsizes(dimx)
+  ntim  = dimx(ndim)      ; usually the time dimension
+  
+  if (ntim%Nmod.eq.0) then
+      return(x)
+  end if
+
+  if (ntim.lt.Nmod) then
+      NTIM = Nmod
+  else
+      NTIM = (ntim/Nmod)*Nmod + Nmod
+  end if
+
+  dimx(ndim) = NTIM
+  X    = new( dimx, typeof(x), getVarFillValue(x))
+  copy_VarAtts(x,X)
+
+  if (rankx.eq.1) then
+      if (ndim.ne.0) then
+          print("dim_pad_modulo: For a rank-one array ndim must be 0: ndim="+ndim)
+          exit
+      end if
+      X(0:ntim-1)     = (/ x /) 
+  elseif (rankx.eq.2) then
+      if (ndim.eq.0) then
+          X(0:ntim-1,:)   = (/ x /)
+          copy_VarCoords(x(0,:), X(0,:))
+      else
+          X(:,0:ntim-1)   = (/ x /)
+          copy_VarCoords(x(:,0), X(:,0))
+      end if
+  elseif (rankx.eq.3) then
+      if (ndim.eq.0) then
+          X(0:ntim-1,:,:)   = (/ x /)
+          copy_VarCoords(x(0,:,:), X(0,:,:))
+      else
+          X(:,0:ntim-1,:)   = (/ x /)
+          copy_VarCoords(x(:,0,:), X(:,0,:))
+      end if
+  elseif (rankx.eq.4) then
+      if (ndim.eq.0) then
+          X(0:ntim-1,:,:,:)   = (/ x /)
+          copy_VarCoords(x(0,:,:,:), X(0,:,:,:))
+      else
+          X(:,0:ntim-1,:,:)   = (/ x /)
+          copy_VarCoords(x(:,0,:,:), X(:,0,:,:))
+      end if
+  elseif (rankx.eq.5) then
+      if (ndim.eq.0) then
+          X(0:ntim-1,:,:,:,:)   = (/ x /)
+          copy_VarCoords(x(0,:,:,:,:), X(0,:,:,:,:))
+      else
+          X(:,0:ntim-1,:,:,:)   = (/ x /)
+          copy_VarCoords(x(:,0,:,:,:), X(:,0,:,:,:))
+      end if
+  end if
+
+  DNAM   = "modulo_"+Nmod
+  if (isdimnamed(x,ndim)) then 
+      DNAM   = x!ndim +"_"+DNAM  
+  end if
+  X!ndim     = DNAM
+  X@Nmod     = Nmod
 
   return(X)
 end
@@ -5975,4 +6038,107 @@ begin
  ;end if
   
   return( pdf3 )
+end
+;-------
+undef("unwrap_phase_matlab")
+function unwrap_phase_matlab(p[*]:numeric)    ; p <==> wrapped phase
+;
+; Near One-to-One translation of Matlab's 'unwrap': See bottom for Matlab code
+; This handles _FillValue.
+; ---
+; Source:
+; https://www.ljmu.ac.uk/~/media/files/ljmu/about-us/faculties-and-schools/tae/geri/onedimensionalphaseunwrapping_finalpdf
+;
+begin
+;---NCL (currently) does not have an 'eps' (machine epsilon)
+;---The following is more than good enough for our purposes.
+
+  if (typeof(p).eq."double") then    
+      eps = 5d-15
+  else
+      eps = 5e-6
+  end if
+
+  pi  = get_pi(p)
+  N   = dimsizes(p)
+  up  = new( N, typeof(p), getVarFillValue(p))
+
+  po    = totype(0, typeof(p))
+  thr   = pi - eps
+  pi2   = 2*pi
+
+  if (any(ismissing(p))) then
+      ii    = ind(.not.ismissing(p))
+      nii   = dimsizes(ii)
+      iStrt = ii(0)+1
+      iLast = ii(nii-1)
+  else
+      iStrt = 1             ; NCL is 0-based
+      iLast = N-1
+  end if
+
+  pm1   = p(iStrt)          ; NCL is 0-based
+  up(0) = p(iStrt-1)
+  
+  do i=iStrt,iLast
+     cp = p(i) + po
+     dp = cp - pm1
+     pm1= cp
+
+     if (dp.gt.thr) then
+         do while (dp.gt.thr)
+            po = po - pi2
+            dp = dp - pi2
+         end do
+     end if
+
+     if (dp.lt.(-thr)) then
+         do while (dp.lt.(-thr))
+            po = po + pi2
+            dp = dp + pi2
+         end do
+     end if
+
+     cp    = p(i) + po
+     pm1   = cp
+     up(i) = cp
+  end do
+
+  up@long_name = "umwrapped phase"
+  up@units     = "radians"
+  copy_VarCoords(p,up)
+  return(up)
+;;
+;; Matlab is 1-based
+;;
+;; function up = unwrap(p)
+;; %UNWRAP unwrap phase
+;;   N = length(p);
+;;   up = zeros(size(p));
+;;   pm1 = p(1);
+;;   up(1) = pm1;
+;;   po = 0;
+;;   thr = pi - eps;
+;;   pi2 = 2*pi;
+;;   for i=2:N
+;;     cp = p(i) + po;
+;;     dp = cp- pm1;
+;;     pm1 = cp;
+;;     if dp>thr
+;;       while dp>thr
+;;         po = po - pi2
+;;         dp = dp - pi2;
+;;       end
+;;     end
+;;     if dp<- thr
+;;       while dp<- thr
+;;         po = po + pi2
+;;         dp = dp + pi2;
+;;       end
+;;     end
+;;     cp = p(i) + po;
+;;     pm1 = cp;
+;;     up(i) = cp;
+;;   end
+  
 end
