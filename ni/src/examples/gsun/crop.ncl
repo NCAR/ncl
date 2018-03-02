@@ -59,7 +59,7 @@ begin
 
     jday = day_of_year(yyyy, mm, dd)
 
-    copy_VarCoords(time, jday)
+    copy_VarCoords(yyyymm, jday)
     jday@long_name = "mid-month day of current year"
     return(jday)
 end
