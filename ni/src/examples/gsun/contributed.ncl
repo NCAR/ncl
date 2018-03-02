@@ -15223,9 +15223,9 @@ function pot_temp (p:numeric, t:numeric, npr[*]:integer, opt[1]:logical)
 ;               Also: equivalent temperature (teqv) could be input
 ;                     teqv =  temperature of an air parcel from which all the water vapor 
 ;                             has been extracted by an adiabatic process.
-;                     teqv = t + (Lv/cpd)*r  ; 
-;                     cpd  = 1004. or 1005.7 ; specific heat dry air [J/kg/K]
-;                     Lv   = 2.5104e6        ; [J/kg]=[m2/s2]  Latent Heat of Vaporization of Water
+;                     teqv = t + (Lv/cpd)*r    ; 
+;                     cpd  = 1004.62 or 1005.7 ; specific heat dry air [J/kg/K]
+;                     Lv   = 2.5104e6          ; [J/kg]=[m2/s2]  Latent Heat of Vaporization at Triple point
 ;                     r    = mixing ratio 
 ;     npr     - dimension number(s) of 'p' corresponding to temperature 
 ;               npr=-1 means that p and t have the same ranks and sizes
@@ -15371,6 +15371,7 @@ begin
  
   t_e@long_name = "equivalent potential temperature"
   t_e@units     = "K"
+  t_e@reference = "https://en.wikipedia.org/wiki/Equivalent_potential_temperature"
   t_e@tag       = "NCL: pot_temp_equiv"
   copy_VarCoords( t, t_e ) ; assign coordinates
   return(t_e)
@@ -19331,8 +19332,8 @@ begin
   return( gradLatLon )
 end
 ;-----------------
-undef("REGLINE_WEIGHT")
-function REGLINE_WEIGHT(x[*]:numeric,y[*]:numeric,SIGY[*]:numeric, mwt[1]:integer)
+undef("regline_weight")
+function regline_weight(xin[*]:numeric,yin[*]:numeric,SIGY[*]:numeric, mwt[1]:integer)
 ;
 ; Weighted linear regression: NCL-2568: Fortran=>NCL translation
 ;
@@ -19340,7 +19341,7 @@ function REGLINE_WEIGHT(x[*]:numeric,y[*]:numeric,SIGY[*]:numeric, mwt[1]:intege
 ; Based on the FIT subroutine of Numerical Recipes for FORTRAN 77
 ; http://faculty.etsu.edu/lutter/courses/phys4007/f77/fit.txt
 ; -------------------------------------------------------
-;Input       :	x,y     data
+;Input       :	xin,yin     data
 ;               SIGY    individual measurement errors (uncertainties) for y
 ;                       weights=[1/SIGY^2]
 ;                       must be same size as x or y
@@ -19371,10 +19372,19 @@ function REGLINE_WEIGHT(x[*]:numeric,y[*]:numeric,SIGY[*]:numeric, mwt[1]:intege
 ; The chi-squared statistic can be used to  test the null hypothesis: 
 ; H0: There is *no relationship* between two variables.
 ; -------------------------------------------------------
-local nxy, yType, one, wt, ss, sx, sy, t, st2, a, b, siga, sigb, chi2, q 
+local ixy, x, y, nxy, yType, one, wt, ss, sx, sy, t, st2, a, b, siga, sigb, chi2, q 
 begin
-  nx = dimsizes(x)
-  ny = dimsizes(y)
+  if (all(ismissing(xin)) .or. all(ismissing(yin)))  then
+      print("regline_weight: All input xin and/or yin are _FillValue")
+      exit
+  end if
+
+  ixy = ind(.not.ismissing(xin) .and. .not.ismissing(yin))
+  x   = xin(ixy)
+  y   = yin(ixy)
+
+  nx  = dimsizes(x)
+  ny  = dimsizes(y)
   if (ny.ne.nx) then
       print("regline_weight: nx, ny: nx="+nx+" ny="+ny)
       exit
@@ -19382,7 +19392,7 @@ begin
 
   nxy    = ny
   if (nxy.lt.3) then
-      print("regline_weight: nxy must be > 2:  nxy="+nxy)
+      print("regline_weight: nxy [number of non-missing values] must be > 2:  nxy="+nxy)
       exit
   end if
 
@@ -19465,32 +19475,6 @@ begin
   rc@nxy        = nxy
 
   return(rc )
-end
-;---
-undef("regline_weight")
-function regline_weight(X[*]:numeric,Y[*]:numeric,SIGY[*]:numeric, mwt[1]:integer)
-;
-; Weighted linear regression: NCL-2568: Fortran=>NCL translation
-;
-; Interface to working code ... this strips missing values before input
-;
-local answer, iGood, xGood, yGood, sGood
-begin
-  if (all(.not.ismissing(X) .and. .not.ismissing(Y))) then
-      answer = REGLINE_WEIGHT(X, Y, SIGY, mwt)
-  else
-      iGood = ind(.not.ismissing(X) .and. .not.ismissing(X) )
-      xGood = X(iGood)
-      yGood = Y(iGood)
-      if (isscalar(SIGY)) then
-          answer = REGLINE_WEIGHT(xGood, yGood, SIGY, mwt)
-      else
-          sGood  = SIGY(igood)
-          answer = REGLINE_WEIGHT(xGood, yGood, sGood, mwt)
-      end if
-  end if
-
-  return(answer)
 end
 ;---
 undef("taylor_stats")
