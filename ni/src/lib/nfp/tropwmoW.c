@@ -49,6 +49,7 @@ NhlErrorTypes trop_wmo_W( void )
   ng_size_t size_ptrop;
   ng_size_t *dsizes_ptrop;
   NclBasicDataTypes type_ptrop;
+  NclScalar missing_ptrop;
 
 /*
  * Variables for retrieving attributes from "opt".
@@ -218,9 +219,11 @@ NhlErrorTypes trop_wmo_W( void )
  */
   if(type_p == NCL_double || type_t == NCL_double) {
     type_ptrop = NCL_double;
+    missing_ptrop.doubleval = -999.;
   }
   else {
     type_ptrop = NCL_float;
+    missing_ptrop.floatval = -999.;
   }
 
 /* 
@@ -384,7 +387,7 @@ NhlErrorTypes trop_wmo_W( void )
 /*
  * Return value back to NCL script.
  */
-  ret = NclReturnValue(ptrop,ndims_ptrop,dsizes_ptrop,NULL,type_ptrop,0);
+  ret = NclReturnValue(ptrop,ndims_ptrop,dsizes_ptrop,&missing_ptrop,type_ptrop,0);
   NclFree(dsizes_ptrop);
   return(ret);
 }
