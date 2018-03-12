@@ -102,10 +102,9 @@ NhlErrorTypes nggcog_W(void)
 /*
  *  Check that the two output arrays are of the same size.
  */
-  if (dsizes_olat[0] != dsizes_olon[0]) {
-         NhlPError(NhlFATAL,NhlEUNKNOWN,
-            "nggcog: output arrays must be of the same size");
-         return(NhlFATAL);
+  if(dsizes_olat[0] != dsizes_olon[0]) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"nggcog: output arrays must be of the same size");
+    return(NhlFATAL);
   }
   else {
         num_points = dsizes_olat[0];
@@ -129,86 +128,83 @@ NhlErrorTypes nggcog_W(void)
 /*
  * Coerce input scalars as appropriate.
  */
-  
-if(type_calc == NCL_double) {
-  if(type_lat == NCL_float) {
-    tmp_lat = (double*)calloc(1,sizeof(double));
-    *((double *)tmp_lat) = (double)((float*)lat)[0];
+  if(type_calc == NCL_double) {
+    if(type_lat == NCL_float) {
+      tmp_lat = (double*)calloc(1,sizeof(double));
+      *((double *)tmp_lat) = (double)((float*)lat)[0];
+    } else {
+      tmp_lat = coerce_input_double(lat,type_lat,1,0,NULL,NULL);
+    }
+
+    if(type_lon == NCL_float) {
+      tmp_lon = (double*)calloc(1,sizeof(double));
+      *((double *)tmp_lon) = (double)((float*)lon)[0];
+    } else {
+      tmp_lon = coerce_input_double(lon,type_lon,1,0,NULL,NULL);
+    }
+
+    if(type_rad == NCL_float) {
+      tmp_rad = (double*)calloc(1,sizeof(double));
+      *((double *)tmp_rad) = (double)((float*)rad)[0];
+    } else {
+      tmp_rad = coerce_input_double(rad,type_rad,1,0,NULL,NULL);
+    }
+  } else {
+      tmp_lat = coerce_input_float(lat,type_lat,1,0,NULL,NULL);
+      tmp_lon = coerce_input_float(lon,type_lon,1,0,NULL,NULL);
+      tmp_rad = coerce_input_float(rad,type_rad,1,0,NULL,NULL);
   }
-  else {
-    tmp_lat = coerce_input_double(lat,type_lat,1,0,NULL,NULL);
-  }
-  if(type_lon == NCL_float) {
-    tmp_lon = (double*)calloc(1,sizeof(double));
-    *((double *)tmp_lon) = (double)((float*)lon)[0];
-  }
-  else {
-    tmp_lon = coerce_input_double(lon,type_lon,1,0,NULL,NULL);
-  }
-  if(type_rad == NCL_float) {
-    tmp_rad = (double*)calloc(1,sizeof(double));
-    *((double *)tmp_rad) = (double)((float*)rad)[0];
-  }
-  else {
-    tmp_rad = coerce_input_double(rad,type_rad,1,0,NULL,NULL);
-  }
-} else {
-    tmp_lat = coerce_input_float(lat,type_lat,1,0,NULL,NULL);
-    tmp_lon = coerce_input_float(lon,type_lon,1,0,NULL,NULL);
-    tmp_rad = coerce_input_float(rad,type_rad,1,0,NULL,NULL);
-}
 
 /*
  * Create temp arrays to hold temporary output float/double arrays, if necessary.
  */
-if(type_calc == NCL_double) {
-  if(type_olat == NCL_float)   tmp_olat = (double*)calloc(num_points,sizeof(double));
-  else                         tmp_olat = (double*)olat;
-  if(type_olon == NCL_float)   tmp_olon = (double*)calloc(num_points,sizeof(double));
-  else                         tmp_olon = (double*)olon;
-} else {
-                               tmp_olat = (float*)olat;
-                               tmp_olon = (float*)olon;
-}
+  if(type_calc == NCL_double) {
+    if(type_olat == NCL_float)  tmp_olat = (double*)calloc(num_points,sizeof(double));
+    else                        tmp_olat = (double*)olat;
+    if(type_olon == NCL_float)  tmp_olon = (double*)calloc(num_points,sizeof(double));
+    else                        tmp_olon = (double*)olon;
+  } else {
+                                tmp_olat = (float*)olat;
+                                tmp_olon = (float*)olon;
+  }
 
 /*
  * Check for unallocated arrays
  */
-if(tmp_olat == NULL || tmp_olon == NULL) {
-  NhlPError(NhlFATAL,NhlEUNKNOWN,
-            "nggcog: unable to allocate memory for temporary output arrays");
-  return(NhlFATAL);
-}
+  if(tmp_olat == NULL || tmp_olon == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"nggcog: unable to allocate memory for temporary output arrays");
+    return(NhlFATAL);
+  }
 
 /*
  * Make the call to c_nggcog.
  */
-if(type_calc == NCL_double) {
-  c_dnggcog(*((double *)tmp_lat),*((double *)tmp_lon),*((double *)tmp_rad),(double *)tmp_olat,(double *)tmp_olon, inum_points);
-} else {
-  c_nggcog(*((float *)tmp_lat),*((float *)tmp_lon),*((float *)tmp_rad),(float *)tmp_olat,(float *)tmp_olon, inum_points);
-}
+  if(type_calc == NCL_double) {
+    c_dnggcog(*((double *)tmp_lat),*((double *)tmp_lon),*((double *)tmp_rad),(double *)tmp_olat,(double *)tmp_olon, inum_points);
+  } else {
+    c_nggcog(*((float *)tmp_lat),*((float *)tmp_lon),*((float *)tmp_rad),(float *)tmp_olat,(float *)tmp_olon, inum_points);
+  }
 
 /*
  * Coerce output to double if needed
  */
-if(type_calc == NCL_double) {
-  if(type_olat == NCL_float) {
-    for( i = 0; i < num_points; i++ ) ((float*)olat)[i]  = (float)((double *)tmp_olat)[i];
-    NclFree(tmp_olat);
+  if(type_calc == NCL_double) {
+    if(type_olat == NCL_float) {
+      for( i = 0; i < num_points; i++ ) ((float*)olat)[i]  = (float)((double *)tmp_olat)[i];
+      NclFree(tmp_olat);
+    }
+    if(type_olon == NCL_float) {
+      for( i = 0; i < num_points; i++ ) ((float*)olon)[i]  = (float)((double *)tmp_olon)[i];
+      NclFree(tmp_olon);
+    }
+    if(type_lat != NCL_double) NclFree(tmp_lat);
+    if(type_lon != NCL_double) NclFree(tmp_lon);
+    if(type_rad != NCL_double) NclFree(tmp_rad);
+  } else {
+    if(type_lat != NCL_float) NclFree(tmp_lat);
+    if(type_lon != NCL_float) NclFree(tmp_lon);
+    if(type_rad != NCL_float) NclFree(tmp_rad);
   }
-  if(type_olon == NCL_float) {
-    for( i = 0; i < num_points; i++ ) ((float*)olon)[i]  = (float)((double *)tmp_olon)[i];
-    NclFree(tmp_olon);
-  }
-  if(type_lat != NCL_double) NclFree(tmp_lat);
-  if(type_lon != NCL_double) NclFree(tmp_lon);
-  if(type_rad != NCL_double) NclFree(tmp_rad);
-} else {
-  if(type_lat != NCL_float) NclFree(tmp_lat);
-  if(type_lon != NCL_float) NclFree(tmp_lon);
-  if(type_rad != NCL_float) NclFree(tmp_rad);
-}
 
   return(NhlNOERROR);
 }
