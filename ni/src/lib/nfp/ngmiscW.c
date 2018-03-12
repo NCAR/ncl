@@ -153,27 +153,9 @@ if(type_calc == NCL_double) {
     tmp_rad = coerce_input_double(rad,type_rad,1,0,NULL,NULL);
   }
 } else {
-  if(type_lat == NCL_double) {
-    tmp_lat = (float*)calloc(1,sizeof(float));
-    *((float *)tmp_lat) = (float)((double*)lat)[0];
-  }
-  else {
     tmp_lat = coerce_input_float(lat,type_lat,1,0,NULL,NULL);
-  }
-  if(type_lon == NCL_double) {
-    tmp_lon = (float*)calloc(1,sizeof(float));
-    *((float *)tmp_lon) = (float)((double*)lon)[0];
-  }
-  else {
     tmp_lon = coerce_input_float(lon,type_lon,1,0,NULL,NULL);
-  }
-  if(type_rad == NCL_double) {
-    tmp_rad = (float*)calloc(1,sizeof(float));
-    *((float *)tmp_rad) = (float)((double*)rad)[0];
-  }
-  else {
     tmp_rad = coerce_input_float(rad,type_rad,1,0,NULL,NULL);
-  } 
 }
 
 /*
@@ -185,10 +167,17 @@ if(type_calc == NCL_double) {
   if(type_olon == NCL_float)   tmp_olon = (double*)calloc(num_points,sizeof(double));
   else                         tmp_olon = (double*)olon;
 } else {
-  if(type_olat == NCL_double)  tmp_olat = (float*)calloc(num_points,sizeof(float));
-  else                         tmp_olat = (float*)olat;
-  if(type_olon == NCL_double)  tmp_olon = (float*)calloc(num_points,sizeof(float));
-  else                         tmp_olon = (float*)olon;
+                               tmp_olat = (float*)olat;
+                               tmp_olon = (float*)olon;
+}
+
+/*
+ * Check for unallocated arrays
+ */
+if(tmp_olat == NULL || tmp_olon == NULL) {
+  NhlPError(NhlFATAL,NhlEUNKNOWN,
+            "nggcog: unable to allocate memory for temporary output arrays");
+  return(NhlFATAL);
 }
 
 /*
@@ -205,25 +194,17 @@ if(type_calc == NCL_double) {
  */
 if(type_calc == NCL_double) {
   if(type_olat == NCL_float) {
-    for( i = 0; i < num_points; i++ ) ((float*)olat)[i]  = (float)((float *)tmp_olat)[i];
+    for( i = 0; i < num_points; i++ ) ((float*)olat)[i]  = (float)((double *)tmp_olat)[i];
     NclFree(tmp_olat);
   }
   if(type_olon == NCL_float) {
-    for( i = 0; i < num_points; i++ ) ((float*)olon)[i]  = (float)((float *)tmp_olon)[i];
+    for( i = 0; i < num_points; i++ ) ((float*)olon)[i]  = (float)((double *)tmp_olon)[i];
     NclFree(tmp_olon);
   }
   if(type_lat != NCL_double) NclFree(tmp_lat);
   if(type_lon != NCL_double) NclFree(tmp_lon);
   if(type_rad != NCL_double) NclFree(tmp_rad);
 } else {
-  if(type_olat == NCL_double) {
-    for( i = 0; i < num_points; i++ ) ((double*)olat)[i]  = (double)((double *)tmp_olat)[i];
-    NclFree(tmp_olat);
-  }
-  if(type_olon == NCL_double) {
-    for( i = 0; i < num_points; i++ ) ((double*)olon)[i]  = (double)((double *)tmp_olon)[i];
-    NclFree(tmp_olon);
-  }
   if(type_lat != NCL_float) NclFree(tmp_lat);
   if(type_lon != NCL_float) NclFree(tmp_lon);
   if(type_rad != NCL_float) NclFree(tmp_rad);
