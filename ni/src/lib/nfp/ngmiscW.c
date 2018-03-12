@@ -2,8 +2,6 @@
 #include <string.h>
 #include "wrapper.h"
 
-extern void NGCALLF(dnggcog,DNGGCOG)(double*,double*,double*,double*,double*,int*);
-
 NhlErrorTypes nggcog_W(void)
 {
 /*
@@ -197,7 +195,7 @@ if(type_calc == NCL_double) {
  * Make the call to c_nggcog.
  */
 if(type_calc == NCL_double) {
-  NGCALLF(dnggcog,DNGGCOG)((double*)tmp_lat,(double*)tmp_lon,(double*)tmp_rad,(double*)tmp_olat,(double*)tmp_olon,&inum_points);
+  c_dnggcog(*((double *)tmp_lat),*((double *)tmp_lon),*((double *)tmp_rad),(double *)tmp_olat,(double *)tmp_olon, inum_points);
 } else {
   c_nggcog(*((float *)tmp_lat),*((float *)tmp_lon),*((float *)tmp_rad),(float *)tmp_olat,(float *)tmp_olon, inum_points);
 }

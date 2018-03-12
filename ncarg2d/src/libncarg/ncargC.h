@@ -2905,6 +2905,17 @@ extern void c_nggcog(
 #endif
 );
 
+extern void c_dnggcog(
+#ifdef  NeedFuncProto
+    double clat,
+    double clon,
+    double crad,
+    double *alat,
+    double *alon,
+    int npts
+#endif
+);
+
 extern void c_nggsog(
 #ifdef  NeedFuncProto
     float slat,
