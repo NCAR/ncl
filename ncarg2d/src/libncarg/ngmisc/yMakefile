@@ -6,12 +6,14 @@ MYNAME	= ngmisc
 GENERIC_SRCS = \
 	ngdots.f nggcog.f nggsog.f ngpict.f ngpswk.f ngputg.f ngritd.f \
 	ngwsym.f ngseti.f nggeti.f ngsetr.f nggetr.f ngsetc.f nggetc.f \
-	ngblda.f ngckop.f ngreop.f ngsrat.f ngmftc.f nglogo.f ngezlogo.f
+	ngblda.f ngckop.f ngreop.f ngsrat.f ngmftc.f nglogo.f ngezlogo.f \
+	dnggcog.f dngritd.f
 
 GENERIC_OBJS = \
 	ngdots.o nggcog.o nggsog.o ngpict.o ngpswk.o ngputg.o ngritd.o \
 	ngwsym.o ngseti.o nggeti.o ngsetr.o nggetr.o ngsetc.o nggetc.o \
-	ngblda.o ngckop.o ngreop.o ngsrat.o ngmftc.o nglogo.o ngezlogo.o
+	ngblda.o ngckop.o ngreop.o ngsrat.o ngmftc.o nglogo.o ngezlogo.o \
+	dnggcog.o dngritd.o
 
 SOURCES = $(GENERIC_SRCS)
 
