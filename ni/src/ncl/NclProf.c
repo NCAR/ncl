@@ -36,6 +36,7 @@
 #if defined(USE_MPI)
 #include "mpi.h"
 #endif
+#include "NclGlobalParams.h"
 
 #define PROF_ENV_NAME	"NCARG_PROF"
 #define MAX_FILENAME_LEN 100
@@ -84,7 +85,7 @@ void NclProfInit(char *filename)
 		}
 	}
 	else{
-		NclProfInfo.enable_print = 1;
+		NclProfInfo.enable_print = NCLprofiler;
 	}
 
 	if(!NclProfInfo.enable_print) return;

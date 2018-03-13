@@ -37,8 +37,6 @@
 #include "VarSupport.h"
 #include "NclData.h"
 
-#ifdef ENABLE_PROFILING
-
 void NclProfInit(char *filename);
 void NclProfFinalize(void );
 
@@ -65,18 +63,5 @@ NhlErrorTypes NclGetWTime(float *time);
 #define NCL_PROF_LENTER(filename, line) NclProfLEnter(filename, line)
 #define NCL_PROF_LEXIT(filename, line) NclProfLExit(filename, line)
 #define NCL_PROF_REGISTER_MDATA(type, str) NclProfRegisterMData(type, str)
-
-#else
-
-	#define NCL_PROF_INIT(filename)
-	#define NCL_PROF_FINALIZE()
-	#define NCL_PROF_PFENTER(funcname)
-	#define NCL_PROF_PFEXIT(funcname)
-	#define NCL_PROF_LENTER(filename, line)
-	#define NCL_PROF_LEXIT(filename, line)
-	#define NCL_PROF_REGISTER_MDATA(type, str)
-
-#endif
-
 
 #endif

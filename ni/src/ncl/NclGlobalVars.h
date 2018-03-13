@@ -14,6 +14,7 @@ short   NCLuseAFS = 0;          /* Use advanced file structure */
 short	NCLdebug_on = 0;	/* Use for debug when NCLDEBUG is defined */
 
 short   NCLusesOpenCL = 0;	/* Uses OpenCL (when run with '-c' and build with BuildOpenCL) */
+short   NCLprofiler = 0;    /* enables profiling */
 
 #ifdef NCLDEBUG
 NclMemoryRecord ncl_memory_record;
