@@ -38,7 +38,6 @@
 #endif
 #include "NclGlobalParams.h"
 
-#define PROF_ENV_NAME	"NCARG_PROF"
 #define MAX_FILENAME_LEN 100
 #define MAX_PROFINFO_FNAMES_CHUNK 32
 
@@ -60,7 +59,6 @@ char *get_prof_logname(char *input_filename, char *output_filename, int olen)
 void NclProfInit(char *filename)
 {
 	char prof_logname[MAX_FILENAME_LEN];
-	char *prof_env = NULL;
 #if defined(USE_MPI)
 	int rank=-1, retval = MPI_SUCCESS;
 #endif
@@ -74,19 +72,7 @@ void NclProfInit(char *filename)
 	NclProfInfo.fnamesq = NULL;
 	NclProfInfo.stime = 0.0;
 
-	if(prof_env = getenv(PROF_ENV_NAME)){
-		int prof_sw = 0;
-		prof_sw = atoi(prof_env);
-		if(prof_sw){
-			NclProfInfo.enable_print = 1;
-		}
-		else{
-			NclProfInfo.enable_print = 0;
-		}
-	}
-	else{
-		NclProfInfo.enable_print = NCLprofiler;
-	}
+	NclProfInfo.enable_print = NCLprofiler;
 
 	if(!NclProfInfo.enable_print) return;
 
