@@ -62,7 +62,7 @@ c
       do 190 j=1,ew
       do 190 i=1,ns
          opdepthd=0.d0
-         k=0
+         k=1
 
 c
 c      Integrate downward from model top, calculating path at full
@@ -81,9 +81,9 @@ c
             if (tk(i,j,k).lt.celkel) then
 c             Note: abscoefi is m**2/g, qcw is g/kg,
 c                   so no convrsion needed
-               opdepthd=opdepthu+abscoefi*qcw(j,i,k)*dp/grav
+               opdepthd=opdepthu+abscoefi*qcw(j,i,ripk)*dp/grav
             else
-               opdepthd=opdepthu+abscoef*qcw(j,i,k)*dp/grav
+               opdepthd=opdepthu+abscoef*qcw(j,i,ripk)*dp/grav
             endif
          else
             opdepthd=opdepthd+(abscoef*qcw(j,i,ripk)+
