@@ -19904,3 +19904,313 @@ begin
 
   return( [/ Rlat, Rlon /] )  ; Rlat(location,radii,circle), Rlon(location,radii,circle)
 end
+;====================================================================
+undef("static_energy_atm")
+function static_energy_atm(t:numeric, q:numeric, z:numeric, iounits[2]:integer)
+;
+; Moist Static Energy (MSE):
+;   Thermodynamic variable that describes the state of an air parcel.
+;   Similar to the equivalent potential temperature. 
+;
+; Glossary of Meteorology: MSE:
+;  A thermodynamic variable (analogous to equivalent potential temperature) 
+;  calculated by hypothetically lifting air adiabatically to the top of the 
+;  atmosphere and allowing all water vapor present in the air to condense 
+;  and release latent heat:
+;
+; Dry Static Energy (DSE): [aka: Montgomery Streamfunction]
+;  A thermodynamic variable similar to potential temperature, except that 
+;  the concept of static energy assumes that any kinetic energy is locally 
+;  dissipated into heat.
+;
+; Latent heat:     Lv*q   
+; Sensible heat:   Cp*t
+; Potential energy: g*z
+;
+; Nomenclature:
+;   t - temperature 
+;   q - specific humidity 
+;   z - geopotentianl height (m)
+;
+;  input units:
+;  iounits(0)=0 t==>C    ;  iounits(0)=1 t==>K  ; iounits(0)=2 t==F
+;  iounits(1)=0 q==>kg/kg;  iounits(1)=1 g/kg
+;
+local g, Cp, Lv, Lvw, t0, con, DSE, MSE, LSE
+begin
+  if (.not.all(iounits.ge.0) .and. all(iounits.le.2)) then
+      print("static_energy_atm: illegal units value: units="+iounits)
+      exit
+  end if
+
+  if (.not.(isconform(t,q) .or. isconform(t,z) .or. isconform(q,z))) then 
+      print("static_energy_atm: non-conforming arrays: exit")
+      exit
+  end if
+
+  g    = 9.8             ; m/s^2
+  Cp   = 1005.7          ; J/Kg*K ; specific heat at constant pressure for dry air
+  Lv   = 2.5104e6        ; [J/kg]=[m2/s2]  Latent Heat of Vaporization of at the triple point (273.16K)
+  Lvw  = 2.256e6         ; [J/kg]=[m2/s2]  Latent Heat of Vaporization of Water
+  t0   = 273.15
+                         ; dse = Cp*t + g*z  ; enthalpy + potential energy (m2/s2)
+  if (iounits(0).eq.0) then        ; (C)
+      DSE = Cp*(t+t0) + g*z
+  elseif (iounits(0).eq.1) then    ; (K) 
+      DSE = Cp*t + g*z
+  else                             ; (F)
+      DSE = Cp*(t0 + (t-32)*0.555556) + gz
+  end if
+
+  con  = 1.0                     ; q units = kg/kg   
+  if (iounits(1).eq.1) then      ; q units =  g/kg 
+      con = 0.001                ; g/kg to kg/kg
+  end if
+
+  LSE  = Lv*(q*con) 
+  MSE  = DSE + LSE
+
+  MSE@long_name = "Moist Static Energy"
+  MSE@units     = "J/kg"         ; "m^2/s^2"
+  MSE@info      = "MSE = (Cp*t + g*z)+Lv*q"
+  MSE@short_name= "MSE"
+  MSE@NCL       = "static_energy_atm"
+  copy_VarCoords(t, MSE)
+
+  DSE@long_name = "Dry Static Energy"
+  DSE@units     = "J/kg"         ; "m^2/s^2"
+  DSE@info      = "DSE = (Cp*t + g*z)"
+  DSE@short_name= "DSE"
+  DSE@NCL       = "static_energy_atm"
+  copy_VarCoords(t, DSE)
+
+  LSE@long_name = "Latent Static Energy"
+  LSE@units     = "J/kg"         ; "m^2/s^2"
+  LSE@info      = "LSE = Lv*q"
+  LSE@short_name= "LSE"
+  LSE@NCL       = "static_energy_atm"
+  copy_VarCoords(t, LSE)
+
+  return([/MSE, DSE, LSE/])
+end
+;====================================================================
+undef("mixhum_convert")
+function mixhum_convert(wq:numeric, wqName[1]:string, iounits[2]:integer)
+;
+; mixing-ratio to/from specificc-humidity conversion:
+;
+; input:
+; wq - mixing ratio or specific humidity: 
+;
+; wqName - string specifying if "wq" is mixing ratio or specific humidity  
+;        = "w", "W" : mixing ratio      ==> specific humidity 
+;        = "q", "Q" ; specific humidity ==> mixing ratio 
+;
+; inout:  iounits(0)=0 [kg/kg]; =1 [g/kg] 
+; output: iounits(1)=0 [kg/kg]; =1 [g/kg] 
+;
+local wqLower, con, WQ, hum     
+begin
+  if (.not.all(iounits.ge.0) .and. all(iounits.le.1)) then
+      print("mixhum_convert: illegal units values: iounits="+iounits)
+      exit
+  end if
+
+  wqLower = str_lower(wqName)
+  if (.not.(wqLower.eq."w" .or. wqLower.eq."q"))  then
+      print("mixhum_convert: unregognized input variable name: wqName="+wqName)
+      exit
+  end if
+
+  con  = 1.0                     ; wq units = kg/kg   
+  if (iounits(1).eq.1) then      ; wq units =  g/kg 
+      con = 0.001                
+  end if
+
+; calculations require kg/kg (dimensionless)
+
+  WQ  = wq*con                   ; units conversion;  must be kg/kg
+  if (wqLower.eq."w") then               ; convert mixing ratio to  specific humidity
+      hum = WQ/(1.0+WQ)   
+      hum@long_name = "specific humidity"
+      hum@equation  = "q=w/(1+w)"
+  else                           ; convert specific humidity to mixing ratio
+      hum = WQ/(1.0-WQ)   
+      hum@long_name = "mixing ratio"
+      hum@equation  = "w=q/(1-q)"
+  end if
+  hum@units = "kg/kg"
+
+  if (iounits(1).eq.1) then
+      hum = hum/con
+      hum@units = "g/kg"
+  end if
+  copy_VarCoords(wq, hum)
+
+  hum@NCL       = "mixhum_convert"
+  return(hum)
+end
+;====================================================================
+undef("temp_virtual")
+function temp_virtual(t:numeric, w:numeric, iounits[3]:integer)
+;
+; virtual temperature
+;
+; input:
+; t - temperature:  units: iounits(0)=0 [degC] ; =1 (degK); =2 (degF)
+; w - mixing ratio: units: iounits(1)=0 [kg/kg]; =1 [g/kg] 
+;
+; output
+; tv units: iounits(2)=0 [degC] ; =1 (degK); =2 (degF)   ; output
+;
+local con, t0, tv
+begin
+  if (.not.all(iounits.ge.0) .and. all(iounits.le.2)) then
+      print("temp_virtual: illegal units value: iounits="+iounits)
+      exit
+  end if
+
+  if (.not.(isconform(t,w))) then 
+      print("temp_virtual: non-conforming arrays: exit")
+      exit
+  end if
+
+  con  = 1.0                     ; w units = kg/kg   
+  if (iounits(1).eq.1) then      ; w units =  g/kg 
+      con = 0.001                
+  end if
+  con  = con*0.61
+
+  t0   = 273.15
+  if (iounits(0).eq.0) then      ; (C)
+      tv = (t+t0)*(1+con*w)
+  elseif (iounits(0).eq.1) then  ; (K) 
+      tv = t*(1+con*w)
+  else                           ; (F)
+      tv = (t0 + (t-32)*0.555556)*(1+con*w)
+  end if
+
+  tv@long_name = "virtual temperature"
+  tv@units     = "degK"
+
+  if (iounits(2).eq.0) then
+      tv = tv-t0                   ; K -> C
+      tv@units = "degC"
+  elseif (iounits(2).eq.2) then
+      tv = (tv-t0)*1.8+32          ; K -> F
+      tv@units = "F"
+  end if
+  copy_VarCoords(t, tv)
+
+  tv@equation  = "T*(1+0.61*w)"
+  tv@NCL       = "temp_virtual"
+  return(tv)
+end
+;----------------------
+undef("enthalpy")
+function enthalpy(t:numeric, w:numeric, iounits[3]:integer)
+;
+; Enthalpy - A thermodynamic quantity equivalent to the total heat content of a system. 
+;            It is equal to the internal energy of the system plus the product of 
+;            pressure and volume.
+; Enthalpy - The internal energy plus the energy the system exerts on its surroundings
+;            The enthalpy is a constant pressure function. As such, it includes the 
+;            work term for expansion against the atmosphere.
+; ---
+; https://www.aqua-calc.com/calculate/humidity
+; Enthalpy (h)  h, kJ/kg = T × (1.01 + 0.00189 × W) + 2.5 × W; T==<degC, W==>g/kg
+;
+local conw, wconw, e
+begin
+    if (.not.all(iounits.ge.0) .and. all(iounits.le.2)) then
+        print("enthalpy: illegal units value: units="+iounits)
+        exit
+    end if
+
+    if (.not.(isconform(t,w))) then 
+        print("enthalpy: non-conforming arrays: exit")
+        exit
+    end if
+
+    conw = 1.0                     ; g/kg
+    if (iounits(1).eq.0) then  
+        conw = 1000.0              ; kg/kg => g/kg
+    end if
+    wconw = w*conw                 ; make sure g/kg
+
+    if (iounits(0).eq.0) then      ; t=>degC
+        e  = t*(1.01 + 0.00189 * wconw) + 2.5*wconw
+    elseif (iounits(0).eq.1) then  ; t=>degK
+        e  = (t-273.15)*(1.01 + 0.00189 * wconw) + 2.5*wconw
+    else
+        e  = ((t-32)*0.555556)*(1.01 + 0.00189 * wconw) + 2.5*wconw
+    end if
+
+    e@long_name = "Enthalpy"
+    e@units     = "kJ/kg"
+    if (iounits(2).eq.1) then
+        e = e*1000.0
+        e@units = "J/kg"
+    end if
+    e@equation  = "Enthalpy (h) kJ/kg = T*(1.01 + 0.00189*W) + 2.5*W; T=>degC, W=>g/kg"
+    e@NCL       = "enthalpy"
+    copy_VarCoords(t, e)
+    return(e)
+end
+;------------------------
+undef("zscore")
+function zscore(x:numeric, flag[1]:integer,  ndim[*]:integer)
+;
+; z-score is the number of standard deviations from the mean 
+; a data point is. But more technically it’s a measure of how many standard 
+; deviations below or above the population mean a raw score is. A z-score 
+; is also known as a standard score and it can be placed on a normal 
+; distribution curve. Technically, n order to use a z-score,  the mean 
+; μ and also the population standard deviation σ are needed.
+;
+; Z-scores are a way to compare results from a test to a “normal” population. 
+;
+; Matlab: https://www.mathworks.com/help/stats/zscore.html
+;         This offers a 'flag' to compute Z-scores using the 
+;         sample or population standard deviation. 
+;         flag=0 [use sample standard deviation]
+;         flag=1 [use population standard deviation]
+; Python: 
+; https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.zscore.html
+;         This uses the population standard deviation. No option.
+;
+local nx, xmean, xstd, z, idim, idx, info 
+begin
+   dimx  = dimsizes(x)
+   rankx = dimsizes(dimx)
+
+   xmean = dim_avg_n(x, ndim)
+   xstd  = dim_stddev_n(x, ndim)                 ; sample
+
+   info  = "sample std"
+   if (flag.eq.1) then                           ; adjust sample size
+       info = "population std"
+       nx   = dim_num_n(.not.(ismissing(x)), ndim)
+       nx@_FillValue = default_fillvalue("integer")
+       xstd = xstd*sqrt((nx-1.0)/nx)             ; adjust: sample ==> population
+   end if
+   
+   if (rankx.eq.1) then
+       z = (x-xmean) /xstd                       ; clarity
+   else
+       idim = ispan(0,rankx-1,1)
+       idim@_FillValue = -999
+       if (isscalar(ndim)) then
+           idx = ind(idim.ne.ndim)
+       else
+           idx = get1Dindex_Exclude(idim,ndim)
+       end if
+       z = (x-conform(x,xmean,idx)) /conform(x,xstd,idx)
+   end if
+
+   z@long_name = "Z-Score"
+   z@method    = "Z=(x-xmean)/xstd ; "+info
+   z@NCL       = "zscore"
+   copy_VarCoords(x, z)
+   return( z ) 
+end
