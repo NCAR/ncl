@@ -2298,3 +2298,91 @@ begin
     end if
     return onedtond(bool, dims)
 end
+;***********************************************************************
+; Are 'x' and 'y' array conformant
+; Return logical True if so; return logical False
+;***********************************************************************
+undef("isconform")
+function isconform(x, y)
+;
+; Are variables conformant (size and shape [rank])?
+; USAGE: result = isconform(t, td)  
+;
+local result, dimx, dimy, rankx, ranky, longname_print
+begin
+;
+; scalars are automatically conformable to any array
+; if either argument is a scalar ... return(True)
+; -----
+  result = True    ; default is arrays are conformant 
+
+  if (.not.(isscalar(x) .or. isscalar(y))) then
+      dimx  = dimsizes(x)
+      dimy  = dimsizes(y)
+      rankx = dimsizes(dimx)
+      ranky = dimsizes(dimy)
+      if (rankx.ne.ranky .or. .not.all(dimx.eq.dimy)) then
+          result = False        ; arrays are NOT conformant
+      end if          ; 
+  end if              ;   scalar test 
+
+  return(result)
+end
+;***********************************************************************
+undef("isconform_print")
+function isconform_print(x, y, printInfo[1]:logical)
+;
+; Are variables the same structure (size and shape [rank])?
+; USAGE: 
+;    result = isconform_print(t, td, True ) ; return True/False
+;                                           ; print dimension information
+;    result = isconform_print(t, td, False) ; return True/False
+;                                           ; no print
+;
+local result, dimx, dimy, rankx, ranky
+begin
+;
+; Scalars are automatically conformable to any array
+; so if either argument is a scalar ... return(True)
+;
+  result = isconform(x, y)
+
+  if (.not.result .and. printInfo) then
+      print("")
+      if (isatt(x,"long_name")) then
+          print("isconform_print: var_1: "+x@long_name)
+      else
+          print("isconform_print: var_1: no variable long_name")
+      end if
+
+      if (isatt(y,"long_name")) then
+          print("isconform_print: var_2: "+y@long_name)
+      else
+          print("isconform_print: var_2: no variable long_name")
+      end if
+
+      dimx  = dimsizes(x)
+      dimy  = dimsizes(y)
+      rankx = dimsizes(dimx)
+      ranky = dimsizes(dimy)
+
+      if (rankx.ne.ranky) then
+          print("isconform_print: rank mismatch: rank_var_1 = "+rankx+ \
+                                             " : rank_var_2 = "+ranky)
+          print("                 dim_var_1 = "+dimx )
+          print("")
+          print("                 dim_var_2 = "+dimy )
+          print("")
+
+      elseif (.not.all(dimx.eq.dimy)) then
+
+          print("isconform_print: rank match: rank_var_1 = "+rankx+ \
+                                          " ; rank_var_2 = "+ranky)
+          print("isconform_print: sizes differ: dim_var_1 = "+dimx+\
+                                          " ; dim_var_2 = "+dimy)
+          print("")
+      end if      ; rankx.ne.ranky
+  end if          ; .not.result .and. printInfo  
+
+  return(result)
+end
