@@ -135,7 +135,7 @@ C
 C
 C Declare local file-name variables.
 C
-        CHARACTER*128 FNM1,FNM2
+        CHARACTER*512 FNM1,FNM2
 C
 C Declare arrays from which the data are to be written to the line
 C data file.
