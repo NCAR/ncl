@@ -496,7 +496,7 @@ NGCOMM########################################################################
 #endif	/* LexCommand */
 
 #ifndef	LexLibrary
-#define	LexLibrary	-ll
+#define	LexLibrary	-lfl
 #endif	/* LexLibrary */
 
 #ifndef	YaccCommand
