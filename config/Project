@@ -246,12 +246,12 @@
 #endif	/* PNGlib */
 
 #ifndef CAIROlib
-#define CAIROlib -lcairo -lXrender -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -lbz2 -lpthread
+#define CAIROlib -lcairo -lXrender -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -lbz2
 #endif
 
 /* This should be same as CAIROlib except with no explicit paths */
 #ifndef CAIROlibuser
-#define CAIROlibuser -lcairo -lXrender -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -lbz2 -lpthread
+#define CAIROlibuser -lcairo -lXrender -lfontconfig -lpixman-1 -lfreetype -lexpat -lpng -lz -lbz2
 #endif
 
 #ifdef	BuildHDFEOS
@@ -288,7 +288,7 @@
 
 #ifdef BuildGDAL
 #ifndef	GDALlib
-#define	GDALlib   -lgdal -lproj -ljpeg
+#define	GDALlib   -lgdal -lproj -ljpeg -liconv
 #endif
 #else
 #define GDALlib
@@ -311,7 +311,7 @@
 #endif	/* EEMDlib */
 
 #ifndef	NetCDFlib
-#define	NetCDFlib	-lnetcdf -lcurl -lidn -lssl -lcrypto -llber -lldap -lz
+#define NetCDFlib	-lnetcdf -lcurl -lssl -lcrypto -lldap -lz
 #endif	/* NetCDFlib */
 
 #ifndef	NetCDF4lib
