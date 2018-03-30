@@ -12,7 +12,7 @@
  *                  this file.
  */
 
-#define HdfDefines  -DLINUX64
+#define HdfDefines  -DLINUX
 #define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped
 #define ByteSwapped
 #define Cstatic
