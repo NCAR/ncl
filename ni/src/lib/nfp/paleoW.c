@@ -3,7 +3,7 @@
 
 extern void NGCALLF(paleooutline,PALEOOUTLINE)(double*,float*,double*,double*,
                                                int*,int*,int*,int*,int*,int*,
-                                               char*,float*,int);
+                                               char*,char*,float*,int,int);
 NhlErrorTypes paleo_outline_W( void )
 {
 /*
@@ -19,7 +19,7 @@ NhlErrorTypes paleo_outline_W( void )
  * Other variables
  */
   float *zdat;
-  char *cname;
+  char *cname, *flines, *fnames;
   int *iwrk, inlon, inlat, iliwk, iim, ijm;
   ng_size_t liwk, nlat, nlon, jm, im;
 /*
@@ -77,6 +77,20 @@ NhlErrorTypes paleo_outline_W( void )
 
   cname = NrmQuarkToString(*name);
 
+/* 
+ * Allocate space for xxx.lines and xxx.names files that will be
+ * created by the Fortran routine.
+ */
+  flines = (char *)calloc(strlen(cname)+7,sizeof(char));
+  fnames = (char *)calloc(strlen(cname)+7,sizeof(char));
+  if(flines == NULL || fnames == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"paleo_outline: Unable to allocate memory for required '.lines' and '.names' files");
+    return(NhlFATAL);
+  }
+  flines = strncpy(flines,cname,strlen(cname));
+  fnames = strncpy(fnames,cname,strlen(cname));
+  flines = strcat(flines,".lines\0");
+  fnames = strcat(fnames,".names\0");
   nlat = dsizes_oro[0];
   nlon = dsizes_oro[1];
   if(dsizes_lat[0] != nlat || dsizes_lon[0] != nlon) {
@@ -130,7 +144,8 @@ NhlErrorTypes paleo_outline_W( void )
  */
   NGCALLF(paleooutline,PALEOOUTLINE)(tmp_oro,zdat,tmp_lat,tmp_lon,
                                      &inlat,&inlon,&ijm,&iim,iwrk,&iliwk,
-                                     cname,landmask,strlen(cname));
+                                     flines,fnames,landmask,
+                                     strlen(flines),strlen(fnames));
 
   if(type_oro != NCL_double) NclFree(tmp_oro);
   if(type_lat != NCL_double) NclFree(tmp_lat);
@@ -138,6 +153,8 @@ NhlErrorTypes paleo_outline_W( void )
 
   NclFree(zdat);
   NclFree(iwrk);
+  NclFree(flines);
+  NclFree(fnames);
 
   return(NhlNOERROR);
 }

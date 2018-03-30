@@ -1,13 +1,13 @@
 c nclfortstart
       SUBROUTINE PALEOOUTLINE (MASK,ZDAT,LAT,LON,NLAT,NLON,JM,IM,
-     +                         IWRK,LIWK,NAME,MSKVAL)
+     +                         IWRK,LIWK,FLINES,FNAMES,MSKVAL)
 C
         INTEGER NLAT,NLON
         INTEGER IM,JM,LIWK
         REAL LAT1,LATN,LON1,LONN
         DOUBLE PRECISION MASK(NLON,NLAT),LAT(NLAT),LON(NLON)
         REAL ZDAT(IM,JM),MSKVAL
-        CHARACTER*(*) NAME
+        CHARACTER*(*) FLINES, FNAMES
         INTEGER IWRK(LIWK)
 c nclend
         INTEGER I,J
@@ -45,9 +45,15 @@ C
 C   LIWK is the size of IWRK; its size depends on both the size and
 C   the complexity of the array MASK.
 C
-C   NAME is of type CHARACTER and is the base name of the files to be
-C   created.
-C
+C   FLINES and FNAMES are of type CHARACTER and are the names of the
+C   files to be created. This code used to just have FLNM, which was
+C   the base name used to form FLINES and FNAMES. This was causing
+C   problems if the basename was really long, because FLINES and FNAMES
+C   were originally hard-coded to only allow 128 characters. The C
+C   wrapper that calls this function now allocates the space for
+C   these two strings and sets them, so this code doesn't need to
+C   do that any more.
+C   
 C   MSKVAL is the value that, when used in the array MASK, represents
 C   land.
 C
@@ -93,7 +99,7 @@ C
 C Call SVBLED to finish the job.
 C
         CALL SVBLED (ZDAT,IM,JM,IWRK,LIWK,MSKVAL,ILFT,LON1,IRGT,LONN,
-     +               IBOT,LAT1,ITOP,LATN,'Land','Water',NAME)
+     +               IBOT,LAT1,ITOP,LATN,'Land','Water',FLINES,FNAMES)
 C
 C Done.
 C
@@ -103,7 +109,8 @@ C
 
 
       SUBROUTINE SVBLED (ZDAT,IDIM,JDIM,IWRK,LIWK,SVAL,ILFT,XLFT,
-     +                   IRGT,XRGT,JBOT,YBOT,JTOP,YTOP,NAML,NAMR,FLNM)
+     +                   IRGT,XRGT,JBOT,YBOT,JTOP,YTOP,NAML,NAMR,
+     +                   FLINES,FNAMES)
 C
 C This routine is adapted from the CONPACK routine CPTRES, which traces
 C the edge of the special-value area in a contour field.  (The mnemonic
@@ -120,22 +127,18 @@ C associated with a first subscript of IRGT.  YBOT is the latitude
 C associated with a second subscript of JBOT and YTOP the latitude
 C associated with a second subscript of JTOP.  NAML and NAMR are the
 C names of the areas to the left and right, respectively, of the
-C boundary lines.  FLNM is the base name of the two files to which the
-C EZMAP data are to be written.
+C boundary lines.  FLINES and FNAMES are the names of the two files to
+C which the EZMAP data are to be written.
 C
 C Declare argument dimensions and sizes.
 C
         DIMENSION ZDAT(IDIM,JDIM),IWRK(LIWK)
 C
-        CHARACTER*(*) NAML,NAMR,FLNM
+        CHARACTER*(*) NAML,NAMR,FLINES,FNAMES
 C
 C Declare local variables used in the tracing algorithm.
 C
         DIMENSION INCX(8),JNCY(8)
-C
-C Declare local file-name variables.
-C
-        CHARACTER*512 FNM1,FNM2
 C
 C Declare arrays from which the data are to be written to the line
 C data file.
@@ -152,17 +155,9 @@ C
         DATA INCX / -1 , -1 ,  0 ,  1 ,  1 ,  1 ,  0 , -1 /
         DATA JNCY /  0 ,  1 ,  1 ,  1 ,  0 , -1 , -1 , -1 /
 C
-C Form the names of the two files to be written - the line data file
-C and the name data file.
-C
-        LFNM=IOLNBC(FLNM)
-C
-        FNM1=FLNM(1:LFNM)//'.lines'//CHAR(0)
-        FNM2=FLNM(1:LFNM)//'.names'//CHAR(0)
-C
 C Open the file to which the line data will be written.
 C
-        CALL NGOFWO (FNM1(1:LFNM+7),IFDE,ISTA)
+        CALL NGOFWO (FLINES,IFDE,ISTA)
 C
         IF (ISTA.NE.0) THEN
           PRINT * , 'SVBLED - FAILED TO OPEN LINE DATA FILE'
@@ -360,7 +355,8 @@ C
 C
 C Open the name data file, write the required items to it, and close it.
 C
-        CALL NGOFWO (FNM2(1:LFNM+7),IFDE,ISTA)
+C        CALL NGOFWO (FNAMES(1:LFNM+7),IFDE,ISTA)
+        CALL NGOFWO (FNAMES,IFDE,ISTA)
 C
         IF (ISTA.NE.0) THEN
           PRINT * , 'SVBLED - FAILED TO OPEN NAME DATA FILE'
