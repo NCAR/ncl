@@ -3743,7 +3743,7 @@ begin
 ; Create a canvas to draw on.
 ;
     canvas = create "ndc_canvas" logLinPlotClass wks
-      "tfDoNDCOverlay" : True
+      "tfDoNDCOverlay" : "NDCViewport"
       "trXMinF"        : vpx
       "trXMaxF"        : vpx+vpw
       "trYMaxF"        : vpy

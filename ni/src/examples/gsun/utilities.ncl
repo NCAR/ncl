@@ -155,6 +155,9 @@ begin
              (/"TriangleLowEnd","1"/),\
              (/"TriangleHighEnd","2"/),\
              (/"TriangleBothEnds","3"/),\
+             (/"DataTransform","0"/),\
+             (/"NDCViewport","1"/),\
+             (/"NDCDataExtent","2"/),\
              (/"Automatic","0"/),\
              (/"Manual","1"/),\
              (/"Explicit","2"/),\
@@ -301,18 +304,25 @@ end
 ; if a resource is set, and if so, it can check both its predefined     ;
 ; string value and its enumerated value. For example, "lbOrientation"   ;
 ; can be set to "horizontal" or "vertical", or the equivalent integer   ;
-; values, 0 or 1.                                                       ;
+; values, 0 or 1, or the equivalent logical values, False / True.       ;
+;                                                                       ;
+; The True/False check was added in NCL V6.5.0.                         ;
 ;***********************************************************************;
 undef("check_attr_enum_value")
 function check_attr_enum_value(res:logical,att_name[1]:string,att_str_value:string)
 local att_num_value
 begin
-  if(.not.isatt(res,att_name).or.typeof(res@$att_name$).ne."string".and.\
-                                 typeof(res@$att_name$).ne."integer") then
+  if(.not.isatt(res,att_name).or.(typeof(res@$att_name$).ne."string".and.\
+                                  typeof(res@$att_name$).ne."integer".and.\
+                                  typeof(res@$att_name$).ne."logical")) then
     return(False)
   end if
   if(typeof(res@$att_name$).eq."string") then
     return(check_attr(res,att_name,att_str_value,True))
+  elseif(typeof(res@$att_name$).eq."logical") then
+    att_num_value = get_enum_value(att_str_value)
+    return((     res@$att_name$.and.att_num_value.eq.1).or.\
+           (.not.res@$att_name$.and.att_num_value.eq.0))
   else
     att_num_value = get_enum_value(att_str_value)
     if(any(ismissing(att_num_value))) then

@@ -275,7 +275,7 @@ begin
           any(vardims(0).eq.(/"south_north","south_north_stag"/)).and.\
           any(vardims(1).eq.(/"west_east","west_east_stag"/))) then
     res = wrf_map_resources(f,res) 
-    res@tfDoNDCOverlay = get_res_value(res,"tfDoNDCOverlay",True)
+    res@tfDoNDCOverlay = get_res_value(res,"tfDoNDCOverlay","NDCViewport")
     res@gsnAddCyclic   = False    ; For now, make this False always
     delete([/res@start_lat,res@start_lon,res@end_lat,res@end_lon,res@mpNestTime/])
     plot = gsn_csm_contour_map(wks,data,res)

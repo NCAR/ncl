@@ -1577,6 +1577,24 @@ begin
            "deg east"/))
 end
 
+;----------------------------------------------------------------------
+; This function checks if tfDoNDCOverlay is explicitly set to True or 
+; NDCDataExtent / NDCViewport, which means no data transformation is
+; to take place when overlaying data on a plot.
+;
+; If tfDoNDCOverlay is not set or it is set to False or DataTransform,
+; then this function returns False.
+;----------------------------------------------------------------------
+undef("check_for_ndc_overlay")
+function check_for_ndc_overlay(res)
+begin
+  if(check_attr_enum_value(res,"tfDoNDCOverlay","NDCViewport").or.\
+     check_attr_enum_value(res,"tfDoNDCOverlay","NDCDataExtent")) then
+    return(True)
+  end if
+  return(False)
+end
+
 ;***********************************************************************;
 ; Function : is_valid_latlon_coord                                      ;
 ;                                                                       ;
@@ -1597,14 +1615,7 @@ undef("is_valid_latlon_coord")
 function is_valid_latlon_coord(data:numeric,axis:string,latorlon:string,\
                                res:logical)
 begin
-;
-; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
-; used in the first place, and hence the units don't need to be correct.
-; It is up to the user to do the right thing and *not* set coordinate
-; arrays.  Here, we check for the setting of this resource to True,
-; and if so, then the units attribute isn't even checked.
-;
-  if(get_res_value_keep(res,"tfDoNDCOverlay",False)) then
+  if(check_for_ndc_overlay(res)) then
     return(False)
   end if
 
@@ -1789,17 +1800,10 @@ procedure check_for_y_lat_coord(data:numeric,res:logical,type:string)
 local latname, char_latname, array_name, start_name, end_name, \
 valid_2dcoord_types, prefix
 begin 
-;
-;
-; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
-; used in the first place.  It is up to the user to do the right thing
-; and *not* set coordinate arrays.  Here, we check for the setting
-; of this resource to True, and if so, then no warning messages are 
-; printed out if no coordinate arrays are set.
-;
-  if(get_res_value_keep(res,"tfDoNDCOverlay",False)) then
+  if(check_for_ndc_overlay(res)) then
     return(False)
   end if
+
 ;
 ; Determine what kind of plot we need to set the data field resources for.
 ; 
@@ -1863,14 +1867,7 @@ procedure check_for_x_lat_coord(data:numeric,res:logical,type:string)
 local latname, char_latname, array_name, start_name, end_name, \
 valid_2dcoord_types, prefx
 begin 
-;
-; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
-; used in the first place.  It is up to the user to do the right thing
-; and *not* set coordinate arrays.  Here, we check for the setting
-; of this resource to True, and if so, then no warning messages are 
-; printed out if no coordinate arrays are set.
-;
-  if(get_res_value_keep(res,"tfDoNDCOverlay",False)) then
+  if(check_for_ndc_overlay(res)) then
     return(False)
   end if
 ;
@@ -1937,17 +1934,9 @@ procedure check_for_lon_coord(data:numeric,res:logical,type:string)
 local lonname, char_lonname, array_name, start_name, end_name, \
 valid_2dcoord_types
 begin 
-;
-; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
-; used in the first place.  It is up to the user to do the right thing
-; and *not* set coordinate arrays.  Here, we check for the setting
-; of this resource to True, and if so, then no warning messages are 
-; printed out if no coordinate arrays are set.
-;
-  if(get_res_value_keep(res,"tfDoNDCOverlay",False)) then
+  if(check_for_ndc_overlay(res)) then
     return(False)
   end if
-
 ;
 ; Determine what kind of plot we need to set the data field resources for.
 ; 
@@ -3593,9 +3582,10 @@ end
 ; This function determines an appropriate default value for the special ;
 ; gsnAddCyclic resource, based on the data input and options.           ;
 ;                                                                       ;
-; If res@gsnAddCyclic=True, then True is returned regardless of anything;
-; else. If tfDoNDCOverlay is set to True, or if the calling function is ;
-; not one of the gsn_csm_xxx_map functions, then False is returned.     ;
+; If res@gsnAddCyclic=True, then True is returned regardless of         ;
+; anything else. If tfDoNDCOverlay is set to an NDC overlay, or if the  ;
+; calling function is not one of the gsn_csm_xxx_map functions, then    ;
+;  False is returned.                                                   ;
 ;                                                                       ;
 ; Otherwise, this function checks the given list of data variables to   ;
 ; see if they all have the *potential* for having a longitude cyclic    ;
@@ -3618,8 +3608,8 @@ begin
     end if
   end if
 
-;---If tfDoNDCOverlay is set to True, then gsnAddCyclic shouldn't be True.
-  if(get_res_value_keep(res,"tfDoNDCOverlay",False).or.ftype.ne."map") then
+;---If tfDoNDCOverlay is set to an NDC overlay, then gsnAddCyclic shouldn't be True.
+  if(check_for_ndc_overlay(res).or.ftype.ne."map") then
     return(False)
   end if
   

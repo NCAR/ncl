@@ -4239,7 +4239,7 @@ function wrf_map_overlays(in_file[1]:file, \
 ;
 ; If LatLonOverlay is set to True, then this means the user is
 ; using the 2D lat/lon coordinates to do the overlay, and hence
-; tfDoNDCOverlay should not be set to True. (The default is False.)
+; tfDoNDCOverlay should not be set to NDCViewport (True) (default is False).
 ;
 begin
 
@@ -4302,7 +4302,7 @@ begin
       end if
       if(.not.latlon_overlay) then
         setvalues plots(i)
-          "tfDoNDCOverlay" : True
+          "tfDoNDCOverlay" : "NDCViewport"
           "tiMainOn"       : False
         end setvalues
       else
@@ -4411,7 +4411,7 @@ function wrf_overlays(in_file[1]:file, \
 ;
 ; If LatLonOverlay is set to True, then this means the user is
 ; using the 2D lat/lon coordinates to do the overlay, and hence
-; tfDoNDCOverlay should not be set to True. (The default is False.)
+; tfDoNDCOverlay should not be set to NDCViewport (True) (default is False).
 ;
 begin
   opts = opt_arg      ; Make a copy of the resource list.
@@ -4439,7 +4439,7 @@ begin
     SubTitles = SubTitle
     if(.not.latlon_overlay) then
       setvalues plots(0)
-        "tfDoNDCOverlay" : True
+        "tfDoNDCOverlay" : "NDCViewport"
         "tiMainOn"       : False
       end setvalues
     else
@@ -4450,7 +4450,7 @@ begin
   else
     if(.not.latlon_overlay) then
       setvalues plots(0)
-        "tfDoNDCOverlay" : True
+        "tfDoNDCOverlay" : "NDCViewport"
       end setvalues
     end if
   end if
@@ -4482,7 +4482,7 @@ begin
       end if
       if(.not.latlon_overlay) then
         setvalues plots(i)
-          "tfDoNDCOverlay" : True
+          "tfDoNDCOverlay" : "NDCViewport"
           "tiMainOn"       : False
         end setvalues
       else
@@ -4659,7 +4659,7 @@ begin
         end if
         if(.not.latlon_overlay) then
     	  setvalues plots(i)
-            "tfDoNDCOverlay" : True
+            "tfDoNDCOverlay" : "NDCViewport"
             "tiMainOn"       : False
           end setvalues
         else
@@ -4670,7 +4670,7 @@ begin
       else
         if(.not.latlon_overlay) then
   	  setvalues plots(i)
-            "tfDoNDCOverlay" : True
+            "tfDoNDCOverlay" : "NDCViewport"
           end setvalues
         end if
       end if
@@ -4771,7 +4771,7 @@ procedure wrf_overlay(wks:graphic, plots[*]:graphic, \
 ;
 ; If LatLonOverlay is set to True, then this means the user is
 ; using the 2D lat/lon coordinates to do the overlay, and hence
-; tfDoNDCOverlay should not be set to True. (The default is False.)
+; tfDoNDCOverlay should not be set to NDCViewport/True (default is False).
 ;
 begin
   print("wrf_overlay: Warning: This procedure is obsolete. Consider using")
@@ -4799,7 +4799,7 @@ begin
     SubTitles = SubTitle
     if(.not.latlon_overlay) then
       setvalues plots(0)
-        "tfDoNDCOverlay" : True
+        "tfDoNDCOverlay" : "NDCViewport"
         "tiMainOn"       : False
       end setvalues
     else
@@ -4809,7 +4809,7 @@ begin
     end if
   else
     setvalues plots(0)
-      "tfDoNDCOverlay" : True
+      "tfDoNDCOverlay" : "NDCViewport"
     end setvalues
   end if
 
@@ -4829,7 +4829,7 @@ begin
         SubTitles = SubTitles + "~C~" + SubTitle
         if(.not.latlon_overlay) then
           setvalues plots(i)
-            "tfDoNDCOverlay" : True
+            "tfDoNDCOverlay" : "NDCViewport"
             "tiMainOn"       : False
           end setvalues
         else
@@ -4840,7 +4840,7 @@ begin
       else
         if(.not.latlon_overlay) then
           setvalues plots(i)
-            "tfDoNDCOverlay" : True
+            "tfDoNDCOverlay" : "NDCViewport"
           end setvalues
         end if
       end if

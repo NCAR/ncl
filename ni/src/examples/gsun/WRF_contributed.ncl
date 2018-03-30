@@ -245,7 +245,7 @@ begin
   res@mpOutlineBoundarySets = "GeophysicalAndUSStates" ; state boundaries
   res@mpPerimDrawOrder      = "PostDraw"       ; force map perim
                                                ; commented 5/17/2007 
-;;res@tfDoNDCOverlay        = True             ; True for 'native' grid
+;;res@tfDoNDCOverlay        = "NDCViewport"    ; necessary for 'native' grid
                                                ; some WRF are not native
   res@gsnAddCyclic          = False            ; data are not cyclic
 end 
