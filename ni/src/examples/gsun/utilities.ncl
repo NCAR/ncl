@@ -2358,3 +2358,52 @@ begin
    return (ii)
 end
 
+;***********************************************************************;
+; Unpacks a bit-field from an integer-typed "host" variable.            ; 
+; Behaves similarly to dim_gbits(), and is implemented in terms of      ;
+; dim_gbits(), with a couple of differences. First, the use-case is     ;
+; inspired by satellite formats that pack multiple bit fields into a    ;
+; variable. These formats tend to denote the bits right-to-left, or     ;
+; least-significant to most-significant. This function uses that        ;
+; convention, unlike dim_gbits, which numbers left-to-right. And        ;
+; because bit-fields are uniformily aligned with the hosting type (ie.  ;
+; always the same position and length within the type), the arguments   ;
+; for this function are simpler than dim_gbits(): a starting bit and a  ;
+; length. dim_gbits() is more general in that it would allow for bit-   ;
+; fields that crossed host-type boundaries and/or where not modulo the  ;
+; host-type size. Finally, this function extracts the bit-field across  ;
+; all dimensions of the input variable                                  ;
+;***********************************************************************;
+undef("get_bitfield")
+function get_bitfield(data:numeric, startBit:integer, numBits:integer)
+local ibit, dataType, dataTypeSize, offset, dataDims
+begin
+
+    function zero()
+    local zeros
+    begin 
+        zeros = new(dimsizes(data), typeof(data))
+        zeros = totype(0, typeof(data))
+	return zeros
+    end	
+    
+    dataType = new((/1/), typeof(data))
+    dataTypeSize = sizeof(dataType) * 8              ; size in bits
+    
+    if (startBit.gt.dataTypeSize) then
+        print("get_bitfield: start-bit exceeds size of the datatype: " + startBit + " vs. " + dataTypeSize)
+        print("get_bitfield: returning zeros")
+        return zero()
+    end if 
+
+    if (startBit-numBits+1.lt.0) then
+        print("get_bitfield: startBit+numBits spills past right-hand-size of the datatype")
+        print("get_bitfield: returning zeros")
+        return zero()
+    end if 
+
+    offset = dataTypeSize - startBit - 1
+    dataDims = dimsizes(data)
+    return onedtond(dim_gbits(ndtooned(data), offset, numBits, dataTypeSize - numBits, dim_product(dataDims)), dataDims)
+end
+
