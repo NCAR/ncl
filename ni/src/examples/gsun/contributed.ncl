@@ -20214,3 +20214,377 @@ begin
    copy_VarCoords(x, z)
    return( z ) 
 end
+;====================================================================
+;   Bolton, David, 1980: 
+;   The computation of equivalent potential temperature 
+;   Monthly Weather Review, vol. 108, no. 7 (july),  p. 1047
+;   http://dx.doi.org/10.1175/1520-0493(1980)108<1046:TCOEPT>2.0.CO;2 
+;====================================================================
+undef("tlcl_td_bolton")
+function tlcl_td_bolton(t:numeric, td:numeric, iounits[2]:integer)
+;
+; temperature at the lifting condensation level: Bolton (1980): Eq 15
+;
+local tlcl, a, b, t0, tk, tkd, dimt, dimtd, rankt, ranktd
+begin
+
+; input error checks
+
+  if (.not.all(iounits.ge.0) .and. all(iounits.le.2)) then
+      print("tlcl_td_bolton: illegal iounits value: iounits="+iounits)
+      exit
+  end if
+
+  if (.not.(isscalar(t) .or. isscalar(td))) then
+      dimt   = dimsizes(t)
+      dimtd  = dimsizes(td)
+      rankt  = dimsizes(dimt)
+      ranktd = dimsizes(dimtd)
+      if (rankt.ne.ranktd) then
+          print("tlcl_td_bolton: rank mismatch: rankt="+rankt+" ; ranktd="+ranktd)
+          print("tlcl_td_bolton: dimt ="+dimt )
+          print("tlcl_td_bolton: dimtd="+dimtd)
+          exit
+      elseif (.not.all(dimt.eq.dimtd)) then
+          print("tlcl_td_bolton: dimension size mismatch: dimt="+dimt+" ; dimtd="+dimtd)
+          exit
+      end if
+  end if
+
+; calculations
+
+  t0   = 273.15
+  if (iounits(0).eq.0) then              ; (C)
+      a    = 1.0/((td+t0)-56.0)
+      b    = log((t+t0)/(td+t0))/800.0
+  elseif (iounits(0).eq.1) then          ; (K)  t & td 
+      a    = 1.0/(td-56.0)
+      b    = log(t/td)/800.0
+  else                                 ; (F)
+      tk   = t0 + (t -32)*0.5555556
+      tkd  = t0 + (td-32)*0.5555556
+      a    = 1.0/(tk-56.0)
+      b    = log(tk/tkd)/800.0
+  end if
+
+  tlcl = (1.0/(a+b)) + 56.0            ; K
+  tlcl@long_name = "temperature: LCL" 
+
+  if (iounits(1).eq.0) then
+      tlcl = tlcl-t0                   ; K -> C
+      tlcl@units = "degC"
+  elseif (iounits(1).eq.1) then
+      tlcl@units     = "degK"
+  else                        
+      tlcl = (tlcl-t0)*1.8+32          ; K -> F
+      tlcl@units = "F"
+  end if
+
+  tlcl@source    = "Bolton (1980): Eq. 15: Dew Point Temperature"
+  tlcl@NCL       = "tlcl_td_bolton"
+  copy_VarCoords(t, tlcl)
+
+  return(tlcl)
+end
+;-----------------------------------------------------------------
+undef("tlcl_rh_bolton")
+function tlcl_rh_bolton(t:numeric, rh:numeric, iounits[2]:integer)
+; rh - %
+local tlcl, t0, tk, a, b, dimt, dimrh, rankt, rankrh
+begin
+
+; input error checks
+
+  if (.not.all(iounits.ge.0) .and. all(iounits.le.2)) then
+      print("tlcl_rh_bolton: illegal iounits value: iounits="+iounits)
+      exit
+  end if
+
+  if (.not.(isscalar(t) .or. isscalar(rh))) then
+      dimt   = dimsizes(t)
+      dimrh  = dimsizes(rh)
+      rankt  = dimsizes(dimt)
+      rankrh = dimsizes(dimrh)
+      if (rankt.ne.rankrh) then
+          print("tlcl_rh_bolton: rank mismatch: rankt="+rankt+" ; rankrh="+rankrh)
+          print("tlcl_rh_bolton: dimt ="+dimt )
+          print("tlcl_rh_bolton: dimrh="+dimrh)
+          exit
+      elseif (.not.all(dimt.eq.dimrh)) then
+          print("tlcl_rh_bolton: dimension size mismatch: dimt="+dimt+" ; dimrh="+dimrh)
+          exit
+      end if
+  end if
+
+  t0   = 273.15
+  if (iounits(0).eq.0) then          ; (C)
+      a  = 1.0/((t+t0)-55.0)
+  elseif (iounits(0).eq.1) then      ; (K)
+      a  = 1.0/(t-55.0)
+  else
+      tk = t0 + (t -32)*0.5555556
+      a  = 1.0/(tk-55.0)
+  end if
+  b    = log(rh/100.0)/2840.0
+
+  tlcl = 1.0/(a-b) + 55.0
+  tlcl@long_name = "temperature: LCL" 
+
+  if (iounits(1).eq.0) then
+      tlcl = tlcl-t0                   ; K -> C
+      tlcl@units = "degC"
+  elseif (iounits(1).eq.1) then
+      tlcl@units     = "degK"
+  else
+      tlcl = (tlcl-t0)*1.8+32          ; K -> F
+      tlcl@units = "F"
+  end if
+
+  tlcl@source = "Bolton (1980): Eq. 22: Relative Humidity"
+  tlcl@NCL    = "tlcl_rh_bolton"
+
+  copy_VarCoords(t, tlcl)
+  return(tlcl)
+end
+;---
+undef("tlcl_mixr_bolton")
+function tlcl_mixr_bolton(t:numeric, mixr:numeric, p:numeric, iounits[4]:integer)
+;
+; temperature at the lifting condensation level: Bolton (1980): Eq 16 & 21
+;
+local tlcl, t0, pcon, rmix, evp, dimt, dimmixr, dimp, rankt, rankmixr, rankp
+begin
+
+; input error checks
+
+  if (.not.all(iounits.ge.0) .and. all(iounits.le.2)) then
+      print("tlcl_mixr_bolton: illegal iounits value: iounits="+iounits)
+      exit
+  end if
+
+  if (.not.(isconform(t,mixr) .and. isconform(p,mixr) .and.  isconform(p,t))) then
+      print("tlcl_mixr_bolton: one or more input array do not conform")
+      exit
+  end if
+
+  pcon = 1.0                            ; hPa
+  if (iounits(2).eq.1) then
+      pcon = 0.01                       ; Pa ==> hPa
+  elseif (iounits(2).eq.2) then
+      pcon = 10.0                       ; kPa ==> hPa
+  end if
+                                        ; Bolton (2000); Eq 16
+  if (iounits(1).eq.0) then
+      rmix = mixr*1000.0                ; kg/kg ==> g/kg
+      evp  = (p*pcon)*rmix/(622+rmix)   
+  else
+      evp  = (p*pcon)*mixr/(622+mixr)   
+  end if
+ ;evp@long_name = "water vapor pressure"
+ ;evp@units     = "hPa"
+                                        ; Bolton (2000); Eq 21
+  t0   = 273.15
+  if (iounits(0).eq.0) then          ; (C)
+      tlcl = 2840.0/(3.5*log((t+t0))-log(evp)-4.805) + 55.0
+  elseif (iounits(0).eq.1) then      ; (K)  t & td 
+      tlcl = 2840.0/(3.5*log(t)-log(evp)-4.805) + 55.0
+  else
+      tlcl = 2840.0/(3.5*log(t0+(t-32)*0.5555556)-log(evp)-4.805) + 55.0
+  end if
+  tlcl@long_name = "temperature: LCL" 
+  tlcl@units     = "degK"
+
+  if (iounits(3).eq.0) then
+      tlcl = tlcl-t0                   ; K -> C
+      tlcl@units = "degC"
+  elseif (iounits(3).eq.2) then
+      tlcl = (tlcl-t0)*1.8+32          ; K -> F
+      tlcl@units = "F"
+  end if
+
+  tlcl@source = "Bolton (1980): Eq. 16 & 21: mixr & Water Vapor Pressure"
+  tlcl@NCL    = "tlcl_mixr_bolton"
+  return(tlcl)
+end
+;---
+undef("tlcl_evp_bolton")
+function tlcl_evp_bolton(t:numeric, evp:numeric, iounits[3]:integer)
+local tlcl, t0, tk, pcon, dimt, dime, rankt, ranke
+begin
+;
+; error check
+;
+  if (.not.all(iounits.ge.0) .and. all(iounits.le.2)) then
+      print("tlcl_evp_bolton: illegal iounits value: iounits="+iounits)
+      exit
+  end if
+
+  if (.not.(isscalar(t) .or. isscalar(td))) then
+      dimt   = dimsizes(t)
+      dime   = dimsizes(evp)
+      rankt  = dimsizes(dimt)
+      ranke  = dimsizes(dime)
+      if (rankt.ne.ranke) then
+          print("tlcl_evp_bolton: rank mismatch: rankt="+rankt+" ; ranktd="+ranke)
+          print("tlcl_evp_bolton: dimt="+dimt )
+          print("tlcl_evp_bolton: dime="+dime)
+          exit
+      elseif (.not.all(dimt.eq.dime)) then
+          print("tlcl_evp_bolton: dimension size mismatch: dimt="+dimt+" ; dimtd="+dime)
+          exit
+      end if
+  end if
+
+  pcon = 1.0                            ; hPa
+  if (iounits(1).eq.1) then
+      pcon = 0.01                       ;  Pa ==> hPa
+  elseif (iounits(1).eq.2) then
+      pcon = 10.0                       ; kPa ==> hPa
+  end if
+
+  t0   = 273.15
+  if (iounits(0).eq.0) then             ; (C)
+      tlcl = 2840.0/(3.5*log((t+t0))-log(evp*pcon)-4.805) + 55.0
+  elseif (iounits(0).eq.1) then         ; (K)  t & td 
+      tlcl = 2840.0/(3.5*log(t)-log(evp*pcon)-4.805) + 55.0
+  else
+      tk   = t0 + (t -32)*0.5555556
+      tlcl = 2840.0/(3.5*log(tk)-log(evp*pcon)-4.805) + 55.0
+  end if
+  tlcl@long_name = "temperature: LCL" 
+
+  if (iounits(2).eq.0) then
+      tlcl = tlcl-t0                    ; K -> C
+      tlcl@units = "degC"
+  elseif (iounits(2).eq.1) then
+      tlcl@units     = "degK"
+  else
+      tlcl = (tlcl-t0)*1.8+32           ; K -> F
+      tlcl@units = "F"
+  end if
+
+  tlcl@source = "Bolton (1980): Eq. 21: Water Vapor Pressure"
+  tlcl@NCL    = "tlcl_evp_bolton"
+  return(tlcl)
+end
+;---
+undef("pot_temp_equiv_tlcl")
+function pot_temp_equiv_tlcl( p:numeric, t:numeric, tlcl:numeric, mixr:numeric, iounits[4]:integer)
+local te, t0, tk, tklcl, pcon, xcon, rmix, evp, td, tdl
+begin
+
+  if (.not.all(iounits.ge.0) .and. all(iounits.le.2)) then
+      print("pot_temp_equiv_tlcl: illegal iounits value: iounits="+iounits)
+      exit
+  end if
+
+  pcon = 1.0                            ; hPa
+  if (iounits(0).eq.1) then
+      pcon = 0.01                       ; Pa ==> hPa
+  elseif (iounits(0).eq.2) then
+      pcon = 10.0                       ; kPa ==> hPa
+  end if
+
+  t0   = 273.15
+  if (iounits(1).eq.0) then             ; (C)
+      tk = t + t0                       ; C ==> K
+      tklcl = tlcl + t0                 ;    "
+  elseif (iounits(1).eq.1) then         ; (K)  t & td 
+      tk = t
+      tklcl = tlcl 
+  elseif (iounits(1).eq.2) then         ; (F)
+      tk    = t0 + (t -32)*0.5555556    ; F ==> K
+      tklcl = t0 + (tlcl -32)*0.5555556 ;    "
+  end if
+                                        ; Bolton (2000); Eq 16
+  xcon = 1000.                          ; water vapor pressure
+  if (iounits(2).eq.1) then
+      rmix = mixr*xcon                  ; kg/kg ==> g/kg 
+  else
+      rmix = mixr
+  end if                                ;evp@units = "hPa"
+  evp  = (p*pcon)*rmix/(622+rmix)   
+
+  td  = tk*(1000.0/(p*pcon-evp))^0.2854      ; eqn 23
+  tdl = td*(tk/tklcl)^(0.28*rmix*1e-3)  ; eqn 24
+  te  = tdl*exp((3.036/tklcl -0.00178)*rmix*(1+0.448*(rmix*1e-3)))
+
+  te@long_name = "theta_e: Eqn 39"
+  te@units     = "degK"
+  te@source    = "Bolton (1980): https://doi.org/10.1175/1520-0493(1980)108<1046:TCOEPT>2.0.CO;2"
+  te@NCL       = "pot_temp_equiv_tlcl"
+
+  if (iounits(3).eq.0) then
+      te       = te-t0
+      te@units = "degC"
+  elseif (iounits(3).eq.2) then
+      te       = (te-t0) + 32
+      te@units = "degF"
+  end if
+
+  copy_VarCoords(t, te)
+  return(te)
+end
+;---
+undef("pot_temp_equiv_wspa")
+function pot_temp_equiv_wspa(p:numeric, t:numeric, tlcl:numeric, mixr:numeric, iounits[4]:integer)
+;
+; Bolton states that eqn 43 :is recommended for the computation of equivalent 
+; potential temperature for a Water-Saturation Psuedo-Adiabatic (_wspa) process.
+;
+local te, t0, tk, tklcl, pcon, rmix, evp, td, tdl
+begin
+
+  if (.not.all(iounits.ge.0) .and. all(iounits.le.2)) then
+      print("pot_temp_equiv_wspa: illegal iounits value: iounits="+iounits)
+      exit
+  end if
+
+  pcon = 1.0                            ; hPa
+  if (iounits(0).eq.1) then
+      pcon = 0.01                       ;  Pa ==> hPa
+  elseif (iounits(0).eq.2) then
+      pcon = 10.0                       ; kPa ==> hPa
+  end if
+ ;print("pot_temp_equiv_wspa: p="+p+"  iounits(0)="+iounits(0)+"  pcon="+pcon)
+
+  t0   = 273.15
+  if (iounits(1).eq.0) then              ; (C)
+      tk = t + t0
+      tklcl = tlcl + t0
+  elseif (iounits(1).eq.1) then          ; (K)  t & td 
+      tk = t
+      tklcl = tlcl 
+  elseif (iounits(1).eq.2) then                                   ; (F)
+      tk    = t0 + (t -32)*0.5555556
+      tklcl = t0 + (t -32)*0.5555556
+  end if
+ ;print("pot_temp_equiv_wspa: t="+t+"  iounits(1)="+iounits(1)+"  tk="+tk+"  tklcl="+tklcl)
+                                        ; Bolton (2000); Eq 16
+  xcon = 1000.                          ; water vapor pressure
+  if (iounits(2).eq.1) then
+      rmix = mixr*xcon                  ; kg/kg ==> g/kg 
+  else
+      rmix = mixr
+  end if                                ;evp@units = "hPa"
+  evp  = (p*pcon)*rmix/(622+rmix)   
+
+  te = tk*(1000.0/(p*pcon))^(0.2854*(1-0.28*(rmix*1e-3)))*exp((3.376/tklcl -0.00254)*rmix*(1+0.81*(rmix*1e-3)))
+
+  te@long_name = "theta_e: Eqn 43"
+  te@units     = "degK"
+  te@info      = "Recommended for EPT for a water-saturation pseudo-adibatic process"
+  te@source    = "Bolton (1980): https://doi.org/10.1175/1520-0493(1980)108<1046:TCOEPT>2.0.CO;2"
+  te@NCL       = "pot_temp_equiv_wspa"
+
+  if (iounits(3).eq.0) then
+      te       = te-t0
+      te@units = "degC"
+  elseif (iounits(3).eq.2) then
+      te       = (te-t0) + 32
+      te@units = "degF"
+  end if
+
+  copy_VarCoords(t, te)
+  return(te)
+end
