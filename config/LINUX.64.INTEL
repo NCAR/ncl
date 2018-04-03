@@ -14,20 +14,23 @@
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   icc
 #define FCompiler   ifort
-#define CtoFLibraries   -lm -lifcore -lsvml -lifport -lirc
-#define CtoFLibrariesUser   -lm -lifcore -lsvml -lifport -lirc
-#define CcOptions    -ansi -openmp
-#define FcOptions     -openmp
+#define CxxCompiler   icpc
+#define CLoader   icpc
+#define CtoFLibraries -lm -lintlc -lsvml -lifcore -lifport  -lirc -liomp5 -lirc -lsvml
+#define CtoFLibrariesUser -lm -lintlc -lsvml -lifcore -lifport -lirc -lsvml
+#define CcOptions    -march=corei7 -axAVX -fopenmp -std=c99
+#define FcOptions    -march=corei7 -axAVX -fopenmp
 #define COptimizeFlag    -O2
 #define FOptimizeFlag    -O2
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
+#define ExtraExportFlags -rdynamic
 
-#define LibSearchUser    -L/usr/X11R6/lib
+#define LibSearchUser    -L/usr/X11R6/lib64
 #define IncSearchUser    -I/usr/X11R6/include
 
-#define ArchRecLibSearch    -L/usr/X11R6/lib
+#define ArchRecLibSearch    -L/usr/X11R6/lib64
 #define ArchRecIncSearch    -I/usr/X11R6/include
 
 FC = $(F77)
