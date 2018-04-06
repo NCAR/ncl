@@ -174,14 +174,15 @@ begin
   dx = x1 - x0
   dy = y1 - y0
   distance = (dx*dx + dy*dy)^0.5
-  npts = tointeger(distance)
+  npts = tointeger(distance) + 1
   dxy = new(1,typeof(distance))
   dxy = distance/npts
 
-  xy = new((/ npts, 2 /),typeof(x1))
+  xy = new((/ npts, 2 /),float)
 
-  dx = dx/npts
-  dy = dy/npts
+  ; Make this float so that integer start/end points work
+  dx := tofloat(dx)/(npts-1)
+  dy := tofloat(dy)/(npts-1)
 
   do i=0,npts-1
     xy(i,0) = x0 + i*dx
@@ -354,11 +355,11 @@ begin
        
 ; set vertical cross section
      if (opts) then
-       xy = wrf_user_set_xy( z, loc_param(0)-1, loc_param(1)-1, \    ; the -1 is for NCL dimensions
-                                loc_param(2)-1, loc_param(3)-1, \
+       xy = wrf_user_set_xy( z, loc_param(0), loc_param(1), \    ; assumes 0-based indexing in v6.5.0
+                                loc_param(2), loc_param(3), \
                                 angle, opts )
      else
-       xy = wrf_user_set_xy( z, loc_param(0), loc_param(1), \
+       xy = wrf_user_set_xy( z, loc_param(0), loc_param(1), \ ; 
                                 0.0, 0.0, angle, opts )
      end if
      xp = dimsizes(xy)
@@ -414,10 +415,10 @@ begin
 
 
 
-     st_x = tointeger(xy(0,0)) + 1
-     st_y = tointeger(xy(0,1)) + 1
-     ed_x = tointeger(xy(xp(0)-1,0)) + 1
-     ed_y = tointeger(xy(xp(0)-1,1)) + 1
+     st_x = tointeger(xy(0,0)) ; + 1 (removed 1-based indexing in 6.5.0) 
+     st_y = tointeger(xy(0,1)) ; + 1
+     ed_x = tointeger(xy(xp(0)-1,0)) ; + 1
+     ed_y = tointeger(xy(xp(0)-1,1)) ; + 1
      if (opts) then
        var2d@Orientation = "Cross-Section: (" + \
                             st_x + "," + st_y + ") to (" + \
