@@ -15473,7 +15473,7 @@ function pot_vort_hybrid\
 ;               =0 means gaussian grid
 ;               =1 means regular or fixed grid
 ;     lat     - latitudes
-;     opt     - options: not used. Set to 0
+;     opt     - return options:
 ;
 ; Note: u,v,t,p MUST:
 ;    [1] be SOUTH-TO-NORTH 
@@ -15592,8 +15592,12 @@ begin
   copy_VarCoords(t,pv)
 
   if (opt.eq.0) then
-      return( pv )
-  else
+      return( pv )                 ; variable
+  end if
+
+  if (opt.eq.1) then
+      return( [/pv, s, theta/] )   ; list
+  else                             ; next is 'hidden'
       return( [/pv, s, theta, dthdp, dudp, dvdp, dtdx, dtdy/] )
   end if
 end
@@ -15736,8 +15740,12 @@ begin
   copy_VarCoords(t,pv)
 
   if (opt.eq.0) then
-      return( pv )
-  else
+      return( pv )                 ; variable
+  end if
+
+  if (opt.eq.1) then
+      return( [/pv, s, theta/] )   ; list
+  else                             ; next is 'hidden'
       return( [/pv, s, theta, dthdp, dudp, dvdp, dtdx, dtdy/] )
   end if
 end
