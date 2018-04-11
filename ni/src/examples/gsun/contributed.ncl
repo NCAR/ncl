@@ -15474,6 +15474,9 @@ function pot_vort_hybrid\
 ;               =1 means regular or fixed grid
 ;     lat     - latitudes
 ;     opt     - return options:
+;               opt=1 ; return one variable 'pv'
+;               opt=2 ; return one variable 'pv', 's' , 'theta'
+;               opt=3 ; return pv, s, theta, dthdp, dudp, dvdp, dtdx, dtdy
 ;
 ; Note: u,v,t,p MUST:
 ;    [1] be SOUTH-TO-NORTH 
@@ -15597,7 +15600,7 @@ begin
 
   if (opt.eq.1) then
       return( [/pv, s, theta/] )   ; list
-  else                             ; next is 'hidden'
+  else                             ; next is undocumented 
       return( [/pv, s, theta, dthdp, dudp, dvdp, dtdx, dtdy/] )
   end if
 end
@@ -15623,7 +15626,10 @@ function pot_vort_isobaric\
 ;     gridType- grid type
 ;               =0 means gaussian grid
 ;               =1 means regular or fixed grid
-;     opt     - options: not used
+;     opt     - return options:
+;               opt=1 ; return one variable 'pv'
+;               opt=2 ; return one variable 'pv', 's' , 'theta'
+;               opt=3 ; return pv, s, theta, dthdp, dudp, dvdp, dtdx, dtdy
 ;
 ; Note: u,v,t MUST be SOUTH-TO-NORTH 
 ;       and must be GLOBAL because spherical harmonics are used
@@ -15745,7 +15751,7 @@ begin
 
   if (opt.eq.1) then
       return( [/pv, s, theta/] )   ; list
-  else                             ; next is 'hidden'
+  else                             ; next is undocumented 
       return( [/pv, s, theta, dthdp, dudp, dvdp, dtdx, dtdy/] )
   end if
 end
