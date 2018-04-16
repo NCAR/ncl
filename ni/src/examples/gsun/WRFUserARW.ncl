@@ -2575,11 +2575,11 @@ begin
   opts@cnHighLabelBackgroundColor = get_res_value_keep(opts,"cnHighLabelBackgroundColor", -1)
   opts@cnLowLabelBackgroundColor  = get_res_value_keep(opts,"cnLowLabelBackgroundColor", -1)
   opts@cnLineColor                = get_res_value_keep(opts,"cnLineColor", "Black")
-  opts@cnLineLabelFontColor       = opts@cnLineColor
-  opts@cnLineLabelPerimColor      = opts@cnLineColor
-  opts@cnInfoLabelFontColor       = opts@cnLineColor
-  opts@cnHighLabelFontColor       = opts@cnLineColor
-  opts@cnLowLabelFontColor        = opts@cnLineColor
+  opts@cnLineLabelFontColor       = get_res_value_keep(opts,"cnLineLabelFontColor",opts@cnLineColor)
+  opts@cnLineLabelPerimColor      = get_res_value_keep(opts,"cnLineLabelPerimColor",opts@cnLineColor)
+  opts@cnInfoLabelFontColor       = get_res_value_keep(opts,"cnInfoLabelFontColor",opts@cnLineColor)
+  opts@cnHighLabelFontColor       = get_res_value_keep(opts,"cnHighLabelFontColor",opts@cnLineColor)
+  opts@cnLowLabelFontColor        = get_res_value_keep(opts,"cnLowLabelFontColor",opts@cnLineColor)
 
 
 ; Set field Title and levels if available
