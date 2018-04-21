@@ -12481,37 +12481,112 @@ end
 ; ------------
 undef("exner_pressure")
 function exner_pressure(p:numeric, punit[1]:integer)
+;
 ; Exner pressure - non-dimensional pressure
-local p0, exner_pres
+;
+; Pielke, R. A. (1984): Mesoscale Meteorological Modeling. Academic Press
+;
+local con, exner_pres
 begin
-  if (punit.eq.0) then
-      p0 = 100000      ; Pa    
-  else
-      p0 = 1000        ; hPa
+  con = 287.05/1005.0                           ; ratio: (Rd/Cp)
+  if (punit.eq.0) then                          ; p => hPa
+      exner_pres = (p/1000.0)^con               
+  else                                          ; p => Pa
+      exner_pres = (p/100000.0)^con               
   end if
 
-  exner_pres = (p/p0)^(287.05/1005.0)
   exner_pres@long_name = "Exner Pressure"
- ;exner_pres@units     = ""        ; dimensionless
+  exner_pres@units     = ""        ; dimensionless
+  exner_pres@NCL_tag   = "exner_pressure"
   copy_VarCoords(p, exner_pres)
+
   return(exner_pres) 
 end
 ; ============
 undef("exner_pressure_theta")
-function exner_pressure_theta(p:numeric, theta:numeric, punit[1]:integer)
+function exner_pressure_theta(p:numeric, theta:numeric \
+                             ,iounit[2]:integer, pDim[1]:integer, opt[1]:logical)
+;
+; p     - pressure (hPa or Pa)
+; theta - potential temperature (C or K)
 ; Exner pressure - non-dimensional pressure
-; theta - potential temperature (K)
-local p0, exner_pres
+; iounits; iounits(0)=0 means input theta are degC
+;          iounits(0)=1 means input theta are degK
+;
+;          iounits(1)=0 means input   p   are hPa  
+;          iounits(1)=1 means input   p   are  Pa 
+;
+; Pielke, R. A. (1984): Mesoscale Meteorological Modeling. Academic Press
+                                                                        ; arrays conform
+; Usage:   prs(time,lev,lat,lon) [Pa] , theta(time,lev,lat,lon) [degK]  ; pDim ignored    
+;          pexner = exner_pressure_theta(prs, theta, (/1,1/), -1, True) ; Pa             
+;
+;
+; Usage:   prs(lev) [hPa] , theta(time,lev,lat,lon) [degC]  ; (0,1,2,3) ; isobaric             
+;          pexner = exner_pressure_theta(prs, theta, (/0,0/),  1, True) ; prs associated with 1th dim
+;                                                                       ; pexner_theta => degC
+;
+local dimp, dimt, rankp, rankt, conp, P, exner_pres, exner_temp
 begin
-  if (punit.eq.0) then
-      exner_pres = theta/p           ; Pa
-  else
-      exner_pres = theta/(p*100)     ; hPa
+  dimp  = dimsizes(p)
+  rankp = dimsizes(dimp)
+  dimt  = dimsizes(theta)
+  rankt = dimsizes(dimt)
+
+; units: conversion constants
+
+  cont  = 0.0                    ; theta (degK)
+  if (iounits(0).eq.0) then
+      cont = 273.15              ; degC => degK
   end if
+
+  conp  = 1.0                    ; Pa
+  if (iounits(1).eq.0) then      ; input is hPa
+      conp = 100.0               ; hPa -> Pa
+  end if
+  
+  if (isconform(p,theta)) then    
+      exner_pres = (theta+cont)/(p*conp)   
+
+  elseif (rankp.eq.1) then       ; isobaric
+      P = conform(theta,p,pDim)  ; replicate [broadcast] for conformance
+      exner_pres = (theta+cont)/(P*conp)   
+
+  else
+      print("exner_pressure_theta: p, theta arrays are not conformant")
+      print("exner_pressure_theta: rankp="+rankp+"  rankt="+rankt)
+      print("                dimp="+dimp)
+      print("                dimt="+dimt)
+      exit
+  end if
+
   exner_pres@long_name = "Exner Pressure"
- ;exner_pres@units     = ""        ; dimensionless
-  copy_VarCoords(p, exner_pres)
-  return(exner_pres) 
+  exner_pres@units     = ""        ; dimensionless
+  exner_pres@NCL_tag   = "exner_pressure_theta"
+  copy_VarCoords(theta, exner_pres)
+
+  if (opt) then
+      exner_temp           = exner_pres*theta
+      exner_temp@long_name = "Exner Temperature"
+
+      if (isatt(theta, "units")) then
+          exner_temp@units = theta@units
+      else
+          if (iounits(0).eq.0) then
+              exner_temp@units = "degC" 
+          else
+              exner_temp@units = "degK" 
+          end if
+      end if
+
+      exner_temp@NCL_tag   = "exner_pressure_theta"
+      copy_VarCoords(theta, exner_temp)
+
+      return( [/ exner_pres, exner_temp /] )   ; return as list variable
+  else
+      return(exner_pres) 
+  end if
+
 end
 ; ------------
 undef("relhum_ttd")
