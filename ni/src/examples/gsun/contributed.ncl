@@ -12504,89 +12504,53 @@ begin
 end
 ; ============
 undef("exner_pressure_theta")
-function exner_pressure_theta(p:numeric, theta:numeric \
-                             ,iounit[2]:integer, pDim[1]:integer, opt[1]:logical)
+function exner_pressure_theta(t:numeric, theta:numeric, iounit[1]:integer)
 ;
-; p     - pressure (hPa or Pa)
-; theta - potential temperature (C or K)
+; INPUT:
+; t      - temperature (C or K); must match units of theta
+; theta  - potential temperature (C or K); must match units of t
+; iounit -  iounit=0 means input t, theta are degC
+;           iounit=1 means input t, theta are degK
+;
+; OUTPUT
 ; Exner pressure - non-dimensional pressure
-; iounits; iounits(0)=0 means input theta are degC
-;          iounits(0)=1 means input theta are degK
-;
-;          iounits(1)=0 means input   p   are hPa  
-;          iounits(1)=1 means input   p   are  Pa 
 ;
 ; Pielke, R. A. (1984): Mesoscale Meteorological Modeling. Academic Press
                                                                         ; arrays conform
-; Usage:   prs(time,lev,lat,lon) [Pa] , theta(time,lev,lat,lon) [degK]  ; pDim ignored    
-;          pexner = exner_pressure_theta(prs, theta, (/1,1/), -1, True) ; Pa             
+; Usage:   t(time,lev,lat,lon) [C or K] , theta(time,lev,lat,lon) [C or K]] 
+;          pexner = exner_pressure_theta(t, theta, 1)               
 ;
-;
-; Usage:   prs(lev) [hPa] , theta(time,lev,lat,lon) [degC]  ; (0,1,2,3) ; isobaric             
-;          pexner = exner_pressure_theta(prs, theta, (/0,0/),  1, True) ; prs associated with 1th dim
-;                                                                       ; pexner_theta => degC
-;
-local dimp, dimt, rankp, rankt, conp, P, exner_pres, exner_temp
+local dimt, dimth, rankt, rankth, cont, exner_pres, exner_temp
 begin
-  dimp  = dimsizes(p)
-  rankp = dimsizes(dimp)
-  dimt  = dimsizes(theta)
-  rankt = dimsizes(dimt)
+  if (.not.isconform(t,theta)) then    
+      dimt   = dimsizes(t)
+      rankt  = dimsizes(dimt)
+      dimth  = dimsizes(theta)
+      rankth = dimsizes(dimth)
+
+      print("exner_pressure_theta: t and theta do not conform")
+      print("                      rankt="+rankt+"  rank_theta="+rankth)
+      print("                      dimt="+dimt)
+      print("                      dimth="+dimth)
+      exit
+  end if
 
 ; units: conversion constants
 
-  cont  = 0.0                    ; theta (degK)
-  if (iounits(0).eq.0) then
-      cont = 273.15              ; degC => degK
-  end if
-
-  conp  = 1.0                    ; Pa
-  if (iounits(1).eq.0) then      ; input is hPa
-      conp = 100.0               ; hPa -> Pa
-  end if
-  
-  if (isconform(p,theta)) then    
-      exner_pres = (theta+cont)/(p*conp)   
-
-  elseif (rankp.eq.1) then       ; isobaric
-      P = conform(theta,p,pDim)  ; replicate [broadcast] for conformance
-      exner_pres = (theta+cont)/(P*conp)   
-
+  cont  = 0.0                    ; t, theta (degK)
+  if (iounit.eq.0) then
+      cont       = 273.15        ; degC => degK
+      exner_pres = (t+cont)/(theta+cont)   
   else
-      print("exner_pressure_theta: p, theta arrays are not conformant")
-      print("exner_pressure_theta: rankp="+rankp+"  rankt="+rankt)
-      print("                dimp="+dimp)
-      print("                dimt="+dimt)
-      exit
+      exner_pres = t/theta   
   end if
 
   exner_pres@long_name = "Exner Pressure"
   exner_pres@units     = ""        ; dimensionless
-  exner_pres@NCL_tag   = "exner_pressure_theta"
-  copy_VarCoords(theta, exner_pres)
+  exner_pres@NCL_tag   = "exner_theta"
+  copy_VarCoords(t, exner_pres)
 
-  if (opt) then
-      exner_temp           = exner_pres*theta
-      exner_temp@long_name = "Exner Temperature"
-
-      if (isatt(theta, "units")) then
-          exner_temp@units = theta@units
-      else
-          if (iounits(0).eq.0) then
-              exner_temp@units = "degC" 
-          else
-              exner_temp@units = "degK" 
-          end if
-      end if
-
-      exner_temp@NCL_tag   = "exner_pressure_theta"
-      copy_VarCoords(theta, exner_temp)
-
-      return( [/ exner_pres, exner_temp /] )   ; return as list variable
-  else
-      return(exner_pres) 
-  end if
-
+  return(exner_pres) 
 end
 ; ------------
 undef("relhum_ttd")
