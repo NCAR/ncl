@@ -44,7 +44,8 @@
 #                             processing as a suffix (e.g. _acc, _avg)
 #       [-v var1[,...]]       user specified subset of variables [default: all variables]
 #       [-L]                  support for writing large (>2Gb) netCDF files [default: no largefile support]
-#       [-nc4c]               output a NetCDF 4 classic format file
+#       [-nc4]                output a NetCDF 4 
+#       [-nc4c]               output a NetCDF 4 "classic" format file
 #       [-cl compression_level]  compression level 0 - 9 [ default 0 - only meaningful for NetCDF 4 output]
 #       [-th size_in_megabytes] theshold size: variables larger than specified size will be written incrementally
 #                             in order to limit in-core memory requirements; 0 (the default) means no threshold
@@ -375,6 +376,11 @@ while ($#argv > 0)
 
         case "-nc4c":
             set ncdf_type = "netcdf4classic"
+            shift
+            breaksw
+
+	case "-nc4":
+            set ncdf_type = "netcdf4"
             shift
             breaksw
 
