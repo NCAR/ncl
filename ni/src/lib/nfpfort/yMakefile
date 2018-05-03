@@ -50,7 +50,7 @@ OBJS = $(FOBJS) $(COBJS)
 LibraryTarget($(MYNAME),$(OBJS))
 
 triple2grid.o: triple2grid.f
-        $(F77) -g -c triple2grid.f
+        $(F77) $(FCOPTIONS) $(XTRA_FDEFINES) -c triple2grid.f
 
 calc_uh.o: calc_uh.f90
         $(F77) $(FFLAGS) -c calc_uh.f90
