@@ -311,7 +311,7 @@
 #endif	/* EEMDlib */
 
 #ifndef	NetCDFlib
-#define NetCDFlib	-lnetcdf -lcurl -lssl -lcrypto -lldap -lz
+#define NetCDFlib	-lnetcdf -lcurl
 #endif	/* NetCDFlib */
 
 #ifndef	NetCDF4lib
