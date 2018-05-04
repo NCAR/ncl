@@ -1692,7 +1692,6 @@ begin
       stag_ght   = (PHB + PH)/9.81
       ght        =  wrf_user_unstagger(stag_ght,PHB@stagger)
 
-"fill_nocloud", "missing", "opt_thresh"
 ;Get optional args
       ctt_opt = True
 
