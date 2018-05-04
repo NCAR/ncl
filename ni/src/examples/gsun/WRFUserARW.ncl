@@ -1008,7 +1008,7 @@ begin
 
 
 
-  if( any( variable .eq. (/"geopt","geopotential","z","height"/) ) ) then
+  if( any( variable .eq. (/"geopt","geopotential","z","height", "height_agl"/) ) ) then
        ; Height [=full geopotentail height / 9.81]
        if(isfilevar(nc_file,"PH")) then
          var = _get_wrf_var(file_handle,"PH",time)
@@ -1027,13 +1027,24 @@ begin
          return
        end if
 
-       if( any( variable .eq. (/"z","height"/) ) ) then
+       if( any( variable .eq. (/"z","height", "height_agl"/) ) ) then
          z = z / 9.81
          z@description = "Height"
+         if (variable .eq. "height_agl") then
+           if (isfilevar(nc_file,"HGT") ) then
+             hgt = _get_wrf_var(file_handle, "HGT", time)
+             z = z - hgt
+             z@description = "Height_AGL"
+           else
+             print("wrf_user_getvar: Error: cannot find 'HGT' in the file")
+             return
+           end if 
+         end if 
          z@units       = "m"
        end if
        return(z)
   end if
+  
 
 
 
@@ -1351,17 +1362,60 @@ begin
   end if
 
     if( any( variable .eq. "cfrac" )) then
-        P    = _get_wrf_var(file_handle,"P",time)
-        PB   = _get_wrf_var(file_handle,"PB",time)
+        
         rh   = wrf_user_getvar(file_handle,"rh",time)
-
-        pres = (P + PB)
-        out_array = wrf_cloud_fraction(pres,rh)
+        
+        ; Defaults       
+        vert_type  = "height_agl" 
+        low_thresh = 300.
+        mid_thresh = 2000.
+        high_thresh = 6000.
+        msg = 9.9692099683868690E36
+        vert_inc_w_height = 1
+        
+        dim_vars = dimsizes(varin)
+        do idims = 1,dim_vars-1
+          if ( idims .eq. 1 ) then
+            if ( varin(idims) .eq. "pressure" .or. varin(idims) .eq. "pres") then
+              vert_type = varin(idims)
+              low_thresh = 97000.
+              mid_thresh = 80000.
+              high_thresh = 45000.
+              vert_inc_w_height = 0
+            end if
+          end if
+          if ( idims .eq. 2 ) then
+            low_thresh = stringtofloat(varin(2))
+          end if
+          if (idims .eq. 3) then
+            mid_thresh = stringtofloat(varin(3))
+          end if 
+          if (idims .eq. 4) then
+            high_thresh = stringtofloat(varin(4))
+          end if
+          if (idims .eq. 5) then
+            msg = stringtofloat(varin(5))
+          end if
+        end do
+        
+        if (vert_type == "height_agl") then
+          vert = wrf_user_user_getvar(file_handle, "height_agl", time)
+        elseif (vert_type == "pressure") then
+          vert = wrf_user_getvar(file_handle, "p", time)
+        elseif (vert_type == "height_msl") then
+          vert = wrf_user_getvar(file_handle, "height", time)
+        end if 
+        
+        out_array = wrf_cloud_fraction(vert, rh, vert_inc_w_height, low_thresh, mid_thresh, high_thresh, msg)
         
         copy_VarAtts_except(rh,out_array,(/"MemoryOrder","description","units"/))
         out_array@units = "%"
         out_array@description = "Low, Mid, High Clouds"
         out_array@MemoryOrder = "XY"
+        out@vert_type = vert_type
+        out_array@low_thresh = low_thresh
+        out_array@mid_thresh = mid_thresh
+        out_array@high_thresh = high_thresh
         
         return(out_array)
 
@@ -1638,7 +1692,29 @@ begin
       stag_ght   = (PHB + PH)/9.81
       ght        =  wrf_user_unstagger(stag_ght,PHB@stagger)
 
-      fctt = wrf_ctt(pres,tk,qci,qcw,qvp,ght,ter,have_qci)
+"fill_nocloud", "missing", "opt_thresh"
+;Get optional args
+      ctt_opt = True
+
+      dim_vars = dimsizes(varin)
+
+      do idims = 1,dim_vars-1
+      
+        if (idims .eq. 1) then
+          ctt_opt@fill_nocloud = stringtointeger(varin(idims))
+        end if 
+        
+        if (idims .eq. 2) then
+          ctt_opt@missing = stringtofloat(varin(idims))
+        end if 
+        
+        if (idims .eq. 3) then
+          ctt_opt@opt_thresh = stringtofloat(varin(idims))
+        end if
+      
+      end do
+
+      fctt = wrf_ctt(pres,tk,qci,qcw,qvp,ght,ter,have_qci,ctt_opt)
 ; fctt will have description, units, and dimension names attached
       copy_VarAtts_except(T,fctt,(/"description","units"/))
       return(fctt)

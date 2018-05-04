@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include "wrapper.h"
 
-#define ERRLEN 512
-
 extern void NGCALLF(wrf_vintrp,WRF_VINTRP)(double *, double *, double *, 
                                            double *, double *, double *, 
                                            double *, double *, double *, 
@@ -135,8 +133,6 @@ NclBasicDataTypes type_ter;
   ng_size_t index_field, index_sfp, index_field_out;
   ng_size_t i, size_leftmost, size_output;
   int ininlev, inlat, inlon, inoutlev, ret;
-  int errstat;
-  char* errmsg;
 
 /*
  * Retrieve parameters.
@@ -673,9 +669,6 @@ NclBasicDataTypes type_ter;
   dsizes_field_out[ndims_field-2] = nlat;
   dsizes_field_out[ndims_field-1] = nlon;
 
-  /* Allocate space for errmsg*/
-  errmsg = (char *) calloc(ERRLEN, sizeof(char))
-
 /*
  * Loop across leftmost dimensions and call the Fortran routine for each
  * subsection of the input arrays.
@@ -792,20 +785,12 @@ NclBasicDataTypes type_ter;
 /*
  * Call the Fortran routine.
  */
-    errstat = 0;
-    errmsg = "";
     NGCALLF(wrf_vintrp,WRF_VINTRP)(tmp_field, tmp_field_out, tmp_pres,
                                    tmp_tk, tmp_qvp, tmp_ght, tmp_ter, 
                                    tmp_sfp, tmp_smsfp, tmp_vcarray, 
                                    tmp_intrp_levels, &inoutlev, icase, 
                                    &inlon, &inlat, &ininlev, extrap, vcor, 
-                                   logp, &missing_dbl_field.doubleval,
-								   &errstat, errmsg, ERRLEN);
-    /* Terminate if there was an error */
-	if (errstat != 0) {
-		fprintf(stderr, errmsg);
-		exit(errstat);
-	}
+                                   logp, &missing_dbl_field.doubleval);
 
 /*
  * Coerce output back to float if necessary.

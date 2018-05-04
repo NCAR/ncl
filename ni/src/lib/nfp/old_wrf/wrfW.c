@@ -3,8 +3,6 @@
 #include <math.h>
 #include "wrapper.h"
 
-#define ERRLEN 512
-
 extern void NGCALLF(dcomputetk,DCOMPUTETK)(double *,double *,double *,int *);
 extern void NGCALLF(dcomputetd,DCOMPUTETD)(double *,double *,double *,int *);
 extern void NGCALLF(dcomputerh,DCOMPUTERH)(double *,double *,double *,
@@ -13,8 +11,7 @@ extern void NGCALLF(dcomputeseaprs,DCOMPUTESEAPRS)(int *,int *,int *,
                                                    double *,double *,
                                                    double *,double *,
                                                    double *,double *,
-                                                   double *,double *,
-												   int *, char *, int);
+                                                   double *,double *);
 
 extern void NGCALLF(dinterp3dz,DINTERP3DZ)(double *,double *,double *,
                                            double *,int *,int *, int*,
@@ -74,13 +71,13 @@ extern void NGCALLF(dlltoij,DLLTOIJ)(int *, double *, double *, double *,
                                      double *, double *, double *, double *, 
                                      double *, double *, double *, double *, 
                                      double *, double *, double *, double *, 
-                                     double *, int *, char *, int);
+                                     double *);
 
 extern void NGCALLF(dijtoll,DIJTOLL)(int *, double *, double *, double *, 
                                      double *, double *, double *, double *, 
                                      double *, double *, double *, double *, 
                                      double *, double *, double *, double *, 
-                                     double *, int *, char *, int);
+                                     double *);
 
 extern void NGCALLF(deqthecalc,DEQTHECALC)(double *, double *, double *,
                                            double *, int *, int *, int *);
@@ -92,9 +89,7 @@ extern void NGCALLF(dcapecalc3d,DCAPECALC3D)(double *prs, double *tmk,
                                              double *cmsg,
                                              int *miy, int *mjx, int *mkzh, 
                                              int *i3dflag, int *ter_follow,
-                                             char *psafile,
-											 int *errstat, char *errmsg,
-											 int, int);
+                                             char *,int);
 
 extern void NGCALLF(dcalrelhl,DCALRELHL)(double *u, double *v, double *z,
                                          double *ter, double *top, 
@@ -1188,8 +1183,6 @@ NhlErrorTypes wrf_slp_W( void )
   ng_size_t size_slp;
   NclBasicDataTypes type_slp;
   NclObjClass type_obj_slp;
-  int errstat;
-  char* errmsg;
 /*
  * Various
  */
@@ -1420,9 +1413,6 @@ NhlErrorTypes wrf_slp_W( void )
     }
   }
 
-  /* Allocate space for errmsg*/
-  errmsg = (char *) calloc(ERRLEN, sizeof(char))
-
 /*
  * Loop across leftmost dimensions and call the Fortran routine
  * for each three-dimensional subsection.
@@ -1477,18 +1467,9 @@ NhlErrorTypes wrf_slp_W( void )
 /*
  * Call Fortran routine.
  */
-    errstat = 0;
-    errmsg = "";
     NGCALLF(dcomputeseaprs,DCOMPUTESEAPRS)(&inx,&iny,&inz,tmp_z,tmp_t,tmp_p,
                                            tmp_q,tmp_slp,tmp_t_sea_level,
-                                           tmp_t_surf,tmp_level,&errstat,
-										   errmsg, ERRLEN);
-
-    /* Terminate if there was an error */
-    if (errstat != 0) {
-    	fprintf(stderr, errmsg);
-    	exit(errstat);
-    }
+                                           tmp_t_surf,tmp_level);
 /*
  * Coerce output back to float if necessary.
  */
@@ -1511,8 +1492,6 @@ NhlErrorTypes wrf_slp_W( void )
   NclFree(tmp_t_sea_level);
   NclFree(tmp_t_surf);
   NclFree(tmp_level);
-
-  NclFree(errmsg);
 
 /*
  * Set up some attributes ("description" and "units") to return.
@@ -7651,8 +7630,6 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
  * Various
  */
   int npts, i;
-  int errstat;
-  char* errmsg;
 
 /*
  * Retrieve parameters.
@@ -8057,9 +8034,6 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
   for(i = 0; i < ndims_loc-1; i++) dsizes_loc[i+1] = dsizes_lat[i];
   dsizes_loc[0] = 2;
 
-  /* Allocate space for errmsg*/
-  errmsg = (char *) calloc(ERRLEN, sizeof(char))
-
 /*
  * Loop across all lat/lon points and call the Fortran routine for each
  * point.
@@ -8088,20 +8062,11 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
 /*
  * Call the Fortran routine.
  */
-    errstat=0;
-    errmsg="";
     NGCALLF(dlltoij,DLLTOIJ)(&map_proj, tmp_truelat1, tmp_truelat2, 
                              tmp_stand_lon, tmp_ref_lat, tmp_ref_lon, 
                              tmp_pole_lat, tmp_pole_lon, tmp_knowni,
                              tmp_knownj, tmp_dx, tmp_dy, tmp_latinc, 
-                             tmp_loninc, tmp_lat, tmp_lon, tmp_loc,
-							 &errstat, errmsg, ERRLEN);
-
-    /* Terminate if there was an error */
-	if (errstat != 0) {
-		fprintf(stderr, errmsg);
-		exit(errstat);
-	}
+                             tmp_loninc, tmp_lat, tmp_lon, tmp_loc);
 
 /*
  * Coerce output back to float or double. What's returned is in
@@ -8297,8 +8262,6 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
  * Various
  */
   int npts, i;
-  int errstat;
-  char* errmsg;
 
 /*
  * Retrieve parameters.
@@ -8703,9 +8666,6 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
   for(i = 0; i < ndims_loc-1; i++) dsizes_loc[i+1] = dsizes_iloc[i];
   dsizes_loc[0] = 2;
 
-  /* Allocate space for errmsg*/
-  errmsg = (char *) calloc(ERRLEN, sizeof(char))
-
 /*
  * Loop across all lat/lon points and call the Fortran routine for each
  * point.
@@ -8734,20 +8694,11 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
 /*
  * Call the Fortran routine.
  */
-    errstat = 0;
-    errmsg = "";
     NGCALLF(dijtoll,DIJTOLL)(&map_proj, tmp_truelat1, tmp_truelat2, 
                              tmp_stand_lon, tmp_ref_lat, tmp_ref_lon, 
                              tmp_pole_lat, tmp_pole_lon, tmp_knowni,
                              tmp_knownj, tmp_dx, tmp_dy, tmp_latinc, 
-                             tmp_loninc, tmp_iloc, tmp_jloc, tmp_loc,
-							 &errstat, errmsg, ERRLEN);
-
-    /* Terminate if there was an error */
-	if (errstat != 0) {
-		fprintf(stderr, errmsg);
-		exit(errstat);
-	}
+                             tmp_loninc, tmp_iloc, tmp_jloc, tmp_loc);
 
 /*
  * Coerce output back to float or double. What's returned is in
@@ -8916,8 +8867,6 @@ NhlErrorTypes wrf_cape_3d_W( void )
   logical flip;
   int imiy, imjx, imkzh;
   char *psa_file;
-  int errstat;
-  char *errmsg;
 
 /*
  * Retrieve parameters
@@ -9258,9 +9207,6 @@ NhlErrorTypes wrf_cape_3d_W( void )
  */
   psa_file = get_psa_file();
 
-/* Allocate space for errmsg*/
-  errmsg = (char *) calloc(ERRLEN, sizeof(char))
-
 /*
  * Loop through time,nz and call the Fortran routine.
  */ 
@@ -9356,14 +9302,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
     NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
                                      tmp_psfc, tmp_cape_orig, tmp_cin_orig,
                                      &cmsg,&imiy, &imjx, &imkzh, &i3dflag,
-                                     &iter,psa_file,&errstat,errmsg,
-									 strlen(psa_file),ERRLEN);
-
-/* Terminate if there was an error */
-    if (errstat != 0) {
-    	fprintf(stderr, errmsg);
-    	exit(errstat);
-    }
+                                     &iter,psa_file,strlen(psa_file));
 
 /*
  * If we flipped arrays before going into the Fortran routine, we need
@@ -9410,7 +9349,6 @@ NhlErrorTypes wrf_cape_3d_W( void )
     NclFree(tmp_cin);
   }
   NclFree(psa_file);
-  NclFree(errmsg);
 
 /*
  * Get dimension info to see if we have named dimensions.
@@ -9560,8 +9498,6 @@ NhlErrorTypes wrf_cape_2d_W( void )
   int imiy, imjx, imkzh, iter, i3dflag=0;
   char *psa_file;
   logical flip;
-  int errstat;
-  char* errmsg;
 
 /*
  * Retrieve parameters
@@ -9915,9 +9851,6 @@ NhlErrorTypes wrf_cape_2d_W( void )
  */
   psa_file = get_psa_file();
 
-  /* Allocate space for errmsg*/
-  errmsg = (char *) calloc(ERRLEN, sizeof(char))
-
 /*
  * Loop through time,nz and call the Fortran routine.
  */ 
@@ -10010,22 +9943,13 @@ NhlErrorTypes wrf_cape_2d_W( void )
       tmp_z = tmp_z_orig;
     }
 
-    errstat = 0;
-    errmsg = "";
 /*
  * Call Fortran routine.
  */
     NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
                                      tmp_psfc, tmp_cape, tmp_cin, &cmsg,
                                      &imiy, &imjx, &imkzh, &i3dflag, &iter,
-                                     psa_file,&errstat,errmsg,strlen(psa_file),
-									 ERRLEN);
-
-    /* Terminate if there was an error */
-    if (errstat != 0) {
-    	fprintf(stderr, errmsg);
-    	exit(errstat);
-    }
+                                     psa_file,strlen(psa_file));
 /*
  * Even if we flipped arrays before going into the Fortran routine, do
  * NOT flip them on the output.
@@ -10076,7 +10000,6 @@ NhlErrorTypes wrf_cape_2d_W( void )
     NclFree(tmp_z);
   }
   NclFree(psa_file);
-  NclFree(errmsg);
 
 /*
  * Get dimension info to see if we have named dimensions.
@@ -12182,8 +12105,6 @@ NhlErrorTypes wrf_wetbulb_W( void )
   ng_size_t i, nx, ny, nz, nxyz, size_leftmost, index_prs, size_twb;
   int inx, iny, inz;
   char *psa_file;
-  int errstat;
-  char* errmsg;
 
 /*
  * Variables for returning the output array with attributes attached.
@@ -12345,10 +12266,6 @@ NhlErrorTypes wrf_wetbulb_W( void )
       return(NhlFATAL);
     }
   }
-
-  /* Allocate space for errmsg*/
-  errmsg = (char *) calloc(ERRLEN, sizeof(char))
-
 /*
  * Get path to psadilookup.dat file required by this routine. 
  */
@@ -12399,17 +12316,9 @@ NhlErrorTypes wrf_wetbulb_W( void )
 /*
  * Call Fortran routine.
  */
-    errstat = 0;
-    errmsg = "";
     NGCALLF(wetbulbcalc,WETBULBCALC)(tmp_prs,tmp_tmk,tmp_qvp,tmp_twb,
 				     &inx,&iny,&inz,psa_file,
 				     strlen(psa_file));
-
-    /* Terminate if there was an error */
-	if (errstat != 0) {
-		fprintf(stderr, errmsg);
-		exit(errstat);
-	}
 
 /*
  * Coerce output back to float if necessary.

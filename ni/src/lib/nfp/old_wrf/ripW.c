@@ -2,8 +2,6 @@
 #include <math.h>
 #include "wrapper.h"
 
-#define ERRLEN 512
-
 extern void NGCALLF(dcapecalc3d,DCAPECALC3D)(double *prs, double *tmk, 
                                              double *qvp, double *ght,
                                              double *ter, double *sfp, 
@@ -59,8 +57,6 @@ NhlErrorTypes rip_cape_3d_W( void )
  */
   const char *path = NULL;
   char psa_file[_NhlMAXFNAMELEN];
-  int errstat;
-  char *errmsg;
 
 /*
  * Declare various variables for random purposes.
@@ -378,9 +374,6 @@ NhlErrorTypes rip_cape_3d_W( void )
     }
   }
 
-  /* Allocate space for errmsg*/
-  errmsg = (char *) calloc(ERRLEN, sizeof(char))
-
 /*
  * Call the Fortran routine.
  */ 
@@ -458,23 +451,13 @@ NhlErrorTypes rip_cape_3d_W( void )
       tmp_cin  = &((double*)cape)[index_cin];
     }
     
-
-   errstat = 0;
-   errmsg = "";
 /*
  * Call Fortran routine.
  */
     NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
                                      tmp_psfc, tmp_cape, tmp_cin, &cmsg, 
                                      &imiy, &imjx, &imkzh, &i3dflag, &iter,
-                                     psa_file,errstat,errmsg,strlen(psa_file),
-									 ERRLEN);
-
-/* Terminate if there was an error */
-	if (errstat != 0) {
-		fprintf(stderr, errmsg);
-		exit(errstat);
-	}
+                                     psa_file,strlen(psa_file));
 
 /*
  * If the output is to be float, then do the coercion here.
@@ -501,7 +484,6 @@ NhlErrorTypes rip_cape_3d_W( void )
   if(type_psfc != NCL_double) NclFree(tmp_psfc);
   if(type_cape != NCL_double) NclFree(tmp_cape);
   if(type_cape != NCL_double) NclFree(tmp_cin);
-  NclFree(errmsg);
 /*
  * Set up variable to return.
  */
@@ -556,8 +538,6 @@ NhlErrorTypes rip_cape_2d_W( void )
  */
   const char *path = NULL;
   char psa_file[_NhlMAXFNAMELEN];
-  int errstat;
-  char *errmsg;
 
 /*
  * Declare various variables for random purposes.
@@ -878,9 +858,6 @@ NhlErrorTypes rip_cape_2d_W( void )
     }
   }
 
-  /* Allocate space for errmsg*/
-  errmsg = (char *) calloc(ERRLEN, sizeof(char))
-
 /*
  * Call the Fortran routine.
  */ 
@@ -958,14 +935,7 @@ NhlErrorTypes rip_cape_2d_W( void )
     NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
                                      tmp_psfc, tmp_cape, tmp_cin, &cmsg, 
                                      &imiy, &imjx, &imkzh, &i3dflag, &iter,
-                                     psa_file,errstat,errmsg,strlen(psa_file),
-									 ERRLEN);
-
-/* Terminate if there was an error */
-	if (errstat != 0) {
-		fprintf(stderr, errmsg);
-		exit(errstat);
-	}
+                                     psa_file,strlen(psa_file));
 
 /*
  * Copy the values back out to the correct places in the "cape" array.
@@ -1007,7 +977,6 @@ NhlErrorTypes rip_cape_2d_W( void )
   if(type_psfc != NCL_double) NclFree(tmp_psfc);
   NclFree(tmp_cape);
   NclFree(tmp_cin);
-  NclFree(errmsg);
 /*
  * Set up variable to return.
  */

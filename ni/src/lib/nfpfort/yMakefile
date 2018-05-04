@@ -52,8 +52,56 @@ LibraryTarget($(MYNAME),$(OBJS))
 triple2grid.o: triple2grid.f
         $(F77) -g -c triple2grid.f
 
+wrf_constants.o: wrf_constants.f90
+        $(F77) $(FFLAGS) -c wrf_constants.f90
+        
 calc_uh.o: calc_uh.f90
         $(F77) $(FFLAGS) -c calc_uh.f90
+
+eqthecalc.o: eqthecalc.f90
+        $(F77) $(FFLAGS) -c eqthecalc.f90
+
+rip_cape.o: rip_cape.f90 
+        $(F77) $(FFLAGS) -c rip_cape.f90
+
+omp.o: omp.f90
+        $(F77) $(FFLAGS) -c omp.f90
+
+wrf_cloud_fracf.o: wrf_cloud_fracf.f90
+        $(F77) $(FFLAGS) -c wrf_cloud_fracf.f90
+
+wrf_fctt.o: wrf_fctt.f90
+        $(F77) $(FFLAGS) -c wrf_fctt.f90
+        
+wrf_pvo.o: rf_pvo.f90
+        $(F77) $(FFLAGS) -c wrf_pvo.f90
+
+wrf_pw.o: wrf_pw.f90
+        $(F77) $(FFLAGS) -c wrf_pw.f90
+
+wrf_relhl.o: wrf_relhl.f90
+        $(F77) $(FFLAGS) -c wrf_relhl.f90
+
+wrf_rip_phys_routines.o: wrf_rip_phys_routines.f90
+        $(F77) $(FFLAGS) -c wrf_rip_phys_routines.f90
+
+wrf_testfunc.o: wrf_testfunc.f90
+        $(F77) $(FFLAGS) -c wrf_testfunc.f90
+
+wrf_user_dbz.o: wrf_user_dbz.f90
+        $(F77) $(FFLAGS) -c wrf_user_dbz.f90
+
+wrf_user_latlon_routines.o: wrf_user_latlon_routines.f90
+        $(F77) $(FFLAGS) -c wrf_user_latlon_routines.f90
+
+wrf_user.o: wrf_user.f90
+        $(F77) $(FFLAGS) -c wrf_user.f90
+
+wrf_vinterp.o: wrf_vinterp.f90
+        $(F77) $(FFLAGS) -c wrf_vinterp.f90
+
+wrf_wind.o: wrf_wind.f90
+        $(F77) $(FFLAGS) -c wrf_wind.f90
 
 plotgrids_var.o: plotgrids_var.f90
         $(F77) $(FFLAGS) -c plotgrids_var.f90
