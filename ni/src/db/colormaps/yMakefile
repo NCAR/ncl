@@ -289,7 +289,25 @@ RANDOM_FILES = \
 		circular_0.rgb \
 		circular_1.rgb \
 		circular_2.rgb \
-		srip_reanalysis.rgb
+		srip_reanalysis.rgb \
+		cmocean_algae.rgb \
+		cmocean_amp.rgb \
+		cmocean_balance.rgb \
+		cmocean_curl.rgb \
+		cmocean_deep.rgb \
+		cmocean_delta.rgb \
+		cmocean_dense.rgb \
+		cmocean_gray.rgb \
+		cmocean_haline.rgb \
+		cmocean_ice.rgb \
+		cmocean_matter.rgb \
+		cmocean_oxy.rgb \
+		cmocean_phase.rgb \
+		cmocean_solar.rgb \
+		cmocean_speed.rgb \
+		cmocean_tempo.rgb \
+		cmocean_thermal.rgb \
+		cmocean_turbid.rgb
 
 FILES = $(ORIG_FILES) $(GFDL_FILES) $(GMT_FILES) $(GRADS_FILES) $(MPL_FILES) $(NCVIEW_FILES) $(SVG_FILES) $(COLORBREWER_FILES) $(RANDOM_FILES)
 
