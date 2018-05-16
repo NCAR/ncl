@@ -7475,66 +7475,66 @@ begin
   if(attach_y) then
     if(found_base) then
       setvalues new_base
-        "tmYUseLeft"   : get_res_value(res1,"tmYUseLeft",False)
-        "tmYROn"       : get_res_value(res1,"tmYROn",False)
-        "tmYRLabelsOn" : get_res_value(res1,"tmYRLabelsOn",False)
-        "tmYRBorderOn" : get_res_value(res1,"tmYRBorderOn",border_on)
+        "tmYUseLeft"   : get_res_value_keep(res1,"tmYUseLeft",False)
+        "tmYROn"       : get_res_value_keep(res1,"tmYROn",False)
+        "tmYRLabelsOn" : get_res_value_keep(res1,"tmYRLabelsOn",False)
+        "tmYRBorderOn" : get_res_value_keep(res1,"tmYRBorderOn",border_on)
       end setvalues
     end if
     do i=0,nplots-2
       if(found_plots(i)) then
         setvalues new_plots(i)
-          "tmYUseLeft"   : get_res_value(res2,"tmYUseLeft",False)
-          "tmYLOn"       : get_res_value(res2,"tmYLOn",False)
-          "tmYLBorderOn" : get_res_value(res2,"tmYLBorderOn",border_on)
-          "tmYROn"       : get_res_value(res2,"tmYROn",False)
-          "tmYRLabelsOn" : get_res_value(res2,"tmYRLabelsOn",False)
-          "tmYRBorderOn" : get_res_value(res2,"tmYRBorderOn",border_on)
-          "tiYAxisOn"    : get_res_value(res2,"tiYAxisOn",False)
+          "tmYUseLeft"   : get_res_value_keep(res2,"tmYUseLeft",False)
+          "tmYLOn"       : get_res_value_keep(res2,"tmYLOn",False)
+          "tmYLBorderOn" : get_res_value_keep(res2,"tmYLBorderOn",border_on)
+          "tmYROn"       : get_res_value_keep(res2,"tmYROn",False)
+          "tmYRLabelsOn" : get_res_value_keep(res2,"tmYRLabelsOn",False)
+          "tmYRBorderOn" : get_res_value_keep(res2,"tmYRBorderOn",border_on)
+          "tiYAxisOn"    : get_res_value_keep(res2,"tiYAxisOn",False)
         end setvalues
       end if
     end do
     if(found_plots(nplots-1)) then
       setvalues new_plots(nplots-1)
-        "tmYUseLeft"   : get_res_value(res2,"tmYUseLeft",False)
-        "tiYAxisOn"    : get_res_value(res2,"tiYAxisOn",False)
-        "tmYLOn"       : get_res_value(res2,"tmYLOn",False)
-        "tmYLBorderOn" : get_res_value(res2,"tmYLBorderOn",border_on)
-        "tmYLLabelsOn" : get_res_value(res1,"tmYLLabelsOn",False)
+        "tmYUseLeft"   : get_res_value_keep(res2,"tmYUseLeft",False)
+        "tiYAxisOn"    : get_res_value_keep(res2,"tiYAxisOn",False)
+        "tmYLOn"       : get_res_value_keep(res2,"tmYLOn",False)
+        "tmYLBorderOn" : get_res_value_keep(res2,"tmYLBorderOn",border_on)
+        "tmYLLabelsOn" : get_res_value_keep(res2,"tmYLLabelsOn",False)
       end setvalues
     end if
   else
     if(found_base) then
       setvalues new_base
-        "tmXUseBottom" : get_res_value(res1,"tmXUseBottom",False)
-        "tmXBOn"       : get_res_value(res1,"tmXBOn",False)
-        "tmXBBorderOn" : get_res_value(res1,"tmXBBorderOn",border_on)
-        "tmXBLabelsOn" : get_res_value(res1,"tmXBLabelsOn",False)
-        "tiXAxisOn"    : get_res_value(res1,"tiXAxisOn",False)
+        "tmXUseBottom" : get_res_value_keep(res1,"tmXUseBottom",False)
+        "tmXBOn"       : get_res_value_keep(res1,"tmXBOn",False)
+        "tmXBBorderOn" : get_res_value_keep(res1,"tmXBBorderOn",border_on)
+        "tmXBLabelsOn" : get_res_value_keep(res1,"tmXBLabelsOn",False)
+        "tiXAxisOn"    : get_res_value_keep(res1,"tiXAxisOn",False)
       end setvalues
     end if
     do i=0,nplots-2
       if(found_plots(i)) then
         setvalues new_plots(i)
-          "tmXUseBottom" : get_res_value(res2,"tmXUseBottom",False)
-          "tmXBOn"       : get_res_value(res2,"tmXBOn",False)
-          "tmXBBorderOn" : get_res_value(res2,"tmXBBorderOn",border_on)
-          "tmXBLabelsOn" : get_res_value(res2,"tmXBLabelsOn",False)
-          "tmXTOn"       : get_res_value(res2,"tmXTOn",False)
-          "tmXTBorderOn" : get_res_value(res2,"tmXTBorderOn",border_on)
-          "tmXTLabelsOn" : get_res_value(res2,"tmXTLabelsOn",False)
-          "tiMainOn"     : get_res_value(res2,"tiMainOn",False)
-          "tiXAxisOn"    : get_res_value(res2,"tiXAxisOn",False)
+          "tmXUseBottom" : get_res_value_keep(res2,"tmXUseBottom",False)
+          "tmXBOn"       : get_res_value_keep(res2,"tmXBOn",False)
+          "tmXBBorderOn" : get_res_value_keep(res2,"tmXBBorderOn",border_on)
+          "tmXBLabelsOn" : get_res_value_keep(res2,"tmXBLabelsOn",False)
+          "tmXTOn"       : get_res_value_keep(res2,"tmXTOn",False)
+          "tmXTBorderOn" : get_res_value_keep(res2,"tmXTBorderOn",border_on)
+          "tmXTLabelsOn" : get_res_value_keep(res2,"tmXTLabelsOn",False)
+          "tiMainOn"     : get_res_value_keep(res2,"tiMainOn",False)
+          "tiXAxisOn"    : get_res_value_keep(res2,"tiXAxisOn",False)
         end setvalues
       end if
     end do
     if(found_plots(nplots-1)) then
       setvalues new_plots(nplots-1)
-        "tmXUseBottom" : get_res_value(res2,"tmXUseBottom",False)
-        "tmXTOn"       : get_res_value(res2,"tmXTOn",False)
-        "tmXTBorderOn" : get_res_value(res2,"tmXTBorderOn",border_on)
-        "tmXTLabelsOn" : get_res_value(res2,"tmXTLabelsOn",False)
-        "tiMainOn"     : get_res_value(res2,"tiMainOn",False)
+        "tmXUseBottom" : get_res_value_keep(res2,"tmXUseBottom",False)
+        "tmXTOn"       : get_res_value_keep(res2,"tmXTOn",False)
+        "tmXTBorderOn" : get_res_value_keep(res2,"tmXTBorderOn",border_on)
+        "tmXTLabelsOn" : get_res_value_keep(res2,"tmXTLabelsOn",False)
+        "tiMainOn"     : get_res_value_keep(res2,"tiMainOn",False)
       end setvalues
     end if
   end if
