@@ -500,6 +500,7 @@ lib/ncarg/colormaps/GMT_split.rgb
 lib/ncarg/colormaps/GMT_topo.rgb
 lib/ncarg/colormaps/GMT_wysiwyg.rgb
 lib/ncarg/colormaps/GMT_wysiwygcont.rgb
+lib/ncarg/colormaps/GSFC_landsat_udf_density.rgb
 lib/ncarg/colormaps/GrayWhiteGray.rgb
 lib/ncarg/colormaps/GreenMagenta16.rgb
 lib/ncarg/colormaps/GreenYellow.rgb
@@ -594,6 +595,7 @@ lib/ncarg/colormaps/SVG_feb_sunrise.rgb
 lib/ncarg/colormaps/SVG_foggy_sunrise.rgb
 lib/ncarg/colormaps/SVG_fs2006.rgb
 lib/ncarg/colormaps/StepSeq25.rgb
+lib/ncarg/colormaps/UKM_hadcrut.rgb
 lib/ncarg/colormaps/ViBlGrWhYeOrRe.gp
 lib/ncarg/colormaps/ViBlGrWhYeOrRe.rgb
 lib/ncarg/colormaps/WhBlGrYeRe.gp
@@ -611,6 +613,7 @@ lib/ncarg/colormaps/WhiteYellowOrangeRed.rgb
 lib/ncarg/colormaps/amwg.rgb
 lib/ncarg/colormaps/amwg256.rgb
 lib/ncarg/colormaps/amwg_blueyellowred.rgb
+lib/ncarg/colormaps/drought_severity.rgb
 lib/ncarg/colormaps/cb_9step.rgb
 lib/ncarg/colormaps/cb_rainbow.rgb
 lib/ncarg/colormaps/cb_rainbow_inv.rgb
