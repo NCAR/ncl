@@ -307,7 +307,10 @@ RANDOM_FILES = \
 		cmocean_speed.rgb \
 		cmocean_tempo.rgb \
 		cmocean_thermal.rgb \
-		cmocean_turbid.rgb
+		cmocean_turbid.rgb \
+		GSFC_landsat_udf_density.rgb \
+		UKM_hadcrut.rgb \
+		drought_severity.rgb
 
 FILES = $(ORIG_FILES) $(GFDL_FILES) $(GMT_FILES) $(GRADS_FILES) $(MPL_FILES) $(NCVIEW_FILES) $(SVG_FILES) $(COLORBREWER_FILES) $(RANDOM_FILES)
 
