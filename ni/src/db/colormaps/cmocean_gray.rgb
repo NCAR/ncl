@@ -1,5 +1,5 @@
 ncolors = 256
-;R   G   B
+# r   g   b
   0   0   0
   0   0   0
   0   0   0
