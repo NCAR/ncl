@@ -3162,11 +3162,27 @@ local lon_index
 begin
   lon_labels  = new(dimsizes(lon_values),string)
 
+; -540 to -360 (west)
+
+  lon_index = ind(-540.lt.lon_values.and.lon_values.lt.-360)
+  if(.not.all(ismissing(lon_index)))
+    lon_labels(lon_index) = fabs((360+lon_values(lon_index)))  +"W"
+  end if
+  delete(lon_index)
+
+; -360 < lon < -180 (east)
+
+  lon_index = ind(-360.lt.lon_values.and.lon_values.lt.-180)
+  if(.not.all(ismissing(lon_index)))
+    lon_labels(lon_index) = lon_values(lon_index) + 360 + "E"
+  end if
+  delete(lon_index)
+
 ; -180 < lon < 0 (west)
 
-  lon_index = ind((lon_values).lt.0)
+  lon_index = ind(-180.lt.lon_values.and.lon_values.lt.0)
   if(.not.all(ismissing(lon_index)))
-    lon_labels(lon_index) = fabs(lon_values(lon_index)) + "W"  ; west
+    lon_labels(lon_index) = fabs(lon_values(lon_index)) + "W"
   end if
   delete(lon_index)
 
@@ -3174,7 +3190,7 @@ begin
 
   lon_index = ind(lon_values.gt.0.and.lon_values.lt.180)
   if(.not.all(ismissing(lon_index)))
-    lon_labels(lon_index) = lon_values(lon_index) + "E"  ; east
+    lon_labels(lon_index) = lon_values(lon_index) + "E"
   end if
   delete(lon_index)
 
@@ -3182,7 +3198,7 @@ begin
 
   lon_index = ind(lon_values.gt.180.and.lon_values.lt.360)
   if(.not.all(ismissing(lon_index)))
-    lon_labels(lon_index) = (360-lon_values(lon_index)) + "W"  ; west
+    lon_labels(lon_index) = (360-lon_values(lon_index)) + "W"
   end if
   delete(lon_index)
 
@@ -3190,7 +3206,7 @@ begin
 
   lon_index = ind(lon_values.gt.360.and.lon_values.lt.540)
   if(.not.all(ismissing(lon_index)))
-    lon_labels(lon_index) = (lon_values(lon_index)-360)+ "E" ; east
+    lon_labels(lon_index) = (lon_values(lon_index)-360)+ "E"
   end if
   delete(lon_index)
 
@@ -3198,13 +3214,13 @@ begin
 
   lon_index = ind(lon_values.gt.540.and.lon_values.lt.720)
   if(.not.all(ismissing(lon_index)))
-    lon_labels(lon_index) = (540-lon_values(lon_index)) + "W"  ; west
+    lon_labels(lon_index) = (720-lon_values(lon_index)) + "W"
   end if
   delete(lon_index)
 
 ; lon = +/-180 or lon=540 (180)
 
-  lon_index = ind(fabs(lon_values).eq.180.or.lon_values.eq.540)
+  lon_index = ind(fabs(lon_values).eq.180.or.fabs(lon_values).eq.540)
   if(.not.all(ismissing(lon_index)))
     lon_labels(lon_index) = "180"
   end if
@@ -3212,7 +3228,7 @@ begin
 
 ; lon=0, lon=360, or lon=720 (0)
 
-  lon_index = ind(lon_values.eq.0.or.lon_values.eq.360.or.lon_values.eq.720)
+  lon_index = ind(lon_values.eq.0.or.fabs(lon_values).eq.360.or.fabs(lon_values).eq.720)
   if(.not.all(ismissing(lon_index)))
       lon_labels(lon_index) = "0"
   end if
