@@ -671,6 +671,7 @@ lib/ncarg/colormaps/matlab_hsv.rgb
 lib/ncarg/colormaps/matlab_jet.rgb
 lib/ncarg/colormaps/matlab_lines.rgb
 lib/ncarg/colormaps/mch_default.rgb
+lib/ncarg/colormaps/nasa_ndvi.rgb
 lib/ncarg/colormaps/ncl_default.rgb
 lib/ncarg/colormaps/ncview_default.ncmap
 lib/ncarg/colormaps/ncview_default.rgb
@@ -734,6 +735,8 @@ lib/ncarg/colormaps/testcmap.rgb
 lib/ncarg/colormaps/thelix.rgb
 lib/ncarg/colormaps/topo_15lev.rgb
 lib/ncarg/colormaps/uniform.rgb
+lib/ncarg/colormaps/vegetation_ClarkU.rgb
+lib/ncarg/colormaps/vegetation_modis.rgb
 lib/ncarg/colormaps/wgne15.rgb
 lib/ncarg/colormaps/wh-bl-gr-ye-re.gp
 lib/ncarg/colormaps/wh-bl-gr-ye-re.rgb

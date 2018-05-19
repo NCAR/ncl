@@ -284,12 +284,7 @@ COLORBREWER_FILES = \
 		CBR_drywet.rgb \
 		CBR_set3.rgb \
 		CBR_wet.rgb
-RANDOM_FILES = \
-		lithology.rgb \
-		circular_0.rgb \
-		circular_1.rgb \
-		circular_2.rgb \
-		srip_reanalysis.rgb \
+CMOCEAN_FILES = \
 		cmocean_algae.rgb \
 		cmocean_amp.rgb \
 		cmocean_balance.rgb \
@@ -307,12 +302,22 @@ RANDOM_FILES = \
 		cmocean_speed.rgb \
 		cmocean_tempo.rgb \
 		cmocean_thermal.rgb \
-		cmocean_turbid.rgb \
+		cmocean_turbid.rgb
+
+RANDOM_FILES = \
+		lithology.rgb \
+		circular_0.rgb \
+		circular_1.rgb \
+		circular_2.rgb \
+		srip_reanalysis.rgb \
 		GSFC_landsat_udf_density.rgb \
 		UKM_hadcrut.rgb \
-		drought_severity.rgb
+		drought_severity.rgb \
+		nasa_ndvi.rgb \
+		vegetation_ClarkU.rgb \
+		vegetation_modis.rgb
 
-FILES = $(ORIG_FILES) $(GFDL_FILES) $(GMT_FILES) $(GRADS_FILES) $(MPL_FILES) $(NCVIEW_FILES) $(SVG_FILES) $(COLORBREWER_FILES) $(RANDOM_FILES)
+FILES = $(ORIG_FILES) $(GFDL_FILES) $(GMT_FILES) $(GRADS_FILES) $(MPL_FILES) $(NCVIEW_FILES) $(SVG_FILES) $(COLORBREWER_FILES) $(CMOCEAN_FILES) $(RANDOM_FILES)
 
 CMPATH	= $(LIBNCARGPATH)/colormaps
 INSTALL_CM = $(INSTALL_DB)
@@ -321,3 +326,4 @@ InstallTarget($(FILES),$(INSTALL_CM),$(CMPATH))
 #ifdef BuildPyNGL
 InstallTarget($(FILES),$(INSTALL_CM),$(PYNGLNCARGPATH)/colormaps)
 #endif
+
