@@ -2389,6 +2389,7 @@ function get_bitfield(data:numeric, startBit:integer, numBits:integer)
 local ibit, dataType, dataTypeSize, offset, dataDims
 begin
 
+    undef("zero")
     function zero()
     local zeros
     begin 
