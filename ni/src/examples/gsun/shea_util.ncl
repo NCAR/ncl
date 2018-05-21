@@ -5183,7 +5183,7 @@ begin
   xrange = xmax - xmin
 
   if (.not.isatt(genres,"ItemSpacePercent")) then
-     genres@ItemSpacePercent = 5.
+     genres@ItemSpacePercent = 2.5
   end if
   incr = (genres@ItemSpacePercent/100.)*yrange*-1.
 
