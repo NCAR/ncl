@@ -36,8 +36,7 @@
 #include "NclVar.h"
 #include "VarSupport.h"
 #include "NclData.h"
-
-#ifdef ENABLE_PROFILING
+#include "NclGlobalParams.h"
 
 void NclProfInit(char *filename);
 void NclProfFinalize(void );
@@ -58,25 +57,12 @@ void NclProfRegisterMData(int type, char *str);
 NhlErrorTypes NclGetWTime(float *time);
 */
 
-#define NCL_PROF_INIT(filename) NclProfInit(filename)
-#define NCL_PROF_FINALIZE() NclProfFinalize()
-#define NCL_PROF_PFENTER(funcname) NclProfPFEnter(funcname)
-#define NCL_PROF_PFEXIT(funcname) NclProfPFExit(funcname)
-#define NCL_PROF_LENTER(filename, line) NclProfLEnter(filename, line)
-#define NCL_PROF_LEXIT(filename, line) NclProfLExit(filename, line)
-#define NCL_PROF_REGISTER_MDATA(type, str) NclProfRegisterMData(type, str)
-
-#else
-
-	#define NCL_PROF_INIT(filename)
-	#define NCL_PROF_FINALIZE()
-	#define NCL_PROF_PFENTER(funcname)
-	#define NCL_PROF_PFEXIT(funcname)
-	#define NCL_PROF_LENTER(filename, line)
-	#define NCL_PROF_LEXIT(filename, line)
-	#define NCL_PROF_REGISTER_MDATA(type, str)
-
-#endif
-
+#define NCL_PROF_INIT(filename) if(NCLprofiler) NclProfInit(filename)
+#define NCL_PROF_FINALIZE() if(NCLprofiler) NclProfFinalize()
+#define NCL_PROF_PFENTER(funcname) if(NCLprofiler) NclProfPFEnter(funcname)
+#define NCL_PROF_PFEXIT(funcname) if(NCLprofiler) NclProfPFExit(funcname)
+#define NCL_PROF_LENTER(filename, line) if(NCLprofiler) NclProfLEnter(filename, line)
+#define NCL_PROF_LEXIT(filename, line) if(NCLprofiler) NclProfLExit(filename, line)
+#define NCL_PROF_REGISTER_MDATA(type, str) if(NCLprofiler) NclProfRegisterMData(type, str)
 
 #endif

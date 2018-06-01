@@ -56,6 +56,7 @@ extern "C" {
 #include "ListSupport.h"
 #include "NclProf.h"
 #include <errno.h>
+#include "NclGlobalParams.h"
 
 extern int cmd_line;
 
@@ -2954,10 +2955,8 @@ void CallINTRINSIC_FUNC_CALL(void) {
 */
 				caller_level = _NclFinishFrame();	
 				if(((NclSymbol*)*ptr)->u.bfunc != NULL) {
-#ifdef ENABLE_PROFILING
 					NclSymbol *func = (NclSymbol *)(*ptr);
 					NCL_PROF_PFENTER(func->name);
-#endif
 					ret = (*((NclSymbol*)*ptr)->u.bfunc->thefunc)();
 					NCL_PROF_PFEXIT(func->name);
 /*
@@ -3013,10 +3012,8 @@ void CallINTRINSIC_PROC_CALL(void) {
 */
 				caller_level = _NclFinishFrame();	
 				if(((NclSymbol*)*ptr)->u.bproc != NULL) {
-#ifdef ENABLE_PROFILING
 					NclSymbol *proc = (NclSymbol *)(*ptr);
 					NCL_PROF_PFENTER(proc->name);
-#endif
 					ret = (*((NclSymbol*)*ptr)->u.bproc->theproc)();
 					NCL_PROF_PFEXIT(proc->name);
 					if(ret < NhlWARNING) {
