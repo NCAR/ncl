@@ -125,7 +125,7 @@ int NclDriver(int argc, char **argv)
      *  -Q      override: don't echo copyright notice (unannounced option)
      */
     opterr = 0;     /* turn off getopt() msgs */
-    while ((c = getopt (argc, argv, "fhnodgmxVXQps")) != -1) {
+    while ((c = getopt (argc, argv, "fhnodgmxVXQpsP")) != -1) {
         switch (c) {
             case 'p':
                 NCLnoSysPager = 1;
@@ -180,6 +180,10 @@ int NclDriver(int argc, char **argv)
                 NCLuseAFS = 1;
                 break;
 
+            case 'P':
+                NCLprofiler = 1;
+                break;
+
             case 'h':
                 (void) fprintf(stdout, "Usage: ncl -fhnopxQV <args> <file.ncl>\n");
 	        (void) fprintf(stdout, "\t -f: use new file structure and NetCDF4 features when possible\n");
@@ -189,6 +193,7 @@ int NclDriver(int argc, char **argv)
                 (void) fprintf(stdout, "\t -p: don't page output from the system() command\n");
                 (void) fprintf(stdout, "\t -x: echo NCL commands\n");
                 (void) fprintf(stdout, "\t -s: disable pre-loading of default script files\n");
+                (void) fprintf(stdout, "\t -P: enable NCL profiler\n");
                 (void) fprintf(stdout, "\t -Q: turn off echo of NCL version and copyright info\n");
                 (void) fprintf(stdout, "\t -V: print NCL version and exit\n");
 #ifdef NCLDEBUG
