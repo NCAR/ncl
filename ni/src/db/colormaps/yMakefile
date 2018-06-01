@@ -313,13 +313,14 @@ RANDOM_FILES = \
 		GSFC_landsat_udf_density.rgb \
 		UKM_hadcrut.rgb \
 		drought_severity.rgb \
-		nasa_ndvi.rgb \
+		NOC_ndvi.rgb \
 		vegetation_ClarkU.rgb \
 		vegetation_modis.rgb \
 		NEO_div_vegetation_a.rgb \
 		NEO_div_vegetation_b.rgb \
 		NEO_div_vegetation_c.rgb \
 		NEO_modis_ndvi.rgb
+
 
 FILES = $(ORIG_FILES) $(GFDL_FILES) $(GMT_FILES) $(GRADS_FILES) $(MPL_FILES) $(NCVIEW_FILES) $(SVG_FILES) $(COLORBREWER_FILES) $(CMOCEAN_FILES) $(RANDOM_FILES)
 

@@ -589,6 +589,7 @@ lib/ncarg/colormaps/NEO_div_vegetation_a.rgb
 lib/ncarg/colormaps/NEO_div_vegetation_b.rgb
 lib/ncarg/colormaps/NEO_div_vegetation_c.rgb
 lib/ncarg/colormaps/NEO_modis_ndvi.rgb
+lib/ncarg/colormaps/NOC_ndvi.rgb
 lib/ncarg/colormaps/OceanLakeLandSnow.rgb
 lib/ncarg/colormaps/SVG_Gallet13.rgb
 lib/ncarg/colormaps/SVG_Lindaa06.rgb
@@ -675,7 +676,6 @@ lib/ncarg/colormaps/matlab_hsv.rgb
 lib/ncarg/colormaps/matlab_jet.rgb
 lib/ncarg/colormaps/matlab_lines.rgb
 lib/ncarg/colormaps/mch_default.rgb
-lib/ncarg/colormaps/nasa_ndvi.rgb
 lib/ncarg/colormaps/ncl_default.rgb
 lib/ncarg/colormaps/ncview_default.ncmap
 lib/ncarg/colormaps/ncview_default.rgb
