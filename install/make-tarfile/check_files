@@ -585,6 +585,10 @@ lib/ncarg/colormaps/NCV_jet.rgb
 lib/ncarg/colormaps/NCV_manga.rgb
 lib/ncarg/colormaps/NCV_rainbow2.rgb
 lib/ncarg/colormaps/NCV_roullet.rgb
+lib/ncarg/colormaps/NEO_div_vegetation_a.rgb
+lib/ncarg/colormaps/NEO_div_vegetation_b.rgb
+lib/ncarg/colormaps/NEO_div_vegetation_c.rgb
+lib/ncarg/colormaps/NEO_modis_ndvi.rgb
 lib/ncarg/colormaps/OceanLakeLandSnow.rgb
 lib/ncarg/colormaps/SVG_Gallet13.rgb
 lib/ncarg/colormaps/SVG_Lindaa06.rgb
