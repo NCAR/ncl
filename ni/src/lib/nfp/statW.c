@@ -2971,7 +2971,7 @@ NhlErrorTypes esacr_n_W( void )
     }
     for(i = *dim+1; i < ndims_x; i++) {
       nr = nr*dsizes_x[i];
-      dsizes_acr[i-1] = dsizes_x[i];
+      dsizes_acr[i] = dsizes_x[i];
     }
   }
   dsizes_acr[*dim] = mxlag1;
@@ -4792,19 +4792,14 @@ NhlErrorTypes dim_acumrun_n_W( void )
            NULL,
            DONT_CARE);
 
-  if(*lrun < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_acumrun_n: 'lrun' must be >= 2");
-    return(NhlFATAL);
-  }
-
+/*
+ * Some error checking. Make sure input parameters are valid.
+ */
   if(*opt !=0  && *opt != 1) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_acumrun_n: 'opt' must be 0 or 1");
     return(NhlFATAL);
   }
 
-/*
- * Some error checking. Make sure input dimensions are valid.
- */
   for(i = 0; i < ndims; i++ ) {
     if(dims[i] < 0 || dims[i] >= ndims_x) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_acumrun_n: Invalid dimension sizes for accumulated sum dimension, can't continue");
@@ -4833,6 +4828,11 @@ NhlErrorTypes dim_acumrun_n_W( void )
   }
   total_elements = total_nr * total_nl;
   total_size_x   = total_elements * npts;
+
+  if(*lrun < 2 || *lrun > npts) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_acumrun_n: 'lrun' must be >= 2 and <= the number of values represented by the 'dims' argument (%ld)",npts);
+    return(NhlFATAL);
+  }
 
 /*
  * Check input dimension size
