@@ -568,6 +568,7 @@ extern NhlErrorTypes ttest_W(void);
 extern NhlErrorTypes ftest_W(void);
 extern NhlErrorTypes rtest_W(void);
 extern NhlErrorTypes equiv_sample_size_W(void);
+extern NhlErrorTypes equiv_sample_size_n_W(void);
 extern NhlErrorTypes z2geouv_W(void);
 extern NhlErrorTypes NhlGetNamedColorIndex_W(void);
 extern NhlErrorTypes rgba_to_color_index_W(void);
@@ -7862,6 +7863,19 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(equiv_sample_size_W,args,"equiv_sample_size",nargs);
+
+/*
+ * Register "equiv_sample_size_n".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(equiv_sample_size_n_W,args,"equiv_sample_size_n",nargs);
 
 /*
  * Register "z2geouv".

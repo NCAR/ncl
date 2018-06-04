@@ -1244,3 +1244,193 @@ NhlErrorTypes equiv_sample_size_W( void )
     return(NclReturnValue(neqv,ndims_neqv,dsizes_neqv,NULL,NCL_int,0));
   }
 }
+
+NhlErrorTypes equiv_sample_size_n_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *x, *siglvl;
+  double *tmp_x = NULL;
+  double *tmp_siglvl;
+  int *opt, *dim;
+  NclScalar missing_x, missing_dx;
+  int has_missing_x;
+  int ndims_x;
+  ng_size_t dsizes_x[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_x, type_siglvl;
+/*
+ * output variable
+ */
+  int *neqv;
+  ng_size_t *dsizes_neqv;
+  int ndims_neqv;
+  NclScalar missing_neqv;
+/*
+ * Declare various variables for random purposes.
+ */
+  ng_size_t nx, i, j, size_neqv, index_x, index_eqv;
+  int inx, is_missing;
+  ng_size_t total_leftmost, total_rightmost, total_size_x;
+/*
+ * Retrieve parameters
+ *
+ * Note that any of the pointer parameters can be set to NULL,
+ * which implies you don't care about its value.
+ */
+
+  x = (void*)NclGetArgValue(
+          0,
+          4,
+          &ndims_x,
+          dsizes_x,
+          &missing_x,
+          &has_missing_x,
+          &type_x,
+          DONT_CARE);
+
+  siglvl = (int*)NclGetArgValue(
+          1,
+          4,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          &type_siglvl,
+          DONT_CARE);
+
+  opt = (int*)NclGetArgValue(
+          2,
+          4,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          DONT_CARE);
+
+  dim = (int*)NclGetArgValue(
+          3,
+          4,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          DONT_CARE);
+
+/*
+ * Make sure "dim" is a valid dimension.
+ */
+  if (*dim < 0 || *dim >= ndims_x) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"equiv_sample_size_n: Invalid dimension index for calculating the weighted running average");
+    return(NhlFATAL);
+  }
+
+  nx = dsizes_x[*dim];
+  if(nx > INT_MAX) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"equiv_sample_size_n: nx = %ld is greater than INT_MAX", nx);
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+
+/*
+ * Calculate the size of the output.
+ */
+  ndims_neqv = max(1,ndims_x-1);
+
+  dsizes_neqv = (ng_size_t*)calloc(ndims_neqv,sizeof(ng_size_t));
+  if(dsizes_neqv == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"equiv_sample_size_n: Unable to allocate memory for output variable");
+    return(NhlFATAL);
+  }
+
+  size_neqv = dsizes_neqv[0] = 1;
+  for( i =      0; i < *dim;    i++ ) {
+    dsizes_neqv[i]     = dsizes_x[i];
+    size_neqv         *= dsizes_x[i];
+  }
+  for( i = *dim+1; i < ndims_x; i++ ) {
+    dsizes_neqv[i - 1] = dsizes_x[i];
+    size_neqv         *= dsizes_x[i];
+  }
+
+/*
+ * Compute the total size of the output array (minus the last dimension).
+ */
+  total_rightmost = total_leftmost = 1;
+  for( i =      0; i < *dim;    i++ ) total_leftmost  *= dsizes_x[i];
+  for( i = *dim+1; i < ndims_x; i++ ) total_rightmost *= dsizes_x[i];
+
+  total_size_x = total_leftmost * total_rightmost * nx;
+
+/*
+ * Set up variables for coercing input to double (if necessary).
+ */
+  if(type_x != NCL_double) {
+    tmp_x = (double*)calloc(nx,sizeof(double));
+    if( tmp_x == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"equiv_sample_size_n: Unable to allocate memory for coercing x to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+  tmp_siglvl = coerce_input_double(siglvl,type_siglvl,1,0,NULL,NULL);
+  if(tmp_siglvl == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"equiv_sample_size_n: Unable to allocate memory for coercing siglvl to double precision");
+    return(NhlFATAL);
+  }
+/*
+ * Allocate space for output array.
+ */
+  neqv = (int*)calloc(size_neqv,sizeof(int));
+  if(neqv == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"equiv_sample_size:_n Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+
+/*
+ * Check for missing values.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+
+/*
+ * Call the Fortran version of this routine.
+ */
+  index_x = is_missing = 0;
+
+  for( i = 0; i < total_leftmost; i++ ) {
+    for( j = 0; j < total_rightmost; j++ ) {
+/*      index_x = i * total_rightmost * nx + j * total_rightmost; */
+      index_x = i * total_rightmost * nx + j;
+      index_eqv = i * total_rightmost + j;
+/*
+ * Coerce subsection of x (tmp_x) to double.
+ */
+      coerce_subset_input_double_step(x,tmp_x,index_x,total_rightmost,type_x,nx,0,NULL,NULL);
+      NGCALLF(deqvsiz,DEQVSIZ)(tmp_x,&inx,&missing_dx.doubleval,tmp_siglvl,
+                               &neqv[index_eqv]);
+/*
+ * Check if missing value is returned.
+ */
+      if(neqv[index_eqv] == -999) is_missing = 1;
+    }
+  }
+/*
+ * free memory.
+ */
+  NclFree(tmp_x);
+  if(type_siglvl != NCL_double) NclFree(tmp_siglvl);
+
+/*
+ * Return.
+ */
+  if(is_missing) {
+    missing_neqv.intval = -999;
+    return(NclReturnValue(neqv,ndims_neqv,dsizes_neqv,&missing_neqv,
+                          NCL_int,0));
+  }
+  else {
+    return(NclReturnValue(neqv,ndims_neqv,dsizes_neqv,NULL,NCL_int,0));
+  }
+}
