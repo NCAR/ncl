@@ -20151,12 +20151,12 @@ begin
     copy_VarCoords(t, e)
     return(e)
 end
-;------------------------
+;----------------------
 undef("zscore")
 function zscore(x:numeric, flag[1]:integer,  ndim[*]:integer)
 ;
-; z-score is the number of standard deviations from the mean 
-; a data point is. But more technically it’s a measure of how many standard 
+; z-score is the number of standard deviations from the mean a data point is. 
+; But more technically it’s a measure of how many standard 
 ; deviations below or above the population mean a raw score is. A z-score 
 ; is also known as a standard score and it can be placed on a normal 
 ; distribution curve. Technically, n order to use a z-score,  the mean 
@@ -20173,19 +20173,46 @@ function zscore(x:numeric, flag[1]:integer,  ndim[*]:integer)
 ; https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.zscore.html
 ;         This uses the population standard deviation. No option.
 ;
-local nx, xmean, xstd, z, idim, idx, info 
+local dimx, rankx, typex,  nx, xmean, xvar, xstd, z, idim, idx, info 
 begin
    dimx  = dimsizes(x)
    rankx = dimsizes(dimx)
+   typex = typeof(x)
 
    xmean = dim_avg_n(x, ndim)
-   xstd  = dim_stddev_n(x, ndim)                 ; sample
+   xstd  = dim_stddev_n(x, ndim)                 ; sample std. deviation 
 
-   info  = "sample std"
-   if (flag.eq.1) then                           ; adjust sample size
+;---Avoid division by zero
+;---A dimension with all constant values has a std. dev. of zero (xstd=0.0)
+;---Convert xstd=0.0 to _FillValue
+
+   if (any(xstd.eq.0)) then                      ; a dimension with all constant values
+       if (.not.isatt(xstd,"_FillValue")) then
+           if (typex.eq."double") then           ; create appropriate _FillValue
+               xstd@_FillValue = -999d   
+           else
+               xstd@_FillValue = -999.0
+           end if
+       end if
+       xstd = where(xstd.eq.0, xstd@_FillValue, xstd)  ; local
+   end if
+
+;---NCL's variance & stddev functions calculate the sample (unbiased) estimates
+;---For flag=1 
+;---    Convert from sample std. deviation to population std. deviation
+;---    Multiply the sample xstd by  ( sqrt[(nx-1.0)/nx] ) to get the population std. dev.
+
+   if (flag.eq.0) then                           ; adjust sample size
+       info  = "sample std"     
+   else
        info = "population std"
-       nx   = dim_num_n(.not.(ismissing(x)), ndim)
-       nx@_FillValue = default_fillvalue("integer")
+       nx   = dim_num_n(.not.(ismissing(x)),ndim); # non-missing values along each dimension
+       if (isatt(x,"_FillValue")) then
+           if (any(nx.eq.0)) then
+               nx@_FillValue = -999              ; default_fillvalue("integer")
+               nx = where(nx.eq.0, nx@_FillValue , nx)  ; avoid division by 0
+           end if
+       end if
        xstd = xstd*sqrt((nx-1.0)/nx)             ; adjust: sample ==> population
    end if
    
