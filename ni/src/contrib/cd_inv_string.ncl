@@ -2,12 +2,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;  A. Brammer
 ;;;  Adapted from cd_string to work in reverse
-;;;  2015
+;;;  2018
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; to do ;
-;; - add month abbrev. recognition. 
+;; -  
 
 ;;;; Take a string and a format string and convert to a cd_time
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -18,14 +18,19 @@
 ; N => 2-digit month (e.g., 06).
 ; D => 2-digit day (e.g., 04).
 ; J => 3-digit day-of-year (e.g., 091)
-;; j => 1, 2, or 3 digit day-of-year (e.g., 4, 91, or 181)
+;;;;;;Not Available;;;;;;;;;;;;;;;;; j => 1, 2, or 3 digit day-of-year (e.g., 4, 91, or 181)
 ; H => 2-digit hour (e.g., 09).
-;; h => 1 or 2 digit hour (e.g., 9 or 11).
+;;;;;;Not Available;;;;;;;;;;;;;;;;; h => 1 or 2 digit hour (e.g., 9 or 11).
 ; M => 2 digit minute (e.g., 08).
-;; m => 1 or 2 digit minute (e.g., 7 or 56).
+;;;;;;Not Available;;;;;;;;;;;;;;;;; m => 1 or 2 digit minute (e.g., 7 or 56).
 ; S => 2 digit second (e.g., 02).
-;; s => 1 or 2 digit second (e.g., 2 or 23).
-; f => 2 digit fractional second (e.g. 25 = 15 seconds)
+;;;;;;Not Available;;;;;;;;;;;;;;;;; s => 1 or 2 digit second (e.g., 2 or 23).
+; r => 2 digit fractional second (e.g. 25 = 15 seconds) ;; changed from f  in 2018
+; c => 3 character Month case insensitive   (e.g. jun)
+; C => 3 character month case insensitive   (e.g. JUN)
+; f => Full Month name  case insensitive    (e.g. january)
+; F => Full Month name case insensitive     (e.g. JANUARY)
+
 
 ;;  abrammer 
 ;; Variable options above are not available as I'm not sure how to parse them automatically. 
@@ -43,16 +48,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 undef("cd_inv_string")
-function cd_inv_string(instring, informat)
+function cd_inv_string(instring, format)
 local months, fmonths, century, time, year, month, day, hour, minute,\
-    second, doy, inchars, strm, c, n, pm_code, monday, units, format, informat
+    second, doy, inchars, strm, c, n, pm_code, monday, units, format, informat,\
+    month_str, m
 begin
-months = (/"","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"/)
-fmonths = (/"","January","February","March","April","May","June","July","August","September","October","November","December"/)
+months = (/"","jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"/)
+fmonths = (/"","january","february","march","april","may","june","july","august","september","october","november","december"/)
 
-format = informat  ;; copy so it isn't changed. 
-century = get_res_value(format, "century", 2000)
-units = get_res_value(format, "units", "hours since 1800-01-01 00:00:00")
+century = get_res_value_keep(format, "century", 2000)
+units = get_res_value_keep(format, "units", "hours since 1800-01-01 00:00:00")
 
 time = new( dimsizes(instring), double)
 do n=0, dimsizes(instring)-1
@@ -78,7 +83,21 @@ do n=0, dimsizes(instring)-1
         else
            c= c+1
            pm_code = inchars(c)
-
+           if(any( pm_code .eq. (/"c","C"/) ))
+               month_str := str_lower( str_get_cols(instring(n), strm, strm+2 ) )
+               month := ind( month_str .eq. months)
+               strm = strm+3
+           end if
+           if(any( pm_code .eq. (/"f","F"/) ))
+               do m=1,12
+                   month_str := str_lower( str_get_cols(instring(n), strm, strm+strlen(fmonths(m))-1 ) ) ; we can overshoot with str_get_cols
+                    if( month_str .eq. fmonths(m) )
+                        month = m
+                        strm = strm+strlen(fmonths(m))
+                        break  ; save some loops at break out once we've found it
+                    end if
+                end do
+           end if
            if(pm_code .eq. "Y")
                year = toint(str_get_cols(instring(n), strm, strm+3 ) )
                strm = strm+4
@@ -107,10 +126,10 @@ do n=0, dimsizes(instring)-1
                second = toint(str_get_cols(instring(n), strm, strm+1 ) )
                strm = strm+2
            end if
-	   if(pm_code .eq. "f")
-               second = toint(str_get_cols(instring(n), strm, strm+1 ) )*0.6 ;;; *100/60
+           if(pm_code .eq. "r")
+               second := toint(str_get_cols(instring(n), strm, strm+1 ) )*0.6 ;;; *100/60 ; assignment type bug fix 2018
                strm = strm+2
-	   end if
+           end if
            if(pm_code .eq. "J")
                doy = toint(str_get_cols(instring(n), strm, strm+2 ) )
                doy@used = True
@@ -125,6 +144,7 @@ do n=0, dimsizes(instring)-1
     end if
     time(n) = cd_inv_calendar(year, month, day, hour, minute, second, units,0)
 end do
+
 return(time)
 end
 
