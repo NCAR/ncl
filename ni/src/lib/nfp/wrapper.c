@@ -6322,7 +6322,7 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(dim_acumrun_n_W,args,"dim_acumrun_n",nargs);
 
 /*
- * Register "kde_n".
+ * Register "kde_n" ("kde_n_test" in NCL V6.5.0).
  *
  * Create private argument array
  */
@@ -6333,7 +6333,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
-    NclRegisterFunc(kde_n_W,args,"kde_n_test",nargs);
+    NclRegisterFunc(kde_n_W,args,KDE_NAME,nargs);
 
 /*
  * Register "dim_spi_n".

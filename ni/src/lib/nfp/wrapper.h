@@ -20,6 +20,9 @@
 #include "NclBuiltIns.h"
 #include "NclHLUObj.h"
 
+/* This is for NCL V6.5.0, until we decide what to do with this function. See NCL-1042. */
+#define KDE_NAME "kde_n_test"
+
 #define min(x,y)   ((x) < (y) ? (x) : (y))
 #define max(x,y)   ((x) > (y) ? (x) : (y))
 
@@ -131,3 +134,4 @@ extern int *get_dims_for_n_funcs(int arg_num,  int num_args, NclStackEntry tmpda
 				  const char *name, int *ndims);
 
 extern int cmpdouble (const void * a, const void * b);
+
