@@ -12481,36 +12481,75 @@ end
 ; ------------
 undef("exner_pressure")
 function exner_pressure(p:numeric, punit[1]:integer)
+;
 ; Exner pressure - non-dimensional pressure
-local p0, exner_pres
+;
+; Pielke, R. A. (1984): Mesoscale Meteorological Modeling. Academic Press
+;
+local con, exner_pres
 begin
-  if (punit.eq.0) then
-      p0 = 100000      ; Pa    
-  else
-      p0 = 1000        ; hPa
+  con = 287.05/1005.0                           ; ratio: (Rd/Cp)
+  if (punit.eq.0) then                          ; p => hPa
+      exner_pres = (p/1000.0)^con               
+  else                                          ; p => Pa
+      exner_pres = (p/100000.0)^con               
   end if
 
-  exner_pres = (p/p0)^(287.05/1005.0)
   exner_pres@long_name = "Exner Pressure"
- ;exner_pres@units     = ""        ; dimensionless
+  exner_pres@units     = ""        ; dimensionless
+  exner_pres@NCL_tag   = "exner_pressure"
   copy_VarCoords(p, exner_pres)
+
   return(exner_pres) 
 end
 ; ============
 undef("exner_pressure_theta")
-function exner_pressure_theta(p:numeric, theta:numeric, punit[1]:integer)
+function exner_pressure_theta(t:numeric, theta:numeric, iounit[1]:integer)
+;
+; INPUT:
+; t      - temperature (C or K); must match units of theta
+; theta  - potential temperature (C or K); must match units of t
+; iounit -  iounit=0 means input t, theta are degC
+;           iounit=1 means input t, theta are degK
+;
+; OUTPUT
 ; Exner pressure - non-dimensional pressure
-; theta - potential temperature (K)
-local p0, exner_pres
+;
+; Pielke, R. A. (1984): Mesoscale Meteorological Modeling. Academic Press
+                                                                        ; arrays conform
+; Usage:   t(time,lev,lat,lon) [C or K] , theta(time,lev,lat,lon) [C or K]] 
+;          pexner = exner_pressure_theta(t, theta, 1)               
+;
+local dimt, dimth, rankt, rankth, cont, exner_pres, exner_temp
 begin
-  if (punit.eq.0) then
-      exner_pres = theta/p           ; Pa
-  else
-      exner_pres = theta/(p*100)     ; hPa
+  if (.not.isconform(t,theta)) then    
+      dimt   = dimsizes(t)
+      rankt  = dimsizes(dimt)
+      dimth  = dimsizes(theta)
+      rankth = dimsizes(dimth)
+
+      print("exner_pressure_theta: t and theta do not conform")
+      print("                      rankt="+rankt+"  rank_theta="+rankth)
+      print("                      dimt="+dimt)
+      print("                      dimth="+dimth)
+      exit
   end if
+
+; units: conversion constants
+
+  cont  = 0.0                    ; t, theta (degK)
+  if (iounit.eq.0) then
+      cont       = 273.15        ; degC => degK
+      exner_pres = (t+cont)/(theta+cont)   
+  else
+      exner_pres = t/theta   
+  end if
+
   exner_pres@long_name = "Exner Pressure"
- ;exner_pres@units     = ""        ; dimensionless
-  copy_VarCoords(p, exner_pres)
+  exner_pres@units     = ""        ; dimensionless
+  exner_pres@NCL_tag   = "exner_theta"
+  copy_VarCoords(t, exner_pres)
+
   return(exner_pres) 
 end
 ; ------------
@@ -20112,12 +20151,12 @@ begin
     copy_VarCoords(t, e)
     return(e)
 end
-;------------------------
+;----------------------
 undef("zscore")
 function zscore(x:numeric, flag[1]:integer,  ndim[*]:integer)
 ;
-; z-score is the number of standard deviations from the mean 
-; a data point is. But more technically it’s a measure of how many standard 
+; z-score is the number of standard deviations from the mean a data point is. 
+; But more technically it’s a measure of how many standard 
 ; deviations below or above the population mean a raw score is. A z-score 
 ; is also known as a standard score and it can be placed on a normal 
 ; distribution curve. Technically, n order to use a z-score,  the mean 
@@ -20134,19 +20173,46 @@ function zscore(x:numeric, flag[1]:integer,  ndim[*]:integer)
 ; https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.zscore.html
 ;         This uses the population standard deviation. No option.
 ;
-local nx, xmean, xstd, z, idim, idx, info 
+local dimx, rankx, typex,  nx, xmean, xvar, xstd, z, idim, idx, info 
 begin
    dimx  = dimsizes(x)
    rankx = dimsizes(dimx)
+   typex = typeof(x)
 
    xmean = dim_avg_n(x, ndim)
-   xstd  = dim_stddev_n(x, ndim)                 ; sample
+   xstd  = dim_stddev_n(x, ndim)                 ; sample std. deviation 
 
-   info  = "sample std"
-   if (flag.eq.1) then                           ; adjust sample size
+;---Avoid division by zero
+;---A dimension with all constant values has a std. dev. of zero (xstd=0.0)
+;---Convert xstd=0.0 to _FillValue
+
+   if (any(xstd.eq.0)) then                      ; a dimension with all constant values
+       if (.not.isatt(xstd,"_FillValue")) then
+           if (typex.eq."double") then           ; create appropriate _FillValue
+               xstd@_FillValue = -999d   
+           else
+               xstd@_FillValue = -999.0
+           end if
+       end if
+       xstd = where(xstd.eq.0, xstd@_FillValue, xstd)  ; local
+   end if
+
+;---NCL's variance & stddev functions calculate the sample (unbiased) estimates
+;---For flag=1 
+;---    Convert from sample std. deviation to population std. deviation
+;---    Multiply the sample xstd by  ( sqrt[(nx-1.0)/nx] ) to get the population std. dev.
+
+   if (flag.eq.0) then                           ; adjust sample size
+       info  = "sample std"     
+   else
        info = "population std"
-       nx   = dim_num_n(.not.(ismissing(x)), ndim)
-       nx@_FillValue = default_fillvalue("integer")
+       nx   = dim_num_n(.not.(ismissing(x)),ndim); # non-missing values along each dimension
+       if (isatt(x,"_FillValue")) then
+           if (any(nx.eq.0)) then
+               nx@_FillValue = -999              ; default_fillvalue("integer")
+               nx = where(nx.eq.0, nx@_FillValue , nx)  ; avoid division by 0
+           end if
+       end if
        xstd = xstd*sqrt((nx-1.0)/nx)             ; adjust: sample ==> population
    end if
    
