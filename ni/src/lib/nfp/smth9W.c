@@ -73,10 +73,10 @@ NhlErrorTypes smth9_W( void )
           NULL,
           DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_x < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"smth9: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"smth9: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 

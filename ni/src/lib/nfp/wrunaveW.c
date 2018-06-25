@@ -80,7 +80,7 @@ NhlErrorTypes wgt_runave_W( void )
     return(NhlFATAL);
   }
 /*
- * Compute the total size of the output array (minus the last dimension).
+ * Compute the total size of the output array (minus the rightmost dimension).
  */
   total_leftmost = 1;
   for( i = 0; i < ndims_x-1; i++ ) total_leftmost *= dsizes_x[i];
@@ -268,7 +268,7 @@ NhlErrorTypes wgt_runave_n_W( void )
     return(NhlFATAL);
   }
 /*
- * Compute the total size of the output array (minus the last dimension).
+ * Compute the total size of the output array (minus the rightmost dimension).
  */
   total_rightmost = total_leftmost = 1;
   for( i =      0; i < *dim;    i++ ) total_leftmost  *= dsizes_x[i];
@@ -435,11 +435,11 @@ NhlErrorTypes runave_W( void )
   npts = dsizes_x[ndims_x-1];
 
   if( *nave > npts ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"runave: nave must be less than or equal to the last dimension of x");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"runave: nave must be less than or equal to the rightmost dimension of x");
     return(NhlFATAL);
   }
 /*
- * Compute the total size of the output array (minus the last dimension).
+ * Compute the total size of the output array (minus the rightmost dimension).
  */
   total_leftmost = 1;
   for( i = 0; i < ndims_x-1; i++ ) total_leftmost *= dsizes_x[i];
@@ -615,7 +615,7 @@ NhlErrorTypes runave_n_W( void )
   npts = dsizes_x[*dim];
 
   if( *nave > npts ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"runave_n: nave must be less than or equal to the last dimension of x");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"runave_n: nave must be less than or equal to the rightmost dimension of x");
     return(NhlFATAL);
   }
 /*

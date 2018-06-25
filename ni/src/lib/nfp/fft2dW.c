@@ -342,10 +342,10 @@ NhlErrorTypes fft2db_W( void )
            &type_coef,
            DONT_CARE);
 /*
- * First dimension must be 2.
+ * Leftmost dimension must be 2.
  */
   if(dsizes_coef[0] != 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"fft2db: The first dimension of coef must be 2");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"fft2db: The leftmost dimension of coef must be 2");
     return(NhlFATAL);
   }
 

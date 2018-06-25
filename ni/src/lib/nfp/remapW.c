@@ -94,7 +94,7 @@ NhlErrorTypes pop_remap_W( void )
   nsrc  = dsizes_src_array[0];
 
   if( dsizes_dst_add[0] != nlink || dsizes_src_add[0] != nlink ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"pop_remap: The size of the dst_add and src_add arrays must be the same as the first dimension of map_wts");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pop_remap: The size of the dst_add and src_add arrays must be the same as the leftmost dimension of map_wts");
     return(NhlFATAL);
   }
   if((ndst > INT_MAX) || (nlink > INT_MAX) || (nw > INT_MAX) || (nsrc > INT_MAX)) {

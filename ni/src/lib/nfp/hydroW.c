@@ -109,7 +109,7 @@ NhlErrorTypes hydro_W( void )
   }
   for( i = 0; i < ndims_p-1; i++ ) {
     if (dsizes_zsfc[i] != dsizes_p[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: The dimensions of the input array 'zsfc' must be the same as the arrays 'p' and 'tkv', minus the last dimension");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: The dimensions of the input array 'zsfc' must be the same as the arrays 'p' and 'tkv', minus the rightmost dimension");
       return(NhlFATAL);
     }
   }

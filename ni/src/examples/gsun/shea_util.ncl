@@ -4052,7 +4052,7 @@ end
 ; ******************************************************************
 undef("pie_chart")
 function pie_chart(wks:graphic, percent[*]:numeric, name[*]:string        \
-                              , colors[*]:string, pieChartRes:logical)
+                              , colors, pieChartRes:logical)
 ;                    Create a Pie Chart
 ; Nomenclature
 ;      percent     - percent [%: 0-100] for each section: sum(percent)=100
@@ -4068,6 +4068,8 @@ function pie_chart(wks:graphic, percent[*]:numeric, name[*]:string        \
 ;                    pieChartRes@pcLabelType = "section"   [default]
 ;                    pieChartRes@pcLabelType = "block"  [labels beneath chart]
  begin
+  rgba_colors = convert_color_to_rgba(wks,colors)
+
   rad       = 4.*atan(1.0)/180.                ; degress to radians
   nSections = dimsizes(percent) 
                                                ; Specify limits for X and Y axes.
@@ -4167,11 +4169,11 @@ function pie_chart(wks:graphic, percent[*]:numeric, name[*]:string        \
      xx(npts2-1)   = xOrig
      yy(npts2-1)   = yOrig
 
-     pgRes@gsFillColor   =  colors(n)          ; fill with associated color
+     pgRes@gsFillColor   =  colors(n,:)          ; fill with associated color
      plotPC@$unique_string("dum")$ = gsn_add_polygon (wks, plotPC, xx, yy, pgRes)  ; color fill
      plotPC@$unique_string("dum")$ = gsn_add_polyline(wks, plotPC, xx, yy, plRes)  ; outline
 
-     gsRes@gsMarkerColor = colors(n)           ; associate marker
+     gsRes@gsMarkerColor = colors(n,:)           ; associate marker
      if (percent(n).lt.10) then
          text = sprintf("%5.1f", percent(n))+"  "+name(n)  ; include %
      else
@@ -4201,7 +4203,7 @@ function pie_chart(wks:graphic, percent[*]:numeric, name[*]:string        \
      xxInfo = (circ+0.25*extraSpace)*cos(((pcStrt+pcLast)*0.5+phase)*rad)
      yyInfo = (circ+0.25*extraSpace)*sin(((pcStrt+pcLast)*0.5+phase)*rad)
      angle  = atan2(xxInfo,yyInfo)/rad
-    ;print("n="+n+"   angle="+angle+"   "+colors(n))
+    ;print("n="+n+"   angle="+angle+"   "+colors(n,:))
      ix     = 5   
      if (angle.gt.-0.001) then                 ; round
          txRes@txJust  = "CenterLeft"

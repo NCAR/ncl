@@ -118,7 +118,7 @@ NhlErrorTypes vibeta_W( void )
   total_size_psfc = 1;
   for( i = 0; i < ndims_x-1; i++ ) {
     if( dsizes_psfc[i] != dsizes_x[i] ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: If psfc is not a constant, then its dimension sizes must be equal to all but the last (rightmost) dimension sizes of x");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: If psfc is not a constant, then its dimension sizes must be equal to all but the rightmost dimension sizes of x");
       return(NhlFATAL);
     }
     total_size_psfc *= dsizes_psfc[i];
@@ -127,7 +127,7 @@ NhlErrorTypes vibeta_W( void )
 
 /*
  * p can either be a one-dimensional array with the same size as the
- * last dimension of x, or the same size as x.
+ * rightmost dimension of x, or the same size as x.
  */
   if(ndims_p==1) {
     if( dsizes_p[0] != dsizes_x[ndims_x-1] ) {
@@ -150,7 +150,7 @@ NhlErrorTypes vibeta_W( void )
   nlev = dsizes_p[ndims_p-1];
 
   if( nlev < 3 || nlev > 150) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: the last dimension of 'p' must be at least 3 and less than 151" );
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: the rightmost dimension of 'p' must be at least 3 and less than 151" );
     return(NhlFATAL);
   }
 
@@ -271,7 +271,7 @@ NhlErrorTypes vibeta_W( void )
  * Dennis wanted this test removed. See his email dated November 14, 2003.
  *
  *      if(tmp_p[nlev-1] < *tmp_ptop) {
- *       NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: The last element of 'p' must be greater than or equal to ptop" );
+ *       NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: The rightmost element of 'p' must be greater than or equal to ptop" );
  *       return(NhlFATAL);
  *     }
  */

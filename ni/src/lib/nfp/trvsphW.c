@@ -116,11 +116,11 @@ NhlErrorTypes g2gshv_W( void )
             NULL,
             DONT_CARE);
 /*
- * The grids coming in must be at least 2-dimensional and have the same
+ * The grids coming in must be at least two-dimensional and have the same
  * size.
  */
   if( ndims_Ua < 2 || ndims_Va < 2 || ndims_Ua != ndims_Va ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"g2gshv: The input arrays must be at least a 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"g2gshv: The input arrays must be at least a two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for(i = 0; i < ndims_Ua; i++) {
@@ -135,7 +135,7 @@ NhlErrorTypes g2gshv_W( void )
     return(NhlFATAL);
   }
 /*
- * The grids going out must be at least 2-dimensional and have the same
+ * The grids going out must be at least two-dimensional and have the same
  * size. The input and output grids must have the same number of dimensions
  * and all but the last two dimensions must be the same.
  */
@@ -178,7 +178,7 @@ NhlErrorTypes g2gshv_W( void )
 /*
  * Allocate space for temporary input and output. If the input is not double,
  * then the output will be float, otherwise the output will be double.
- * The temporary arrays are just big enough to hold a 2-dimensional subsection
+ * The temporary arrays are just big enough to hold a two-dimensional subsection
  * of the input and output. We only need to allocate space for them if the
  * input is not already double, otherwise, we just have them point to the
  * appropriate locations in Ta and Tb.
@@ -314,7 +314,7 @@ NhlErrorTypes g2gshv_W( void )
     if(found_missing) {
       set_subset_output_missing(Ub,index_UVb,type_Ub,nlatbnlonb,missing);
       set_subset_output_missing(Vb,index_UVb,type_Vb,nlatbnlonb,missing);
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"g2gshv: One or more 2-dimensional input arrays contain missing values. No interpolation performed on these 2d arrays.");
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"g2gshv: One or more two-dimensional input arrays contain missing values. No interpolation performed on these 2d arrays.");
     }
     else {
 /*
@@ -465,11 +465,11 @@ NhlErrorTypes f2gshv_W( void )
             NULL,
             DONT_CARE);
 /*
- * The grids coming in must be at least 2-dimensional and have the same
+ * The grids coming in must be at least two-dimensional and have the same
  * size.
  */
   if( ndims_Ua < 2 || ndims_Va < 2 || ndims_Ua != ndims_Va ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2gshv: The input arrays must be at least a 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2gshv: The input arrays must be at least a two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for(i = 0; i < ndims_Ua; i++) {
@@ -484,7 +484,7 @@ NhlErrorTypes f2gshv_W( void )
     return(NhlFATAL);
   }
 /*
- * The grids going out must be at least 2-dimensional and have the same
+ * The grids going out must be at least two-dimensional and have the same
  * size. The input and output grids must have the same number of dimensions
  * and all but the last two dimensions must be the same.
  */
@@ -527,7 +527,7 @@ NhlErrorTypes f2gshv_W( void )
 /*
  * Allocate space for temporary input and output. If the input is not double,
  * then the output will be float, otherwise the output will be double.
- * The temporary arrays are just big enough to hold a 2-dimensional subsection
+ * The temporary arrays are just big enough to hold a two-dimensional subsection
  * of the input and output. We only need to allocate space for them if the
  * input is not already double, otherwise, we just have them point to the
  * appropriate locations in Ta and Tb.
@@ -661,7 +661,7 @@ NhlErrorTypes f2gshv_W( void )
     if(found_missing) {
       set_subset_output_missing(Ub,index_UVb,type_Ub,nlatbnlonb,missing);
       set_subset_output_missing(Vb,index_UVb,type_Vb,nlatbnlonb,missing);
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"f2gshv: One or more 2-dimensional input arrays contain missing values. No interpolation performed on these 2d arrays.");
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"f2gshv: One or more two-dimensional input arrays contain missing values. No interpolation performed on these 2d arrays.");
     }
     else {
 /*
@@ -801,11 +801,11 @@ NhlErrorTypes g2fshv_W( void )
            &type_Vb,
            1);
 /*
- * The grids coming in must be at least 2-dimensional and have the same
+ * The grids coming in must be at least two-dimensional and have the same
  * size.
  */
   if( ndims_Ua < 2 || ndims_Va < 2 || ndims_Ua != ndims_Va ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"g2fshv: The input arrays must be at least a 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"g2fshv: The input arrays must be at least a two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for(i = 0; i < ndims_Ua; i++) {
@@ -820,7 +820,7 @@ NhlErrorTypes g2fshv_W( void )
     return(NhlFATAL);
   }
 /*
- * The grids going out must be at least 2-dimensional and have the same
+ * The grids going out must be at least two-dimensional and have the same
  * size. The input and output grids must have the same number of dimensions
  * and all but the last two dimensions must be the same.
  */
@@ -863,7 +863,7 @@ NhlErrorTypes g2fshv_W( void )
 /*
  * Allocate space for temporary input and output. If the input is not double,
  * then the output will be float, otherwise the output will be double.
- * The temporary arrays are just big enough to hold a 2-dimensional subsection
+ * The temporary arrays are just big enough to hold a two-dimensional subsection
  * of the input and output. We only need to allocate space for them if the
  * input is not already double, otherwise, we just have them point to the
  * appropriate locations in Ta and Tb.
@@ -996,7 +996,7 @@ NhlErrorTypes g2fshv_W( void )
     if(found_missing) {
       set_subset_output_missing(Ub,index_UVb,type_Ub,nlatbnlonb,missing);
       set_subset_output_missing(Vb,index_UVb,type_Vb,nlatbnlonb,missing);
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"g2fshv: One or more 2-dimensional input arrays contain missing values. No interpolation performed on these 2d arrays.");
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"g2fshv: One or more two-dimensional input arrays contain missing values. No interpolation performed on these 2d arrays.");
     }
     else {
 /*
@@ -1135,11 +1135,11 @@ NhlErrorTypes f2fshv_W( void )
            &type_Vb,
            1);
 /*
- * The grids coming in must be at least 2-dimensional and have the same
+ * The grids coming in must be at least two-dimensional and have the same
  * size.
  */
   if( ndims_Ua < 2 || ndims_Va < 2 || ndims_Ua != ndims_Va ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2fshv: The input arrays must be at least a 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2fshv: The input arrays must be at least a two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for(i = 0; i < ndims_Ua; i++) {
@@ -1154,7 +1154,7 @@ NhlErrorTypes f2fshv_W( void )
     return(NhlFATAL);
   }
 /*
- * The grids going out must be at least 2-dimensional and have the same
+ * The grids going out must be at least two-dimensional and have the same
  * size. The input and output grids must have the same number of dimensions
  * and all but the last two dimensions must be the same.
  */
@@ -1196,7 +1196,7 @@ NhlErrorTypes f2fshv_W( void )
 /*
  * Allocate space for temporary input and output. If the input is not double,
  * then the output will be float, otherwise the output will be double.
- * The temporary arrays are just big enough to hold a 2-dimensional subsection
+ * The temporary arrays are just big enough to hold a two-dimensional subsection
  * of the input and output. We only need to allocate space for them if the
  * input is not already double, otherwise, we just have them point to the
  * appropriate locations in Ta and Tb.
@@ -1330,7 +1330,7 @@ NhlErrorTypes f2fshv_W( void )
     if(found_missing) {
       set_subset_output_missing(Ub,index_UVb,type_Ub,nlatbnlonb,missing);
       set_subset_output_missing(Vb,index_UVb,type_Vb,nlatbnlonb,missing);
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"f2fshv: One or more 2-dimensional input arrays contain missing values. No interpolation performed on these 2d arrays.");
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"f2fshv: One or more two-dimensional input arrays contain missing values. No interpolation performed on these 2d arrays.");
     }
     else {
 /*
@@ -1459,11 +1459,11 @@ NhlErrorTypes fo2fshv_W( void )
            &type_vreg,
            1);
 /*
- * The grids coming in must be at least 2-dimensional and have the same
+ * The grids coming in must be at least two-dimensional and have the same
  * size.
  */
   if( ndims_uoff < 2 || ndims_voff < 2 || ndims_uoff != ndims_voff ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"fo2fshv: The input arrays must be at least a 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"fo2fshv: The input arrays must be at least a two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for(i = 0; i < ndims_uoff; i++) {
@@ -1484,7 +1484,7 @@ NhlErrorTypes fo2fshv_W( void )
     return(NhlFATAL);
   }
 /*
- * The grids going out must be at least 2-dimensional and have the same
+ * The grids going out must be at least two-dimensional and have the same
  * size. The input and output grids must have the same number of dimensions
  * and all but the last two dimensions must be the same.
  */
@@ -1524,7 +1524,7 @@ NhlErrorTypes fo2fshv_W( void )
 /*
  * Allocate space for temporary input and output. If the input is not double,
  * then the output will be float, otherwise the output will be double.
- * The temporary arrays are just big enough to hold a 2-dimensional subsection
+ * The temporary arrays are just big enough to hold a two-dimensional subsection
  * of the input and output. We only need to allocate space for them if the
  * input is not already double, otherwise, we just have them point to the
  * appropriate locations in uoff/voff and ureg/vreg.
@@ -1643,7 +1643,7 @@ NhlErrorTypes fo2fshv_W( void )
     if(found_missing) {
       set_subset_output_missing(ureg,index_uvreg,type_ureg,jlat1ilon,missing);
       set_subset_output_missing(ureg,index_uvreg,type_vreg,jlat1ilon,missing);
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"fo2fshv: One or more 2-dimensional input arrays contain missing values. No interpolation performed on these 2d arrays.");
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"fo2fshv: One or more two-dimensional input arrays contain missing values. No interpolation performed on these 2d arrays.");
     }
     else {
 /*
@@ -1769,11 +1769,11 @@ NhlErrorTypes f2foshv_W( void )
            &type_voff,
            1);
 /*
- * The grids coming in must be at least 2-dimensional and have the same
+ * The grids coming in must be at least two-dimensional and have the same
  * size.
  */
   if( ndims_ureg < 2 || ndims_vreg < 2 || ndims_ureg != ndims_vreg ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2foshv: The input arrays must be at least a 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2foshv: The input arrays must be at least a two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for(i = 0; i < ndims_ureg; i++) {
@@ -1797,7 +1797,7 @@ NhlErrorTypes f2foshv_W( void )
     return(NhlFATAL);
   }
 /*
- * The grids going out must be at least 2-dimensional and have the same
+ * The grids going out must be at least two-dimensional and have the same
  * size. The input and output grids must have the same number of dimensions
  * and all but the last two dimensions must be the same.
  */
@@ -1837,7 +1837,7 @@ NhlErrorTypes f2foshv_W( void )
 /*
  * Allocate space for temporary input and output. If the input is not double,
  * then the output will be float, otherwise the output will be double.
- * The temporary arrays are just big enough to hold a 2-dimensional subsection
+ * The temporary arrays are just big enough to hold a two-dimensional subsection
  * of the input and output. We only need to allocate space for them if the
  * input is not already double, otherwise, we just have them point to the
  * appropriate locations in uoff/voff and ureg/vreg.
@@ -1958,7 +1958,7 @@ NhlErrorTypes f2foshv_W( void )
     if(found_missing) {
       set_subset_output_missing(uoff,index_uvoff,type_uoff,jlatilon,missing);
       set_subset_output_missing(uoff,index_uvoff,type_voff,jlatilon,missing);
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"f2foshv: One or more 2-dimensional input arrays contain missing values. No interpolation performed on these 2d arrays.");
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"f2foshv: One or more two-dimensional input arrays contain missing values. No interpolation performed on these 2d arrays.");
     }
     else {
 /*

@@ -1733,8 +1733,8 @@ NhlErrorTypes regCoef_shields_W( void )
 
   total_size_leftmost_x = dsizes_x[0];
 /*
- * Don't count first dimension, since this should be the same as the
- * first dimension of x.
+ * Don't count leftmost dimension, since this should be the same as the
+ * leftmost dimension of x.
  */
   total_size_leftmost_y = 1;
   for(i = 1; i < ndims_y-1; i++) total_size_leftmost_y *= dsizes_y[i];

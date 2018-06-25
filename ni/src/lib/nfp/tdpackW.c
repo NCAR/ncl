@@ -1120,7 +1120,7 @@ NhlErrorTypes tdstri_W( void )
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdstri: the second dimension of rtri must be 10");
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdstri: the second-from-the-left dimension of rtri must be 10");
     return(NhlFATAL);
   }
 
@@ -1178,7 +1178,7 @@ NhlErrorTypes tditri_W( void )
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tditri: the second dimension of ntri must be 10");
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tditri: the second-from-the-left dimension of ntri must be 10");
     return(NhlFATAL);
   }
 
@@ -1236,7 +1236,7 @@ NhlErrorTypes tdmtri_W( void )
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdmtri: the second dimension of ntri must be 10");
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdmtri: the second-from-the-left dimension of ntri must be 10");
     return(NhlFATAL);
   }
 
@@ -1292,7 +1292,7 @@ NhlErrorTypes tdttri_W( void )
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdttri: the second dimension of ntri must be 10");
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdttri: the second-from-the-left dimension of ntri must be 10");
     return(NhlFATAL);
   }
 
@@ -1343,7 +1343,7 @@ NhlErrorTypes tdctri_W( void )
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdctri: the second dimension of ntri must be 10");
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdctri: the second-from-the-left dimension of ntri must be 10");
     return(NhlFATAL);
   }
 
@@ -1390,7 +1390,7 @@ NhlErrorTypes tdotri_W( void )
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdotri: the second dimension of ntri must be 10");
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdotri: the second-from-the-left dimension of ntri must be 10");
     return(NhlFATAL);
   }
 

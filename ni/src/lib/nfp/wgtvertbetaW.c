@@ -130,12 +130,12 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
  * Check dimension sizes of p and datai against each other, if p is nD.
  */
   if(ndims_p < 1 || ndims_p == 2 || (ndims_p > 1 && ndims_p != ndims_datai)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: The p array must either be a one dimensional array of length klev, or at least a 3-dimensional array of the same size as datai, with rightmost dimensions klev x nlat x mlon");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: The p array must either be a one dimensional array of length klev, or at least a three-dimensional array of the same size as datai, with rightmost dimensions klev x nlat x mlon");
     return(NhlFATAL);
   }
 
   if(dsizes_datai[ndims_datai-3] != klev) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: The third-to-the-last dimension of datai must be of length klev");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: The third-from-the-right dimension of datai must be length klev");
     return(NhlFATAL);
   }
   nlat         = dsizes_datai[ndims_datai-2];

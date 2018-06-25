@@ -72,10 +72,10 @@ NhlErrorTypes escorc_W( void )
            &type_y,
            DONT_CARE);
 /*
- * The last dimension of x and y both must be the same.
+ * The rightmost dimension of x and y both must be the same.
  */
   if( dsizes_x[ndims_x-1] != dsizes_y[ndims_y-1] ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"escorc: The last dimension of x must be equal to the last dimension of y");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"escorc: The rightmost dimension of x must be equal to the rightmost dimension of y");
     return(NhlFATAL);
   }
 /*
@@ -143,9 +143,9 @@ NhlErrorTypes escorc_W( void )
   }
 /* 
  * Get size of output variable, which is equal to the product of all but
- * the last dimension of x and y (unless the dimension sizes of x and y
+ * the rightmost dimension of x and y (unless the dimension sizes of x and y
  * are the same, in which case the output will be the product of the all
- * but the last dimension of x).
+ * but the rightmost dimension of x).
  */
   if(dimsizes_same) {
     ndims_corc = max(1,ndims_x-1);
@@ -432,10 +432,10 @@ NhlErrorTypes escovc_W( void )
            &type_y,
            DONT_CARE);
 /*
- * The last dimension of x and y both must be the same.
+ * The rightmost dimension of x and y both must be the same.
  */
   if( dsizes_x[ndims_x-1] != dsizes_y[ndims_y-1] ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"escovc: The last dimension of x must be equal to the last dimension of y");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"escovc: The rightmost dimension of x must be equal to the rightmost dimension of y");
     return(NhlFATAL);
   }
 /*
@@ -503,9 +503,9 @@ NhlErrorTypes escovc_W( void )
   }
 /* 
  * Get size of output variable, which is equal to the product of all but
- * the last dimension of x and y (unless the dimension sizes of x and y
+ * the rightmost dimension of x and y (unless the dimension sizes of x and y
  * are the same, in which case the output will be the product of the all
- * but the last dimension of x).
+ * but the rightmost dimension of x).
  */
   if(dimsizes_same) {
     ndims_covc = max(1,ndims_x-1);
@@ -908,9 +908,9 @@ NhlErrorTypes escorc_n_W( void )
 
 /* 
  * Get size of output variable, which is equal to the product of all but
- * the last dimension of x and y (unless the dimension sizes of x and y
+ * the rightmost dimension of x and y (unless the dimension sizes of x and y
  * are the same, in which case the output will be the product of the all
- * but the last dimension of x).
+ * but the rightmost dimension of x).
  */
   if(dimsizes_same) {
     ndims_corc  = max(1,ndims_x-ndims_n);

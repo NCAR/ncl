@@ -77,7 +77,7 @@ NhlErrorTypes fourier_info_W( void )
  */
   npts = dsizes_x[ndims_x-1];
   if(npts < 1) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: The last dimension of x must be greater than 1");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: The rightmost dimension of x must be greater than 1");
     return(NhlFATAL);
   }
   
@@ -96,7 +96,7 @@ NhlErrorTypes fourier_info_W( void )
   }
   else {
     if(*nhret < 0 || *nhret > nhar) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: nhx must be 0 <= nhx <= npts/2, where npts is the last dimension size of x");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: nhx must be 0 <= nhx <= npts/2, where npts is the rightmost dimension size of x");
       return(NhlFATAL);
     }
     nht = *nhret;

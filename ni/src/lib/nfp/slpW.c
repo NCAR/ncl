@@ -484,7 +484,7 @@ NhlErrorTypes pslec_W( void )
   nlatmlon = nlat*mlon;
 
   if( dsizes_phis[0] != nlat || dsizes_phis[1] != mlon ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"pslec: The dimensions of 'phis' must be the same as the last two dimensions of 't'");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pslec: The dimensions of 'phis' must be the same as the rightmost two dimensions of 't'");
     return(NhlFATAL);
   }
 /*
@@ -939,17 +939,17 @@ NhlErrorTypes pslhor_W( void )
   klevnlatmlon = klev * nlatmlon;
 
   if( dsizes_ps[ndims_ps-2] != nlat || dsizes_ps[ndims_ps-1] != mlon ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: The last two dimension sizes of array 'ps' must be the same as the last two dimension sizes of array 'z'");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: The rightmost two dimension sizes of array 'ps' must be the same as the rightmost two dimension sizes of array 'z'");
     return(NhlFATAL);
   }
 
   if( dsizes_phis[0] != nlat || dsizes_phis[1] != mlon ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: The dimension sizes of 'phis' must be the same as the last two dimension sizes of 'z'");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: The dimension sizes of 'phis' must be the same as the rightmost two dimension sizes of 'z'");
     return(NhlFATAL);
   }
 
   if( dsizes_lats[0] != nlat) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: The input array 'lats' must be the same length as the first dimension of 'phis'" );
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pslhor: The input array 'lats' must be the same length as the leftmost dimension of 'phis'" );
     return(NhlFATAL);
   }
 /*

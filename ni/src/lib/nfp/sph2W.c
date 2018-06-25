@@ -282,10 +282,10 @@ NhlErrorTypes dv2uvf_W( void )
            &type_vd,
            1);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_dv < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvf: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvf: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -321,7 +321,7 @@ NhlErrorTypes dv2uvf_W( void )
 
 /*
  * Allocate space for temporary input array. The temporary array
- * tmp_dv is just big enough to hold a 2-dimensional subsection of the
+ * tmp_dv is just big enough to hold a two-dimensional subsection of the
  * dv array. We only need to allocate space for it if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in dv.
@@ -481,7 +481,7 @@ NhlErrorTypes dv2uvf_W( void )
     else {
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_dv,work1);
 /*
@@ -510,7 +510,7 @@ NhlErrorTypes dv2uvf_W( void )
 			       6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ud,tmp_vd,work1);
@@ -536,7 +536,7 @@ NhlErrorTypes dv2uvf_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"dv2uvf: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dv2uvf: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -650,10 +650,10 @@ NhlErrorTypes dv2uvg_W( void )
            &type_vd,
            1);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_dv < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvg: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvg: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -689,7 +689,7 @@ NhlErrorTypes dv2uvg_W( void )
 
 /*
  * Allocate space for temporary input array. The temporary array
- * tmp_dv is just big enough to hold a 2-dimensional subsection of the
+ * tmp_dv is just big enough to hold a two-dimensional subsection of the
  * dv array. We only need to allocate space for it if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in dv.
@@ -848,7 +848,7 @@ NhlErrorTypes dv2uvg_W( void )
     else {
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_dv,work1);
 /*
@@ -878,7 +878,7 @@ NhlErrorTypes dv2uvg_W( void )
 			       6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ud,tmp_vd,work1);
@@ -904,7 +904,7 @@ NhlErrorTypes dv2uvg_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"dv2uvg: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dv2uvg: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -994,10 +994,10 @@ NhlErrorTypes dv2uvF_W( void )
            &type_dv,
            DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_dv < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvF: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvF: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 
@@ -1014,7 +1014,7 @@ NhlErrorTypes dv2uvF_W( void )
 
 /*
  * Allocate space for temporary input/output arrays. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * full arrays. We only need to allocate space for them if the
  * input is not already double. Otherwise, we just have them point
  * to their appropriate locations in dv.
@@ -1174,7 +1174,7 @@ NhlErrorTypes dv2uvF_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_dv,work1);
 /*
@@ -1203,7 +1203,7 @@ NhlErrorTypes dv2uvF_W( void )
 			       6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ud,tmp_vd,work1);
@@ -1248,7 +1248,7 @@ NhlErrorTypes dv2uvF_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"dv2uvF: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dv2uvF: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     ret = NclReturnValue(uvd,ndims_uvd,dsizes_uvd,&missing_uvd,type_uvd,0);
   }
   else {
@@ -1325,10 +1325,10 @@ NhlErrorTypes dv2uvG_W( void )
            &type_dv,
            DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_dv < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvG: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvG: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 
@@ -1345,7 +1345,7 @@ NhlErrorTypes dv2uvG_W( void )
 
 /*
  * Allocate space for temporary input/output arrays. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * full arrays. We only need to allocate space for them if the
  * input is not already double. Otherwise, we just have them point
  * to their appropriate locations in dv.
@@ -1504,7 +1504,7 @@ NhlErrorTypes dv2uvG_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_dv,work1);
 /*
@@ -1534,7 +1534,7 @@ NhlErrorTypes dv2uvG_W( void )
 			       6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ud,tmp_vd,work1);
@@ -1579,7 +1579,7 @@ NhlErrorTypes dv2uvG_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"dv2uvG: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dv2uvG: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     ret = NclReturnValue(uvd,ndims_uvd,dsizes_uvd,&missing_uvd,type_uvd,0);
   }
   else {
@@ -1681,10 +1681,10 @@ NhlErrorTypes gradsf_W( void )
            &type_gzy,
            1);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_z < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsf: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsf: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -1696,7 +1696,7 @@ NhlErrorTypes gradsf_W( void )
     return(NhlFATAL);
   }
 /*
- * The output arrays must also be at least 2-dimensional.
+ * The output arrays must also be at least two-dimensional.
  */
   if( ndims_gzx != ndims_z || ndims_gzy != ndims_z ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsf: The input/output arrays must have the same number of dimensions");
@@ -1727,7 +1727,7 @@ NhlErrorTypes gradsf_W( void )
 
 /*
  * Allocate space for temporary input array. The temporary array
- * tmp_z is just big enough to hold a 2-dimensional subsection of the
+ * tmp_z is just big enough to hold a two-dimensional subsection of the
  * z array. We only need to allocate space for it if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in z.
@@ -1888,7 +1888,7 @@ NhlErrorTypes gradsf_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_z,work1);
 /*
@@ -1917,7 +1917,7 @@ NhlErrorTypes gradsf_W( void )
 			       6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_gzx,tmp_gzy,work1);
@@ -1944,7 +1944,7 @@ NhlErrorTypes gradsf_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"gradsf: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"gradsf: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -2059,10 +2059,10 @@ NhlErrorTypes gradsg_W( void )
            &type_gzy,
            1);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_z < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsg: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsg: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -2074,7 +2074,7 @@ NhlErrorTypes gradsg_W( void )
     return(NhlFATAL);
   }
 /*
- * The output arrays must also be at least 2-dimensional.
+ * The output arrays must also be at least two-dimensional.
  */
   if( ndims_gzx != ndims_z || ndims_gzy != ndims_z ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsg: The input/output arrays must have the same number of dimensions");
@@ -2105,7 +2105,7 @@ NhlErrorTypes gradsg_W( void )
 
 /*
  * Allocate space for temporary input array. The temporary array
- * tmp_z is just big enough to hold a 2-dimensional subsection of the
+ * tmp_z is just big enough to hold a two-dimensional subsection of the
  * z array. We only need to allocate space for it if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in z.
@@ -2266,7 +2266,7 @@ NhlErrorTypes gradsg_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_z,work1);
 /*
@@ -2295,7 +2295,7 @@ NhlErrorTypes gradsg_W( void )
 			       6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_gzx,tmp_gzy,work1);
@@ -2322,7 +2322,7 @@ NhlErrorTypes gradsg_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"gradsg: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"gradsg: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -2442,11 +2442,11 @@ NhlErrorTypes igradsf_W( void )
     return(NhlFATAL);
   }
 /*
- * The grids coming in must be at least 2-dimensional and the same # of
+ * The grids coming in must be at least two-dimensional and the same # of
  * dimensions.
  */
   if( ndims_gzx != ndims_gzy || ndims_gzx < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsf: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsf: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_gzx; i++ ) {
@@ -2456,7 +2456,7 @@ NhlErrorTypes igradsf_W( void )
     }
   }
 /*
- * The output array must also be at least 2-dimensional.
+ * The output array must also be at least two-dimensional.
  */
   if( ndims_z != ndims_gzx  ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsf: The input/output arrays must have the same number of dimensions");
@@ -2482,7 +2482,7 @@ NhlErrorTypes igradsf_W( void )
 
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in gzx, gzy, and z.
@@ -2646,7 +2646,7 @@ NhlErrorTypes igradsf_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_gzx,tmp_gzy,work1);
 /*
@@ -2673,7 +2673,7 @@ NhlErrorTypes igradsf_W( void )
 			       &mer,7,14);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_gzx,tmp_gzy,work1);
@@ -2696,7 +2696,7 @@ NhlErrorTypes igradsf_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"igradsf: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"igradsf: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -2797,11 +2797,11 @@ NhlErrorTypes igradsF_W( void )
            &type_gzy,
            DONT_CARE);
 /*
- * The grids coming in must be at least 2-dimensional and the same # of
+ * The grids coming in must be at least two-dimensional and the same # of
  * dimensions.
  */
   if( ndims_gzx != ndims_gzy || ndims_gzx < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsF: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsF: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_gzx; i++ ) {
@@ -2824,7 +2824,7 @@ NhlErrorTypes igradsF_W( void )
                  &missing_rgzy);
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in gzx, gzy, and z.
@@ -3008,7 +3008,7 @@ NhlErrorTypes igradsF_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_gzx,tmp_gzy,work1);
 /*
@@ -3035,7 +3035,7 @@ NhlErrorTypes igradsF_W( void )
 			       &mer,7,14);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_gzx,tmp_gzy,work1);
@@ -3075,7 +3075,7 @@ NhlErrorTypes igradsF_W( void )
 /*
  * If any input arrays contained missing values, print a warning message.
  */
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"igradsF: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"igradsF: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     return(NclReturnValue(z,ndims_gzx,dsizes_gzx,&missing_z,type_z,0));
   }
   else {
@@ -3182,11 +3182,11 @@ NhlErrorTypes igradsg_W( void )
     return(NhlFATAL);
   }
 /*
- * The grids coming in must be at least 2-dimensional and the same # of
+ * The grids coming in must be at least two-dimensional and the same # of
  * dimensions.
  */
   if( ndims_gzx != ndims_gzy || ndims_gzx < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsg: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsg: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_gzx; i++ ) {
@@ -3196,7 +3196,7 @@ NhlErrorTypes igradsg_W( void )
     }
   }
 /*
- * The output array must also be at least 2-dimensional.
+ * The output array must also be at least two-dimensional.
  */
   if( ndims_z != ndims_gzx  ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsg: The input/output arrays must have the same number of dimensions");
@@ -3221,7 +3221,7 @@ NhlErrorTypes igradsg_W( void )
   coerce_missing(type_z,has_missing_z,&missing_z,&missing_dz,NULL);
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in gzx, gzy, and z.
@@ -3385,7 +3385,7 @@ NhlErrorTypes igradsg_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_gzx,tmp_gzy,work1);
 /*
@@ -3413,7 +3413,7 @@ NhlErrorTypes igradsg_W( void )
 
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_gzx,tmp_gzy,work1);
@@ -3436,7 +3436,7 @@ NhlErrorTypes igradsg_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"igradsg: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"igradsg: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -3537,11 +3537,11 @@ NhlErrorTypes igradsG_W( void )
            &type_gzy,
            DONT_CARE);
 /*
- * The grids coming in must be at least 2-dimensional and the same # of
+ * The grids coming in must be at least two-dimensional and the same # of
  * dimensions.
  */
   if( ndims_gzx != ndims_gzy || ndims_gzx < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsG: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsG: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_gzx; i++ ) {
@@ -3565,7 +3565,7 @@ NhlErrorTypes igradsG_W( void )
 
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in gzx, gzy, and z.
@@ -3749,7 +3749,7 @@ NhlErrorTypes igradsG_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_gzx,tmp_gzy,work1);
 /*
@@ -3775,7 +3775,7 @@ NhlErrorTypes igradsG_W( void )
 			       &mer,7,14);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_gzx,tmp_gzy,work1);
@@ -3815,7 +3815,7 @@ NhlErrorTypes igradsG_W( void )
 /*
  * If any input arrays contained missing values, print a warning message.
  */
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"igradsG: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"igradsG: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     return(NclReturnValue(z,ndims_gzx,dsizes_gzx,&missing_z,type_z,0));
   }
   else {
@@ -3916,11 +3916,11 @@ NhlErrorTypes ilapsf_W( void )
  * The grids coming in must be 1 and 3-dimensional.
  */
   if( ndims_zlap < 2 || ndims_zlmbda < 1 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsf: The first input array must be at least 2-dimensional and the second input array must be at least 1-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsf: The first input array must be at least two-dimensional and the second input array must be at least one-dimensional");
     return(NhlFATAL);
   }
 /*
- * The output array must also be at least 2-dimensional.
+ * The output array must also be at least two-dimensional.
  */
   if( ndims_z != ndims_zlap  ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsf: The input/output arrays must have the same number of dimensions");
@@ -3969,7 +3969,7 @@ NhlErrorTypes ilapsf_W( void )
 
 /*
  * Allocate space for temporary input and output. The temporary array
- * tmp_zlap is just big enough to hold a 2-dimensional subsection of the
+ * tmp_zlap is just big enough to hold a two-dimensional subsection of the
  * zlap array. The temporary array tmp_zlmbda is just big enough to hold
  * one double value. We only need to allocate space for them if the
  * input is not already double. Otherwise, we just have them point
@@ -4136,7 +4136,7 @@ NhlErrorTypes ilapsf_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_zlap,work1);
 /* 
@@ -4163,7 +4163,7 @@ NhlErrorTypes ilapsf_W( void )
 			       6,14);
 /*
  * Transform from math coordinates to geophysical coordinates
- *  (math) nlat is the first dim
+ *  (math) nlat is the leftmost dim
  */ 
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_zlap,work1);
@@ -4186,7 +4186,7 @@ NhlErrorTypes ilapsf_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapsf: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapsf: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -4289,7 +4289,7 @@ NhlErrorTypes ilapsF_W( void )
  * The grids coming in must be 1 and 3-dimensional.
  */
   if( ndims_zlap < 2 || ndims_zlmbda < 1 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: The first input array must be at least 2-dimensional and the second input array must be at least 1-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: The first input array must be at least two-dimensional and the second input array must be at least one-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -4323,7 +4323,7 @@ NhlErrorTypes ilapsF_W( void )
                  &missing_dzlmbda,NULL);
 /*
  * Allocate space for temporary input and output. The temporary array
- * tmp_zlap is just big enough to hold a 2-dimensional subsection of the
+ * tmp_zlap is just big enough to hold a two-dimensional subsection of the
  * zlap array. The temporary array tmp_zlmbda is just big enough to hold
  * one double value. We only need to allocate space for them if the
  * input is not already double. Otherwise, we just have them point
@@ -4510,7 +4510,7 @@ NhlErrorTypes ilapsF_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_zlap,work1);
 /* 
@@ -4537,7 +4537,7 @@ NhlErrorTypes ilapsF_W( void )
 			       6,14);
 /*
  * Transform from math coordinates to geophysical coordinates
- *  (math) nlat is the first dim
+ *  (math) nlat is the leftmost dim
  */ 
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_zlap,work1);
@@ -4576,7 +4576,7 @@ NhlErrorTypes ilapsF_W( void )
 /*
  * If any input arrays contained missing values, print a warning message.
  */
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapsF: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapsF: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     return(NclReturnValue(z,ndims_zlap,dsizes_zlap,&missing_z,type_z,0));
   }
   else {
@@ -4678,11 +4678,11 @@ NhlErrorTypes ilapsg_W( void )
  * The grids coming in must be 1 and 3-dimensional.
  */
   if( ndims_zlap < 2 || ndims_zlmbda < 1 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsg: The first input array must be at least 2-dimensional and the second input array must be at least 1-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsg: The first input array must be at least two-dimensional and the second input array must be at least one-dimensional");
     return(NhlFATAL);
   }
 /*
- * The output array must also be at least 2-dimensional.
+ * The output array must also be at least two-dimensional.
  */
   if( ndims_z != ndims_zlap  ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsg: The input/output arrays must have the same number of dimensions");
@@ -4731,7 +4731,7 @@ NhlErrorTypes ilapsg_W( void )
 
 /*
  * Allocate space for temporary input and output. The temporary array
- * tmp_zlap is just big enough to hold a 2-dimensional subsection of the
+ * tmp_zlap is just big enough to hold a two-dimensional subsection of the
  * zlap array. The temporary array tmp_zlmbda is just big enough to hold
  * one double value. We only need to allocate space for them if the
  * input is not already double. Otherwise, we just have them point
@@ -4899,7 +4899,7 @@ NhlErrorTypes ilapsg_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_zlap,work1);
 /* 
@@ -4925,7 +4925,7 @@ NhlErrorTypes ilapsg_W( void )
                                  6,14);
 /*
  * Transform from math coordinates to geophysical coordinates
- *  (math) nlat is the first dim
+ *  (math) nlat is the leftmost dim
  */ 
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_zlap,work1);
@@ -4948,7 +4948,7 @@ NhlErrorTypes ilapsg_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapsg: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapsg: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -5050,7 +5050,7 @@ NhlErrorTypes ilapsG_W( void )
  * The grids coming in must be 1 and 3-dimensional.
  */
   if( ndims_zlap < 2 || ndims_zlmbda < 1 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: The first input array must be at least 2-dimensional and the second input array must be at least 1-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: The first input array must be at least two-dimensional and the second input array must be at least one-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -5084,7 +5084,7 @@ NhlErrorTypes ilapsG_W( void )
                  &missing_dzlmbda,NULL);
 /*
  * Allocate space for temporary input and output. The temporary array
- * tmp_zlap is just big enough to hold a 2-dimensional subsection of the
+ * tmp_zlap is just big enough to hold a two-dimensional subsection of the
  * zlap array. The temporary array tmp_zlmbda is just big enough to hold
  * one double value. We only need to allocate space for them if the
  * input is not already double. Otherwise, we just have them point
@@ -5270,7 +5270,7 @@ NhlErrorTypes ilapsG_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_zlap,work1);
 /* 
@@ -5296,7 +5296,7 @@ NhlErrorTypes ilapsG_W( void )
                                  6,14);
 /*
  * Transform from math coordinates to geophysical coordinates
- *  (math) nlat is the first dim
+ *  (math) nlat is the leftmost dim
  */ 
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_zlap,work1);
@@ -5335,7 +5335,7 @@ NhlErrorTypes ilapsG_W( void )
 /*
  * If any input arrays contained missing values, print a warning message.
  */
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapsG: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapsG: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     return(NclReturnValue(z,ndims_zlap,dsizes_zlap,&missing_z,type_z,0));
   }
   else {
@@ -5446,11 +5446,11 @@ NhlErrorTypes ilapvf_W( void )
            &type_v,
            1);
 /*
- * The grids coming in must be at least 2-dimensional and the same # of
+ * The grids coming in must be at least two-dimensional and the same # of
  * dimensions.
  */
   if( ndims_ulap != ndims_vlap || ndims_ulap < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapvf: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapvf: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_ulap; i++ ) {
@@ -5460,7 +5460,7 @@ NhlErrorTypes ilapvf_W( void )
     }
   }
 /*
- * The output arrays must also be at least 2-dimensional and the same sizes.
+ * The output arrays must also be at least two-dimensional and the same sizes.
  */
   if( ndims_u != ndims_ulap || ndims_v != ndims_ulap ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapvf: The input/output arrays must have the same number of dimensions");
@@ -5493,7 +5493,7 @@ NhlErrorTypes ilapvf_W( void )
   coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
 /*
  * Allocate space for temporary input. The temporary arrays tmp_ulap
- * and tmp_vlap are just big enough to hold a 2-dimensional
+ * and tmp_vlap are just big enough to hold a two-dimensional
  * subsection of the ulap, vlap array. We only need to allocate space
  * for them if the input is not already double. Otherwise, we just 
  * have them point to the appropriate locations in ulap and vlap.
@@ -5674,7 +5674,7 @@ NhlErrorTypes ilapvf_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_ulap,tmp_vlap,work1);
 /*
@@ -5701,7 +5701,7 @@ NhlErrorTypes ilapvf_W( void )
                                  6,14);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ulap,tmp_vlap,work1);
@@ -5728,7 +5728,7 @@ NhlErrorTypes ilapvf_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapvf: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapvf: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -5855,11 +5855,11 @@ NhlErrorTypes ilapvg_W( void )
            &type_v,
            1);
 /*
- * The grids coming in must be at least 2-dimensional and the same # of
+ * The grids coming in must be at least two-dimensional and the same # of
  * dimensions.
  */
   if( ndims_ulap != ndims_vlap || ndims_ulap < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapvg: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapvg: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_ulap; i++ ) {
@@ -5869,7 +5869,7 @@ NhlErrorTypes ilapvg_W( void )
     }
   }
 /*
- * The output arrays must also be at least 2-dimensional and the same sizes.
+ * The output arrays must also be at least two-dimensional and the same sizes.
  */
   if( ndims_u != ndims_ulap || ndims_v != ndims_ulap ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapvg: The input/output arrays must have the same number of dimensions");
@@ -5902,7 +5902,7 @@ NhlErrorTypes ilapvg_W( void )
   coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
 /*
  * Allocate space for temporary input. The temporary arrays tmp_ulap
- * and tmp_vlap are just big enough to hold a 2-dimensional
+ * and tmp_vlap are just big enough to hold a two-dimensional
  * subsection of the ulap, vlap array. We only need to allocate space
  * for them if the input is not already double. Otherwise, we just 
  * have them point to the appropriate locations in ulap and vlap.
@@ -6084,7 +6084,7 @@ NhlErrorTypes ilapvg_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_ulap,tmp_vlap,work1);
 /*
@@ -6111,7 +6111,7 @@ NhlErrorTypes ilapvg_W( void )
                                  6,14);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ulap,tmp_vlap,work1);
@@ -6138,7 +6138,7 @@ NhlErrorTypes ilapvg_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapvg: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"ilapvg: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -6240,14 +6240,14 @@ NhlErrorTypes lapsf_W( void )
            &type_zlap,
            1);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_z < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsf: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsf: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
- * The output array must also be at least 2-dimensional.
+ * The output array must also be at least two-dimensional.
  */
   if( ndims_z != ndims_zlap  ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsf: The input/output arrays must have the same number of dimensions");
@@ -6279,7 +6279,7 @@ NhlErrorTypes lapsf_W( void )
 
 /*
  * Allocate space for temporary input array. The temporary array
- * tmp_z is just big enough to hold a 2-dimensional subsection of the
+ * tmp_z is just big enough to hold a two-dimensional subsection of the
  * z array. We only need to allocate space for it if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in z.
@@ -6416,7 +6416,7 @@ NhlErrorTypes lapsf_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_z,work1);
 /* 
@@ -6443,7 +6443,7 @@ NhlErrorTypes lapsf_W( void )
                                  5,13);
 /*
  * Transform from math coordinates to geophysical coordinates
- *  (math) nlat is the first dim
+ *  (math) nlat is the leftmost dim
  */ 
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_zlap,work1);
@@ -6465,7 +6465,7 @@ NhlErrorTypes lapsf_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapsf: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapsf: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -6548,10 +6548,10 @@ NhlErrorTypes lapsF_W( void )
            &type_z,
            DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_z < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsF: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsF: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -6565,7 +6565,7 @@ NhlErrorTypes lapsF_W( void )
   coerce_missing(type_z,has_missing_z,&missing_z,&missing_dz,&missing_rz);
 /*
  * Allocate space for temporary input array. The temporary array
- * tmp_z is just big enough to hold a 2-dimensional subsection of the
+ * tmp_z is just big enough to hold a two-dimensional subsection of the
  * z array. We only need to allocate space for it if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in z.
@@ -6715,7 +6715,7 @@ NhlErrorTypes lapsF_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_z,work1);
 /* 
@@ -6742,7 +6742,7 @@ NhlErrorTypes lapsF_W( void )
                                  5,13);
 /*
  * Transform from math coordinates to geophysical coordinates
- *  (math) nlat is the first dim
+ *  (math) nlat is the leftmost dim
  */ 
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_zlap,work1);
@@ -6778,7 +6778,7 @@ NhlErrorTypes lapsF_W( void )
 /*
  * If any input arrays contained missing values, print a warning message.
  */
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapsF: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapsF: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     return(NclReturnValue(zlap,ndims_z,dsizes_z,&missing_zlap,type_zlap,0));
   }
   else {
@@ -6864,14 +6864,14 @@ NhlErrorTypes lapsg_W( void )
            &type_zlap,
            1);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_z < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsg: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsg: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
- * The output array must also be at least 2-dimensional.
+ * The output array must also be at least two-dimensional.
  */
   if( ndims_z != ndims_zlap  ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsg: The input/output arrays must have the same number of dimensions");
@@ -6903,7 +6903,7 @@ NhlErrorTypes lapsg_W( void )
 
 /*
  * Allocate space for temporary input array. The temporary array
- * tmp_z is just big enough to hold a 2-dimensional subsection of the
+ * tmp_z is just big enough to hold a two-dimensional subsection of the
  * z array. We only need to allocate space for it if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in z.
@@ -7039,7 +7039,7 @@ NhlErrorTypes lapsg_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_z,work1);
 /* 
@@ -7064,7 +7064,7 @@ NhlErrorTypes lapsg_W( void )
                                  5,13);
 /*
  * Transform from math coordinates to geophysical coordinates
- *  (math) nlat is the first dim
+ *  (math) nlat is the leftmost dim
  */ 
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_zlap,work1);
@@ -7086,7 +7086,7 @@ NhlErrorTypes lapsg_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapsg: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapsg: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -7169,10 +7169,10 @@ NhlErrorTypes lapsG_W( void )
            &type_z,
            DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_z < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsG: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsG: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -7186,7 +7186,7 @@ NhlErrorTypes lapsG_W( void )
   coerce_missing(type_z,has_missing_z,&missing_z,&missing_dz,&missing_rz);
 /*
  * Allocate space for temporary input array. The temporary array
- * tmp_z is just big enough to hold a 2-dimensional subsection of the
+ * tmp_z is just big enough to hold a two-dimensional subsection of the
  * z array. We only need to allocate space for it if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in z.
@@ -7336,7 +7336,7 @@ NhlErrorTypes lapsG_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_z,work1);
 /* 
@@ -7361,7 +7361,7 @@ NhlErrorTypes lapsG_W( void )
                                  5,13);
 /*
  * Transform from math coordinates to geophysical coordinates
- *  (math) nlat is the first dim
+ *  (math) nlat is the leftmost dim
  */ 
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_z,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_zlap,work1);
@@ -7397,7 +7397,7 @@ NhlErrorTypes lapsG_W( void )
 /*
  * If any input arrays contained missing values, print a warning message.
  */
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapsG: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapsG: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     return(NclReturnValue(zlap,ndims_z,dsizes_z,&missing_zlap,type_zlap,0));
   }
   else {
@@ -7505,11 +7505,11 @@ NhlErrorTypes lapvf_W( void )
            &type_vlap,
            1);
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapvf: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapvf: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -7519,7 +7519,7 @@ NhlErrorTypes lapvf_W( void )
     }
   }
 /*
- * The output arrays must also be at least 2-dimensional and the same sizes.
+ * The output arrays must also be at least two-dimensional and the same sizes.
  */
   if( ndims_u != ndims_ulap || ndims_v != ndims_ulap ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapvf: The input/output arrays must have the same number of dimensions");
@@ -7552,7 +7552,7 @@ NhlErrorTypes lapvf_W( void )
                  NULL);
 /*
  * Allocate space for temporary input. The temporary arrays tmp_u
- * and tmp_v are just big enough to hold a 2-dimensional
+ * and tmp_v are just big enough to hold a two-dimensional
  * subsection of the u, v array. We only need to allocate space
  * for them if the input is not already double. Otherwise, we just 
  * have them point to the appropriate locations in u and v.
@@ -7735,7 +7735,7 @@ NhlErrorTypes lapvf_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -7761,7 +7761,7 @@ NhlErrorTypes lapvf_W( void )
                                  5,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ulap,tmp_vlap,work1);
@@ -7787,7 +7787,7 @@ NhlErrorTypes lapvf_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapvf: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapvf: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -7912,11 +7912,11 @@ NhlErrorTypes lapvg_W( void )
            &type_vlap,
            1);
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapvg: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapvg: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -7926,7 +7926,7 @@ NhlErrorTypes lapvg_W( void )
     }
   }
 /*
- * The output arrays must also be at least 2-dimensional and the same sizes.
+ * The output arrays must also be at least two-dimensional and the same sizes.
  */
   if( ndims_u != ndims_ulap || ndims_v != ndims_ulap ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lapvg: The input/output arrays must have the same number of dimensions");
@@ -7959,7 +7959,7 @@ NhlErrorTypes lapvg_W( void )
                  NULL);
 /*
  * Allocate space for temporary input. The temporary arrays tmp_u
- * and tmp_v are just big enough to hold a 2-dimensional
+ * and tmp_v are just big enough to hold a two-dimensional
  * subsection of the u, v array. We only need to allocate space
  * for them if the input is not already double. Otherwise, we just 
  * have them point to the appropriate locations in u and v.
@@ -8141,7 +8141,7 @@ NhlErrorTypes lapvg_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -8167,7 +8167,7 @@ NhlErrorTypes lapvg_W( void )
                                  5,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ulap,tmp_vlap,work1);
@@ -8193,7 +8193,7 @@ NhlErrorTypes lapvg_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapvg: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"lapvg: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -8320,11 +8320,11 @@ NhlErrorTypes uv2sfvpf_W( void )
            &type_vp,
            1);
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpf: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpf: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -8365,7 +8365,7 @@ NhlErrorTypes uv2sfvpf_W( void )
   coerce_missing(type_vp,has_missing_vp,&missing_vp,&missing_dvp,NULL);
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in u, v, sf, and vp.
@@ -8543,7 +8543,7 @@ NhlErrorTypes uv2sfvpf_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -8568,7 +8568,7 @@ NhlErrorTypes uv2sfvpf_W( void )
                                  &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_sf,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vp,work1);
@@ -8596,7 +8596,7 @@ NhlErrorTypes uv2sfvpf_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2sfvpf: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2sfvpf: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -8700,11 +8700,11 @@ NhlErrorTypes uv2sfvpF_W( void )
            &type_v,
            DONT_CARE);
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpF: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpF: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -8725,7 +8725,7 @@ NhlErrorTypes uv2sfvpF_W( void )
   coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in u, v, sf, and vp.
@@ -8909,7 +8909,7 @@ NhlErrorTypes uv2sfvpF_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -8934,7 +8934,7 @@ NhlErrorTypes uv2sfvpF_W( void )
                                  &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_sf,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vp,work1);
@@ -8983,7 +8983,7 @@ NhlErrorTypes uv2sfvpF_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2sfvpF: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2sfvpF: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     ret = NclReturnValue(sfvp,ndims_sfvp,dsizes_sfvp,&missing_sfvp,
                           type_sfvp,0);
   }
@@ -9096,11 +9096,11 @@ NhlErrorTypes uv2sfvpg_W( void )
            &type_vp,
            1);
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpg: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpg: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -9141,7 +9141,7 @@ NhlErrorTypes uv2sfvpg_W( void )
   coerce_missing(type_vp,has_missing_vp,&missing_vp,&missing_dvp,NULL);
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in u, v, sf, and vp.
@@ -9319,7 +9319,7 @@ NhlErrorTypes uv2sfvpg_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -9343,7 +9343,7 @@ NhlErrorTypes uv2sfvpg_W( void )
                                 &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_sf,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vp,work1);
@@ -9371,7 +9371,7 @@ NhlErrorTypes uv2sfvpg_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2sfvpg: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2sfvpg: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -9475,11 +9475,11 @@ NhlErrorTypes uv2sfvpG_W( void )
            &type_v,
            DONT_CARE);
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpG: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpG: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -9500,7 +9500,7 @@ NhlErrorTypes uv2sfvpG_W( void )
   coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in u, v, sf, and vp.
@@ -9684,7 +9684,7 @@ NhlErrorTypes uv2sfvpG_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -9708,7 +9708,7 @@ NhlErrorTypes uv2sfvpG_W( void )
                                  &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_sf,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vp,work1);
@@ -9757,7 +9757,7 @@ NhlErrorTypes uv2sfvpG_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2sfvpG: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2sfvpG: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     ret = NclReturnValue(sfvp,ndims_sfvp,dsizes_sfvp,&missing_sfvp,
                           type_sfvp,0);
   }
@@ -9871,11 +9871,11 @@ NhlErrorTypes lderuvf_W( void )
            &type_vy,
            1);
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvf: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvf: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -9885,7 +9885,7 @@ NhlErrorTypes lderuvf_W( void )
     }
   }
 /*
- * The output arrays must also be at least 2-dimensional and the same sizes.
+ * The output arrays must also be at least two-dimensional and the same sizes.
  */
   if( ndims_uy != ndims_u || ndims_vy != ndims_u ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvf: The input/output arrays must have the same number of dimensions");
@@ -9919,7 +9919,7 @@ NhlErrorTypes lderuvf_W( void )
   coerce_missing(type_vy,has_missing_vy,&missing_vy,&missing_dvy,NULL);
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in u, v, uy, and vy.
@@ -10099,7 +10099,7 @@ NhlErrorTypes lderuvf_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -10125,7 +10125,7 @@ NhlErrorTypes lderuvf_W( void )
       NGCALLF(dchkerr,DCHKERR)("lderuvf","vtsec",&ier,&jer,&ker,&mer,7,5);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_uy,tmp_vy,work1);
@@ -10152,7 +10152,7 @@ NhlErrorTypes lderuvf_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"lderuvf: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"lderuvf: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -10280,11 +10280,11 @@ NhlErrorTypes lderuvg_W( void )
            &type_vy,
            1);
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvg: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvg: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -10294,7 +10294,7 @@ NhlErrorTypes lderuvg_W( void )
     }
   }
 /*
- * The output arrays must also be at least 2-dimensional and the same sizes.
+ * The output arrays must also be at least two-dimensional and the same sizes.
  */
   if( ndims_uy != ndims_u || ndims_vy != ndims_u ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvg: The input/output arrays must have the same number of dimensions");
@@ -10329,7 +10329,7 @@ NhlErrorTypes lderuvg_W( void )
 
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in u, v, uy, and vy.
@@ -10508,7 +10508,7 @@ NhlErrorTypes lderuvg_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -10534,7 +10534,7 @@ NhlErrorTypes lderuvg_W( void )
       NGCALLF(dchkerr,DCHKERR)("lderuvg","vtsgc",&ier,&jer,&ker,&mer,7,5);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_uy,tmp_vy,work1);
@@ -10561,7 +10561,7 @@ NhlErrorTypes lderuvg_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"lderuvg: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"lderuvg: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -10677,11 +10677,11 @@ NhlErrorTypes uv2dvf_W( void )
            &type_dv,
            1);
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvf: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvf: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -10691,7 +10691,7 @@ NhlErrorTypes uv2dvf_W( void )
     }
   }
 /*
- * The output array must also be at least 2-dimensional.
+ * The output array must also be at least two-dimensional.
  */
   if( ndims_dv != ndims_u  ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvf: The input/output arrays must have the same number of dimensions");
@@ -10724,7 +10724,7 @@ NhlErrorTypes uv2dvf_W( void )
 
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in u, v, and dv.
@@ -10886,7 +10886,7 @@ NhlErrorTypes uv2dvf_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -10914,7 +10914,7 @@ NhlErrorTypes uv2dvf_W( void )
                                  6,12);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
@@ -10937,7 +10937,7 @@ NhlErrorTypes uv2dvf_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2dvf: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2dvf: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -11038,11 +11038,11 @@ NhlErrorTypes uv2dvF_W( void )
            &type_v,
            DONT_CARE);
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvF: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvF: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -11063,7 +11063,7 @@ NhlErrorTypes uv2dvF_W( void )
   coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,&missing_rv);
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in u, v, and dv.
@@ -11246,7 +11246,7 @@ NhlErrorTypes uv2dvF_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -11275,7 +11275,7 @@ NhlErrorTypes uv2dvF_W( void )
 
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
@@ -11316,7 +11316,7 @@ NhlErrorTypes uv2dvF_W( void )
 /*
  * If any input arrays contained missing values, print a warning message.
  */
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2dvF: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2dvF: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     return(NclReturnValue(dv,ndims_u,dsizes_u,&missing_dvo,type_dv,0));
   }
   else {
@@ -11415,11 +11415,11 @@ NhlErrorTypes uv2dvg_W( void )
            &type_dv,
            1);
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvg: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvg: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -11429,7 +11429,7 @@ NhlErrorTypes uv2dvg_W( void )
     }
   }
 /*
- * The output array must also be at least 2-dimensional.
+ * The output array must also be at least two-dimensional.
  */
   if( ndims_dv != ndims_u  ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvg: The input/output arrays must have the same number of dimensions");
@@ -11462,7 +11462,7 @@ NhlErrorTypes uv2dvg_W( void )
 
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in u, v, and vort.
@@ -11624,7 +11624,7 @@ NhlErrorTypes uv2dvg_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -11651,7 +11651,7 @@ NhlErrorTypes uv2dvg_W( void )
                                  6,12);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
@@ -11674,7 +11674,7 @@ NhlErrorTypes uv2dvg_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2dvg: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2dvg: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -11775,11 +11775,11 @@ NhlErrorTypes uv2dvG_W( void )
            &type_v,
            DONT_CARE);
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvG: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvG: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -11800,7 +11800,7 @@ NhlErrorTypes uv2dvG_W( void )
   coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,&missing_rv);
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in u, v, and dv.
@@ -11983,7 +11983,7 @@ NhlErrorTypes uv2dvG_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -12009,7 +12009,7 @@ NhlErrorTypes uv2dvG_W( void )
                                  6,12);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
@@ -12050,7 +12050,7 @@ NhlErrorTypes uv2dvG_W( void )
 /*
  * If any input arrays contained missing values, print a warning message.
  */
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2dvG: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2dvG: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     return(NclReturnValue(dv,ndims_u,dsizes_u,&missing_dvo,type_dv,0));
   }
   else {
@@ -12148,11 +12148,11 @@ NhlErrorTypes uv2vrf_W( void )
            &type_vort,
            1);
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrf: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrf: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -12162,7 +12162,7 @@ NhlErrorTypes uv2vrf_W( void )
     }
   }
 /*
- * The output array must also be at least 2-dimensional.
+ * The output array must also be at least two-dimensional.
  */
   if( ndims_vort != ndims_u  ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrf: The input/output arrays must have the same number of dimensions");
@@ -12193,7 +12193,7 @@ NhlErrorTypes uv2vrf_W( void )
 
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in u, v, and vort.
@@ -12356,7 +12356,7 @@ NhlErrorTypes uv2vrf_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -12384,7 +12384,7 @@ NhlErrorTypes uv2vrf_W( void )
                                  6,12);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vort,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
@@ -12407,7 +12407,7 @@ NhlErrorTypes uv2vrf_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrf: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrf: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -12509,11 +12509,11 @@ NhlErrorTypes uv2vrF_W( void )
            DONT_CARE);
 
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrF: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrF: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -12534,7 +12534,7 @@ NhlErrorTypes uv2vrF_W( void )
   coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,&missing_rv);
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in u, v, and vort.
@@ -12717,7 +12717,7 @@ NhlErrorTypes uv2vrF_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -12745,7 +12745,7 @@ NhlErrorTypes uv2vrF_W( void )
                                  6,12);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vort,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
@@ -12786,7 +12786,7 @@ NhlErrorTypes uv2vrF_W( void )
 /*
  * If any input arrays contained missing values, print a warning message.
  */
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrF: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrF: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     return(NclReturnValue(vort,ndims_u,dsizes_u,&missing_vort,type_vort,0));
   }
   else {
@@ -12885,11 +12885,11 @@ NhlErrorTypes uv2vrg_W( void )
            &type_vort,
            1);
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrg: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrg: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -12899,7 +12899,7 @@ NhlErrorTypes uv2vrg_W( void )
     }
   }
 /*
- * The output array must also be at least 2-dimensional.
+ * The output array must also be at least two-dimensional.
  */
   if( ndims_vort != ndims_u  ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrg: The input/output arrays must have the same number of dimensions");
@@ -12929,7 +12929,7 @@ NhlErrorTypes uv2vrg_W( void )
                  NULL);
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in u, v, and vort.
@@ -13092,7 +13092,7 @@ NhlErrorTypes uv2vrg_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -13119,7 +13119,7 @@ NhlErrorTypes uv2vrg_W( void )
                                  6,12);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vort,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
@@ -13142,7 +13142,7 @@ NhlErrorTypes uv2vrg_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrg: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrg: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -13244,11 +13244,11 @@ NhlErrorTypes uv2vrG_W( void )
            DONT_CARE);
 
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrF: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrF: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -13269,7 +13269,7 @@ NhlErrorTypes uv2vrG_W( void )
   coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,&missing_rv);
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in u, v, and vort.
@@ -13452,7 +13452,7 @@ NhlErrorTypes uv2vrG_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -13479,7 +13479,7 @@ NhlErrorTypes uv2vrG_W( void )
                                  6,12);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vort,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_u,tmp_v,work1);
@@ -13517,7 +13517,7 @@ NhlErrorTypes uv2vrG_W( void )
 /*
  * If any input arrays contained missing values, print a warning message.
  */
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrG: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrG: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     return(NclReturnValue(vort,ndims_u,dsizes_u,&missing_vort,type_vort,0));
   }
   else {
@@ -13629,11 +13629,11 @@ NhlErrorTypes uv2vrdvf_W( void )
            1);
 
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvf: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvf: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -13643,7 +13643,7 @@ NhlErrorTypes uv2vrdvf_W( void )
     }
   }
 /*
- * The output arrays must also be at least 2-dimensional.
+ * The output arrays must also be at least two-dimensional.
  */
   if( ndims_vr != ndims_u || ndims_dv != ndims_u ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvf: The input/output arrays must have the same number of dimensions");
@@ -13675,7 +13675,7 @@ NhlErrorTypes uv2vrdvf_W( void )
 
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in u, v, vr, and dv.
@@ -13853,7 +13853,7 @@ NhlErrorTypes uv2vrdvf_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -13882,7 +13882,7 @@ NhlErrorTypes uv2vrdvf_W( void )
                                  &ker,&mer,8,18);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vr,work1);
@@ -13910,7 +13910,7 @@ NhlErrorTypes uv2vrdvf_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrdvf: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrdvf: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -14016,11 +14016,11 @@ NhlErrorTypes uv2vrdvF_W( void )
            DONT_CARE);
 
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvF: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvF: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -14041,7 +14041,7 @@ NhlErrorTypes uv2vrdvF_W( void )
   coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in u, v, vr, and dv.
@@ -14226,7 +14226,7 @@ NhlErrorTypes uv2vrdvF_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -14255,7 +14255,7 @@ NhlErrorTypes uv2vrdvF_W( void )
                                  &ker,&mer,8,18);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vr,work1);
@@ -14304,7 +14304,7 @@ NhlErrorTypes uv2vrdvF_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrdvF: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrdvF: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     ret = NclReturnValue(vrdv,ndims_vrdv,dsizes_vrdv,&missing_vrdv,
                           type_vrdv,0);
   }
@@ -14419,11 +14419,11 @@ NhlErrorTypes uv2vrdvg_W( void )
            1);
 
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvg: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvg: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -14433,7 +14433,7 @@ NhlErrorTypes uv2vrdvg_W( void )
     }
   }
 /*
- * The output arrays must also be at least 2-dimensional.
+ * The output arrays must also be at least two-dimensional.
  */
   if( ndims_vr != ndims_u || ndims_dv != ndims_u ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvg: The input/output arrays must have the same number of dimensions");
@@ -14466,7 +14466,7 @@ NhlErrorTypes uv2vrdvg_W( void )
 
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in u, v, vr, and dv.
@@ -14645,7 +14645,7 @@ NhlErrorTypes uv2vrdvg_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -14673,7 +14673,7 @@ NhlErrorTypes uv2vrdvg_W( void )
                                  &ker,&mer,8,18);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vr,work1);
@@ -14701,7 +14701,7 @@ NhlErrorTypes uv2vrdvg_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrdvg: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrdvg: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -14807,11 +14807,11 @@ NhlErrorTypes uv2vrdvG_W( void )
            DONT_CARE);
 
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvG: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvG: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -14832,7 +14832,7 @@ NhlErrorTypes uv2vrdvG_W( void )
   coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
 /*
  * Allocate space for temporary input and output. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * input and output. We only need to allocate space for them if the
  * input/output is not already double. Otherwise, we just have them point
  * to the appropriate locations in u, v, vr, and dv.
@@ -15017,7 +15017,7 @@ NhlErrorTypes uv2vrdvG_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomatv,DGEOMATV)(&inlon,&inlat,tmp_u,tmp_v,work1);
 /*
@@ -15045,7 +15045,7 @@ NhlErrorTypes uv2vrdvG_W( void )
                                  &ker,&mer,8,18);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vr,work1);
@@ -15093,7 +15093,7 @@ NhlErrorTypes uv2vrdvG_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrdvG: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrdvG: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     ret = NclReturnValue(vrdv,ndims_vrdv,dsizes_vrdv,&missing_vrdv,
                           type_vrdv,0);
   }
@@ -15193,14 +15193,14 @@ NhlErrorTypes vr2uvf_W( void )
            &type_vr,
            1);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_vort < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvf: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvf: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
- * The output arrays must also be at least 2-dimensional.
+ * The output arrays must also be at least two-dimensional.
  */
   if( ndims_ur != ndims_vort || ndims_vr != ndims_vort ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvf: The input/output arrays must have the same number of dimensions");
@@ -15231,7 +15231,7 @@ NhlErrorTypes vr2uvf_W( void )
   coerce_missing(type_vr,has_missing_vr,&missing_vr,&missing_dvr,NULL);
 /*
  * Allocate space for temporary input array. The temporary array
- * tmp_vort is just big enough to hold a 2-dimensional subsection of the
+ * tmp_vort is just big enough to hold a two-dimensional subsection of the
  * vort array. We only need to allocate space for it if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in vort.
@@ -15391,7 +15391,7 @@ NhlErrorTypes vr2uvf_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vort,work1);
 /*
@@ -15420,7 +15420,7 @@ NhlErrorTypes vr2uvf_W( void )
                                  6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vort,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ur,tmp_vr,work1);
@@ -15447,7 +15447,7 @@ NhlErrorTypes vr2uvf_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"vr2uvf: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"vr2uvf: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -15537,10 +15537,10 @@ NhlErrorTypes vr2uvF_W( void )
            &type_vort,
            DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_vort < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvF: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvF: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -15555,7 +15555,7 @@ NhlErrorTypes vr2uvF_W( void )
                  &missing_rvort);
 /*
  * Allocate space for temporary input/output arrays. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * full arrays. We only need to allocate space for them if the
  * input is not already double. Otherwise, we just have them point
  * to their appropriate locations in vr.
@@ -15713,7 +15713,7 @@ NhlErrorTypes vr2uvF_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vort,work1);
 /*
@@ -15741,7 +15741,7 @@ NhlErrorTypes vr2uvF_W( void )
                                  6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vort,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ur,tmp_vr,work1);
@@ -15786,7 +15786,7 @@ NhlErrorTypes vr2uvF_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"vr2uvF: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"vr2uvF: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     ret = NclReturnValue(uvr,ndims_uvr,dsizes_uvr,&missing_uvr,type_uvr,0);
   }
   else {
@@ -15886,14 +15886,14 @@ NhlErrorTypes vr2uvg_W( void )
            &type_vr,
            1);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_vort < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvg: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvg: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
- * The output arrays must also be at least 2-dimensional.
+ * The output arrays must also be at least two-dimensional.
  */
   if( ndims_ur != ndims_vort || ndims_vr != ndims_vort ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvg: The input/output arrays must have the same number of dimensions");
@@ -15925,7 +15925,7 @@ NhlErrorTypes vr2uvg_W( void )
 
 /*
  * Allocate space for temporary input array. The temporary array
- * tmp_vort is just big enough to hold a 2-dimensional subsection of the
+ * tmp_vort is just big enough to hold a two-dimensional subsection of the
  * vort array. We only need to allocate space for it if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in vort.
@@ -16085,7 +16085,7 @@ NhlErrorTypes vr2uvg_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vort,work1);
 /*
@@ -16112,7 +16112,7 @@ NhlErrorTypes vr2uvg_W( void )
                                  &mer,6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vort,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ur,tmp_vr,work1);
@@ -16139,7 +16139,7 @@ NhlErrorTypes vr2uvg_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"vr2uvg: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"vr2uvg: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -16229,10 +16229,10 @@ NhlErrorTypes vr2uvG_W( void )
            &type_vort,
            DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_vort < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvG: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvG: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -16247,7 +16247,7 @@ NhlErrorTypes vr2uvG_W( void )
                  &missing_rvort);
 /*
  * Allocate space for temporary input/output arrays. The temporary arrays
- * are just big enough to hold a 2-dimensional subsection of the
+ * are just big enough to hold a two-dimensional subsection of the
  * full arrays. We only need to allocate space for them if the
  * input is not already double. Otherwise, we just have them point
  * to their appropriate locations in vr.
@@ -16405,7 +16405,7 @@ NhlErrorTypes vr2uvG_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vort,work1);
 /*
@@ -16432,7 +16432,7 @@ NhlErrorTypes vr2uvG_W( void )
                                  &mer,6,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vort,work1);
       NGCALLF(dmatgeov,DMATGEOV)(&inlat,&inlon,tmp_ur,tmp_vr,work1);
@@ -16477,7 +16477,7 @@ NhlErrorTypes vr2uvG_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"vr2uvG: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"vr2uvG: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     ret = NclReturnValue(uvr,ndims_uvr,dsizes_uvr,&missing_uvr,type_uvr,0);
   }
   else {
@@ -16589,11 +16589,11 @@ NhlErrorTypes vrdv2uvf_W( void )
            &type_v,
            1);
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_vr != ndims_dv || ndims_vr < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvf: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvf: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_vr; i++ ) {
@@ -16603,7 +16603,7 @@ NhlErrorTypes vrdv2uvf_W( void )
     }
   }
 /*
- * The output arrays must also be at least 2-dimensional and the same sizes.
+ * The output arrays must also be at least two-dimensional and the same sizes.
  */
   if( ndims_u != ndims_vr || ndims_v != ndims_vr ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvf: The input/output arrays must have the same number of dimensions");
@@ -16638,7 +16638,7 @@ NhlErrorTypes vrdv2uvf_W( void )
 
 /*
  * Allocate space for temporary input arrays. The temporary arrays
- * tmp_dv/tmp_vr are just big enough to hold 2-dimensional subsections
+ * tmp_dv/tmp_vr are just big enough to hold two-dimensional subsections
  * of the dv/vr array. We only need to allocate space for them if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in dv/vr.
@@ -16825,7 +16825,7 @@ NhlErrorTypes vrdv2uvf_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_dv,work1);
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vr,work1);
@@ -16853,7 +16853,7 @@ NhlErrorTypes vrdv2uvf_W( void )
                                  &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vr,work1);
@@ -16881,7 +16881,7 @@ NhlErrorTypes vrdv2uvf_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"vrdv2uvf: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"vrdv2uvf: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -16988,11 +16988,11 @@ NhlErrorTypes vrdv2uvF_W( void )
            DONT_CARE);
 
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_vr != ndims_dv || ndims_vr < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvF: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvF: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_vr; i++ ) {
@@ -17014,7 +17014,7 @@ NhlErrorTypes vrdv2uvF_W( void )
 
 /*
  * Allocate space for temporary input arrays. The temporary arrays
- * tmp_dv/tmp_vr are just big enough to hold 2-dimensional subsections
+ * tmp_dv/tmp_vr are just big enough to hold two-dimensional subsections
  * of the dv/vr array. We only need to allocate space for them if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in dv/vr.
@@ -17203,7 +17203,7 @@ NhlErrorTypes vrdv2uvF_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_dv,work1);
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vr,work1);
@@ -17231,7 +17231,7 @@ NhlErrorTypes vrdv2uvF_W( void )
                                  &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vr,work1);
@@ -17282,7 +17282,7 @@ NhlErrorTypes vrdv2uvF_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"vrdv2uvF: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"vrdv2uvF: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     ret = NclReturnValue(uv,ndims_uv,dsizes_uv,&missing_uv,type_uv,0);
   }
   else {
@@ -17394,11 +17394,11 @@ NhlErrorTypes vrdv2uvg_W( void )
            &type_v,
            1);
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_vr != ndims_dv || ndims_vr < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvg: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvg: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_vr; i++ ) {
@@ -17408,7 +17408,7 @@ NhlErrorTypes vrdv2uvg_W( void )
     }
   }
 /*
- * The output arrays must also be at least 2-dimensional and the same sizes.
+ * The output arrays must also be at least two-dimensional and the same sizes.
  */
   if( ndims_u != ndims_vr || ndims_v != ndims_vr ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvg: The input/output arrays must have the same number of dimensions");
@@ -17440,7 +17440,7 @@ NhlErrorTypes vrdv2uvg_W( void )
 
 /*
  * Allocate space for temporary input arrays. The temporary arrays
- * tmp_dv/tmp_vr are just big enough to hold 2-dimensional subsections
+ * tmp_dv/tmp_vr are just big enough to hold two-dimensional subsections
  * of the dv/vr array. We only need to allocate space for them if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in dv/vr.
@@ -17627,7 +17627,7 @@ NhlErrorTypes vrdv2uvg_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_dv,work1);
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vr,work1);
@@ -17655,7 +17655,7 @@ NhlErrorTypes vrdv2uvg_W( void )
                                  &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vr,work1);
@@ -17683,7 +17683,7 @@ NhlErrorTypes vrdv2uvg_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"vrdv2uvg: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"vrdv2uvg: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -17789,11 +17789,11 @@ NhlErrorTypes vrdv2uvG_W( void )
            &type_dv,
            DONT_CARE);
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_vr != ndims_dv || ndims_vr < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvG: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvG: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_vr; i++ ) {
@@ -17815,7 +17815,7 @@ NhlErrorTypes vrdv2uvG_W( void )
 
 /*
  * Allocate space for temporary input arrays. The temporary arrays
- * tmp_dv/tmp_vr are just big enough to hold 2-dimensional subsections
+ * tmp_dv/tmp_vr are just big enough to hold two-dimensional subsections
  * of the dv/vr array. We only need to allocate space for them if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in dv/vr.
@@ -18004,7 +18004,7 @@ NhlErrorTypes vrdv2uvG_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_dv,work1);
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vr,work1);
@@ -18030,7 +18030,7 @@ NhlErrorTypes vrdv2uvG_W( void )
                                  &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_dv,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vr,work1);
@@ -18081,7 +18081,7 @@ NhlErrorTypes vrdv2uvG_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"vrdv2uvG: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"vrdv2uvG: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
     ret = NclReturnValue(uv,ndims_uv,dsizes_uv,&missing_uv,type_uv,0);
   }
   else {
@@ -18195,11 +18195,11 @@ NhlErrorTypes sfvp2uvf_W( void )
            1);
 
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_sf != ndims_vp || ndims_sf < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvf: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvf: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_sf; i++ ) {
@@ -18209,7 +18209,7 @@ NhlErrorTypes sfvp2uvf_W( void )
     }
   }
 /*
- * The output arrays must also be at least 2-dimensional and the same sizes.
+ * The output arrays must also be at least two-dimensional and the same sizes.
  */
   if( ndims_u != ndims_sf || ndims_v != ndims_sf ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvf: The input/output arrays must have the same number of dimensions");
@@ -18241,7 +18241,7 @@ NhlErrorTypes sfvp2uvf_W( void )
 
 /*
  * Allocate space for temporary input arrays. The temporary arrays
- * tmp_vp/tmp_sf are just big enough to hold 2-dimensional subsections
+ * tmp_vp/tmp_sf are just big enough to hold two-dimensional subsections
  * of the vp/sf array. We only need to allocate space for them if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in vp/sf.
@@ -18427,7 +18427,7 @@ NhlErrorTypes sfvp2uvf_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vp,work1);
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_sf,work1);
@@ -18454,7 +18454,7 @@ NhlErrorTypes sfvp2uvf_W( void )
                                  &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vp,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_sf,work1);
@@ -18482,7 +18482,7 @@ NhlErrorTypes sfvp2uvf_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"sfvp2uvf: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"sfvp2uvf: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -18611,11 +18611,11 @@ NhlErrorTypes sfvp2uvg_W( void )
            1);
 
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_sf != ndims_vp || ndims_sf < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvg: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvg: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_sf; i++ ) {
@@ -18625,7 +18625,7 @@ NhlErrorTypes sfvp2uvg_W( void )
     }
   }
 /*
- * The output arrays must also be at least 2-dimensional and the same sizes.
+ * The output arrays must also be at least two-dimensional and the same sizes.
  */
   if( ndims_u != ndims_sf || ndims_v != ndims_sf ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvg: The input/output arrays must have the same number of dimensions");
@@ -18657,7 +18657,7 @@ NhlErrorTypes sfvp2uvg_W( void )
 
 /*
  * Allocate space for temporary input arrays. The temporary arrays
- * tmp_vp/tmp_sf are just big enough to hold 2-dimensional subsections
+ * tmp_vp/tmp_sf are just big enough to hold two-dimensional subsections
  * of the vp/sf array. We only need to allocate space for them if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in vp/sf.
@@ -18842,7 +18842,7 @@ NhlErrorTypes sfvp2uvg_W( void )
 
 /*
  * Transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_vp,work1);
       NGCALLF(dgeomat,DGEOMAT)(&inlon,&inlat,tmp_sf,work1);
@@ -18869,7 +18869,7 @@ NhlErrorTypes sfvp2uvg_W( void )
                                  &mer,8,13);
 /* 
  * Transform from math coordinates to geophysical coordinates.
- * (math) nlon is the last dim
+ * (math) nlon is the rightmost dim
  */
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_vp,work1);
       NGCALLF(dmatgeo,DMATGEO)(&inlat,&inlon,tmp_sf,work1);
@@ -18897,7 +18897,7 @@ NhlErrorTypes sfvp2uvg_W( void )
  * warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"sfvp2uvg: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"sfvp2uvg: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free the work arrays.
@@ -19037,11 +19037,11 @@ NhlErrorTypes vhaec_W( void )
            1);
 
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaec: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaec: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -19131,7 +19131,7 @@ NhlErrorTypes vhaec_W( void )
 
 /*
  * transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
   j = 0;
   for(i = 0; i < nt; i++ ) {
@@ -19198,7 +19198,7 @@ NhlErrorTypes vhaec_W( void )
   NGCALLF(dchkerr,DCHKERR)("vhaec","vhaec",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates
- * (math) nlon is the first dim
+ * (math) nlon is the leftmost dim
  */
   lwork = nlatnlon;
   work  = (double*)calloc(lwork,sizeof(double));
@@ -19296,11 +19296,11 @@ NhlErrorTypes vhaeC_W( void )
            DONT_CARE);
 
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaeC: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaeC: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -19351,7 +19351,7 @@ NhlErrorTypes vhaeC_W( void )
 
 /*
  * transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
   j = 0;
   for(i = 0; i < nt; i++ ) {
@@ -19416,7 +19416,7 @@ NhlErrorTypes vhaeC_W( void )
   NGCALLF(dchkerr,DCHKERR)("vhaec","vhaec",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates
- * (math) nlon is the first dim
+ * (math) nlon is the leftmost dim
  */
   lwork = nlatnlon;
   work  = (double*)calloc(lwork,sizeof(double));
@@ -19583,11 +19583,11 @@ NhlErrorTypes vhagc_W( void )
            1);
 
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagc: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagc: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -19673,7 +19673,7 @@ NhlErrorTypes vhagc_W( void )
 
 /*
  * transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
   j = 0;
   for(i = 0; i < nt; i++ ) {
@@ -19741,7 +19741,7 @@ NhlErrorTypes vhagc_W( void )
   NGCALLF(dchkerr,DCHKERR)("vhagc","vhagc",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates
- * (math) nlon is the first dim
+ * (math) nlon is the leftmost dim
  */
   lwork = nlatnlon;
   work  = (double*)calloc(lwork,sizeof(double));
@@ -19838,11 +19838,11 @@ NhlErrorTypes vhagC_W( void )
            DONT_CARE);
 
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if( ndims_u != ndims_v || ndims_u < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagC: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagC: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_u; i++ ) {
@@ -19896,7 +19896,7 @@ NhlErrorTypes vhagC_W( void )
 
 /*
  * transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
   j = 0;
   for(i = 0; i < nt; i++ ) {
@@ -19965,7 +19965,7 @@ NhlErrorTypes vhagC_W( void )
   NGCALLF(dchkerr,DCHKERR)("vhagC","vhagc",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates
- * (math) nlon is the first dim
+ * (math) nlon is the leftmost dim
  */
   lwork = nlatnlon;
   work  = (double*)calloc(lwork,sizeof(double));
@@ -20130,12 +20130,12 @@ NhlErrorTypes vhsec_W( void )
            &type_v,
            1);
 /*
- * The grids coming in must be at least 2-dimensional.
+ * The grids coming in must be at least two-dimensional.
  */
   if( ndims_br != ndims_bi || ndims_br != ndims_ci || ndims_br != ndims_cr ||
       ndims_bi != ndims_ci || ndims_bi != ndims_cr ||
       ndims_cr != ndims_ci || ndims_br < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsec: The input arrays must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsec: The input arrays must be at least two-dimensional");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_br; i++ ) {
@@ -20254,7 +20254,7 @@ NhlErrorTypes vhsec_W( void )
   NGCALLF(dchkerr,DCHKERR)("vhsec","vhsec",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates
- * (math) nlon is the first dim
+ * (math) nlon is the leftmost dim
  */
   lwork = nlatnlon;
   work  = (double*)calloc(lwork,sizeof(double));
@@ -20361,14 +20361,14 @@ NhlErrorTypes vhseC_W( void )
   NclFree(nlon_dims);
 
 /*
- * The grid coming in must be at least 3-dimensional.
+ * The grid coming in must be at least three-dimensional.
  */
   if( ndims_bc < 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhseC: The input array must be at least 3-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhseC: The input array must be at least three-dimensional");
     return(NhlFATAL);
   }
   if(dsizes_bc[0] != 4) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhseC: The first dimension of the input array must be 4");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhseC: The leftmost dimension of the input array must be 4");
     return(NhlFATAL);
   }
 /*
@@ -20464,7 +20464,7 @@ NhlErrorTypes vhseC_W( void )
   NGCALLF(dchkerr,DCHKERR)("vhseC","vhsec",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates
- * (math) nlon is the first dim
+ * (math) nlon is the leftmost dim
  */
   lwork = nlatnlon;
   work  = (double*)calloc(lwork,sizeof(double));
@@ -20630,13 +20630,13 @@ NhlErrorTypes vhsgc_W( void )
            1);
 
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  *  dimensions. 
  */
   if( ndims_br != ndims_bi || ndims_br != ndims_ci || ndims_br != ndims_cr ||
       ndims_bi != ndims_ci || ndims_bi != ndims_cr ||
       ndims_cr != ndims_ci || ndims_br < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsgc: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsgc: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_br; i++ ) {
@@ -20755,7 +20755,7 @@ NhlErrorTypes vhsgc_W( void )
   NGCALLF(dchkerr,DCHKERR)("vhsgc","vhsgc",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates
- * (math) nlon is the first dim
+ * (math) nlon is the leftmost dim
  */
   lwork = nlatnlon;
   work  = (double*)calloc(lwork,sizeof(double));
@@ -20862,14 +20862,14 @@ NhlErrorTypes vhsgC_W( void )
   NclFree(nlon_dims);
 
 /*
- * The grid coming in must be at least 3-dimensional.
+ * The grid coming in must be at least three-dimensional.
  */
   if( ndims_bc < 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsgC: The input array must be at least 3-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsgC: The input array must be at least three-dimensional");
     return(NhlFATAL);
   }
   if(dsizes_bc[0] != 4) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsgC: The first dimension of the input array must be 4");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsgC: The leftmost dimension of the input array must be 4");
     return(NhlFATAL);
   }
 /*
@@ -20964,7 +20964,7 @@ NhlErrorTypes vhsgC_W( void )
   NGCALLF(dchkerr,DCHKERR)("vhsgC","vhsgc",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates
- * (math) nlon is the first dim
+ * (math) nlon is the leftmost dim
  */
   lwork = nlatnlon;
   work  = (double*)calloc(lwork,sizeof(double));
@@ -21105,10 +21105,10 @@ NhlErrorTypes shaec_W( void )
   }
 
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if(ndims_g < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shaec: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shaec: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -21183,7 +21183,7 @@ NhlErrorTypes shaec_W( void )
 
 /*
  * transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
   j = 0;
   for(i = 0; i < nt; i++ ) {
@@ -21249,7 +21249,7 @@ NhlErrorTypes shaec_W( void )
   NGCALLF(dchkerr,DCHKERR)("shaec","shaec",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates
- * (math) nlon is the first dim
+ * (math) nlon is the leftmost dim
  */
   lwork = nlatnlon;
   work  = (double*)calloc(lwork,sizeof(double));
@@ -21365,10 +21365,10 @@ NhlErrorTypes shagc_W( void )
   }
 
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if(ndims_g < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shagc: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shagc: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -21440,7 +21440,7 @@ NhlErrorTypes shagc_W( void )
   inlat = (int) nlat;
 /*
  * transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
   j = 0;
   for(i = 0; i < nt; i++ ) {
@@ -21507,7 +21507,7 @@ NhlErrorTypes shagc_W( void )
   NGCALLF(dchkerr,DCHKERR)("shagc","shagc",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates
- * (math) nlon is the first dim
+ * (math) nlon is the leftmost dim
  */
   lwork = nlatnlon;
   work  = (double*)calloc(lwork,sizeof(double));
@@ -21618,11 +21618,11 @@ NhlErrorTypes shsec_W( void )
           1);
 
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if(ndims_a != ndims_b || ndims_a < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsec: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsec: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_a; i++ ) {
@@ -21740,7 +21740,7 @@ NhlErrorTypes shsec_W( void )
   NGCALLF(dchkerr,DCHKERR)("shsec","shsec",&ier,&jer,&ker,&mer,5,5);
 /*
  * transform from math coordinates to geophysical coordinates
- * (math) nlon is the first dim
+ * (math) nlon is the leftmost dim
  */
   lwork = nlatnlon;
   work  = (double*)calloc(lwork,sizeof(double));
@@ -21849,11 +21849,11 @@ NhlErrorTypes shsgc_W( void )
           &type_g,
           1);
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions.
  */
   if(ndims_a != ndims_b || ndims_a < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_a; i++ ) {
@@ -21970,7 +21970,7 @@ NhlErrorTypes shsgc_W( void )
   NGCALLF(dchkerr,DCHKERR)("shsgc","shsgc",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates
- * (math) nlon is the first dim
+ * (math) nlon is the leftmost dim
  */
   lwork = nlatnlon;
   work  = (double*)calloc(lwork,sizeof(double));
@@ -22056,12 +22056,12 @@ NhlErrorTypes shsgc_R42_W( void )
            DONT_CARE);
 
 /*
- * The grids coming in must be at least 2-dimensional and have the same # of
+ * The grids coming in must be at least two-dimensional and have the same # of
  * dimensions, and the rightmost dimensions must be 43 x 43.
  */
   size_rightmost_ab = 43 * 43;
   if(ndims_a != ndims_b || ndims_a < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc_R42: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc_R42: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   if(dsizes_a[ndims_a-1] != 43 || dsizes_a[ndims_a-2] != 43 || 
@@ -22128,7 +22128,7 @@ NhlErrorTypes shsgc_R42_W( void )
   }
 /*
  * Allocate space for temporary input array. The temporary array
- * tmp_g is just big enough to hold a 2-dimensional subsection of the
+ * tmp_g is just big enough to hold a two-dimensional subsection of the
  * g array (which is always size 108 x 128).
  */
   if(type_a != NCL_double && type_b != NCL_double) {
@@ -22268,10 +22268,10 @@ NhlErrorTypes shaeC_W( void )
            DONT_CARE);
 
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if(ndims_g < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shaeC: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shaeC: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -22325,7 +22325,7 @@ NhlErrorTypes shaeC_W( void )
 
 /*
  * transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
   j = 0;
   for(i = 0; i < nt; i++ ) {
@@ -22392,7 +22392,7 @@ NhlErrorTypes shaeC_W( void )
   NGCALLF(dchkerr,DCHKERR)("shaeC","shaec",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates
- * (math) nlon is the first dim
+ * (math) nlon is the leftmost dim
  */
   lwork = nlatnlon;
   work  = (double*)calloc(lwork,sizeof(double));
@@ -22498,10 +22498,10 @@ NhlErrorTypes shagC_W( void )
              DONT_CARE);
 
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if(ndims_g < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shagC: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shagC: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -22555,7 +22555,7 @@ NhlErrorTypes shagC_W( void )
 
 /*
  * transform from geophysical coordinates to math coordinates.
- * (geo) nlon is the last dim.
+ * (geo) nlon is the rightmost dim.
  */
   j = 0;
   for(i = 0; i < nt; i++ ) {
@@ -22621,7 +22621,7 @@ NhlErrorTypes shagC_W( void )
   NGCALLF(dchkerr,DCHKERR)("shagC","shagc",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates
- * (math) nlon is the first dim
+ * (math) nlon is the leftmost dim
  */
   lwork = nlatnlon;
   work  = (double*)calloc(lwork,sizeof(double));
@@ -22749,18 +22749,18 @@ NhlErrorTypes shseC_W( void )
   NclFree(nlon_dims);
 
 /*
- * The grid coming in must be at least 3-dimensional.
+ * The grid coming in must be at least three-dimensional.
  */
   if(ndims_ab < 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shseC: The input array must be at least 3-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shseC: The input array must be at least three-dimensional");
     return(NhlFATAL);
   }
   if(dsizes_ab[0] != 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shseC: The first dimension of the input array must be 2");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shseC: The leftmost dimension of the input array must be 2");
     return(NhlFATAL);
   }
 /*
- * Check the last dimension of ab.
+ * Check the rightmost dimension of ab.
  */
   ndab = nlat = dsizes_ab[ndims_ab-2];
   if (nlon % 2) {
@@ -22770,7 +22770,7 @@ NhlErrorTypes shseC_W( void )
     mdab   = min(nlat,(nlon+2)/2);
   }
   if(dsizes_ab[ndims_ab-1] != mdab) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shseC: The last dimension of the coefficient array must be min(nlat,(nlon+2)/2) if nlon is even or min(nlat,(nlon+1)/2) if nlon is odd");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shseC: The rightmost dimension of the coefficient array must be min(nlat,(nlon+2)/2) if nlon is even or min(nlat,(nlon+1)/2) if nlon is odd");
     return(NhlFATAL);
   }
 /*
@@ -22859,7 +22859,7 @@ NhlErrorTypes shseC_W( void )
   NGCALLF(dchkerr,DCHKERR)("shseC","shsec",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates
- * (math) nlon is the first dim
+ * (math) nlon is the leftmost dim
  */
   lwork = nlatnlon;
   work  = (double*)calloc(lwork,sizeof(double));
@@ -22988,18 +22988,18 @@ NhlErrorTypes shsgC_W( void )
   NclFree(nlon_dims);
 
 /*
- * The grid coming in must be at least 3-dimensional.
+ * The grid coming in must be at least three-dimensional.
  */
   if(ndims_ab < 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgC: The input array must be at least 3-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgC: The input array must be at least three-dimensional");
     return(NhlFATAL);
   }
   if(dsizes_ab[0] != 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgC: The first dimension of the input array must be 2");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgC: The leftmost dimension of the input array must be 2");
     return(NhlFATAL);
   }
 /*
- * Check the last dimension of ab.
+ * Check the rightmost dimension of ab.
  */
   ndab = nlat = dsizes_ab[ndims_ab-2];
   if (nlon % 2) {
@@ -23009,7 +23009,7 @@ NhlErrorTypes shsgC_W( void )
     mdab   = min(nlat,(nlon+2)/2);
   }
   if(dsizes_ab[ndims_ab-1] != mdab) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgC: The last dimension of the coefficient array must be min(nlat,(nlon+2)/2) if nlon is even or min(nlat,(nlon+1)/2) if nlon is odd");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgC: The rightmost dimension of the coefficient array must be min(nlat,(nlon+2)/2) if nlon is even or min(nlat,(nlon+1)/2) if nlon is odd");
     return(NhlFATAL);
   }
 /*
@@ -23101,7 +23101,7 @@ NhlErrorTypes shsgC_W( void )
   NGCALLF(dchkerr,DCHKERR)("shsgC","shsgc",&ier,&jer,&ker,&mer,5,5);
 /* 
  * transform from math coordinates to geophysical coordinates
- * (math) nlon is the first dim
+ * (math) nlon is the leftmost dim
  */
   lwork = nlatnlon;
   work  = (double*)calloc(lwork,sizeof(double));

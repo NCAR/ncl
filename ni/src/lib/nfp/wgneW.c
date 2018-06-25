@@ -121,7 +121,7 @@ NhlErrorTypes angmom_atm_W( void )
   }
 
   if(dsizes_wgt[0] != 1 && dsizes_wgt[0] != nlat) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"angmom_atm: wgt must be a scalar or a 1-dimensional vector the same size as the 'lats' array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"angmom_atm: wgt must be a scalar or a one-dimensional vector the same size as the 'lats' array");
     return(NhlFATAL);
   }
 
@@ -248,7 +248,7 @@ NhlErrorTypes angmom_atm_W( void )
     if(type_angmom == NCL_double) tmp_angmom = &((double*)angmom)[i];
 
 /*
- * Depending on whether dp is 1-dimensional or 3 (or 4) dimensional,
+ * Depending on whether dp is one-dimensional or 3 (or 4) dimensional,
  * call a different Fortran routine.  First, if dp is 3 or dimensional,
  * we need to coerce it to double.
  */ 

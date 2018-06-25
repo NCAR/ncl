@@ -129,7 +129,7 @@ NhlErrorTypes SMMul_W
 
     if( dsizes_x[1] !=  dsizes_y[1] ) 
     {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"The second dimension of x and y must be the same.");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"The second-from-the-left dimension of x and y must be the same.");
         return(NhlFATAL);
     }
     

@@ -126,12 +126,12 @@ NhlErrorTypes wgt_areaave_W( void )
   nxny = nx * ny;
 
   if(dsizes_wgty[0] != 1 && dsizes_wgty[0] != ny) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areaave: wgty must be a scalar or a 1-dimensional vector the same size as the second-to-the-last dimension of x");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areaave: wgty must be a scalar or a one-dimensional vector the same size as the second-from-the-right dimension of x");
     return(NhlFATAL);
   }
 
   if(dsizes_wgtx[0] != 1 && dsizes_wgtx[0] != nx) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areaave: wgtx must be a scalar or a 1-dimensional vector the same size as the last dimension of x");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areaave: wgtx must be a scalar or a one-dimensional vector the same size as the rightmost dimension of x");
     return(NhlFATAL);
   }
 
@@ -334,7 +334,7 @@ NhlErrorTypes wgt_areaave2_W( void )
   nxny = nx * ny;
 
   if(dsizes_wgt[0] != ny && dsizes_wgt[1] != ny) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areaave2: wgt must be a 2-dimensional array the same size as the two rightmost dimensions of x");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areaave2: wgt must be a two-dimensional array the same size as the two rightmost dimensions of x");
     return(NhlFATAL);
   }
 
@@ -523,7 +523,7 @@ NhlErrorTypes wgt_areasum2_W( void )
   nxny = nx * ny;
 
   if(dsizes_wgt[0] != ny && dsizes_wgt[1] != ny) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areasum2: wgt must be a 2-dimensional array the same size as the two rightmost dimensions of x");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areasum2: wgt must be a two-dimensional array the same size as the two rightmost dimensions of x");
     return(NhlFATAL);
   }
 
@@ -749,12 +749,12 @@ NhlErrorTypes wgt_arearmse_W( void )
   nlatnlon = nlon * nlat;
 
   if(dsizes_wgty[0] != 1 && dsizes_wgty[0] != nlat) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_arearmse: wgty must be a scalar or a 1-dimensional vector the same size as the second-to-the-last dimension of q");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_arearmse: wgty must be a scalar or a one-dimensional vector the same size as the second-from-the-right dimension of q");
     return(NhlFATAL);
   }
 
   if(dsizes_wgtx[0] != 1 && dsizes_wgtx[0] != nlon) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_arearmse: wgtx must be a scalar or a 1-dimensional vector the same size as the last dimension of q");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_arearmse: wgtx must be a scalar or a one-dimensional vector the same size as the rightmost dimension of q");
     return(NhlFATAL);
   }
 
@@ -1004,7 +1004,7 @@ NhlErrorTypes wgt_arearmse2_W( void )
   }
 
   if(dsizes_wgt[0] != ny && dsizes_wgt[1] != ny) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_arearmse2: wgt must be a 2-dimensional array the same size as the two rightmost dimensions of x and y");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_arearmse2: wgt must be a two-dimensional array the same size as the two rightmost dimensions of x and y");
     return(NhlFATAL);
   }
 
@@ -1243,15 +1243,15 @@ NhlErrorTypes wgt_volave_W( void )
   nxnynz = nx * ny * nz;
 
   if(dsizes_wgtz[0] != 1 && dsizes_wgtz[0] != nz) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave: wgtz must be a scalar or a 1-dimensional vector the same size as the third-to-the-last dimension of x");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave: wgtz must be a scalar or a one-dimensional vector the same size as the third-from-the-right dimension of x");
     return(NhlFATAL);
   }
   if(dsizes_wgty[0] != 1 && dsizes_wgty[0] != ny) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave: wgty must be a scalar or a 1-dimensional vector the same size as the second-to-the-last dimension of x");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave: wgty must be a scalar or a one-dimensional vector the same size as the second-from-the-right dimension of x");
     return(NhlFATAL);
   }
   if(dsizes_wgtx[0] != 1 && dsizes_wgtx[0] != nx) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave: wgtx must be a scalar or a 1-dimensional vector the same size as the last dimension of x");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave: wgtx must be a scalar or a one-dimensional vector the same size as the rightmost dimension of x");
     return(NhlFATAL);
   }
 /*
@@ -1509,11 +1509,11 @@ NhlErrorTypes wgt_volave_ccm_W( void )
  * wgtx must either be a scalar or a 1-d array of length nx.
  */
   if(dsizes_wgty[0] != 1 && dsizes_wgty[0] != ny) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave_ccm: wgty must be a scalar or a 1-dimensional vector the same size as the second-to-the-last dimension of x");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave_ccm: wgty must be a scalar or a one-dimensional vector the same size as the second-from-the-right dimension of x");
     return(NhlFATAL);
   }
   if(dsizes_wgtx[0] != 1 && dsizes_wgtx[0] != nx) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave_ccm: wgtx must be a scalar or a 1-dimensional vector the same size as the last dimension of x");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave_ccm: wgtx must be a scalar or a one-dimensional vector the same size as the rightmost dimension of x");
     return(NhlFATAL);
   }
 
@@ -1761,17 +1761,17 @@ NhlErrorTypes wgt_volrmse_W( void )
   klevnlatnlon = klev * nlon * nlat;
 
   if(dsizes_wgtz[0] != 1 && dsizes_wgtz[0] != klev) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volrmse: wgtz must be a scalar or a 1-dimensional vector the same size as the third-to-the-last dimension of q");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volrmse: wgtz must be a scalar or a one-dimensional vector the same size as the third-from-the-right dimension of q");
     return(NhlFATAL);
   }
 
   if(dsizes_wgty[0] != 1 && dsizes_wgty[0] != nlat) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volrmse: wgty must be a scalar or a 1-dimensional vector the same size as the second-to-the-last dimension of q");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volrmse: wgty must be a scalar or a one-dimensional vector the same size as the second-from-the-right dimension of q");
     return(NhlFATAL);
   }
 
   if(dsizes_wgtx[0] != 1 && dsizes_wgtx[0] != nlon) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volrmse: wgtx must be a scalar or a 1-dimensional vector the same size as the last dimension of q");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volrmse: wgtx must be a scalar or a one-dimensional vector the same size as the rightmost dimension of q");
     return(NhlFATAL);
   }
 
@@ -2064,12 +2064,12 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
   klevnlatnlon = klev * nlon * nlat;
 
   if(dsizes_wgty[0] != 1 && dsizes_wgty[0] != nlat) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volrmse_ccm: wgty must be a scalar or a 1-dimensional vector the same size as the second-to-the-last dimension of q");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volrmse_ccm: wgty must be a scalar or a one-dimensional vector the same size as the second-from-the-right dimension of q");
     return(NhlFATAL);
   }
 
   if(dsizes_wgtx[0] != 1 && dsizes_wgtx[0] != nlon) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volrmse_ccm: wgtx must be a scalar or a 1-dimensional vector the same size as the last dimension of q");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volrmse_ccm: wgtx must be a scalar or a one-dimensional vector the same size as the rightmost dimension of q");
     return(NhlFATAL);
   }
 

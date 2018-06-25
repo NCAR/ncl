@@ -62,7 +62,7 @@ NhlErrorTypes pres_sigma_W( void )
  * Check dimensions.
  */
   if(ndims_ps < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_sigma: ps array must be at least 2-dimensional, where the last two dimensions are nlat x mlon");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_sigma: ps array must be at least two-dimensional, where the last two dimensions are nlat x mlon");
     return(NhlFATAL);
   }
   klvl = dsizes_sigma[0];

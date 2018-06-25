@@ -39,14 +39,14 @@ NhlErrorTypes exp_tapershC_W( void )
           &type_ab,
           DONT_CARE);
 /*
- * The grid coming in must be at least 3-dimensional.
+ * The grid coming in must be at least three-dimensional.
  */
   if(ndims_ab < 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"exp_tapershC: The input array must be at least 3-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"exp_tapershC: The input array must be at least three-dimensional");
     return(NhlFATAL);
   }
   if(dsizes_ab[0] != 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"exp_tapershC: The first dimension of the input array must be 2");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"exp_tapershC: The leftmost dimension of the input array must be 2");
     return(NhlFATAL);
   }
 
@@ -199,10 +199,10 @@ NhlErrorTypes exp_tapersh_W( void )
           &type_b,
           DONT_CARE);
 /*
- * The grids coming in must be at least 2-dimensional.
+ * The grids coming in must be at least two-dimensional.
  */
   if(ndims_a != ndims_b || ndims_a < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"exp_tapersh: The input arrays must have the same number of dimensions and be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"exp_tapersh: The input arrays must have the same number of dimensions and be at least two-dimensional");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_a; i++ ) {

@@ -98,10 +98,10 @@ NhlErrorTypes g2gsh_W( void )
             NULL,
             DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_Ta < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"g2gsh: The input array must be at least a 2-dimensional array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"g2gsh: The input array must be at least a two-dimensional array");
     return(NhlFATAL);
   }
 /*
@@ -127,7 +127,7 @@ NhlErrorTypes g2gsh_W( void )
 /*
  * Allocate space for temporary input and output. If the input is not double,
  * then the output will be float, otherwise the output will be double.
- * The temporary arrays are just big enough to hold a 2-dimensional subsection
+ * The temporary arrays are just big enough to hold a two-dimensional subsection
  * of the input and output. We only need to allocate space for them if the
  * input is not already double, otherwise, we just have them point to the
  * appropriate locations in Ta and Tb.
@@ -266,7 +266,7 @@ NhlErrorTypes g2gsh_W( void )
  * warning message.
  */
   if(kmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"g2gsh: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",kmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"g2gsh: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",kmiss);
   }
 /*
  * Free workspace arrays.
@@ -387,10 +387,10 @@ NhlErrorTypes f2gsh_W( void )
             NULL,
             DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_Ta < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2gsh: The input array must be at least a 2-dimensional array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2gsh: The input array must be at least a two-dimensional array");
     return(NhlFATAL);
   }
 /*
@@ -415,7 +415,7 @@ NhlErrorTypes f2gsh_W( void )
 /*
  * Allocate space for temporary input and output. If the input is not double,
  * then the output will be float, otherwise the output will be double.
- * The temporary arrays are just big enough to hold a 2-dimensional subsection
+ * The temporary arrays are just big enough to hold a two-dimensional subsection
  * of the input and output. We only need to allocate space for them if the
  * input is not already double, otherwise, we just have them point to the
  * appropriate locations in Ta and Tb.
@@ -554,7 +554,7 @@ NhlErrorTypes f2gsh_W( void )
  * warning message.
  */
   if(kmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"f2gsh: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",kmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"f2gsh: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",kmiss);
   }
 /*
  * Free workspace arrays.
@@ -663,10 +663,10 @@ NhlErrorTypes g2fsh_W( void )
   if(dsizes_Tb == NULL) 
     return(NhlFATAL);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_Ta < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"g2fsh: The input array must be at least a 2-dimensional array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"g2fsh: The input array must be at least a two-dimensional array");
     return(NhlFATAL);
   }
 /*
@@ -691,7 +691,7 @@ NhlErrorTypes g2fsh_W( void )
 /*
  * Allocate space for temporary input and output. If the input is not double,
  * then the output will be float, otherwise the output will be double.
- * The temporary arrays are just big enough to hold a 2-dimensional subsection
+ * The temporary arrays are just big enough to hold a two-dimensional subsection
  * of the input and output. We only need to allocate space for them if the
  * input is not already double, otherwise, we just have them point to the
  * appropriate locations in Ta and Tb.
@@ -830,7 +830,7 @@ NhlErrorTypes g2fsh_W( void )
  * warning message.
  */
   if(kmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"g2fsh: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",kmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"g2fsh: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",kmiss);
   }
 /*
  * Free workspace arrays.
@@ -941,10 +941,10 @@ NhlErrorTypes f2fsh_W( void )
     return(NhlFATAL);
 
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_Ta < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2fsh: The input array must be at least a 2-dimensional array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2fsh: The input array must be at least a two-dimensional array");
     return(NhlFATAL);
   }
 /*
@@ -969,7 +969,7 @@ NhlErrorTypes f2fsh_W( void )
 /*
  * Allocate space for temporary input and output. If the input is not double,
  * then the output will be float, otherwise the output will be double.
- * The temporary arrays are just big enough to hold a 2-dimensional subsection
+ * The temporary arrays are just big enough to hold a two-dimensional subsection
  * of the input and output. We only need to allocate space for them if the
  * input is not already double, otherwise, we just have them point to the
  * appropriate locations in Ta and Tb.
@@ -1107,7 +1107,7 @@ NhlErrorTypes f2fsh_W( void )
  * warning message.
  */
   if(kmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"f2fsh: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",kmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"f2fsh: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",kmiss);
   }
 /*
  * Free workspace arrays.
@@ -1190,10 +1190,10 @@ NhlErrorTypes fo2fsh_W( void )
            &type_goff,
            DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_goff < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"fo2fsh: The input array must be at least a 2-dimensional array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"fo2fsh: The input array must be at least a two-dimensional array");
     return(NhlFATAL);
   }
 /*
@@ -1210,7 +1210,7 @@ NhlErrorTypes fo2fsh_W( void )
 /*
  * Allocate space for temporary input and output. If the input is not double,
  * then the output will be float, otherwise the output will be double.
- * The temporary arrays are just big enough to hold a 2-dimensional subsection
+ * The temporary arrays are just big enough to hold a two-dimensional subsection
  * of the input and output. We only need to allocate space for them if the
  * input is not already double, otherwise, we just have them point to the
  * appropriate locations in goff and greg.
@@ -1337,7 +1337,7 @@ NhlErrorTypes fo2fsh_W( void )
  * warning message.
  */
   if(kmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"fo2fsh: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",kmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"fo2fsh: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",kmiss);
   }
 /*
  * Free workspace arrays.
@@ -1417,10 +1417,10 @@ NhlErrorTypes f2fosh_W( void )
            &type_greg,
            DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_greg < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2fosh: The input array must be at least a 2-dimensional array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"f2fosh: The input array must be at least a two-dimensional array");
     return(NhlFATAL);
   }
 /*
@@ -1437,7 +1437,7 @@ NhlErrorTypes f2fosh_W( void )
 /*
  * Allocate space for temporary input and output. If the input is not double,
  * then the output will be float, otherwise the output will be double.
- * The temporary arrays are just big enough to hold a 2-dimensional subsection
+ * The temporary arrays are just big enough to hold a two-dimensional subsection
  * of the input and output. We only need to allocate space for them if the
  * input is not already double, otherwise, we just have them point to the
  * appropriate locations in goff and greg.
@@ -1562,7 +1562,7 @@ NhlErrorTypes f2fosh_W( void )
  * warning message.
  */
   if(kmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"f2fosh: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",kmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"f2fosh: %d two-dimensional input array(s) contained missing values. No interpolation performed on these arrays",kmiss);
   }
 /*
  * Free workspace arrays.

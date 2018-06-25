@@ -188,7 +188,7 @@ NhlErrorTypes rip_cape_3d_W( void )
     return(NhlFATAL);
   }
   if(ndims_p != 1 && ndims_p != 3 && ndims_p != 4) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: The p, t, q, and z arrays must be 1-, 3-, or 4-dimensional\n");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: The p, t, q, and z arrays must be 1-, 3-, or four-dimensional\n");
     return(NhlFATAL);
   }
 /*
@@ -258,13 +258,13 @@ NhlErrorTypes rip_cape_3d_W( void )
   if(ndims_p == 4) {
     if(dsizes_psfc[0] != ntime || dsizes_psfc[1] != mjx || 
        dsizes_psfc[2] != miy) { 
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: If p,q,t,z are 4-dimensional (time x lev x lat x lon), psfc,zsfc must be 3-dimensional (time x lat x lon)");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: If p,q,t,z are four-dimensional (time x lev x lat x lon), psfc,zsfc must be three-dimensional (time x lat x lon)");
       return(NhlFATAL);
     }
   }
   if(ndims_p == 3) {
     if(dsizes_psfc[0] != mjx || dsizes_psfc[1] != miy) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: If p,q,t,z are 3-dimensional (time x lev x lat x lon), psfc,zsfc must be 2-dimensional (lat x lon)");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: If p,q,t,z are three-dimensional (time x lev x lat x lon), psfc,zsfc must be two-dimensional (lat x lon)");
       return(NhlFATAL);
     }
   }
@@ -672,7 +672,7 @@ NhlErrorTypes rip_cape_2d_W( void )
     return(NhlFATAL);
   }
   if(ndims_p != 3 && ndims_p != 4) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: The p, t, q, and z arrays must be 3 or 4-dimensional\n");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: The p, t, q, and z arrays must be 3 or four-dimensional\n");
     return(NhlFATAL);
   }
 /*
@@ -711,7 +711,7 @@ NhlErrorTypes rip_cape_2d_W( void )
     ndims_cape = 4;
     if(dsizes_psfc[0] != ntime || dsizes_psfc[1] != mjx ||
        dsizes_psfc[2] != miy) { 
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: If p,q,t,z are 4-dimensional (time x lev x lat x lon), psfc,zsfc must be 3-dimensional (time x lat x lon)");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: If p,q,t,z are four-dimensional (time x lev x lat x lon), psfc,zsfc must be three-dimensional (time x lat x lon)");
       return(NhlFATAL);
 
     }
@@ -726,7 +726,7 @@ NhlErrorTypes rip_cape_2d_W( void )
     miy  = dsizes_p[2];           /* lon */
     ndims_cape = 3;
     if(dsizes_psfc[0] != mjx || dsizes_psfc[1] != miy) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: If p,q,t,z are 3-dimensional (time x lev x lat x lon), psfc,zsfc must be 2-dimensional (lat x lon)");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: If p,q,t,z are three-dimensional (time x lev x lat x lon), psfc,zsfc must be two-dimensional (lat x lon)");
       return(NhlFATAL);
     }
   }

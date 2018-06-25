@@ -155,7 +155,7 @@ NhlErrorTypes int2p_W( void )
   if(ndims_pout > 1) {
     for( i = 0; i < ndims_pout-1; i++ ) {
       if (dsizes_pout[i] != dsizes_xin[i]) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: If xin and pout have the same number of dimensions, then all but their last dimension must be the same size");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p: If xin and pout have the same number of dimensions, then all but their rightmost dimension must be the same size");
         return(NhlFATAL);
       }
     }

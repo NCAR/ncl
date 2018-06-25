@@ -149,7 +149,7 @@ NhlErrorTypes sparse_matrix_mult_W
  */
     if(dsizes_output_dsizes[0] == 2) {
       if(ndims_x < 2) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: the input array must be at least 2-dimensional if the output dimensions represent a 2D array");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult: the input array must be at least two-dimensional if the output dimensions represent a 2D array");
         return(NhlFATAL);
       }
       nrowx = dsizes_x[ndims_x-2];
@@ -510,7 +510,7 @@ NhlErrorTypes sparse_matrix_mult_trimesh_W
  */
     if(dsizes_output_dsizes[0] == 2) {
       if(ndims_x < 2) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult_trimesh: the input array must be at least 2-dimensional if the output dimensions represent a 2D array");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"sparse_matrix_mult_trimesh: the input array must be at least two-dimensional if the output dimensions represent a two-dimensional array");
         return(NhlFATAL);
       }
       nrowx = dsizes_x[ndims_x-2];

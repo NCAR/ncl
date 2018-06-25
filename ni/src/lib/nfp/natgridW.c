@@ -597,7 +597,7 @@ NhlErrorTypes natgrid_W( void )
                                &missing_dyo);
 /*
  * Allocate space for temporary input array. The temporary array
- * tmp_z is just big enough to hold a 1-dimensional subsection of the
+ * tmp_z is just big enough to hold a one-dimensional subsection of the
  * z array. We only need to allocate space for it if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in z.
@@ -726,7 +726,7 @@ NhlErrorTypes natgrid_W( void )
  * Check if z array had missing values. If so, print a warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"natgrid: %d 1-dimensional input array contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"natgrid: %d one-dimensional input array contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free arrays

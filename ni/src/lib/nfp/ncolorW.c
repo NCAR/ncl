@@ -138,7 +138,7 @@ NhlErrorTypes rgba_to_color_index_W( void )
   }
   else  {
 	  NhlPError(NhlFATAL,NhlEUNKNOWN,
-		    "rgba_to_color_index: the second dimension of the input array must have either three or four elements");
+		    "rgba_to_color_index: the rightmost dimension of the input array must have either three or four elements");
 	  return(NhlFATAL);
   }
 

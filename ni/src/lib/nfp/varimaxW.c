@@ -84,7 +84,7 @@ NhlErrorTypes eof_varimax_W( void )
  * Check dimensions.
  */
   if( ndims_evec < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 
@@ -436,7 +436,7 @@ NhlErrorTypes eofunc_varimax_W( void )
  * Check dimensions.
  */
   if( ndims_evec < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 
@@ -857,7 +857,7 @@ NhlErrorTypes eofunc_varimax_jl_W( void )
  * Check dimensions.
  */
   if( ndims_evec < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax_jl: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax_jl: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 

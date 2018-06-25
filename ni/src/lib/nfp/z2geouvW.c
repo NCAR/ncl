@@ -91,12 +91,12 @@ NhlErrorTypes z2geouv_W( void )
   nlatlon = nlat * nlon;
 
   if(dsizes_lat[0] != nlat) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"z2geouv: The 'lat' array must be the same length as the second rightmost dimension of 'z'");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"z2geouv: The 'lat' array must be the same length as the second-from-the-right dimension of 'z'");
     return(NhlFATAL);
   }
 
   if(dsizes_lon[0] != nlon) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"z2geouv: The 'lon' array must be the same length as the last dimension of 'z'");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"z2geouv: The 'lon' array must be the same length as the rightmost dimension of 'z'");
     return(NhlFATAL);
   }
 

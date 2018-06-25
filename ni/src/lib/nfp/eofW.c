@@ -156,10 +156,10 @@ NhlErrorTypes eofunc_W( void )
            &type_x,
            DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_x < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 
@@ -1494,10 +1494,10 @@ NhlErrorTypes eofunc_n_W( void )
            &type_x,
            DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_x < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_n: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_n: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 
@@ -2891,12 +2891,12 @@ NhlErrorTypes eofunc_ts_W( void )
            DONT_CARE);
 /*
  * Check the input grids.  They both must be at least two dimensional and
- * have the same number of dimensions.  All but the last dimension of the
- * first input array must be the same as all the but first dimension of
+ * have the same number of dimensions.  All but the rightmost dimension of the
+ * first input array must be the same as all the but leftmost dimension of
  * the second input array.
  */
   if( ndims_x < 2 || ndims_x != ndims_evec ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   msta = 1;
@@ -3352,12 +3352,12 @@ NhlErrorTypes eofunc_ts_n_W( void )
 
 /*
  * Check the input grids.  They both must be at least two dimensional and
- * have the same number of dimensions.  All but the last dimension of the
- * first input array must be the same as all the but first dimension of
+ * have the same number of dimensions.  All but the rightmost dimension of the
+ * first input array must be the same as all the but leftmost dimension of
  * the second input array.
  */
   if( ndims_x < 2 || ndims_x != ndims_evec ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts_n: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts_n: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   for( i = 0; i < *dim; i++ ) {
@@ -3847,10 +3847,10 @@ NhlErrorTypes eofcov_tr_W( void )
             NULL,
             DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_x < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -4644,10 +4644,10 @@ NhlErrorTypes eofcov_tr_old_W( void )
             NULL,
             DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_x < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr_old: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr_old: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -5379,10 +5379,10 @@ NhlErrorTypes eofcor_tr_W( void )
             NULL,
             DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_x < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_tr: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_tr: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -6088,10 +6088,10 @@ NhlErrorTypes eofcov_W( void )
             NULL,
             DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_x < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -6534,10 +6534,10 @@ NhlErrorTypes eofcor_W( void )
             NULL,
             DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_x < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -6991,10 +6991,10 @@ NhlErrorTypes eofcov_pcmsg_W( void )
             &type_pcmsg,
             DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_x < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_pcmsg: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_pcmsg: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -7531,10 +7531,10 @@ NhlErrorTypes eofcor_pcmsg_W( void )
             &type_pcmsg,
             DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_x < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_pcmsg: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_pcmsg: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -8047,18 +8047,18 @@ NhlErrorTypes eofcov_ts_W( void )
            DONT_CARE);
 /*
  * Check the input grids.  They both must be at least two dimensional and
- * have the same number of dimensions.  All but the last dimension of the
- * first input array must be the same as all the but first dimension of
+ * have the same number of dimensions.  All but the rightmost dimension of the
+ * first input array must be the same as all the but leftmost dimension of
  * the second input array.
  */
   if( ndims_x < 2 || ndims_x != ndims_evec ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_ts: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_ts: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   msta = 1;
   for( i = 0; i <= ndims_x-2; i++ ) {
     if( dsizes_x[i] != dsizes_evec[i+1] ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_ts: All but the last dimension of the first input array must be the same as all but the first dimension of the second input array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_ts: All but the rightmost dimension of the first input array must be the same as all but the leftmost dimension of the second input array");
       return(NhlFATAL);
     }
     msta *= dsizes_x[i];
@@ -8360,18 +8360,18 @@ NhlErrorTypes eofcor_ts_W( void )
            DONT_CARE);
 /*
  * Check the input grids.  They both must be at least two dimensional and
- * have the same number of dimensions.  All but the last dimension of the
- * first input array must be the same as all the but first dimension of
+ * have the same number of dimensions.  All but the rightmost dimension of the
+ * first input array must be the same as all the but leftmost dimension of
  * the second input array.
  */
   if( ndims_x < 2 || ndims_x != ndims_evec ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_ts: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_ts: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   msta = 1;
   for( i = 0; i <= ndims_x-2; i++ ) {
     if( dsizes_x[i] != dsizes_evec[i+1] ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_ts: All but the last dimension of the first input array must be the same as all but the first dimension of the second input array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_ts: All but the rightmost dimension of the first input array must be the same as all but the leftmost dimension of the second input array");
       return(NhlFATAL);
     }
     msta *= dsizes_x[i];
@@ -8674,18 +8674,18 @@ NhlErrorTypes eofcov_ts_pcmsg_W( void )
             DONT_CARE);
 /*
  * Check the input grids.  They both must be at least two dimensional and
- * have the same number of dimensions.  All but the last dimension of the
- * first input array must be the same as all the but first dimension of
+ * have the same number of dimensions.  All but the rightmost dimension of the
+ * first input array must be the same as all the but leftmost dimension of
  * the second input array.
  */
   if( ndims_x < 2 || ndims_x != ndims_evec ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_ts_pcmsg: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_ts_pcmsg: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   msta = 1;
   for( i = 0; i <= ndims_x-2; i++ ) {
     if( dsizes_x[i] != dsizes_evec[i+1] ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_ts_pcmsg: All but the last dimension of the first input array must be the same as all but the first dimension of the second input array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_ts_pcmsg: All but the rightmost dimension of the first input array must be the same as all but the leftmost dimension of the second input array");
       return(NhlFATAL);
     }
     msta *= dsizes_x[i];
@@ -8893,18 +8893,18 @@ NhlErrorTypes eofcor_ts_pcmsg_W( void )
             DONT_CARE);
 /*
  * Check the input grids.  They both must be at least two dimensional and
- * have the same number of dimensions.  All but the last dimension of the
- * first input array must be the same as all the but first dimension of
+ * have the same number of dimensions.  All but the rightmost dimension of the
+ * first input array must be the same as all the but leftmost dimension of
  * the second input array.
  */
   if( ndims_x < 2 || ndims_x != ndims_evec ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_ts_pcmsg: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_ts_pcmsg: The input arrays must be at least two-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   msta = 1;
   for( i = 0; i <= ndims_x-2; i++ ) {
     if( dsizes_x[i] != dsizes_evec[i+1] ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_ts_pcmsg: All but the last dimension of the first input array must be the same as all but the first dimension of the second input array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_ts_pcmsg: All but the rightmost dimension of the first input array must be the same as all but the leftmost dimension of the second input array");
       return(NhlFATAL);
     }
     msta *= dsizes_x[i];
@@ -9097,11 +9097,11 @@ NhlErrorTypes eof2data_W( void )
            DONT_CARE);
 /*
  * Check the input grids. The first one can be any dimension, but it must
- * be at least 2 dimensions.  The first dimension of both input arrays
+ * be at least 2 dimensions.  The leftmost dimension of both input arrays
  * must be the same (neval).
  */
   if(ndims_evec < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof2data: The first input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof2data: The first input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 
@@ -9304,11 +9304,11 @@ NhlErrorTypes eof2data_n_W( void )
 
 /*
  * Check the input grids. The first one can be any dimension, but it must
- * be at least 2 dimensions.  The first dimension of both input arrays
+ * be at least 2 dimensions.  The leftmost dimension of both input arrays
  * must be the same (neval).
  */
   if(ndims_evec < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof2data_n: The first input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof2data_n: The first input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 

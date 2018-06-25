@@ -86,7 +86,7 @@ NhlErrorTypes dz_height_W( void )
  * Check dimension sizes for z.
  */
   if(ndims_z < 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dz_height: The 'z' array must be at least 3-dimensional with rightmost dimensions lev x lat x lon");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dz_height: The 'z' array must be at least three-dimensional with rightmost dimensions lev x lat x lon");
     return(NhlFATAL);
   }
   klvl = dsizes_z[ndims_z-3];

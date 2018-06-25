@@ -112,13 +112,13 @@ NhlErrorTypes zonal_mpsi_W( void )
   }
   if(ndims_v == 3) {
     if(dsizes_ps[0] != nlat || dsizes_ps[1] != nlon) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"zonal_mpsi: The 'ps' array must be dimensioned nlat x nlon if 'v' is 3-dimensional");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"zonal_mpsi: The 'ps' array must be dimensioned nlat x nlon if 'v' is three-dimensional");
       return(NhlFATAL);
     }
   }
   else {
     if(dsizes_ps[0] != ntim || dsizes_ps[1] != nlat || dsizes_ps[2] != nlon) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"zonal_mpsi: The 'ps' array must be dimensioned ntim x nlat x nlon if 'v' is 4-dimensional");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"zonal_mpsi: The 'ps' array must be dimensioned ntim x nlat x nlon if 'v' is four-dimensional");
       return(NhlFATAL);
     }
   }

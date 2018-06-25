@@ -54,14 +54,14 @@ NhlErrorTypes rhomb_trunC_W( void )
        NULL,
        DONT_CARE);
 /*
- * The grid coming in must be at least 3-dimensional.
+ * The grid coming in must be at least three-dimensional.
  */
   if(ndims_ab < 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"rhomb_trunC: The input array must be at least 3-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"rhomb_trunC: The input array must be at least three-dimensional");
     return(NhlFATAL);
   }
   if(dsizes_ab[0] != 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"rhomb_trunC: The first dimension of the input array must be 2");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"rhomb_trunC: The leftmost dimension of the input array must be 2");
     return(NhlFATAL);
   }
 /*
@@ -194,14 +194,14 @@ NhlErrorTypes tri_trunC_W( void )
        NULL,
        DONT_CARE);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if(ndims_ab < 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"tri_trunC: The input array must be at least 3-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tri_trunC: The input array must be at least three-dimensional");
     return(NhlFATAL);
   }
   if(dsizes_ab[0] != 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"tri_trunC: The first dimension of the input array must be 2");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tri_trunC: The leftmost dimension of the input array must be 2");
     return(NhlFATAL);
   }
 /*
@@ -348,10 +348,10 @@ NhlErrorTypes rhomb_trunc_W( void )
        NULL,
        DONT_CARE);
 /*
- * The grids coming in must be at least 2-dimensional.
+ * The grids coming in must be at least two-dimensional.
  */
   if(ndims_a != ndims_b || ndims_a < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"rhomb_trunc: The input arrays must have the same number of dimensions and be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"rhomb_trunc: The input arrays must have the same number of dimensions and be at least two-dimensional");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_a; i++ ) {
@@ -509,10 +509,10 @@ NhlErrorTypes tri_trunc_W( void )
        NULL,
        DONT_CARE);
 /*
- * The grids coming in must be at least 2-dimensional.
+ * The grids coming in must be at least two-dimensional.
  */
   if(ndims_a != ndims_b || ndims_a < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"tri_trunc: The input arrays must have the same number of dimensions and be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tri_trunc: The input arrays must have the same number of dimensions and be at least two-dimensional");
     return(NhlFATAL);
   }
   for( i = 0; i < ndims_a; i++ ) {

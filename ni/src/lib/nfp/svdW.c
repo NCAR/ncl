@@ -163,8 +163,8 @@ NhlErrorTypes svdcov_W( void )
     return(NhlFATAL);
   }
 /*
- * Check dimension sizes.  The first dimension must be nsvd. The second
- * dimension must be the same as the first dimension of x (or y if
+ * Check dimension sizes.  The leftmost dimension must be nsvd. The second
+ * dimension must be the same as the leftmost dimension of x (or y if
  * it's the rgt arrays).
  */
   if( dsizes_homlft[0] != *nsvd || dsizes_hetlft[0] != *nsvd ||
@@ -657,8 +657,8 @@ NhlErrorTypes svdstd_W( void )
     return(NhlFATAL);
   }
 /*
- * Check dimension sizes.  The first dimension must be nsvd. The second
- * dimension must be the same as the first dimension of x (or y if
+ * Check dimension sizes.  The leftmost dimension must be nsvd. The second
+ * dimension must be the same as the leftmost dimension of x (or y if
  * it's the rgt arrays).
  */
   if( dsizes_homlft[0] != *nsvd || dsizes_hetlft[0] != *nsvd ||
@@ -1114,8 +1114,8 @@ NhlErrorTypes svdcov_sv_W( void )
   ntimes = dsizes_x[1];
 
 /*
- * Check dimension sizes.  The first dimension must be nsvd. The
- *  second dimension must be the same as the first dimension of
+ * Check dimension sizes.  The leftmost dimension must be nsvd. The
+ *  second dimension must be the same as the leftmost dimension of
  * x (or y if it's the rgt arrays).
  */
   if( dsizes_svlft[0] != *nsvd || dsizes_svlft[1] != dsizes_x[0]) { 
@@ -1447,8 +1447,8 @@ NhlErrorTypes svdstd_sv_W( void )
   ntimes = dsizes_x[1];
 
 /*
- * Check dimension sizes.  The first dimension must be nsvd. The
- *  second dimension must be the same as the first dimension of
+ * Check dimension sizes.  The leftmost dimension must be nsvd. The
+ *  second dimension must be the same as the leftmost dimension of
  * x (or y if it's the rgt arrays).
  */
   if( dsizes_svlft[0] != *nsvd || dsizes_svlft[1] != dsizes_x[0]) { 
@@ -1735,10 +1735,10 @@ NhlErrorTypes svd_lapack_W( void )
            DONT_CARE);
 
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least two-dimensional.
  */
   if( ndims_a < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svd_lapack: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svd_lapack: The input array must be at least two-dimensional");
     return(NhlFATAL);
   }
 

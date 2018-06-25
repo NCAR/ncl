@@ -95,7 +95,7 @@ NhlErrorTypes utm2latlon_W( void )
  */
   npts = 1;
   for( i = 1; i < ndims_xy; i++ ) npts *= dsizes_xy[i];
-  total_size_xy = 2 * npts;     /* We know first dimension is 2. */
+  total_size_xy = 2 * npts;     /* We know leftmost dimension is 2. */
 
 /*
  * Calculate size and dimensions for output array, and allocate
@@ -364,7 +364,7 @@ NhlErrorTypes latlon2utm_W( void )
     dsizes_grid_zone[0] = 1;
     ndims_grid_zone     = 1;
   }
-  total_size_latlon = 2 * npts;     /* We know first dimension is 2. */
+  total_size_latlon = 2 * npts;     /* We know leftmost dimension is 2. */
 
 /*
  * Calculate size and dimensions for output array, and allocate

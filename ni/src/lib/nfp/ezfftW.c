@@ -719,7 +719,7 @@ NhlErrorTypes ezfftb_W( void )
   if(!scalar_xbar) {
 /*
  * If xbar is not a scalar, it must be an array of the same dimension
- * sizes as the leftmost dimensions of cf (except the first dimension
+ * sizes as the leftmost dimensions of cf (except the leftmost dimension
  * of '2').
  */ 
     if(dsizes_xbar[0] != size_leftmost) {
@@ -1042,7 +1042,7 @@ NhlErrorTypes ezfftb_n_W( void )
   if(!scalar_xbar) {
 /*
  * If xbar is not a scalar, it must be an array of the same dimension
- * sizes as the leftmost dimensions of cf (except the first dimension
+ * sizes as the leftmost dimensions of cf (except the leftmost dimension
  * of 'if').
  */ 
     if(dsizes_xbar[0] != total_nlr) {

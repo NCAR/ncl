@@ -3613,7 +3613,7 @@ NhlErrorTypes dim_num_W( void)
            NULL,
            DONT_CARE);
 /*
- * Calculate the product of the dimension sizes for the first n-1 
+ * Calculate the product of the dimension sizes for the leftmost n-1 
  * dimensions (size_leftmost).
  */
   ndims_num     = max(ndims_input-1,1);
@@ -3899,7 +3899,7 @@ NhlErrorTypes esccr_shields_W( void )
   mxlag1 = *mxlag + 1;
 /*
  * Compute the total number of elements in our x and y arrays.
- * Don't count the first dimension (ncases), because this is
+ * Don't count the leftmost dimension (ncases), because this is
  * a special dimension.
  */
   total_size_x1 = 1;
@@ -4448,7 +4448,7 @@ NhlErrorTypes dim_stat4_W( void )
   inpts = (int) npts;
 
 /*
- * Compute the total number of lefmost and rightmost elements in our x array.
+ * Compute the total number of leftmost and rightmost elements in our x array.
  */
   total_leftmost = 1;
   for(i = 0; i < ndims_x-1; i++) total_leftmost *= dsizes_x[i];

@@ -368,7 +368,7 @@ NhlErrorTypes dsgrid2_W( void )
                                &missing_dyo);
 /*
  * Allocate space for temporary input array. The temporary array
- * tmp_z is just big enough to hold a 1-dimensional subsection of the
+ * tmp_z is just big enough to hold a one-dimensional subsection of the
  * z array. We only need to allocate space for it if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in z.
@@ -483,7 +483,7 @@ NhlErrorTypes dsgrid2_W( void )
  * Check if z array had missing values. If so, print a warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"dsgrid2: %d 1-dimensional input arrays contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dsgrid2: %d one-dimensional input arrays contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free arrays
@@ -1128,7 +1128,7 @@ NhlErrorTypes dsgrid3_W( void )
                                &missing_dzo);
 /*
  * Allocate space for temporary input array. The temporary array
- * tmp_u is just big enough to hold a 1-dimensional subsection of the
+ * tmp_u is just big enough to hold a one-dimensional subsection of the
  * u array. We only need to allocate space for it if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in u.
@@ -1249,7 +1249,7 @@ NhlErrorTypes dsgrid3_W( void )
  * Check if u array had missing values. If so, print a warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"dsgrid2: %d 1-dimensional input arrays contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dsgrid2: %d one-dimensional input arrays contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free arrays
@@ -2204,7 +2204,7 @@ NhlErrorTypes dspnt2_W( void )
 
 /*
  * Allocate space for temporary z array. The temporary array
- * tmp_z is just big enough to hold a 1-dimensional subsection of the
+ * tmp_z is just big enough to hold a one-dimensional subsection of the
  * z array. We only need to allocate space for it if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in z later.
@@ -2683,7 +2683,7 @@ NhlErrorTypes dspnt3d_W( void )
   size_leftmost = 1;
   for( i = 0; i < ndims_u-1; i++ ) {
     if(dsizes_u[i] != dsizes_uo[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt3d: u and uo must have the same lefmost dimension sizes");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt3d: u and uo must have the same leftmost dimension sizes");
       return(NhlFATAL);
     }
     size_leftmost *= dsizes_u[i];
@@ -2886,7 +2886,7 @@ NhlErrorTypes dspnt3_W( void )
 
 /*
  * Allocate space for temporary u array. The temporary array
- * tmp_u is just big enough to hold a 1-dimensional subsection of the
+ * tmp_u is just big enough to hold a one-dimensional subsection of the
  * u array. We only need to allocate space for it if the
  * input is not already double. Otherwise, we just have it point
  * to the appropriate locations in u later.

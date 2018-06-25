@@ -704,7 +704,7 @@ NhlErrorTypes triple2grid2d_W( void )
   nlon = dsizes_gridx[1];
 
   if(dsizes_gridy[0] != nlat || dsizes_gridy[1] != nlon) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid2d: The two 2-dimensional arrays that define the output grid must be the same size");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid2d: The two two-dimensional arrays that define the output grid must be the same size");
     return(NhlFATAL);
   }
 

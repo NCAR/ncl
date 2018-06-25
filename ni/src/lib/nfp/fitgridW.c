@@ -335,7 +335,7 @@ NhlErrorTypes ftcurv_W(void)
   else {
     if(dsizes_yi[ndims_yi-1] != npts) {
       NhlPError(NhlFATAL, NhlEUNKNOWN,
-                "ftcurv: The last dimension of yi must be the same length as xi");
+                "ftcurv: The rightmost dimension of yi must be the same length as xi");
       return(NhlFATAL);
     }
   }
@@ -550,7 +550,7 @@ NhlErrorTypes ftcurvd_W(void)
   else {
     if(dsizes_yi[ndims_yi-1] != npts) {
       NhlPError(NhlFATAL, NhlEUNKNOWN,
-                "ftcurvd: The last dimension of yi must be the same length as xi");
+                "ftcurvd: The rightmost dimension of yi must be the same length as xi");
       return(NhlFATAL);
     }
   }
@@ -792,7 +792,7 @@ NhlErrorTypes ftcurvi_W(void)
   else {
     if(dsizes_yi[ndims_yi-1] != npts) {
       NhlPError(NhlFATAL, NhlEUNKNOWN,
-                "ftcurvi: The last dimension of yi must be the same length as xi");
+                "ftcurvi: The rightmost dimension of yi must be the same length as xi");
       return(NhlFATAL);
     }
   }
@@ -994,7 +994,7 @@ NhlErrorTypes ftcurvp_W(void)
   else {
     if(dsizes_yi[ndims_yi-1] != npts) {
       NhlPError(NhlFATAL, NhlEUNKNOWN,
-                "ftcurvp: The last dimension of yi must be the same length as xi");
+                "ftcurvp: The rightmost dimension of yi must be the same length as xi");
       return(NhlFATAL);
     }
   }
@@ -1266,7 +1266,7 @@ NhlErrorTypes ftcurvpi_W(void)
   else {
     if(dsizes_yi[ndims_yi-1] != npts) {
       NhlPError(NhlFATAL, NhlEUNKNOWN,
-                "ftcurvpi: The last dimension of yi must be the same length as xi");
+                "ftcurvpi: The rightmost dimension of yi must be the same length as xi");
       return(NhlFATAL);
     }
   }
@@ -1475,7 +1475,7 @@ NhlErrorTypes ftcurvs_W(void)
   else {
     if(dsizes_yi[ndims_yi-1] != npts) {
       NhlPError(NhlFATAL, NhlEUNKNOWN,
-                "ftcurvs: The last dimension of yi must be the same length as xi");
+                "ftcurvs: The rightmost dimension of yi must be the same length as xi");
       return(NhlFATAL);
     }
   }
@@ -1495,7 +1495,7 @@ NhlErrorTypes ftcurvs_W(void)
 
   if(dsizes_d[0] != npts && dsizes_d[0] != 1) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvs: The d must be the same length as xi's last dimension or should be scalar");
+              "ftcurvs: The d must be the same length as xi's rightmost dimension or should be scalar");
     return(NhlFATAL);
   }
 
@@ -1719,7 +1719,7 @@ NhlErrorTypes ftcurvps_W(void)
   else {
     if(dsizes_yi[ndims_yi-1] != npts) {
       NhlPError(NhlFATAL, NhlEUNKNOWN,
-                "ftcurvps: The last dimension of yi must be the same length as xi");
+                "ftcurvps: The rightmost dimension of yi must be the same length as xi");
       return(NhlFATAL);
     }
   }
