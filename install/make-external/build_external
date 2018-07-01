@@ -264,7 +264,7 @@ NETCDF4_DIR="netcdf-c-4.6.1"
 NETCDF4_FORTRAN_DIR="netcdf-fortran-4.4.4"
 PIXMAN_DIR="pixman-0.34.0"
 PKGCONFIG_DIR="pkg-config-0.29.2"
-PNG_DIR="libpng-1.2.59"
+PNG_DIR="libpng-1.6.34"
 PROJ4_DIR="proj-5.1.0"
 SZIP_DIR="szip-2.1.1"
 UDUNITS_DIR="udunits-2.2.26"
@@ -768,7 +768,6 @@ if [ $INSTALL_JASPER ] ; then
 ##  unset SOURCE_DIR
 ##  unset BUILD_DIR
 ##  unset INSTALL_DIR
-##  cd ..
     cd ..
   else
     echo "Directory $JASPER_DIR doesn't exist"
@@ -975,6 +974,7 @@ if [ $INSTALL_HDFEOS ] ; then
     echo "Building $HDFEOS_DIR..."
     ./configure CC\=$PREFIX/bin/h4cc --with-hdf4\=$PREFIX --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX
     make all install
+    make install
     /bin/rm -rf $PREFIX/include/HdfEosDef.h $PREFIX/include/ease.h $PREFIX/include/cfortHdf.h
     cp include/HdfEosDef.h include/ease.h include/cfortHdf.h $PREFIX/include/.
     if [ $? ] ; then
@@ -1021,6 +1021,7 @@ then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz"
         ./configure --enable-netcdf-4 --disable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX_NODAP
         make all install
+        make install
         make distclean
         make clean
       fi
@@ -1028,6 +1029,7 @@ then
       export LIBS="-lhdf5_hl -lhdf5 -lsz -lz $CURL_LIBS"
       ./configure --enable-netcdf-4 --enable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
       make all install
+      make install
     else
       if [ "$un" = "yellowstone_gnu483" ] || [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] || [ "$un" = "k9" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -ldl"
@@ -1037,6 +1039,7 @@ then
       if [ $BUILD_NON_OPENDAP ] ; then
         ./configure --enable-netcdf-4 --disable-dap --disable-shared --prefix\=$PREFIX_NODAP
         make all install
+        make install
         mv config.log config.log.nodap
         make distclean
         make clean
@@ -1045,6 +1048,7 @@ then
       export LIBS="-lhdf5_hl -lhdf5 -lsz -lz $CURL_LIBS"
       ./configure --enable-netcdf-4 --enable-dap --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
       make all install
+      make install
       unset LIBS
     fi
     if [ $? ] ; then
@@ -1180,19 +1184,20 @@ if [ $INSTALL_GDAL ] ; then
       make clean
     fi
     echo "Building $GDAL_DIR..."
-    if [ "$os" = "Darwin" ] ; then
-      export CPPFLAGS="-I/opt/X11/include"
-      export LDFLAGS="-L/opt/X11/lib"
-    fi
+#    if [ "$os" = "Darwin" ] ; then
+#      export CPPFLAGS="-I/opt/X11/include"
+#      export LDFLAGS="-L/opt/X11/lib"
+#    fi
 # Some systems don't have all these extra libraries!
-##  ./configure --with-static-proj4\=$PREFIX --prefix\=$PREFIX --without-pam --with-png\=$PREFIX --with-gif=internal --with-libtiff=internal --with-geotiff=internal --with-jpeg\=$PREFIX --with-libz\=$PREFIX --with-sqlite3=no --with-expat=no --with-curl=no --without-ld-shared --with-hdf4=no --with-hdf5=no --with-pg=no --without-grib --disable-shared --with-freexl=no --with-geos=no --with-openjpeg=no --with-mysql=no --with-ecw=no --with-fgdb=no --with-odbc=no --with-xml2=no --with-ogdi=no --with-pcraster=no --with-xerces=no --with-libkml=no --with-libjson-c=no
+# Dave said you might also need --with-avx=no
+#  ./configure --with-static-proj4\=$PREFIX --prefix\=$PREFIX --without-pam --with-png\=$PREFIX --with-gif=internal --with-libtiff=internal --with-geotiff=internal --with-jpeg\=$PREFIX --with-libz\=$PREFIX --with-sqlite3=no --with-expat=no --with-curl=no --without-ld-shared --with-hdf4=no --with-hdf5=no --with-pg=no --without-grib --disable-shared --with-freexl=no --with-geos=no --with-openjpeg=no --with-mysql=no --with-ecw=no --with-fgdb=no --with-odbc=no --with-xml2=no --with-ogdi=no --with-pcraster=no --with-xerces=no --with-libkml=no --with-libjson-c=no
     ./configure --with-static-proj4\=$PREFIX --prefix\=$PREFIX --without-pam --with-png\=$PREFIX --with-gif=internal --with-libtiff=internal --with-geotiff=internal --with-jpeg\=$PREFIX --with-libz\=$PREFIX --with-sqlite3=no --with-expat=no --with-curl=no --without-ld-shared --with-hdf4=no --with-hdf5=no --with-pg=no --without-grib --disable-shared --with-freexl=no --with-geos=no --with-openjpeg=no --with-mysql=no --with-ecw=no --with-fgdb=no --with-odbc=no --with-xml2=no --with-ogdi=no --with-pcraster=no --with-xerces=no
     make all install
     make install
-    if [ "$os" = "Darwin" ] ; then
-      unset CPPFLAGS
-      unset LDFLAGS
-    fi
+#    if [ "$os" = "Darwin" ] ; then
+#      unset CPPFLAGS
+#      unset LDFLAGS
+#    fi
     if [ $? ] ; then
       echo "$GDAL_DIR build successful."
       if [ $CLEAN_AFTER ] ; then
