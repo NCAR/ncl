@@ -48,3 +48,9 @@ FC = $(F77)
 #ifndef MakeDir
 #define MakeDir(dir)    @if (test ! -d dir); then ($(MKDIRHIER) dir); fi
 #endif
+
+#ifdef __arm__
+#define CcOptions_tmp CcOptions
+#undef CcOptions
+#define CcOptions CcOptions_tmp -fsigned-char
+#endif
