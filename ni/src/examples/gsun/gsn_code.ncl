@@ -5246,8 +5246,10 @@ begin
     new_dims = xsizes
   elseif(yrank.gt.1) then
     new_dims = ysizes
+  elseif(trank.gt.1) then
+    new_dims = tsizes
   else
-    new_dims = xsizes > ysizes
+    new_dims = max((/tsizes,xsizes,ysizes/))
   end if
   x    = ndtooned(conform_dims(new_dims,xo,-1))
   y    = ndtooned(conform_dims(new_dims,yo,-1))
