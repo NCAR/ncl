@@ -185,7 +185,7 @@ int NclDriver(int argc, char **argv)
                 break;
 
             case 'h':
-                (void) fprintf(stdout, "Usage: ncl -fhnopxQV <args> <file.ncl>\n");
+                (void) fprintf(stdout, "Usage: ncl -fhnopxsPQV <args> <file.ncl>\n");
 	        (void) fprintf(stdout, "\t -f: use new file structure and NetCDF4 features when possible\n");
                 (void) fprintf(stdout, "\t -h: print this message and exit\n");
                 (void) fprintf(stdout, "\t -n: don't enumerate values in print()\n");
