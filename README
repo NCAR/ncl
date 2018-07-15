@@ -1,8 +1,8 @@
 ----------------------------------------------------------------------
-This is the top level directory for version 6.4.1 of the NCL and NCAR
+This is the top level directory for version 6.5.0 of the NCL and NCAR
 Graphics source code. 
 
-This source can be used to build NCL or just NCAR Graphics.  Note:
+This source can be used to build NCL or just NCAR Graphics. Note:
 NCL depends on NCAR Graphics, so you will get both if you elect to
 build NCL.
 
@@ -16,17 +16,18 @@ its own documentation:
     http://www.ncarg.ucar.edu/
 ----------------------------------------------------------------------
 
-Generally, we recommend that people install NCL and NCAR Graphics
-using a precompiled binary. We provide precompiled binaries for
-several flavors of LINUX, MacOS, and Windows/Cygwin. The NCL and NCAR
-Graphics precompiled binaries are hosted on the Earth System Grid
-website:
+We highly recommend that people install NCL using a precompiled
+binary. We provide precompiled binaries for several flavors of LINUX,
+MacOS, and Windows/Cygwin. Precompiled binaries are hosted on the 
+Climate Data Gateway website:
 
    http://www.earthsystemgrid.org
 
+Source code is also available in the same location.
+
 Any questions or problems with installing NCL and/or NCAR Graphics
 from source code or precompiled binaries should be posted to
-ncl-install@ucar.edu.  You need to subscribe first:
+ncl-install@ucar.edu. You need to subscribe first:
 
    http://mailman.ucar.edu/mailman/listinfo/ncl-install
 
@@ -41,8 +42,8 @@ ncarg-talk@ucar.edu:
    http://mailman.ucar.edu/mailman/listinfo/ncarg-talk
 
 ----------------------------------------------------------------------
-You can find detailed instructions for building NCL and NCAR Graphics
-from source code, or installing from precompiled binaries at:
+You can find detailed instructions for building NCL from source code,
+or installing from precompiled binaries at:
 
   http://www.ncl.ucar.edu/Download/
 

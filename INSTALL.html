@@ -1,14 +1,14 @@
 <html>
 <head>
-<title>How to build NCL and NCAR Graphics version 6.4.0 from source code</title>
+<title>How to build NCL and NCAR Graphics version 6.5.0 from source code</title>
 </head>
 
 </head>
 
-<h1>How to build NCL and NCAR Graphics version 6.4.0 from source code</h1>
+<h1>How to build NCL and NCAR Graphics version 6.5.0 from source code</h1>
 <p>
 
-<i>February 11, 2017</i><p>
+<i>July 15, 2018</i><p>
 
 <b>The latest version of this document can be found at
 <a href="http://www.ncl.ucar.edu/Download/build_from_src.shtml">http://www.ncl.ucar.edu/Download/build_from_src.shtml</a>.</b>
@@ -35,10 +35,12 @@ NCL and NCAR Graphics can only be built on UNIX systems.
 
 <b>We highly recommend that you install NCL via conda or using a
 precompiled NCL binary, rather than attempting a build from source
-code. If you tried a precompiled binary and ran into problems, you
-can post your problem to
+code.<br>
+
+If you tried a precompiled binary and ran into problems, you can email
+your problem to
 the <a href="http://mailman.ucar.edu/mailman/listinfo/ncl-install">ncl-install</a>
-email list.</b>
+email list (you must subscribe first).</b>
 
 </blockquote>
 <p>
@@ -120,23 +122,23 @@ non-optional external software</A><br>
 
 <UL>
 <LI><A HREF="#JPEG">JPEG</A> (9b)
-<LI><A HREF="#ZLIB">ZLIB</A> (1.2.8)
+<LI><A HREF="#ZLIB">ZLIB</A> (1.2.11)
 
-<LI><A HREF="#cairo">cairo</A> (1.14.6)
+<LI><A HREF="#cairo">cairo</A> (1.14.12)
 <UL>
-<LI><A HREF="#PNG">PNG</A> (1.2.56)
-<LI><A HREF="#pkgconfig">pkg-config</A> (0.29)
-<LI><A HREF="#freetype">FreeType</A> (2.6.5)
+<LI><A HREF="#PNG">PNG</A> (1.6.34)
+<LI><A HREF="#pkgconfig">pkg-config</A> (0.29.2)
+<LI><A HREF="#freetype">FreeType</A> (2.9.1)
 <LI><A HREF="#pixman">pixman</A> (0.34.0)
 </UL>
 
-<LI><A HREF="#NetCDF">NetCDF</A> (4.4.1.1)
+<LI><A HREF="#NetCDF">NetCDF</A> (4.6.1)
 <UL>
-<LI><A HREF="#szip">szip</A> (2.1)
-<LI><A HREF="#HDF5">HDF-5</A> (1.8.17)
-<LI><A HREF="#libcurl">libcurl</a> (7.49.1)
+<LI><A HREF="#szip">szip</A> (2.1.1)
+<LI><A HREF="#HDF5">HDF-5</A> (1.10.1)
+<LI><A HREF="#libcurl">libcurl</a> (7.60.0)
 </UL>
-<LI><A HREF="#HDF4">HDF-4</A> (4.2.12)
+<LI><A HREF="#HDF4">HDF-4</A> (4.2.13)
 
 </UL>
 
@@ -147,23 +149,17 @@ external software</A><br>
 <LI><A HREF="#GRIB2">GRIB2</A>
 <UL>
 <LI><A HREF="#Jasper">Jasper</a> (1.900.1)
-<LI><A HREF="#PNG">PNG</a> (1.2.56)
 <LI><A HREF="#g2clib">g2clib</a> (1.6.0-patch)
 </UL>
 <LI><A HREF="#GDAL_PROJ4">GDAL/PROJ.4</A>
 <UL>
-<LI><A HREF="#PROJ4">PROJ.4</A> (4.9.2)
-<LI><A HREF="#GDAL">GDAL</A> (2.1.1)
+<LI><A HREF="#PROJ4">PROJ.4</A> (5.1.0)
+<LI><A HREF="#GDAL">GDAL</A> (2.2.4)
 </UL>
-<LI><A HREF="#HDFEOS2">HDF-EOS 2</A> (2.19)
-<LI><A HREF="#HDFEOS5">HDF-EOS 5</A> (1.15)
-<UL>
-<LI><A HREF="#szip">szip</A> (2.1)
-<LI><A HREF="#HDF5">HDF-5</A> (1.8.17)
-</UL>
-
+<LI><A HREF="#HDFEOS2">HDF-EOS 2</A> (2.20)
+<LI><A HREF="#HDFEOS5">HDF-EOS 5</A> (1.16)
 <LI><A HREF="#Triangle">Triangle</A>
-<LI><A HREF="#UDUNITS2">UDUNITS-2</A> (2.2.20)
+<LI><A HREF="#UDUNITS2">UDUNITS-2</A> (2.2.26)
 <LI><A HREF="#Vis5D">Vis5D+</A>
 </UL>
 
@@ -265,7 +261,7 @@ software is no longer optional.
 <li>The
 new <a href="http://www.ncl.ucar.edu/Applications/ESMF.shtml">ESMF
 regridding software</a> in NCL uses an application called
-"<a href="http://www.earthsystemmodeling.org/esmf_releases/public/ESMF_3_1_0rp3/ESMF_usrdoc/node7.html">ESMF_RegridWeightGen</a>",
+"<a href="https://www.earthsystemcog.org/projects/regridweightgen/">ESMF_RegridWeightGen</a>",
 which is part of
 the <a href="http://www.earthsystemmodeling.org/">Earth System
 Modeling Framework</a>. A serial version of this application is
@@ -290,13 +286,14 @@ remove this option from the appropriate configuration file.
 <b>Compilers needed to build NCL</b><p>
 
 To build NCL, you need a Fortran compiler that can compile both
-Fortran 77 and 90 and an ANSI C compiler. If your system has native
-Fortran and C compilers (for example "xlf" on IBM/AIX systems), we
-recommend using these. To build the ESMF software (only required if
-you want a parallel version of ESMF_RegridWeightGen), you additionally
-need a C++ compiler. In addition to native compilers, NCL has been
-successfully built with a wide-range of compilers
-including <a href="http://gcc.gnu.org/">gcc</a>, <a href="http://gcc.gnu.org/wiki/GFortran">gfortran</a>, <a href="http://g95.org/">g95</a>, <a href="http://software.intel.com/en-us/articles/intel-compilers/">Intel
+Fortran 77 and 90, an ANSI C compiler, and a C++ compiler. In general,
+we recommend using the GNU (gcc, gfortran, and g++) compilers, and
+using version 7.x or higher. For NCL V6.5.0, NCL was 
+built with the GNU and Intel compilers.  In the past we
+have successfully used <a href="http://gcc.gnu.org/">gcc</a>,
+<a href="http://gcc.gnu.org/wiki/GFortran">gfortran</a>,
+<a href="http://g95.org/">g95</a>,
+<a href="http://software.intel.com/en-us/articles/intel-compilers/">Intel
 Fortran/C</a>, and <a href="http://www.pgroup.com/">Portland
 Group</a>. <i>You cannot use g77 as a Fortran compiler</i>.
 <p>
@@ -460,7 +457,7 @@ use <a href="http://www.macports.org/">MacPorts</a>. Under Cygwin, the
 <p>
 
 Each package is listed below, along with the version we used to build
-NCL V6.4.0 on our own systems. In most cases you don't need to have
+NCL V6.5.0 on our own systems. In most cases you don't need to have
 the exact version of the software we used, but it's a good idea to
 match them as much as possible. We've included the "wget" command we
 used for the retrieving the source code, where applicable.
@@ -484,7 +481,7 @@ with:
 <p>
 
 <pre>
-  ./configure --prefix=/usr/local
+  ./configure --disable-shared --prefix=/usr/local
   make all install
 </pre>
 
@@ -498,15 +495,15 @@ You may additionally need do this to install the libraries and include files:
 <p>
 
 <A NAME="ZLIB"></A>
-<li><a href="http://www.zlib.net/">zlib</a> (1.2.8) - not optional,
+<li><a href="http://www.zlib.net/">zlib</a> (1.2.11) - not optional,
 but mostly likely already available on your system
 <p>
 
-Download version 1.2.8 or later.
+Download version 1.2.11 or later.
 <p>
 
 <pre>
-    wget http://zlib.net/zlib-1.2.8.tar.gz
+    wget https://zlib.net/zlib-1.2.11.tar.gz 
 </pre>
 <p>
 
@@ -515,7 +512,7 @@ with:
 <p>
 
 <pre>
-  ./configure --prefix=/usr/local
+  ./configure --prefix=/usr/local --static
   make all install
 </pre>
 <p>
@@ -543,14 +540,15 @@ so check for this before you install all the packages.
 <ul>
 <A NAME="PNG"></A>
 <a href="http://www.libpng.org/pub/png/libpng.html">PNG</a> library
-(1.2.56) - required
+(1.6.34) - required
 <p>
 
-Download version 1.2.x (not 1.4.x or 1.5.x).
+Download version 1.6.x (not 1.4.x or 1.5.x). Version 1.2 will work as well,
+but we don't recommend this version.
 <p>
 
 <pre>
-    wget http://sourceforge.net/projects/libpng/files/libpng12/1.2.56/libpng-1.2.56.tar.gz/download
+    wget http://prdownloads.sourceforge.net/libpng/libpng-1.6.34.tar.gz
 </pre>
 <p>
 
@@ -559,20 +557,19 @@ with:
 <p>
 
 <pre>
-  ./configure  --with-pic --prefix=/usr/local 
+  ./configure  --with-pic --disable-shared --prefix=/usr/local 
   make all install
 </pre>
 <p>
 
 <a name="pkgconfig"></a>
 <li><a href="http://pkgconfig.freedesktop.org/releases/">pkg-config</a>
-(0.29) - Download version 0.28 or later.
+(0.29) - Download version 0.29 or later.
 <p>
 
 <pre>
     wget http://pkgconfig.freedesktop.org/releases/pkg-config-0.29.tar.gz
 </pre>
-<p>
 
 Once you have the pkg-config source code, you can build and install it
 with:
@@ -594,7 +591,6 @@ From tcsh or csh:
 
 <pre>
   setenv PKG_CONFIG_PATH /usr/local/lib/pkgconfig
-  setenv LD_LIBRARY_PATH /usr/local/cairo/lib
   set path=(/usr/local/bin $path)
 </pre>
 <p>
@@ -604,7 +600,6 @@ From ksh or bash:
 
 <pre>
   export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
-  export LD_LIBRARY_PATH=/usr/local/cairo/lib
   export PATH=/usr/local/bin:$PATH
 </pre>
 <p>
@@ -614,11 +609,11 @@ From ksh or bash:
 
 <a name="freetype"></a>
 <li><a href="http://freetype.sourceforge.net/index2.html">FreeType</a>
-(2.6.5) - Download version 2.6 or later.
+(2.9.1) - Download version 2.9 or later.
 <p>
 
 <pre>
-    wget http://download.savannah.gnu.org/releases/freetype/freetype-2.6.5.tar.gz
+  wget https://sourceforge.net/projects/freetype/files/freetype2/2.9.1/freetype-2.9.1.tar.gz
 </pre>
 <p>
 
@@ -627,18 +622,18 @@ with:
 <p>
 
 <pre>
-  ./configure --prefix=/usr/local
+  ./configure --prefix=/usr/local --disable-shared
   make all install
 </pre>
 <p>
 
 <a name="pixman"></a>
 <li><a href="http://cairographics.org/releases/">pixman</a>
-(0.34.0) - Download version 0.2x.x or later.
+(0.34.0) - Download version 0.34.x or later.
 <p>
 
 <pre>
-    wget http://cairographics.org/releases/pixman-0.34.0.tar.gz
+    wget https://www.cairographics.org/releases/LATEST-pixman-0.34.0
 </pre>
 <p>
 
@@ -663,12 +658,12 @@ Linux, Cygwin, others:<p>
 </pre>
 <p>
 
-<li><a href="http://cairographics.org/releases/">cairo</a> (1.14.6) -
-Download version 1.14.6 or later. Older versions have known bugs.
+<li><a href="http://cairographics.org/releases/">cairo</a> (1.14.12) -
+Download version 1.14.12 or later. Older versions have known bugs.
 <p>
 
 <pre>
-    wget http://cairographics.org/releases/cairo-1.14.6.tar.xz
+    wget http://cairographics.org/releases/cairo-1.14.12.tar.xz
 </pre>
 <p>
 
@@ -700,16 +695,6 @@ Once you have the cairo source code, you can build and install it
 with:
 <p>
 
-Linux, Cygwin, others:<p>
-
-<pre>
-  ./configure --prefix=/usr/local
-  make all install
-</pre>
-<p>
-
-Macs:<p>
-
 <pre>
   ./configure --prefix=/usr/local --enable-quartz-font=no --enable-quartz=no \
        --enable-shared=no --enable-static=yes
@@ -727,17 +712,16 @@ not install if you are only doing an NCAR Graphics build.
 <p>
 
 Download
-version <a href="http://www.unidata.ucar.edu/downloads/netcdf/index.jsp">4.4.1.1</a>. 
+version <a href="http://www.unidata.ucar.edu/downloads/netcdf/index.jsp">4.6.1</a>. 
 <p>
 
 Note that <glossary term="netCDFclassic">NetCDF classic</glossary>
 (sometimes referred to as NetCDF-3)
 and <glossary term="netCDF4">NetCDF-4</glossary> are different <b>file
-formats</b> and have nothing to do with the version of the NetCDF
-software. NetCDF software version 4.<i>x</i> supports both NetCDF-3
-and NetCDF-4 file formats, but as noted below, you may have to set
-some flags in order to get support for both. NetCDF-4 files are
-actually written as HDF5 under the hood.<p>
+formats</b>.  software. NetCDF software version 4.<i>x</i> supports
+both NetCDF-3 and NetCDF-4 file formats, but as noted below, you may
+have to set some flags in order to get support for both. NetCDF-4
+files are actually written as HDF5 under the hood.<p>
 
 <glossary term="netCDF4classic">Classic NetCDF-4</glossary> is another
 supported format, which looks like NetCDF-3 files to the user, but
@@ -746,50 +730,38 @@ NetCDF-4 files cannot be read by programs that only support NetCDF-3.
 <p>
 
 NetCDF versions 4.1.x and later support OPenDAP, and this is built in
-by default. Unidata recommends you use V4.3.3.1 or later. NetCDF 4.1.x also
-includes the UDUNITS-2 software, but the stand-alone UDUNITS-2 library
-is more up-to-date so we recommend this over the one that comes with
+by default. NetCDF 4.1.x also includes the UDUNITS-2 software, but the
+stand-alone UDUNITS-2 library is more up-to-date so we recommend this
+over the one that comes with
 NetCDF. See <a href="#UDUNITS2">instructions on building and
 installing UDUNITS-2</a>.
 <p>
 
-This software can be built different ways: with or without "classic"
+This software can be built many different ways: with or without "classic"
 NetCDF-4 support, and with or without OPeNDAP support. Classic
 NetCDF-4 support gives you file compression capabilities. Full
 NetCDF-4 support gives you groups, unlimited dimensions, file compression,
 and compound structures. OPeNDAP support allows you to read NetCDF
 files served on the web by OPeNDAP servers. We recommend building with
-both NetCDF-4 and OPeNDAP support.
+at least classic NetCDF-4 support turned on. The instructions
+below show methods for building classic NetCDF-4 without OPenDAP
+support, and classic NetCDF-4 with OPenDAP support.
 <p>
 
-Decide which version you want to build and follow one of the four set
-of instructions:
+The NetCDF website has up-to-date intructions for building this
+software, so we recommend you visit their
+<a href="https://www.unidata.ucar.edu/software/netcdf/docs/getting_and_building_netcdf.html">Getting
+and building NetCDF</a> page. In particular, you can look at these two methods for building
+NetCDF:
+
+<ol>
+<li><a href="https://www.unidata.ucar.edu/software/netcdf/docs/getting_and_building_netcdf.html#build_default">Building netCDF-4 and the Remote Data Client from source</a>
+<li><a href="https://www.unidata.ucar.edu/software/netcdf/docs/getting_and_building_netcdf.html#build_classic">Building netCDF with Classic Library Only</a>
+</ol>
 <p>
 
-<b>1. Without "classic" NetCDF-4 support, without OPeNDAP support</b><p>
-
-<pre>
-  ./configure --disable-dap --prefix=/usr/local
-  make all install
-</pre>
-<p>
-
-<b>2. Without "classic" NetCDF-4 support, with OPeNDAP support</b><p>
-
-<pre>
-  ./configure --prefix=/usr/local
-  make all install
-</pre>
-<p>
-
-<b>3. With "classic" NetCDF-4 support, with OPeNDAP support</b><p>
-
-You first need to download and install the following packages.
-Unidata has provided all of these software packages in
-<a href="ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4/">one
-convenient location</a>, or you can download them at their individual
-locations using the links given below.
-<p>
+The above links include information about where to get the additional
+software required. We've provided these links below for convenience:
 
 <ul>
 
@@ -802,25 +774,30 @@ href="http://www.hdfgroup.org/HDF5/release/obtain5.html">szip</a> -
 Download version 2.1 or later. (Click on "External Libraries Used By HDF5".)
 <p>
 
+<pre>
+  wget https://support.hdfgroup.org/ftp/lib-external/szip/2.1.1/src/szip-2.1.1.tar.gz
+</pre>
+<p>
+
 The szip 2.<i>x</i> software is available from same page where you
 download HDF-5. Use this version, rather than the one on the official
 szip page.
 <p>
 
 <pre>
-  ./configure --prefix=/usr/local
-  make all install >& make-output
+  ./configure --prefix=/usr/local --enable-netcdf-4  --disable-shared
+  make all install
 </pre>
 <p>
 
 <A NAME="HDF5"></A>
 <li><a
 href="http://www.hdfgroup.org/HDF5/release/obtain5.html">HDF-5</a>
-(1.8.17) - Download version 1.8.17 or later.
+(1.10.1) - Download version 1.10.x or later.
 <p>
 
 <pre>
-    wget http://www.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.8.17.tar.gz
+    wget https://support.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.10.1.tar.gz
 </pre>
 <p>
 
@@ -831,15 +808,15 @@ href="http://www.hdfgroup.org/HDF5/release/obtain5.html">HDF-5</a>
 <p>
 
 <A NAME="libcurl"></A>
-<li><a href="http://curl.haxx.se">libcurl</a> (7.49.1)
+<li><a href="http://curl.haxx.se">libcurl</a> (7.60.1)
 <p>
 
 <pre>
-    wget http://curl.haxx.se/download/curl-7.49.1.tar.gz
+    wget https://curl.haxx.se/download/curl-7.60.0.tar.gz
 </pre>
 <p>
 
-Download version 7.49.x or later. Once you have the source code, you
+Download version 7.60.x or later. Once you have the source code, you
 can build and install it with:
 <p>
 
@@ -851,54 +828,11 @@ can build and install it with:
 <p>
 
 </ul>
-
-Then, build NetCDF as follows and be sure to include the
-"--enable-netcdf-4" option:
-<p>
-
-<pre>
-  ./configure --with-hdf5=/usr/local --with-zlib=/usr/local --with-szlib=/usr/local \
-       --prefix=/usr/local --enable-netcdf-4
-  make all install >& make-output
-</pre>
-<p>
-
-Note that OPeNDAP support will be built in by default. This means
-that you may need the "curl" library later when building NCL. This
-library may already be on your system.
-<p>
-
-<b>4. With "classic" NetCDF-4 support, without OPeNDAP support</b><p>
-
-Follow the instructions above, but you don't need "libcurl",
-and include "--disable-dap" on the above configure line for NetCDF.
-<p>
-
-<b>Troubleshooting for either NetCDF build</b>:
-<p>
-
-Note: if during the "make all install" phase of building the NetCDF
-software you see an error message like:
-<p>
-
-<pre>
-"cfortran.h", line 138.3: 1506-205 (S) #error cfortran.h:  Can't find your environment among:
-    - MIPS cc and f77 2.0. (e.g. Silicon Graphics, DECstations, ...)
- . . .
-make[3]: *** [fort-attio.lo] Error 1
-</pre>
-
-then you need to "help" the NetCDF build recognize your system by
-adding the appropriate "-D" macro definition to your CPPFLAGS line. The
-error message above suggests some of them for you, or you can go to
-the "<a
-href="http://www.unidata.ucar.edu/software/netcdf/docs/other-builds.html">Other
-Builds of the NetCDF Package</a>" page for some tips.
 <p>
 
 <A NAME="HDF4"></A>
 <li><a href="http://www.hdfgroup.org/products/hdf4/">HDF-4</a> -
-(4.2.12) if you want to build NCAR Graphics only, then HDF-4 is optional,
+(4.2.13) if you want to build NCAR Graphics only, then HDF-4 is optional,
 unless you need HDF support in <a
 href="http://www.ncl.ucar.edu/Document/Tools/ctrans.shtml">ctrans</a>,
 <a
@@ -912,7 +846,7 @@ different software package).
 <p>
 
 <pre>
-    wget http://www.hdfgroup.org/ftp/HDF/HDF_Current/src/hdf-4.2.12.tar.gz
+    wget https://support.hdfgroup.org/ftp/HDF/HDF_Current/src/hdf-4.2.13.tar
 </pre>
 <p>
 
@@ -1040,12 +974,12 @@ two packages.
 <ul>
 
 <a name="PROJ4"></a>
-<li><a href="http://trac.osgeo.org/proj/">PROJ.4</a> (4.9.2) -
-Cartographic Projections Library - Download version 4.9.0 or later.
+<li><a href="http://trac.osgeo.org/proj/">PROJ.4</a> (5.1.0) -
+Cartographic Projections Library - Download version 5.x or later.
 <p>
 
 <pre>
-    wget http://download.osgeo.org/proj/proj-4.9.2.tar.gz
+    wget http://download.osgeo.org/proj/proj-5.1.0.tar.gz
 </pre>
 <p>
 
@@ -1061,12 +995,12 @@ with:
 
 
 <a name="GDAL"></a>
-<li><a href="http://www.gdal.org/">GDAL</a> (2.1.1) - Geospatial Data
-Abstraction Library - Download version 1.11 or later.
+<li><a href="http://www.gdal.org/">GDAL</a> (2.2.4) - Geospatial Data
+Abstraction Library - Download version 2.2.x or later.
 <p>
 
 <pre>
-    wget ftp://ftp.remotesensing.org/gdal/2.1.1/gdal-2.1.1.tar.gz
+    wget http://download.osgeo.org/gdal/2.2.4/gdal-2.2.4.tar.gz
 </pre>
 <p>
 
@@ -1086,7 +1020,7 @@ software requires including several "--without-<i>xxxx</i>" options:
       --with-hdf4=no --with-hdf5=no --with-pg=no --without-grib --disable-shared
       --with-freexl=no --with-geos=no --with-openjpeg=no --with-mysql=no 
       --with-ecw=no --with-fgdb=no --with-odbc=no --with-xml2=no --with-ogdi=no
-      --with-pcraster=no
+      --with-pcraster=no --with-xerces=no
 
   make all install
 </pre>
@@ -1099,7 +1033,7 @@ software requires including several "--without-<i>xxxx</i>" options:
 Graphics build.<p>
 
 <pre>
-    wget ftp://edhs1.gsfc.nasa.gov/edhs/hdfeos/latest_release/HDF-EOS2.19v1.00.tar.Z 
+    wget ftp://edhs1.gsfc.nasa.gov/edhs/hdfeos/latest_release/HDF-EOS2.20v1.00.tar.Z
 </pre>
 <p>
 
@@ -1110,7 +1044,7 @@ packages:
 
 <ul>
 <li><a href="ftp://edhs1.gsfc.nasa.gov/edhs/hdfeos/latest_release/">HDF-EOS
-2</a> (2.19) - Download version 2.19 or later.
+2</a> (2.20) - Download version 2.20 or later.
 <p>
 
 Once you have the HDF-EOS 2 source code, you can build and install it
@@ -1129,7 +1063,7 @@ with:
 Graphics build.<p>
 
 <pre>
-    wget ftp://edhs1.gsfc.nasa.gov/edhs/hdfeos5/latest_release/HDF-EOS5.1.15.tar.Z 
+    wget ftp://edhs1.gsfc.nasa.gov/edhs/hdfeos5/latest_release/HDF-EOS5.1.16.tar.Z 
 </pre>
 <p>
 
@@ -1146,7 +1080,7 @@ packages:
 <p>
 
 <li><a href="ftp://edhs1.gsfc.nasa.gov/edhs/hdfeos5/latest_release/">HDF-EOS
-5</a> (1.14) - Download version 1.14 or later.
+5</a> (1.16) - Download version 1.16 or later.
 <p>
 
 Once you have the HDF-EOS 5 source code, you can build and install it
@@ -1171,7 +1105,7 @@ by enclosing them with '':
 </pre>
 <p>
 
-You will also have to hand-copy two include files:
+You may also have to hand-copy two include files:
 <p>
 
 <pre>
@@ -1205,7 +1139,7 @@ be bound by Triangle's license.
 <p>
 
 <A NAME="UDUNITS2"></A>
-<b>UDUNITS-2</b> (2.2.20) - not needed if you are only doing an NCAR Graphics
+<b>UDUNITS-2</b> (2.2.26) - not needed if you are only doing an NCAR Graphics
 build.<p>
 
 Download
@@ -1213,7 +1147,7 @@ the <a href="http://www.unidata.ucar.edu/software/udunits/">Udunits</a>
 2.<i>x</i> (<b>not</b> 1.<i>x</i>!) source code.
 
 <pre>
-    wget ftp://ftp.unidata.ucar.edu/pub/udunits/udunits-2.2.20.tar.gz 
+    wget ftp://ftp.unidata.ucar.edu/pub/udunits/udunits-2.2.26.tar.gz 
 </pre>
 <p>
 
@@ -1278,17 +1212,17 @@ HREF="http://www.ncl.ucar.edu/Download/">http://www.ncl.ucar.edu/Download/</A>
 <p>
 
 The NCL source code you download will be a single compressed tar
-file (we'll call it "ncl_ncarg-6.4.0.tar.gz"). Move the
-"ncl_ncarg-6.4.0.tar.gz" file to a temporary directory where you
-have plenty of disk space (around 630 megabytes to hold all of the
+file (we'll call it "ncl_ncarg-6.5.0.tar.gz"). Move the
+"ncl_ncarg-6.5.0.tar.gz" file to a temporary directory where you
+have plenty of disk space (around 850 megabytes to hold all of the
 source code, object files, binaries, and so on). Then, uncompress and
 untar the file as follows:<P>
 
 <pre>
-  tar -zxvf ncl_ncarg-6.4.0.tar.gz
+  tar -zxvf ncl_ncarg-6.5.0.tar.gz
 </pre>
 
-The above steps will create a directory called "ncl_ncarg-6.4.0". For
+The above steps will create a directory called "ncl_ncarg-6.5.0". For
 convenience, we'll use the notation $NCARG to mean the top level of
 the NCL/NCAR Graphics source tree. Set the environment variable NCARG
 to the full path of this directory.
@@ -1300,21 +1234,21 @@ From tcsh or csh:
 <p>
 
 <pre>
-  setenv NCARG /usr/local/src/ncl_ncarg-6.4.0
+  setenv NCARG /usr/local/src/ncl_ncarg-6.5.0
 </pre>
 
 From ksh or bash:
 <p>
 
 <pre>
-  export NCARG=/usr/local/src/ncl_ncarg-6.4.0
+  export NCARG=/usr/local/src/ncl_ncarg-6.5.0
 </pre>
 
 sh:
 <p>
 
 <pre>
-  NCARG=/usr/local/src/ncl_ncarg-6.4.0
+  NCARG=/usr/local/src/ncl_ncarg-6.5.0
   export NCARG
 </pre>
 <p>
