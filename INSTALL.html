@@ -66,7 +66,7 @@ built with. Check if you already have any of these packages on your
 system <i>and if they were built with the correct options</i>.
 <p>
 
-Some of the required softwre libraries may already be on your
+Some of the required software libraries may already be on your
 system. On Linux and Mac systems, you can use a command called
 "locate" to look for libraries.
 <p>
@@ -78,9 +78,8 @@ system. On Linux and Mac systems, you can use a command called
 
 NCL/NCAR Graphics has been successfully built on 32 and 64 bit Linux
 systems, Macs (32 or 64 bit) running MacOSX, and Windows running
-Cygwin.
+32-bit Cygwin.
 <p>
-
 
 <a href="http://mailman.ucar.edu/mailman/listinfo/ncl-install">Email
 ncl-install</a> if you have any problems understanding this document
@@ -188,7 +187,7 @@ to change default values</A> (may not be necessary)
 
 <LI><A HREF="#Linux">Special note for Linux systems</A>
 <LI><A HREF="#MacOSX">Special note for MacOSX systems</A>
-<LI><A HREF="#Cygwin">Special note for Cygwin systems</A>
+<LI><A HREF="#Windows">Special note for Windows systems</A>
 </UL>
 
 <LI><A HREF="#StartBuildAndInstall">Start the build and install process</A>
@@ -570,6 +569,7 @@ with:
 <pre>
     wget http://pkgconfig.freedesktop.org/releases/pkg-config-0.29.tar.gz
 </pre>
+<p>
 
 Once you have the pkg-config source code, you can build and install it
 with:
@@ -650,7 +650,7 @@ Macs:<p>
 </pre>
 <p>
 
-Linux, Cygwin, others:<p>
+Linux, MacOS, others:<p>
 
 <pre>
   ./configure --prefix=/usr/local
@@ -718,7 +718,7 @@ version <a href="http://www.unidata.ucar.edu/downloads/netcdf/index.jsp">4.6.1</
 Note that <glossary term="netCDFclassic">NetCDF classic</glossary>
 (sometimes referred to as NetCDF-3)
 and <glossary term="netCDF4">NetCDF-4</glossary> are different <b>file
-formats</b>.  software. NetCDF software version 4.<i>x</i> supports
+formats</b>. NetCDF software version 4.<i>x</i> supports
 both NetCDF-3 and NetCDF-4 file formats, but as noted below, you may
 have to set some flags in order to get support for both. NetCDF-4
 files are actually written as HDF5 under the hood.<p>
@@ -737,7 +737,7 @@ NetCDF. See <a href="#UDUNITS2">instructions on building and
 installing UDUNITS-2</a>.
 <p>
 
-This software can be built many different ways: with or without "classic"
+This software can be built different ways: with or without "classic"
 NetCDF-4 support, and with or without OPeNDAP support. Classic
 NetCDF-4 support gives you file compression capabilities. Full
 NetCDF-4 support gives you groups, unlimited dimensions, file compression,
@@ -774,11 +774,6 @@ href="http://www.hdfgroup.org/HDF5/release/obtain5.html">szip</a> -
 Download version 2.1 or later. (Click on "External Libraries Used By HDF5".)
 <p>
 
-<pre>
-  wget https://support.hdfgroup.org/ftp/lib-external/szip/2.1.1/src/szip-2.1.1.tar.gz
-</pre>
-<p>
-
 The szip 2.<i>x</i> software is available from same page where you
 download HDF-5. Use this version, rather than the one on the official
 szip page.
@@ -808,7 +803,7 @@ href="http://www.hdfgroup.org/HDF5/release/obtain5.html">HDF-5</a>
 <p>
 
 <A NAME="libcurl"></A>
-<li><a href="http://curl.haxx.se">libcurl</a> (7.60.1)
+<li><a href="http://curl.haxx.se">libcurl</a> (7.60.0)
 <p>
 
 <pre>
@@ -901,8 +896,8 @@ packages.
 
 <ul>
 
-<a name="Jasper"></a> <li><a
-href="http://www.ece.uvic.ca/~mdadams/jasper/">Jasper</a> 
+<a name="Jasper"></a>
+<li><a href="http://www.ece.uvic.ca/~mdadams/jasper/">Jasper</a>
 (1.900.1) - Download version 1.900 or later.
 <p>
 
@@ -1632,12 +1627,12 @@ Be sure to see the "<a href="macosx.shtml">Running NCL under
 MacOSX</a>" document for more notes.<p>
 <p>
 
-<A NAME="Cygwin"></A>
-<B>Special note for Cygwin systems</B><P>
+<A NAME="Windows"></A>
+<B>Special note for Windows systems</B><P>
 
-Before you can build any software on a Windows/Cygwin system,
-you need to install a number of software packages via the "setup.exe"
-X/Cygwin program. See the "<a href="cygwin.shtml">Installing NCL under
+Before you can build any software on a Windows system running Cygwin,
+you need to install a number of software packages via the "setup-x86.exe"
+X/Cygwin program. See the "<a href="http://www.ncl.ucar.edu/Downloads/windows_cygwin.shtml">Installing NCL under
 Windows/Cygwin/X</a>" page for a full description of what you need 
 and how to download it.
 <p>
