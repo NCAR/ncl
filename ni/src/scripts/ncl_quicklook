@@ -15,6 +15,7 @@
 #  
 #    ncl_quicklook [-v <var>] [-t <time_index>] [-lev <level>] [-pltype <plot_type>] 
 #                  [-o <output_format>] [-cmap <color_map>] [-region <sub-region>] 
+#                  [-cont <cmin,cmax,cint>] [-animate] [-gif] 
 #                  [-addCyclic <logical>] [-savescript]  input-file
 #  
 #  DESCRIPTION
@@ -1180,6 +1181,7 @@ SYNOPSIS
 
   ncl_quicklook [-v <var>] [-t <time_index>] [-lev <level>] [-pltype <plot_type>] 
                 [-o <output_format>] [-cmap <color_map>] [-region <sub-region>] 
+                [-cont <cmin,cmax,cint>] [-animate] [-gif] 
                 [-addCyclic <logical>] [-savescript]  input-file
 
 DESCRIPTION
