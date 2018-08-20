@@ -1,0 +1,1267 @@
+#!/bin/csh -f
+#--------------------------------------------------------------------
+# DKRZ program		Program to generate a quick-look plot.
+#
+# Version:			1.0		2018-08-14		kmf
+#
+# Requirements:		csh
+#					CDO version 1.9.2 or later
+#					NCL version 6.4.0 or later
+#  NAME
+#  
+#    ncl_quicklook - Create a quick-look plot
+#  
+#  SYNOPSIS
+#  
+#    ncl_quicklook [-v <var>] [-t <time_index>] [-lev <level>] [-pltype <plot_type>] 
+#                  [-o <output_format>] [-cmap <color_map>] [-region <sub-region>] 
+#                  [-addCyclic <logical>] [-savescript]  input-file
+#  
+#  DESCRIPTION
+#  
+#    The ncl_quicklook generates a quick-look like plot in an x11 window (default). A file name must 
+#    be given. If a variable is not given ncl_quicklook will show all available variables and ask 
+#    for the variable name. Valid input file formats: netCDF and GRIB. Two plot types are available:
+#    'contour fill' - cnfill and 'contour lines' - cnlines, the default is cnfill.
+#  
+#    The options are as follows:
+#     
+#       [-v <var>]                       Select variable name. If a variable is not given ncl_quicklook 
+#                                        will show all available variables and ask which one to use.
+#     
+#       [-t <time_index>]                Select time index (integer), default: 0 (NCL indexing!!).
+#     
+#       [-lev <level>]                   Select level index (integer), default: 0 (NCL indexing!!).
+#     
+#       [-pltype <plot_type>]            Select contour type. Plot type: cnfill (contour fill), 
+#                                        cnlines (contour lines) (default: cnfill).
+#     
+#       [-o <output_format>]             Select output file format; output_format: x11, png, pdf, ps,  
+#                                        eps, svg (default: x11).
+#
+#		[-cont <cmin,cmax,cint>]		 Set contour minimum, maximum and interval.
+#
+#       [-cmap <color_map>]              Select color map (default: ncl_default).
+#  
+#       [-region <lat0,lat1,lon0,lon1>]  Select sub-region: lat0 latitude minimum,  lat1 latitude maximum,
+#                                                           lon0 longitude minimum, lon1 longitude maximum
+#  
+#       [-addCyclic <logical>]           Add cyclic point when longitude range is less 360 degrees; 
+#                                        logical: True or False (default: True).
+#
+#       [-animate]                       Create animation and send output plot by plot to an x11 window.
+#
+#       [-gif]                           Create animation and save output as an animated GIF.
+#
+#       [-savescript]                    Save the NCL script tmp_nclscript.ncl.
+#          
+#       [-h]                             This usage message.
+#  
+#       input-file                       Input file name.
+#  
+#  EXAMPLES
+#  
+#    Read file data.nc, show all available variables, and select a variable:
+#  
+#        ncl_quicklook data.nc
+#  
+#    To plot the variable prec from file data.nc (contour fill):
+#  
+#        ncl_quicklook -v prec data.nc 
+#
+#    To plot the variable tas (only variable in file) from file tas_20000101.nc (contour fill) and draw 
+#    the contours between 250 and 300 K with interval 10:
+#
+#        ncl_quicklook -cont 250,300,10 tas_20000101.nc 
+#  
+#    To plot the variable temp from file data.grb (contour lines):
+#  
+#        ncl_quicklook -v temp -pltype cnlines data.nc 
+#  
+#    To plot the variable qvi at the 12th time step (NCL index start with 0) and write the 
+#    plot file to a PDF file:
+#  
+#        ncl_quicklook -v qvi -t 11 -o pdf data.nc 
+#
+#    To create an animation and save the output as animated GIF:
+#    
+#    	 ncl_quicklook -gif data.nc
+#    	  
+#    	  
+#  AUTHOR
+#  
+#    DKRZ - Deutsches Klimarechenzentrum GmBH, Hamburg, Germany, Karin Meier-Fleischer (meier-fleischer(at)dkrz.de)
+#--------------------------------------------------------------------
+onintr cleanup
+
+set progname = `basename $0`
+
+if ($#argv < 1) goto usage
+
+#---------------------------------------
+#-- Init variables
+#---------------------------------------
+set SAVESCRIPT  = "False"
+set noCN        = "-Q"
+set noNL        = "-n"
+set fname0      = ""
+set vname0      = ""
+set pltype0     = ""
+set format0     = ""
+set cont0       = ""
+set cmap0       = ""
+set addCyclic0  = ""
+set region0     = ""
+set t0          = ""
+set lev0        = ""
+set animate0    = ""
+set gif0        = ""
+
+#---------------------------------------
+# Loop through the options
+#---------------------------------------
+while ($#argv > 0)
+    switch ("$1")
+        case "-v":
+            shift
+            set vname0 = $1
+            breaksw
+        case "-pltype"
+            shift
+            set pltype0 = $1
+            breaksw
+        case "-o"
+            shift
+            set format0 = $1
+            breaksw
+        case "-cont":
+            shift
+            set cont0 = $1
+            breaksw
+        case "-cmap"
+            shift
+            set cmap0 = $1
+            breaksw
+        case "-t"
+            shift
+            set t0 = $1
+            breaksw
+        case "-lev"
+            shift
+            set lev0 = $1
+            breaksw
+        case "-addcyclic"
+        case "-addCyclic"
+        case "-AddCyclic"
+            shift
+            set addCyclic0 = $1
+            breaksw
+        case "-a":
+        case "-anim":
+        case "-animate":
+            shift
+            set animate0 = "True"
+            breaksw
+        case "-gif":
+        case "-animgif":
+        case "-animGIF":
+        case "-animategif":
+        case "-animateGIF":
+            shift
+            set gif0 = "True"
+            breaksw
+        case "-region":
+            shift
+            set region0 = $1
+            breaksw
+        case "-h":
+            goto usage
+            exit 0
+            breaksw
+        case "-savescript":
+            shift
+            set SAVESCRIPT = "True"
+            breaksw
+        default:
+            set fname0 = $1
+            shift
+    endsw
+end
+
+#---------------------------------------
+# Construct the command line strings for
+# NCL (which is very special :()
+#---------------------------------------
+set str_fname     = ""
+set str_vname     = ""
+set str_pltype    = ""
+set str_format    = ""
+set str_addCyclic = ""
+set str_cont      = ""
+set str_cmap      = ""
+set str_region    = ""
+set str_t         = ""
+set str_lev       = ""
+set str_animate   = ""
+set str_gif       = ""
+
+#-- set file name
+if ($fname0 != "") set str_fname = 'fname="'${fname0}'"'
+
+#-- set variable name
+if ($vname0 != "") then
+   set str_vname = 'vname="'${vname0}'"'
+else
+   set varnames = `cdo -s showvar ${fname0}`
+   set numvars  = `echo $varnames | wc -w`
+   if ($numvars == 1) then
+      set vname0 = $varnames
+      set str_vname = 'vname="'$varnames'"'
+   else
+      echo ""
+      echo "Available variables:  $varnames"
+      echo ""
+      echo -n "Enter variable:  "
+      set vname0 = $<
+      set str_vname = 'vname="'${vname0}'"'
+   endif
+endif
+
+#-- set plot type
+if ($pltype0 != "") set str_pltype = 'pltype="'${pltype0}'"'
+
+#-- set plot output format
+if ($format0 != "") set str_format = 'format="'${format0}'"'
+
+#-- set cont
+if ($cont0 != "") set str_cont = 'cont="'${cont0}'"'
+
+#-- set color map
+if ($cmap0 != "") set str_cmap = 'cmap="'${cmap0}'"'
+
+#-- set add cyclic point
+if ($addCyclic0 != "") set str_addCyclic = 'addCyclic="'${addCyclic0}'"'
+
+#-- set animation in x11 window
+if ($animate0 != "") set str_animate = 'animate="'${animate0}'"'
+
+#-- set animated GIF
+if ($gif0 != "") set str_gif = 'gif="'${gif0}'"'
+
+#-- set sub-region
+if ($region0 != "") set str_region = 'region="'${region0}'"'
+
+#-- set time step
+set ntimes = `cdo -s ntime ${fname0}`
+@ maxtime = ($ntimes - 1)
+
+if ($t0 == "") then
+   set t0 = 0
+else if ($t0 != "" && $t0 >= $ntimes) then
+   echo ""
+   echo "WARNING: Given time step is greater than max number of time steps in file (min:0 - max:${maxtime})."
+   echo -n "         Enter correct time step [${maxtime}]:  "
+   set input = $<
+   if ($input == "") then
+      set t0 = $maxtime
+   else
+      set t0 = $input
+   endif
+   echo ""
+endif
+set str_t = 't="'${t0}'"'
+
+#-- set level
+set nlevels = `cdo -s nlevel -selvar,${vname0} ${fname0}`
+@ maxlevel = ($nlevels - 1)
+
+if ($lev0 == "") then
+   set lev0 = 0
+else if ($lev0 != "" && $lev0 >= $nlevels) then
+   echo ""
+   echo "WARNING: Given level is greater than max number of levels in file (min:0 - max:${maxlevel})."
+   echo -n "         Enter correct level [${maxlevel}]:  "
+   set input = $<
+   if ($input == "") then
+      set lev0 = $maxlevel
+   else
+      set lev0 = $input
+   endif
+   echo ""
+endif
+set str_lev = 'lev="'${lev0}'"'
+
+#---------------------------------------
+# Check that a file name was specified.
+#---------------------------------------
+if (! $?fname0) then
+    echo "${progname}: ERROR: a file name must be specified."
+    goto usage
+    exit 1
+endif
+
+#---------------------------------------
+# What kind of file is it?
+#---------------------------------------
+set ncl_suffix = ("nc" "nc3" "nc4" "grb" "grb1" "grib" "grib1" "grb2" "grib2" "hdf" "h4" "hdf5" "h5")
+set suffix     = "$fname0:e"
+set prefix     = "$fname0:r"
+set without_suffix
+
+if ("$suffix" != "") then
+    @ i = 1
+    while ($i <= $#ncl_suffix  &&  $?without_suffix)
+        if ("$suffix" == "$ncl_suffix[$i]") then
+            unset without_suffix
+        endif
+        @ i++
+    end
+endif
+
+####################################################################################################
+# Create the NCL script
+####################################################################################################
+set nclscript = "./tmp_nclscript.ncl"
+
+if ($SAVESCRIPT == "False") /bin/rm -rf $nclscript >& /dev/null endif
+
+cat << 'EOF' >! $nclscript
+;--------------------------------------------------------------------
+;-- global variables
+;--------------------------------------------------------------------
+curvlin      =  False
+lonlat       =  False
+unstructured =  False
+rotated      =  False
+gridtype     = "lonlat"
+subregion    =  False
+
+;--------------------------------------------------------------------
+; Function plot_data:	plot data on map
+;--------------------------------------------------------------------
+undef("plot_data")
+procedure plot_data(var:numeric, filepointer:file, opt:logical)
+local vpx, vpy, vpw, vph, lat2d, lon2d, title_font, wks, res, txres
+begin
+
+  if(.not. isatt(var,"units")) then
+     var@units = ""
+  end if
+ 
+;-- retrieve the min/max of latitude and longitude to set the map edges  
+  latmin = min(opt@lat)
+  latmax = max(opt@lat)
+  lonmin = min(opt@lon)
+  lonmax = max(opt@lon)
+
+;-- open workstation
+  if(opt@gif .eq. "True") then
+     wks_type     = "png"
+     png_dir      = "./.Images_"+opt@plotname
+     system("mkdir -p "+png_dir)
+     wks_plotname = png_dir+"/"+opt@plotname
+  else
+     wks_type     = opt@plotfmt
+     wks_plotname = opt@plotname
+  end if
+  
+  wks = gsn_open_wks(wks_type,wks_plotname)
+
+;-- resource settings
+  res               = True
+  res@gsnFrame      = False                         ;-- do not advance the frame
+  res@gsnMaximize   = True                          ;-- maximize plot output
+  
+;-- contour resources
+  if(isatt(opt,"cont")) then
+     mnmxint    = new(3,float)
+     mnmxint(0) = tofloat(str_get_field(opt@cont,1,","))
+     mnmxint(1) = tofloat(str_get_field(opt@cont,2,","))
+     mnmxint(2) = tofloat(str_get_field(opt@cont,3,","))
+     var = where(var .ge. mnmxint(0) .and. var .le. mnmxint(1), var, var@_FillValue)
+  else
+     dmin    = min(var)
+     dmax    = max(var)
+     maxlev  = 18
+     mnmxint = nice_mnmxintvl( dmin, dmax, maxlev, False)
+  end if
+  
+  res@cnFillOn        = opt@contourFillMode         ;-- contour fill mode 
+  res@cnLinesOn       = opt@contourLineMode         ;-- contour line mode
+  res@cnInfoLabelOn   = opt@contourInfoMode         ;-- contour line info box
+  res@cnFillPalette   = opt@colormap                ;-- contour fill color map
+  res@cnLevelSelectionMode = "ManualLevels"         ;-- use manual contour line levels
+  res@cnMinLevelValF  = mnmxint(0)                  ;-- contour min. value
+  res@cnMaxLevelValF  = mnmxint(1)                  ;-- contour max. value
+  res@cnLevelSpacingF = mnmxint(2)                  ;-- contour interval        
+
+;-- map resources
+  res@mpFillOn        = False
+  
+;-- labelbar settings
+  res@pmLabelBarWidthF  = 0.7                       ;-- width of the labelbar
+  res@pmLabelBarHeightF = 0.05                      ;-- height of the labelbar
+  res@pmLabelBarOrthogonalPosF = 0.12               ;-- move complete labelbar downwards
+  
+;-- add a cyclic point?
+  if(opt@addCyclic .eq. False) then
+    res@gsnAddCyclic = False
+  else
+    res@gsnAddCyclic = True
+  end if
+
+;-- set lat and lon resources if needed
+  if(opt@gridtype .eq. "curvlin") then
+     lat2d        = filepointer->lat
+     lon2d        = filepointer->lon
+     var@lat2d    = lat2d
+     var@lon2d    = lon2d
+     res@gsnAddCyclic  =  False 
+     res@sfXArray      =  lon2d
+     res@sfYArray      =  lat2d
+  else if(opt@gridtype .eq. "unstructured") then
+     res@cnFillMode    = "RasterFill"    ;-- fastes way
+     res@trGridType    = "TriangularMesh"
+     res@sfXArray      =  opt@lon
+     res@sfYArray      =  opt@lat
+  else if(opt@gridtype .eq. "rotated") then
+     res@gsnAddCyclic  =  False
+     res@sfXArray      =  opt@lon
+     res@sfYArray      =  opt@lat
+  end if
+  end if
+  end if
+
+;-- subregion
+  if(isatt(var,"subregion") .and. var@subregion .eq. True) then
+     res@gsnAddCyclic =  False
+     res@mpMinLatF = var@latmin
+     res@mpMaxLatF = var@latmax
+     res@mpMinLonF = var@lonmin
+     res@mpMaxLonF = var@lonmax
+  else
+     if(lonmin .gt. -180. .and. lonmax .gt. 180.) then
+       res@mpCenterLonF = 0.
+     end if
+     res@mpMinLatF = latmin
+     res@mpMaxLatF = latmax
+     res@mpMinLonF = lonmin
+     res@mpMaxLonF = lonmax
+  end if
+  
+;-- change font size if title string is too long
+  if(opt@subregion .or. (strlen(opt@title) .gt. 95)) then
+     title_font = 0.008 
+  else
+     title_font = 0.012 
+  end if
+  
+  res@tiMainOffsetYF    =  0.06                         ;-- assign some space above the plot
+  res@tiMainString      =  " "                          ;-- we will draw the title string manually
+
+  if(.not. isatt(var,"long_name")) then
+     var@long_name = opt@varname
+  end if
+  
+;-- left and right string settings
+  if(strlen(var@long_name) .gt. 30) then
+     res@gsnLeftStringFontHeightF  = 0.012
+     res@gsnRightStringFontHeightF = 0.012
+  else
+     res@gsnLeftStringFontHeightF  = 0.014
+     res@gsnRightStringFontHeightF = 0.014
+  end if
+
+;-- text resources
+  txres1               =  True
+  txres1@txFont        =  29                            ;-- font 29 courier
+  txres1@txJust        = "CenterLeft"                   ;-- text justification
+  txres1@txFontColor   = "black"                        ;-- text color
+  txres1@txFontHeightF =  title_font                    ;-- font size
+     
+  txres2 = txres1     
+     
+  if(strlen(opt@datadir) .gt. 70) then     
+     txres2@txFontHeightF =  0.006                      ;-- font size
+  else     
+     txres2@txFontHeightF =  0.007                      ;-- font size  
+  end if     
+  
+  txres3 = txres2     
+  txres3@txFontColor   = "gray20"                       ;-- text color 
+  txres3@txAngleF      =  90                            ;-- rotate the text    
+
+;-- prepare the plot or animation
+  dims   = dimsizes(var)
+  ndims  = dimsizes(dims)
+  
+  if(isfilevar(filepointer,"time")) then
+     time   = filepointer->time
+     ntimes = dimsizes(time)
+    
+;-- convert time to YYYY-MM-DD hh:mm:ss
+     utc_date =  cd_calendar(time, 0)  
+     date =  sprinti("%0.2i",toint(utc_date(:,0)))+"-"+\
+          sprinti("%0.2i",toint(utc_date(:,1)))+"-"+\
+          sprinti("%0.2i",toint(utc_date(:,2)))+" "+\
+          sprinti("%0.2i",toint(utc_date(:,3)))+":"+\
+          sprinti("%0.2i",toint(utc_date(:,4)))+":"+\
+          sprinti("%0.2i",toint(utc_date(:,5)))
+  else
+     time   =  0
+     ntimes =  1
+     date   = "?"
+  end if
+  
+;-- create the animation, animated gif or single plot 
+  if((opt@animate .eq. True .or. opt@gif .eq. True) .and. ndims .ge. 3) then
+
+;-- loop over time steps
+     do ii= 0,ntimes-1
+        print("time step:  "+ii+"  "+date(ii))
+        
+        if(ndims .eq. 2 .and. var!0 .eq. "time") then
+           plotvar = var(ii,:)
+        else if(ndims .eq. 3) then
+           plotvar = var(ii,:,:)
+        end if
+        end if
+
+;-- create the plot
+        plot = gsn_csm_contour_map(wks,plotvar,res)
+
+;-- retrieve the viewport values
+        getvalues plot
+              "vpXF"      : vpx                                             ;-- viewport x-position
+              "vpYF"      : vpy                                             ;-- viewport y-position
+              "vpWidthF"  : vpw                                             ;-- viewport width
+              "vpHeightF" : vph                                             ;-- viewport height
+        end getvalues
+
+;-- draw the title string, date and data path
+        gsn_text_ndc(wks, opt@title, vpx, vpy+0.12, txres1)                 ;-- draw the title
+        gsn_text_ndc(wks, "Time: "+date(ii), vpx, vpy+0.07, txres2)         ;-- draw the date
+        gsn_text_ndc(wks, opt@datadir, vpx+vpw+0.025, vpy-vph+0.01, txres3) ;-- draw the data path
+
+;-- advance the frame
+        frame(wks)
+     end do
+     
+     if(opt@gif .eq. True) then
+        system("convert -delay 70 "+png_dir+"/"+opt@plotname+"*.png -loop 0 "+wks_plotname+".gif")
+        system("display "+wks_plotname+".gif")
+     end if
+  else
+  
+;-- create the plot
+     plot = gsn_csm_contour_map(wks,var,res)
+
+;-- retrieve the viewport values
+     getvalues plot
+        "vpXF"      : vpx                                                ;-- viewport x-position
+        "vpYF"      : vpy                                                ;-- viewport y-position
+        "vpWidthF"  : vpw                                                ;-- viewport width
+        "vpHeightF" : vph                                                ;-- viewport height
+     end getvalues
+
+;-- draw the title string, date and data path
+     gsn_text_ndc(wks, opt@title, vpx, vpy+0.12, txres1)                 ;-- draw the title
+     gsn_text_ndc(wks, "Time: "+date(opt@time), vpx, vpy+0.07, txres2)   ;-- draw the date
+     gsn_text_ndc(wks, opt@datadir, vpx+vpw+0.025, vpy-vph+0.01, txres3) ;-- draw the data path
+
+;-- advance the frame
+     frame(wks)
+  end if
+end
+
+;********************************************************************
+;                              MAIN
+;********************************************************************
+begin
+
+  start_date = toint(systemfunc("date +%s"))        ;-- computing start time for wall clock
+
+  r2d  = get_r2d("float")                           ;-- radians to degrees
+
+  print("")
+  print("Input settings")
+  
+;----------------------------------------
+;-- check command line variable settings
+;----------------------------------------
+;-- file name
+  if(isvar("fname")) then
+     f = addfile(fname,"r")
+     print("          File name "+fname)
+  else
+     print("")
+     print("FATAL ERROR: missing file name!")
+     print("EXIT")
+     print("")
+     exit
+  end if
+
+;-- variable name
+  if(isvar("vname")) then
+     var = f->$vname$
+     print("          Variable             "+vname)
+  else
+     print("")
+     print("FATAL ERROR: missing variable name!")
+     print("EXIT")
+     print("")
+     exit
+  end if
+
+  if(.not. isatt(var,"_FillValue")) then
+     var@_FillValue = default_fillvalue(typeof(var))
+  end if
+  
+;-- pltype
+  if(isvar("pltype") .and. pltype .eq. "cnlines") then
+     pltype        = "cnlines"
+     cnFillOn      =  False   
+     cnLinesOn     =  True    
+     cnInfoLabelOn =  True    
+  else
+     pltype        = "cnfill"
+     cnFillOn      =  True                          ;-- default
+     cnLinesOn     =  False                         ;-- default
+     cnInfoLabelOn =  False                         ;-- default
+  end if
+     print("          Plot type            "+pltype)
+
+;-- format
+  if(.not. isvar("format")) then
+     format = "x11"
+  end if
+  print("          Plot format          "+format)
+
+;-- level
+  nlevels = systemfunc("cdo -s -nlevel -selvar,"+vname+" "+fname)
+  if(isvar("lev")) then
+     lev := toint(lev)
+     print("          Level                "+lev+"  (total levels "+nlevels+")")
+  else
+     lev := 0                                        ;-- default
+  end if
+
+;-- time
+  ntsteps = systemfunc("cdo -s ntime "+fname)
+  if(isvar("t")) then
+     t := toint(t)
+  else
+     t := 0                                          ;-- default
+  end if
+  print("          Time step            "+t+"  (total time steps "+ntsteps+")")
+
+;-- region
+  if(isvar("region")) then
+     print("          Region               "+region)
+     regcount = str_fields_count(region,",")
+     if(regcount .eq. 4) then
+        subregion = True
+        var@latmin = tofloat(str_get_field(region,1,","))
+        var@latmax = tofloat(str_get_field(region,2,","))
+        var@lonmin = tofloat(str_get_field(region,3,","))
+        var@lonmax = tofloat(str_get_field(region,4,","))
+        print("")
+     else
+        subregion = False
+     end if
+     var@subregion = subregion
+  end if
+
+;-- cont
+  if(isvar("cont")) then
+     print("          Contour min,max,int  "+cont)
+  end if
+
+;-- cmap
+  if(.not. isvar("cmap")) then
+     cmap = "BlueWhiteOrangeRed"
+  end if
+  print("          Color map            "+cmap)
+
+;-- addCyclic
+  if(isvar("addCyclic") .and. (addCyclic .eq. "True")) then
+     addCyclic = True
+  else
+     addCyclic = False                              ;-- default
+  end if
+  print("          AddCyclic            "+addCyclic)
+
+
+;-- animate
+  if(isvar("animate") .and. (animate .eq. "True")) then
+     animate = True                                 ;-- default: False
+     print("          Animate              "+animate)
+  else
+     animate = False                                ;-- default
+  end if
+
+;-- animated GIF
+  if(isvar("gif") .and. (gif .eq. "True")) then
+     gif = True                                     ;-- default
+     print("          Animated GIF         "+gif)
+  else
+     gif = False                                    ;-- default
+  end if
+
+;----------------------------------------
+;-- separate data path and file name
+;----------------------------------------
+  diri  = systemfunc("dirname  "+fname) + "/"
+  fname = systemfunc("basename "+fname)
+
+;-- retrieve variable dimensions and their size
+  vardims  = getfilevardims(f,vname)
+  dimsize  = getfilevardimsizes(f,vname)  
+  nvardims = dimsizes(dimsizes(var))
+  filevars = getfilevarnames(f)
+
+  print("")
+  print("Variable dims of file")  
+  print_table([/vardims,dimsize/], "          %-10s %13d")  
+
+;----------------------------------------
+;-- what is the lev dimension name
+;----------------------------------------
+  if(any(vardims .eq. "lev"))then
+     levels = "lev"
+  else if(any(vardims .eq. "lev")) then
+     levels = "level"
+  else if(any(vardims .eq. "plev")) then
+     levels = "plev"
+  else if(any(vardims .eq. "level")) then
+     levels = "level"
+  else if(any(vardims .eq. "height")) then
+     levels = "height"
+  else if(any(vardims .eq. "height_2m")) then
+     levels = "height_2m"
+  else if(any(vardims .eq. "depth")) then
+     levels = "depth"
+  else if(any(vardims .eq. "depth_3")) then
+     levels = "depth_3"
+  else if(any(vardims .eq. "DEPTH_T11")) then
+     levels = "DEPTH_T11"
+  else if(any(vardims .eq. "LEV")) then
+     levels = "level"
+  else if(any(vardims .eq. "LEVEL")) then
+     levels = "height"
+  else if(any(vardims .eq. "HEIGHT")) then
+     levels = "depth"
+  else if(any(vardims .eq. "DEPTH")) then
+     levels = "depth_3"
+  else if(any(vardims .eq. "nVertLevels")) then     ;-- MPASocean
+     levels = "hZLevel"
+  else
+     levels = ""
+  end if
+  end if
+  end if
+  end if
+  end if
+  end if
+  end if
+  end if
+  end if
+  end if
+  end if
+  end if
+  end if
+  end if
+
+;----------------------------------------
+;-- check the variable dimensions
+;----------------------------------------
+  if(nvardims .eq. 1) then
+     if(any(vardims .eq. "ncells")) then        ;-- FESOM
+        print("          --> (ncells)")
+        lat = f->lat
+        lon = f->lon
+     end if
+
+  else if(nvardims .eq. 2) then
+     if(any(vardims .eq. "lat") .and. any(vardims .eq. "lon")) then
+        print("          --> (lat,lon)")
+        lat  = f->lat
+        lon  = f->lon
+        if(subregion) then
+           var := var({var@latmin:var@latmax},{var@lonmin:var@lonmax})
+        end if
+;-- MPAS (Time,nCells)
+     else if(any(vardims .eq. "Time") .and. any(vardims .eq. "nCells")) then
+;        var := var(Time|:,nCells|:)
+        print("          --> (Time,nCells)")
+        unstructured = True
+        lat = f->latCell
+        lon = f->lonCell
+        lat@units   = "radian"
+        lon@units   = "radian"
+        coordinates = "lonlat"
+        if(animate .ne. "True" .or. gif .ne. "True") then
+           var := var(t,:)
+        end if
+     end if   
+     end if
+
+  else if(nvardims .eq. 3) then
+     if(any(vardims .eq. "time") .and. any(vardims .eq. "lat") .and. any(vardims .eq. "lon")) then
+        var := var(time|:,lat|:,lon|:)
+        print("          --> (time,lat,lon)")
+
+        if(subregion) then
+           if(animate .eq. "True" .or. gif .eq. "True") then
+              var := var(:,{var@latmin:var@latmax},{var@lonmin:var@lonmax})
+           else
+              var := var(t,{var@latmin:var@latmax},{var@lonmin:var@lonmax})
+           end if
+           lat  = f->lat({var@latmin:var@latmax})
+           lon  = f->lon({var@lonmin:var@lonmax})
+        else
+           if(animate .ne. "True" .or. gif .ne. "True") then
+              var := var(t,:,:)
+           end if
+
+           lat  = f->lat
+           lon  = f->lon
+
+        end if
+
+     else if((any(vardims .eq. "time") .and. any(vardims .eq. "latitude") .and. any(vardims .eq. "longitude"))) then
+        var := var(time|:,latitude|:,longitude|:)
+        var!1 = "lat"
+        var!2 = "lon"
+        print("          --> (time,latitude,longitude)")
+
+        if(subregion) then
+           if(animate .eq. "True" .or. gif .eq. "True") then
+              var := var(:,{var@latmin:var@latmax},{var@lonmin:var@lonmax})
+           else
+              var := var(t,{var@latmin:var@latmax},{var@lonmin:var@lonmax})
+           end if
+           lat  = f->lat({var@latmin:var@latmax})
+           lon  = f->lon({var@lonmin:var@lonmax})
+        else
+           if(animate .ne. "True" .or. gif .ne. "True") then
+              var := var(t,:,:)
+           end if
+
+           lat       = f->latitude
+           lon       = f->longitude
+           lat@units = f->latitude@units
+           lon@units = f->longitude@units
+
+        end if
+        
+     else if(any(vardims .eq. "time") .and. any(vardims .eq. "rlat")  .and. any(vardims .eq. "rlon")) then
+        var := var(time|:,rlat|:,rlon|:)
+        print("          --> (time,rlat,rlon)")
+        rotated = True
+        lat = f->rlat
+        lon = f->rlon
+        lat@units = "degrees_north"
+        lon@units = "degrees_east"
+        if(animate .ne. "True" .or. gif .ne. "True") then
+           var := var(t,:,:)
+        end if
+
+     else if(any(vardims .eq. "time") .and. any(vardims .eq. "y")  .and. any(vardims .eq. "x")) then
+        var := var(time|:,y|:,x|:)
+        print("          --> (time,y,x)")
+        
+        curvilin = True
+        lat = f->lat
+        lon = f->lon
+        lat@units = "degrees_north"
+        lon@units = "degrees_east"
+        if(animate .ne. "True" .or. gif .ne. "True") then
+           var := var(t,:,:)
+        end if
+        
+     else if(any(vardims .eq. "cell") .or. any(vardims .eq. "cells") .or. any(vardims .eq. "ncells")) then
+        var := var($var!0$|:,$var!1$|:,$var!2$|:)
+        print("          --> ("+var!0+","+var!1+","+var!2+")")
+        if(subregion) then
+           print("")
+           print("WARNING:  Selecting a region from unstructured data not provided yet!")
+           print("          Using variable default grid")
+           print("")
+           subregion = False
+        end if
+        if(animate .ne. "True" .or. gif .ne. "True") then
+           var := var(t,lev,:)
+        end if
+
+;-- MPAS (Time,nCells,nVertLevels)
+     else if(any(vardims .eq. "Time") .and. any(vardims .eq. "nCells") .and. any(vardims .eq. "nVertLevels")) then
+        var := var(Time|:,nCells|:,nVertLevels|:)
+        print("          --> (Time,nCells,nVertLevels)")
+        print("")
+        print("          -->  !! levels = hZLevel")
+        nlevels = dimsize(2)
+        unstructured = True
+        lat = f->latCell
+        lon = f->lonCell
+        lat@units   = "radian"
+        lon@units   = "radian"
+        coordinates = "lonlat"
+        if(animate .ne. "True" .or. gif .ne. "True") then
+           var := var(t,:,lev)
+        else
+           var := var(:,:,lev)
+        end if
+     end if
+     end if
+     end if
+     end if
+     end if
+     end if
+
+  else if(nvardims .eq. 4) then
+     if(any(vardims .eq. "time") .and. (levels .ne. "") .and. \
+        any(vardims .eq. "lat")  .and. any(vardims .eq. "lon")) then
+
+        var := var(time|:,$levels$|:,lat|:,lon|:)
+        
+        print("          --> (time,"+levels+",lat,lon)")
+        
+        if(subregion) then
+           if(animate .eq. "True" .or. gif .eq. "True") then
+              var := var(:,lev,:,:)
+              var := var(:,{var@latmin:var@latmax},{var@lonmin:var@lonmax})
+           else
+              var := var(t,lev,:,:)
+              var := var({var@latmin:var@latmax},{var@lonmin:var@lonmax})
+           end if
+           lat  = f->lat({var@latmin:var@latmax})
+           lon  = f->lon({var@lonmin:var@lonmax})
+        else
+           lat  = f->lat
+           lon  = f->lon
+           if(animate .ne. "True" .or. gif .ne. "True") then
+              var := var(t,lev,:,:)
+           end if
+        end if
+     end if
+     
+     if(any(vardims .eq. "time") .and. (levels .ne. "") .and. \
+        any(vardims .eq. "rlat")  .and. any(vardims .eq. "rlon")) then
+        var := var(time|:,$levels$|:,rlat|:,rlon|:)
+        print("          --> (time,"+levels+",rlat,rlon)")
+
+        rotated = True
+        lat = f->rlat
+        lon = f->rlon
+        lat@units = "degrees_north"
+        lon@units = "degrees_east"
+           if(animate .eq. "True" .or. gif .eq. "True") then
+              var := var(:,lev,:,:)
+           else
+              var := var(t,lev,:,:)
+           end if
+     end if
+     
+     if(any(vardims .eq. "time") .and. (levels .ne. "") .and. \
+        any(vardims .eq. "x")  .and. any(vardims .eq. "y")) then
+        var := var(time|:,$levels$|:,y|:,x|:)
+        print("          --> (time,"+levels+",y,x)")
+
+        if(dimsizes(dimsizes(f->lat)) .eq. 2) then
+           lat2d = f->lat
+           lon2d = f->lon
+           if(animate .eq. "True" .or. gif .eq. "True") then
+              var := var(:,lev,:,:)
+           else
+              var := var(t,lev,:,:)
+           end if
+        end if
+     end if
+     
+  end if
+  end if
+  end if    
+  end if    
+
+;----------------------------------------
+;-- print variable information  
+;----------------------------------------
+  varatts  = getvaratts(var)
+  nvaratts = dimsizes(varatts)
+  vatt     = new(nvaratts,string) 
+  do i = 0,nvaratts-1
+     vatt(i) = ""+var@$varatts(i)$
+  end do
+
+  print("")
+  print("Variable dimensions and attributes")
+  print_table([/varatts,vatt/], "          %-20s %-30s")  
+  print("")
+  print("Variable minimum and maximum")
+  print_table([/(/"Minimum Maximum"/),(/min(var)+"   "+max(var)/)/], "          %-20s %-30s")  
+
+;----------------------------------------
+;-- what kind of data is it?
+;----------------------------------------
+  print("")
+  print("Grid information")
+
+  if(any(vardims .eq. "cell") .or. any(vardims .eq. "cells") .or. \
+     any(vardims .eq. "ncells") .or. any(vardims .eq. "nCells")) then
+     print("          Type of grid         unstructured")
+     unstructured = True
+     gridtype = "unstructured"
+  else if(any(vardims .eq. "rlat")) then
+     if(any(filevars .eq. "lat") .and. dimsizes(dimsizes(f->lat)) .eq. 2) then
+        print("          Type of grid         rotated")
+        curvlin     = True
+        gridtype    = "curvlin"
+     else if(.not. any(filevars .eq. "lat") .and. dimsizes(dimsizes(f->rlat)) .eq. 1) then
+        print("          Type of grid         rotated")
+        curvlin     = True
+        gridtype    = "lonlat"
+        coordinates = "lonlat"
+     else
+        lonlat      = True
+        gridtype    = "lonlat"
+        coordinates = "lonlat"
+     end if
+     end if
+  else if(any(vardims .eq. "x")) then
+     if(dimsizes(dimsizes(f->lat)) .eq. 2) then
+        print("          Type of grid         curvilinear data")
+        curvlin = True
+        gridtype = "curvlin"
+     else
+        lonlat = True
+        gridtype = "lonlat"
+     end if
+  else if(any(vardims .eq. "lat")) then
+     if(dimsizes(dimsizes(f->lat)) .eq. 2) then
+        print("          Type of grid         curvilinear data")
+        curvlin = True
+        gridtype = "curvlin"
+     else
+        lonlat = True
+        gridtype = "lonlat"
+        coordinates = "lonlat"
+     end if
+  end if
+  end if
+  end if
+  end if
+
+  if(rotated .eq. True) then
+     gridtype = "rotated"
+  end if
+  
+;----------------------------------------
+;-- use the variable coordinates attribute to set lat and lon
+;----------------------------------------
+  if(isatt(var,"coordinates")) then
+     coord0 = str_get_field(var@coordinates,1," ")
+     coord1 = str_get_field(var@coordinates,2," ")
+     if(coord0 .eq. "lon" .and. coord1 .eq. "lat") then
+        lat = f->$coord1$
+        lon = f->$coord0$
+        coordinates = "lonlat"
+     end if
+     if(coord0 .eq. "lat" .and. coord1 .eq. "lon") then
+        lat = f->$coord0$
+        lon = f->$coord1$
+        coordinates = "lonlat"
+     end if
+     if(coord0 .eq. "clon" .and. coord1 .eq. "clat") then
+        lat = f->$coord1$
+        lon = f->$coord0$
+        coordinates = "clonclat"
+     end if
+     if(coord0 .eq. "clat" .and. coord1 .eq. "clon") then
+        lat = f->$coord0$
+        lon = f->$coord1$
+        coordinates = "clonclat"
+     end if
+     print("          Coordinates          "+var@coordinates)
+  end if
+
+;----------------------------------------
+;-- convert from radians to degrees if needed
+;----------------------------------------
+  if(lat@units .eq. "radian") then
+     lat           =  lat * r2d
+     lat@units     = "degrees_north"
+     lat@long_name = "latitude"
+  end if
+
+  if(lon@units .eq. "radian") then
+     lon           =  lon * r2d
+     lon@units     = "degrees_east"
+     lon@long_name = "longitude"
+  end if
+
+  print("          Latitude:            "+sprintf("%8.4f", min(lat))+" - "+sprintf("%8.4f", max(lat)))
+  print("          Longitude:           "+sprintf("%8.4f", min(lon))+" - "+sprintf("%8.4f", max(lon)))
+  
+;-- set plot options for plot function plot_data
+  opt                   =  True
+  opt@varname           =  vname
+  opt@datadir           =  diri
+  opt@contourFillMode   =  cnFillOn
+  opt@contourLineMode   =  cnLinesOn
+  opt@contourInfoMode   =  cnInfoLabelOn
+  opt@plotfmt           =  format
+  opt@plotname          = "plot_quick_look_"+vname+"_t"+t
+  opt@gridtype          =  gridtype
+  opt@coordinates       =  coordinates
+  opt@time              =  t
+  opt@lat               =  lat
+  opt@lon               =  lon
+  opt@subregion         =  subregion
+  opt@addCyclic         =  addCyclic
+  if(isvar("cont")) then
+     opt@cont =  cont
+  end if
+  opt@colormap          =  cmap
+  opt@animate           =  animate
+  opt@gif               =  gif
+  opt@title             =  fname+ \
+                           "~C~~C~var  = "+vname+"    ~Z90~[range: "+min(var)+" - "+max(var)+ \
+                           "]~Z100~~C~~N~t    = "+t+"      ~Z90~[total: "+ntsteps+\
+                           "]~Z100~~C~~N~lev  = "+lev+"      ~Z90~[total: "+nlevels+"]"
+    
+;-- call the plot function
+  plot_data(var,f,opt)
+
+;----------------------------------------
+;-- print some computing time information
+;----------------------------------------
+  end_date = toint(systemfunc("date +%s"))              ;-- computing time 
+  print("")
+  print("Wallclock time:  "+(end_date-start_date)+"s")
+  print("")
+  print("-------------------------------------------------------------------")
+  
+end
+'EOF'
+####################################################################################################
+
+#---------------------------------------
+# Run the NCL script
+#---------------------------------------
+ncl $noCN $noNL $nclscript $str_vname $str_pltype $str_format $str_addCyclic $str_cmap \
+                           $str_cont $str_animate $str_gif $str_region $str_t $str_lev \
+                           $str_fname 
+
+#---------------------------------------
+# Delete temporary NCL script and exit
+#---------------------------------------
+if ($SAVESCRIPT == "False") /bin/rm -rf $nclscript
+exit 0
+
+#---------------------------------------
+# Cleanup
+#---------------------------------------
+cleanup:
+    if ($SAVESCRIPT == "False") /bin/rm -f $nclscript
+    exit 1
+
+#---------------------------------------
+# Usage
+#---------------------------------------
+usage:
+    cat << 'EOF_usage' > usage.tmp
+
+NAME
+
+  ncl_quicklook - Create a quick-look plot
+
+SYNOPSIS
+
+  ncl_quicklook [-v <var>] [-t <time_index>] [-lev <level>] [-pltype <plot_type>] 
+                [-o <output_format>] [-cmap <color_map>] [-region <sub-region>] 
+                [-addCyclic <logical>] [-savescript]  input-file
+
+DESCRIPTION
+
+  The ncl_quicklook generates a quick-look like plot in an x11 window (default). A file name must 
+  be given. If a variable is not given ncl_quicklook will show all available variables and ask 
+  for the variable name. Valid input file formats: netCDF and GRIB. Two plot types are available:
+  'contour fill' - cnfill and 'contour lines' - cnlines, the default is cnfill.
+
+  The options are as follows:
+   
+     [-v <var>]                       Select variable name. If a variable is not given ncl_quicklook 
+                                      will show all available variables and ask which one to use.
+   
+     [-t <time_index>]                Select time index (integer), default: 0 (NCL indexing!!).
+   
+     [-lev <level>]                   Select level index (integer), default: 0 (NCL indexing!!).
+   
+     [-pltype <plot_type>]            Select contour type. Plot type: cnfill (contour fill), 
+                                      cnlines (contour lines) (default: cnfill).
+   
+     [-o <output_format>]             Select output file format; output_format: x11, png, pdf, ps,  
+                                      eps, svg (default: x11).
+
+     [-cont <cmin,cmax,cint>]		  Set contour minimum, maximum and interval.
+   
+     [-cmap <color_map>]              Select color map (default: ncl_default).
+
+     [-region <lat0,lat1,lon0,lon1>]  Select sub-region: lat0 latitude minimum,  lat1 latitude maximum,
+                                                         lon0 longitude minimum, lon1 longitude maximum
+
+     [-addCyclic <logical>]           Add cyclic point when longitude range is less 360 degrees; 
+                                      logical: True or False (default: True).
+
+     [-animate]                       Create animation and send output plot by plot to an x11 window.
+
+     [-gif]                           Create animation and save output as an animated GIF.
+
+     [-savescript]                    Save the NCL script tmp_nclscript.ncl.
+        
+     [-h]                             This usage message.
+
+     input-file                       Input file name.
+
+EXAMPLES
+
+  Read file data.nc, show all available variables, and select a variable:
+
+      ncl_quicklook data.nc
+
+  To plot the variable prec from file data.nc (contour fill):
+
+      ncl_quicklook -v prec data.nc
+
+  To plot the variable tas (only variable in file) from file tas_20000101.nc (contour fill) and draw 
+  the contours between 250 and 300 K with interval 10:
+
+      ncl_quicklook -cont 250,300,10 tas_20000101.nc 
+
+  To plot the variable temp from file data.grb (contour lines):
+
+      ncl_quicklook -v temp -pltype cnlines data.nc 
+
+  To plot the variable qvi at the 12th time step (NCL index start with 0) and write the 
+  plot file to a PDF file:
+
+      ncl_quicklook -v qvi -t 11 -o pdf data.nc 
+
+  To create an animation and save the output as animated GIF:
+  
+  	  ncl_quicklook -gif data.nc
+
+
+AUTHOR
+
+  DKRZ - Deutsches Klimarechenzentrum GmBH, Hamburg, Germany, Karin Meier-Fleischer
+
+'EOF_usage'
+
+#---------------------------------------
+# that's it
+#---------------------------------------
+less usage.tmp
+/bin/rm -rf usage.tmp
+exit(0)
