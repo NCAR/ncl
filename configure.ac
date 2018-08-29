@@ -42,13 +42,46 @@ AC_SYS_LARGEFILE
 
 # Find required libraries.
 AC_CHECK_LIB([netcdf], [nc_create], [], [AC_MSG_ERROR([NetCDF library is required])], [])
-AC_CHECK_LIB([jpeg], [jpeg_write_marker], [], [AC_MSG_ERROR([JPEG library is required])], [])c
+AC_CHECK_LIB([jpeg], [jpeg_write_marker], [], [AC_MSG_ERROR([JPEG library is required])], [])
 AC_CHECK_LIB([z], [deflate], [], [AC_MSG_ERROR([zlib library is required])], [])
 AC_CHECK_LIB([cairo], [cairo_in_fill], [], [AC_MSG_ERROR([cairo library is required])], [])
 AC_CHECK_LIB([png], [png_access_version_number], [], [AC_MSG_ERROR([PNG library is required])], [])
 AC_CHECK_LIB([freetype], [FT_Init_FreeType], [], [AC_MSG_ERROR([Freetype2 library is required])], [])
 AC_CHECK_LIB([pixman-1], [pixman_blt], [], [AC_MSG_ERROR([Freetype2 library is required])], [])
 AC_CHECK_LIB([udunits2], [ut_compare], [], [AC_MSG_ERROR([UDUNITS2 library is required])], [])
+#AC_CHECK_LIB([sz], [SZ_encoder_enabled], [], [AC_MSG_ERROR([szlib library is required])], [])
+
+# HDF4 use is optional.
+use_hdf4=yes
+AC_CHECK_LIB([df], [Hclose], [], [use_hdf4=no])
+AC_CHECK_LIB([mfhdf], [SDcreate], [], [use_hdf4=no])
+AC_MSG_CHECKING([whether HDF4 will be used])
+AC_MSG_RESULT($use_hdf4)
+
+# GRIB2 use is optional. Check for jasper and grib2c libraries.
+use_grib2=yes
+AC_CHECK_LIB([jasper], [jas_memdump], [], [use_grib2=no])
+AC_CHECK_LIB([grib2c], [getgridindex], [], [use_grib2=no])
+AC_MSG_CHECKING([whether GRIB2 will be used])
+AC_MSG_RESULT($use_grib2)
+
+# Map project library PROJ is optional. Check for it.
+use_proj4=yes
+AC_CHECK_LIB([proj], [pj_laea], [], [use_proj4=no])
+AC_MSG_CHECKING([whether PROJ4 will be used])
+AC_MSG_RESULT($use_proj4)
+
+# GDAL library is optional. Check for it.
+use_gdal=yes
+AC_CHECK_LIB([gdal], [OGR_G_AddPoint], [], [use_gdal=no])
+AC_MSG_CHECKING([whether GDAL will be used])
+AC_MSG_RESULT($use_gdal)
+
+# HDF5 library is optional. Check for it.
+use_hdf5=yes
+AC_CHECK_LIB([hdf5], [H5Fflush], [], [use_hdf5=no])
+AC_MSG_CHECKING([whether HDF5 will be used])
+AC_MSG_RESULT($use_hdf5)
 
 # Is pkg-config installed? If not, bail.
 AC_CHECK_PROGS([PKG_CONFIG], [pkg-config])
@@ -56,6 +89,7 @@ if test -z "$PKG_CONFIG"; then
    AC_MSG_ERROR([Cannot find pkg-config utility. Install pkg-config and try again.])
 fi
 
+# These files will be created when the configure script is run.
 AC_CONFIG_FILES([Makefile
                  ])
 AC_OUTPUT()
