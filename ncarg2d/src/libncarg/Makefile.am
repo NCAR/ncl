@@ -11,4 +11,4 @@
 # plotcharC polypackC softfillC sppsC srfaceC stitleC supportC strmlnC	\
 # tdpackC threedC velvctC wmapC
 
-SUBDIRS = Iftran
+SUBDIRS = Iftran areas

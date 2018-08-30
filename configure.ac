@@ -34,6 +34,10 @@ AC_PROG_CC
 AM_PROG_CC_C_O
 AC_C_CONST
 
+# Find the Fortran compiler.
+AC_PROG_FC
+AC_PROG_F77
+
 # Find the install program.
 AC_PROG_INSTALL
 
@@ -107,5 +111,6 @@ AC_CONFIG_FILES([Makefile
                  ncarg2d/src/Makefile
                  ncarg2d/src/libncarg/Makefile
                  ncarg2d/src/libncarg/Iftran/Makefile
+                 ncarg2d/src/libncarg/areas/Makefile
                  ])
 AC_OUTPUT()
