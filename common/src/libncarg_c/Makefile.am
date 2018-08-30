@@ -5,4 +5,7 @@
 noinst_LTLIBRARIES = libncarg_c.la
 
 # Sources for convenience library.
-libncarg_c_la_SOURCES = bcopyswap.c gsbytes.c logic32.c
+libncarg_c_la_SOURCES = gbytes.f sbytes.f bcopyswap.c gsbytes.c		\
+logic32.c argget.f options.c misc.c ncarg_path.c version.c error.c	\
+atoargv.c usleep.c env.c trnspprt.c rwchinfl.c sdbm.c mangle.c sdbm.c	\
+lblank.f iargct.f i1mach.f r1mach.f d1mach.f
