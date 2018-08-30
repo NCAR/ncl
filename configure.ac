@@ -106,6 +106,9 @@ fi
 
 # These files will be created when the configure script is run.
 AC_CONFIG_FILES([Makefile
+                 common/Makefile
+                 common/src/Makefile
+                 common/src/libncarg_c/Makefile
                  ncarg2d/Makefile
                  ncarg2d/man/Makefile
                  ncarg2d/src/Makefile
