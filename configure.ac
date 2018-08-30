@@ -41,6 +41,7 @@ AC_PROG_INSTALL
 AC_SYS_LARGEFILE
 
 # Find required libraries.
+AC_CHECK_LIB([m], [floor], [], [AC_MSG_ERROR([math library is required])], [])
 AC_CHECK_LIB([netcdf], [nc_create], [], [AC_MSG_ERROR([NetCDF library is required])], [])
 AC_CHECK_LIB([jpeg], [jpeg_write_marker], [], [AC_MSG_ERROR([JPEG library is required])], [])
 AC_CHECK_LIB([z], [deflate], [], [AC_MSG_ERROR([zlib library is required])], [])
@@ -57,6 +58,16 @@ AC_CHECK_LIB([df], [Hclose], [], [use_hdf4=no])
 AC_CHECK_LIB([mfhdf], [SDcreate], [], [use_hdf4=no])
 AC_MSG_CHECKING([whether HDF4 will be used])
 AC_MSG_RESULT($use_hdf4)
+
+# HDF-EOS library is optional. HDF4 is required for HDF-EOS.
+use_hdfeos=no
+if test $use_hdf4 = yes; then
+   use_hdfeos=yes
+   AC_CHECK_LIB([hdfeos], [GDcreate], [], [use_hdfeos=no])
+   AC_CHECK_LIB([Gctp], [gctp], [], [use_hdfeos=no])
+fi
+AC_MSG_CHECKING([whether HDF-EOS will be used])
+AC_MSG_RESULT($use_hdfeos)
 
 # GRIB2 use is optional. Check for jasper and grib2c libraries.
 use_grib2=yes
@@ -91,5 +102,8 @@ fi
 
 # These files will be created when the configure script is run.
 AC_CONFIG_FILES([Makefile
+                 ncarg2d/Makefile
+                 ncarg2d/src/Makefile
+                 ncarg2d/man/Makefile
                  ])
 AC_OUTPUT()
