@@ -111,6 +111,7 @@ AC_CONFIG_FILES([Makefile
                  common/src/libncarg_c/Makefile
                  common/src/bin/Makefile
                  common/src/bin/ncargpath/Makefile
+                 common/src/fontcap/Makefile
                  ncarg2d/Makefile
                  ncarg2d/man/Makefile
                  ncarg2d/src/Makefile
