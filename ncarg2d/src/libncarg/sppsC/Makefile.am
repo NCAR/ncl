@@ -3,10 +3,10 @@
 
 
 # Build this convenience library.
-noinst_LTLIBRARIES = libncarg_sppsC.la
+noinst_LTLIBRARIES = libncarg_sppsc.la
 
 # Sources for convenience library.
-libncarg_sppsC_la_SOURCES = c_clsgks.c c_curve.c c_fl2int.c c_frame.c c_frstpt.c c_getset.c \
+libncarg_sppsc_la_SOURCES = c_clsgks.c c_curve.c c_fl2int.c c_frame.c c_frstpt.c c_getset.c \
 	c_getusv.c c_line.c c_opngks.c c_plotif.c c_point.c c_points.c c_set.c \
 	c_setusv.c c_sflush.c c_vector.c c_wtstr.c c_plotit.c c_pwrit.c c_cfux.c \
 	c_cfuy.c c_cmfx.c c_cmfy.c c_cufx.c c_cufy.c c_cpux.c c_cpuy.c c_cpfx.c \

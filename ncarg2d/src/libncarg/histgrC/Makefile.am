@@ -3,7 +3,7 @@
 
 
 # Build this convenience library.
-noinst_LTLIBRARIES = libncarg_histgrC.la
+noinst_LTLIBRARIES = libncarg_histgrc.la
 
 # Sources for convenience library.
-libncarg_histgrC_la_SOURCES = c_histgr.c c_hstopc.c c_hstopi.c c_hstopl.c c_hstopr.c
+libncarg_histgrc_la_SOURCES = c_histgr.c c_hstopc.c c_hstopi.c c_hstopl.c c_hstopr.c

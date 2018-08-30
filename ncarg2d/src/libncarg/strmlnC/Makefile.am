@@ -3,8 +3,8 @@
 
 
 # Build this convenience library.
-noinst_LTLIBRARIES = libncarg_strmlnC.la
+noinst_LTLIBRARIES = libncarg_strmlnc.la
 
 # Sources for convenience library.
-libncarg_strmlnC_la_SOURCES = c_ezstrm.c c_stgeti.c c_stgetr.c c_stinit.c c_stream.c \
+libncarg_strmlnc_la_SOURCES = c_ezstrm.c c_stgeti.c c_stgetr.c c_stinit.c c_stream.c \
 	c_strmln.c c_strset.c c_stseti.c c_stsetr.c

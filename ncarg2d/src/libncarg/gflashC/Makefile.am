@@ -3,7 +3,7 @@
 
 
 # Build this convenience library.
-noinst_LTLIBRARIES = libncarg_gflashC.la
+noinst_LTLIBRARIES = libncarg_gflashc.la
 
 # Sources for convenience library.
-libncarg_gflashC_la_SOURCES = c_gflas1.c c_gflas2.c c_gflas3.c c_gflas4.c
+libncarg_gflashc_la_SOURCES = c_gflas1.c c_gflas2.c c_gflas3.c c_gflas4.c

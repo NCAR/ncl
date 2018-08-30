@@ -2,10 +2,10 @@
 # Ed Hartnett 8/30/18
 
 # # Build this convenience library.
-# noinst_LTLIBRARIES = libncarg_tdpackC.la
+# noinst_LTLIBRARIES = libncarg_tdpackc.la
 
 # # Sources for convenience library.
-# libncarg_tdpackC_la_SOURCES = c_tdclrs.c c_tddtri.c c_tdez2d.c		\
+# libncarg_tdpackc_la_SOURCES = c_tdclrs.c c_tddtri.c c_tdez2d.c		\
 # c_tdez3d.c c_tdgeti.c c_tdgetr.c c_tdgrds.c c_tdgrid.c c_tdgtrs.c	\
 # c_tdinit.c c_tditri.c c_tdlbla.c c_tdlbls.c c_tdline.c c_tdlnpa.c	\
 # c_tdmtri.c c_tdotri.c c_tdpara.c c_tdplch.c c_tdprpa.c c_tdprpi.c	\

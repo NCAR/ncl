@@ -2,10 +2,10 @@
 # Ed Hartnett 8/30/18
 
 # # Build this convenience library.
-# noinst_LTLIBRARIES = libncarg_ezmapCC.la
+# noinst_LTLIBRARIES = libncarg_ezmapcc.la
 
 # # Sources for convenience library.
-# libncarg_ezmapCC_la_SOURCES = c_mapblm.c c_mapdrw.c c_mapfst.c          \
+# libncarg_ezmapcc_la_SOURCES = c_mapblm.c c_mapdrw.c c_mapfst.c          \
 # c_mapgrd.c c_mapgtc.c c_mapgti.c c_mapgtl.c c_mapgtr.c c_mapint.c       \
 # c_mapiq.c c_mapit.c c_maplbl.c c_maplmb.c c_maplot.c c_mappos.c         \
 # c_maproj.c c_maprs.c c_maprst.c c_mapsav.c c_mapset.c c_mapstc.c        \

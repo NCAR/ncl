@@ -3,7 +3,7 @@
 
 
 # Build this convenience library.
-noinst_LTLIBRARIES = libncarg_srfaceC.la
+noinst_LTLIBRARIES = libncarg_srfacec.la
 
 # Sources for convenience library.
-libncarg_srfaceC_la_SOURCES = c_ezsrfc.c c_srface.c c_trn32s.c c_pwrzs.c c_setr.c
+libncarg_srfacec_la_SOURCES = c_ezsrfc.c c_srface.c c_trn32s.c c_pwrzs.c c_setr.c

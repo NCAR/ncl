@@ -2,7 +2,7 @@
 # Ed Hartnett 8/30/18
 
 # Build this convenience library.
-noinst_LTLIBRARIES = libncarg_commonC.la
+noinst_LTLIBRARIES = libncarg_commonc.la
 
 # Sources for convenience library.
-libncarg_commonC_la_SOURCES = array.c chk_ret_str.c
+libncarg_commonc_la_SOURCES = array.c chk_ret_str.c
