@@ -51,12 +51,13 @@ threedC/libncarg_threedc.la velvct/libncarg_velvct.la		\
 velvctC/libncarg_velvctc.la conpack/libncarg_conpack.la		\
 ezmapa/libncarg_ezmapa.la softfill/libncarg_softfill.la		\
 conpackt/libncarg_conpackt.la polypack/libncarg_polypack.la	\
-vaspackt/libncarg_vaspackt.la
+vaspackt/libncarg_vaspackt.la wmap/libncarg_wmap.la		\
+ezmapCC/libncarg_ezmapcc.la
 
 # These don't work yet.
-# wmap/libncarg_wmap.la wmapC/libncarg_wmapc.la
+#  wmapC/libncarg_wmapc.la
 #
-#  ezmapCC/libncarg_ezmapcc.la
+#
 #  polypackC/libncarg_polypackc.la
 # tdpackC/libncarg_tdpackc.la
 #
