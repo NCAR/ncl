@@ -12,10 +12,4 @@ iargct.f i1mach.f r1mach.f d1mach.f c.h
 
 noinst_HEADERS = options.h
 
-ncarg_path.c: ncarg_path.c.sed
-	@sed -e 's+SED_ENV_DEFS+$(NGENV_DESCRIPT)+' <ncarg_path.c.sed >ncarg_path.c
-
-# c.h: c.h.sed
-# 	@sed -e 's+SED_NGCALLF+$(NGCALLF)+' <c.h.sed >c.h
-
 EXTRA_DIST = c.h.in ncarg_path.c.in
