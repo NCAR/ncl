@@ -9,6 +9,8 @@ fontcap_SOURCES = cfaamn.f cfrdln.f cfwrit.f ffgttk.f ffinfo.f	\
 ffphol.f ffppkt.f ffprcf.f ffprsa.f fftbkd.f fftkin.f sffndc.f	\
 sfgtin.f sfgtkw.f sfprcf.f sfskbk.f sftbkd.f
 
+noinst_HEADERS = capfnt.h  fntcom.h  fnterr.h  fnttab.h
+
 cfaamn.f:cfaamn.f.sed
 	cp cfaamn.f.sed cfaamn.F
 	$(CPP) $(CPPFLAGS) -o cfaamn.f cfaamn.F
