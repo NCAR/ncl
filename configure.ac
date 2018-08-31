@@ -117,6 +117,9 @@ AC_DEFINE([IBM])
 AC_DEFINE([NGVERSION], ["6.5.0"])
 AC_DEFINE([NCLVERSION], ["6.5.0"])
 
+# These files need to be copied to the build directory.
+AC_CONFIG_LINKS([ncarg2d/src/libncarg/areas/CodeIftran:ncarg2d/src/libncarg/areas/CodeIftran])
+
 # These files will be created when the configure script is run.
 AC_CONFIG_FILES([Makefile
                  common/Makefile
@@ -127,6 +130,7 @@ AC_CONFIG_FILES([Makefile
                  common/src/bin/Makefile
                  common/src/bin/ncargpath/Makefile
                  common/src/fontcap/Makefile
+                 common/src/graphcap/Makefile
                  ncarg2d/Makefile
                  ncarg2d/man/Makefile
                  ncarg2d/src/Makefile
