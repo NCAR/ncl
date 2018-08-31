@@ -23,6 +23,9 @@ vttsom.f vtvrap.f vtvrll.f vtzflb.f
 # Note that all these files must be built.
 BUILT_SOURCES = IftranRun $(libncarg_vaspackt_la_SOURCES)
 
+# Track dependencies to allow parallel builds.
+hluvtchil.f: IftranRun
+
 # Target to trigger building of all fortran files.
 IftranRun : CodeIftran
 	@$(IFTRAN) < CodeIftran > CodeFortran

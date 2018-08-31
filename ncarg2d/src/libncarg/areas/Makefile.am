@@ -18,6 +18,9 @@ arseti.f arsetr.f
 # Note that all these files must be built.
 BUILT_SOURCES = IftranRun $(libncarg_areas_la_SOURCES)
 
+# Track dependencies to allow parallel builds.
+arblda.f: IftranRun
+
 # Target to trigger building of all fortran files.
 IftranRun : CodeIftran
 	@$(IFTRAN) < CodeIftran > CodeFortran
@@ -27,4 +30,4 @@ IftranRun : CodeIftran
 # Include all source code in dist.
 EXTRA_DIST = CodeIftran
 
-CLEANFILES = $(BUILT_SOURCES) CodeFortran
+CLEANFILES = $(BUILT_SOURCES) CodeFortran IftranRun

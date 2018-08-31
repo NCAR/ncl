@@ -18,6 +18,9 @@ mdplmm.f mdrdnm.f
 # Note that all these files must be built.
 BUILT_SOURCES = IftranRun $(libncarg_ezmapa_la_SOURCES)
 
+# Track dependencies to allow parallel builds.
+mapaci.f: IftranRun
+
 # Target to trigger building of all fortran files.
 IftranRun : CodeIftran
 	@$(IFTRAN) < CodeIftran > CodeFortran

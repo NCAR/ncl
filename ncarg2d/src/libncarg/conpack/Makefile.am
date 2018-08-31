@@ -26,6 +26,9 @@ cphls2.f
 # Note that all these files must be built.
 BUILT_SOURCES = IftranRun $(libncarg_conpack_la_SOURCES)
 
+# Track dependencies to allow parallel builds.
+cpback.f: IftranRun
+
 # Target to trigger building of all fortran files.
 IftranRun : CodeIftran
 	@$(IFTRAN) < CodeIftran > CodeFortran
