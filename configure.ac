@@ -33,6 +33,7 @@ LT_INIT()
 AC_PROG_CC
 AM_PROG_CC_C_O
 AC_C_CONST
+AC_PROG_CPP
 
 # Find the Fortran compiler.
 AC_PROG_FC
