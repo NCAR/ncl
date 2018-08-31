@@ -48,14 +48,15 @@ strmln/libncarg_strmln.la strmlnC/libncarg_strmlnc.la		\
 support/libncarg_support.la supportC/libncarg_supportc.la	\
 tdpack/libncarg_tdpack.la threed/libncarg_threed.la		\
 threedC/libncarg_threedc.la velvct/libncarg_velvct.la		\
-velvctC/libncarg_velvctc.la conpack/libncarg_conpack.la
+velvctC/libncarg_velvctc.la conpack/libncarg_conpack.la		\
+ezmapa/libncarg_ezmapa.la softfill/libncarg_softfill.la
 
 # These don't work yet.
 # wmap/libncarg_wmap.la wmapC/libncarg_wmapc.la
 # conpackt/libncarg_conpackt.la
-# ezmapa/libncarg_ezmapa.la ezmapCC/libncarg_ezmapcc.la
+#  ezmapCC/libncarg_ezmapcc.la
 # polypack/libncarg_polypack.la polypackC/libncarg_polypackc.la
-# softfill/libncarg_softfill.la tdpackC/libncarg_tdpackc.la
+# tdpackC/libncarg_tdpackc.la
 # vaspackt/libncarg_vaspackt.la
 
 # This is the full list.
