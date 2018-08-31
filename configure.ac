@@ -205,5 +205,11 @@ AC_CONFIG_FILES([Makefile
                  ncarg2d/src/libncarg/threedC/Makefile
                  ncarg2d/src/libncarg/velvctC/Makefile
                  ncarg2d/src/libncarg/wmapC/Makefile
+                 ncarg2d/src/libncarg_gks/Makefile
+                 ncarg2d/src/libncarg_gks/awi/Makefile
+                 ncarg2d/src/libncarg_gks/bwi/Makefile
+                 ncarg2d/src/libncarg_gks/wiss/Makefile
+                 ncarg2d/src/libncarg_gks/cdrivers/Makefile
+                 ncarg2d/src/libncarg_gks/awiC/Makefile
                  ])
 AC_OUTPUT()
