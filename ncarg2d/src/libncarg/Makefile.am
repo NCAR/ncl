@@ -49,15 +49,17 @@ support/libncarg_support.la supportC/libncarg_supportc.la	\
 tdpack/libncarg_tdpack.la threed/libncarg_threed.la		\
 threedC/libncarg_threedc.la velvct/libncarg_velvct.la		\
 velvctC/libncarg_velvctc.la conpack/libncarg_conpack.la		\
-ezmapa/libncarg_ezmapa.la softfill/libncarg_softfill.la
+ezmapa/libncarg_ezmapa.la softfill/libncarg_softfill.la		\
+conpackt/libncarg_conpackt.la polypack/libncarg_polypack.la	\
+vaspackt/libncarg_vaspackt.la
 
 # These don't work yet.
 # wmap/libncarg_wmap.la wmapC/libncarg_wmapc.la
-# conpackt/libncarg_conpackt.la
+#
 #  ezmapCC/libncarg_ezmapcc.la
-# polypack/libncarg_polypack.la polypackC/libncarg_polypackc.la
+#  polypackC/libncarg_polypackc.la
 # tdpackC/libncarg_tdpackc.la
-# vaspackt/libncarg_vaspackt.la
+#
 
 # This is the full list.
 # libncarg_la_LIBADD = areasC/libncarg_areasc.la			\
