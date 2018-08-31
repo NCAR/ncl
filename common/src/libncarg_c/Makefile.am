@@ -6,6 +6,14 @@ noinst_LTLIBRARIES = libncarg_c.la
 
 # Sources for convenience library.
 libncarg_c_la_SOURCES = gbytes.f sbytes.f bcopyswap.c gsbytes.c		\
-logic32.c argget.f options.c misc.c ncarg_path.c version.c error.c	\
-atoargv.c usleep.c env.c trnspprt.c rwchinfl.c sdbm.c mangle.c sdbm.c	\
-lblank.f iargct.f i1mach.f r1mach.f d1mach.f
+logic32.c options.c misc.c ncarg_path.c version.c error.c atoargv.c	\
+usleep.c env.c trnspprt.c rwchinfl.c sdbm.c mangle.c sdbm.c lblank.f	\
+iargct.f i1mach.f r1mach.f d1mach.f c.h
+
+ncarg_path.c: ncarg_path.c.sed
+	@sed -e 's+SED_ENV_DEFS+$(NGENV_DESCRIPT)+' <ncarg_path.c.sed >ncarg_path.c
+
+# c.h: c.h.sed
+# 	@sed -e 's+SED_NGCALLF+$(NGCALLF)+' <c.h.sed >c.h
+
+EXTRA_DIST = c.h.in ncarg_path.c.in

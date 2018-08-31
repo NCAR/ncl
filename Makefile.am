@@ -7,4 +7,4 @@ ACLOCAL_AMFLAGS = -I m4
 # These files get added to the distribution.
 EXTRA_DIST = COPYING
 
-SUBDIRS = ncarg2d
+SUBDIRS = common ncarg2d

@@ -27,7 +27,7 @@ AC_CONFIG_MACRO_DIR([m4])
 LT_PREREQ([2.4])
 LT_INIT()
 
-AC_CONFIG_HEADERS([config.h])
+#AC_CONFIG_HEADERS([config.h])
 
 # Find the C compiler.
 AC_PROG_CC
@@ -104,11 +104,25 @@ if test -z "$PKG_CONFIG"; then
    AC_MSG_ERROR([Cannot find pkg-config utility. Install pkg-config and try again.])
 fi
 
+# Set these values.
+AC_DEFINE([NCARGURL], ["ngurl"])
+AC_DEFINE([NeedFuncProto])
+AC_DEFINE([SYSV])
+AC_DEFINE([_POSIX_SOURCE])
+AC_DEFINE([_XOPEN_SOURCE])
+AC_DEFINE([ByteSwapped])
+AC_DEFINE([Linux])
+AC_DEFINE([IBM])
+AC_DEFINE([NGVERSION], ["6.5.0"])
+AC_DEFINE([NCLVERSION], ["6.5.0"])
+
 # These files will be created when the configure script is run.
 AC_CONFIG_FILES([Makefile
                  common/Makefile
                  common/src/Makefile
                  common/src/libncarg_c/Makefile
+                 common/src/libncarg_c/c.h
+                 common/src/libncarg_c/ncarg_path.c
                  common/src/bin/Makefile
                  common/src/bin/ncargpath/Makefile
                  common/src/fontcap/Makefile
