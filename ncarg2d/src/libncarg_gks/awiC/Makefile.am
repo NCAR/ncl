@@ -1,6 +1,9 @@
 # This is an automake file for NCL.
 # Ed Hartnett 8/31/18
 
+# Add this convenience library from another directory.
+LDADD = ${top_builddir}/ncarg2d/src/libncarg_gks/cdrivers/libbasegks.la
+
 # Build this convenience library.
 noinst_LTLIBRARIES = libncarg_awic.la
 
