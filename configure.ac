@@ -134,6 +134,12 @@ AC_CONFIG_FILES([Makefile
                  ncarg2d/Makefile
                  ncarg2d/man/Makefile
                  ncarg2d/src/Makefile
+                 ncarg2d/src/db/Makefile
+                 ncarg2d/src/db/ezmap/Makefile
+                 ncarg2d/src/db/plotchar/Makefile
+                 ncarg2d/src/db/pwritxnt/Makefile
+                 ncarg2d/src/db/ranfdata/Makefile
+                 ncarg2d/src/db/ftfonts/Makefile
                  ncarg2d/src/libncarg/Makefile
                  ncarg2d/src/libncarg/Iftran/Makefile
                  ncarg2d/src/libncarg/areas/Makefile
