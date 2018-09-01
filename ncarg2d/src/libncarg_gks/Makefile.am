@@ -13,4 +13,11 @@ libncarg_gks_la_LDFLAGS = -version-info 1:0:0
 
 # These convenience libraries are added together to make the
 # libncarg_gks library.
-libncarg_gks_la_LIBADD = awi/libncarg_awi.la bwi/libncarg_bwi.la wiss/libncarg_wiss.la
+libncarg_gks_la_LIBADD = awi/libncarg_awi.la bwi/libncarg_bwi.la	\
+wiss/libncarg_wiss.la
+
+libncarg_gks_la_SOURCES = gks.h
+
+# Header get installed in subdirectory of install.
+ncargdir = $(prefix)/install/ncarg
+ncarg_HEADERS = gks.h
