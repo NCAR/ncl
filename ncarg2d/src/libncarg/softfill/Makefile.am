@@ -19,6 +19,18 @@ BUILT_SOURCES = IftranRun $(libncarg_softfill_la_SOURCES)
 
 # Track dependencies to allow parallel builds.
 sfsgfa.f: IftranRun
+sfwrld.f: IftranRun
+sfnorm.f: IftranRun
+sfgetc.f: IftranRun
+sfgeti.f: IftranRun
+sfgetp.f: IftranRun
+sfgetr.f: IftranRun
+sfsetc.f: IftranRun
+sfseti.f: IftranRun
+sfsetp.f: IftranRun
+sfsetr.f: IftranRun
+sfsort.f: IftranRun
+sfblda.f: IftranRun
 
 # Target to trigger building of all fortran files.
 IftranRun : CodeIftran

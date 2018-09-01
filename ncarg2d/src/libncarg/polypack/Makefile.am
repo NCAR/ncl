@@ -18,6 +18,14 @@ BUILT_SOURCES = IftranRun $(libncarg_polypack_la_SOURCES)
 
 # Track dependencies to allow parallel builds.
 ppdipo.f: IftranRun
+ppditr.f: IftranRun
+ppinpo.f: IftranRun
+ppintr.f: IftranRun
+ppplcl.f: IftranRun
+ppppap.f: IftranRun
+ppunpo.f: IftranRun
+ppuntr.f: IftranRun
+ppzbts.f: IftranRun
 
 # Target to trigger building of all fortran files.
 IftranRun : CodeIftran

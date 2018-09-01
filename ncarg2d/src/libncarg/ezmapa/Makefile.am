@@ -20,6 +20,25 @@ BUILT_SOURCES = IftranRun $(libncarg_ezmapa_la_SOURCES)
 
 # Track dependencies to allow parallel builds.
 mapaci.f: IftranRun
+mapbla.f: IftranRun
+mapblm.f: IftranRun
+mapgrm.f: IftranRun
+mapiqa.f: IftranRun
+mapiqm.f: IftranRun
+mapita.f: IftranRun
+mapitm.f: IftranRun
+maplmm.f: IftranRun
+mdpaci.f: IftranRun
+mdpbla.f: IftranRun
+mdpblm.f: IftranRun
+mdpchm.f: IftranRun
+mdpgrm.f: IftranRun
+mdpiqa.f: IftranRun
+mdpiqm.f: IftranRun
+mdpita.f: IftranRun
+mdpitm.f: IftranRun
+mdplmm.f: IftranRun
+mdrdnm.f: IftranRun
 
 # Target to trigger building of all fortran files.
 IftranRun : CodeIftran
