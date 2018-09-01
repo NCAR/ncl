@@ -20,6 +20,25 @@ BUILT_SOURCES = IftranRun $(libncarg_areas_la_SOURCES)
 
 # Track dependencies to allow parallel builds.
 arblda.f: IftranRun
+arrat2.f: IftranRun
+ardat2.f: IftranRun
+ardbda.f: IftranRun
+ardbpa.f: IftranRun
+ardrln.f: IftranRun
+aredam.f: IftranRun
+argeti.f: IftranRun
+argetr.f: IftranRun
+argpai.f: IftranRun
+argtai.f: IftranRun
+arinam.f: IftranRun
+arini2.f: IftranRun
+arinit.f: IftranRun
+armpia.f: IftranRun
+armvam.f: IftranRun
+arpram.f: IftranRun
+arscam.f: IftranRun
+arseti.f: IftranRun
+arsetr.f: IftranRun
 
 # Target to trigger building of all fortran files.
 IftranRun : CodeIftran
