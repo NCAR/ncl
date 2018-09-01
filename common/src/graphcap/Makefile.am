@@ -103,7 +103,7 @@ capchg.f: capchg.f.sed
 	${CPP} ${CPPFLAGS} -E -o capchg.f capchg.F
 
 # Install these data files.
-graphcapdir = $(prefix)/ncarg/graphcaps
+graphcapdir = $(prefix)/lib/ncarg/graphcaps
 graphcap_HEADERS = qms800 r6211 s100 t4010 t4025 t4105 t4107		\
 t4107.seg t4115 t4115.seg tal1590 tekalike versaterm vt100 vt125	\
 vt220 vt240 vt330 vt340 vt340w
