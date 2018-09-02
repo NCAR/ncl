@@ -45,8 +45,15 @@ ncarg_databasedir = $(prefix)/lib/ncarg/database
 ncarg_database_HEADERS = Earth..1.lines Earth..2.lines Earth..3.lines	\
 Earth..4.lines Earth..1.names Earth..2.names Earth..3.names		\
 Earth..4.names EzmapOutlines.PO EzmapOutlines.PS EzmapOutlines.US	\
+EzmapOutlines.CO Earth..1.areas Earth..2.areas Earth..3.areas		\
+Earth..4.areas EzmapAreaInfo.CO EzmapAreaInfo.PO EzmapAreaInfo.PS	\
+EzmapAreaInfo.US
+
+EXTRA_DIST = Earth..1 Earth..2 Earth..3 Earth..4 Earth..1.areas	\
+Earth..2.areas Earth..3.areas Earth..4.areas EzmapAreaInfo.CO	\
+EzmapAreaInfo.PO EzmapAreaInfo.PS EzmapAreaInfo.US
+
+CLEANFILES = Earth..1.lines Earth..2.lines Earth..3.lines	\
+Earth..4.lines Earth..1.names Earth..2.names Earth..3.names		\
+Earth..4.names EzmapOutlines.PO EzmapOutlines.PS EzmapOutlines.US	\
 EzmapOutlines.CO
-
-EXTRA_DIST = Earth..1 Earth..2 Earth..3 Earth..4
-
-CLEANFILES = $(ncarg_database_HEADERS)
