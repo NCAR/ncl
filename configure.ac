@@ -45,6 +45,11 @@ AC_PROG_INSTALL
 # Check to see if any macros must be set to enable large (>2GB) files.
 AC_SYS_LARGEFILE
 
+# Make sure to check for Xlibs in this old directory.
+AC_CHECK_FILE([/usr/X11R6/lib], [LDFLAGS="-L/usr/X11R6/lib"])
+AC_CHECK_LIB([X11], [XOpenDisplay])
+AC_CHECK_LIB([Xext], [XShmAttach])
+
 # Find required libraries.
 AC_CHECK_LIB([m], [floor], [], [AC_MSG_ERROR([math library is required])], [])
 AC_CHECK_LIB([netcdf], [nc_create], [], [AC_MSG_ERROR([NetCDF library is required])], [])
@@ -116,6 +121,10 @@ AC_DEFINE([Linux])
 AC_DEFINE([IBM])
 AC_DEFINE([NGVERSION], ["6.5.0"])
 AC_DEFINE([NCLVERSION], ["6.5.0"])
+AC_DEFINE([NCLVERSION], ["6.5.0"])
+
+AC_SUBST([LIBSEARCHUSER], [-L/usr/X11R6/lib64])
+AC_SUBST([SYSTEMINCLUDE], [-L/usr/X11R6/lib64])
 
 # These files need to be copied to the build directory.
 AC_CONFIG_LINKS([ncarg2d/src/libncarg/conpack/CodeIftran:ncarg2d/src/libncarg/conpack/CodeIftran])
@@ -125,14 +134,6 @@ AC_CONFIG_LINKS([ncarg2d/src/libncarg/areas/CodeIftran:ncarg2d/src/libncarg/area
 AC_CONFIG_LINKS([ncarg2d/src/libncarg/conpackt/CodeIftran:ncarg2d/src/libncarg/conpackt/CodeIftran])
 AC_CONFIG_LINKS([ncarg2d/src/libncarg/vaspackt/CodeIftran:ncarg2d/src/libncarg/vaspackt/CodeIftran])
 AC_CONFIG_LINKS([ncarg2d/src/libncarg/polypack/CodeIftran:ncarg2d/src/libncarg/polypack/CodeIftran])
-
-# These are shell scripts that are built during configure.
-AC_CONFIG_FILES([ncarg2d/src/bin/scripts/ncargcc], [chmod +x ncarg2d/src/bin/scripts/ncargcc])
-AC_CONFIG_FILES([ncarg2d/src/bin/scripts/ncargex], [chmod +x ncarg2d/src/bin/scripts/ncargex])
-AC_CONFIG_FILES([ncarg2d/src/bin/scripts/ncargf77], [chmod +x ncarg2d/src/bin/scripts/ncargf77])
-AC_CONFIG_FILES([ncarg2d/src/bin/scripts/ncargfile], [chmod +x ncarg2d/src/bin/scripts/ncargfile])
-AC_CONFIG_FILES([ncarg2d/src/bin/scripts/ncargsrc], [chmod +x ncarg2d/src/bin/scripts/ncargsrc])
-AC_CONFIG_FILES([ncarg2d/src/bin/scripts/ncargsrcy], [chmod +x ncarg2d/src/bin/scripts/ncargsrcy])
 
 # These files will be created when the configure script is run.
 AC_CONFIG_FILES([Makefile
