@@ -118,7 +118,21 @@ AC_DEFINE([NGVERSION], ["6.5.0"])
 AC_DEFINE([NCLVERSION], ["6.5.0"])
 
 # These files need to be copied to the build directory.
+AC_CONFIG_LINKS([ncarg2d/src/libncarg/conpack/CodeIftran:ncarg2d/src/libncarg/conpack/CodeIftran])
+AC_CONFIG_LINKS([ncarg2d/src/libncarg/ezmapa/CodeIftran:ncarg2d/src/libncarg/ezmapa/CodeIftran])
+AC_CONFIG_LINKS([ncarg2d/src/libncarg/softfill/CodeIftran:ncarg2d/src/libncarg/softfill/CodeIftran])
 AC_CONFIG_LINKS([ncarg2d/src/libncarg/areas/CodeIftran:ncarg2d/src/libncarg/areas/CodeIftran])
+AC_CONFIG_LINKS([ncarg2d/src/libncarg/conpackt/CodeIftran:ncarg2d/src/libncarg/conpackt/CodeIftran])
+AC_CONFIG_LINKS([ncarg2d/src/libncarg/vaspackt/CodeIftran:ncarg2d/src/libncarg/vaspackt/CodeIftran])
+AC_CONFIG_LINKS([ncarg2d/src/libncarg/polypack/CodeIftran:ncarg2d/src/libncarg/polypack/CodeIftran])
+
+# These are shell scripts that are built during configure.
+AC_CONFIG_FILES([ncarg2d/src/bin/scripts/ncargcc], [chmod +x ncarg2d/src/bin/scripts/ncargcc])
+AC_CONFIG_FILES([ncarg2d/src/bin/scripts/ncargex], [chmod +x ncarg2d/src/bin/scripts/ncargex])
+AC_CONFIG_FILES([ncarg2d/src/bin/scripts/ncargf77], [chmod +x ncarg2d/src/bin/scripts/ncargf77])
+AC_CONFIG_FILES([ncarg2d/src/bin/scripts/ncargfile], [chmod +x ncarg2d/src/bin/scripts/ncargfile])
+AC_CONFIG_FILES([ncarg2d/src/bin/scripts/ncargsrc], [chmod +x ncarg2d/src/bin/scripts/ncargsrc])
+AC_CONFIG_FILES([ncarg2d/src/bin/scripts/ncargsrcy], [chmod +x ncarg2d/src/bin/scripts/ncargsrcy])
 
 # These files will be created when the configure script is run.
 AC_CONFIG_FILES([Makefile
