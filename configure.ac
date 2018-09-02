@@ -134,6 +134,27 @@ AC_CONFIG_FILES([Makefile
                  ncarg2d/Makefile
                  ncarg2d/man/Makefile
                  ncarg2d/src/Makefile
+                 ncarg2d/src/liboptional/Makefile
+                 ncarg2d/src/liboptional/conraq/Makefile
+                 ncarg2d/src/liboptional/conras/Makefile
+                 ncarg2d/src/liboptional/conrcqck/Makefile
+                 ncarg2d/src/liboptional/conrcspr/Makefile
+                 ncarg2d/src/liboptional/dashsmth/Makefile
+                 ncarg2d/src/liboptional/dashline/Makefile
+                 ncarg2d/src/liboptional/dashsupr/Makefile
+                 ncarg2d/src/liboptional/agupwrtx/Makefile
+                 ncarg2d/src/liboptional/ncarbd/Makefile
+                 ncarg2d/src/bin/Makefile
+                 ncarg2d/src/bin/scripts/Makefile
+                 ncarg2d/src/bin/impltest/Makefile
+                 ncarg2d/src/bin/ncargworld/Makefile
+                 ncarg2d/src/bin/findg/Makefile
+                 ncarg2d/src/bin/logos/Makefile
+                 ncarg2d/src/bin/psfltrs/Makefile
+                 ncarg2d/src/bin/pre2ncgm/Makefile
+                 ncarg2d/src/bin/psplit/Makefile
+                 ncarg2d/src/bin/tdpackdemo/Makefile
+                 ncarg2d/src/bin/ezmapdemo/Makefile
                  ncarg2d/src/db/Makefile
                  ncarg2d/src/db/ezmap/Makefile
                  ncarg2d/src/db/plotchar/Makefile
