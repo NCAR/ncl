@@ -1,2 +1,14 @@
 # This is an automake file for NCL.
 # Ed Hartnett 9/2/18
+
+LDADD = $(top_builddir)/ncarg2d/src/libncarg_gks/awi/ggkwdr_stub.o
+LDADD += ${top_builddir}/ncarg2d/src/libncarg/libncarg.la
+LDADD += $(top_builddir)/ncarg2d/src/libncarg_gks/libncarg_gks.la
+LDADD += ${top_builddir}/common/src/libncarg_c/libncarg_c.la
+
+# bin_PROGRAMS = tlocal tgks0a
+
+# tlocal_SOURCES = tlocal32.o tiand.o tior.o lcm.o tgbyte.o tshift.o	\
+# tsbyte.o mskout.o
+
+# tgks0a_SOURCES = tgks0a.f

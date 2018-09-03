@@ -30,3 +30,10 @@ gzinsl.f gziqwk.f gzn2wx.f gzn2wy.f gzname.f gznume.f gzputr.f		\
 gzputs.f gzreop.f gzroi.f gzsrat.f gzusat.f gztowk.f gzw2gk.f		\
 gzw2nx.f gzw2ny.f gzxid.f gzacwk.f gzclwk.f gzclrwk.f gzdawk.f		\
 gzopwk.f
+
+ggkwdr_stub.o: ggkwdr_stub.c
+	$(FC) -c ${FCFLAGS} -o $@ $^
+
+# Install this file.
+robjdir = $(prefix)/lib/ncarg/robj
+robj_HEADERS = ggkwdr_stub.o
