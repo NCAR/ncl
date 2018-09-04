@@ -9,4 +9,3 @@ SUBDIRS = \
 	ezmap gflash gks gridall histogram isosurface labelbar ngmisc \
 	plotchar polypack scrolled_title softfill spps streamlines surface \
 	tdpack threed vectors wmap
-
