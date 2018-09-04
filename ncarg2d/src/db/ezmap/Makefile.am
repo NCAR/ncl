@@ -34,6 +34,8 @@ Earth..3.names: WriteNameFile
 Earth..4.names: WriteNameFile
 	echo Earth..4 | $(WRITENAMEFILE) > /dev/null
 
+# Had to change these files names because git (as used by Jenkins)
+# could not see them.
 Earth..1.areas:
 	cp Earth__1_areas Earth..1.areas
 Earth..2.areas:
@@ -59,9 +61,11 @@ Earth..4.areas EzmapAreaInfo.CO EzmapAreaInfo.PO EzmapAreaInfo.PS	\
 EzmapAreaInfo.US
 
 EXTRA_DIST = Earth..1 Earth..2 Earth..3 Earth..4 EzmapAreaInfo.CO	\
-EzmapAreaInfo.PO EzmapAreaInfo.PS EzmapAreaInfo.US Earth__1_areas
+EzmapAreaInfo.PO EzmapAreaInfo.PS EzmapAreaInfo.US Earth__1_areas	\
+Earth__2_areas Earth__3_areas Earth__4_areas
 
 CLEANFILES = Earth..1.lines Earth..2.lines Earth..3.lines		\
 Earth..4.lines Earth..1.names Earth..2.names Earth..3.names		\
 Earth..4.names EzmapOutlines.PO EzmapOutlines.PS EzmapOutlines.US	\
-EzmapOutlines.CO
+EzmapOutlines.CO Earth..1.areas Earth..2.areas Earth..3.areas		\
+Earth..4.areas
