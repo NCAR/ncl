@@ -36,6 +36,12 @@ Earth..4.names: WriteNameFile
 
 Earth..1.areas:
 	cp Earth__1_areas Earth..1.areas
+Earth..2.areas:
+	cp Earth__2_areas Earth..2.areas
+Earth..3.areas:
+	cp Earth__3_areas Earth..3.areas
+Earth..4.areas:
+	cp Earth__4_areas Earth..4.areas
 
 EzmapOutlines.PO: ConvertMapData
 	$(CONVERTMAPDATA)
