@@ -51,6 +51,15 @@ EzmapOutlines.PS: ConvertMapData EzmapOutlines.PO
 EzmapOutlines.US: ConvertMapData EzmapOutlines.PO
 EzmapOutlines.CO: ConvertMapData EzmapOutlines.PO
 
+EzmapAreaInfo.CO:
+	cp EzmapAreaInfo_CO EzmapAreaInfo.CO
+EzmapAreaInfo.PO:
+	cp EzmapAreaInfo_PO EzmapAreaInfo.PO
+EzmapAreaInfo.PS:
+	cp EzmapAreaInfo_PS EzmapAreaInfo.PS
+EzmapAreaInfo.US:
+	cp EzmapAreaInfo_US EzmapAreaInfo.US
+
 # Install these data files.
 ncarg_databasedir = $(prefix)/lib/ncarg/database
 ncarg_database_HEADERS = Earth..1.lines Earth..2.lines Earth..3.lines	\
@@ -60,8 +69,8 @@ EzmapOutlines.CO Earth..1.areas Earth..2.areas Earth..3.areas		\
 Earth..4.areas EzmapAreaInfo.CO EzmapAreaInfo.PO EzmapAreaInfo.PS	\
 EzmapAreaInfo.US
 
-EXTRA_DIST = Earth..1 Earth..2 Earth..3 Earth..4 EzmapAreaInfo.CO	\
-EzmapAreaInfo.PO EzmapAreaInfo.PS EzmapAreaInfo.US Earth__1_areas	\
+EXTRA_DIST = Earth..1 Earth..2 Earth..3 Earth..4 EzmapAreaInfo_CO	\
+EzmapAreaInfo_PO EzmapAreaInfo_PS EzmapAreaInfo_US Earth__1_areas	\
 Earth__2_areas Earth__3_areas Earth__4_areas
 
 CLEANFILES = Earth..1.lines Earth..2.lines Earth..3.lines		\
