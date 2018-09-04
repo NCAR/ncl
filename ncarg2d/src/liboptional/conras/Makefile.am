@@ -12,3 +12,5 @@ conpms.o: conpms.f
 # Install this "lib" file.
 robjdir = $(prefix)/lib/ncarg/robj
 robj_HEADERS = libconras.o
+
+EXTRA_DIST = conras.f conpms.f

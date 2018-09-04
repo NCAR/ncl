@@ -12,3 +12,5 @@ contor.o: contor.f
 # Install this "lib" file.
 robjdir = $(prefix)/lib/ncarg/robj
 robj_HEADERS = libconraq.o
+
+EXTRA_DIST = conraq.f contor.f

@@ -10,3 +10,5 @@ agpwrt.o: agpwrt.f
 # Install this "lib" file.
 robjdir = $(prefix)/lib/ncarg/robj
 robj_HEADERS = libagupwrtx.o
+
+EXTRA_DIST = agpwrt.f

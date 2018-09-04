@@ -34,6 +34,11 @@ gzopwk.f
 ggkwdr_stub.o: ggkwdr_stub.c
 	$(FC) -c ${FCFLAGS} -o $@ $^
 
+noinst_HEADERS = gkscom.h trbufr.h trcode.h trdefl.h trinst.h	\
+trpars.h trstat.h
+
 # Install this file.
 robjdir = $(prefix)/lib/ncarg/robj
 robj_HEADERS = ggkwdr_stub.o
+
+EXTRA_DIST = ggkwdr_stub.c

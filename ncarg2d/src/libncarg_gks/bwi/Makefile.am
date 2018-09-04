@@ -12,3 +12,8 @@ g01sas.f g01seg.f g01siq.f g01snp.f g01tx.f g01wdr.f g01wkt.f		\
 gflcnv.f giargs.f ginlod.f gkasci.f gmflod.f gmpart.f gopnic.f		\
 gputmd.f gputni.f gputpr.f gputps.f gtnlen.f gupasf.f gupdva.f		\
 gupdvi.f gupdvr.f argb2ci.f
+
+noinst_HEADERS = g01adc.h g01ast.h g01dfa.h g01ins.h g01io.h g01opc.h	\
+g01prm.h g01rqa.h g01wdt.h g01wsl.h gksenu.h gksin.h wks.h g01adc.doc	\
+g01dfa.doc g01ins.doc g01io.doc g01opc.doc g01wdt.doc g01wsl.doc	\
+gksenu.doc

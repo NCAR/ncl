@@ -31,3 +31,5 @@ s_gsvp.c s_gswkvp.c s_gswkwn.c s_gswn.c s_gtx.c s_guwk.c s_gwitm.c	\
 s_gcrsg.c s_gclsg.c s_gdsg.c s_gcsgwk.c s_gssgt.c s_ginst.c		\
 s_gqopsg.c s_gqsgus.c s_grqst.c s_gsstm.c getcid.c rmcid.c addcid.c	\
 setcid.c gstore.c
+
+noinst_HEADERS = gstore.h

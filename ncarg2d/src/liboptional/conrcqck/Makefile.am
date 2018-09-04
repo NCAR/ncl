@@ -22,3 +22,6 @@ quick.o: quick.f
 # Install this "lib" file.
 robjdir = $(prefix)/lib/ncarg/robj
 robj_HEADERS = libconrcqck.o
+
+EXTRA_DIST = calcnt.f clgen.f conbd.f conrec.f ezcntr.f maxmin.f	\
+quick.f

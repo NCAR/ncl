@@ -10,3 +10,6 @@ gwid2r.f gwid2s.f gwidmp.f gwiesc.f gwifa.f gwiflb.f gwiiac.f		\
 gwiiws.f gwilod.f gwipat.f gwipl.f gwipm.f gwisas.f gwitx.f gwiwdr.f	\
 gwpart.f gwpasf.f gwpdva.f gwpdvi.f gwpdvr.f gwptni.f gwptpr.f		\
 gwptps.f
+
+noinst_HEADERS = gwiadc.h gwiarq.h gksin.h gwienu.h gwiopc.h gwiadf.h	\
+gwiwsl.h gwiast.h gwiio.h gwiwdt.h gwiins.h
