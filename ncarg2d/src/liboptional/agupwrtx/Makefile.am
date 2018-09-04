@@ -12,3 +12,5 @@ robjdir = $(prefix)/lib/ncarg/robj
 robj_HEADERS = libagupwrtx.o
 
 EXTRA_DIST = agpwrt.f
+
+CLEANFILES = *.o

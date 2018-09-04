@@ -134,6 +134,12 @@ AC_CONFIG_LINKS([ncarg2d/src/libncarg/areas/CodeIftran:ncarg2d/src/libncarg/area
 AC_CONFIG_LINKS([ncarg2d/src/libncarg/conpackt/CodeIftran:ncarg2d/src/libncarg/conpackt/CodeIftran])
 AC_CONFIG_LINKS([ncarg2d/src/libncarg/vaspackt/CodeIftran:ncarg2d/src/libncarg/vaspackt/CodeIftran])
 AC_CONFIG_LINKS([ncarg2d/src/libncarg/polypack/CodeIftran:ncarg2d/src/libncarg/polypack/CodeIftran])
+AC_CONFIG_LINKS([ncarg2d/src/bin/scripts/ncargcc.csh:ncarg2d/src/bin/scripts/ncargcc.csh])
+AC_CONFIG_LINKS([ncarg2d/src/bin/scripts/ncargf77.csh:ncarg2d/src/bin/scripts/ncargf77.csh])
+AC_CONFIG_LINKS([ncarg2d/src/bin/scripts/ncargex.csh:ncarg2d/src/bin/scripts/ncargex.csh])
+AC_CONFIG_LINKS([ncarg2d/src/bin/scripts/ncargfile.csh:ncarg2d/src/bin/scripts/ncargfile.csh])
+AC_CONFIG_LINKS([ncarg2d/src/bin/scripts/ncargsrc.csh:ncarg2d/src/bin/scripts/ncargsrc.csh])
+AC_CONFIG_LINKS([ncarg2d/src/bin/scripts/ncargsrcy.csh:ncarg2d/src/bin/scripts/ncargsrcy.csh])
 
 # These files will be created when the configure script is run.
 AC_CONFIG_FILES([Makefile

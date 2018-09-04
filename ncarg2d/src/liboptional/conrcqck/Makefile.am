@@ -25,3 +25,5 @@ robj_HEADERS = libconrcqck.o
 
 EXTRA_DIST = calcnt.f clgen.f conbd.f conrec.f ezcntr.f maxmin.f	\
 quick.f
+
+CLEANFILES = *.o

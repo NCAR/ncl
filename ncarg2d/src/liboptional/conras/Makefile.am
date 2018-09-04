@@ -14,3 +14,5 @@ robjdir = $(prefix)/lib/ncarg/robj
 robj_HEADERS = libconras.o
 
 EXTRA_DIST = conras.f conpms.f
+
+CLEANFILES = *.o

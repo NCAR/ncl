@@ -117,4 +117,5 @@ t4115.seg.gc tal1590.gc tekalike.gc versaterm.gc vt100.gc vt125.gc	\
 vt220.gc vt240.gc vt330.gc vt340.gc vt340w.gc ditroff.gc capast.f.sed	\
 capchg.f.sed
 
-CLEANFILES = aed.a aed.b capast.F capast.f capchg.F capchg.f
+CLEANFILES = aed.a aed.b capast.F capast.f capchg.F capchg.f	\
+$(graphcap_HEADERS)

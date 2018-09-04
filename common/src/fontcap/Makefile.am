@@ -103,3 +103,5 @@ font29.fc font34.fc font3.fc font7.fc font11.fc font15.fc font19.fc	\
 font22.fc font2.fc font35.fc font4.fc font8.fc font12.fc font16.fc	\
 font1.fc font25.fc font30.fc font36.fc font5.fc font9.fc font13.fc	\
 font17.fc font20.fc font26.fc font33.fc font37.fc font6.fc
+
+CLEANFILES = $(fontcap_HEADERS)

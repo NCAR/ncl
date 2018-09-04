@@ -53,3 +53,5 @@ robj_HEADERS = libdashsupr.o
 EXTRA_DIST = cfvld.f curved.f cutup.f dashbd1024.f dashdb.f dashdc.f	\
 drawpv.f fdvdld.f frstd.f intmsk.f lastd.f lined.f markl.f pwrtm.f	\
 remove32.f reset.f vectd.f
+
+CLEANFILES = *.o

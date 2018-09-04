@@ -29,3 +29,5 @@ robj_HEADERS = libdashline.o
 
 EXTRA_DIST = cfvld.f curved.f dashbd.f dashdb.f drawpv.f frstd.f	\
 lastd.f lined.f vectd.f
+
+CLEANFILES = *.o

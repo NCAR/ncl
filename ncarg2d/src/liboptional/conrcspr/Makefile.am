@@ -29,3 +29,5 @@ robj_HEADERS = libconrcspr.o
 
 EXTRA_DIST = calcnt.f clgen.f conbd.f conrec.f crdrln.f ezcntr.f	\
 minmax.f reord.f stline.f
+
+CLEANFILES = *.o

@@ -12,3 +12,5 @@ robjdir = $(prefix)/lib/ncarg/robj
 robj_HEADERS = libncarbd.o
 
 EXTRA_DIST = ncarbd.f
+
+CLEANFILES = *.o
