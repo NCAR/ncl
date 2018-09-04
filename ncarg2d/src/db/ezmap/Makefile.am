@@ -34,6 +34,9 @@ Earth..3.names: WriteNameFile
 Earth..4.names: WriteNameFile
 	echo Earth..4 | $(WRITENAMEFILE) > /dev/null
 
+Earth..1.areas:
+	cp Earth__1_areas Earth..1.areas
+
 EzmapOutlines.PO: ConvertMapData
 	$(CONVERTMAPDATA)
 EzmapOutlines.PS: ConvertMapData EzmapOutlines.PO
@@ -49,11 +52,10 @@ EzmapOutlines.CO Earth..1.areas Earth..2.areas Earth..3.areas		\
 Earth..4.areas EzmapAreaInfo.CO EzmapAreaInfo.PO EzmapAreaInfo.PS	\
 EzmapAreaInfo.US
 
-EXTRA_DIST = Earth..1 Earth..2 Earth..3 Earth..4 Earth..1.areas	\
-Earth..2.areas Earth..3.areas Earth..4.areas EzmapAreaInfo.CO	\
-EzmapAreaInfo.PO EzmapAreaInfo.PS EzmapAreaInfo.US
+EXTRA_DIST = Earth..1 Earth..2 Earth..3 Earth..4 EzmapAreaInfo.CO	\
+EzmapAreaInfo.PO EzmapAreaInfo.PS EzmapAreaInfo.US Earth__1_areas
 
-CLEANFILES = Earth..1.lines Earth..2.lines Earth..3.lines	\
+CLEANFILES = Earth..1.lines Earth..2.lines Earth..3.lines		\
 Earth..4.lines Earth..1.names Earth..2.names Earth..3.names		\
 Earth..4.names EzmapOutlines.PO EzmapOutlines.PS EzmapOutlines.US	\
 EzmapOutlines.CO
