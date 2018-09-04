@@ -282,7 +282,6 @@ AC_CONFIG_FILES([Makefile
                  ncarg2d/src/fundamental/fgks/Makefile
                  ncarg2d/src/fundamental/fisosurface/Makefile
                  ncarg2d/src/fundamental/flabelbar/Makefile
-                 ncarg2d/src/fundamental/fmisc/Makefile
                  ncarg2d/src/fundamental/fngmisc/Makefile
                  ncarg2d/src/fundamental/fplotchar/Makefile
                  ncarg2d/src/fundamental/fscrolled_title/Makefile
