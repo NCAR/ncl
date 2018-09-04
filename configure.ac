@@ -313,7 +313,6 @@ AC_CONFIG_FILES([Makefile
                  ncarg2d/src/examplesC/histogram/Makefile
                  ncarg2d/src/examplesC/isosurface/Makefile
                  ncarg2d/src/examplesC/labelbar/Makefile
-                 ncarg2d/src/examplesC/misc/Makefile
                  ncarg2d/src/examplesC/ngmisc/Makefile
                  ncarg2d/src/examplesC/plotchar/Makefile
                  ncarg2d/src/examplesC/polypack/Makefile
