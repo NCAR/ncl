@@ -59,7 +59,7 @@ AC_CHECK_LIB([X11], [XOpenDisplay])
 AC_CHECK_LIB([Xext], [XShmAttach])
 AC_CHECK_LIB([Xrender], [XRenderQueryExtension])
 
-# Find required libraries.
+# Find required libraries and thier headers.
 AC_CHECK_LIB([m], [floor], [], [AC_MSG_ERROR([math library is required])], [])
 AC_CHECK_LIB([netcdf], [nc_create], [], [AC_MSG_ERROR([NetCDF library is required])], [])
 AC_CHECK_LIB([jpeg], [jpeg_write_marker], [], [AC_MSG_ERROR([JPEG library is required])], [])
@@ -67,6 +67,7 @@ AC_CHECK_LIB([z], [deflate], [], [AC_MSG_ERROR([zlib library is required])], [])
 AC_CHECK_LIB([cairo], [cairo_in_fill], [], [AC_MSG_ERROR([cairo library is required])], [])
 AC_CHECK_LIB([png], [png_access_version_number], [], [AC_MSG_ERROR([PNG library is required])], [])
 AC_CHECK_LIB([freetype], [FT_Init_FreeType], [], [AC_MSG_ERROR([Freetype2 library is required])], [])
+AC_CHECK_HEADER([ft2build.h], [],  [AC_MSG_ERROR([Freetype2 header files are required])])
 AC_CHECK_LIB([pixman-1], [pixman_blt], [], [AC_MSG_ERROR([Freetype2 library is required])], [])
 AC_CHECK_LIB([udunits2], [ut_compare], [], [AC_MSG_ERROR([UDUNITS2 library is required])], [])
 #AC_CHECK_LIB([sz], [SZ_encoder_enabled], [], [AC_MSG_ERROR([szlib library is required])], [])
