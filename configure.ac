@@ -45,6 +45,14 @@ AC_PROG_INSTALL
 # Check to see if any macros must be set to enable large (>2GB) files.
 AC_SYS_LARGEFILE
 
+# Does the user want to build NCL?
+AC_MSG_CHECKING([whether we should build NCL])
+AC_ARG_ENABLE([ncl], [AS_HELP_STRING([--disable-ncl],
+              [do not build with NCL (only NCAR graphics library will be built)])])
+test "x$enable_ncl" = xno || enable_ncl=yes
+AC_MSG_RESULT([$enable_ncl])
+AM_CONDITIONAL(BUILD_NCL, [test x$enable_ncl = xyes])
+
 # Make sure to check for Xlibs in this old directory.
 AC_CHECK_FILE([/usr/X11R6/lib], [LDFLAGS="-L/usr/X11R6/lib"])
 AC_CHECK_LIB([X11], [XOpenDisplay])
@@ -152,8 +160,46 @@ AC_CONFIG_FILES([Makefile
                  common/src/bin/ncargpath/Makefile
                  common/src/fontcap/Makefile
                  common/src/graphcap/Makefile
+                 external/Makefile
+                 external/fftpack5_dp/Makefile
+                 external/blas/Makefile
+                 external/sphere3.1_dp/Makefile
+                 external/lapack/Makefile
                  ncarg2d/Makefile
                  ncarg2d/man/Makefile
+                 ncarg2d/man/areas/Makefile
+                 ncarg2d/man/autograph/Makefile
+                 ncarg2d/man/bivar/Makefile
+                 ncarg2d/man/colconv/Makefile
+                 ncarg2d/man/conpack/Makefile
+                 ncarg2d/man/dashline/Makefile
+                 ncarg2d/man/dashpack/Makefile
+                 ncarg2d/man/error_handling/Makefile
+                 ncarg2d/man/ezmap/Makefile
+                 ncarg2d/man/gflash/Makefile
+                 ncarg2d/man/gks/Makefile
+                 ncarg2d/man/gksC/Makefile
+                 ncarg2d/man/gridall/Makefile
+                 ncarg2d/man/halftone/Makefile
+                 ncarg2d/man/histogram/Makefile
+                 ncarg2d/man/isosurface/Makefile
+                 ncarg2d/man/labelbar/Makefile
+                 ncarg2d/man/ngmisc/Makefile
+                 ncarg2d/man/other/Makefile
+                 ncarg2d/man/plotchar/Makefile
+                 ncarg2d/man/polypack/Makefile
+                 ncarg2d/man/pwrite_family/Makefile
+                 ncarg2d/man/conran_family/Makefile
+                 ncarg2d/man/conrec_family/Makefile
+                 ncarg2d/man/scrolled_title/Makefile
+                 ncarg2d/man/softfill/Makefile
+                 ncarg2d/man/spps/Makefile
+                 ncarg2d/man/streamlines/Makefile
+                 ncarg2d/man/surface/Makefile
+                 ncarg2d/man/tdpack/Makefile
+                 ncarg2d/man/threed/Makefile
+                 ncarg2d/man/vectors/Makefile
+                 ncarg2d/man/wmap/Makefile
                  ncarg2d/src/Makefile
                  ncarg2d/src/libncarg/Makefile
                  ncarg2d/src/libncarg/Iftran/Makefile
@@ -332,5 +378,30 @@ AC_CONFIG_FILES([Makefile
                  ncarg2d/src/examplesC/wmap/Makefile
                  ncarg2d/src/pdocexamples/Makefile
                  ncarg2d/src/pdocexamples/pgks/Makefile
+                 ncarview/Makefile
+                 ncarview/man/Makefile
+                 ncarview/src/bin/Makefile
+                 ncarview/src/lib/Makefile
+                 ncarview/src/Makefile
+                 ncarview/app/Makefile
+                 ngmath/man/fitgrid/Makefile
+                 ngmath/man/dsgrid/Makefile
+                 ngmath/man/csagrid/Makefile
+                 ngmath/man/Makefile
+                 ngmath/man/shgrid/Makefile
+                 ngmath/man/cssgrid/Makefile
+                 ngmath/man/natgrid/Makefile
+                 ngmath/src/Makefile
+                 ngmath/Makefile
+                 ni/src/lib/Makefile
+                 ni/src/ncl/Makefile
+                 ni/src/nyacc/Makefile
+                 ni/src/scripts/Makefile
+                 ni/src/examples/Makefile
+                 ni/src/db/Makefile
+                 ni/src/Makefile
+                 ni/src/mkwrap/Makefile
+                 ni/src/contrib/Makefile
+                 ni/Makefile
                  ])
 AC_OUTPUT()
