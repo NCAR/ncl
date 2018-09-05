@@ -70,6 +70,7 @@ AC_CHECK_LIB([freetype], [FT_Init_FreeType], [], [AC_MSG_ERROR([Freetype2 librar
 AC_CHECK_HEADER([ft2build.h], [],  [AC_MSG_ERROR([Freetype2 header files are required])])
 AC_CHECK_LIB([pixman-1], [pixman_blt], [], [AC_MSG_ERROR([Freetype2 library is required])], [])
 AC_CHECK_LIB([udunits2], [ut_compare], [], [AC_MSG_ERROR([UDUNITS2 library is required])], [])
+AC_CHECK_LIB([expat], [XML_ParserCreate], [], [AC_MSG_ERROR([expat library is required])], [])
 #AC_CHECK_LIB([sz], [SZ_encoder_enabled], [], [AC_MSG_ERROR([szlib library is required])], [])
 
 # HDF4 use is optional.
