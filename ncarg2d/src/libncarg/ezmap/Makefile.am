@@ -27,4 +27,11 @@ rbglen.f rbidfe.f supcon.f supmap.f rdpnaz.f rdpndw.f rdpntz.f		\
 rdpnuw.f mdlltd.f mdllnd.f mdgnid.f mdlacd.f mdlocd.f maqini.f		\
 mdqini.f mdqin2.f maqtra.f mdqtra.f maqtri.f mdqtri.f maqtrn.f		\
 mdqtrn.f aiproj.f aiprin.f haproj.f haprin.f moproj.f moprin.f		\
-wtproj.f wtprin.f
+wtproj.f wtprin.f mpdbdi.f # mapnga.c mapngb.c
+
+mpdbdi.f: mpdbdi.f.sed Makefile
+	sed -e 's+SED_DBDIR+$(DBDIR)+' <mpdbdi.f.sed >mpdbdi.f
+
+EXTRA_DIST = mpdbdi.f.sed
+
+CLEANFILES = mpdbdi.f

@@ -6,7 +6,7 @@ SUBDIRS = lib bin examples
 libngmathbd.o: ngmathbd.o
 	ld -r -o $@ $^
 
-ngmathdb.o: ngmathbd.f
+ngmathbd.o: ngmathbd.f
 	$(FC) -c ${FCFLAGS} -o $@ $^
 
 # Install this "lib" file.

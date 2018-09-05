@@ -42,8 +42,8 @@ arsetr.f: IftranRun
 
 # Target to trigger building of all fortran files.
 IftranRun : CodeIftran
-	@$(IFTRAN) < CodeIftran > CodeFortran
-	@$(FSPLIT) -both CodeFortran
+	$(IFTRAN) < CodeIftran > CodeFortran
+	$(FSPLIT) -both CodeFortran
 	touch IftranRun
 
 # Include all source code in dist.
