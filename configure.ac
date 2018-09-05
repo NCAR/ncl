@@ -57,6 +57,7 @@ AM_CONDITIONAL(BUILD_NCL, [test x$enable_ncl = xyes])
 AC_CHECK_FILE([/usr/X11R6/lib], [LDFLAGS="-L/usr/X11R6/lib"])
 AC_CHECK_LIB([X11], [XOpenDisplay])
 AC_CHECK_LIB([Xext], [XShmAttach])
+AC_CHECK_LIB([Xrender], [XRenderQueryExtension])
 
 # Find required libraries.
 AC_CHECK_LIB([m], [floor], [], [AC_MSG_ERROR([math library is required])], [])
@@ -132,6 +133,7 @@ AC_DEFINE([NCLVERSION], ["6.5.0"])
 AC_DEFINE([DEFAULT_GKS_BUFSIZE], [0])
 AC_DEFINE([NGTMPDIR], ["tmp"])
 AC_DEFINE([MAJOR], [4])
+AC_DEFINE([BuildPNG])
 
 AC_SUBST([LIBSEARCHUSER], [-L/usr/X11R6/lib64])
 AC_SUBST([SYSTEMINCLUDE], [-L/usr/X11R6/lib64])
@@ -388,8 +390,14 @@ AC_CONFIG_FILES([Makefile
                  ncarview/app/Makefile
                  ngmath/src/bin/Makefile
                  ngmath/src/bin/nnalg/Makefile
-                 ngmath/src/lib/gridpack/Makefile
                  ngmath/src/lib/Makefile
+                 ngmath/src/lib/gridpack/Makefile
+                 ngmath/src/lib/gridpack/csagrid/Makefile
+                 ngmath/src/lib/gridpack/cssgrid/Makefile
+                 ngmath/src/lib/gridpack/dsgrid/Makefile
+                 ngmath/src/lib/gridpack/fitgrid/Makefile
+                 ngmath/src/lib/gridpack/natgrid/Makefile
+                 ngmath/src/lib/gridpack/shgrid/Makefile
                  ngmath/src/examples/edsgrid/Makefile
                  ngmath/src/examples/efitgrid/Makefile
                  ngmath/src/examples/ecssgrid/Makefile
