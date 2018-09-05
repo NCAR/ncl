@@ -129,7 +129,9 @@ AC_DEFINE([Linux])
 AC_DEFINE([IBM])
 AC_DEFINE([NGVERSION], ["6.5.0"])
 AC_DEFINE([NCLVERSION], ["6.5.0"])
-AC_DEFINE([NCLVERSION], ["6.5.0"])
+AC_DEFINE([DEFAULT_GKS_BUFSIZE], [0])
+AC_DEFINE([NGTMPDIR], ["tmp"])
+AC_DEFINE([MAJOR], [4])
 
 AC_SUBST([LIBSEARCHUSER], [-L/usr/X11R6/lib64])
 AC_SUBST([SYSTEMINCLUDE], [-L/usr/X11R6/lib64])
@@ -384,6 +386,17 @@ AC_CONFIG_FILES([Makefile
                  ncarview/src/lib/Makefile
                  ncarview/src/Makefile
                  ncarview/app/Makefile
+                 ngmath/src/bin/Makefile
+                 ngmath/src/bin/nnalg/Makefile
+                 ngmath/src/lib/gridpack/Makefile
+                 ngmath/src/lib/Makefile
+                 ngmath/src/examples/edsgrid/Makefile
+                 ngmath/src/examples/efitgrid/Makefile
+                 ngmath/src/examples/ecssgrid/Makefile
+                 ngmath/src/examples/ecsagrid/Makefile
+                 ngmath/src/examples/Makefile
+                 ngmath/src/examples/enatgrid/Makefile
+                 ngmath/src/examples/eshgrid/Makefile
                  ngmath/man/fitgrid/Makefile
                  ngmath/man/dsgrid/Makefile
                  ngmath/man/csagrid/Makefile
