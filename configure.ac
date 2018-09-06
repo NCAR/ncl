@@ -427,6 +427,10 @@ AC_CONFIG_FILES([Makefile
                  ngmath/src/Makefile
                  ngmath/Makefile
                  ni/src/lib/Makefile
+                 ni/src/lib/hlu/Makefile
+                 ni/src/lib/nfpfort/Makefile
+                 ni/src/lib/nio/Makefile
+                 ni/src/lib/nfp/Makefile
                  ni/src/ncl/Makefile
                  ni/src/nyacc/Makefile
                  ni/src/scripts/Makefile
