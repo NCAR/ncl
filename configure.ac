@@ -79,6 +79,10 @@ AC_CHECK_LIB([df], [Hclose], [], [use_hdf4=no])
 AC_CHECK_LIB([mfhdf], [SDcreate], [], [use_hdf4=no])
 AC_MSG_CHECKING([whether HDF4 will be used])
 AC_MSG_RESULT($use_hdf4)
+if test x$use_hdf4 = xyes; then
+   AC_DEFINE([BuildHDF4])
+fi
+AM_CONDITIONAL(USE_HDF4, [test x$use_hdf4 = xyes])
 
 # HDF-EOS library is optional. HDF4 is required for HDF-EOS.
 use_hdfeos=no
@@ -89,6 +93,10 @@ if test $use_hdf4 = yes; then
 fi
 AC_MSG_CHECKING([whether HDF-EOS will be used])
 AC_MSG_RESULT($use_hdfeos)
+if test x$use_hdfeos = xyes; then
+   AC_DEFINE([BuildHDFEOS])
+fi
+AM_CONDITIONAL(USE_HDFEOS, [test x$use_hdfeos = xyes])
 
 # GRIB2 use is optional. Check for jasper and grib2c libraries.
 use_grib2=yes
@@ -96,24 +104,37 @@ AC_CHECK_LIB([jasper], [jas_memdump], [], [use_grib2=no])
 AC_CHECK_LIB([grib2c], [getgridindex], [], [use_grib2=no])
 AC_MSG_CHECKING([whether GRIB2 will be used])
 AC_MSG_RESULT($use_grib2)
+AM_CONDITIONAL(USE_GRIB2, [test x$use_grib2 = xyes])
+if test x$use_grib2 = xyes; then
+   AC_DEFINE([BuildGRIB2])
+fi
 
 # Map project library PROJ is optional. Check for it.
 use_proj4=yes
 AC_CHECK_LIB([proj], [pj_laea], [], [use_proj4=no])
 AC_MSG_CHECKING([whether PROJ4 will be used])
 AC_MSG_RESULT($use_proj4)
+AM_CONDITIONAL(USE_PROJ4, [test x$use_proj4 = xyes])
 
 # GDAL library is optional. Check for it.
 use_gdal=yes
 AC_CHECK_LIB([gdal], [OGR_G_AddPoint], [], [use_gdal=no])
 AC_MSG_CHECKING([whether GDAL will be used])
 AC_MSG_RESULT($use_gdal)
+AM_CONDITIONAL(USE_GDAL, [test x$use_gdal = xyes])
+if test x$use_gdal = xyes; then
+   AC_DEFINE([BuildGDAL])
+fi
 
 # HDF5 library is optional. Check for it.
 use_hdf5=yes
 AC_CHECK_LIB([hdf5], [H5Fflush], [], [use_hdf5=no])
 AC_MSG_CHECKING([whether HDF5 will be used])
 AC_MSG_RESULT($use_hdf5)
+if test x$use_hdf5 = xyes; then
+   AC_DEFINE([BuildHDF5])
+fi
+AM_CONDITIONAL(USE_HDF5, [test x$use_hdf5 = xyes])
 
 # Is pkg-config installed? If not, bail.
 AC_CHECK_PROGS([PKG_CONFIG], [pkg-config])
@@ -142,7 +163,9 @@ AC_DEFINE([LIBDIR], ["lib"])
 AC_DEFINE([FONTCAPDIR], ["fontcaps"])
 AC_DEFINE([GRAPHCAPDIR], ["graphcaps"])
 AC_DEFINE([NCARGDIR], ["ncarg"])
-
+AC_DEFINE([USE_NETCDF4]) # for now always use netcdf-4
+use_netcdf4=yes
+AM_CONDITIONAL(USE_NETCDF4, [test x$use_netcdf4 = xyes])
 AC_SUBST([LIBSEARCHUSER], [-L/usr/X11R6/lib64])
 AC_SUBST([SYSTEMINCLUDE], [-L/usr/X11R6/lib64])
 
