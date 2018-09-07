@@ -1,7 +1,7 @@
 # This is an automake file for NCL.
 # Ed Hartnett 9/3/18
 
-testsdir = $(prefix)/ncarg2d/src/examples/eareas
+testsdir = $(prefix)/lib/ncarg/tests
 tests_HEADERS = tagupw.f tautog.f tcnsmt.f tcolcv.f tconaq.f tconpa.f	\
 tdashc.f tdashp.f tdshpk.f tezmpa.f tgflas.f thafto.f thstmv.f		\
 tisosr.f tpltch.f tpwrtx.f tpwrzi.f tpwrzt.f tsoftf.f tstitl.f		\
