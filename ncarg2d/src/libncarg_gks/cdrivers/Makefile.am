@@ -15,5 +15,9 @@ cro_conv.c crotiff.c crodisplay.c
 noinst_HEADERS = argb.h croddi.h cro.h ctxt_device.h font.h gksc.h	\
 gks.h pdfddi.h pdf.h pix_device.h ps_device.h text.h xattribute.h	\
 x_device.h common.h cro_device.h crotiff.h ctxt.h fort_c.h		\
-gks_device.h gksP.h pdf_device.h pixddi.h psddi.h ps.h transform.h	\
-xddi.h x.h
+gks_device.h pdf_device.h pixddi.h psddi.h ps.h transform.h xddi.h	\
+x.h
+
+# Header get installed in special subdirectory.
+ncargdir = $(prefix)/include/ncarg
+ncarg_HEADERS = gksP.h

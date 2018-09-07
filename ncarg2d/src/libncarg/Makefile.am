@@ -58,3 +58,7 @@ velvct/libncarg_velvct.la velvctC/libncarg_velvctc.la		\
 wmap/libncarg_wmap.la wmapC/libncarg_wmapc.la
 
 libncarg_la_SOURCES = ncargC.h
+
+# Header get installed in special subdirectory.
+ncargdir = $(prefix)/include/ncarg
+ncarg_HEADERS = ncargC.h

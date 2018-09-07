@@ -60,6 +60,11 @@ EzmapAreaInfo.PS:
 EzmapAreaInfo.US:
 	cp EzmapAreaInfo_US EzmapAreaInfo.US
 
+noinst_PROGRAMS = mapconvrt
+mapconvrt_SOURCES = mapconvrt.f
+ezmapdata: ezmapdat mapconvrt
+	./mapconvrt
+
 # Install these data files.
 ncarg_databasedir = $(prefix)/lib/ncarg/database
 ncarg_database_HEADERS = Earth..1.lines Earth..2.lines Earth..3.lines	\
@@ -67,14 +72,14 @@ Earth..4.lines Earth..1.names Earth..2.names Earth..3.names		\
 Earth..4.names EzmapOutlines.PO EzmapOutlines.PS EzmapOutlines.US	\
 EzmapOutlines.CO Earth..1.areas Earth..2.areas Earth..3.areas		\
 Earth..4.areas EzmapAreaInfo.CO EzmapAreaInfo.PO EzmapAreaInfo.PS	\
-EzmapAreaInfo.US
+EzmapAreaInfo.US ezmap_area_ids ezmapdata
 
 EXTRA_DIST = Earth..1 Earth..2 Earth..3 Earth..4 EzmapAreaInfo_CO	\
 EzmapAreaInfo_PO EzmapAreaInfo_PS EzmapAreaInfo_US Earth__1_areas	\
-Earth__2_areas Earth__3_areas Earth__4_areas
+Earth__2_areas Earth__3_areas Earth__4_areas ezmapdat
 
 CLEANFILES = Earth..1.lines Earth..2.lines Earth..3.lines		\
 Earth..4.lines Earth..1.names Earth..2.names Earth..3.names		\
 Earth..4.names EzmapOutlines.PO EzmapOutlines.PS EzmapOutlines.US	\
 EzmapOutlines.CO Earth..1.areas Earth..2.areas Earth..3.areas		\
-Earth..4.areas
+Earth..4.areas ezmapdata

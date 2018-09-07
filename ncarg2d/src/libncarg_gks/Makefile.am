@@ -18,6 +18,6 @@ wiss/libncarg_wiss.la awiC/libncarg_awic.la cdrivers/libbasegks.la
 
 libncarg_gks_la_SOURCES = gks.h
 
-# Header get installed in subdirectory of install.
-ncargdir = $(prefix)/install/ncarg
+# Header get installed in special subdirectory.
+ncargdir = $(prefix)/include/ncarg
 ncarg_HEADERS = gks.h
