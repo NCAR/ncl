@@ -429,6 +429,7 @@ AC_CONFIG_FILES([Makefile
                  ngmath/src/lib/gridpack/Makefile
                  ngmath/src/lib/gridpack/csagrid/Makefile
                  ngmath/src/lib/gridpack/cssgrid/Makefile
+                 ngmath/src/lib/gridpack/cssgrid1/Makefile
                  ngmath/src/lib/gridpack/dsgrid/Makefile
                  ngmath/src/lib/gridpack/fitgrid/Makefile
                  ngmath/src/lib/gridpack/natgrid/Makefile
