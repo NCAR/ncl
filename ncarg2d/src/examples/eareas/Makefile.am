@@ -2,5 +2,5 @@
 # Ed Hartnett 9/3/18
 
 # Install these example files.
-exampledir = $(prefix)/ncarg2d/src/examples/eareas
+exampledir = $(prefix)/lib/ncarg/examples
 example_HEADERS = arex01.f arex02.f arex03.f

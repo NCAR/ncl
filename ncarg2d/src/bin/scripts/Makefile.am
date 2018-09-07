@@ -32,6 +32,10 @@ bin_SCRIPTS = ncargcc ncargex ncargf77 ncargfile ncargsrc ncargsrcy
 EXTRA_DIST = ncargcc.csh ncargex.csh ncargf77.csh ncargfile.csh	\
 ncargsrc.csh ncargsrcy.csh
 
+# Install this script in a special place.
+wwwdir = $(prefix)/lib/ncarg/ngwww
+www_HEADERS = ngurl
+
 ncargf77: ncargf77.csh
 	@sed \
 	-e 's+SED_FC+$(F77)+' \

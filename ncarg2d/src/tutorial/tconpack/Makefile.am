@@ -1,7 +1,7 @@
 # This is an automake file for NCL.
 # Ed Hartnett 9/3/18
 
-tutorialdir = $(prefix)/ncarg2d/src/tutorial/tconpack
+tutorialdir = $(prefix)/ncarg/tutorial
 tutorial_HEADERS =  \
 	ccpback.f ccpcff.f ccpcfx.f ccpcica.f ccpcir.f ccpcis.f ccpcit.f \
 	ccpclc.f ccpcld.f ccpcldm.f ccpcldr.f ccpcll.f ccpclu.f ccpcnrc.f \

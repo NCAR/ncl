@@ -1,5 +1,5 @@
 # This is an automake file for NCL.
 # Ed Hartnett 9/3/18
 
-exampledir = $(prefix)/ncarg2d/src/examples/evelvc
+exampledir = $(prefix)/lib/ncarg/examples
 example_HEADERS = vvex01.f vvex02.f vvex03.f vvexcc.f
