@@ -2,7 +2,6 @@
 # Ed Hartnett 9/1/18
 
 LDADD = ${top_builddir}/common/src/libncarg_c/libncarg_c.la
-LDADD += ${top_builddir}/ncarg2d/src/libncarg/libncarg.la
 
 bin_PROGRAMS = ConvertMapData WriteLineFile WriteNameFile
 
