@@ -1,53 +1,65 @@
-----------------------------------------------------------------------
-This is the top level directory for version 6.5.0 of the NCL and NCAR
-Graphics source code. 
+======================================================================
 
-This source can be used to build NCL or just NCAR Graphics. Note:
-NCL depends on NCAR Graphics, so you will get both if you elect to
-build NCL.
+The NCAR Command Language (NCL) is a software project developed by the
+Computational & Information Systems Laboratory at the National Center
+for Atmospheric Research (NCAR), and funded by the National Science
+Foundation.
 
-The documentation for NCL can be found at:
+NCL is an interpreted language that is tailored for the scientific
+analysis and visualization of climate and weather data.
+
+======================================================================
+Documentation
+======================================================================
+
+NCL has extensive documentation available at:
 
     http://www.ncl.ucar.edu/
 
-While NCAR Graphics is part of the NCL source code tree, it has
-its own documentation:
+======================================================================
+Installing NCL
+======================================================================
 
-    http://www.ncarg.ucar.edu/
-----------------------------------------------------------------------
+We recommend you install NCL via conda:
 
-We highly recommend that people install NCL using a precompiled
-binary. We provide precompiled binaries for several flavors of LINUX,
-MacOS, and Windows/Cygwin. Precompiled binaries are hosted on the 
-Climate Data Gateway website:
+http://www.ncl.ucar.edu/Download/conda.shtml
 
-   http://www.earthsystemgrid.org
+======================================================================
+Reporting bugs
+======================================================================
 
-Source code is also available in the same location.
+If you'd like to report a bug, please use the NCL GitHub repo:
 
-Any questions or problems with installing NCL and/or NCAR Graphics
-from source code or precompiled binaries should be posted to
-ncl-install@ucar.edu. You need to subscribe first:
+   http://github.com/ncar/ncl
+
+======================================================================
+Help with NCL
+======================================================================
+
+If you have any problems installing or using NCL, post them
+on one of our two email lists. You must subscribe first:
+
+Installation questions and help: 
+
+   ncl-install@ucar.edu
+
+Subscribe via:
 
    http://mailman.ucar.edu/mailman/listinfo/ncl-install
 
-Questions and bug reports on NCL should be posted to
-ncl-talk@ucar.edu:
+Usage questions/help:
+
+   ncl-talk@ucar.edu
+
+Subscribe via:
 
    http://mailman.ucar.edu/mailman/listinfo/ncl-talk
 
-Questions and bug reports on NCARG Graphics should be posted to
-ncarg-talk@ucar.edu:
-
-   http://mailman.ucar.edu/mailman/listinfo/ncarg-talk
-
 ----------------------------------------------------------------------
-You can find detailed instructions for building NCL from source code,
-or installing from precompiled binaries at:
+
+Detailed instructions for building NCL from source code or installing
+from pre-built binaries can be found at:
 
   http://www.ncl.ucar.edu/Download/
-
-Detailed instructions for building from source code are also found
-in the "INSTALL.html" file in this directory.
 
 ----------------------------------------------------------------------

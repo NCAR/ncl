@@ -1,14 +1,14 @@
 <html>
 <head>
-<title>How to build NCL and NCAR Graphics version 6.5.0 from source code</title>
+<title>How to build NCL and NCAR Graphics version 6.5.1 from source code</title>
 </head>
 
 </head>
 
-<h1>How to build NCL and NCAR Graphics version 6.5.0 from source code</h1>
+<h1>How to build NCL and NCAR Graphics version 6.5.1 from source code</h1>
 <p>
 
-<i>July 15, 2018</i><p>
+<i>October 12, 2018</i><p>
 
 <b>The latest version of this document can be found at
 <a href="http://www.ncl.ucar.edu/Download/build_from_src.shtml">http://www.ncl.ucar.edu/Download/build_from_src.shtml</a>.</b>
@@ -287,7 +287,7 @@ remove this option from the appropriate configuration file.
 To build NCL, you need a Fortran compiler that can compile both
 Fortran 77 and 90, an ANSI C compiler, and a C++ compiler. In general,
 we recommend using the GNU (gcc, gfortran, and g++) compilers, and
-using version 7.x or higher. For NCL V6.5.0, NCL was 
+using version 7.x or higher. For NCL V6.5.1, NCL was 
 built with the GNU and Intel compilers.  In the past we
 have successfully used <a href="http://gcc.gnu.org/">gcc</a>,
 <a href="http://gcc.gnu.org/wiki/GFortran">gfortran</a>,
@@ -456,7 +456,7 @@ use <a href="http://www.macports.org/">MacPorts</a>. Under Cygwin, the
 <p>
 
 Each package is listed below, along with the version we used to build
-NCL V6.5.0 on our own systems. In most cases you don't need to have
+NCL V6.5.1 on our own systems. In most cases you don't need to have
 the exact version of the software we used, but it's a good idea to
 match them as much as possible. We've included the "wget" command we
 used for the retrieving the source code, where applicable.
@@ -1207,17 +1207,17 @@ HREF="http://www.ncl.ucar.edu/Download/">http://www.ncl.ucar.edu/Download/</A>
 <p>
 
 The NCL source code you download will be a single compressed tar
-file (we'll call it "ncl_ncarg-6.5.0.tar.gz"). Move the
-"ncl_ncarg-6.5.0.tar.gz" file to a temporary directory where you
+file (we'll call it "ncl_ncarg-6.5.1.tar.gz"). Move the
+"ncl_ncarg-6.5.1.tar.gz" file to a temporary directory where you
 have plenty of disk space (around 850 megabytes to hold all of the
 source code, object files, binaries, and so on). Then, uncompress and
 untar the file as follows:<P>
 
 <pre>
-  tar -zxvf ncl_ncarg-6.5.0.tar.gz
+  tar -zxvf ncl_ncarg-6.5.1.tar.gz
 </pre>
 
-The above steps will create a directory called "ncl_ncarg-6.5.0". For
+The above steps will create a directory called "ncl_ncarg-6.5.1". For
 convenience, we'll use the notation $NCARG to mean the top level of
 the NCL/NCAR Graphics source tree. Set the environment variable NCARG
 to the full path of this directory.
@@ -1229,21 +1229,21 @@ From tcsh or csh:
 <p>
 
 <pre>
-  setenv NCARG /usr/local/src/ncl_ncarg-6.5.0
+  setenv NCARG /usr/local/src/ncl_ncarg-6.5.1
 </pre>
 
 From ksh or bash:
 <p>
 
 <pre>
-  export NCARG=/usr/local/src/ncl_ncarg-6.5.0
+  export NCARG=/usr/local/src/ncl_ncarg-6.5.1
 </pre>
 
 sh:
 <p>
 
 <pre>
-  NCARG=/usr/local/src/ncl_ncarg-6.5.0
+  NCARG=/usr/local/src/ncl_ncarg-6.5.1
   export NCARG
 </pre>
 <p>
