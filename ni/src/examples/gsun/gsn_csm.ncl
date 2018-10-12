@@ -2269,9 +2269,14 @@ undef("add_labelbar")
 procedure add_labelbar(wks:graphic,plot,zone:integer, \
                        font_height:numeric,type:string,\
                        lbar_on,res:logical)
-local anno, num_res, amres, lbres, labelbar_object, lbar_orient, \
-lbar_side, lbar_just, fill_patterns, fill_scales, mono_fill_pat, \
-mono_fill_scl, mono_fill_col, levels, class_name, the_plot, anno_off
+local amres, anno, cap_style, class_name, colors, def_lvpwf, dot_size, \
+      end_labelbar_style, end_labels_on, fill_mode, fill_opacity, \
+      fill_pattern, fill_patterns, fill_scale, fill_scales, height, \
+      labelbar_object, lbar_just, lbar_orient, lbar_side, lbres, lbstrings, \
+      levels, line_format, lwscale, mono_fill_col, mono_fill_pat, \
+      mono_fill_scl, nlab, nlev, orth, parallel, ratio, ratio1, ratio2, \
+      ratios, the_plot, tmp_colors, tmp_fill_patterns, tmp_fill_scales, \
+      wh_ind, width
 begin
   lbres = True   ; hold labelbar resources
   amres = True   ; hold annomanager resources 
