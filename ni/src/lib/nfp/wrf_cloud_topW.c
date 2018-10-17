@@ -1,7 +1,13 @@
 #include <stdio.h>
 #include "wrapper.h"
 
-
+/*wrfcttcalc(
+ * prs, tk, qci,
+ * qcw, qvp, ght,
+ * ter, ctt, pf,
+ * haveqci,fill_nocloud, missing, opt_thresh,
+ * nz, ns, ew)
+                 */
 extern void NGCALLF(wrfcttcalc,WRFCTTCALC)(double *, double *, double *, 
                                            double *, double *, double *, 
                                            double *, double *, double *,
@@ -86,6 +92,11 @@ NhlErrorTypes wrf_ctt_W( void )
   int *haveqci;
 
 /*
+* Arguments # 8
+*/
+int *opt;
+
+/*
  * Variable for getting/setting dimension name info.
  */
   NclDimRec *dim_info      = NULL;
@@ -129,7 +140,7 @@ NhlErrorTypes wrf_ctt_W( void )
   int fill_nocloud;
   void *missing = NULL;
   void *opt_thresh = NULL;
-  double *tmp_missing, *tmp_opt_thresh;
+  double *tmp_missing, *tmp_opt_thresh, *pfwork;
   logical set_missing, set_opt_thresh;
   NclBasicDataTypes type_missing = NCL_none;
   NclBasicDataTypes type_opt_thresh = NCL_none;
@@ -393,7 +404,7 @@ NhlErrorTypes wrf_ctt_W( void )
   stack_entry = _NclGetArg(8, 9, DONT_CARE);
   if(stack_entry.kind == NclStk_VAR &&
 		  stack_entry.u.data_var->var.att_id != -1) {
-    attr_obj = (NclAtt) NclGetObj(stack_entry.u.data_var->var.att_id);
+    attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
     if (attr_obj != NULL && attr_obj->att.n_atts > 0) {
       attr_list = attr_obj->att.att_list;
 	  while (attr_list != NULL) {
@@ -438,6 +449,8 @@ NhlErrorTypes wrf_ctt_W( void )
     tmp_opt_thresh  = (double *)calloc(1,sizeof(double));
     *tmp_opt_thresh = 1.0;
   }
+
+
 
 /*
  * Calculate size of leftmost dimensions.
@@ -614,6 +627,9 @@ NhlErrorTypes wrf_ctt_W( void )
     dim_info[ndims_ctt-2] = dim_info_ght[ndims_ght-2];
   }
 
+  /* Create the pf work array */
+  pfwork = (double *) calloc(nlevlatlon, sizeof(double));
+
 /*
  * Loop across leftmost dimensions and call the Fortran routine for each
  * subsection of the input arrays.
@@ -713,9 +729,10 @@ NhlErrorTypes wrf_ctt_W( void )
                  fill_nocloud, missing, opt_thresh, nz, ns, ew)
  */
 
-    NGCALLF(wrfcttcalc,WRFCTTCALC)(tmp_pres, tmp_tk, tmp_qci, tmp_qcw,
-                                   tmp_qvp, tmp_ght, tmp_ter, tmp_ctt,
-                                   haveqci, fill_nocloud,
+    NGCALLF(wrfcttcalc,WRFCTTCALC)(tmp_pres, tmp_tk, tmp_qci,
+    		                       tmp_qcw, tmp_qvp, tmp_ght,
+								   tmp_ter, tmp_ctt, pfwork,
+                                   &haveqci, &fill_nocloud,
 								   tmp_missing, tmp_opt_thresh,
 								   &inlev, &inlat, &inlon);
 
@@ -746,6 +763,7 @@ NhlErrorTypes wrf_ctt_W( void )
   if(type_ctt  != NCL_double) NclFree(tmp_ctt);
   if(type_missing  != NCL_double) NclFree(tmp_missing);
   if(type_opt_thresh  != NCL_double) NclFree(tmp_opt_thresh);
+  NclFree(pfwork);
 
 /*
  * Set up some attributes ("description" and "units") to return.

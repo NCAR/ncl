@@ -340,7 +340,7 @@ SUBROUTINE wrf_vintrp(datain, dataout, pres, tk, qvp, ght, terrain,&
                             plev = ((ezlev - ezlhsl)*&
                                    psurf + (ezsurf - ezlev)*plhsl)/(ezsurf - ezlhsl)
                             IF (icase .EQ. 1) THEN
-                                tempout(i,j) = plev
+                                tempout(i,j) = plev * 100.
                                 CYCLE
                             END IF
                         END IF
@@ -377,7 +377,7 @@ SUBROUTINE wrf_vintrp(datain, dataout, pres, tk, qvp, ght, terrain,&
                             zlev = -sclht*LOG(vlev)
                             plev = pbot*(1. + USSALR/vt*(zbot - zlev))**EXPONI
                             IF (icase .EQ. 1) THEN
-                                tempout(i,j) = plev
+                                tempout(i,j) = plev * 100.
                                 CYCLE
                             END IF
                         END IF

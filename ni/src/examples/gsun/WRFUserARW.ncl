@@ -8,6 +8,8 @@
 ; function wrf_user_vert_interp(file_handle,field:float,\
 ;                               vert_coordinate[1]:string, \
         ;                       interp_levels[*]:numeric,opts[1]:logical)
+; function wrf_user_vertcross(var3d:numeric, z:numeric, loc_param:numeric, 
+;                             angle:numeric, opts:logical )
 ; function wrf_user_getvar( file_handle, variable:string, time:integer )
 ; function wrf_user_list_times( file_handle )
 ; function wrf_user_ll_to_ij( nc_file:file, longitude:numeric, latitude:numeric, \
@@ -435,6 +437,294 @@ begin
   end if
 
 
+
+end
+
+;--------------------------------------------------------------------------------
+ 
+undef("wrf_user_intrp2d")
+function wrf_user_intrp2d( var2d:numeric, \
+                           loc_param:numeric, angle:numeric, opts:logical )
+
+; var2d      - 2d field to interpolate 
+; loc_param  - plane for vertical plots (2 values representing an xy point 
+;              on the model domain through which the vertical plane will pass
+;              OR 4 values specifying start and end values
+; angle      - 0.0 for horizontal plots, and 
+;              an angle for vertical plots - 90 represent a WE cross section
+; opts         Used IF opts is TRUE, else use loc_param and angle to determine crosssection
+
+begin
+
+     dims = dimsizes(var2d)
+     nd = dimsizes(dims)
+     dimX = dims(nd-1)
+     dimY = dims(nd-2)
+     dimT = 1
+     if ( nd .eq. 3 ) then
+       dimT = dims(nd-3)
+     end if
+     var2dtmp = new( (/ 1, dimY, dimX /), typeof(var2d) )
+     
+
+; set vertical cross section
+     if ( nd .eq. 3 ) then
+       var2dtmp(0,:,:) = var2d(0,:,:)
+     else
+       var2dtmp(0,:,:) = var2d(:,:)
+     end if
+     if (opts) then
+       xy = wrf_user_set_xy( var2dtmp, \
+                             loc_param(0)-1, loc_param(1)-1, \    ; the -1 is for NCL dimensions
+                             loc_param(2)-1, loc_param(3)-1, \
+                             angle, opts )
+     else
+       xy = wrf_user_set_xy( var2dtmp, \
+                             loc_param(0), loc_param(1), \
+                             0.0, 0.0, angle, opts )
+     end if
+     xp = dimsizes(xy)
+
+     var2dout = new( (/ dimT, xp(0) /), typeof(var2d) )
+
+     var1dtmp = wrf_interp_2d_xy( var2dtmp, xy )
+     var2dout(0,:) = var1dtmp(0,:)
+     if ( dimT .eq. 1 ) then
+       var2dout!1 = "Horizontal"
+       return ( var2dout(0,:) )
+     end if
+
+     do it = 1,dimT-1
+       var2dtmp(0,:,:) = var2d(it,:,:)
+       var1dtmp = wrf_interp_2d_xy( var2dtmp, xy )
+       var2dout(it,:) = var1dtmp(0,:)
+     end do
+     var2dout!0 = "Time"
+     var2dout!1 = "Horizontal"
+     return(var2dout)
+
+end
+
+;--------------------------------------------------------------------------------
+ 
+undef("wrf_user_vertcross")
+function wrf_user_vertcross(var3d:numeric, z_in:numeric, \
+                           loc_param:numeric, angle:numeric, opts:logical )
+
+; var3d      - 3d field to interpolate (all input fields must be unstaggered)
+; z_in       - interpolate to this field (either p/z)
+; loc_param  - an array of 4 values representing the start point and end point 
+;              for the cross section (start_x, start_y, end_x, end_y) OR a single 
+;              point when opt@use_pivot is True representing the pivot point. 
+;              The values can be in grid coordinates or lat/lon coordinates 
+;              (start_x = start_lon, start_y = start_lat, ...). If using 
+;              lat/lon coordinates, then opt@latlon must be True.
+; opts       - optional arguments
+;   use_pivot   - set to True to indicate that loc_param and angle are used, 
+;                 otherwise loc_param is set to 4 values to indicate a start and
+;                 end point 
+;   angle       - an angle for vertical plots - 90 represent a WE cross section, 
+;                 ignored if pivot_angle is False.
+;   levels      - the vertical levels to use in the same units as z_in. Set to 
+;                 False to automatically generate levels in 1% increments.
+;   latlon      - set to True if the values in loc_param are latitude and longitude
+;                 values rather than grid values
+;   file_handle - must be set to a file handle when latlon is True, otherwise 
+;                 this should be set to False
+;   timeidx     - the time index to use for moving nests when latlon is True. Set
+;                 to 0 if the nest is not moving.
+;   linecoords  - set to True to include the latitude and longitude coordinates
+;                 for the cross section line in the output attributes.
+
+begin
+
+     use_pivot = get_res_value(opts, "use_pivot", False)
+     angle = get_res_value(opts, "angle", 0.0)
+     levels = get_res_value(opts, "levels", new(1,integer))
+     latlon = get_res_value(opts, "latlon", False)
+     file_handle = get_res_value(opts, "file_handle", 0)
+     timeidx = get_res_value(opts, "timeidx", 0)
+     linecoords = get_res_value(opts, "linecoords", False)
+     
+     dims = dimsizes(var3d)
+     nd = dimsizes(dims)
+    
+     dimX = dims(nd-1)
+     dimY = dims(nd-2)
+     dimZ = dims(nd-3)
+     
+     if ( nd .eq. 4 ) then
+       if ( z_in(0,dimZ-1,0,0) .lt. z_in(0,dimZ-2,0,0) ) then
+         ; We must be interpolating to pressure
+           ; This routine needs input field and level in hPa - lets make sure of this
+         if ( max(z_in) .gt. 2000. ) then
+           ; looks like we have Pa as input - make this hPa
+           z_in = z_in * 0.01
+         end if
+       end if
+       z = z_in(0,:,:,:)
+     else
+       if ( z_in(dimZ-1,0,0) .lt. z_in(dimZ-2,0,0) ) then
+         ; We must be interpolating to pressure
+           ; This routine needs input field and level in hPa - lets make sure of this
+         if ( z_in(0,0,0) .gt. 2000. ) then
+           ; looks like we have Pa as input - make this hPa
+           z_in = z_in * 0.01
+         end if
+       end if
+       z = z_in
+     end if
+
+; Convert latlon to xy coordinates
+
+    if (use_pivot) then 
+        if (latlon) then
+            opt = True
+            opt@returnInt = True
+            opt@useTime = timeidx
+            ij := wrf_user_ll_to_xy(file_handle, loc_param(0), loc_param(1), opt)
+            start_x = ij(0)
+            start_y = ij(1)
+        else
+            start_x = loc_param(0)
+            start_y = loc_param(1)
+        end if
+    else
+        if (latlon) then
+            opt = True
+            opt@returnInt = True
+            opt@useTime = timeidx
+            ij := wrf_user_ll_to_xy(file_handle, (/ loc_param(0), loc_param(2) /), (/ loc_param(1), loc_param(3) /), opt)
+            start_x = ij(0,0)
+            start_y = ij(0,1)
+            end_x = ij(1,0)
+            end_y = ij(1,1)
+        else
+            start_x = loc_param(0)
+            start_y = loc_param(1)
+            end_x = loc_param(2)
+            end_y = loc_param(3)
+        end if
+    end if 
+ 
+; get the lat/lons along the cross section line if requested
+     
+; set the cross section line coordinates if requested
+     if (linecoords) then 
+     
+         latname = "XLAT" 
+         lonname = "XLONG" 
+         if(.not. isfilevar(file_handle,"XLAT")) then
+           if(isfilevar(file_handle,"XLAT_M")) then
+             latname = "XLAT_M"
+             lonname = "XLONG_M"
+           end if
+         end if
+         
+         latvar  = _get_wrf_var(file_handle, latname, timeidx)
+         lonvar = _get_wrf_var(file_handle, lonname, timeidx)
+         
+        if (use_pivot) then
+            loc := (/start_x, start_y/)
+            linelats = wrf_user_intrp2d(latvar, loc, angle, False)
+            linelons = wrf_user_intrp2d(lonvar, loc, angle, False)
+        else
+            loc := (/start_x, start_y, end_x, end_y /)
+            linelats = wrf_user_intrp2d(latvar, loc, angle, True)
+            linelons = wrf_user_intrp2d(lonvar, loc, angle, True)
+        end if
+        
+     end if
+
+; set vertical cross section
+     if (use_pivot) then
+         xy = wrf_user_set_xy( z, start_x, start_y, \ ; 
+                                0.0, 0.0, angle, opts )
+     
+     else
+         xy = wrf_user_set_xy( z, start_x, start_y, \    ; assumes 0-based indexing in v6.5.0
+                                end_x, end_y, \
+                                angle, opts )
+         
+     end if
+     xp = dimsizes(xy)
+  
+  
+; first we interp z
+     var2dz   = wrf_interp_2d_xy( z, xy)
+
+;  interp to constant z grid
+     if (all(ismissing(levels))) then
+         if(var2dz(0,0) .gt. var2dz(1,0) ) then  ; monotonically decreasing coordinate
+            z_max = floor(max(z)/10)*10     ; bottom value
+            z_min = ceil(min(z)/10)*10      ; top value
+            dz = 10
+            nlevels = tointeger( (z_max-z_min)/dz)
+            z_var2d = new( (/nlevels/), typeof(z))
+            z_var2d(0) = z_max
+            dz = -dz
+         else
+            z_max = max(z)
+            z_min = 0.
+            dz = 0.01 * z_max
+            nlevels = tointeger( z_max/dz )
+            z_var2d = new( (/nlevels/), typeof(z))
+            z_var2d(0) = z_min
+         end if
+      
+         do i=1, nlevels-1
+            z_var2d(i) = z_var2d(0)+i*dz
+         end do
+     else
+         z_var2d = levels
+     end if
+  
+; interp the variable
+     if ( dimsizes(dims) .eq. 4 ) then
+       var2d = new( (/dims(0), nlevels, xp(0)/), typeof(var2dz))
+       do it = 0,dims(0)-1
+         var2dtmp = wrf_interp_2d_xy( var3d(it,:,:,:), xy)
+         do i=0,xp(0)-1
+            var2d(it,:,i) = wrf_interp_1d( var2dtmp(:,i), var2dz(:,i), z_var2d)
+         end do
+       end do
+       var2d!0 = var3d!0
+       var2d!1 = "Vertical"
+       var2d!2 = "Horizontal"
+     else
+       var2d = new( (/nlevels, xp(0)/), typeof(var2dz))
+       var2dtmp = wrf_interp_2d_xy( var3d, xy)
+       do i=0,xp(0)-1
+          var2d(:,i) = wrf_interp_1d( var2dtmp(:,i), var2dz(:,i), z_var2d)
+       end do
+       var2d!0 = "Vertical"
+       var2d!1 = "Horizontal"
+     end if
+
+
+
+     st_x = tointeger(xy(0,0)) ; + 1 (removed 1-based indexing in 6.5.0) 
+     st_y = tointeger(xy(0,1)) ; + 1
+     ed_x = tointeger(xy(xp(0)-1,0)) ; + 1
+     ed_y = tointeger(xy(xp(0)-1,1)) ; + 1
+     if (.not. use_pivot) then
+       var2d@Orientation = "Cross-Section: (" + \
+                            st_x + "," + st_y + ") to (" + \
+                            ed_x + "," + ed_y + ")"
+     else
+       var2d@Orientation = "Cross-Section: (" + \
+                            st_x + "," + st_y + ") to (" + \
+                            ed_x + "," + ed_y + ") ; center=(" + \
+                            start_x + "," + start_y + \
+                            ") ; angle=" + angle
+     end if
+     
+     if (linecoords) then 
+        var2d@lats = linelats
+        var2d@lons = linlons
+     end if
+
+     return(var2d)
 
 end
 
@@ -1398,11 +1688,11 @@ begin
           end if
         end do
         
-        if (vert_type == "height_agl") then
+        if (vert_type .eq. "height_agl") then
           vert = wrf_user_user_getvar(file_handle, "height_agl", time)
-        elseif (vert_type == "pressure") then
+        elseif (vert_type.eq. "pressure") then
           vert = wrf_user_getvar(file_handle, "p", time)
-        elseif (vert_type == "height_msl") then
+        elseif (vert_type .eq. "height_msl") then
           vert = wrf_user_getvar(file_handle, "height", time)
         end if 
         
@@ -1419,7 +1709,7 @@ begin
         
         return(out_array)
 
-    end if ;variable is cfrac
+    end if ;;variable is cfrac
 
   if( any( variable .eq. (/"pw"/) ) ) then
        ;Precipitable Water 
@@ -1436,47 +1726,51 @@ begin
        pres   =  P + PB
        height = (PH + PHB)/9.8           ; height at full levels 
        theta  =  T + 300.
-       temp   = theta * (pres/100000) ^ (gas_const/Cp)
-       vtemp  = (1 + 0.61*QV) * temp  ; virtual temp
+       ;temp   = theta * (pres/100000) ^ (gas_const/Cp)
+       ;tv  = (1 + 0.61*QV) * temp  ; virtual temp
+       tk = wrf_tk(pres, theta)
+       tv = wrf_virtual_temp(tk, QV)
+       
+       pw = wrf_pw(pres, tv, QV, height)
 
-       dims = dimsizes(T)
-       nd = dimsizes(dims)
+       ;dims = dimsizes(T)
+       ;nd = dimsizes(dims)
 
-       if ( nd .eq. 4 ) then
-         zdiff  = height(:,0,:,:)
-         zdiff  = 0.
-         pw_sfc_ptop = height(:,0,:,:)
-         pw_sfc_ptop = 0.
-         do k = 0,dims(1)-1
-           zdiff(:,:,:) = (height(:,k+1,:,:) - height(:,k,:,:))
-           pw_sfc_ptop(:,:,:) =  pw_sfc_ptop(:,:,:) + ((pres(:,k,:,:)/(gas_const * vtemp(:,k,:,:))) * QV(:,k,:,:) * zdiff(:,:,:))
-         end do
-       end if
-       if ( nd .eq. 3 ) then
-         zdiff  = height(0,:,:)
-         zdiff  = 0.
-         pw_sfc_ptop = height(0,:,:)
-         pw_sfc_ptop = 0.
-         do k = 0,dims(0)-1
-           zdiff(:,:) = (height(k+1,:,:) - height(k,:,:))
-           pw_sfc_ptop(:,:) =  pw_sfc_ptop(:,:) + ((pres(k,:,:)/(gas_const * vtemp(k,:,:))) * QV(k,:,:) * zdiff(:,:))
-         end do
-       end if
+       ;if ( nd .eq. 4 ) then
+       ;  zdiff  = height(:,0,:,:)
+       ;  zdiff  = 0.
+       ;  pw_sfc_ptop = height(:,0,:,:)
+       ;  pw_sfc_ptop = 0.
+       ;  do k = 0,dims(1)-1
+       ;    zdiff(:,:,:) = (height(:,k+1,:,:) - height(:,k,:,:))
+       ;    pw_sfc_ptop(:,:,:) =  pw_sfc_ptop(:,:,:) + ((pres(:,k,:,:)/(gas_const * vtemp(:,k,:,:))) * QV(:,k,:,:) * zdiff(:,:,:))
+       ;  end do
+       ;end if
+       ;if ( nd .eq. 3 ) then
+       ;  zdiff  = height(0,:,:)
+       ;  zdiff  = 0.
+       ;  pw_sfc_ptop = height(0,:,:)
+       ;  pw_sfc_ptop = 0.
+       ;  do k = 0,dims(0)-1
+       ;    zdiff(:,:) = (height(k+1,:,:) - height(k,:,:))
+       ;    pw_sfc_ptop(:,:) =  pw_sfc_ptop(:,:) + ((pres(k,:,:)/(gas_const * vtemp(k,:,:))) * QV(k,:,:) * zdiff(:,:))
+       ;  end do
+       ;end if
 
 ;---Dimension names added in NCL V6.4.0
-       rank_ph = dimsizes(dimsizes(PH))
-       if(any(rank_ph.eq.(/3,4/)).and..not.any(ismissing(getvardims(PH)))) then
-         if(rank_ph.eq.3) then
-           pw_sfc_ptop!0 = PH!1
-           pw_sfc_ptop!1 = PH!2
-         elseif(rank_ph.eq.4) then
-           pw_sfc_ptop!0 = PH!0
-           pw_sfc_ptop!1 = PH!2
-           pw_sfc_ptop!2 = PH!3
-         end if
-       end if
-       pw_sfc_ptop@description = "Precipitable Water"
-       return(pw_sfc_ptop)
+       ;rank_ph = dimsizes(dimsizes(PH))
+       ;if(any(rank_ph.eq.(/3,4/)).and..not.any(ismissing(getvardims(PH)))) then
+       ;  if(rank_ph.eq.3) then
+       ;    pw_sfc_ptop!0 = PH!1
+       ;    pw_sfc_ptop!1 = PH!2
+       ;  elseif(rank_ph.eq.4) then
+       ;    pw_sfc_ptop!0 = PH!0
+       ;    pw_sfc_ptop!1 = PH!2
+       ;    pw_sfc_ptop!2 = PH!3
+       ;  end if
+       ;end if
+       ;pw_sfc_ptop@description = "Precipitable Water"
+       return(pw)
   end if
 
 
@@ -1502,6 +1796,13 @@ begin
        geopt  = geopt + PH
        za     = wrf_user_unstagger(geopt,geopt@stagger)
        za     = za / 9.81  ; change to height
+       
+       ;; Added in 6.5.1 to support southern hemisphere
+       latvar = "XLAT" 
+       if(.not. isfilevar(nc_file,latvar)) then
+         latvar = "XLAT_M"
+       end if
+       lat    = _get_wrf_var(file_handle,latvar,time)
 
        nd = dimsizes(dimsizes(ua))
        if(nd.eq.3) then
@@ -1536,7 +1837,7 @@ begin
        end if
 
        print("Calculations are done with a top of " + top)
-       sreh = wrf_helicity(ua1, va1, za1, ter, top)
+       sreh = wrf_helicity_lat(ua1, va1, za1, ter, lat, top)
        return(sreh)
   end if
 
@@ -1561,7 +1862,7 @@ begin
        ua     = wrf_user_unstagger(u_in,u_in@stagger)
        va     = wrf_user_unstagger(v_in,v_in@stagger)
        mapfct = nc_file->MAPFAC_M(0,:,:)
-       zp     = ph + phb
+       zp     = (ph + phb) / 9.81
        dx     = nc_file@DX
        dy     = nc_file@DY
 
@@ -2077,6 +2378,101 @@ end
 
 ;--------------------------------------------------------------------------------
 
+undef("wrf_user_ll_to_xy")
+function wrf_user_ll_to_xu( file_handle, longitude:numeric, latitude:numeric, \
+                            opts_args:logical )
+                            
+; This is the same as wrf_user_ll_to_ij, but returns 0-based indexes
+
+begin
+;
+; As of NCL V6.0.0, wrf_user_ll_to_ij can now handle a file 
+; or a list of files.
+;
+  if(typeof(file_handle).eq."file") then
+    ISFILE = True
+    nc_file = file_handle
+  elseif(typeof(file_handle).eq."list") then
+    ISFILE = False
+    nc_file = file_handle[0]
+  else
+    print("wrf_user_ll_to_xy: Error: the first argument must be a file or a list of files opened with addfile or addfiles")
+    return
+  end if
+
+  opts = opts_args
+  useT  = get_res_value(opts,"useTime",0)
+  returnI= get_res_value(opts,"returnInt",True)
+
+  res = True
+  res@MAP_PROJ  = nc_file@MAP_PROJ
+  res@TRUELAT1  = nc_file@TRUELAT1
+  res@TRUELAT2  = nc_file@TRUELAT2
+  res@STAND_LON = nc_file@STAND_LON
+  res@DX        = nc_file@DX
+  res@DY        = nc_file@DY
+
+  if (res@MAP_PROJ .eq. 6) then
+    res@POLE_LAT  = nc_file@POLE_LAT
+    res@POLE_LON  = nc_file@POLE_LON
+    res@LATINC = (res@DY*360.)/2.0/3.141592653589793/6370000.
+    res@LONINC = (res@DX*360.)/2.0/3.141592653589793/6370000.
+  else
+    res@POLE_LAT = 90.0
+    res@POLE_LON =  0.0
+    res@LATINC = 0.0
+    res@LONINC = 0.0
+  end if
+
+  if(isfilevar(nc_file,"XLAT"))
+    if(ISFILE) then
+      XLAT  = nc_file->XLAT(useT,:,:)
+      XLONG = nc_file->XLONG(useT,:,:)
+    else
+      XLAT  = file_handle[useT]->XLAT
+      XLONG = file_handle[useT]->XLONG
+    end if
+  else
+    if(ISFILE) then
+      XLAT  = nc_file->XLAT_M(useT,:,:)
+      XLONG = nc_file->XLONG_M(useT,:,:)
+    else
+      XLAT  = file_handle[useT]->XLAT_M
+      XLONG = file_handle[useT]->XLONG_M
+    end if
+  end if
+
+
+  if(dimsizes(dimsizes(XLAT)).eq.2) then
+; Rank 2
+    res@REF_LAT = XLAT(0,0)
+    res@REF_LON = XLONG(0,0)
+  else
+; Rank 3
+    res@REF_LAT = XLAT(0,0,0)
+    res@REF_LON = XLONG(0,0,0)
+  end if
+  res@KNOWNI  = 1.0
+  res@KNOWNJ  = 1.0
+
+  loc = wrf_ll_to_ij (longitude, latitude, res)
+  loc = loc - 1
+
+  if ( returnI  ) then
+    loci = new(dimsizes(loc),integer)
+    ;loci@_FillValue = default_fillvalue("integer")   ; was -999
+    loci = tointeger(loc + .5)
+    loci!0 = loc!0
+    return(loci)
+  else
+    return(loc)
+  end if
+
+
+end
+
+;--------------------------------------------------------------------------------
+
 undef("wrf_user_ij_to_ll")
 function wrf_user_ij_to_ll( file_handle, i:numeric, j:numeric, \
                             opts_args:logical )
@@ -2152,6 +2548,93 @@ begin
   res@KNOWNJ  = 1.0
 
   loc = wrf_ij_to_ll (i,j,res)
+
+  return(loc)
+
+
+end
+
+;--------------------------------------------------------------------------------
+
+undef("wrf_user_xy_to_ll")
+function wrf_user_xy_to_ll( file_handle, x:numeric, y:numeric, \
+                            opts_args:logical )
+
+begin
+;
+; As of NCL V6.0.0, wrf_user_ll_to_ij can now handle a file 
+; or a list of files.
+;
+  if(typeof(file_handle).eq."file") then
+    ISFILE = True
+    nc_file = file_handle
+  elseif(typeof(file_handle).eq."list") then
+    ISFILE = False
+    nc_file = file_handle[0]
+  else
+    print("wrf_user_xy_to_ll: Error: the first argument must be a file or a list of files opened with addfile or addfiles")
+    return
+  end if
+
+  opts = opts_args
+  useT  = get_res_value(opts,"useTime",0)
+
+  res = True
+  res@MAP_PROJ  = nc_file@MAP_PROJ
+  res@TRUELAT1  = nc_file@TRUELAT1
+  res@TRUELAT2  = nc_file@TRUELAT2
+  res@STAND_LON = nc_file@STAND_LON
+  res@DX        = nc_file@DX
+  res@DY        = nc_file@DY
+
+  if (res@MAP_PROJ .eq. 6) then
+    res@POLE_LAT  = nc_file@POLE_LAT
+    res@POLE_LON  = nc_file@POLE_LON
+    res@LATINC = (res@DY*360.)/2.0/3.141592653589793/6370000.
+    res@LONINC = (res@DX*360.)/2.0/3.141592653589793/6370000.
+  else
+    res@POLE_LAT = 90.0
+    res@POLE_LON =  0.0
+    res@LATINC = 0.0
+    res@LONINC = 0.0
+  end if
+
+
+  if(isfilevar(nc_file,"XLAT")) then
+    if(ISFILE) then
+      XLAT  = nc_file->XLAT(useT,:,:)
+      XLONG = nc_file->XLONG(useT,:,:)
+    else
+      XLAT  = file_handle[useT]->XLAT
+      XLONG = file_handle[useT]->XLONG
+    end if
+  else
+    if(ISFILE) then
+      XLAT  = nc_file->XLAT_M(useT,:,:)
+      XLONG = nc_file->XLONG_M(useT,:,:)
+    else
+      XLAT  = file_handle[useT]->XLAT_M
+      XLONG = file_handle[useT]->XLONG_M
+    end if
+  end if
+
+  if(dimsizes(dimsizes(XLAT)).eq.2) then
+; Rank 2
+    res@REF_LAT = XLAT(0,0)
+    res@REF_LON = XLONG(0,0)
+  else
+; Rank 3
+    res@REF_LAT = XLAT(0,0,0)
+    res@REF_LON = XLONG(0,0,0)
+  end if
+  res@KNOWNI  = 1.0
+  res@KNOWNJ  = 1.0
+    
+  ; Convert to 1-based indexes for Fortran
+  new_x = x + 1
+  new_y = y + 1
+  
+  loc = wrf_ij_to_ll (new_x,new_y,res)
 
   return(loc)
 

@@ -15,7 +15,7 @@
 
 extern void NGCALLF(dcloudfrac2,DCLOUDFRAC2)(double *, double *,
 		                                     int *, double *, double *,
-		                                     double * double *,
+		                                     double *, double *,
 		                                     double *, double *, double *,
 		                                     int *, int *, int *);
 
