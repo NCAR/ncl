@@ -14,7 +14,7 @@ extern void NGCALLF(dcomputeseaprs,DCOMPUTESEAPRS)(int *,int *,int *,
                                                    double *,double *,
                                                    double *,double *,
                                                    double *,double *,
-												   int *, char *, int);
+												   int *, char *, size_t);
 
 extern void NGCALLF(dinterp3dz,DINTERP3DZ)(double *,double *,double *,
                                            double *,int *,int *, int*,
@@ -74,27 +74,40 @@ extern void NGCALLF(dlltoij,DLLTOIJ)(int *, double *, double *, double *,
                                      double *, double *, double *, double *, 
                                      double *, double *, double *, double *, 
                                      double *, double *, double *, double *, 
-                                     double *, int *, char *, int);
+                                     double *, int *, char *, size_t);
 
 extern void NGCALLF(dijtoll,DIJTOLL)(int *, double *, double *, double *, 
                                      double *, double *, double *, double *, 
                                      double *, double *, double *, double *, 
                                      double *, double *, double *, double *, 
-                                     double *, int *, char *, int);
+                                     double *, int *, char *, size_t);
 
 extern void NGCALLF(deqthecalc,DEQTHECALC)(double *, double *, double *,
                                            double *, int *, int *, int *);
 
 extern void NGCALLF(dcapecalc3d,DCAPECALC3D)(double *prs, double *tmk, 
                                              double *qvp, double *ght,
-                                             double *ter, double *sfp, 
-                                             double *cape, double *cin, 
+                                             double *ter, double *sfp,
+											 double *cape, double *cin,
+											 double *prsf, double *prs_new, double *tmk_new,
+											 double *qvp_new, double *ght_new,
                                              double *cmsg,
                                              int *miy, int *mjx, int *mkzh, 
-                                             int *i3dflag, int *ter_follow,
-                                             char *psafile,
-											 int *errstat, char *errmsg,
-											 int, int);
+                                             int *ter_follow,
+                                             char *psafile,int *errstat,
+											 char *errmsg, size_t, size_t);
+
+extern void NGCALLF(dcapecalc2d,DCAPECALC2D)(double *prs, double *tmk,
+                                             double *qvp, double *ght,
+                                             double *ter, double *sfp,
+											 double *cape, double *cin,
+											 double *prsf, double *prs_new, double *tmk_new,
+											 double *qvp_new, double *ght_new,
+                                             double *cmsg,
+                                             int *miy, int *mjx, int *mkzh,
+                                             int *ter_follow,
+                                             char *psafile,int *errstat,
+											 char *errmsg, size_t, size_t);
 
 extern void NGCALLF(dcalrelhl,DCALRELHL)(double *u, double *v, double *z,
                                          double *ter, double *lat, double *top,
@@ -129,7 +142,8 @@ extern void NGCALLF(plotfmt_rddata,PLOTFMT_RDDATA)(int *istatus,
 extern void NGCALLF(wetbulbcalc,WETBULBCALC)(double *prs,double *tmk, 
                                              double *qvp, double *twb,
                                              int *nx, int *ny,int *nz,
-					     char *,int);
+					                         char *psafile, int* errstat,
+											 char *errmsg, size_t, size_t);
 
 extern void NGCALLF(omgcalc,OMGCALC)(double *qvp, double *tmk, double *www,
                                      double *prs, double *omg, 
@@ -1515,8 +1529,6 @@ NhlErrorTypes wrf_slp_W( void )
   NclFree(tmp_t_sea_level);
   NclFree(tmp_t_surf);
   NclFree(tmp_level);
-
-  NclFree(errmsg);
 
 /*
  * Set up some attributes ("description" and "units") to return.
@@ -9420,14 +9432,6 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
  * NCARG_PSADILOOKUP is set to the location of this file.
  */
 
-/*
- * The wrf_cape_3d wrapper is for the case where I3DFLAG is set to
- * 1 in the Fortran rip_cape.f file. This wrapper is similar to
- * rip_cape_3d except it will flip the first four input arrays if
- * the pressure values are not decreasing. It will also multiple the
- * pressure values by 0.01 to convert from hPa to Pa.
- * 
- */
 NhlErrorTypes wrf_cape_3d_W( void )
 {
 /*
@@ -9441,44 +9445,35 @@ NhlErrorTypes wrf_cape_3d_W( void )
   double *tmp_z = NULL;
   double *tmp_zsfc = NULL;
   double *tmp_psfc = NULL;
-  double *tmp_p_orig = NULL;
-  double *tmp_t_orig = NULL;
-  double *tmp_q_orig = NULL;
-  double *tmp_z_orig = NULL;
+  double *prsf = NULL;
+  double *prs_new = NULL;
+  double *tmk_new = NULL;
+  double *qvp_new = NULL;
+  double *ght_new = NULL;
   int ndims_p, ndims_t, ndims_q, ndims_z, ndims_zsfc, ndims_psfc;
-  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
-  ng_size_t dsizes_t[NCL_MAX_DIMENSIONS];
-  ng_size_t dsizes_q[NCL_MAX_DIMENSIONS];
-  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
-  ng_size_t dsizes_zsfc[NCL_MAX_DIMENSIONS];
-  ng_size_t dsizes_psfc[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS], dsizes_t[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_q[NCL_MAX_DIMENSIONS], dsizes_z[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_zsfc[NCL_MAX_DIMENSIONS], dsizes_psfc[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p, type_t, type_q, type_z, type_zsfc, type_psfc;
 
 /*
  * Output array variables
  */
   void *cape;
-  double *tmp_cape_orig, *tmp_cin_orig, cmsg;
-  double *tmp_cape, *tmp_cin;
+  double *tmp_cape = NULL, cmsg;
+  double *tmp_cin = NULL;
   NclBasicDataTypes type_cape;
-  NclObjClass type_obj_cape;
   int ndims_cape;
-  NclScalar missing_cape;
   ng_size_t *dsizes_cape;
-
+  NclScalar missing_cape;
 /*
- * Variable for getting/setting dimension name info.
+ * File input variables.
  */
-  NclDimRec *dim_info = NULL;
-  NclDimRec *dim_info_t;
+  const char *path = NULL;
+  char psa_file[_NhlMAXFNAMELEN];
+  int errstat;
+  char *errmsg;
 
-/*
- * Variables for returning the output array with attributes and/or
- * dimension names attached.
- */
-  NclMultiDValData return_md;
-  NclVar tmp_var;
-  NclStackEntry return_data;
 /*
  * Declare various variables for random purposes.
  */
@@ -9487,16 +9482,33 @@ NhlErrorTypes wrf_cape_3d_W( void )
   ng_size_t mjx = 0;
   ng_size_t mkzh = 0;
   ng_size_t ntime = 0;
-  ng_size_t nz = 0;
   ng_size_t size_cape, size_output, size_zsfc;
-  int i3dflag=1, scalar_zsfc;
   ng_size_t index_cape, index_zsfc, index_cin;
-  int iter;
-  logical flip;
+  int scalar_zsfc;
+  int iter, ret;
   int imiy, imjx, imkzh;
-  char *psa_file;
-  int errstat;
-  char *errmsg;
+
+/*
+ * The default is to use $NCARG_ROOT/lib/ncarg/data/asc/psadilookup.dat
+ * for the input data file, unless PSADILOOKUP_PATH is set by the
+ * user, then it will try to use this path.
+ */
+  path = getenv("PSADILOOKUP_PATH");
+  if ((void *)path == (void *)NULL) {
+    path = _NGGetNCARGEnv("data");
+    if ((void *)path != (void *)NULL) {
+      strcpy(psa_file,path);
+      strcat(psa_file,_NhlPATHDELIMITER);
+      strcat(psa_file,"asc");
+      strcat(psa_file,_NhlPATHDELIMITER);
+      strcat(psa_file,"psadilookup.dat");
+    }
+  }
+  else {
+    strcpy(psa_file,path);
+    strcat(psa_file,_NhlPATHDELIMITER);
+    strcat(psa_file,"psadilookup.dat");
+  }
 
 /*
  * Retrieve parameters
@@ -9576,14 +9588,16 @@ NhlErrorTypes wrf_cape_3d_W( void )
           NULL,
           DONT_CARE);
   
-  if(*ter_follow) iter = 1;
-  else            iter = 0;
+  if(*ter_follow) {
+	  iter = 1;
+  } else {
+	  iter = 0;
+  }
 
 /*
- * Check the input dimension sizes. There are four possible cases
+ * Check the input dimension sizes. There are three possible cases
  * for the input dimension sizes:
  *
- *  - p,t,q,z (nz,time,lev,lat,lon) and psfc,zsfc (nz,time,lat,lon)
  *  - p,t,q,z (time,lev,lat,lon) and psfc,zsfc (time,lat,lon)
  *  - p,t,q,z (lev,lat,lon) and psfc,zsfc (lat,lon)
  *  - p,t,q,z (lev) and psfc,zsfc (scalars)
@@ -9592,8 +9606,8 @@ NhlErrorTypes wrf_cape_3d_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: The p, t, q, and z arrays must all have the same number of dimensions");
     return(NhlFATAL);
   }
-  if(ndims_p != 1 && ndims_p != 3 && ndims_p != 4 && ndims_p != 5) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: The p, t, q, and z arrays must be 1-, 3-, 4-, or 5-dimensional\n");
+  if(ndims_p != 1 && ndims_p != 3 && ndims_p != 4) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: The p, t, q, and z arrays must be 1-, 3-, or 4-dimensional\n");
     return(NhlFATAL);
   }
 /*
@@ -9627,40 +9641,30 @@ NhlErrorTypes wrf_cape_3d_W( void )
 /*
  * Get sizes of input arrays.
  */
-  if(ndims_p == 5) {
-    nz    = dsizes_p[0];       /* nz, serves as leftmost dimension */
-    ntime = dsizes_p[1];       /* time, also serves as leftmost dimension */
-    mkzh  = dsizes_p[2];       /* lev */
-    mjx   = dsizes_p[3];       /* lat */
-    miy   = dsizes_p[4];       /* lon */
-  }
-  else if(ndims_p == 4) {
-    nz    = 1;
-    ntime = dsizes_p[0];       /* time, serves as a leftmost dimension */
-    mkzh  = dsizes_p[1];       /* lev */
-    mjx   = dsizes_p[2];       /* lat */
-    miy   = dsizes_p[3];       /* lon */
+  if(ndims_p == 4) {
+    ntime = dsizes_p[0];          /* time, serves as a leftmost dimension */
+    mkzh  = dsizes_p[1];          /* lev */
+    mjx   = dsizes_p[2];          /* lat */
+    miy   = dsizes_p[3];          /* lon */
   }
   else if(ndims_p == 3) {
-    nz    = 1;
     ntime = 1;
-    mkzh  = dsizes_p[0];       /* lev */
-    mjx   = dsizes_p[1];       /* lat */
-    miy   = dsizes_p[2];       /* lon */
+    mkzh = dsizes_p[0];           /* lev */
+    mjx  = dsizes_p[1];           /* lat */
+    miy  = dsizes_p[2];           /* lon */
   }
   else if(ndims_p == 1) {
-    nz    = 1;
     ntime = 1;
-    mkzh  = dsizes_p[0];       /* lev */
-    mjx   = 1;                 /* lat */
-    miy   = 1;                 /* lon */
+    mkzh = dsizes_p[0];           /* lev */
+    mjx  = 1;                     /* lat */
+    miy  = 1;                     /* lon */
   }
 
 /*
  * Test input dimension sizes.
  */
   if((miy > INT_MAX) || (mjx > INT_MAX) || (mkzh > INT_MAX)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: one or more dimension sizes is greater than INT_MAX");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: one or more input dimension sizes is greater than INT_MAX");
     return(NhlFATAL);
   }
   imiy = (int) miy;
@@ -9670,21 +9674,14 @@ NhlErrorTypes wrf_cape_3d_W( void )
 /*
  * Check some more dimension sizes.
  */
-  if(ndims_p == 5) {
-    if(dsizes_psfc[0] != nz || dsizes_psfc[1] != ntime || 
-       dsizes_psfc[2] != mjx || dsizes_psfc[3] != miy) { 
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: If p,q,t,z are 4-dimensional (time x lev x lat x lon), psfc,zsfc must be 3-dimensional (time x lat x lon)");
-      return(NhlFATAL);
-    }
-  }
-  else if(ndims_p == 4) {
+  if(ndims_p == 4) {
     if(dsizes_psfc[0] != ntime || dsizes_psfc[1] != mjx || 
        dsizes_psfc[2] != miy) { 
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: If p,q,t,z are 4-dimensional (time x lev x lat x lon), psfc,zsfc must be 3-dimensional (time x lat x lon)");
       return(NhlFATAL);
     }
   }
-  else if(ndims_p == 3) {
+  if(ndims_p == 3) {
     if(dsizes_psfc[0] != mjx || dsizes_psfc[1] != miy) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: If p,q,t,z are 3-dimensional (time x lev x lat x lon), psfc,zsfc must be 2-dimensional (lat x lon)");
       return(NhlFATAL);
@@ -9694,8 +9691,6 @@ NhlErrorTypes wrf_cape_3d_W( void )
  * Calculate size of output array. The output array size depends on
  * the size of p,t,q,z:
  *
- *  - p,t,q,z (nz,time,lev,lat,lon) and psfc,zsfc (nz,time,lat,lon)
- *       output array: (2,nz,time,lev,lat,lon)
  *  - p,t,q,z (time,lev,lat,lon) and psfc,zsfc (time,lat,lon)
  *       output array: (2,time,lev,lat,lon)
  *  - p,t,q,z (lev,lat,lon) and psfc,zsfc (lat,lon)
@@ -9716,67 +9711,67 @@ NhlErrorTypes wrf_cape_3d_W( void )
   }
   size_zsfc   = mjx * miy;
   size_cape   = mkzh * size_zsfc;       /* Also size of cin array */
-  size_output = 2 * size_cape * ntime * nz;
+  size_output = 2 * size_cape * ntime;
 
 /* 
- * Allocate space for output arrays. We are allocating space for 
- * tmp_cape_orig and tmp_cin_orig even if the output will be double,
- * because we may also need to flip the values before we're done.
- *
- * The addition of missing values was added in V6.1.0.
+ * Allocate space for output arrays.  If any of the input is already double,
+ * then we don't need to allocate space for temporary arrays, because
+ * we'll just change the pointer into the void array appropriately.
  */
   if(type_p == NCL_double || type_t == NCL_double || type_q == NCL_double ||
      type_z == NCL_double) {
-    type_cape     = NCL_double;
-    type_obj_cape = nclTypedoubleClass;
+    type_cape = NCL_double;
     cape = (double *)calloc(size_output,sizeof(double));
     missing_cape.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
     cmsg = missing_cape.doubleval;
+    if(cape == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
   }
   else {
-    type_cape     = NCL_float;
-    type_obj_cape = nclTypefloatClass;
-    cape          = (float *)calloc(size_output,sizeof(float));
+    type_cape = NCL_float;
+    cape      = (float *)calloc(size_output,sizeof(float));
+    tmp_cape  = (double *)calloc(size_cape,sizeof(double));
+    tmp_cin   = (double *)calloc(size_cape,sizeof(double));
+    if(cape == NULL || tmp_cape == NULL || tmp_cin == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for output arrays");
+      return(NhlFATAL);
+    }
     missing_cape.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
     cmsg = (double)missing_cape.floatval;
   }
-  tmp_cape_orig = (double *)calloc(size_cape,sizeof(double));
-  tmp_cin_orig  = (double *)calloc(size_cape,sizeof(double));
-  if(cape == NULL || tmp_cape_orig == NULL || tmp_cin_orig == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for output arrays");
-    return(NhlFATAL);
-  }
 
 /*
- * Allocate memory for coercing input arrays to double, if necessary.
- * Force a copy of variable p, because we need to multiply it by 0.01,
- * and we don't want this to propagate back to the NCL script.
+ * Allocate memory for allocating input arrays to double, if necessary.
  */
-  tmp_p_orig = (double *)calloc(size_cape,sizeof(double));
-  if(tmp_p_orig == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for coercing input arrays to double");
-    return(NhlFATAL);
+  if(type_p != NCL_double) {
+    tmp_p = (double *)calloc(size_cape,sizeof(double));
+    if(tmp_p == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for coercing input arrays to double");
+      return(NhlFATAL);
+    }
   }
 
   if(type_t != NCL_double) {
-    tmp_t_orig = (double *)calloc(size_cape,sizeof(double));
-    if(tmp_t_orig == NULL) {
+    tmp_t = (double *)calloc(size_cape,sizeof(double));
+    if(tmp_t == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for coercing input arrays to double");
       return(NhlFATAL);
     }
   }
 
   if(type_q != NCL_double) {
-    tmp_q_orig = (double *)calloc(size_cape,sizeof(double));
-    if(tmp_q_orig == NULL) {
+    tmp_q = (double *)calloc(size_cape,sizeof(double));
+    if(tmp_q == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for coercing input arrays to double");
       return(NhlFATAL);
     }
   }
 
   if(type_z != NCL_double) {
-    tmp_z_orig = (double *)calloc(size_cape,sizeof(double));
-    if(tmp_z_orig == NULL) {
+    tmp_z = (double *)calloc(size_cape,sizeof(double));
+    if(tmp_z == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for coercing input arrays to double");
       return(NhlFATAL);
     }
@@ -9798,97 +9793,89 @@ NhlErrorTypes wrf_cape_3d_W( void )
     }
   }
 
-/*
- * We need to coerce the pressure array once outside the loop to
- * check if the values are in ascending order.
- *
- * If not, we need to flip the leftmost dimension (p = p(::-1,:,:) in
- * NCL-ese), *and* flip the other 3 input arrays in the same fashion.
- */
-  coerce_subset_input_double(p,tmp_p_orig,0,type_p,size_cape,0,NULL,NULL);
-
-  if(tmp_p_orig[0] > tmp_p_orig[(mkzh-1)*size_zsfc] ) {
-    flip     = True;
-    tmp_p    = (double *)calloc(size_cape,sizeof(double));
-    tmp_t    = (double *)calloc(size_cape,sizeof(double));
-    tmp_q    = (double *)calloc(size_cape,sizeof(double));
-    tmp_z    = (double *)calloc(size_cape,sizeof(double));
-    tmp_cape = (double *)calloc(size_cape,sizeof(double));
-    tmp_cin  = (double *)calloc(size_cape,sizeof(double));
-
-    if(tmp_p == NULL || tmp_t == NULL || tmp_q == NULL || tmp_z == NULL ||
-       tmp_cape == NULL || tmp_cin == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for flipping arrays");
-      return(NhlFATAL);
-    }
-  }
-  else  {
-    flip     = False;
-    tmp_p    = tmp_p_orig;
-    tmp_t    = tmp_t_orig;
-    tmp_q    = tmp_q_orig;
-    tmp_z    = tmp_z_orig;
-    tmp_cape = tmp_cape_orig;
-    tmp_cin  = tmp_cin_orig;
-  }
-
-/*
- * Get path to psadilookup.dat file required by this routine. 
- */
-  psa_file = get_psa_file();
-
-/* Allocate space for errmsg*/
+  /* Allocate space for errmsg*/
   errmsg = (char *) calloc(ERRLEN, sizeof(char));
+  if(errmsg == NULL) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for error string");
+      return(NhlFATAL);
+  }
+
+  /* Allocate space for the work arrays */
+  prsf = (double *) calloc(size_cape, sizeof(double));
+  if(prsf == NULL) {
+  	 NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for prsf");
+     return(NhlFATAL);
+  }
+
+  prs_new = (double *) calloc(size_cape, sizeof(double));
+  if(prs_new == NULL) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for prs_new");
+      return(NhlFATAL);
+  }
+
+  tmk_new = (double *) calloc(size_cape, sizeof(double));
+  if(tmk_new == NULL) {
+  	  NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for tmk_new");
+      return(NhlFATAL);
+  }
+
+  qvp_new = (double *) calloc(size_cape, sizeof(double));
+  if(qvp_new == NULL) {
+  	  NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for qvp_new");
+      return(NhlFATAL);
+  }
+
+  ght_new = (double *) calloc(size_cape, sizeof(double));
+  if(ght_new == NULL) {
+  	  NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for ght_new");
+      return(NhlFATAL);
+  }
 
 /*
- * Loop through time,nz and call the Fortran routine.
+ * Call the Fortran routine.
  */ 
   index_cape = index_zsfc = 0;
-  index_cin  = ntime * nz * size_cape;    /* Second half of output array */
+  index_cin = ntime * size_cape;    /* Second half of output array */
 
-  for(i = 0; i < ntime*nz; i++) {
+  for(i = 0; i < ntime; i++) {
 /*
  * Coerce subset of input arrays to double if necessary.
  */
-    if(i > 0) {
-      coerce_subset_input_double(p,tmp_p_orig,index_cape,type_p,
-                                 size_cape,0,NULL,NULL);
-    }
-/*
- * Multiple pressure values by 0.01 to convert from Pa to hPa.
- * The assumption is that pressure values come in as Pa.
- */
-    convert_to_hPa(tmp_p_orig,size_cape);
-
-    if(type_t != NCL_double) {
-      coerce_subset_input_double(t,tmp_t_orig,index_cape,type_t,
-                                 size_cape,0,NULL,NULL);
+    if(type_p != NCL_double) {
+      coerce_subset_input_double(p,tmp_p,index_cape,type_p,size_cape,0,NULL,NULL);
     }
     else {
 /*
- * Point tmp_t_orig to appropriate location in t.
+ * Point tmp_p to appropriate location in p.
  */
-      tmp_t_orig = &((double*)t)[index_cape];
+      tmp_p = &((double*)p)[index_cape];
+    }
+    if(type_t != NCL_double) {
+      coerce_subset_input_double(t,tmp_t,index_cape,type_t,size_cape,0,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_t to appropriate location in t.
+ */
+      tmp_t = &((double*)t)[index_cape];
     }
     if(type_q != NCL_double) {
-      coerce_subset_input_double(q,tmp_q_orig,index_cape,type_q,
-                                 size_cape,0,NULL,NULL);
+      coerce_subset_input_double(q,tmp_q,index_cape,type_q,size_cape,0,NULL,NULL);
     }
     else {
 /*
- * Point tmp_q_orig to appropriate location in q.
+ * Point tmp_q to appropriate location in q.
  */
-      tmp_q_orig = &((double*)q)[index_cape];
+      tmp_q = &((double*)q)[index_cape];
     }
     if(type_z != NCL_double) {
-      coerce_subset_input_double(z,tmp_z_orig,index_cape,type_z,
-                                 size_cape,0,NULL,NULL);
+      coerce_subset_input_double(z,tmp_z,index_cape,type_z,size_cape,0,NULL,NULL);
     }
     else {
 /*
- * Point tmp_z_orig to appropriate location in z.
+ * Point tmp_z to appropriate location in z.
  */
-      tmp_z_orig = &((double*)z)[index_cape];
+      tmp_z = &((double*)z)[index_cape];
     }
 
     if(type_psfc != NCL_double) {
@@ -9913,55 +9900,44 @@ NhlErrorTypes wrf_cape_3d_W( void )
     }
     
 /*
- * If the pressure values need to be flipped, we also need to flip
- * the z, q, and t values in the same fashion.
+ * Point tmp_cape and tmp_cin to appropriate location in cape
+ * if necessary
  */
-    if(flip) {
-      flip_it(tmp_p_orig,tmp_p,mkzh,size_zsfc);
-      flip_it(tmp_t_orig,tmp_t,mkzh,size_zsfc);
-      flip_it(tmp_q_orig,tmp_q,mkzh,size_zsfc);
-      flip_it(tmp_z_orig,tmp_z,mkzh,size_zsfc);
-    }
-    else {
-      tmp_p = tmp_p_orig;
-      tmp_t = tmp_t_orig;
-      tmp_q = tmp_q_orig;
-      tmp_z = tmp_z_orig;
+    if(type_cape == NCL_double) {
+      tmp_cape = &((double*)cape)[index_cape];
+      tmp_cin  = &((double*)cape)[index_cin];
     }
 
+
+   errstat = 0;
+   errmsg = "";
 /*
  * Call Fortran routine.
+ * DCAPECALC3D(prs,tmk,qvp,ght,ter,sfp,cape,cin,&
+            prsf, prs_new, tmk_new, qvp_new, ght_new,&
+            cmsg,mix,mjy,mkzh,ter_follow,&
+            psafile, errstat, errmsg)
  */
     NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
-                                     tmp_psfc, tmp_cape_orig, tmp_cin_orig,
-                                     &cmsg,&imiy, &imjx, &imkzh, &i3dflag,
-                                     &iter,psa_file,&errstat,errmsg,
-									 strlen(psa_file),ERRLEN);
+                                     tmp_psfc, tmp_cape, tmp_cin,
+									 prsf, prs_new, tmk_new, qvp_new, ght_new,
+									 &cmsg, &imiy, &imjx, &imkzh, &iter,
+                                     psa_file,&errstat,errmsg,
+									 strlen(psa_file), (size_t) ERRLEN);
 
 /* Terminate if there was an error */
-    if (errstat != 0) {
-    	fprintf(stderr, errmsg);
-    	exit(errstat);
-    }
+	if (errstat != 0) {
+		fprintf(stderr, errmsg);
+		exit(errstat);
+	}
 
-/*
- * If we flipped arrays before going into the Fortran routine, we need
- * to flip the output values as well.
- */
-    if(flip) {
-      flip_it(tmp_cape_orig,tmp_cape,mkzh,size_zsfc);
-      flip_it(tmp_cin_orig,tmp_cin,mkzh,size_zsfc);
-    }
-    else {
-      tmp_cape = tmp_cape_orig;
-      tmp_cin  = tmp_cin_orig;
-    }
 /*
  * If the output is to be float, then do the coercion here.
  */
-    coerce_output_float_or_double(cape,tmp_cape,type_cape,size_cape,index_cape);
-    coerce_output_float_or_double(cape,tmp_cin,type_cape,size_cape,index_cin);
-
+    if(type_cape == NCL_float) {
+      coerce_output_float_only(cape,tmp_cape,size_cape,index_cape);
+      coerce_output_float_only(cape,tmp_cin,size_cape,index_cin);
+    }
 /*
  * Implement the pointers into the arrays.
  */
@@ -9972,100 +9948,35 @@ NhlErrorTypes wrf_cape_3d_W( void )
 /*
  * Free memory.
  */
-  NclFree(tmp_p_orig);
-  NclFree(tmp_cape_orig);
-  NclFree(tmp_cin_orig);
-  if(type_t != NCL_double) NclFree(tmp_t_orig);
-  if(type_q != NCL_double) NclFree(tmp_q_orig);
-  if(type_z != NCL_double) NclFree(tmp_z_orig);
+  if(type_p != NCL_double) NclFree(tmp_p);
+  if(type_t != NCL_double) NclFree(tmp_t);
+  if(type_q != NCL_double) NclFree(tmp_q);
+  if(type_z != NCL_double) NclFree(tmp_z);
   if(type_zsfc != NCL_double) NclFree(tmp_zsfc);
   if(type_psfc != NCL_double) NclFree(tmp_psfc);
-  if(flip) {
-    NclFree(tmp_p);
-    NclFree(tmp_t);
-    NclFree(tmp_q);
-    NclFree(tmp_z);
-    NclFree(tmp_cape);
-    NclFree(tmp_cin);
-  }
-  NclFree(psa_file);
-  NclFree(errmsg);
+  if(type_cape != NCL_double) NclFree(tmp_cape);
+  if(type_cape != NCL_double) NclFree(tmp_cin);
+  NclFree(prsf);
+  NclFree(prs_new);
+  NclFree(tmk_new);
+  NclFree(qvp_new);
+  NclFree(ght_new);
 
 /*
- * Get dimension info to see if we have named dimensions.
- * This will be used for return variable.
+ * Set up variable to return.
  */
-  dim_info_t = get_wrf_dim_info(1,7,ndims_t,dsizes_t);
-  if(dim_info_t != NULL) {
-    dim_info = malloc(sizeof(NclDimRec)*ndims_cape);
-    if(dim_info == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for holding dimension information");
-      return(NhlFATAL);
-    }
-    for(i = 0; i < ndims_cape; i++ ) {
-      dim_info[i].dim_num  = i;
-      dim_info[i].dim_size = dsizes_cape[i];
-      if(i != 0) dim_info[i].dim_quark = dim_info_t[i-1].dim_quark;
-      else       dim_info[0].dim_quark = NrmStringToQuark("cape_cin");
-    }
-  }
-
-
-/*
- * Set up return value.
- */
-  return_md = _NclCreateVal(
-                            NULL,
-                            NULL,
-                            Ncl_MultiDValData,
-                            0,
-                            (void*)cape,
-                            &missing_cape,
-                            ndims_cape,
-                            dsizes_cape,
-                            TEMPORARY,
-                            NULL,
-                            type_obj_cape
-                            );
-  tmp_var = _NclVarCreate(
-                          NULL,
-                          NULL,
-                          Ncl_Var,
-                          0,
-                          NULL,
-                          return_md,
-                          dim_info,
-                          -1,
-                          NULL,
-                          RETURNVAR,
-                          NULL,
-                          TEMPORARY
-                          );
-
+  ret = NclReturnValue(cape,ndims_cape,dsizes_cape,&missing_cape,type_cape,0);
   NclFree(dsizes_cape);
-  if(dim_info   != NULL) NclFree(dim_info);
-  NclFree(dim_info_t);
-
-/*
- * Return output grid and attributes to NCL.
- */
-  return_data.kind = NclStk_VAR;
-  return_data.u.data_var = tmp_var;
-  _NclPlaceReturn(return_data);
-  return(NhlNOERROR);
+  return(ret);
 }
 
 
+
+
 /*
- * The wrf_cape_2d wrapper is for the case where I3DFLAG is set to
- * 0 in the Fortran rip_cape.f file.  In this case, 4 2D arrays
+ * In this case, 4 2D arrays
  * are returned: cape, cin, lcl, and lfc, but they are all returned 
  * in one big array whose leftmost dimension is 4:
- *
- * This wrapper is similar to rip_cape_2d except it will flip the first
- * four input arrays if the pressure values are not decreasing. 
- * It will also multiple the pressure values by 0.01 to convert 
- * from hPa to Pa.
  *
  *   index 0 = cape
  *   index 1 = cin
@@ -10085,43 +9996,35 @@ NhlErrorTypes wrf_cape_2d_W( void )
   double *tmp_z = NULL;
   double *tmp_zsfc = NULL;
   double *tmp_psfc = NULL;
-  double *tmp_p_orig = NULL;
-  double *tmp_t_orig = NULL;
-  double *tmp_q_orig = NULL;
-  double *tmp_z_orig = NULL;
+  double *prsf = NULL;
+  double *prs_new = NULL;
+  double *tmk_new = NULL;
+  double *qvp_new = NULL;
+  double *ght_new = NULL;
   int ndims_p, ndims_t, ndims_q, ndims_z, ndims_zsfc, ndims_psfc;
-  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS];
-  ng_size_t dsizes_t[NCL_MAX_DIMENSIONS];
-  ng_size_t dsizes_q[NCL_MAX_DIMENSIONS];
-  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
-  ng_size_t dsizes_zsfc[NCL_MAX_DIMENSIONS];
-  ng_size_t dsizes_psfc[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_p[NCL_MAX_DIMENSIONS], dsizes_t[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_q[NCL_MAX_DIMENSIONS], dsizes_z[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_zsfc[NCL_MAX_DIMENSIONS], dsizes_psfc[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p, type_t, type_q, type_z, type_zsfc, type_psfc;
 
 /*
  * Output array variables
  */
   void *cape;
-  double *tmp_cape, *tmp_cin, cmsg;
+  double *tmp_cape = NULL, cmsg;
+  double *tmp_cin = NULL;
   NclBasicDataTypes type_cape;
-  NclObjClass type_obj_cape;
   int ndims_cape = 0;
   NclScalar missing_cape;
   ng_size_t *dsizes_cape;
-
 /*
- * Variable for getting/setting dimension name info.
+ * File input variables.
  */
-  NclDimRec *dim_info = NULL;
-  NclDimRec *dim_info_t;
+  const char *path = NULL;
+  char psa_file[_NhlMAXFNAMELEN];
+  int errstat;
+  char *errmsg;
 
-/*
- * Variables for returning the output array with attributes and/or
- * dimension names attached.
- */
-  NclMultiDValData return_md;
-  NclVar tmp_var;
-  NclStackEntry return_data;
 /*
  * Declare various variables for random purposes.
  */
@@ -10130,17 +10033,35 @@ NhlErrorTypes wrf_cape_2d_W( void )
   ng_size_t mjx = 0;
   ng_size_t mkzh = 0;
   ng_size_t ntime = 0;
-  ng_size_t nz = 0;
   ng_size_t size_cape, size_output, size_zsfc;
   ng_size_t size_left_zsfc;
   ng_size_t index_cape, index_zsfc;
   ng_size_t index_output_cape, index_output_cin, index_output_lcl;
   ng_size_t index_output_lfc, mkzh0_index, mkzh1_index, mkzh2_index;
-  int imiy, imjx, imkzh, iter, i3dflag=0;
-  char *psa_file;
-  logical flip;
-  int errstat;
-  char* errmsg;
+  int iter, ret;
+  int imiy, imjx, imkzh;
+
+/*
+ * The default is to use $NCARG_ROOT/lib/ncarg/data/asc/psadilookup.dat
+ * for the input data file, unless PSADILOOKUP_PATH is set by the
+ * user, then it will try to use this path.
+ */
+  path = getenv("PSADILOOKUP_PATH");
+  if ((void *)path == (void *)NULL) {
+    path = _NGGetNCARGEnv("data");
+    if ((void *)path != (void *)NULL) {
+      strcpy(psa_file,path);
+      strcat(psa_file,_NhlPATHDELIMITER);
+      strcat(psa_file,"asc");
+      strcat(psa_file,_NhlPATHDELIMITER);
+      strcat(psa_file,"psadilookup.dat");
+    }
+  }
+  else {
+    strcpy(psa_file,path);
+    strcat(psa_file,_NhlPATHDELIMITER);
+    strcat(psa_file,"psadilookup.dat");
+  }
 
 /*
  * Retrieve parameters
@@ -10220,15 +10141,16 @@ NhlErrorTypes wrf_cape_2d_W( void )
           NULL,
           DONT_CARE);
   
-  if(*ter_follow) iter = 1;
-  else            iter = 0;
-
+  if(*ter_follow) {
+	  iter = 1;
+  } else {
+	  iter = 0;
+  }
 
 /*
- * Check the input dimension sizes. There are three possible cases
+ * Check the input dimension sizes. There are two possible cases
  * for the input dimension sizes:
  *
- *  - p,t,q,z (nz,time,lev,lat,lon) and psfc,zsfc (nz,time,lat,lon)
  *  - p,t,q,z (time,lev,lat,lon) and psfc,zsfc (time,lat,lon)
  *  - p,t,q,z (lev,lat,lon) and psfc,zsfc (lat,lon)
  */
@@ -10236,8 +10158,8 @@ NhlErrorTypes wrf_cape_2d_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: The p, t, q, and z arrays must all have the same number of dimensions");
     return(NhlFATAL);
   }
-  if(ndims_p != 3 && ndims_p != 4 && ndims_p != 5) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: The p, t, q, and z arrays must be 3-, 4- or 5-dimensional\n");
+  if(ndims_p != 3 && ndims_p != 4) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: The p, t, q, and z arrays must be 3 or 4-dimensional\n");
     return(NhlFATAL);
   }
 /*
@@ -10265,32 +10187,14 @@ NhlErrorTypes wrf_cape_2d_W( void )
       return(NhlFATAL);
     }
   }
-  if(ndims_p == 5) {
+  if(ndims_p == 4) {
 /*
  * Store dimension sizes.
  */
-    nz    = dsizes_p[0];        /* nz */
-    ntime = dsizes_p[1];        /* time */
-    mkzh  = dsizes_p[2];        /* lev */
-    mjx   = dsizes_p[3];        /* lat */
-    miy   = dsizes_p[4];        /* lon */
-    ndims_cape = 5;
-    if(dsizes_psfc[0] != nz || dsizes_psfc[1] != ntime || 
-       dsizes_psfc[2] != mjx || dsizes_psfc[3] != miy) { 
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: If p,q,t,z are 5-dimensional (nz x time x lev x lat x lon), psfc,zsfc must be 4-dimensional (nz x time x lat x lon)");
-      return(NhlFATAL);
-
-    }
-  }
-  else if(ndims_p == 4) {
-/*
- * Store dimension sizes.
- */
-    nz    = 1;
-    ntime = dsizes_p[0];        /* time */
-    mkzh  = dsizes_p[1];        /* lev */
-    mjx   = dsizes_p[2];        /* lat */
-    miy   = dsizes_p[3];        /* lon */
+    ntime = dsizes_p[0];       /* time */
+    mkzh = dsizes_p[1];        /* lev */
+    mjx  = dsizes_p[2];        /* lat */
+    miy  = dsizes_p[3];        /* lon */
     ndims_cape = 4;
     if(dsizes_psfc[0] != ntime || dsizes_psfc[1] != mjx ||
        dsizes_psfc[2] != miy) { 
@@ -10303,7 +10207,6 @@ NhlErrorTypes wrf_cape_2d_W( void )
 /*
  * Store dimension sizes.
  */
-    nz    = 1;
     ntime = 1;
     mkzh = dsizes_p[0];           /* lev */
     mjx  = dsizes_p[1];           /* lat */
@@ -10327,20 +10230,17 @@ NhlErrorTypes wrf_cape_2d_W( void )
  * Test input dimension sizes.
  */
   if((miy > INT_MAX) || (mjx > INT_MAX) || (mkzh > INT_MAX)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: one or more dimension sizes is greater than INT_MAX");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: one or more input dimension sizes is greater than INT_MAX");
     return(NhlFATAL);
   }
   imiy = (int) miy;
   imjx = (int) mjx;
   imkzh = (int) mkzh;
 
-
 /*
  * Calculate size of output array. The output array size depends on
  * the size of p,t,q,z:
  *
- *  - p,t,q,z (nz,time,lev,lat,lon) and psfc,zsfc (nz,time,lat,lon)
- *       output array: (4,nz,time,lat,lon)
  *  - p,t,q,z (time,lev,lat,lon) and psfc,zsfc (time,lat,lon)
  *       output array: (4,time,lat,lon)
  *  - p,t,q,z (lev,lat,lon) and psfc,zsfc (lat,lon)
@@ -10352,32 +10252,18 @@ NhlErrorTypes wrf_cape_2d_W( void )
     return(NhlFATAL);
   }
 
+  dsizes_cape[0]            = 4;    /* To hold the 4 different variables. */
                                     /* 0=cape, 1=cin, 2=lcl, 3=lfc */
-  if(ndims_cape == 5) {
-    dsizes_cape[0] = 4;    /* To hold the 4 different variables. */
-    dsizes_cape[1] = nz;
-    dsizes_cape[2] = ntime;
-    dsizes_cape[3] = mjx;
-    dsizes_cape[4] = miy;
-  }
-  else if(ndims_cape == 4) {
-    dsizes_cape[0] = 4;    /* To hold the 4 different variables. */
-    dsizes_cape[1] = ntime;
-    dsizes_cape[2] = mjx;
-    dsizes_cape[3] = miy;
-  }
-  else if(ndims_cape == 3) {
-    dsizes_cape[0] = 4;    /* To hold the 4 different variables. */
-    dsizes_cape[1] = mjx;
-    dsizes_cape[2] = miy;
-  }
+  dsizes_cape[ndims_cape-1] = miy;
+  dsizes_cape[ndims_cape-2] = mjx;
+  if(ndims_cape == 4) dsizes_cape[1] = ntime;
 
   size_zsfc   = mjx * miy;
   size_cape   = mkzh * size_zsfc;
   mkzh0_index = (mkzh-1) * size_zsfc;    /* Indexes into cin array for   */
   mkzh1_index = (mkzh-2) * size_zsfc;    /* returning cin, lcl, and lfc  */
   mkzh2_index = (mkzh-3) * size_zsfc;    /* respectively. */
-  size_left_zsfc = size_zsfc * ntime * nz;
+  size_left_zsfc = size_zsfc * ntime;
   size_output = 4 * size_left_zsfc;
 
 /* 
@@ -10389,16 +10275,14 @@ NhlErrorTypes wrf_cape_2d_W( void )
  */
   if(type_p == NCL_double || type_t == NCL_double || type_q == NCL_double ||
      type_z == NCL_double) {
-    type_cape     = NCL_double;
-    type_obj_cape = nclTypedoubleClass;
-    cape          = (double *)calloc(size_output,sizeof(double));
+    type_cape = NCL_double;
+    cape      = (double *)calloc(size_output,sizeof(double));
     missing_cape.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
     cmsg = missing_cape.doubleval;
   }
   else {
-    type_cape     = NCL_float;
-    type_obj_cape = nclTypefloatClass;
-    cape          = (float *)calloc(size_output,sizeof(float));
+    type_cape = NCL_float;
+    cape      = (float *)calloc(size_output,sizeof(float));
     missing_cape.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
     cmsg = (double)missing_cape.floatval;
   }
@@ -10410,36 +10294,35 @@ NhlErrorTypes wrf_cape_2d_W( void )
   }
 
 /*
- * Allocate memory for coercing input arrays to double, if necessary.
- *
- * Force a copy of variable p, because we need to multiply it by 0.01,
- * and we don't want this to propagate back to the NCL script.
+ * Allocate memory for allocating input arrays to double, if necessary.
  */
-  tmp_p_orig = (double *)calloc(size_cape,sizeof(double));
-  if(tmp_p_orig == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: Unable to allocate memory for coercing input arrays to double");
-    return(NhlFATAL);
+  if(type_p != NCL_double) {
+    tmp_p = (double *)calloc(size_cape,sizeof(double));
+    if(tmp_p == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: Unable to allocate memory for coercing input arrays to double");
+      return(NhlFATAL);
+    }
   }
 
   if(type_t != NCL_double) {
-    tmp_t_orig = (double *)calloc(size_cape,sizeof(double));
-    if(tmp_t_orig == NULL) {
+    tmp_t = (double *)calloc(size_cape,sizeof(double));
+    if(tmp_t == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: Unable to allocate memory for coercing input arrays to double");
       return(NhlFATAL);
     }
   }
 
   if(type_q != NCL_double) {
-    tmp_q_orig = (double *)calloc(size_cape,sizeof(double));
-    if(tmp_q_orig == NULL) {
+    tmp_q = (double *)calloc(size_cape,sizeof(double));
+    if(tmp_q == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: Unable to allocate memory for coercing input arrays to double");
       return(NhlFATAL);
     }
   }
 
   if(type_z != NCL_double) {
-    tmp_z_orig = (double *)calloc(size_cape,sizeof(double));
-    if(tmp_z_orig == NULL) {
+    tmp_z = (double *)calloc(size_cape,sizeof(double));
+    if(tmp_z == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: Unable to allocate memory for coercing input arrays to double");
       return(NhlFATAL);
     }
@@ -10461,44 +10344,47 @@ NhlErrorTypes wrf_cape_2d_W( void )
     }
   }
 
-/*
- * We need to coerce the pressure array once outside the loop to
- * check if the values are in ascending order.
- *
- * If not, we need to flip the leftmost dimension (p = p(::-1,:,:) in
- * NCL-ese), *and* flip the other 3 input arrays in the same fashion.
- */
-  coerce_subset_input_double(p,tmp_p_orig,0,type_p,size_cape,0,NULL,NULL);
-
-  if(tmp_p_orig[0] > tmp_p_orig[(mkzh-1)*size_zsfc] ) {
-    flip  = True;
-    tmp_p = (double *)calloc(size_cape,sizeof(double));
-    tmp_t = (double *)calloc(size_cape,sizeof(double));
-    tmp_q = (double *)calloc(size_cape,sizeof(double));
-    tmp_z = (double *)calloc(size_cape,sizeof(double));
-
-    if(tmp_p == NULL || tmp_t == NULL || tmp_q == NULL || tmp_z == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: Unable to allocate memory for flipping arrays");
-      return(NhlFATAL);
-    }
-  }
-  else  {
-    flip  = False;
-    tmp_p = tmp_p_orig;
-    tmp_t = tmp_t_orig;
-    tmp_q = tmp_q_orig;
-    tmp_z = tmp_z_orig;
-  }
-/*
- * Get path to psadilookup.dat file required by this routine. 
- */
-  psa_file = get_psa_file();
-
   /* Allocate space for errmsg*/
+
   errmsg = (char *) calloc(ERRLEN, sizeof(char));
+  if(errmsg == NULL) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: Unable to allocate memory for error string");
+	  return(NhlFATAL);
+  }
+
+  /* Allocate space for the work arrays */
+  prsf = (double *) calloc(size_cape, sizeof(double));
+  if(prsf == NULL) {
+  	 NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: Unable to allocate memory for prsf");
+  	 return(NhlFATAL);
+  }
+
+  prs_new = (double *) calloc(size_cape, sizeof(double));
+  if(prs_new == NULL) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: Unable to allocate memory for prs_new");
+	  return(NhlFATAL);
+  }
+
+  tmk_new = (double *) calloc(size_cape, sizeof(double));
+  if(tmk_new == NULL) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: Unable to allocate memory for tmk_new");
+	  return(NhlFATAL);
+  }
+
+  qvp_new = (double *) calloc(size_cape, sizeof(double));
+  if(qvp_new == NULL) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: Unable to allocate memory for qvp_new");
+	  return(NhlFATAL);
+  }
+
+  ght_new = (double *) calloc(size_cape, sizeof(double));
+  if(ght_new == NULL) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: Unable to allocate memory for ght_new");
+	  return(NhlFATAL);
+  }
 
 /*
- * Loop through time,nz and call the Fortran routine.
+ * Call the Fortran routine.
  */ 
   index_cape        = index_zsfc = 0;
   index_output_cape = 0;
@@ -10506,49 +10392,45 @@ NhlErrorTypes wrf_cape_2d_W( void )
   index_output_lcl  = 2 * size_left_zsfc;
   index_output_lfc  = 3 * size_left_zsfc;
 
-  for(i = 0; i < ntime*nz; i++) {
+  for(i = 0; i < ntime; i++) {
 /*
  * Coerce subset of input arrays to double if necessary.
  */
-    if(i > 0) {
-      coerce_subset_input_double(p,tmp_p_orig,index_cape,type_p,
-                                 size_cape,0,NULL,NULL);
-    }
-/*
- * Multiple pressure values by 0.01 to convert from Pa to hPa.
- * The assumption is that pressure values come in as Pa.
- */
-    convert_to_hPa(tmp_p_orig,size_cape);
-
-    if(type_t != NCL_double) {
-      coerce_subset_input_double(t,tmp_t_orig,index_cape,type_t,
-                                 size_cape,0,NULL,NULL);
+    if(type_p != NCL_double) {
+      coerce_subset_input_double(p,tmp_p,index_cape,type_p,size_cape,0,NULL,NULL);
     }
     else {
 /*
- * Point tmp_t_orig to appropriate location in t.
+ * Point tmp_p to appropriate location in p.
  */
-      tmp_t_orig = &((double*)t)[index_cape];
+      tmp_p = &((double*)p)[index_cape];
+    }
+    if(type_t != NCL_double) {
+      coerce_subset_input_double(t,tmp_t,index_cape,type_t,size_cape,0,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_t to appropriate location in t.
+ */
+      tmp_t = &((double*)t)[index_cape];
     }
     if(type_q != NCL_double) {
-      coerce_subset_input_double(q,tmp_q_orig,index_cape,type_q,
-                                 size_cape,0,NULL,NULL);
+      coerce_subset_input_double(q,tmp_q,index_cape,type_q,size_cape,0,NULL,NULL);
     }
     else {
 /*
- * Point tmp_q_orig to appropriate location in q.
+ * Point tmp_q to appropriate location in q.
  */
-      tmp_q_orig = &((double*)q)[index_cape];
+      tmp_q = &((double*)q)[index_cape];
     }
     if(type_z != NCL_double) {
-      coerce_subset_input_double(z,tmp_z_orig,index_cape,type_z,
-                                 size_cape,0,NULL,NULL);
+      coerce_subset_input_double(z,tmp_z,index_cape,type_z,size_cape,0,NULL,NULL);
     }
     else {
 /*
- * Point tmp_z_orig to appropriate location in z.
+ * Point tmp_z to appropriate location in z.
  */
-      tmp_z_orig = &((double*)z)[index_cape];
+      tmp_z = &((double*)z)[index_cape];
     }
 
     if(type_psfc != NCL_double) {
@@ -10571,44 +10453,27 @@ NhlErrorTypes wrf_cape_2d_W( void )
  */
       tmp_zsfc = &((double*)zsfc)[index_zsfc];
     }
-    
-/*
- * If the pressure values need to be flipped, we also need to flip
- * the z, q, and t values in the same fashion.
- */
-    if(flip) {
-      flip_it(tmp_p_orig,tmp_p,mkzh,size_zsfc);
-      flip_it(tmp_t_orig,tmp_t,mkzh,size_zsfc);
-      flip_it(tmp_q_orig,tmp_q,mkzh,size_zsfc);
-      flip_it(tmp_z_orig,tmp_z,mkzh,size_zsfc);
-    }
-    else {
-      tmp_p = tmp_p_orig;
-      tmp_t = tmp_t_orig;
-      tmp_q = tmp_q_orig;
-      tmp_z = tmp_z_orig;
-    }
 
-    errstat = 0;
-    errmsg = "";
 /*
  * Call Fortran routine.
  */
-    NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
-                                     tmp_psfc, tmp_cape, tmp_cin, &cmsg,
-                                     &imiy, &imjx, &imkzh, &i3dflag, &iter,
-                                     psa_file,&errstat,errmsg,strlen(psa_file),
-									 ERRLEN);
+    errstat = 0;
+    errmsg = "";
 
-    /* Terminate if there was an error */
-    if (errstat != 0) {
-    	fprintf(stderr, errmsg);
-    	exit(errstat);
-    }
+    NGCALLF(dcapecalc2d,DCAPECALC2D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
+                                     tmp_psfc, tmp_cape, tmp_cin,
+									 prsf, prs_new, tmk_new, qvp_new, ght_new,
+									 &cmsg, &imiy, &imjx, &imkzh, &iter,
+                                     psa_file,&errstat,errmsg,
+									 strlen(psa_file), (size_t) ERRLEN);
+
+/* Terminate if there was an error */
+	if (errstat != 0) {
+		fprintf(stderr, errmsg);
+		exit(errstat);
+	}
+
 /*
- * Even if we flipped arrays before going into the Fortran routine, do
- * NOT flip them on the output.
- *
  * Copy the values back out to the correct places in the "cape" array.
  *
  * This is a bit whacky, because the Fortran code is doing something
@@ -10640,92 +10505,27 @@ NhlErrorTypes wrf_cape_2d_W( void )
 /*
  * Free memory.
  */
-  NclFree(tmp_p_orig);
-  if(type_t != NCL_double) NclFree(tmp_t_orig);
-  if(type_q != NCL_double) NclFree(tmp_q_orig);
-  if(type_z != NCL_double) NclFree(tmp_z_orig);
+  if(type_p != NCL_double) NclFree(tmp_p);
+  if(type_t != NCL_double) NclFree(tmp_t);
+  if(type_q != NCL_double) NclFree(tmp_q);
+  if(type_z != NCL_double) NclFree(tmp_z);
   if(type_zsfc != NCL_double) NclFree(tmp_zsfc);
   if(type_psfc != NCL_double) NclFree(tmp_psfc);
   NclFree(tmp_cape);
   NclFree(tmp_cin);
-  if(flip) {
-    NclFree(tmp_p);
-    NclFree(tmp_t);
-    NclFree(tmp_q);
-    NclFree(tmp_z);
-  }
-  NclFree(psa_file);
-  NclFree(errmsg);
+  NclFree(prsf);
+  NclFree(prs_new);
+  NclFree(tmk_new);
+  NclFree(qvp_new);
+  NclFree(ght_new);
 
 /*
- * Get dimension info to see if we have named dimensions.
- * This will be used for return variable.
+ * Set up variable to return.
  */
-  dim_info_t = get_wrf_dim_info(1,7,ndims_t,dsizes_t);
-  if(dim_info_t != NULL) {
-    dim_info = malloc(sizeof(NclDimRec)*ndims_cape);
-    if(dim_info == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: Unable to allocate memory for holding dimension information");
-      return(NhlFATAL);
-    }
-    for(i = 0; i < ndims_cape; i++ ) {
-      dim_info[i].dim_num  = i;
-      dim_info[i].dim_size = dsizes_cape[i];
-    }
-    dim_info[0].dim_quark = NrmStringToQuark("mcape_mcin_lcl_lfc");
-    for(i = 0; i < ndims_t-3; i++) {
-      dim_info[i+1].dim_quark = dim_info_t[i].dim_quark;
-    }
-    dim_info[ndims_cape-2].dim_quark = dim_info_t[ndims_t-2].dim_quark;
-    dim_info[ndims_cape-1].dim_quark = dim_info_t[ndims_t-1].dim_quark;
-
-  }
-
-
-/*
- * Set up return value.
- */
-  return_md = _NclCreateVal(
-                            NULL,
-                            NULL,
-                            Ncl_MultiDValData,
-                            0,
-                            (void*)cape,
-                            &missing_cape,
-                            ndims_cape,
-                            dsizes_cape,
-                            TEMPORARY,
-                            NULL,
-                            type_obj_cape
-                            );
-  tmp_var = _NclVarCreate(
-                          NULL,
-                          NULL,
-                          Ncl_Var,
-                          0,
-                          NULL,
-                          return_md,
-                          dim_info,
-                          -1,
-                          NULL,
-                          RETURNVAR,
-                          NULL,
-                          TEMPORARY
-                          );
-
+  ret = NclReturnValue(cape,ndims_cape,dsizes_cape,&missing_cape,type_cape,0);
   NclFree(dsizes_cape);
-  if(dim_info   != NULL) NclFree(dim_info);
-  NclFree(dim_info_t);
-
-/*
- * Return output grid and attributes to NCL.
- */
-  return_data.kind = NclStk_VAR;
-  return_data.u.data_var = tmp_var;
-  _NclPlaceReturn(return_data);
-  return(NhlNOERROR);
+  return(ret);
 }
-
 
 /*
  * Retrieve the dimension name info of a particular
@@ -12981,8 +12781,8 @@ NhlErrorTypes wrf_wetbulb_W( void )
     errstat = 0;
     errmsg = "";
     NGCALLF(wetbulbcalc,WETBULBCALC)(tmp_prs,tmp_tmk,tmp_qvp,tmp_twb,
-				     &inx,&iny,&inz,psa_file,
-				     strlen(psa_file));
+				     &inx,&iny,&inz,psa_file,&errstat,errmsg,
+				     strlen(psa_file), (size_t) ERRLEN);
 
     /* Terminate if there was an error */
 	if (errstat != 0) {
