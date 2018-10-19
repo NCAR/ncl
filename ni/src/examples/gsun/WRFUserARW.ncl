@@ -1689,7 +1689,7 @@ begin
         end do
         
         if (vert_type .eq. "height_agl") then
-          vert = wrf_user_user_getvar(file_handle, "height_agl", time)
+          vert = wrf_user_getvar(file_handle, "height_agl", time)
         elseif (vert_type.eq. "pressure") then
           vert = wrf_user_getvar(file_handle, "p", time)
         elseif (vert_type .eq. "height_msl") then
@@ -1724,7 +1724,7 @@ begin
        QV     = _get_wrf_var(file_handle,"QVAPOR",time)
        
        pres   =  P + PB
-       height = (PH + PHB)/9.8           ; height at full levels 
+       height = (PH + PHB)/9.81           ; height at full levels 
        theta  =  T + 300.
        ;temp   = theta * (pres/100000) ^ (gas_const/Cp)
        ;tv  = (1 + 0.61*QV) * temp  ; virtual temp
@@ -1732,44 +1732,9 @@ begin
        tv = wrf_virtual_temp(tk, QV)
        
        pw = wrf_pw(pres, tv, QV, height)
-
-       ;dims = dimsizes(T)
-       ;nd = dimsizes(dims)
-
-       ;if ( nd .eq. 4 ) then
-       ;  zdiff  = height(:,0,:,:)
-       ;  zdiff  = 0.
-       ;  pw_sfc_ptop = height(:,0,:,:)
-       ;  pw_sfc_ptop = 0.
-       ;  do k = 0,dims(1)-1
-       ;    zdiff(:,:,:) = (height(:,k+1,:,:) - height(:,k,:,:))
-       ;    pw_sfc_ptop(:,:,:) =  pw_sfc_ptop(:,:,:) + ((pres(:,k,:,:)/(gas_const * vtemp(:,k,:,:))) * QV(:,k,:,:) * zdiff(:,:,:))
-       ;  end do
-       ;end if
-       ;if ( nd .eq. 3 ) then
-       ;  zdiff  = height(0,:,:)
-       ;  zdiff  = 0.
-       ;  pw_sfc_ptop = height(0,:,:)
-       ;  pw_sfc_ptop = 0.
-       ;  do k = 0,dims(0)-1
-       ;    zdiff(:,:) = (height(k+1,:,:) - height(k,:,:))
-       ;    pw_sfc_ptop(:,:) =  pw_sfc_ptop(:,:) + ((pres(k,:,:)/(gas_const * vtemp(k,:,:))) * QV(k,:,:) * zdiff(:,:))
-       ;  end do
-       ;end if
-
-;---Dimension names added in NCL V6.4.0
-       ;rank_ph = dimsizes(dimsizes(PH))
-       ;if(any(rank_ph.eq.(/3,4/)).and..not.any(ismissing(getvardims(PH)))) then
-       ;  if(rank_ph.eq.3) then
-       ;    pw_sfc_ptop!0 = PH!1
-       ;    pw_sfc_ptop!1 = PH!2
-       ;  elseif(rank_ph.eq.4) then
-       ;    pw_sfc_ptop!0 = PH!0
-       ;    pw_sfc_ptop!1 = PH!2
-       ;    pw_sfc_ptop!2 = PH!3
-       ;  end if
-       ;end if
-       ;pw_sfc_ptop@description = "Precipitable Water"
+       
+       copy_VarAtts_except(T,pw,(/"description","units"/))
+       
        return(pw)
   end if
 
@@ -2379,7 +2344,7 @@ end
 ;--------------------------------------------------------------------------------
 
 undef("wrf_user_ll_to_xy")
-function wrf_user_ll_to_xu( file_handle, longitude:numeric, latitude:numeric, \
+function wrf_user_ll_to_xy( file_handle, longitude:numeric, latitude:numeric, \
                             opts_args:logical )
                             
 ; This is the same as wrf_user_ll_to_ij, but returns 0-based indexes

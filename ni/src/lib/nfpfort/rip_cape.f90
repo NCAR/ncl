@@ -600,6 +600,7 @@ END SUBROUTINE DCAPECALC3D
 ! Also also, Pressure must be hPa
 
 ! NCLFORTSTART
+
 SUBROUTINE DCAPECALC2D(prs,tmk,qvp,ght,ter,sfp,cape,cin,&
             prsf, prs_new, tmk_new, qvp_new, ght_new,&
             cmsg,mix,mjy,mkzh,ter_follow,&
@@ -651,7 +652,6 @@ SUBROUTINE DCAPECALC2D(prs,tmk,qvp,ght,ter,sfp,cape,cin,&
     REAL(KIND=8), DIMENSION(150,150) :: psaditmk
     LOGICAL :: elfound
     REAL(KIND=8), DIMENSION(mkzh) :: eth_temp
-
 
     ! To remove compiler warnings
     errstat = 0
