@@ -115,7 +115,7 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
 		&type_mid_thresh,
 	    DONT_CARE);
 
-    tmp_low_thresh = coerce_input_double(mid_thresh,type_mid_thresh,1,0,NULL,NULL);
+    tmp_mid_thresh = coerce_input_double(mid_thresh,type_mid_thresh,1,0,NULL,NULL);
 
     high_thresh = (void*) NclGetArgValue(
 		5,
@@ -277,10 +277,10 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
     if(type_vert   != NCL_double) NclFree(tmp_vert);
     if(type_rh     != NCL_double) NclFree(tmp_rh);
     if(type_output != NCL_double) NclFree(tmp_output);
-    if(type_low_thresh != NCL_double) NclFree(tmp_low_thresh);
-    if(type_mid_thresh != NCL_double) NclFree(tmp_mid_thresh);
-    if(type_high_thresh != NCL_double) NclFree(tmp_high_thresh);
-    if(type_msg != NCL_double) NclFree(tmp_msg);
+    NclFree(tmp_low_thresh);
+    NclFree(tmp_mid_thresh);
+    NclFree(tmp_high_thresh);
+    NclFree(tmp_msg);
 
 
 	/*
@@ -312,7 +312,7 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
 	* Get dimension info to see if we have named dimensions.
 	* This will be used for return variable.
 	*/
-	dim_info_rh = get_wrf_dim_info(1,2,ndims_rh,dsizes_rh);
+	dim_info_rh = get_wrf_dim_info(1,7,ndims_rh,dsizes_rh);
 	if(dim_info_rh != NULL) {
 	  dim_info = malloc(sizeof(NclDimRec)*output_ndims);
 	  if(dim_info == NULL) {
@@ -364,7 +364,7 @@ NhlErrorTypes wrf_cloud_frac_W(void) {
 	                          );
 
 	  if(dim_info   != NULL) NclFree(dim_info);
-	  NclFree(dim_info_rh);
+	  if (dim_info_rh != NULL) NclFree(dim_info_rh);
 
 	/*
 	 * Return output grid and attributes to NCL.
