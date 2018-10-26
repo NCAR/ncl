@@ -1383,6 +1383,12 @@ begin
   end if
 
     if( any( variable .eq. "cfrac" )) then
+;Optional arguments for cfrac:
+; 1: vert_type: "height_agl", "height_msl", "pressure" or "pres" [default: "height_agl]
+; 2: low_thresh: The low cloud threshold as string [default: "300." for height_agl] 
+; 3: mid_thresh: The mid cloud threshold as string [default: "2000." for height_agl]
+; 4: high_thersh: The high cloud threshold as a string [default: "6000." for height_agl]
+; 5: msg: The missing/fill value to use for non-cloud areas [default: "9.9692099683868690E36"]
         
         rh   = wrf_user_getvar(file_handle,"rh",time)
         
@@ -1403,6 +1409,8 @@ begin
               mid_thresh = 80000.
               high_thresh = 45000.
               vert_inc_w_height = 0
+            else
+              vert_type = varin(idims)
             end if
           end if
           if ( idims .eq. 2 ) then
@@ -1421,7 +1429,7 @@ begin
         
         if (vert_type .eq. "height_agl") then
           vert = wrf_user_getvar(file_handle, "height_agl", time)
-        elseif (vert_type.eq. "pressure") then
+        elseif (vert_type .eq. "pressure" .or. vert_type .eq. "pres") then
           vert = wrf_user_getvar(file_handle, "p", time)
         elseif (vert_type .eq. "height_msl") then
           vert = wrf_user_getvar(file_handle, "height", time)
@@ -1649,6 +1657,14 @@ begin
   end if
 
   if( variable .eq. "ctt") then
+;Optional arguments for ctt:
+; 1: fill_nocloud: "1" if areas without clouds use a fill value. When "0", use the
+;          surface temperature.
+; 2: missing: The fill value for non-cloud areas if ctt_opt is True. Default is
+;          "9.9692099683868690E36".
+; 3: opt_thresh: The optical thickness required to determine the presence of 
+;             a cloud. Default is "1.0".
+
       if(isfilevar(nc_file,"QICE")) then
         have_qci = 1
       else
@@ -1690,7 +1706,12 @@ begin
       ght        =  wrf_user_unstagger(stag_ght,PHB@stagger)
 
 ;Get optional args
+
       ctt_opt = True
+      ctt_opt@fill_nocloud = False
+      ctt_opt@missing = 9.9692099683868690E36
+      ctt_opt@opt_thresh = 1.0
+      
 
       dim_vars = dimsizes(varin)
 
@@ -1711,6 +1732,7 @@ begin
       end do
 
       fctt = wrf_ctt(pres,tk,qci,qcw,qvp,ght,ter,have_qci,ctt_opt)
+      
 ; fctt will have description, units, and dimension names attached
       copy_VarAtts_except(T,fctt,(/"description","units"/))
       return(fctt)
@@ -2384,11 +2406,13 @@ function wrf_user_vertcross(var3d:numeric, z_in:numeric, \
 ;   latlon      - set to True if the values in loc_param are latitude and longitude
 ;                 values rather than grid values
 ;   file_handle - must be set to a file handle when latlon is True or 
-;                 linecoords is True, otherwise this should be set to False
+;                 linecoords is True, otherwise this is ignored.
 ;   timeidx     - the time index to use for moving nests when latlon is True. Set
 ;                 to 0 if the nest is not moving.
 ;   linecoords  - set to True to include the latitude and longitude coordinates
 ;                 for the cross section line in the output attributes.
+;   numlevels   - set to the desired number of levels when levels are 
+;                 selected automatically (default 100)
 
 begin
 
@@ -2399,6 +2423,7 @@ begin
      file_handle = get_res_value(opts, "file_handle", 0)
      timeidx = get_res_value(opts, "timeidx", 0)
      linecoords = get_res_value(opts, "linecoords", False)
+     nlevels = get_res_value(opts, "numlevels", 100)
      
      dims = dimsizes(var3d)
      nd = dimsizes(dims)
@@ -2408,24 +2433,8 @@ begin
      dimZ = dims(nd-3)
      
      if ( nd .eq. 4 ) then
-       if ( z_in(0,dimZ-1,0,0) .lt. z_in(0,dimZ-2,0,0) ) then
-         ; We must be interpolating to pressure
-           ; This routine needs input field and level in hPa - lets make sure of this
-         if ( max(z_in) .gt. 2000. ) then
-           ; looks like we have Pa as input - make this hPa
-           z_in = z_in * 0.01
-         end if
-       end if
        z = z_in(0,:,:,:)
      else
-       if ( z_in(dimZ-1,0,0) .lt. z_in(dimZ-2,0,0) ) then
-         ; We must be interpolating to pressure
-           ; This routine needs input field and level in hPa - lets make sure of this
-         if ( z_in(0,0,0) .gt. 2000. ) then
-           ; looks like we have Pa as input - make this hPa
-           z_in = z_in * 0.01
-         end if
-       end if
        z = z_in
      end if
 
@@ -2493,7 +2502,7 @@ begin
 ; set vertical cross section
 ; Note for wrf_user_set_xy, opt is False when pivot and angle used.
      if (use_pivot) then
-         xy = wrf_user_set_xy( z, start_x, start_y, \ ; 
+         xy = wrf_user_set_xy( z, start_x, start_y, \ ; assumes 0-based indexing in v6.5.0
                                 0.0, 0.0, angle, False )
      
      else
@@ -2513,16 +2522,16 @@ begin
          if(var2dz(0,0) .gt. var2dz(1,0) ) then  ; monotonically decreasing coordinate
             z_max = floor(max(z)/10)*10     ; bottom value
             z_min = ceil(min(z)/10)*10      ; top value
-            dz = 10
-            nlevels = tointeger( (z_max-z_min)/dz)
+            dz = (1.0/nlevels) * (z_max - z_min)
+            ;nlevels = tointeger( (z_max-z_min)/dz)
             z_var2d = new( (/nlevels/), typeof(z))
             z_var2d(0) = z_max
             dz = -dz
          else
             z_max = max(z)
             z_min = 0.
-            dz = 0.01 * z_max
-            nlevels = tointeger( z_max/dz )
+            dz = (1.0/nlevels) * z_max
+            ;nlevels = tointeger( z_max/dz )
             z_var2d = new( (/nlevels/), typeof(z))
             z_var2d(0) = z_min
          end if

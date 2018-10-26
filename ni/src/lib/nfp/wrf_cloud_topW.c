@@ -410,8 +410,7 @@ int *opt;
 	  while (attr_list != NULL) {
 		if(!strcasecmp(attr_list->attname, "fill_nocloud")) {
 		  fill_nocloud      = *((int*)attr_list->attvalue->multidval.val);
-		}
-		else if(!strcasecmp(attr_list->attname, "missing")) {
+		} else if(!strcasecmp(attr_list->attname, "missing")) {
 		  missing      = attr_list->attvalue->multidval.val;
 		  type_missing = attr_list->attvalue->multidval.data_type;
 		  set_missing = True;
@@ -613,7 +612,7 @@ int *opt;
  * 
  * This will be used for return variable.
  */
-  dim_info_ght = get_wrf_dim_info(5,8,ndims_ght,dsizes_ght);
+  dim_info_ght = get_wrf_dim_info(5,9,ndims_ght,dsizes_ght);
   if(dim_info_ght != NULL) {
     dim_info = malloc(sizeof(NclDimRec)*ndims_ctt);
     if(dim_info == NULL) {

@@ -24,7 +24,7 @@ extern void NGCALLF(dinterp2dxy,DINTERP2DXY)(double *,double *,double *,
                                              int *,int *,int *, int*);
 
 extern void NGCALLF(dinterp1d,DINTERP1D)(double *,double *,double *,double *,
-                                         int *, int *, double *);
+		                                 double *, int *, int *);
 
 extern void NGCALLF(dfilter2d,DFILTER2D)(double *, double *, int *, int *, 
                                          int *, double *, double *);
@@ -2804,8 +2804,8 @@ NhlErrorTypes wrf_interp_1d_W( void )
 /*
  * Call Fortran routine.
  */
-    NGCALLF(dinterp1d,DINTERP1D)(tmp_v_in,tmp_v_out,tmp_z_in,tmp_z_out,&inz_in,
-                                 &inz_out,&v_out_msg);
+    NGCALLF(dinterp1d,DINTERP1D)(tmp_v_in,tmp_v_out,tmp_z_in,tmp_z_out,
+    		                     &v_out_msg, &inz_in, &inz_out);
 /*
  * Coerce output back to float if necessary.
  */
