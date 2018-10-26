@@ -2402,7 +2402,8 @@ function wrf_user_vertcross(var3d:numeric, z_in:numeric, \
 ;   angle       - an angle for vertical plots - 90 represent a WE cross section, 
 ;                 ignored if use_pivot is False.
 ;   levels      - the vertical levels to use in the same units as z_in. Set to 
-;                 False to automatically generate levels in 1% increments.
+;                 False to automatically generate the number of levels specified 
+;                 by autolevels.
 ;   latlon      - set to True if the values in loc_param are latitude and longitude
 ;                 values rather than grid values
 ;   file_handle - must be set to a file handle when latlon is True or 
@@ -2411,8 +2412,8 @@ function wrf_user_vertcross(var3d:numeric, z_in:numeric, \
 ;                 to 0 if the nest is not moving.
 ;   linecoords  - set to True to include the latitude and longitude coordinates
 ;                 for the cross section line in the output attributes.
-;   numlevels   - set to the desired number of levels when levels are 
-;                 selected automatically (default 100)
+;   autolevels  - set to the desired number of levels when levels are 
+;                 selected automatically (default 100).
 
 begin
 
@@ -2423,7 +2424,7 @@ begin
      file_handle = get_res_value(opts, "file_handle", 0)
      timeidx = get_res_value(opts, "timeidx", 0)
      linecoords = get_res_value(opts, "linecoords", False)
-     nlevels = get_res_value(opts, "numlevels", 100)
+     nlevels = get_res_value(opts, "autolevels", 100)
      
      dims = dimsizes(var3d)
      nd = dimsizes(dims)
