@@ -12,7 +12,6 @@
 #include <ncarg/ncl/NclBuiltIns.h>
 #include "wrapper.h"
 
-
 extern void NGCALLF(dcloudfrac2,DCLOUDFRAC2)(double *, double *,
 		                                     int *, double *, double *,
 		                                     double *, double *,

@@ -2078,6 +2078,7 @@ void NclAddUserFuncs(void)
  * wcf = wrf_cloud_fraction(vert, rh, vert_inc_w_height, low_thresh, mid_thresh, high_thresh, msg)
  * Create private argument array
  */
+
         nargs = 0;
         args = NewArgs(7);
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;

@@ -67,8 +67,8 @@ extern void NGCALLF(dcomputeabsvort,DCOMPUTEABSVORT)(double *, double *,
                                                      int *, int *, int *);
 
 extern void NGCALLF(calcdbz,CALCDBZ)(double *, double *, double *, double *,
-                                     double *, double *, double *, int *, 
-                                     int *, int *, int *, int *, int *);
+                                     double *, double *, int *, int *,
+                                     int *, double *, int *, int *, int *);
 
 extern void NGCALLF(dlltoij,DLLTOIJ)(int *, double *, double *, double *, 
                                      double *, double *, double *, double *, 
@@ -4608,9 +4608,9 @@ NhlErrorTypes wrf_dbz_W( void )
 /*
  * Call the Fortran routine.
  */
-    NGCALLF(calcdbz,CALCDBZ)(tmp_dbz, tmp_prs, tmp_tmk, tmp_qvp, tmp_qra, 
-                             tmp_qsn, tmp_qgr, &iwedim, &isndim, &ibtdim, 
-                             &sn0, ivarint, iliqskin);
+    NGCALLF(calcdbz,CALCDBZ)(tmp_prs, tmp_tmk, tmp_qvp, tmp_qra,
+                             tmp_qsn, tmp_qgr, &sn0, ivarint, iliqskin,
+							 tmp_dbz, &iwedim, &isndim, &ibtdim);
 /*
  * Coerce output back to float if necessary.
  */
@@ -7107,7 +7107,7 @@ for(i = 0; i < ndims_lat-2; i++) {
  *
  * ter's dimension names will be used for the output.
  */
-  dim_info   = get_wrf_dim_info(3,5,ndims_ter,dsizes_ter);
+  dim_info   = get_wrf_dim_info(3,6,ndims_ter,dsizes_ter);
 
 /* 
  * Allocate space for coercing input arrays.  If any of the input
@@ -7253,7 +7253,7 @@ for(i = 0; i < ndims_lat-2; i++) {
  * Reuse index_ter since they're the same.
  */
 	if(type_lat != NCL_double) {
-	  coerce_subset_input_double(ter,tmp_lat,index_ter,type_lat,mxy,0,NULL,NULL);
+	  coerce_subset_input_double(lat,tmp_lat,index_ter,type_lat,mxy,0,NULL,NULL);
 	}
 	else {
 	  tmp_lat = &((double*)lat)[index_ter];

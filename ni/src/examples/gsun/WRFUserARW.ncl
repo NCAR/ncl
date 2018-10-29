@@ -1414,16 +1414,16 @@ begin
             end if
           end if
           if ( idims .eq. 2 ) then
-            low_thresh = stringtofloat(varin(2))
+            low_thresh = stringtodouble(varin(2))
           end if
           if (idims .eq. 3) then
-            mid_thresh = stringtofloat(varin(3))
+            mid_thresh = stringtodouble(varin(3))
           end if 
           if (idims .eq. 4) then
-            high_thresh = stringtofloat(varin(4))
+            high_thresh = stringtodouble(varin(4))
           end if
           if (idims .eq. 5) then
-            msg = stringtofloat(varin(5))
+            msg = stringtodouble(varin(5))
           end if
         end do
         
@@ -1452,9 +1452,7 @@ begin
 
   if( any( variable .eq. (/"pw"/) ) ) then
        ;Precipitable Water 
-;;     print("calculating precipitable water")
-       gas_const = 287.  ; J/K/kg
-       Cp        = 1004. ; J/K/kg     
+;;     print("calculating precipitable water")  
        T      = _get_wrf_var(file_handle,"T",time)
        P      = _get_wrf_var(file_handle,"P",time)
        PB     = _get_wrf_var(file_handle,"PB",time)
@@ -1465,8 +1463,6 @@ begin
        pres   =  P + PB
        height = (PH + PHB)/9.81           ; height at full levels 
        theta  =  T + 300.
-       ;temp   = theta * (pres/100000) ^ (gas_const/Cp)
-       ;tv  = (1 + 0.61*QV) * temp  ; virtual temp
        tk = wrf_tk(pres, theta)
        tv = wrf_virtual_temp(tk, QV)
        
