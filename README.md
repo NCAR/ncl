@@ -16,8 +16,10 @@ NCL is developed by the [Computational and Information Systems Lab](https://www2
 
 The current version of NCL is [6.5.0](http://www.ncl.ucar.edu/current_release.shtml), which can be installed via [conda](http://www.ncl.ucar.edu/Download/conda.shtml).
 
->  conda create -n ncl_stable -c conda-forge ncl
->  source activate ncl_stable
+```
+conda create -n ncl_stable -c conda-forge ncl<p>
+source activate ncl_stable
+```
 
 # Documentation and support
 
