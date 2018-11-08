@@ -10,13 +10,14 @@ NCL is a scripting language for the analysis and visualization of climate and we
 * Has hundreds of built-in computational routines
 * Produces high-quality graphics
 
-NCL is developed by the [Computational and Information Systems Lab](https://www2.cisl.ucar.edu) at the [National Center for Atmospheric Research](https://ncar.ucar.edu), and is funded by
-the [National Science Foundation](https://www.nsf.gov).
+NCL is developed by the [Computational and Information Systems Lab](https://www2.cisl.ucar.edu) at the [National Center for Atmospheric Research](https://ncar.ucar.edu), and is funded by the [National Science Foundation](https://www.nsf.gov).
 
 # Installation
 
 The current version of NCL is [6.5.0](http://www.ncl.ucar.edu/current_release.shtml), which can be installed via [conda](http://www.ncl.ucar.edu/Download/conda.shtml).
 
+>  conda create -n ncl_stable -c conda-forge ncl
+>  source activate ncl_stable
 
 # Documentation and support
 
@@ -66,6 +67,6 @@ Update the NCL version and year as appropriate.
 
 NCL has separate licenses for source code and binary distributions:
 
-[Source code license](http://www.ncl.ucar.edu/Download/NCL_source_license.shtml)
-[Binary license](http://www.ncl.ucar.edu/Download/NCL_binary_license.shtml)
+* [Source code license](http://www.ncl.ucar.edu/Download/NCL_source_license.shtml)
+* [Binary license](http://www.ncl.ucar.edu/Download/NCL_binary_license.shtml)
 
