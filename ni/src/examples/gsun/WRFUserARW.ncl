@@ -404,110 +404,74 @@ function wrf_user_intrp3d( var3d:numeric, z_in:numeric, \
 begin
 
   if(plot_type .eq. "h" ) then   ;  horizontal cross section needed
-
-     dimL = dimsizes(loc_param)
-
-     dims = dimsizes(var3d)
+     
+     z = z_in
+     loc = loc_param
+     
+     dims = dimsizes(z)
      nd = dimsizes(dims)
-
-     dimX = dims(nd-1)
-     dimY = dims(nd-2)
      dimZ = dims(nd-3)
-     dim4 = 1
-     dim5 = 1
-     if ( nd .eq. 4 ) then
-       dim4 = dims(nd-4)
+     nloc = dimsizes(loc_param)
+     
+     if (nd .eq. 3) then
+        z_top = z(dimZ-1, 0, 0)
+        z_top_neigh = z(dimZ-2, 0, 0)
+     elseif (nd .eq. 4) then
+        z_top = z(0, dimZ-1, 0, 0)
+        z_top_neigh = z(0, dimZ-2, 0, 0)
+     elseif (nd .eq. 5) then
+        z_top = z(0, 0, dimZ-1, 0, 0)
+        z_top_neigh = z(0, 0, dimZ-2, 0, 0)
+     elseif (nd .eq. 6) then
+        z_top = z(0, 0, 0, dimZ-1, 0, 0)
+        z_top_neigh = z(0, 0, 0, dimZ-2, 0, 0)
      end if
-     if ( nd .eq. 5 ) then
-       dim4 = dims(nd-4)
-       dim5 = dims(nd-5)
-     end if
-
-     var3  = new ( (/ dim5, dim4, dimZ, dimY, dimX /) , typeof(var3d) )
-     z     = new ( (/ dim5, dim4, dimZ, dimY, dimX /) , typeof(var3d) )
-     var2d = new ( (/ dim5, dim4, dimL, dimY, dimX /) , typeof(var3d) )
-
-     if ( nd .eq. 5 ) then
-       var3 = var3d
-          z =  z_in
-     end if
-     if ( nd .eq. 4 ) then
-       var3(0,:,:,:,:) = var3d(:,:,:,:)
-          z(0,:,:,:,:) =  z_in(:,:,:,:)
-     end if
-     if ( nd .eq. 3 ) then
-       var3(0,0,:,:,:) = var3d(:,:,:)
-          z(0,0,:,:,:) =  z_in(:,:,:)
-     end if
-
-
-     if ( z(0,0,dimZ-1,0,0) .lt. z(0,0,dimZ-2,0,0) ) then
+     
+     ; Routine really doesn't need to be in hPa, but keeping this behavior 
+     ; for backwards compatibility.
+     if ( z_top .lt. z_top_neigh ) then
        ; We must be interpolating to pressure
        ; This routine needs input field and level in hPa - lets make sure of this
        if ( max(z) .gt. 2000. ) then
          ; looks like we have Pa as input - make this hPa
          z = z * 0.01
        end if
-       if ( loc_param(0) .gt. 2000. ) then
+       if ( loc(0) .gt. 2000. ) then
          ; looks like the input was specified in Pa - change this
-         loc_param = loc_param * 0.01
+         loc = loc * 0.01
        end if
      end if
-
-     do il = 0,dimL-1
-       var = wrf_interp_3d_z(var3,z,loc_param(il))
-       var2d(:,:,il,:,:) = var(:,:,:,:)
-     end do
-
-     copy_VarAtts(var3d,var3)
-     if(isatt(var3,"description")) then
-       delete_VarAtts(var3,(/"description"/))
+     
+     var2d = wrf_interp_3d_z(var3d, z, loc)
+     
+     copy_temp = True
+     copy_VarAtts(var3d, copy_temp)
+     
+     if(isatt(copy_temp,"description")) then
+       delete_VarAtts(copy_temp,(/"description"/))
      end if
-     if(isatt(var3,"units")) then
-       delete_VarAtts(var3,(/"units"/))
+     if(isatt(copy_temp,"units")) then
+       delete_VarAtts(copy_temp,(/"units"/))
      end if
-     if(isatt(var3,"MemoryOrder")) then
-       delete_VarAtts(var3,(/"MemoryOrder"/))
+     if(isatt(copy_temp,"MemoryOrder")) then
+       delete_VarAtts(copy_temp,(/"MemoryOrder"/))
      end if
-     if(isatt(var3,"_FillValue")) then
-       delete_VarAtts(var3,(/"_FillValue"/))
+     if(isatt(copy_temp,"_FillValue")) then
+       delete_VarAtts(copy_temp,(/"_FillValue"/))
      end if
-     copy_VarAtts(var3,var2d)
-
-     nn = nd-2
-     var2d!nn = "plevs"
-
-     if ( dimL .gt. 1 ) then
-       if ( nd .eq. 5 ) then
-         return( var2d )
-       end if
-       if ( nd .eq. 4 ) then
-         return( var2d(0,:,:,:,:) )
-       end if
-       if ( nd .eq. 3 ) then
-         return( var2d(0,0,:,:,:) )
-       end if
-     else
-       if ( z(0,0,dimZ-1,0,0) .lt. z(0,0,dimZ-2,0,0) ) then
-          var2d@PlotLevelID = loc_param + " hPa"
-       else
-          var2d@PlotLevelID = .001*loc_param + " km"
-       end if
-       if ( nd .eq. 5 ) then
-         return( var2d(:,:,0,:,:) )
-       end if
-       if ( nd .eq. 4 ) then
-         return( var2d(0,:,0,:,:) )
-       end if
-       if ( nd .eq. 3 ) then
-         return( var2d(0,0,0,:,:) )
-       end if
+     copy_VarAtts(copy_temp,var2d)
+     
+     if (nloc .eq. 1) then
+        if ( z_top .lt. z_top_neigh) then
+            var2d@PlotLevelID = loc_param + " hPa"
+        else
+            var2d@PlotLevelID = .001*loc_param + " km"
+        end if
      end if
-
+     
+     return(rm_single_dims(var2d))
 
   end if
-
-
 
 
   if(plot_type .eq. "v" ) then   ;  vertical cross section needed
@@ -2587,6 +2551,48 @@ begin
      var2d&vertical = z_var2d
 
      return(var2d)
+
+end
+
+
+;--------------------------------------------------------------------------------
+ 
+undef("wrf_user_interplevel")
+function wrf_user_interplevel(var3d:numeric, z_in:numeric, \
+                              loc_param:numeric, opts:logical )
+                           
+begin
+
+     dimL = dimsizes(loc_param)
+     loc_rank = dimsizes(dimL)
+
+     dims = dimsizes(var3d)
+     nd = dimsizes(dims)
+     
+     if (loc_rank .lt. 2) then
+        var2d = wrf_interp_3d_z(var3d, z_in, loc_param)
+        
+        var2d&level = loc_param
+        var2d := rm_single_dims(var2d)
+     else
+        inc_levels = get_res_value(opts, "inc2dlevs", False)
+     
+        var2d = wrf_interp_lev2d(var3d, z_in, loc_param)
+        
+        if (inc_levels) then 
+            var2d@level = loc_param
+        end if        
+        
+     end if
+     
+     ; Set the units for level(s)
+     if (isatt(z_in, "units")) then
+        var2d@level_units = z_in@units
+     else
+        vart2d@level_units = "unknown"
+     end if
+     
+     return var2d
 
 end
 

@@ -18,7 +18,11 @@ extern void NGCALLF(dcomputeseaprs,DCOMPUTESEAPRS)(int *,int *,int *,
 
 extern void NGCALLF(dinterp3dz,DINTERP3DZ)(double *,double *,double *,
                                            double *,int *,int *, int*,
-                                           double *);
+                                           int *, double *);
+
+extern void NGCALLF(dinterp3dz_2dlev,DINTERP3DZ_2DLEV)(double *,double *,
+		                                   double *, double *,int *,int *,
+										   int *, double *);
 
 extern void NGCALLF(dinterp2dxy,DINTERP2DXY)(double *,double *,double *,
                                              int *,int *,int *, int*);
@@ -1644,9 +1648,10 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
   double *tmp_v3d = NULL; 
   double *tmp_z = NULL; 
   double *tmp_loc = NULL; 
-  int ndims_v3d, ndims_z;
+  int ndims_v3d, ndims_z, ndims_loc;
   ng_size_t dsizes_v3d[NCL_MAX_DIMENSIONS];
   ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_loc[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_v3d, type_z, type_loc;
 /*
  * Variable for getting/setting dimension name info.
@@ -1689,8 +1694,8 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
 /*
  * Various
  */
-  ng_size_t i, nx, ny, nz, nxy, nxyz, size_leftmost, index_v3d, index_v2d;
-  int inx, iny, inz;
+  ng_size_t i, nx, ny, nz, nxy, nxyz, nxyloc, nloc, size_leftmost, index_v3d, index_v2d;
+  int inx, iny, inz, inloc;
   double vmsg;
 
 /*
@@ -1722,8 +1727,8 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
   loc = (void*)NclGetArgValue(
            2,
            3,
-           NULL,
-           NULL,
+           &ndims_loc,
+           dsizes_loc,
            NULL,
            NULL,
            &type_loc,
@@ -1740,6 +1745,11 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
   if(ndims_v3d != ndims_z) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: The v3d and z arrays must have the same number of dimensions");
     return(NhlFATAL);
+  }
+
+  if (ndims_loc != 1) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: The loc array must be one dimensional");
+	  return(NhlFATAL);
   }
 
   for(i = 0; i < ndims_v3d; i++) {
@@ -1805,13 +1815,16 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
  * Calculate size of leftmost dimensions and set dimension sizes for 
  * output array.
  *
- * The output array will have one less dimension than v3d/z input arrays.
+ * The output array will have the same number of dims as v3d, but the vertical
+ * dimension for the output will be the desired levels.
  */
   nx = dsizes_v3d[ndims_v3d-1];
   ny = dsizes_v3d[ndims_v3d-2];
   nz = dsizes_v3d[ndims_v3d-3];
+  nloc = dsizes_loc[0];
   nxy  = nx * ny;
   nxyz = nxy * nz;
+  nxyloc = nxy * nloc;
 
 /*
  * Test dimension sizes.
@@ -1823,8 +1836,9 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
   inx = (int) nx;
   iny = (int) ny;
   inz = (int) nz;
+  inloc = (int) nloc;
 
-  ndims_v2d = ndims_v3d-1;
+  ndims_v2d = ndims_v3d;
   dsizes_v2d = (ng_size_t*)calloc(ndims_v2d,sizeof(ng_size_t));  
   if( dsizes_v2d == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for holding dimension sizes");
@@ -1835,10 +1849,11 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
     dsizes_v2d[i] = dsizes_v3d[i];
     size_leftmost *= dsizes_v3d[i];
   }
+  dsizes_v2d[ndims_v2d-3] = nloc;
   dsizes_v2d[ndims_v2d-2] = ny;
   dsizes_v2d[ndims_v2d-1] = nx;
 
-  size_v2d = size_leftmost * nxy;
+  size_v2d = size_leftmost * nxyloc;
 
 /*
  * Retrieve dimension names from the "v3d" variable, if any.
@@ -1856,6 +1871,9 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
     }
     dim_info[ndims_v2d-1] = dim_info_v3d[ndims_v3d-1];
     dim_info[ndims_v2d-2] = dim_info_v3d[ndims_v3d-2];
+    dim_info[ndims_v2d-3].dim_num  = ndims_v2d-3;
+    dim_info[ndims_v2d-3].dim_size = nloc;
+    dim_info[ndims_v2d-3].dim_quark = NrmStringToQuark("level");
   }
 
 /* 
@@ -1891,10 +1909,18 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
     type_v2d     = NCL_double;
     type_obj_v2d = nclTypedoubleClass;
   }
+
 /*
  * Coerce loc (tmp_loc) to double if ncessary.
  */
-  tmp_loc = coerce_input_double(loc,type_loc,1,0,NULL,NULL);
+
+  tmp_loc = coerce_input_double(loc,type_loc,nloc,0,NULL,NULL);
+
+  if(tmp_loc == NULL) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to coerce loc to double");
+      return(NhlFATAL);
+  }
+
 
 /*
  * Allocate space for output array.
@@ -1907,17 +1933,15 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
     }
     missing_v2d.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
     vmsg = missing_v2d.doubleval;
-  }
-  else {
+  } else {
     v2d     = (float *)calloc(size_v2d,sizeof(float));
-    tmp_v2d = (double *)calloc(nxy,sizeof(double));
+    tmp_v2d = (double *)calloc(nxyloc,sizeof(double));
     if(tmp_v2d == NULL || v2d == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
     missing_v2d.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
     vmsg = (double)missing_v2d.floatval;
-
   }
 /*
  * Loop across leftmost dimensions and call the Fortran routine
@@ -1953,7 +1977,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
  * Call Fortran routine.
  */
     NGCALLF(dinterp3dz,DINTERP3DZ)(tmp_v3d,tmp_v2d,tmp_z,tmp_loc,
-                                   &inx,&iny,&inz,&vmsg);
+                                   &inx,&iny,&inz,&inloc,&vmsg);
 /*
  * Coerce output back to float if necessary.
  */
@@ -1962,15 +1986,15 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
     }
 
     index_v3d += nxyz;
-    index_v2d += nxy;
+    index_v2d += nxyloc;
   }
 /*
  * Free up memory.
  */
   if(type_v3d != NCL_double) NclFree(tmp_v3d);
   if(type_z   != NCL_double) NclFree(tmp_z);
-  if(type_loc != NCL_double) NclFree(tmp_loc);
   if(type_v2d != NCL_double) NclFree(tmp_v2d);
+  if(type_loc != NCL_double) NclFree(tmp_loc);
 
 /*
  * If v3d had a "description" or units attribute, return them with
@@ -1989,8 +2013,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
  */
   qdesc  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *qdesc = NrmStringToQuark(cdesc);
-  if (!found_desc)
-          free(cdesc);
+  if (!found_desc) free(cdesc);
 
   if(found_units) {
     qunits  = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -2087,6 +2110,508 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
   return(NhlNOERROR);
 }
 
+
+/* Use this for interpolating to 2D levels (e.g. PBLH) */
+NhlErrorTypes wrf_interp_lev2d_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *v3d, *z, *loc;
+  double *tmp_v3d = NULL;
+  double *tmp_z = NULL;
+  double *tmp_loc = NULL;
+  int ndims_v3d, ndims_z, ndims_loc;
+  ng_size_t dsizes_v3d[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_z[NCL_MAX_DIMENSIONS];
+  ng_size_t dsizes_loc[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_v3d, type_z, type_loc;
+/*
+ * Variable for getting/setting dimension name info.
+ */
+  NclDimRec *dim_info_v3d;
+  NclDimRec *dim_info = NULL;
+
+/*
+ * Variables for retrieving attributes from "v3d".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
+  NrmQuark *description, *units;
+  char *cdesc = NULL;
+  char *cunits = NULL;
+  logical found_desc = False, found_units = False, locis2d = False;
+/*
+ * Output variable.
+ */
+  void *v2d;
+  double *tmp_v2d = NULL;
+  int ndims_v2d;
+  ng_size_t *dsizes_v2d;
+  ng_size_t size_v2d;
+  NclBasicDataTypes type_v2d;
+  NclObjClass type_obj_v2d;
+  NclScalar missing_v2d;
+
+/*
+ * Variables for returning the output array with attributes attached.
+ */
+  int att_id;
+  ng_size_t dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+  NclQuark *qdesc, *qunits;
+
+/*
+ * Various
+ */
+  ng_size_t i, nx, ny, nz, nxy, nxyz, size_leftmost, index_v3d, index_v2d;
+  int inx, iny, inz;
+  double vmsg;
+
+/*
+ * Retrieve parameters.
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+  v3d = (void*)NclGetArgValue(
+           0,
+           3,
+           &ndims_v3d,
+           dsizes_v3d,
+           NULL,
+           NULL,
+           &type_v3d,
+           DONT_CARE);
+
+  z = (void*)NclGetArgValue(
+           1,
+           3,
+           &ndims_z,
+           dsizes_z,
+           NULL,
+           NULL,
+           &type_z,
+           DONT_CARE);
+
+  loc = (void*)NclGetArgValue(
+           2,
+           3,
+           &ndims_loc,
+           dsizes_loc,
+           NULL,
+           NULL,
+           &type_loc,
+           DONT_CARE);
+
+/*
+ * Error checking. First two input variables must be same size.
+ */
+  if(ndims_v3d < 3) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: The v3d and z arrays must have at least 3 dimensions");
+    return(NhlFATAL);
+  }
+
+  if(ndims_v3d != ndims_z) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: The v3d and z arrays must have the same number of dimensions");
+    return(NhlFATAL);
+  }
+
+  /* loc can either be 2 dimensions, or the leftmost dimensions must match
+   * v3d's leftmost dimensions.
+   */
+  if (ndims_loc == 2) {
+	  locis2d = True;
+  } else if (ndims_loc > 2) {
+	  for (i=0; i < ndims_v3d-3; i++) {
+		  if (dsizes_loc[i] != dsizes_v3d[i]) {
+			  NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: The loc array must have same leftmost dimensions as v3d");
+			  return(NhlFATAL);
+		  }
+	  }
+  } else {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: The loc array must have at least 2 dimensions");
+	  return(NhlFATAL);
+  }
+
+  for(i = 0; i < ndims_v3d; i++) {
+    if(dsizes_v3d[i] != dsizes_z[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: v3d and z must be the same dimensionality");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Check if v3d has any attributes, namely "description" or "units".
+ * These attributes will be attached to the return variable v2d.
+ */
+  stack_entry = _NclGetArg(0, 3, DONT_CARE);
+  switch (stack_entry.kind) {
+  case NclStk_VAR:
+    if (stack_entry.u.data_var->var.att_id != -1) {
+      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+      if (attr_obj == NULL) {
+        break;
+      }
+    }
+    else {
+/*
+ * att_id == -1 ==> no optional args given.
+ */
+      break;
+    }
+/*
+ * Get optional arguments. If none are specified, then return
+ * missing values.
+ */
+    if (attr_obj->att.n_atts == 0) {
+      break;
+    }
+    else {
+/*
+ * Get list of attributes.
+ */
+      attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them.
+ */
+      while (attr_list != NULL) {
+        if ((strcmp(attr_list->attname, "description")) == 0) {
+          description = (NrmQuark *) attr_list->attvalue->multidval.val;
+          cdesc       = NrmQuarkToString(*description);
+          found_desc  = True;
+        }
+        if ((strcmp(attr_list->attname, "units")) == 0) {
+          units  = (NrmQuark *) attr_list->attvalue->multidval.val;
+          cunits = NrmQuarkToString(*units);
+          found_units  = True;
+        }
+        attr_list = attr_list->next;
+      }
+    }
+  default:
+    break;
+  }
+
+/*
+ * Calculate size of leftmost dimensions and set dimension sizes for
+ * output array.
+ *
+ * The output array will have one less dimension than v3d/z input arrays.
+ */
+  nx = dsizes_v3d[ndims_v3d-1];
+  ny = dsizes_v3d[ndims_v3d-2];
+  nz = dsizes_v3d[ndims_v3d-3];
+  nxy  = nx * ny;
+  nxyz = nxy * nz;
+
+/*
+ * Test dimension sizes.
+ */
+  if((nx > INT_MAX) || (ny > INT_MAX) || (nz > INT_MAX)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: nx, ny, and/or nz is greater than INT_MAX");
+    return(NhlFATAL);
+  }
+  inx = (int) nx;
+  iny = (int) ny;
+  inz = (int) nz;
+
+  ndims_v2d = ndims_v3d-1;
+  dsizes_v2d = (ng_size_t*)calloc(ndims_v2d,sizeof(ng_size_t));
+  if( dsizes_v2d == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
+  size_leftmost = 1;
+  for(i = 0; i < ndims_v3d-3; i++) {
+    dsizes_v2d[i] = dsizes_v3d[i];
+    size_leftmost *= dsizes_v3d[i];
+  }
+  dsizes_v2d[ndims_v2d-2] = ny;
+  dsizes_v2d[ndims_v2d-1] = nx;
+
+  size_v2d = size_leftmost * nxy;
+
+/*
+ * Retrieve dimension names from the "v3d" variable, if any.
+ * These dimension names will later be attached to the output variable.
+ */
+  dim_info_v3d = get_wrf_dim_info(0,3,ndims_v3d,dsizes_v3d);
+  if(dim_info_v3d != NULL) {
+    dim_info = malloc(sizeof(NclDimRec)*ndims_v2d);
+    if(dim_info == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for holding dimension information");
+      return(NhlFATAL);
+    }
+    for(i = 0; i < ndims_v3d-3; i++) {
+      dim_info[i] = dim_info_v3d[i];
+    }
+    dim_info[ndims_v2d-1] = dim_info_v3d[ndims_v3d-1];
+    dim_info[ndims_v2d-2] = dim_info_v3d[ndims_v3d-2];
+  }
+
+/*
+ * Allocate space for coercing input arrays.  If the input v3d or z
+ * are already double, then we don't need to allocate space for
+ * temporary arrays, because we'll just change the pointer into
+ * the void array appropriately.
+ *
+ * The output type defaults to float, unless any of the two input arrays
+ * are double.
+ */
+  type_v2d     = NCL_float;
+  type_obj_v2d = nclTypefloatClass;
+  if(type_v3d != NCL_double) {
+    tmp_v3d = (double *)calloc(nxyz,sizeof(double));
+    if(tmp_v3d == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_v2d     = NCL_double;
+    type_obj_v2d = nclTypedoubleClass;
+  }
+
+  if(type_z != NCL_double) {
+    tmp_z = (double *)calloc(nxyz,sizeof(double));
+    if(tmp_z == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for coercing z array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_v2d     = NCL_double;
+    type_obj_v2d = nclTypedoubleClass;
+  }
+/*
+ * Coerce loc to double if ncessary.
+ */
+  if (!locis2d) {
+	  if(type_loc != NCL_double) {
+		  tmp_loc = (double *)calloc(nxy,sizeof(double));
+		  if(tmp_loc == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for coercing loc array to double");
+			return(NhlFATAL);
+		  }
+		}
+		else {
+		  type_loc     = NCL_double;
+		}
+  } else {
+	  /* When loc is 2d, then only need to coerce one time.  If there are
+	   * leftmost dimensions, then it will be done in the loop below using the
+	   * array allocated above.
+	   */
+	  tmp_loc = coerce_input_double(loc,type_loc,nxy,0,NULL,NULL);
+  }
+
+
+/*
+ * Allocate space for output array.
+ */
+  if(type_v2d == NCL_double) {
+    v2d = (double *)calloc(size_v2d,sizeof(double));
+    if(v2d == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+    missing_v2d.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    vmsg = missing_v2d.doubleval;
+  }
+  else {
+    v2d     = (float *)calloc(size_v2d,sizeof(float));
+    tmp_v2d = (double *)calloc(nxy,sizeof(double));
+    if(tmp_v2d == NULL || v2d == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+    missing_v2d.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    vmsg = (double)missing_v2d.floatval;
+
+  }
+/*
+ * Loop across leftmost dimensions and call the Fortran routine
+ * for each three-dimensional subsection.
+ */
+  index_v2d = index_v3d = 0;
+  for(i = 0; i < size_leftmost; i++) {
+/*
+ * Coerce subsection of v3d (tmp_v3d) to double if necessary.
+ */
+    if(type_v3d != NCL_double) {
+      coerce_subset_input_double(v3d,tmp_v3d,index_v3d,type_v3d,nxyz,
+                                 0,NULL,NULL);
+    }
+    else {
+      tmp_v3d = &((double*)v3d)[index_v3d];
+    }
+/*
+ * Coerce subsection of z (tmp_z) to double if necessary.
+ */
+    if(type_z != NCL_double) {
+      coerce_subset_input_double(z,tmp_z,index_v3d,type_z,nxyz,0,NULL,NULL);
+    }
+    else {
+      tmp_z = &((double*)z)[index_v3d];
+    }
+
+/*
+ * Coerce subsection of loc (tmp_loc) to double if necessary.
+ */
+    if (!locis2d) {
+		if(type_loc != NCL_double) {
+		  coerce_subset_input_double(loc,tmp_loc,index_v2d,type_loc,nxy,0,NULL,NULL);
+		}
+		else {
+		  tmp_loc = &((double*)loc)[index_v2d];
+		}
+    }
+
+/*
+ * Point temporary output array to void output array if appropriate.
+ */
+    if(type_v2d == NCL_double) tmp_v2d = &((double*)v2d)[index_v2d];
+/*
+ * Call Fortran routine.
+ */
+    NGCALLF(dinterp3dz_2dlev,DINTERP3DZ_2DLEV)(tmp_v3d,tmp_v2d,tmp_z,tmp_loc,
+                                   &inx,&iny,&inz,&vmsg);
+/*
+ * Coerce output back to float if necessary.
+ */
+    if(type_v2d == NCL_float) {
+      coerce_output_float_only(v2d,tmp_v2d,nxy,index_v2d);
+    }
+
+    index_v3d += nxyz;
+    index_v2d += nxy;
+  }
+/*
+ * Free up memory.
+ */
+  if(type_v3d != NCL_double) NclFree(tmp_v3d);
+  if(type_z   != NCL_double) NclFree(tmp_z);
+  if(type_v2d != NCL_double) NclFree(tmp_v2d);
+  if(type_loc != NCL_double) NclFree(tmp_loc);
+
+/*
+ * If v3d had a "description" or units attribute, return them with
+ * the output variable as an attribute.  Otherwise, return a
+ * blank string for description, and nothing for units.
+ */
+  if(!found_desc) {
+    cdesc = (char *)calloc(2,sizeof(char));
+    strcpy(cdesc," ");
+  }
+/*
+ * I don't think we can return "description" or "units" here, because
+ * they are attached to an NCL input parameter. It could screw things up
+ * if we try to return it as an attribute with the output variable.
+ * Instead, create a new description and units "quark" variable.
+ */
+  qdesc  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *qdesc = NrmStringToQuark(cdesc);
+  if (!found_desc)
+          free(cdesc);
+
+  if(found_units) {
+    qunits  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+    *qunits = NrmStringToQuark(cunits);
+  }
+
+/*
+ * Set up return value.
+ */
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            (void*)v2d,
+                            &missing_v2d,
+                            ndims_v2d,
+                            dsizes_v2d,
+                            TEMPORARY,
+                            NULL,
+                            type_obj_v2d
+                            );
+/*
+ * Set up attributes to return.
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)qdesc,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "description",
+             att_md,
+             NULL
+             );
+
+  if(found_units) {
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           (void*)qunits,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypestringClass
+                           );
+    _NclAddAtt(
+               att_id,
+             "units",
+               att_md,
+               NULL
+               );
+  }
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          dim_info,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+  NclFree(dsizes_v2d);
+  if(dim_info != NULL) NclFree(dim_info);
+  NclFree(dim_info_v3d);
+
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
+}
 
 NhlErrorTypes wrf_interp_2d_xy_W( void )
 {

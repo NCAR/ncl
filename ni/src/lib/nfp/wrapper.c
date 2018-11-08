@@ -90,6 +90,7 @@ extern NhlErrorTypes wrf_slp_W(void);
 extern NhlErrorTypes wrf_interp_1d_W(void);
 extern NhlErrorTypes wrf_interp_2d_xy_W(void);
 extern NhlErrorTypes wrf_interp_3d_z_W(void);
+extern NhlErrorTypes wrf_interp_lev2d_W(void);
 extern NhlErrorTypes wrf_smooth_2d_W(void);
 extern NhlErrorTypes wrf_latlon_to_ij_W(void);
 extern NhlErrorTypes wrf_uvmet_W(void);
@@ -1681,10 +1682,24 @@ void NclAddUserFuncs(void)
 
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterFunc(wrf_interp_3d_z_W,args,"wrf_interp_3d_z",nargs);
+
+/*
+ * Register "wrf_interp_lev2d".
+ *
+ * Create private argument array.
+ */
+	nargs = 0;
+	args = NewArgs(3);
+
+	SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+	NclRegisterFunc(wrf_interp_lev2d_W,args,"wrf_interp_lev2d",nargs);
+
 /*
  * Register "wrf_smooth_2d".
  *
