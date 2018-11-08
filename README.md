@@ -1,6 +1,6 @@
 # NCAR Command Language
 
-![NCL logo](http://www.ncl.ucar.edu/Images/NCLLogoWeb.jpg)
+![NCL logo](http://www.ncl.ucar.edu/Images/NCLLogoWeb.jpg =250x)
 
 This is the source code for the NCAR Command Language (NCL).
 
