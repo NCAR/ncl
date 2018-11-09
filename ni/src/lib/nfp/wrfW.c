@@ -1982,7 +1982,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
  * Coerce output back to float if necessary.
  */
     if(type_v2d == NCL_float) {
-      coerce_output_float_only(v2d,tmp_v2d,nxy,index_v2d);
+      coerce_output_float_only(v2d,tmp_v2d,nxyloc,index_v2d);
     }
 
     index_v3d += nxyz;
