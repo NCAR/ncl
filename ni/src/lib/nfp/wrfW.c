@@ -14501,7 +14501,7 @@ NhlErrorTypes wrf_pw_W( void )
 /*
  * Various
  */
-  ng_size_t i, nx, ny, nz, nzh, nxyz, nxyzh, size_leftmost, index_pres, index_ht, size_pw;
+  ng_size_t i, nx, ny, nz, nzh, nxy, nxyz, nxyzh, size_leftmost, index_pres, index_ht, size_pw, index_pw;
   int inx, iny, inz, inzh;
 
 /*
@@ -14628,7 +14628,7 @@ NhlErrorTypes wrf_pw_W( void )
  * Get dimension info to see if we have named dimensions.
  * This will be used for return variable.
  */
-  dim_info_p = get_wrf_dim_info(1,4,ndims_pres,dsizes_pres);
+  dim_info_p = get_wrf_dim_info(0,4,ndims_pres,dsizes_pres);
   if(dim_info_p != NULL) {
     dim_info = malloc(sizeof(NclDimRec)*ndims_pw);
     if(dim_info == NULL) {
@@ -14652,6 +14652,7 @@ NhlErrorTypes wrf_pw_W( void )
   }
   dsizes_pw[ndims_pw-1] = nx;
   dsizes_pw[ndims_pw-2] = ny;
+  nxy = nx * ny;
   nxyz = nx * ny * nz;
   nxyzh = nx * ny * nzh;
   size_pw = size_leftmost * nxyz;
@@ -14740,6 +14741,7 @@ NhlErrorTypes wrf_pw_W( void )
  */
   index_pres = 0;
   index_ht = 0;
+  index_pw = 0;
   for(i = 0; i < size_leftmost; i++) {
 /*
  * Coerce subsection of pres (tmp_pres) to double if ncessary.
@@ -14787,7 +14789,7 @@ NhlErrorTypes wrf_pw_W( void )
 /*
  * Point temporary output array to void output array if appropriate.
  */
-    if(type_pw == NCL_double) tmp_pw = &((double*)pw)[index_pres];
+    if(type_pw == NCL_double) tmp_pw = &((double*)pw)[index_pw];
 /*
  * Call Fortran routine.
  */
@@ -14798,11 +14800,12 @@ NhlErrorTypes wrf_pw_W( void )
  * Coerce output back to float if necessary.
  */
     if(type_pw == NCL_float) {
-      coerce_output_float_only(pw,tmp_pw,nxyz,index_pres);
+      coerce_output_float_only(pw,tmp_pw,nxy,index_pw);
     }
 
     index_pres += nxyz;    /* Increment index */
     index_ht += nxyzh;     /* Increment ht index (staggered) */
+    index_pw += nxy;
   }
 /*
  * Free up memory.

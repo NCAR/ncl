@@ -2377,14 +2377,14 @@ function wrf_user_vertcross(var3d:numeric, z_in:numeric, \
 
 begin
 
-     use_pivot = get_res_value(opts, "use_pivot", False)
-     angle = get_res_value(opts, "angle", 0.0)
-     levels = get_res_value(opts, "levels", new(1,integer))
-     latlon = get_res_value(opts, "latlon", False)
-     file_handle = get_res_value(opts, "file_handle", 0)
-     timeidx = get_res_value(opts, "timeidx", 0)
-     linecoords = get_res_value(opts, "linecoords", False)
-     nlevels = get_res_value(opts, "autolevels", 100)
+     use_pivot = get_res_value_keep(opts, "use_pivot", False)
+     angle = get_res_value_keep(opts, "angle", 0.0)
+     levels = get_res_value_keep(opts, "levels", new(1,integer))
+     latlon = get_res_value_keep(opts, "latlon", False)
+     file_handle = get_res_value_keep(opts, "file_handle", 0)
+     timeidx = get_res_value_keep(opts, "timeidx", 0)
+     linecoords = get_res_value_keep(opts, "linecoords", False)
+     nlevels = get_res_value_keep(opts, "autolevels", 100)
      
      dims = dimsizes(var3d)
      nd = dimsizes(dims)
@@ -2435,11 +2435,15 @@ begin
      
 ; set the cross section line coordinates if requested
      if (linecoords) then 
-     
+         if (typeof(file_handle).eq."list") then
+             nc_file = file_handle[0]
+         else
+             nc_file = file_handle
+         end if
          latname = "XLAT" 
          lonname = "XLONG" 
-         if(.not. isfilevar(file_handle,"XLAT")) then
-           if(isfilevar(file_handle,"XLAT_M")) then
+         if(.not. isfilevar(nc_file,"XLAT")) then
+           if(isfilevar(nc_file,"XLAT_M")) then
              latname = "XLAT_M"
              lonname = "XLONG_M"
            end if
@@ -2575,7 +2579,7 @@ begin
         var2d&level = loc_param
         var2d := rm_single_dims(var2d)
      else
-        inc_levels = get_res_value(opts, "inc2dlevs", False)
+        inc_levels = get_res_value_keep(opts, "inc2dlevs", False)
      
         var2d = wrf_interp_lev2d(var3d, z_in, loc_param)
         
