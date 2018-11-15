@@ -731,7 +731,7 @@ int *opt;
     NGCALLF(wrfcttcalc,WRFCTTCALC)(tmp_pres, tmp_tk, tmp_qci,
     		                       tmp_qcw, tmp_qvp, tmp_ght,
 								   tmp_ter, tmp_ctt, pfwork,
-                                   &haveqci, &fill_nocloud,
+                                   haveqci, &fill_nocloud,
 								   tmp_missing, tmp_opt_thresh,
 								   &inlev, &inlat, &inlon);
 

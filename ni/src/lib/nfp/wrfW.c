@@ -14706,7 +14706,7 @@ NhlErrorTypes wrf_pw_W( void )
   }
 
   if(type_ht != NCL_double) {
-    tmp_ht = (double *)calloc(nxyz,sizeof(double));
+    tmp_ht = (double *)calloc(nxyzh,sizeof(double));
     if(tmp_ht == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pw: Unable to allocate memory for coercing 'ht' to double");
       return(NhlFATAL);

@@ -374,8 +374,8 @@ begin
   dy := tofloat(dy)/(npts-1)
 
   do i=0,npts-1
-    xy(i,0) = x0 + i*dx
-    xy(i,1) = y0 + i*dy
+    xy(i,0) = tofloat(x0 + i*dx)
+    xy(i,1) = tofloat(y0 + i*dy)
   end do
 
 ; print(xy)
@@ -1985,8 +1985,8 @@ begin
   end if
 
   opts = opts_args
-  useT  = get_res_value(opts,"useTime",0)
-  returnI= get_res_value(opts,"returnInt",True)
+  useT  = get_res_value_keep(opts,"useTime",0)
+  returnI= get_res_value_keep(opts,"returnInt",True)
 
   res = True
   res@MAP_PROJ  = nc_file@MAP_PROJ
@@ -2056,6 +2056,61 @@ end
 
 ;--------------------------------------------------------------------------------
 
+undef("_is_moving_nest")
+function _is_moving_nest(lats:numeric, lons:numeric)
+                            
+; Return True if the domain is from a moving nest
+
+begin
+   latdims = dimsizes(lats)
+   londims = dimsizes(lons)
+   
+   rank = dimsizes(latdims)
+   
+   if (rank .eq. 2) then
+       return True
+   end if
+   
+   if (all(latdims .ne. londims)) then
+       print("_is_moving_nest: invalid lat/lon arrays")
+       exit
+   end if
+   
+   offset = 1
+   do r=1,rank-1
+       offset = offset * latdims(r)
+   end do
+   
+   latoned = ndtooned(lats)
+   lononed = ndtooned(lons)
+   
+   onedsize = dimsizes(latoned)
+   result = False
+   llat0 = latoned(0)
+   llon0 = lononed(0)
+   ulat0 = latoned(offset-1)
+   ulon0 = lononed(offset-1)
+   
+   do i=0,onedsize-1,offset
+       llat = latoned(i)
+       llon = lononed(i)
+       ulat = latoned(i+offset-1)
+       ulon = lononed(i+offset-1)
+       
+       if ((llat .ne. llat0) .or. (llon .ne. llon0) .or. \
+           (ulat .ne. ulat0) .or. (ulon .ne. ulon0)) then
+           result = True
+           break
+       end if
+   end do
+   
+   return(result)
+
+end
+
+
+;--------------------------------------------------------------------------------
+
 undef("wrf_user_ll_to_xy")
 function wrf_user_ll_to_xy( file_handle, longitude:numeric, latitude:numeric, \
                             opts_args:logical )
@@ -2079,8 +2134,8 @@ begin
   end if
 
   opts = opts_args
-  useT  = get_res_value(opts,"useTime",0)
-  returnI= get_res_value(opts,"returnInt",True)
+  useT  = get_res_value_keep(opts,"useTime",0)
+  returnI = get_res_value_keep(opts,"returnInt",False)
 
   res = True
   res@MAP_PROJ  = nc_file@MAP_PROJ
@@ -2104,44 +2159,68 @@ begin
 
   if(isfilevar(nc_file,"XLAT"))
     if(ISFILE) then
-      XLAT  = nc_file->XLAT(useT,:,:)
-      XLONG = nc_file->XLONG(useT,:,:)
+      XLAT  = nc_file->XLAT(:,:,:)
+      XLONG = nc_file->XLONG(:,:,:)
     else
       XLAT  = file_handle[:]->XLAT
       XLONG = file_handle[:]->XLONG
     end if
   else
     if(ISFILE) then
-      XLAT  = nc_file->XLAT_M(useT,:,:)
-      XLONG = nc_file->XLONG_M(useT,:,:)
+      XLAT  = nc_file->XLAT_M(:,:,:)
+      XLONG = nc_file->XLONG_M(:,:,:)
     else
       XLAT  = file_handle[:]->XLAT_M
       XLONG = file_handle[:]->XLONG_M
     end if
   end if
 
-
-  if(dimsizes(dimsizes(XLAT)).eq.2) then
-; Rank 2
-    res@REF_LAT = XLAT(0,0)
-    res@REF_LON = XLONG(0,0)
-  else
-; Rank 3
-    res@REF_LAT = XLAT(useT,0,0)
-    res@REF_LON = XLONG(useT,0,0)
-  end if
+  is_moving = _is_moving_nest(XLAT, XLONG)
+  
   res@KNOWNI  = 1.0
   res@KNOWNJ  = 1.0
 
-  loc = wrf_ll_to_ij (longitude, latitude, res)
+  if (.not. is_moving) then
+      res@REF_LAT = XLAT(0,0,0)
+      res@REF_LON = XLONG(0,0,0)
+      
+      loc = wrf_ll_to_ij (longitude, latitude, res)
+  else
+      if (useT .ge. 0) then
+          res@REF_LAT = XLAT(useT,0,0)
+          res@REF_LON = XLONG(useT,0,0)
+          
+          loc = wrf_ll_to_ij (longitude, latitude, res)
+      else
+          xlatdims = dimsizes(XLAT)
+          latdims = dimsizes(latitude)
+          
+          if (typeof(longitude) .eq. "double") then
+              loc = new((/2,xlatdims(0),latdims(0)/), "double")
+          else
+              loc = new((/2,xlatdims(0),latdims(0)/), "float")
+          end if
+          
+          do t=0,xlatdims(0)-1
+             res@REF_LAT = XLAT(t,0,0)
+             res@REF_LON = XLONG(t,0,0)
+             l = wrf_ll_to_ij (longitude, latitude, res)
+             loc(0,t,:) = l(0,:)
+             loc(1,t,:) = l(1,:)
+          end do
+      end if
+  end if
+
   loc = loc - 1
   
-  if (dimsizes(dimsizes(loc)) .eq. 1) then
+  locrank = dimsizes(dimsizes(loc))
+  
+  if (locrank .eq. 1) then
       loc!0 = "x_y"
-  elseif (dimsizes(dimsizes(loc)) .eq. 2) then
+  elseif (locrank .eq. 2) then
       loc!0 = "x_y"
       loc!1 = "idx"
-  else ; Not currently supported
+  else 
       loc!0 = "x_y"
       loc!1 = "domain_idx"
       loc!2 = "idx"
@@ -2150,7 +2229,7 @@ begin
   if ( returnI  ) then
     loci = new(dimsizes(loc),integer)
     ;loci@_FillValue = default_fillvalue("integer")   ; was -999
-    loci = tointeger(loc + .5)
+    loci = round(loc,3)
     loci!0 = loc!0
     return(loci)
   else
@@ -2183,7 +2262,7 @@ begin
   end if
 
   opts = opts_args
-  useT  = get_res_value(opts,"useTime",0)
+  useT  = get_res_value_keep(opts,"useTime",0)
 
   res = True
   res@MAP_PROJ  = nc_file@MAP_PROJ
@@ -2266,7 +2345,7 @@ begin
   end if
 
   opts = opts_args
-  useT  = get_res_value(opts,"useTime",0)
+  useT  = get_res_value_keep(opts,"useTime",0)
 
   res = True
   res@MAP_PROJ  = nc_file@MAP_PROJ
@@ -2289,33 +2368,26 @@ begin
   end if
 
 
-  if(isfilevar(nc_file,"XLAT")) then
+  if(isfilevar(nc_file,"XLAT"))
     if(ISFILE) then
-      XLAT  = nc_file->XLAT(useT,:,:)
-      XLONG = nc_file->XLONG(useT,:,:)
+      XLAT  = nc_file->XLAT(:,:,:)
+      XLONG = nc_file->XLONG(:,:,:)
     else
       XLAT  = file_handle[:]->XLAT
       XLONG = file_handle[:]->XLONG
     end if
   else
     if(ISFILE) then
-      XLAT  = nc_file->XLAT_M(useT,:,:)
-      XLONG = nc_file->XLONG_M(useT,:,:)
+      XLAT  = nc_file->XLAT_M(:,:,:)
+      XLONG = nc_file->XLONG_M(:,:,:)
     else
       XLAT  = file_handle[:]->XLAT_M
       XLONG = file_handle[:]->XLONG_M
     end if
   end if
 
-  if(dimsizes(dimsizes(XLAT)).eq.2) then
-; Rank 2
-    res@REF_LAT = XLAT(0,0)
-    res@REF_LON = XLONG(0,0)
-  else
-; Rank 3
-    res@REF_LAT = XLAT(useT,0,0)
-    res@REF_LON = XLONG(useT,0,0)
-  end if
+  is_moving = _is_moving_nest(XLAT, XLONG)
+  
   res@KNOWNI  = 1.0
   res@KNOWNJ  = 1.0
     
@@ -2323,11 +2395,42 @@ begin
   new_x = x + 1
   new_y = y + 1
   
-  loc = wrf_ij_to_ll (new_x,new_y,res)
+  if (.not. is_moving) then
+      res@REF_LAT = XLAT(0,0,0)
+      res@REF_LON = XLONG(0,0,0)
+      
+      loc = wrf_ij_to_ll (new_x,new_y,res)
+  else
+      if (useT .ge. 0) then
+          res@REF_LAT = XLAT(useT,0,0)
+          res@REF_LON = XLONG(useT,0,0)
+          
+          loc = wrf_ij_to_ll (new_x,new_y,res)
+      else
+          xlatdims = dimsizes(XLAT)
+          xdims = dimsizes(x)
+
+          if (typeof(new_x) .eq. "double") then 
+             loc = new((/2,xlatdims(0),xdims(0)/), "double")
+          else
+             loc = new((/2,xlatdims(0),xdims(0)/), "float")
+          end if
+          
+          do t=0,xlatdims(0)-1
+             res@REF_LAT = XLAT(t,0,0)
+             res@REF_LON = XLONG(t,0,0)
+             l = wrf_ij_to_ll (new_x,new_y,res)
+             loc(0,t,:) = l(0,:)
+             loc(1,t,:) = l(1,:)
+          end do
+      end if
+  end if
   
-  if (dimsizes(dimsizes(loc)) .eq. 1) then
+  locrank = dimsizes(dimsizes(loc))
+  
+  if (locrank .eq. 1) then
       loc!0 = "lon_lat"
-  elseif (dimsizes(dimsizes(loc)) .eq. 2) then
+  elseif (locrank .eq. 2) then
       loc!0 = "lon_lat"
       loc!1 = "idx"
   else ; Not currently supported
@@ -2393,76 +2496,146 @@ begin
      dimY = dims(nd-2)
      dimZ = dims(nd-3)
      
+     ; Used later for calculating vertical levels (auto)
      if ( nd .eq. 4 ) then
        z = z_in(0,:,:,:)
      else
        z = z_in
      end if
-
-; Convert latlon to xy coordinates
-
-    if (use_pivot) then 
-        if (latlon) then
-            opt = True
-            opt@returnInt = True
-            opt@useTime = timeidx
-            ij := wrf_user_ll_to_xy(file_handle, loc_param(0), loc_param(1), opt)
-            start_x = ij(0)
-            start_y = ij(1)
-        else
-            start_x = loc_param(0)
-            start_y = loc_param(1)
-        end if
-    else
-        if (latlon) then
-            opt = True
-            opt@returnInt = True
-            opt@useTime = timeidx
-            ij := wrf_user_ll_to_xy(file_handle, (/ loc_param(0), loc_param(2) /), (/ loc_param(1), loc_param(3) /), opt)
-            start_x = ij(0,0)
-            start_y = ij(1,0)
-            end_x = ij(0,1)
-            end_y = ij(1,1)
-        else
-            start_x = loc_param(0)
-            start_y = loc_param(1)
-            end_x = loc_param(2)
-            end_y = loc_param(3)
-        end if
-    end if 
- 
-; get the lat/lons along the cross section line if requested
      
-; set the cross section line coordinates if requested
-     if (linecoords) then 
-         if (typeof(file_handle).eq."list") then
-             nc_file = file_handle[0]
-         else
-             nc_file = file_handle
-         end if
-         latname = "XLAT" 
-         lonname = "XLONG" 
-         if(.not. isfilevar(nc_file,"XLAT")) then
-           if(isfilevar(nc_file,"XLAT_M")) then
-             latname = "XLAT_M"
-             lonname = "XLONG_M"
-           end if
-         end if
+     if (use_pivot) then 
+         start_x = loc_param(0)
+         start_y = loc_param(1)
          
-         latvar  = _get_wrf_var(file_handle, latname, timeidx)
-         lonvar = _get_wrf_var(file_handle, lonname, timeidx)
-         
-        if (use_pivot) then
-            loc := (/start_x, start_y/)
-            linelats = wrf_user_intrp2d(latvar, loc, angle, False)
-            linelons = wrf_user_intrp2d(lonvar, loc, angle, False)
-        else
-            loc := (/start_x, start_y, end_x, end_y /)
-            linelats = wrf_user_intrp2d(latvar, loc, angle, True)
-            linelons = wrf_user_intrp2d(lonvar, loc, angle, True)
-        end if
-        
+     else
+         start_x = loc_param(0)
+         start_y = loc_param(1)
+         end_x = loc_param(2)
+         end_y = loc_param(3)
      end if
+     
+     ; Handle latitude/longitude coordinates and cross section line
+     if (latlon .or. linecoords) then
+         lats = wrf_user_getvar(file_handle, "lat", timeidx)
+         lons = wrf_user_getvar(file_handle, "lon", timeidx)
+         is_moving_nest = _is_moving_nest(lats, lons)
+         
+         if (is_moving_nest .and. timeidx .lt. 0) then
+             ; Need to do this recursively
+             dimlats = dimsizes(lats)
+             dimvar = dimsizes(var3d)
+             dimz = dimsizes(z_in)
+             
+             
+             if ((dimlats(0) .ne. dimvar(0)) .or. (dimlats(0) .ne. dimz(0))) then
+                 print("time dimensions must be the same for var3d, z, and lat/lon when timeidx is -1 and the nest is moving")
+                 exit
+             end if
+             
+             new_opt = opts
+             result = 0;
+             new_lats = 0
+             new_lons = 0
+             orientation = ""
+             
+             do t=0,dimlats(0)-1
+                 v_t = var3d(0,:,:,:)
+                 z_t = z_in(0,:,:,:)
+                 
+                 new_opt@timeidx = t
+                 
+                 v = wrf_user_vertcross(v_t, z_t, loc_param, new_opt)
+                 
+                 if (dimsizes(dimsizes(result)) .eq. 1) then
+                    vdims = dimsizes(v)
+                    result := new((/dimlats(0),vdims(0),vdims(1)/), typeof(v))
+                 end if
+                 
+                 result(t,:,:) = v(:,:)
+                 
+                 if (linecoords) then 
+                     if (dimsizes(dimsizes(new_lats)) .eq. 1) then
+                         new_lats := new((/dimlats(0), vdims(1)/), typeof(v@lats))
+                     end if
+                     
+                     if (dimsizes(dimsizes(new_lons)) .eq. 1) then
+                         new_lons := new((/dimlats(0), vdims(1)/), typeof(v@lons))
+                     end if
+                     
+                     new_lats(t,:) = v@lats(:)
+                     new_lons(t,:) = v@lons(:)
+                 
+                 end if 
+                 
+                 if (orientation .ne. "") then 
+                    orientation = orientation + " ; " + result@Orientation
+                 else
+                    orientation = result@Orientation
+                 end if
+                 
+             end do
+             
+             result!0 = "Time"
+             
+             ;if (.not. use_pivot) then
+             ;   result@Orientation = "start=(" + start_x + ", " + start_y + ") end=(" + end_x + ", " + end_y + ") [moving nest]"
+             ;else
+             ;   result@Orientation = "start=(" + start_x + ", " + start_y + ") pivot=" + opts@angle + " [moving nest]"
+             ;end if    
+            
+             
+             if (linecoords) then
+                result@lats := new_lats
+                result@lons := new_lons
+             end if
+             
+             return result
+             
+         else
+            timeidx = 0
+         end if
+           
+         
+         if (latlon) then
+            if (use_pivot) then
+                opt = True
+                opt@returnInt = True
+                opt@useTime = timeidx
+                ij := wrf_user_ll_to_xy(file_handle, loc_param(0), loc_param(1), opt)
+                start_x = ij(0)
+                start_y = ij(1)
+             else
+                opt = True
+                opt@returnInt = True
+                opt@useTime = timeidx
+                ij := wrf_user_ll_to_xy(file_handle, (/ loc_param(0), loc_param(2) /), (/ loc_param(1), loc_param(3) /), opt)
+                start_x = ij(0,0)
+                start_y = ij(1,0)
+                end_x = ij(0,1)
+                end_y = ij(1,1)
+            end if
+         end if
+         
+         if (dimsizes(dimsizes(lats)) .gt. 2) then
+             lats = lats(0,:,:)
+             lons = lons(0,:,:)
+         end if
+         
+         ; set the cross section line coordinates if requested
+         if (linecoords) then 
+            if (use_pivot) then
+                loc := (/start_x, start_y/)
+                linelats = wrf_user_intrp2d(lats, loc, angle, False)
+                linelons = wrf_user_intrp2d(lons, loc, angle, False)
+            else
+                loc := (/start_x, start_y, end_x, end_y /)
+                linelats = wrf_user_intrp2d(lats, loc, angle, True)
+                linelons = wrf_user_intrp2d(lons, loc, angle, True)
+            end if
+            
+         end if
+     
+     end if   
 
 ; set vertical cross section
 ; Note for wrf_user_set_xy, opt is False when pivot and angle used.
