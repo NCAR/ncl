@@ -2521,61 +2521,70 @@ begin
          is_moving_nest = _is_moving_nest(lats, lons)
          
          if (is_moving_nest .and. timeidx .lt. 0) then
+             ; Requesting all times with a moving nest is not supported with 
+             ; lat/lon cross sections because the nest could move outside of 
+             ; the cross section line, leading to various problems. Users 
+             ; need to handle this case themselves.
+             
+             print("Requesting all times with a moving nest is not supported when using lat/lon cross sections because the domain could move outside of the cross section.")
+             print("Please request each time individually")
+             exit
+             
              ; Need to do this recursively
-             dimlats = dimsizes(lats)
-             dimvar = dimsizes(var3d)
-             dimz = dimsizes(z_in)
+             ;dimlats = dimsizes(lats)
+             ;dimvar = dimsizes(var3d)
+             ;dimz = dimsizes(z_in)
              
              
-             if ((dimlats(0) .ne. dimvar(0)) .or. (dimlats(0) .ne. dimz(0))) then
-                 print("time dimensions must be the same for var3d, z, and lat/lon when timeidx is -1 and the nest is moving")
-                 exit
-             end if
+             ;if ((dimlats(0) .ne. dimvar(0)) .or. (dimlats(0) .ne. dimz(0))) then
+             ;    print("time dimensions must be the same for var3d, z, and lat/lon when timeidx is -1 and the nest is moving")
+             ;    exit
+             ;end if
              
-             new_opt = opts
-             result = 0;
-             new_lats = 0
-             new_lons = 0
-             orientation = ""
+             ;new_opt = opts
+             ;result = 0;
+             ;new_lats = 0
+             ;new_lons = 0
+             ;orientation = ""
              
-             do t=0,dimlats(0)-1
-                 v_t = var3d(0,:,:,:)
-                 z_t = z_in(0,:,:,:)
+             ;do t=0,dimlats(0)-1
+             ;    v_t = var3d(0,:,:,:)
+             ;    z_t = z_in(0,:,:,:)
+             ;    
+             ;    new_opt@timeidx = t
+             ;    
+             ;    v = wrf_user_vertcross(v_t, z_t, loc_param, new_opt)
+             ;    
+             ;    if (dimsizes(dimsizes(result)) .eq. 1) then
+             ;       vdims = dimsizes(v)
+             ;       result := new((/dimlats(0),vdims(0),vdims(1)/), typeof(v))
+             ;    end if
                  
-                 new_opt@timeidx = t
-                 
-                 v = wrf_user_vertcross(v_t, z_t, loc_param, new_opt)
-                 
-                 if (dimsizes(dimsizes(result)) .eq. 1) then
-                    vdims = dimsizes(v)
-                    result := new((/dimlats(0),vdims(0),vdims(1)/), typeof(v))
-                 end if
-                 
-                 result(t,:,:) = v(:,:)
-                 
-                 if (linecoords) then 
-                     if (dimsizes(dimsizes(new_lats)) .eq. 1) then
-                         new_lats := new((/dimlats(0), vdims(1)/), typeof(v@lats))
-                     end if
-                     
-                     if (dimsizes(dimsizes(new_lons)) .eq. 1) then
-                         new_lons := new((/dimlats(0), vdims(1)/), typeof(v@lons))
-                     end if
-                     
-                     new_lats(t,:) = v@lats(:)
-                     new_lons(t,:) = v@lons(:)
-                 
-                 end if 
-                 
-                 if (orientation .ne. "") then 
-                    orientation = orientation + " ; " + result@Orientation
-                 else
-                    orientation = result@Orientation
-                 end if
-                 
-             end do
+             ;    result(t,:,:) = v(:,:)
+             ;    
+             ;    if (linecoords) then 
+             ;        if (dimsizes(dimsizes(new_lats)) .eq. 1) then
+             ;            new_lats := new((/dimlats(0), vdims(1)/), typeof(v@lats))
+             ;        end if
+             ;        
+             ;        if (dimsizes(dimsizes(new_lons)) .eq. 1) then
+             ;            new_lons := new((/dimlats(0), vdims(1)/), typeof(v@lons))
+             ;        end if
+             ;        
+             ;        new_lats(t,:) = v@lats(:)
+             ;        new_lons(t,:) = v@lons(:)
+             ;    
+             ;    end if 
+             ;    
+             ;    if (orientation .ne. "") then 
+             ;       orientation = orientation + " ; " + result@Orientation
+             ;    else
+             ;       orientation = result@Orientation
+             ;    end if
+             ;    
+             ;end do
              
-             result!0 = "Time"
+             ;result!0 = "Time"
              
              ;if (.not. use_pivot) then
              ;   result@Orientation = "start=(" + start_x + ", " + start_y + ") end=(" + end_x + ", " + end_y + ") [moving nest]"
@@ -2584,12 +2593,12 @@ begin
              ;end if    
             
              
-             if (linecoords) then
-                result@lats := new_lats
-                result@lons := new_lons
-             end if
+             ;if (linecoords) then
+             ;   result@lats := new_lats
+             ;   result@lons := new_lons
+             ;end if
              
-             return result
+             ;return result
              
          else
             timeidx = 0
