@@ -7,9 +7,10 @@
 ;                            loc_param:numeric, angle:numeric, opts:logical )
 ; function wrf_user_vert_interp(file_handle,field:float,\
 ;                               vert_coordinate[1]:string, \
-        ;                       interp_levels[*]:numeric,opts[1]:logical)
-; function wrf_user_vertcross(var3d:numeric, z:numeric, loc_param:numeric, 
+;                               interp_levels[*]:numeric,opts[1]:logical)
+; function wrf_user_vertcross(var3d:numeric, z:numeric, loc_param:numeric, \
 ;                             angle:numeric, opts:logical )
+; function wrf_user_interpline(var2d:numeric, loc_param:numeric, opts:logical )
 ; function wrf_user_getvar( file_handle, variable:string, time:integer )
 ; function wrf_user_list_times( file_handle )
 ; function wrf_user_ll_to_ij( nc_file:file, longitude:numeric, latitude:numeric, \
@@ -492,7 +493,7 @@ begin
            z_in = z_in * 0.01
          end if
        end if
-       z = z_in(0,:,:,:)
+       z0 = z_in(0,:,:,:)
      else
        if ( z_in(dimZ-1,0,0) .lt. z_in(dimZ-2,0,0) ) then
          ; We must be interpolating to pressure
@@ -502,52 +503,54 @@ begin
            z_in = z_in * 0.01
          end if
        end if
-       z = z_in
+       z0 = z_in
      end if
 
        
 ; set vertical cross section
      if (opts) then
-       xy = wrf_user_set_xy( z, loc_param(0), loc_param(1), \    ; assumes 0-based indexing in v6.5.0
+       xy = wrf_user_set_xy( z0, loc_param(0), loc_param(1), \    ; assumes 0-based indexing in v6.5.0
                                 loc_param(2), loc_param(3), \
                                 angle, opts )
      else
-       xy = wrf_user_set_xy( z, loc_param(0), loc_param(1), \ ; 
+       xy = wrf_user_set_xy( z0, loc_param(0), loc_param(1), \ ; 
                                 0.0, 0.0, angle, opts )
      end if
+
      xp = dimsizes(xy)
   
-  
 ; first we interp z
-     var2dz   = wrf_interp_2d_xy( z, xy)
+     var2dz   = wrf_interp_2d_xy( z0, xy)
 
 ;  interp to constant z grid
      if(var2dz(0,0) .gt. var2dz(1,0) ) then  ; monotonically decreasing coordinate
-        z_max = floor(max(z)/10)*10     ; bottom value
-        z_min = ceil(min(z)/10)*10      ; top value
+        z_max = floor(max(z0)/10)*10     ; bottom value
+        z_min = ceil(min(z0)/10)*10      ; top value
         dz = 10
         nlevels = tointeger( (z_max-z_min)/dz)
-        z_var2d = new( (/nlevels/), typeof(z))
+        z_var2d = new( (/nlevels/), typeof(z0))
         z_var2d(0) = z_max
         dz = -dz
      else
-        z_max = max(z)
+        z_max = max(z0)
         z_min = 0.
         dz = 0.01 * z_max
         nlevels = tointeger( z_max/dz )
-        z_var2d = new( (/nlevels/), typeof(z))
+        z_var2d = new( (/nlevels/), typeof(z0))
         z_var2d(0) = z_min
      end if
   
      do i=1, nlevels-1
         z_var2d(i) = z_var2d(0)+i*dz
      end do
-  
+     
 
 ; interp the variable
      if ( dimsizes(dims) .eq. 4 ) then
        var2d = new( (/dims(0), nlevels, xp(0)/), typeof(var2dz))
        do it = 0,dims(0)-1
+         ; first we interp z
+         var2dz   := wrf_interp_2d_xy( z_in(it,:,:,:), xy)
          var2dtmp = wrf_interp_2d_xy( var3d(it,:,:,:), xy)
          do i=0,xp(0)-1
             var2d(it,:,i) = wrf_interp_1d( var2dtmp(:,i), var2dz(:,i), z_var2d)
@@ -2498,9 +2501,9 @@ begin
      
      ; Used later for calculating vertical levels (auto)
      if ( nd .eq. 4 ) then
-       z = z_in(0,:,:,:)
+       z0 = z_in(0,:,:,:)
      else
-       z = z_in
+       z0 = z_in
      end if
      
      if (use_pivot) then 
@@ -2579,37 +2582,36 @@ begin
 ; set vertical cross section
 ; Note for wrf_user_set_xy, opt is False when pivot and angle used.
      if (use_pivot) then
-         xy = wrf_user_set_xy( z, start_x, start_y, \ ; assumes 0-based indexing in v6.5.0
+         xy = wrf_user_set_xy( z0, start_x, start_y, \ ; assumes 0-based indexing in v6.5.0
                                 0.0, 0.0, angle, False )
      
      else
-         xy = wrf_user_set_xy( z, start_x, start_y, \    ; assumes 0-based indexing in v6.5.0
+         xy = wrf_user_set_xy( z0, start_x, start_y, \    ; assumes 0-based indexing in v6.5.0
                                 end_x, end_y, \
                                 angle, True)
          
      end if
      xp = dimsizes(xy)
   
-  
 ; first we interp z
-     var2dz   = wrf_interp_2d_xy( z, xy)
+     var2dz   = wrf_interp_2d_xy( z0, xy)
 
 ;  interp to constant z grid
      if (all(ismissing(levels))) then
          if(var2dz(0,0) .gt. var2dz(1,0) ) then  ; monotonically decreasing coordinate
-            z_max = floor(max(z)/10)*10     ; bottom value
-            z_min = ceil(min(z)/10)*10      ; top value
+            z_max = floor(max(z0)/10)*10     ; bottom value
+            z_min = ceil(min(z0)/10)*10      ; top value
             dz = (1.0/nlevels) * (z_max - z_min)
             ;nlevels = tointeger( (z_max-z_min)/dz)
-            z_var2d = new( (/nlevels/), typeof(z))
+            z_var2d = new( (/nlevels/), typeof(z0))
             z_var2d(0) = z_max
             dz = -dz
          else
-            z_max = max(z)
+            z_max = max(z0)
             z_min = 0.
             dz = (1.0/nlevels) * z_max
             ;nlevels = tointeger( z_max/dz )
-            z_var2d = new( (/nlevels/), typeof(z))
+            z_var2d = new( (/nlevels/), typeof(z0))
             z_var2d(0) = z_min
          end if
       
@@ -2623,8 +2625,11 @@ begin
   
 ; interp the variable
      if ( dimsizes(dims) .eq. 4 ) then
+       
        var2d = new( (/dims(0), nlevels, xp(0)/), typeof(var2dz))
        do it = 0,dims(0)-1
+         ; first we interp z
+         var2dz   := wrf_interp_2d_xy( z_in(it,:,:,:), xy)
          var2dtmp = wrf_interp_2d_xy( var3d(it,:,:,:), xy)
          do i=0,xp(0)-1
             var2d(it,:,i) = wrf_interp_1d( var2dtmp(:,i), var2dz(:,i), z_var2d)
@@ -2669,6 +2674,184 @@ begin
      return(var2d)
 
 end
+
+
+;--------------------------------------------------------------------------------
+ 
+undef("wrf_user_interpline")
+function wrf_user_interpline(var2d:numeric, loc_param:numeric, opts:logical )
+
+; var2d      - 2d field to interpolate to a line
+; loc_param  - an array of 4 values representing the start point and end point 
+;              for the cross section (start_x, start_y, end_x, end_y) OR a single 
+;              point when opt@use_pivot is True representing the pivot point. 
+;              The values can be in grid coordinates or lat/lon coordinates 
+;              (start_x = start_lon, start_y = start_lat, ...). If using 
+;              lat/lon coordinates, then opt@latlon must be True.
+; opts       - optional arguments
+;   use_pivot   - set to True to indicate that loc_param and angle are used, 
+;                 otherwise loc_param is set to 4 values to indicate a start and
+;                 end point 
+;   angle       - an angle for vertical plots - 90 represent a WE cross section, 
+;                 ignored if use_pivot is False.
+;   latlon      - set to True if the values in loc_param are latitude and longitude
+;                 values rather than grid values
+;   file_handle - must be set to a file handle when latlon is True or 
+;                 linecoords is True, otherwise this is ignored.
+;   timeidx     - the time index to use for moving nests when latlon is True. Set
+;                 to 0 if the nest is not moving.
+;   linecoords  - set to True to include the latitude and longitude coordinates
+;                 for the cross section line in the output attributes.
+
+begin
+
+     use_pivot = get_res_value_keep(opts, "use_pivot", False)
+     angle = get_res_value_keep(opts, "angle", 0.0)
+     latlon = get_res_value_keep(opts, "latlon", False)
+     file_handle = get_res_value_keep(opts, "file_handle", 0)
+     timeidx = get_res_value_keep(opts, "timeidx", 0)
+     linecoords = get_res_value_keep(opts, "linecoords", False)
+     
+     dims = dimsizes(var2d)
+     nd = dimsizes(dims)
+     dimX = dims(nd-1)
+     dimY = dims(nd-2)
+     dimT = 1
+     if ( nd .eq. 3 ) then
+       dimT = dims(nd-3)
+     end if
+     
+     if (use_pivot) then 
+         start_x = loc_param(0)
+         start_y = loc_param(1)
+         
+     else
+         start_x = loc_param(0)
+         start_y = loc_param(1)
+         end_x = loc_param(2)
+         end_y = loc_param(3)
+     end if
+     
+     ; Handle latitude/longitude coordinates and cross section line
+     if (latlon .or. linecoords) then
+         lats = wrf_user_getvar(file_handle, "lat", timeidx)
+         lons = wrf_user_getvar(file_handle, "lon", timeidx)
+         is_moving_nest = _is_moving_nest(lats, lons)
+         
+         if (is_moving_nest .and. timeidx .lt. 0) then
+             ; Requesting all times with a moving nest is not supported with 
+             ; lat/lon lines because the nest could move outside of 
+             ; the line, leading to various problems. Users 
+             ; need to handle this case themselves.
+             
+             print("Requesting all times with a moving nest is not supported when using a lat/lon line because the domain could move outside of the line.")
+             print("You must request each time individually")
+             exit
+             
+         else
+            timeidx = 0
+         end if
+           
+         
+         if (latlon) then
+            if (use_pivot) then
+                opt = True
+                opt@returnInt = True
+                opt@useTime = timeidx
+                ij := wrf_user_ll_to_xy(file_handle, loc_param(0), loc_param(1), opt)
+                start_x = ij(0)
+                start_y = ij(1)
+             else
+                opt = True
+                opt@returnInt = True
+                opt@useTime = timeidx
+                ij := wrf_user_ll_to_xy(file_handle, (/ loc_param(0), loc_param(2) /), (/ loc_param(1), loc_param(3) /), opt)
+                start_x = ij(0,0)
+                start_y = ij(1,0)
+                end_x = ij(0,1)
+                end_y = ij(1,1)
+            end if
+         end if
+         
+         if (dimsizes(dimsizes(lats)) .gt. 2) then
+             lats = lats(0,:,:)
+             lons = lons(0,:,:)
+         end if
+         
+         ; set the line coordinates if requested
+         if (linecoords) then 
+            if (use_pivot) then
+                loc := (/start_x, start_y/)
+                linelats = wrf_user_intrp2d(lats, loc, angle, False)
+                linelons = wrf_user_intrp2d(lons, loc, angle, False)
+            else
+                loc := (/start_x, start_y, end_x, end_y /)
+                linelats = wrf_user_intrp2d(lats, loc, angle, True)
+                linelons = wrf_user_intrp2d(lons, loc, angle, True)
+            end if
+            
+         end if
+     
+     end if   
+     
+     var2dtmp = new( (/ 1, dimY, dimX /), typeof(var2d) )
+
+; set vertical cross section
+     if ( nd .eq. 3 ) then
+       var2dtmp(0,:,:) = var2d(timeidx,:,:)
+     else
+       var2dtmp(0,:,:) = var2d(:,:)
+     end if
+
+; set line
+; Note for wrf_user_set_xy, opt is False when pivot and angle used.
+     if (use_pivot) then
+         xy = wrf_user_set_xy(var2dtmp, start_x, start_y, \ ; assumes 0-based indexing in v6.5.0
+                                0.0, 0.0, angle, False )
+     
+     else
+         xy = wrf_user_set_xy(var2dtmp, start_x, start_y, \    ; assumes 0-based indexing in v6.5.0
+                                end_x, end_y, \
+                                angle, True)
+         
+     end if
+
+     xp = dimsizes(xy)
+  
+     var2dout = new((/ dimT, xp(0) /), typeof(var2d))
+
+     var1dtmp = wrf_interp_2d_xy(var2dtmp, xy)
+     var2dout(0,:) = var1dtmp(0,:)
+     
+     if ( dimT .eq. 1 ) then
+       var2dout!1 = "line_idx"
+       if (linecoords) then 
+          var2dout@lats = linelats
+          var2dout@lons = linelons
+       end if
+       
+       result = rm_single_dims(var2dout)
+     else
+         do it = 1,dimT-1
+             var2dtmp(0,:,:) = var2d(it,:,:)
+             var1dtmp = wrf_interp_2d_xy(var2dtmp, xy)
+             var2dout(it,:) = var1dtmp(0,:)
+         end do
+         
+         var2dout!0 = "Time"
+         var2dout!1 = "line_idx"
+         
+         result = var2dout
+     end if
+     
+     if (linecoords) then 
+       result@lats = linelats
+       result@lons = linelons
+     end if
+     
+     return(result)
+end
+
 
 
 ;--------------------------------------------------------------------------------
