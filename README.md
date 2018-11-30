@@ -64,11 +64,3 @@ Cite NCL using the following text:
 > The NCAR Command Language (Version 6.5.0) [Software]. (2018). Boulder, Colorado: UCAR/NCAR/CISL/TDD. http://dx.doi.org/10.5065/D6WD3XH5
 
 Update the NCL version and year as appropriate.
-
-
-# License
-
-NCL has separate binary and source code licenses which are based on the OSI <a href="http://www.opensource.org/licenses/apache2.0.php">Apache License, Version 2.0</a> license.
-
-* [NCL Source Code License](LICENSE.md#ncl-source-code-license)
-* [NCL Binary License](LICENSE.md#ncl-binary-license)
