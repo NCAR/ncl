@@ -1,6 +1,8 @@
 ;--------------------------------------------------------------------------------
 ; function wrf_user_set_xy( var:numeric, xp:numeric, yp:numeric, x1:numeric, \
 ;                           y1:numeric,angle:numeric ,opts )
+; function wrf_user_set_xy_err( var:numeric, xp:numeric, yp:numeric, x1:numeric, \
+;                           y1:numeric,angle:numeric ,opts )
 ; function wrf_user_intrp3d( var3d:numeric, z:numeric, plot_type:string, \
 ;                            loc_param:numeric, angle:numeric, opts:logical )
 ; function wrf_user_intrp2d( var2d:numeric, \
@@ -358,6 +360,157 @@ begin
     end if
     if ( y1 .gt. dims(1)-1 ) then 
       y1 = dims(1)
+    end if
+  end if
+
+  dx = x1 - x0
+  dy = y1 - y0
+  distance = (dx*dx + dy*dy)^0.5
+  npts = tointeger(distance) + 1
+  dxy = new(1,typeof(distance))
+  dxy = distance/npts
+
+  xy = new((/ npts, 2 /),float)
+
+  ; Make this float so that integer start/end points work
+  dx := tofloat(dx)/(npts-1)
+  dy := tofloat(dy)/(npts-1)
+
+  do i=0,npts-1
+    xy(i,0) = tofloat(x0 + i*dx)
+    xy(i,1) = tofloat(y0 + i*dy)
+  end do
+
+; print(xy)
+  return(xy)
+
+end
+
+;--------------------------------------------------------------------------------
+undef("wrf_user_set_xy_err")
+function wrf_user_set_xy_err( var:numeric, xp:numeric, yp:numeric, x1:numeric, \
+                          y1:numeric, angle:numeric, opts )
+
+;  mass coordinate version of ncl user routines
+;  when opts is False, use pivot point and angle
+;  same as wrf_user_set_xy but errors out when the point is outside of the domain
+
+local dims,x,y,slope,intercept,distance,dx,dy,dxy,npts,xy
+
+begin
+
+; find intersection of line and domain boundaries
+
+  dims = dimsizes(var)
+
+  if (.not. opts) then        ; We have a pivot point and location and 
+                  ; need to calculate the start and end points of 
+                  ; the cross section
+
+     if ((angle .gt. 315.) .or. (angle .lt. 45.) .or. \
+         ((angle .gt. 135.) .and. (angle .lt. 225.)) )  then
+
+;  x = y*slope + intercept
+
+          slope = -(360.-angle)/45.
+          if( angle .lt. 45. ) then
+            slope = angle/45.
+          end if
+          if( angle .gt. 135.) then
+            slope = (angle-180.)/45.
+          end if
+          intercept = xp - yp*slope
+
+; find intersections with domain boundaries
+
+          y0 = 0.
+          x0 = y0*slope + intercept
+   
+          if( x0 .lt. 0.) then  ; intersect outside of left boundary
+            x0 = 0.
+            y0 =  (x0 - intercept)/slope
+          end if
+          if( x0 .gt. dims(2)-1) then  ; intersect outside of right boundary
+            x0 = dims(2)-1
+            y0 =  (x0 - intercept)/slope
+          end if
+   
+          y1 = dims(1)-1.  ;  need to make sure this will be a float?
+          x1 = y1*slope + intercept
+   
+          if( x1 .lt. 0.) then  ; intersect outside of left boundary
+            x1 = 0.
+            y1 =  (x1 - intercept)/slope
+          end if
+          if( x1 .gt. dims(2)-1) then  ; intersect outside of right boundary
+            x1 = dims(2)-1
+            y1 =  (x1 - intercept)/slope
+          end if
+
+     else
+
+;  y = x*slope + intercept
+
+          slope = (90.-angle)/45.
+          if( angle .gt. 225. ) then
+            slope = (270.-angle)/45.
+          end if
+          intercept = yp - xp*slope
+
+; find intersections with domain boundaries
+
+          x0 = 0.
+          y0 = x0*slope + intercept
+   
+          if( y0 .lt. 0.) then  ; intersect outside of bottom boundary
+            y0 = 0.
+            x0 =  (y0 - intercept)/slope
+          end if
+          if( y0 .gt. dims(1)-1) then  ; intersect outside of top boundary
+            y0 = dims(1)-1
+            x0 =  (y0 - intercept)/slope
+          end if
+
+          x1 = dims(2)-1.  ;  need to make sure this will be a float?
+          y1 = x1*slope + intercept
+   
+          if( y1 .lt. 0.) then  ; intersect outside of bottom boundary
+            y1 = 0.
+            x1 =  (y1 - intercept)/slope
+          end if
+          if( y1 .gt. dims(1)-1) then  ; intersect outside of top boundary
+            y1 = dims(1)-1
+            x1 =  (y1 - intercept)/slope
+          end if
+   
+     end if  ; we have beginning and ending points
+
+  end if
+
+
+  if (opts) then    ; We have a specified start and end point
+    x0 = xp
+    y0 = yp
+    if ( xp .gt. dims(2)-1 ) then 
+      e = sprintf("xp=%f is outside of the domain boundaries",xp)
+      print(e)
+      exit
+    end if
+    if ( yp .gt. dims(1)-1 ) then 
+      e = sprintf("yp=%f is outside of the domain boundaries",yp)
+      print(e)
+      exit
+    end if
+    if ( x1 .gt. dims(2)-1 ) then 
+      print(x1)
+      e = sprintf("x1=%f is outside of the domain boundaries",x1)
+      print(e)
+      exit
+    end if
+    if ( y1 .gt. dims(1)-1 ) then 
+      e = sprintf("y1=%f is outside of the domain boundaries",y1)
+      print(e)
+      exit
     end if
   end if
 
@@ -2519,22 +2672,27 @@ begin
      
      ; Handle latitude/longitude coordinates and cross section line
      if (latlon .or. linecoords) then
-         lats = wrf_user_getvar(file_handle, "lat", timeidx)
-         lons = wrf_user_getvar(file_handle, "lon", timeidx)
+         lats = wrf_user_getvar(file_handle, "lat", -1)
+         lons = wrf_user_getvar(file_handle, "lon", -1)
          is_moving_nest = _is_moving_nest(lats, lons)
          
-         if (is_moving_nest .and. timeidx .lt. 0) then
-             ; Requesting all times with a moving nest is not supported with 
-             ; lat/lon cross sections because the nest could move outside of 
-             ; the cross section line, leading to various problems. Users 
-             ; need to handle this case themselves.
+         if (is_moving_nest) then
+             if (timeidx .lt. 0) then
+                ; Requesting all times with a moving nest is not supported with 
+                ; lat/lon cross sections because the nest could move outside of 
+                ; the cross section line, leading to various problems. Users 
+                ; need to handle this case themselves.
              
-             print("Requesting all times with a moving nest is not supported when using lat/lon cross sections because the domain could move outside of the cross section.")
-             print("Please request each time individually")
-             exit
-             
+                print("Requesting all times with a moving nest is not supported when using lat/lon cross sections because the domain could move outside of the cross section.")
+                print("Please request each time individually")
+                exit
+             else
+                ; a timeidx has been provided
+                _timeidx = timeidx
+             end if
          else
-            timeidx = 0
+             ; if the nest isn't moving, then just use time 0
+             _timeidx = 0
          end if
            
          
@@ -2559,8 +2717,8 @@ begin
          end if
          
          if (dimsizes(dimsizes(lats)) .gt. 2) then
-             lats = lats(0,:,:)
-             lons = lons(0,:,:)
+             lats := lats(_timeidx,:,:)
+             lons := lons(_timeidx,:,:)
          end if
          
          ; set the cross section line coordinates if requested
@@ -2582,11 +2740,11 @@ begin
 ; set vertical cross section
 ; Note for wrf_user_set_xy, opt is False when pivot and angle used.
      if (use_pivot) then
-         xy = wrf_user_set_xy( z0, start_x, start_y, \ ; assumes 0-based indexing in v6.5.0
+         xy = wrf_user_set_xy_err( z0, start_x, start_y, \ ; assumes 0-based indexing in v6.5.0
                                 0.0, 0.0, angle, False )
      
      else
-         xy = wrf_user_set_xy( z0, start_x, start_y, \    ; assumes 0-based indexing in v6.5.0
+         xy = wrf_user_set_xy_err( z0, start_x, start_y, \    ; assumes 0-based indexing in v6.5.0
                                 end_x, end_y, \
                                 angle, True)
          
