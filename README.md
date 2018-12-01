@@ -34,26 +34,28 @@ Visit the [NCL website](http://www.ncl.ucar.edu) for documentation, examples, su
 
 The top level NCL source code tree contains the following directories and files:
 
-| Directory          | Purpose |
-| :--------------     | :------- |
-| ```common/```      | Low-level library and fonts required by NCAR Graphics and NCL |
-| ```config/```      | Configuration files for installation |
-| ```external/```    | External libraries required by NCL |
-| ```install/```     | Auxiliary files for installation |
-| ```ncarg2d/```     | NCAR Graphics and GKS libraries and examples |
-| ```ncarview/```    | NCGM-based applications and raster utilities |
-| ```ngmath/```      | Interpolation libraries for 1D, 2D, and 3D data |
-| ```ni/```          | NCL interpreter, HLU library, examples, color tables, GRIB2 code tables |
-| **Files**          | **Purpose** |
-| ```Configure```    | Configuration script for installation |
-| ```Copyright```    | Detailed copyright notice |
-| ```version```      | version file |
-| ```yMakefile```    | Top level makefile |
-
+| Directory                | Purpose |
+| :--------------          | :------- |
+| ```common/```            | Low-level library and fonts required by NCAR Graphics and NCL |
+| ```config/```            | Configuration files for installation |
+| ```external/```          | External libraries required by NCL |
+| ```install/```           | Auxiliary files for installation |
+| ```ncarg2d/```           | NCAR Graphics and GKS libraries and examples |
+| ```ncarview/```          | NCGM-based applications and raster utilities |
+| ```ngmath/```            | Interpolation libraries for 1D, 2D, and 3D data |
+| ```ni/```                | NCL interpreter, HLU library, examples, color tables, GRIB2 code tables |
+| **Files**                | **Purpose** |
+| ```CODE_OF_CONDUCT.md``` | Code of Conduct for NCL user community |
+| ```CONTRIBUTING.md```    | How to contribute to the NCL Project |
+| ```Configure```          | Configuration script for installation |
+| ```LICENSE```            | Apache 2.0 License |
+| ```README.md```          | Information about NCL |
+| ```version```            | version file |
+| ```yMakefile```          | Top level makefile |
 
 # Bug reports and feature requests
 
-Use the GitHub [issue tracker](https://github.com/NCAR/ncl/issues) to submit a bug or request.
+Use the GitHub [issue tracker](https://github.com/NCAR/ncl/issues) to submit a bug or request a feature.
 
 # Citing NCL
 
