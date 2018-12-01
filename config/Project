@@ -24,8 +24,7 @@
  *			etc are in the Template file.
  */
 
-#define NcargVersion 6.5.1
-#define NclVersion 6.5.1
+#define Version 6.5.1
 
 #ifndef	BuildNCL
 #define	BuildNCL
@@ -347,15 +346,15 @@
 #endif	/* GksBufferSize */
 
 #ifdef BETA
-NGVERSION       = NcargVersion-BETA
-NCLVERSION      = NclVersion-BETA
+NGVERSION       = Version-BETA
+NCLVERSION      = Version-BETA
 #else
 #ifdef DEVEL
-NGVERSION       = NcargVersion-$(DATE)
-NCLVERSION      = NclVersion-$(DATE)
+NGVERSION       = Version-$(DATE)
+NCLVERSION      = Version-$(DATE)
 #else
-NGVERSION       = NcargVersion
-NCLVERSION      = NclVersion
+NGVERSION       = Version
+NCLVERSION      = Version
 #endif
 #endif
 

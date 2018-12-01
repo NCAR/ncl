@@ -249,11 +249,7 @@ endif
 # Get the version, if not already set by user.
 #
 if ($version == "") then
-  if ($?NCARGONLY) then
-    set version = `cat $branch/NcargVersion`
-  else
-    set version = `cat $branch/NclVersion`
-  endif
+  set version = `cat $branch/version`
 endif
 
 if ($?NCARGONLY) then

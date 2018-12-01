@@ -158,7 +158,6 @@ FOPT            dynamic     uses DEBUG to determine
 
 "Project" sets up defaults for the following cpp variables:
 
-NcargVersion        3.2.x
 BuildRasterHDF      YES
 BuildRasterHPPCL    YES
 BuildRasterNrif     YES
@@ -187,7 +186,7 @@ GksBufferSize       0
 "Project" sets up the following Make Symbols:
 
 symbol          value                   description
-VERSION         NcargVersion
+VERSION         version
 COMMONSRC       $(TOP)/common/src
 NCARG2DSRC      $(TOP)/ncarg2d/src
 NVIEWSRC        $(TOP)/ncarview/src

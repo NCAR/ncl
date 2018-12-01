@@ -145,7 +145,6 @@ while ($#argv > 0)
     case "-2":
       set NCARGONLY
       unset NCARGNCL
-      set version = `cat $NCARG/NcargVersion`
       shift
       breaksw
 
