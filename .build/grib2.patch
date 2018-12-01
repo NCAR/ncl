@@ -1,0 +1,26 @@
+diff --git a/external/g2clib-1.6.0/makefile b/external/g2clib-1.6.0/makefile
+index c70c4bebb..444fe1ded 100755
+--- a/external/g2clib-1.6.0/makefile
++++ b/external/g2clib-1.6.0/makefile
+@@ -18,7 +18,7 @@ DEFS=-DUSE_JPEG2000 -DUSE_PNG
+ #
+ 
+ #INC=-I/nwprod/lib/include/
+-INC=-I/usr/local/include/
++INC=-I$(PREFIX)/include/
+ 
+ #
+ #   This "C" source code contains many uses of the C++
+diff --git a/external/yMakefile b/external/yMakefile
+index 31219f27f..25115da84 100644
+--- a/external/yMakefile
++++ b/external/yMakefile
+@@ -18,7 +18,7 @@
+ #	Date:		Fri Jan 16 21:11:00 MST 2004
+ #
+ #	Description:	yMakefile for external libraries and software
+-SUBDIRS = blas lapack sphere3.1_dp  fftpack5_dp
++SUBDIRS = blas lapack sphere3.1_dp  fftpack5_dp g2clib-1.6.0
+ #define IHaveSubdirs
+ 
+ 
