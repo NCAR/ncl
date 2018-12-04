@@ -2700,14 +2700,14 @@ begin
             if (use_pivot) then
                 opt = True
                 opt@returnInt = True
-                opt@useTime = timeidx
+                opt@useTime = _timeidx
                 ij := wrf_user_ll_to_xy(file_handle, loc_param(0), loc_param(1), opt)
                 start_x = ij(0)
                 start_y = ij(1)
              else
                 opt = True
                 opt@returnInt = True
-                opt@useTime = timeidx
+                opt@useTime = _timeidx
                 ij := wrf_user_ll_to_xy(file_handle, (/ loc_param(0), loc_param(2) /), (/ loc_param(1), loc_param(3) /), opt)
                 start_x = ij(0,0)
                 start_y = ij(1,0)
@@ -2892,22 +2892,27 @@ begin
      
      ; Handle latitude/longitude coordinates and cross section line
      if (latlon .or. linecoords) then
-         lats = wrf_user_getvar(file_handle, "lat", timeidx)
-         lons = wrf_user_getvar(file_handle, "lon", timeidx)
+         lats = wrf_user_getvar(file_handle, "lat", -1)
+         lons = wrf_user_getvar(file_handle, "lon", -1)
          is_moving_nest = _is_moving_nest(lats, lons)
          
-         if (is_moving_nest .and. timeidx .lt. 0) then
-             ; Requesting all times with a moving nest is not supported with 
-             ; lat/lon lines because the nest could move outside of 
-             ; the line, leading to various problems. Users 
-             ; need to handle this case themselves.
+         if (is_moving_nest) then
+             if (timeidx .lt. 0) then
+                ; Requesting all times with a moving nest is not supported with 
+                ; lat/lon cross sections because the nest could move outside of 
+                ; the cross section line, leading to various problems. Users 
+                ; need to handle this case themselves.
              
-             print("Requesting all times with a moving nest is not supported when using a lat/lon line because the domain could move outside of the line.")
-             print("You must request each time individually")
-             exit
-             
+                print("Requesting all times with a moving nest is not supported when using lat/lon line definitions because the domain could move outside of the line.")
+                print("You must request each time individually")
+                exit
+             else
+                ; a timeidx has been provided
+                _timeidx = timeidx
+             end if
          else
-            timeidx = 0
+             ; if the nest isn't moving, then just use time 0
+             _timeidx = 0
          end if
            
          
@@ -2915,14 +2920,14 @@ begin
             if (use_pivot) then
                 opt = True
                 opt@returnInt = True
-                opt@useTime = timeidx
+                opt@useTime = _timeidx
                 ij := wrf_user_ll_to_xy(file_handle, loc_param(0), loc_param(1), opt)
                 start_x = ij(0)
                 start_y = ij(1)
              else
                 opt = True
                 opt@returnInt = True
-                opt@useTime = timeidx
+                opt@useTime = _timeidx
                 ij := wrf_user_ll_to_xy(file_handle, (/ loc_param(0), loc_param(2) /), (/ loc_param(1), loc_param(3) /), opt)
                 start_x = ij(0,0)
                 start_y = ij(1,0)
@@ -2931,9 +2936,10 @@ begin
             end if
          end if
          
+        
          if (dimsizes(dimsizes(lats)) .gt. 2) then
-             lats = lats(0,:,:)
-             lons = lons(0,:,:)
+             lats := lats(_timeidx,:,:)
+             lons := lons(_timeidx,:,:)
          end if
          
          ; set the line coordinates if requested
@@ -2956,7 +2962,8 @@ begin
 
 ; set vertical cross section
      if ( nd .eq. 3 ) then
-       var2dtmp(0,:,:) = var2d(timeidx,:,:)
+       ; Use first timestep here
+       var2dtmp(0,:,:) = var2d(0,:,:)
      else
        var2dtmp(0,:,:) = var2d(:,:)
      end if
@@ -2964,14 +2971,13 @@ begin
 ; set line
 ; Note for wrf_user_set_xy, opt is False when pivot and angle used.
      if (use_pivot) then
-         xy = wrf_user_set_xy(var2dtmp, start_x, start_y, \ ; assumes 0-based indexing in v6.5.0
+         xy = wrf_user_set_xy_err(var2dtmp, start_x, start_y, \ ; assumes 0-based indexing in v6.5.0
                                 0.0, 0.0, angle, False )
      
      else
-         xy = wrf_user_set_xy(var2dtmp, start_x, start_y, \    ; assumes 0-based indexing in v6.5.0
+         xy = wrf_user_set_xy_err(var2dtmp, start_x, start_y, \    ; assumes 0-based indexing in v6.5.0
                                 end_x, end_y, \
                                 angle, True)
-         
      end if
 
      xp = dimsizes(xy)
