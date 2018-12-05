@@ -10831,7 +10831,7 @@ NhlErrorTypes DrawAdjustedCell
 /*
  * Function:  CellFill2D
  *
- * Description: fills data cells using GKS fill  
+ * Description: fills data cells using GKS fill (coordinates are 2D)
  *
  * In Args:
  *
@@ -11393,7 +11393,7 @@ NhlErrorTypes CellFill2D
 /*
  * Function:  CellFill1D
  *
- * Description: fills data cells using GKS fill  
+ * Description: fills data cells using GKS fill (1D meaning coordinates have 1 dimension)
  *
  * In Args:
  *
@@ -11502,7 +11502,13 @@ NhlErrorTypes CellFill1D
 		}
 	}
 			
-
+	/*
+	 * this section determines the minimum and maximum indexes along the x-coordinate where a cell is 
+	 * visible according to the current transformation. These values are stored in successive elements of
+	 * the ibnds array. If no cells along the row are visible the y index values may be adjusted if the row
+	 * is below or above any rows with visible cells. 
+	 */
+   
 	NhlVAGetValues(cnp->trans_obj->base.id,
 		       NhlNtrOutOfRangeF,&out_of_range,NULL);
 
@@ -11570,17 +11576,21 @@ NhlErrorTypes CellFill1D
 		xcellthreshold = uxd;
 		ycellthreshold = uyd;
 	}
-	/*
-	 * jd is the offset to the beginning of the current y axis data row
-	 * jc is the offset to the beginning of the current y axis coord row
-	 * jcp1 is the offset to the beginning of the next y axis coord row
-	 * jcm1 is the offset to the beginning of the previous y axis coord.
-	 */
 
+	/*
+	 * this section is the main drawing loop. The behavior changes slightly when the arrays are cell-bounded 
+         * and as result the coordinate arrays have one more element than the data. 
+	 * jd is the offset to the beginning of the current y axis data row
+	 * 11/26/18 -- additional checks added to prevent out-of-bound array accesses in the cell-bounded case.
+	 */
 
 	for (j = yminix; j <= ymaxix; j++) {
 		int jd = j * xsize;
+		int ilast = *(ibnd+2*j+1);
 		if (cnp->sfp->yc_is_bounds) {
+			if (j == ycount)
+				continue;
+			ilast = ilast - 1;
 			yi[0] = ya[j]; 
 			yi[1] = ya[j];
 			yi[2] = ya[j+1]; 
@@ -11604,7 +11614,7 @@ NhlErrorTypes CellFill1D
 			yi[2] = (ya[j]+ ya[j+1]) / 2.; 
 			yi[3] = (ya[j]+ ya[j+1]) / 2.; 
 		}
-		for (i = *(ibnd+2*j); i <= *(ibnd+2*j+1); i++) {
+		for (i = *(ibnd+2*j); i <= ilast; i++) {
 			float zval = *(da + jd + i);
 				
 			npoints = 4;
