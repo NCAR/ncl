@@ -41,8 +41,7 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	det_code42.o kmeans_kmns_as136.o spi3.o wrf_vinterp.o wrf_fctt.o \
 	wrf_write_wps.o pres_hybrid_jra55_dp.o relhum_ice.o relhum_water.o \
 	wetbulb_profs.o wrf_cloud_fracf.o mlegev_memory.o kernel_density.o \
-	meemd.o dpsort_large.o wrf_pw.o wrf_constants.o wrf_constants.mod \
-	omp.o omp_constants.mod 
+	meemd.o dpsort_large.o wrf_pw.o wrf_constants.o wrf_constants.mod
 
 COBJS =
 
@@ -64,9 +63,6 @@ eqthecalc.o: eqthecalc.f90 wrf_constants.mod
 
 rip_cape.o: rip_cape.f90 wrf_constants.mod
         $(F77) $(FFLAGS) -c rip_cape.f90
-
-omp.o omp_constants.mod: omp.f90
-        $(F77) $(FFLAGS) -c omp.f90
 
 wrf_cloud_fracf.o: wrf_cloud_fracf.f90
         $(F77) $(FFLAGS) -c wrf_cloud_fracf.f90
