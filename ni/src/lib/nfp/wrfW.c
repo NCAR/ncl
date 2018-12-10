@@ -2693,7 +2693,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
  * Error checking.
  */
   if(ndims_v3d < 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_2d_xy: The v3d array must be at least 3-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_2d_xy: The v3d array must be at least three-dimensional");
     return(NhlFATAL);
   }
   if(ndims_v3d != (ndims_xy+1)) {
@@ -5572,7 +5572,7 @@ NhlErrorTypes wrf_pvo_W( void )
   if(ndims_msfu > 2) {
     for(i = 0; i < ndims_u-3; i++) {
       if(dsizes_msfu[i] != dsizes_u[i]) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: If msfu is not 2-dimensional, then the leftmost dimensions of msfu and u must be the same");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: If msfu is not two-dimensional, then the leftmost dimensions of msfu and u must be the same");
         return(NhlFATAL);
       }
     }
@@ -6333,7 +6333,7 @@ NhlErrorTypes wrf_avo_W( void )
   if(ndims_msfu > 2) {
     for(i = 0; i < ndims_u-3; i++) {
       if(dsizes_msfu[i] != dsizes_u[i]) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_avo: If msfu is not 2-dimensional, then the leftmost dimensions of msfu and u must be the same");
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_avo: If msfu is not two-dimensional, then the leftmost dimensions of msfu and u must be the same");
         return(NhlFATAL);
       }
     }
@@ -9950,6 +9950,9 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
 }
 
 
+/* This is the correct cape */
+
+
 /*
  * Function for calculating cape (from the RIP code). This function
  * depends on the "psadilookup.dat" file, which by default will be
@@ -9957,6 +9960,13 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
  * NCARG_PSADILOOKUP is set to the location of this file.
  */
 
+/*
+ * This wrapper is similar to
+ * rip_cape_3d except it will flip the first four input arrays if
+ * the pressure values are not decreasing. It will also multiple the
+ * pressure values by 0.01 to convert from hPa to Pa.
+ *
+ */
 NhlErrorTypes wrf_cape_3d_W( void )
 {
 /*
@@ -10109,12 +10119,9 @@ NhlErrorTypes wrf_cape_3d_W( void )
           NULL,
           NULL,
           DONT_CARE);
-  
-  if(*ter_follow) {
-	  iter = 1;
-  } else {
-	  iter = 0;
-  }
+
+  if(*ter_follow) iter = 1;
+  else            iter = 0;
 
 /*
  * Check the input dimension sizes. There are four possible cases
@@ -10138,8 +10145,8 @@ NhlErrorTypes wrf_cape_3d_W( void )
  */
   scalar_zsfc = is_scalar(ndims_zsfc,dsizes_zsfc);
 
-  if((ndims_zsfc != ndims_psfc) || (scalar_zsfc && ndims_p != 1) || 
-     (!scalar_zsfc && ndims_zsfc != ndims_p-1)) { 
+  if((ndims_zsfc != ndims_psfc) || (scalar_zsfc && ndims_p != 1) ||
+     (!scalar_zsfc && ndims_zsfc != ndims_p-1)) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: The zsfc and psfc arrays must have the same number of dimensions, and either be scalars or one less dimension than the other input arrays");
     return(NhlFATAL);
   }
@@ -10148,7 +10155,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
  * Now check that the dimension sizes are equal to each other.
  */
   for(i = 0; i < ndims_p; i++) {
-    if(dsizes_p[i] != dsizes_t[i] || dsizes_p[i] != dsizes_q[i] || 
+    if(dsizes_p[i] != dsizes_t[i] || dsizes_p[i] != dsizes_q[i] ||
        dsizes_p[i] != dsizes_z[i]) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: p, t, q, and z must be the same dimensionality");
     return(NhlFATAL);
@@ -10215,8 +10222,8 @@ NhlErrorTypes wrf_cape_3d_W( void )
     }
   }
   else if(ndims_p == 4) {
-    if(dsizes_psfc[0] != ntime || dsizes_psfc[1] != mjx || 
-       dsizes_psfc[2] != miy) { 
+    if(dsizes_psfc[0] != ntime || dsizes_psfc[1] != mjx ||
+       dsizes_psfc[2] != miy) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: If p,q,t,z are four-dimensional (time x lev x lat x lon), psfc,zsfc must be three-dimensional (time x lat x lon)");
       return(NhlFATAL);
     }
@@ -10255,7 +10262,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
   size_cape   = mkzh * size_zsfc;       /* Also size of cin array */
   size_output = 2 * size_cape * ntime * nz;
 
-/* 
+/*
  * Allocate space for output arrays. We are allocating space for
  * tmp_cape_orig and tmp_cin_orig even if the output will be double,
  * because we may also need to flip the values before we're done.
@@ -10414,7 +10421,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
 
 /*
  * Loop through time,nz and call the Fortran routine.
- */ 
+ */
   index_cape = index_zsfc = 0;
   index_cin  = ntime * nz * size_cape;    /* Second half of output array */
 
@@ -10483,7 +10490,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
  */
       tmp_zsfc = &((double*)zsfc)[index_zsfc];
     }
-    
+
 /*
  * If the pressure values need to be flipped, we also need to flip
  * the z, q, and t values in the same fashion.
@@ -10508,17 +10515,17 @@ NhlErrorTypes wrf_cape_3d_W( void )
     errmsg = "";
 
     NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
-    		                         tmp_psfc, tmp_cape_orig, tmp_cin_orig,
-    		                         prsf, prs_new, tmk_new, qvp_new, ght_new,
-    		                         &cmsg, &imiy, &imjx, &imkzh, &iter,
-    		                         psa_file,&errstat,errmsg,
-    		                         strlen(psa_file), (size_t) ERRLEN);
+                                     tmp_psfc, tmp_cape_orig, tmp_cin_orig,
+                                     prsf, prs_new, tmk_new, qvp_new, ght_new,
+                                     &cmsg, &imiy, &imjx, &imkzh, &iter,
+                                     psa_file,&errstat,errmsg,
+                                     strlen(psa_file), (size_t) ERRLEN);
 
 /* Terminate if there was an error */
-    if (errstat != 0) {
-    	fprintf(stderr, errmsg);
-        exit(errstat);
-    }
+	if (errstat != 0) {
+		fprintf(stderr, errmsg);
+		exit(errstat);
+	}
 
 /*
  * If we flipped arrays before going into the Fortran routine, we need
@@ -10636,12 +10643,9 @@ NhlErrorTypes wrf_cape_3d_W( void )
 }
 
 
-
-
-
 /*
- * In this case, 4 2D arrays
- * are returned: cape, cin, lcl, and lfc, but they are all returned 
+ * In this case, four 2D arrays
+ * are returned: cape, cin, lcl, and lfc, but they are all returned
  * in one big array whose leftmost dimension is 4:
  *
  *   index 0 = cape
@@ -10724,6 +10728,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
   int errstat;
   char *errmsg;
 
+
 /*
  * Retrieve parameters
  *
@@ -10801,7 +10806,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
           NULL,
           NULL,
           DONT_CARE);
-  
+
   if(*ter_follow) iter = 1;
   else            iter = 0;
 
@@ -10825,7 +10830,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
 /*
  * Check zsfc and psfc dimension sizes.
  */
-  if((ndims_zsfc != ndims_psfc) || (ndims_zsfc != ndims_p-1)) { 
+  if((ndims_zsfc != ndims_psfc) || (ndims_zsfc != ndims_p-1)) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: The zsfc and psfc arrays must have the same number of dimensions and be one less dimension than the other input arrays");
     return(NhlFATAL);
   }
@@ -10834,7 +10839,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
  * Now check that the dimension sizes are equal to each other.
  */
   for(i = 0; i < ndims_p; i++) {
-    if(dsizes_p[i] != dsizes_t[i] || dsizes_p[i] != dsizes_q[i] || 
+    if(dsizes_p[i] != dsizes_t[i] || dsizes_p[i] != dsizes_q[i] ||
        dsizes_p[i] != dsizes_z[i]) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: p, t, q, and z must be the same dimensionality");
     return(NhlFATAL);
@@ -10875,7 +10880,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
     miy   = dsizes_p[3];        /* lon */
     ndims_cape = 4;
     if(dsizes_psfc[0] != ntime || dsizes_psfc[1] != mjx ||
-       dsizes_psfc[2] != miy) { 
+       dsizes_psfc[2] != miy) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: If p,q,t,z are four-dimensional (time x lev x lat x lon), psfc,zsfc must be three-dimensional (time x lat x lon)");
       return(NhlFATAL);
 
@@ -10897,7 +10902,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
     }
   }
 /*
- * If mkzh is not at least size 3, then this dimension won't be big 
+ * If mkzh is not at least size 3, then this dimension won't be big
  * enough to contain the cin, lcl, and lfc values.
  */
   if(mkzh < 3) {
@@ -10962,7 +10967,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
   size_left_zsfc = size_zsfc * ntime * nz;
   size_output = 4 * size_left_zsfc;
 
-/* 
+/*
  * Allocate space for output and temporary arrays.  Even if the input
  * arrays are already double, go ahead and allocate some space for
  * them b/c we have to copy the values back to 4 different locations.
@@ -11079,8 +11084,6 @@ NhlErrorTypes wrf_cape_2d_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: Unable to allocate memory for ght_new");
     return(NhlFATAL);
   }
-
-
 
 /*
  * We need to coerce the pressure array once outside the loop to
@@ -11210,6 +11213,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
 /*
  * Call Fortran routine.
  */
+
     errstat = 0;
     errmsg = "";
 
@@ -11225,7 +11229,6 @@ NhlErrorTypes wrf_cape_2d_W( void )
       fprintf(stderr, errmsg);
       exit(errstat);
     }
-
 /*
  * Even if we flipped arrays before going into the Fortran routine, do
  * NOT flip them on the output.
