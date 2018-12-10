@@ -90,6 +90,7 @@ extern NhlErrorTypes wrf_slp_W(void);
 extern NhlErrorTypes wrf_interp_1d_W(void);
 extern NhlErrorTypes wrf_interp_2d_xy_W(void);
 extern NhlErrorTypes wrf_interp_3d_z_W(void);
+extern NhlErrorTypes wrf_interp_lev2d_W(void);
 extern NhlErrorTypes wrf_smooth_2d_W(void);
 extern NhlErrorTypes wrf_latlon_to_ij_W(void);
 extern NhlErrorTypes wrf_uvmet_W(void);
@@ -98,6 +99,7 @@ extern NhlErrorTypes wrf_eth_W(void);
 extern NhlErrorTypes wrf_pvo_W(void);
 extern NhlErrorTypes wrf_avo_W(void);
 extern NhlErrorTypes wrf_helicity_W(void);
+extern NhlErrorTypes wrf_helicity_lat_W(void);
 extern NhlErrorTypes wrf_updraft_helicity_W(void);
 extern NhlErrorTypes wrf_wetbulb_W(void);
 extern NhlErrorTypes wrf_omega_W(void);
@@ -115,6 +117,7 @@ extern NhlErrorTypes wrf_vintrp_W(void);
 extern NhlErrorTypes wrf_ctt_W(void);
 extern NhlErrorTypes wrf_cloud_frac_W(void);
 extern NhlErrorTypes wrf_monotonic_W(void);
+extern NhlErrorTypes wrf_pw_W(void);
 
 extern NhlErrorTypes cape_thermo_W(void);
 extern NhlErrorTypes gaus_lobat_W(void);
@@ -1681,10 +1684,24 @@ void NclAddUserFuncs(void)
 
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterFunc(wrf_interp_3d_z_W,args,"wrf_interp_3d_z",nargs);
+
+/*
+ * Register "wrf_interp_lev2d".
+ *
+ * Create private argument array.
+ */
+	nargs = 0;
+	args = NewArgs(3);
+
+	SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+	NclRegisterFunc(wrf_interp_lev2d_W,args,"wrf_interp_lev2d",nargs);
+
 /*
  * Register "wrf_smooth_2d".
  *
@@ -1826,6 +1843,24 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
         NclRegisterFunc(wrf_helicity_W,args,"wrf_helicity",nargs);
+
+/*
+ * Register "wrf_helicity_lat".
+ *
+ * Create private argument array
+ */
+		nargs = 0;
+		args = NewArgs(6);
+
+		dimsizes[0] = 1;
+		SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+		SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+		SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+		SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+		SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+		SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+
+		NclRegisterFunc(wrf_helicity_lat_W,args,"wrf_helicity_lat",nargs);
 
 /*
  * Register "wrf_updraft_helicity".
@@ -2036,10 +2071,11 @@ void NclAddUserFuncs(void)
 /*
  * Register "wrf_ctt".
  *
+ * ctt = wrf_ctt(prs, tk, qci, qcw, qvp, ght, ter, have_qci, opt)
  * Create private argument array
  */
         nargs = 0;
-        args = NewArgs(8);
+        args = NewArgs(9);
 
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
@@ -2050,19 +2086,42 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
         dimsizes[0] = 1;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
         NclRegisterFunc(wrf_ctt_W,args,"wrf_ctt",nargs);
 
 /*
  * Register "wrf_cloud_fraction"
- *
+ * wcf = wrf_cloud_fraction(vert, rh, vert_inc_w_height, low_thresh, mid_thresh, high_thresh, msg)
  * Create private argument array
  */
+
         nargs = 0;
-        args = NewArgs(2);
-        SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
-        SetArgTemplate(args,1,"numeric",0,NclANY);nargs++;
+        args = NewArgs(7);
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+
         NclRegisterFunc(wrf_cloud_frac_W,args,"wrf_cloud_fraction",nargs);
+
+/*
+ * Register "wrf_pw"
+ * pw(pres, tkel, qv, height)
+ * Create private argument array
+ */
+		nargs = 0;
+		args = NewArgs(4);
+		SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+		SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+		SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+		SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+		NclRegisterFunc(wrf_pw_W,args,"wrf_pw",nargs);
 
 /*
  * Register "wrf_vintrp".

@@ -27,7 +27,7 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	wrf_bint3d.o erf_sub.o dimavgwgt.o dimsumwgt.o wgtVertAvg_beta.o \
 	student_tprob.o dpres_plevel_dp.o fill_msg_grid.o sg_tools.o \
 	dcolconv.o cfft_driver.o wk_smooth121.o conservLinInt_2d_ncl.o \
-        dz_height.o covcorm_driver.o kron_square.o wrf_user_dbz.o wrf_pvo.o \
+    dz_height.o covcorm_driver.o kron_square.o wrf_user_dbz.o wrf_pvo.o \
 	wrf_user_latlon_routines.o vpower.o VSPCORR.o MOC.loops.o \
 	eqthecalc.o bindata.o binavg.o stattrop_dp.o xy2pdf77.o \
 	vinth2p_ecmwf_nodes_dp.o vinth2p_nodes_dp.o obsp1_mult_time_dp.o \
@@ -41,7 +41,8 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	det_code42.o kmeans_kmns_as136.o spi3.o wrf_vinterp.o wrf_fctt.o \
 	wrf_write_wps.o pres_hybrid_jra55_dp.o relhum_ice.o relhum_water.o \
 	wetbulb_profs.o wrf_cloud_fracf.o mlegev_memory.o kernel_density.o \
-	meemd.o dpsort_large.o
+	meemd.o dpsort_large.o wrf_pw.o wrf_constants.o wrf_constants.mod \
+	omp.o omp_constants.mod 
 
 COBJS =
 
@@ -50,10 +51,55 @@ OBJS = $(FOBJS) $(COBJS)
 LibraryTarget($(MYNAME),$(OBJS))
 
 triple2grid.o: triple2grid.f
-        $(F77) $(FCOPTIONS) $(XTRA_FDEFINES) -c triple2grid.f
+        $(F77) -g -c triple2grid.f
 
+wrf_constants.o wrf_constants.mod: wrf_constants.f90
+        $(F77) $(FFLAGS) -c wrf_constants.f90
+        
 calc_uh.o: calc_uh.f90
         $(F77) $(FFLAGS) -c calc_uh.f90
+
+eqthecalc.o: eqthecalc.f90 wrf_constants.mod
+        $(F77) $(FFLAGS) -c eqthecalc.f90
+
+rip_cape.o: rip_cape.f90 wrf_constants.mod
+        $(F77) $(FFLAGS) -c rip_cape.f90
+
+omp.o omp_constants.mod: omp.f90
+        $(F77) $(FFLAGS) -c omp.f90
+
+wrf_cloud_fracf.o: wrf_cloud_fracf.f90
+        $(F77) $(FFLAGS) -c wrf_cloud_fracf.f90
+
+wrf_fctt.o: wrf_fctt.f90 wrf_constants.mod
+        $(F77) $(FFLAGS) -c wrf_fctt.f90
+        
+wrf_pvo.o: wrf_pvo.f90 wrf_constants.mod
+        $(F77) $(FFLAGS) -c wrf_pvo.f90
+
+wrf_pw.o: wrf_pw.f90 wrf_constants.mod
+        $(F77) $(FFLAGS) -c wrf_pw.f90
+
+wrf_relhl.o: wrf_relhl.f90 wrf_constants.mod
+        $(F77) $(FFLAGS) -c wrf_relhl.f90
+
+wrf_rip_phys_routines.o: wrf_rip_phys_routines.f90 wrf_constants.mod
+        $(F77) $(FFLAGS) -c wrf_rip_phys_routines.f90
+
+wrf_user_dbz.o: wrf_user_dbz.f90 wrf_constants.mod
+        $(F77) $(FFLAGS) -c wrf_user_dbz.f90
+
+wrf_user_latlon_routines.o: wrf_user_latlon_routines.f90 wrf_constants.mod
+        $(F77) $(FFLAGS) -c wrf_user_latlon_routines.f90
+
+wrf_user.o: wrf_user.f90 wrf_constants.mod
+        $(F77) $(FFLAGS) -c wrf_user.f90
+
+wrf_vinterp.o: wrf_vinterp.f90 wrf_constants.mod
+        $(F77) $(FFLAGS) -c wrf_vinterp.f90
+
+wrf_wind.o: wrf_wind.f90 wrf_constants.mod
+        $(F77) $(FFLAGS) -c wrf_wind.f90
 
 plotgrids_var.o: plotgrids_var.f90
         $(F77) $(FFLAGS) -c plotgrids_var.f90

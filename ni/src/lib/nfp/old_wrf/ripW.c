@@ -1,33 +1,15 @@
 #include <stdio.h>
-#include <stddef.h>
 #include <math.h>
 #include "wrapper.h"
 
-#define ERRLEN 512
-
 extern void NGCALLF(dcapecalc3d,DCAPECALC3D)(double *prs, double *tmk, 
                                              double *qvp, double *ght,
-                                             double *ter, double *sfp,
-											 double *cape, double *cin,
-											 double *prsf, double *prs_new, double *tmk_new,
-											 double *qvp_new, double *ght_new,
+                                             double *ter, double *sfp, 
+                                             double *cape, double *cin, 
                                              double *cmsg,
                                              int *miy, int *mjx, int *mkzh, 
-                                             int *ter_follow,
-                                             char *psafile,int *errstat,
-											 char *errmsg, size_t, size_t);
-
-extern void NGCALLF(dcapecalc2d,DCAPECALC2D)(double *prs, double *tmk,
-                                             double *qvp, double *ght,
-                                             double *ter, double *sfp,
-											 double *cape, double *cin,
-											 double *prsf, double *prs_new, double *tmk_new,
-											 double *qvp_new, double *ght_new,
-                                             double *cmsg,
-                                             int *miy, int *mjx, int *mkzh,
-                                             int *ter_follow,
-                                             char * psafile,int *errstat,
-											 char *errmsg, size_t, size_t);
+                                             int *i3dflag, int *ter_follow,
+                                             char *,int);
 
 
 /*
@@ -37,6 +19,10 @@ extern void NGCALLF(dcapecalc2d,DCAPECALC2D)(double *prs, double *tmk,
  * NCARG_PSADILOOKUP is set to the location of this file.
  */
 
+/*
+ * The rip_cape_3d wrapper is for the case where I3DFLAG is set to
+ * 1 in the Fortran rip_cape.f file.
+ */
 NhlErrorTypes rip_cape_3d_W( void )
 {
 /*
@@ -50,11 +36,6 @@ NhlErrorTypes rip_cape_3d_W( void )
   double *tmp_z = NULL;
   double *tmp_zsfc = NULL;
   double *tmp_psfc = NULL;
-  double *prsf = NULL;
-  double *prs_new = NULL;
-  double *tmk_new = NULL;
-  double *qvp_new = NULL;
-  double *ght_new = NULL;
   int ndims_p, ndims_t, ndims_q, ndims_z, ndims_zsfc, ndims_psfc;
   ng_size_t dsizes_p[NCL_MAX_DIMENSIONS], dsizes_t[NCL_MAX_DIMENSIONS];
   ng_size_t dsizes_q[NCL_MAX_DIMENSIONS], dsizes_z[NCL_MAX_DIMENSIONS];
@@ -76,8 +57,6 @@ NhlErrorTypes rip_cape_3d_W( void )
  */
   const char *path = NULL;
   char psa_file[_NhlMAXFNAMELEN];
-  int errstat;
-  char *errmsg;
 
 /*
  * Declare various variables for random purposes.
@@ -89,7 +68,7 @@ NhlErrorTypes rip_cape_3d_W( void )
   ng_size_t ntime = 0;
   ng_size_t size_cape, size_output, size_zsfc;
   ng_size_t index_cape, index_zsfc, index_cin;
-  int scalar_zsfc;
+  int i3dflag=1, scalar_zsfc;
   int iter, ret;
   int imiy, imjx, imkzh;
 
@@ -193,11 +172,8 @@ NhlErrorTypes rip_cape_3d_W( void )
           NULL,
           DONT_CARE);
   
-  if(*ter_follow) {
-	  iter = 1;
-  } else {
-	  iter = 0;
-  }
+  if(*ter_follow) iter = 1;
+  else            iter = 0;
 
 /*
  * Check the input dimension sizes. There are three possible cases
@@ -212,7 +188,7 @@ NhlErrorTypes rip_cape_3d_W( void )
     return(NhlFATAL);
   }
   if(ndims_p != 1 && ndims_p != 3 && ndims_p != 4) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: The p, t, q, and z arrays must be 1-, 3-, or four-dimensional\n");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: The p, t, q, and z arrays must be 1-, 3-, or 4-dimensional\n");
     return(NhlFATAL);
   }
 /*
@@ -282,13 +258,13 @@ NhlErrorTypes rip_cape_3d_W( void )
   if(ndims_p == 4) {
     if(dsizes_psfc[0] != ntime || dsizes_psfc[1] != mjx || 
        dsizes_psfc[2] != miy) { 
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: If p,q,t,z are four-dimensional (time x lev x lat x lon), psfc,zsfc must be three-dimensional (time x lat x lon)");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: If p,q,t,z are 4-dimensional (time x lev x lat x lon), psfc,zsfc must be 3-dimensional (time x lat x lon)");
       return(NhlFATAL);
     }
   }
   if(ndims_p == 3) {
     if(dsizes_psfc[0] != mjx || dsizes_psfc[1] != miy) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: If p,q,t,z are three-dimensional (time x lev x lat x lon), psfc,zsfc must be two-dimensional (lat x lon)");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: If p,q,t,z are 3-dimensional (time x lev x lat x lon), psfc,zsfc must be 2-dimensional (lat x lon)");
       return(NhlFATAL);
     }
   }
@@ -398,44 +374,6 @@ NhlErrorTypes rip_cape_3d_W( void )
     }
   }
 
-  /* Allocate space for errmsg*/
-  errmsg = (char *) calloc(ERRLEN, sizeof(char));
-  if(errmsg == NULL) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: Unable to allocate memory for error string");
-      return(NhlFATAL);
-  }
-
-  /* Allocate space for the work arrays */
-  prsf = (double *) calloc(size_cape, sizeof(double));
-  if(prs_new == NULL) {
-     NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: Unable to allocate memory for prsf");
-     return(NhlFATAL);
-  }
-
-  prs_new = (double *) calloc(size_cape, sizeof(double));
-  if(prs_new == NULL) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: Unable to allocate memory for prs_new");
-      return(NhlFATAL);
-  }
-
-  tmk_new = (double *) calloc(size_cape, sizeof(double));
-  if(tmk_new == NULL) {
-  	  NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: Unable to allocate memory for tmk_new");
-      return(NhlFATAL);
-  }
-
-  qvp_new = (double *) calloc(size_cape, sizeof(double));
-  if(qvp_new == NULL) {
-  	  NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: Unable to allocate memory for qvp_new");
-      return(NhlFATAL);
-  }
-
-  ght_new = (double *) calloc(size_cape, sizeof(double));
-  if(ght_new == NULL) {
-  	  NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: Unable to allocate memory for ght_new");
-      return(NhlFATAL);
-  }
-
 /*
  * Call the Fortran routine.
  */ 
@@ -513,29 +451,13 @@ NhlErrorTypes rip_cape_3d_W( void )
       tmp_cin  = &((double*)cape)[index_cin];
     }
     
-
-   errstat = 0;
-   errmsg = "";
 /*
  * Call Fortran routine.
- * DCAPECALC3D(prs,tmk,qvp,ght,ter,sfp,cape,cin,&
-            prsf, prs_new, tmk_new, qvp_new, ght_new,&
-            cmsg,mix,mjy,mkzh,ter_follow,&
-            psafile, errstat, errmsg)
  */
     NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
-                                     tmp_psfc, tmp_cape, tmp_cin,
-									 prsf, prs_new, tmk_new, qvp_new, ght_new,
-									 &cmsg, &imiy, &imjx, &imkzh, &iter,
-                                     psa_file,&errstat,errmsg,
-									 strlen(psa_file),
-									 (size_t) ERRLEN);
-
-/* Terminate if there was an error */
-	if (errstat != 0) {
-		fprintf(stderr, errmsg);
-		exit(errstat);
-	}
+                                     tmp_psfc, tmp_cape, tmp_cin, &cmsg, 
+                                     &imiy, &imjx, &imkzh, &i3dflag, &iter,
+                                     psa_file,strlen(psa_file));
 
 /*
  * If the output is to be float, then do the coercion here.
@@ -562,12 +484,6 @@ NhlErrorTypes rip_cape_3d_W( void )
   if(type_psfc != NCL_double) NclFree(tmp_psfc);
   if(type_cape != NCL_double) NclFree(tmp_cape);
   if(type_cape != NCL_double) NclFree(tmp_cin);
-  NclFree(prsf);
-  NclFree(prs_new);
-  NclFree(tmk_new);
-  NclFree(qvp_new);
-  NclFree(ght_new);
-
 /*
  * Set up variable to return.
  */
@@ -578,7 +494,8 @@ NhlErrorTypes rip_cape_3d_W( void )
 
 
 /*
- * In this case, 4 2D arrays
+ * The rip_cape_2d wrapper is for the case where I3DFLAG is set to
+ * 0 in the Fortran rip_cape.f file.  In this case, 4 2D arrays
  * are returned: cape, cin, lcl, and lfc, but they are all returned 
  * in one big array whose leftmost dimension is 4:
  *
@@ -600,11 +517,6 @@ NhlErrorTypes rip_cape_2d_W( void )
   double *tmp_z = NULL;
   double *tmp_zsfc = NULL;
   double *tmp_psfc = NULL;
-  double *prsf = NULL;
-  double *prs_new = NULL;
-  double *tmk_new = NULL;
-  double *qvp_new = NULL;
-  double *ght_new = NULL;
   int ndims_p, ndims_t, ndims_q, ndims_z, ndims_zsfc, ndims_psfc;
   ng_size_t dsizes_p[NCL_MAX_DIMENSIONS], dsizes_t[NCL_MAX_DIMENSIONS];
   ng_size_t dsizes_q[NCL_MAX_DIMENSIONS], dsizes_z[NCL_MAX_DIMENSIONS];
@@ -626,8 +538,6 @@ NhlErrorTypes rip_cape_2d_W( void )
  */
   const char *path = NULL;
   char psa_file[_NhlMAXFNAMELEN];
-  int errstat;
-  char *errmsg;
 
 /*
  * Declare various variables for random purposes.
@@ -639,6 +549,7 @@ NhlErrorTypes rip_cape_2d_W( void )
   ng_size_t ntime = 0;
   ng_size_t size_cape, size_output, size_zsfc;
   ng_size_t size_left_zsfc;
+  int i3dflag=0;
   ng_size_t index_cape, index_zsfc;
   ng_size_t index_output_cape, index_output_cin, index_output_lcl;
   ng_size_t index_output_lfc, mkzh0_index, mkzh1_index, mkzh2_index;
@@ -659,9 +570,6 @@ NhlErrorTypes rip_cape_2d_W( void )
       strcat(psa_file,"asc");
       strcat(psa_file,_NhlPATHDELIMITER);
       strcat(psa_file,"psadilookup.dat");
-    } else {
-    	NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: yep...this exploded");
-    	return(NhlFATAL);
     }
   }
   else {
@@ -748,11 +656,8 @@ NhlErrorTypes rip_cape_2d_W( void )
           NULL,
           DONT_CARE);
   
-  if(*ter_follow) {
-	  iter = 1;
-  } else {
-	  iter = 0;
-  }
+  if(*ter_follow) iter = 1;
+  else            iter = 0;
 
 
 /*
@@ -767,7 +672,7 @@ NhlErrorTypes rip_cape_2d_W( void )
     return(NhlFATAL);
   }
   if(ndims_p != 3 && ndims_p != 4) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: The p, t, q, and z arrays must be 3 or four-dimensional\n");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: The p, t, q, and z arrays must be 3 or 4-dimensional\n");
     return(NhlFATAL);
   }
 /*
@@ -806,7 +711,7 @@ NhlErrorTypes rip_cape_2d_W( void )
     ndims_cape = 4;
     if(dsizes_psfc[0] != ntime || dsizes_psfc[1] != mjx ||
        dsizes_psfc[2] != miy) { 
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: If p,q,t,z are four-dimensional (time x lev x lat x lon), psfc,zsfc must be three-dimensional (time x lat x lon)");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: If p,q,t,z are 4-dimensional (time x lev x lat x lon), psfc,zsfc must be 3-dimensional (time x lat x lon)");
       return(NhlFATAL);
 
     }
@@ -821,7 +726,7 @@ NhlErrorTypes rip_cape_2d_W( void )
     miy  = dsizes_p[2];           /* lon */
     ndims_cape = 3;
     if(dsizes_psfc[0] != mjx || dsizes_psfc[1] != miy) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: If p,q,t,z are three-dimensional (time x lev x lat x lon), psfc,zsfc must be two-dimensional (lat x lon)");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: If p,q,t,z are 3-dimensional (time x lev x lat x lon), psfc,zsfc must be 2-dimensional (lat x lon)");
       return(NhlFATAL);
     }
   }
@@ -953,46 +858,6 @@ NhlErrorTypes rip_cape_2d_W( void )
     }
   }
 
-  /* Allocate space for errmsg*/
-
-  errmsg = (char *) calloc(ERRLEN, sizeof(char));
-  if(errmsg == NULL) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: Unable to allocate memory for error string");
-	  return(NhlFATAL);
-  }
-
-  /* Allocate space for the work arrays */
-  prsf = (double *) calloc(size_cape, sizeof(double));
-  if(prsf == NULL) {
-  	NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: Unable to allocate memory for prsf");
-  	return(NhlFATAL);
-  }
-
-  /* Allocate space for the work arrays */
-  prs_new = (double *) calloc(size_cape, sizeof(double));
-  if(prs_new == NULL) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: Unable to allocate memory for prs_new");
-	  return(NhlFATAL);
-  }
-
-  tmk_new = (double *) calloc(size_cape, sizeof(double));
-  if(tmk_new == NULL) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: Unable to allocate memory for tmk_new");
-	  return(NhlFATAL);
-  }
-
-  qvp_new = (double *) calloc(size_cape, sizeof(double));
-  if(qvp_new == NULL) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: Unable to allocate memory for qvp_new");
-	  return(NhlFATAL);
-  }
-
-  ght_new = (double *) calloc(size_cape, sizeof(double));
-  if(ght_new == NULL) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: Unable to allocate memory for ght_new");
-	  return(NhlFATAL);
-  }
-
 /*
  * Call the Fortran routine.
  */ 
@@ -1063,26 +928,14 @@ NhlErrorTypes rip_cape_2d_W( void )
  */
       tmp_zsfc = &((double*)zsfc)[index_zsfc];
     }
-
+    
 /*
  * Call Fortran routine.
  */
-    errstat = 0;
-    errmsg = "";
-
-    NGCALLF(dcapecalc2d,DCAPECALC2D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
-                                     tmp_psfc, tmp_cape, tmp_cin,
-									 prsf, prs_new, tmk_new, qvp_new, ght_new,
-									 &cmsg, &imiy, &imjx, &imkzh, &iter,
-                                     psa_file,&errstat,errmsg,
-									 strlen(psa_file),
-									 (size_t) ERRLEN);
-
-/* Terminate if there was an error */
-	if (errstat != 0) {
-		fprintf(stderr, errmsg);
-		exit(errstat);
-	}
+    NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
+                                     tmp_psfc, tmp_cape, tmp_cin, &cmsg, 
+                                     &imiy, &imjx, &imkzh, &i3dflag, &iter,
+                                     psa_file,strlen(psa_file));
 
 /*
  * Copy the values back out to the correct places in the "cape" array.
@@ -1124,12 +977,6 @@ NhlErrorTypes rip_cape_2d_W( void )
   if(type_psfc != NCL_double) NclFree(tmp_psfc);
   NclFree(tmp_cape);
   NclFree(tmp_cin);
-  NclFree(prsf);
-  NclFree(prs_new);
-  NclFree(tmk_new);
-  NclFree(qvp_new);
-  NclFree(ght_new);
-
 /*
  * Set up variable to return.
  */

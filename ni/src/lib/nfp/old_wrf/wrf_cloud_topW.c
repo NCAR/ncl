@@ -1,17 +1,9 @@
 #include <stdio.h>
 #include "wrapper.h"
 
-/*wrfcttcalc(
- * prs, tk, qci,
- * qcw, qvp, ght,
- * ter, ctt, pf,
- * haveqci,fill_nocloud, missing, opt_thresh,
- * nz, ns, ew)
-                 */
 extern void NGCALLF(wrfcttcalc,WRFCTTCALC)(double *, double *, double *, 
                                            double *, double *, double *, 
-                                           double *, double *, double *,
-										   int *, int *, double *, double *,
+                                           double *, double *, int *, 
                                            int *, int *, int *);
 
 extern NclDimRec *get_wrf_dim_info(int,int,int,ng_size_t*);
@@ -92,11 +84,6 @@ NhlErrorTypes wrf_ctt_W( void )
   int *haveqci;
 
 /*
-* Arguments # 8
-*/
-int *opt;
-
-/*
  * Variable for getting/setting dimension name info.
  */
   NclDimRec *dim_info      = NULL;
@@ -131,21 +118,6 @@ int *opt;
   NclVar tmp_var;
   NclStackEntry return_data;
 
-  /*
-   * Variables for retrieving attributes from "opt".
-   */
-  NclAttList  *attr_list;
-  NclAtt  attr_obj;
-  NclStackEntry stack_entry;
-  int fill_nocloud;
-  void *missing = NULL;
-  void *opt_thresh = NULL;
-  double *tmp_missing, *tmp_opt_thresh, *pfwork;
-  logical set_missing, set_opt_thresh;
-  NclBasicDataTypes type_missing = NCL_none;
-  NclBasicDataTypes type_opt_thresh = NCL_none;
-  NclScalar missing_ctt;
-
 /*
  * Retrieve parameters.
  *
@@ -153,14 +125,15 @@ int *opt;
  * implies you don't care about its value.
  */
 /*
+ * Get argument # 0
  */
 
 /*
- * Get argument # 0
+ * Get argument # 1
  */
   pres = (void*)NclGetArgValue(
            0,
-           9,
+           8,
            &ndims_pres,
            dsizes_pres,
            NULL,
@@ -193,7 +166,7 @@ int *opt;
  */
   tk = (void*)NclGetArgValue(
            1,
-           9,
+           8,
            &ndims_tk,
            dsizes_tk,
            NULL,
@@ -223,7 +196,7 @@ int *opt;
  */
   qci = (void*)NclGetArgValue(
            2,
-           9,
+           8,
            &ndims_qci,
            dsizes_qci,
            NULL,
@@ -252,7 +225,7 @@ int *opt;
  */
   qcw = (void*)NclGetArgValue(
            3,
-           9,
+           8,
            &ndims_qcw,
            dsizes_qcw,
            NULL,
@@ -281,7 +254,7 @@ int *opt;
  */
   qvp = (void*)NclGetArgValue(
            4,
-           9,
+           8,
            &ndims_qvp,
            dsizes_qvp,
            NULL,
@@ -310,7 +283,7 @@ int *opt;
  */
   ght = (void*)NclGetArgValue(
            5,
-           9,
+           8,
            &ndims_ght,
            dsizes_ght,
            NULL,
@@ -339,7 +312,7 @@ int *opt;
  */
   ter = (void*)NclGetArgValue(
            6,
-           9,
+           8,
            &ndims_ter,
            dsizes_ter,
            NULL,
@@ -377,79 +350,13 @@ int *opt;
  */
   haveqci = (int*)NclGetArgValue(
            7,
-           9,
+           8,
            NULL,
            NULL,
            NULL,
            NULL,
            NULL,
            DONT_CARE);
-
-  /*
-  * Get argument # 8
-  */
-  opt = (int*)NclGetArgValue(
-		   8,
-		   9,
-		   NULL,
-		   NULL,
-		   NULL,
-		   NULL,
-		   NULL,
-		   DONT_CARE);
-
-  /* Handle the opt stuff*/
-  fill_nocloud = 0;
-
-  stack_entry = _NclGetArg(8, 9, DONT_CARE);
-  if(stack_entry.kind == NclStk_VAR &&
-		  stack_entry.u.data_var->var.att_id != -1) {
-    attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
-    if (attr_obj != NULL && attr_obj->att.n_atts > 0) {
-      attr_list = attr_obj->att.att_list;
-	  while (attr_list != NULL) {
-		if(!strcasecmp(attr_list->attname, "fill_nocloud")) {
-		  fill_nocloud      = *((int*)attr_list->attvalue->multidval.val);
-		} else if(!strcasecmp(attr_list->attname, "missing")) {
-		  missing      = attr_list->attvalue->multidval.val;
-		  type_missing = attr_list->attvalue->multidval.data_type;
-		  set_missing = True;
-		} else if (!strcasecmp(attr_list->attname, "opt_thresh")) {
-			opt_thresh      = attr_list->attvalue->multidval.val;
-			type_opt_thresh = attr_list->attvalue->multidval.data_type;
-			set_opt_thresh = True;
-		}
-		attr_list = attr_list->next;
-      }
-    }
-  }
-
-
-  if(set_missing) {
-      tmp_missing = coerce_input_double(missing,type_missing,1,0,NULL,NULL);
-  }
-  else {
-      type_missing = NCL_double;
-      tmp_missing  = (double *)calloc(1,sizeof(double));
-      *tmp_missing = 9.9692099683868690E36;
-  }
-
-  if(type_missing == NCL_double) {
-      missing_ctt.doubleval = (double) *tmp_missing;
-  } else {
-      missing_ctt.floatval = (float) *tmp_missing;
-  }
-
-  if(set_opt_thresh) {
-    tmp_opt_thresh = coerce_input_double(opt_thresh,type_opt_thresh,1,0,NULL,NULL);
-  }
-  else {
-    type_opt_thresh = NCL_double;
-    tmp_opt_thresh  = (double *)calloc(1,sizeof(double));
-    *tmp_opt_thresh = 1.0;
-  }
-
-
 
 /*
  * Calculate size of leftmost dimensions.
@@ -612,7 +519,7 @@ int *opt;
  * 
  * This will be used for return variable.
  */
-  dim_info_ght = get_wrf_dim_info(5,9,ndims_ght,dsizes_ght);
+  dim_info_ght = get_wrf_dim_info(5,8,ndims_ght,dsizes_ght);
   if(dim_info_ght != NULL) {
     dim_info = malloc(sizeof(NclDimRec)*ndims_ctt);
     if(dim_info == NULL) {
@@ -625,9 +532,6 @@ int *opt;
     dim_info[ndims_ctt-1] = dim_info_ght[ndims_ght-1];
     dim_info[ndims_ctt-2] = dim_info_ght[ndims_ght-2];
   }
-
-  /* Create the pf work array */
-  pfwork = (double *) calloc(nlevlatlon, sizeof(double));
 
 /*
  * Loop across leftmost dimensions and call the Fortran routine for each
@@ -724,16 +628,10 @@ int *opt;
     
 /*
  * Call the Fortran routine.
- * wrfcttcalc(prs, tk, qci, qcw, qvp, ght, ter, ctt, pf, haveqci,&
-                 fill_nocloud, missing, opt_thresh, nz, ns, ew)
  */
-
-    NGCALLF(wrfcttcalc,WRFCTTCALC)(tmp_pres, tmp_tk, tmp_qci,
-    		                       tmp_qcw, tmp_qvp, tmp_ght,
-								   tmp_ter, tmp_ctt, pfwork,
-                                   haveqci, &fill_nocloud,
-								   tmp_missing, tmp_opt_thresh,
-								   &inlev, &inlat, &inlon);
+    NGCALLF(wrfcttcalc,WRFCTTCALC)(tmp_pres, tmp_tk, tmp_qci, tmp_qcw,
+                                   tmp_qvp, tmp_ght, tmp_ter, tmp_ctt,
+                                   haveqci,&inlev, &inlat, &inlon);
 
 /*
  * Coerce output back to float if necessary.
@@ -760,9 +658,6 @@ int *opt;
   if(type_ght  != NCL_double) NclFree(tmp_ght);
   if(type_ter  != NCL_double) NclFree(tmp_ter);
   if(type_ctt  != NCL_double) NclFree(tmp_ctt);
-  if(type_missing  != NCL_double) NclFree(tmp_missing);
-  if(type_opt_thresh  != NCL_double) NclFree(tmp_opt_thresh);
-  NclFree(pfwork);
 
 /*
  * Set up some attributes ("description" and "units") to return.
@@ -781,16 +676,13 @@ int *opt;
 /*
  * Set up return value.
  */
-
-
-
   return_md = _NclCreateVal(
                             NULL,
                             NULL,
                             Ncl_MultiDValData,
                             0,
                             (void*)ctt,
-                            &missing_ctt,
+                            NULL,
                             ndims_ctt,
                             dsizes_ctt,
                             TEMPORARY,

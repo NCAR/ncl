@@ -1,23 +1,12 @@
 #include <stdio.h>
 #include "wrapper.h"
 
-#define ERRLEN 512
-
-/*wrf_vintrp(
- * datain, dataout, pres,
- * tk, qvp, ght,
- * terrain,sfp, smsfp,
- * vcarray, interp_levels, numlevels,&
-   icase, ew, ns, nz,
-   extrap, vcor, logp, work,
-   rmsg,errstat, errmsg)*/
-extern void NGCALLF(wrf_vintrp,WRF_VINTRP)(double *, double *, double *,
+extern void NGCALLF(wrf_vintrp,WRF_VINTRP)(double *, double *, double *, 
                                            double *, double *, double *, 
                                            double *, double *, double *, 
                                            double *, double *, int *, 
                                            int *, int *, int *, int *, 
-                                           int *, int *, int *, double *,
-										   double *, int *, char *, int);
+                                           int *, int *, int *, double *);
 
 extern void NGCALLF(wrf_monotonic,WRF_MONOTONIC)(double *, double *, double *, 
                                                  double *, int *, double *, 
@@ -131,7 +120,7 @@ NclBasicDataTypes type_ter;
  * Return variable
  */
   void *field_out;
-  double *tmp_field_out, *outwork;
+  double *tmp_field_out;
   ng_size_t *dsizes_field_out;
   NclScalar missing_field_out;
   NclBasicDataTypes type_field_out;
@@ -144,8 +133,6 @@ NclBasicDataTypes type_ter;
   ng_size_t index_field, index_sfp, index_field_out;
   ng_size_t i, size_leftmost, size_output;
   int ininlev, inlat, inlon, inoutlev, ret;
-  int errstat;
-  char* errmsg;
 
 /*
  * Retrieve parameters.
@@ -682,12 +669,6 @@ NclBasicDataTypes type_ter;
   dsizes_field_out[ndims_field-2] = nlat;
   dsizes_field_out[ndims_field-1] = nlon;
 
-  /* Allocate space for errmsg*/
-  errmsg = (char *) calloc(ERRLEN, sizeof(char));
-
-  /* Allocate space for the work array */
-  outwork = (double *) calloc(nlatlon, sizeof(double));
-
 /*
  * Loop across leftmost dimensions and call the Fortran routine for each
  * subsection of the input arrays.
@@ -804,24 +785,12 @@ NclBasicDataTypes type_ter;
 /*
  * Call the Fortran routine.
  */
-    errstat = 0;
-    /*wrf_vintrp(datain, dataout, pres, tk, qvp, ght, terrain,&
-                      sfp, smsfp, vcarray, interp_levels, numlevels,&
-                      icase, ew, ns, nz, extrap, vcor, logp, tempout, rmsg,&
-                      errstat, errmsg)*/
     NGCALLF(wrf_vintrp,WRF_VINTRP)(tmp_field, tmp_field_out, tmp_pres,
                                    tmp_tk, tmp_qvp, tmp_ght, tmp_ter, 
                                    tmp_sfp, tmp_smsfp, tmp_vcarray, 
                                    tmp_intrp_levels, &inoutlev, icase, 
                                    &inlon, &inlat, &ininlev, extrap, vcor, 
-                                   logp, outwork,
-								   &missing_dbl_field.doubleval,
-								   &errstat, errmsg, ERRLEN);
-    /* Terminate if there was an error */
-	if (errstat != 0) {
-		fprintf(stderr, errmsg);
-		exit(errstat);
-	}
+                                   logp, &missing_dbl_field.doubleval);
 
 /*
  * Coerce output back to float if necessary.
@@ -850,9 +819,6 @@ NclBasicDataTypes type_ter;
   if(type_vcarray      != NCL_double) NclFree(tmp_vcarray);
   if(type_intrp_levels != NCL_double) NclFree(tmp_intrp_levels);
   if(type_field_out    != NCL_double) NclFree(tmp_field_out);
-
-  NclFree(errmsg);
-  NclFree(outwork);
 
 /*
  * Return value back to NCL script.
