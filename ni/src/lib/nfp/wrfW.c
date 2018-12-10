@@ -2211,12 +2211,12 @@ NhlErrorTypes wrf_interp_lev2d_W( void )
  * Error checking. First two input variables must be same size.
  */
   if(ndims_v3d < 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: The v3d and z arrays must have at least 3 dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_lev2d: The v3d and z arrays must have at least 3 dimensions");
     return(NhlFATAL);
   }
 
   if(ndims_v3d != ndims_z) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: The v3d and z arrays must have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_lev2d: The v3d and z arrays must have the same number of dimensions");
     return(NhlFATAL);
   }
 
@@ -2228,18 +2228,18 @@ NhlErrorTypes wrf_interp_lev2d_W( void )
   } else if (ndims_loc > 2) {
 	  for (i=0; i < ndims_v3d-3; i++) {
 		  if (dsizes_loc[i] != dsizes_v3d[i]) {
-			  NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: The loc array must have same leftmost dimensions as v3d");
+			  NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_lev2d: The loc array must have same leftmost dimensions as v3d");
 			  return(NhlFATAL);
 		  }
 	  }
   } else {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: The loc array must have at least 2 dimensions");
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_lev2d: The loc array must have at least 2 dimensions");
 	  return(NhlFATAL);
   }
 
   for(i = 0; i < ndims_v3d; i++) {
     if(dsizes_v3d[i] != dsizes_z[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: v3d and z must be the same dimensionality");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_lev2d: v3d and z must be the same dimensionality");
       return(NhlFATAL);
     }
   }
@@ -2312,7 +2312,7 @@ NhlErrorTypes wrf_interp_lev2d_W( void )
  * Test dimension sizes.
  */
   if((nx > INT_MAX) || (ny > INT_MAX) || (nz > INT_MAX)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: nx, ny, and/or nz is greater than INT_MAX");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_lev2d: nx, ny, and/or nz is greater than INT_MAX");
     return(NhlFATAL);
   }
   inx = (int) nx;
@@ -2322,7 +2322,7 @@ NhlErrorTypes wrf_interp_lev2d_W( void )
   ndims_v2d = ndims_v3d-1;
   dsizes_v2d = (ng_size_t*)calloc(ndims_v2d,sizeof(ng_size_t));
   if( dsizes_v2d == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for holding dimension sizes");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_lev2d: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
   }
   size_leftmost = 1;
@@ -2343,7 +2343,7 @@ NhlErrorTypes wrf_interp_lev2d_W( void )
   if(dim_info_v3d != NULL) {
     dim_info = malloc(sizeof(NclDimRec)*ndims_v2d);
     if(dim_info == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for holding dimension information");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_lev2d: Unable to allocate memory for holding dimension information");
       return(NhlFATAL);
     }
     for(i = 0; i < ndims_v3d-3; i++) {
@@ -2367,7 +2367,7 @@ NhlErrorTypes wrf_interp_lev2d_W( void )
   if(type_v3d != NCL_double) {
     tmp_v3d = (double *)calloc(nxyz,sizeof(double));
     if(tmp_v3d == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for coercing input array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_lev2d: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
     }
   }
@@ -2379,7 +2379,7 @@ NhlErrorTypes wrf_interp_lev2d_W( void )
   if(type_z != NCL_double) {
     tmp_z = (double *)calloc(nxyz,sizeof(double));
     if(tmp_z == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for coercing z array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_lev2d: Unable to allocate memory for coercing z array to double");
       return(NhlFATAL);
     }
   }
@@ -2394,7 +2394,7 @@ NhlErrorTypes wrf_interp_lev2d_W( void )
 	  if(type_loc != NCL_double) {
 		  tmp_loc = (double *)calloc(nxy,sizeof(double));
 		  if(tmp_loc == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for coercing loc array to double");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_lev2d: Unable to allocate memory for coercing loc array to double");
 			return(NhlFATAL);
 		  }
 		}
@@ -2416,7 +2416,7 @@ NhlErrorTypes wrf_interp_lev2d_W( void )
   if(type_v2d == NCL_double) {
     v2d = (double *)calloc(size_v2d,sizeof(double));
     if(v2d == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for output array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_lev2d: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
     missing_v2d.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
@@ -2426,7 +2426,7 @@ NhlErrorTypes wrf_interp_lev2d_W( void )
     v2d     = (float *)calloc(size_v2d,sizeof(float));
     tmp_v2d = (double *)calloc(nxy,sizeof(double));
     if(tmp_v2d == NULL || v2d == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for output array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_lev2d: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
     missing_v2d.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
