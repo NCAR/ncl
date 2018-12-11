@@ -24,7 +24,7 @@
  *			etc are in the Template file.
  */
 
-#define Version 6.5.1
+#define Version 6.6.0
 
 #ifndef	BuildNCL
 #define	BuildNCL
