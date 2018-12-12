@@ -17,7 +17,6 @@
 /* libgdal contains its own libgrib2c, so the proper libgrib2c should always be linked before libgdal. */
 #define GDALlib  ${grib2_dir}/libgrib2c.a -lgdal -lproj -ljpeg
 #define LexLibrary  ${PREFIX}/lib/libfl.a
-#define BuildTRIANGLE 0
 
 ${CAIROLIB}
 ${CAIROLIBUSER}

@@ -23,7 +23,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum ".build/envs/Linux.yml" }}
+          - v1-dependencies-{{ checksum ".build/envs/Linux.yml" }}-{{ checksum ".circleci/config.yml" }}
 
       - run:
           name: install csh
@@ -41,24 +41,29 @@ jobs:
             bash $MINICONDA_FILE -b
             source ~/miniconda3/bin/activate root
             conda env create -f .build/envs/Linux.yml
+            conda install -n ncl_build -c conda-forge imagemagick esmf
 
       - save_cache:
           paths:
             - ~/miniconda3
-          key: v1-dependencies-{{ checksum ".build/envs/Linux.yml" }}
+          key: v1-dependencies-{{ checksum ".build/envs/Linux.yml" }}-{{ checksum ".circleci/config.yml" }}
 
       - run:
           name: build ncl
           command: |
             source ~/miniconda3/bin/activate root
+            sh -c "${CIRCLE_COMMAND_1}"
             bash .build/conda_build.sh
 
       - run:
           name: run tests
           command: |
             source ~/miniconda3/bin/activate ncl_build
-            test `ncl -V` = `cat version`
+            test "`ncl -V`" = "`cat version`"
+            git clone https://github.com/NCAR/ncl_ci_test
+            cd ncl_ci_test
+            bash run_tests.bash
 
       - store_artifacts:
-          path: test-reports
+          path: ncl_ci_test/nug/bad
           destination: test-reports
