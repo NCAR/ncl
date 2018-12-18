@@ -6330,6 +6330,7 @@ begin
   panel_center   = get_res_value_keep(res,"gsnPanelCenter",True)
   panel_labelbar = get_res_value_keep(res,"gsnPanelLabelBar",False)
   panel_plotid   = get_res_value_keep(res,"gsnPanelScalePlotIndex",-1)
+  panel_lbarid   = get_res_value_keep(res,"gsnPanelLabelBarPlotIndex",-1)
   calldraw       = get_res_value_keep(res,"gsnDraw",True)
   callframe      = get_res_value_keep(res,"gsnFrame",True)
   xwsp_perc      = get_res_value_keep(res,"gsnPanelXWhiteSpacePercent",1.)
@@ -6499,6 +6500,18 @@ begin
   else
     valid_plot = ind_nomsg(0)
   end if
+;
+; In NCL V6.6.0, we added a new resource, gsnPanelLabelBarPlotIndex 
+; which allows you to specify which plot to base the panel labelbar
+; on. If none is specified, then the first non-missing plot in the
+; list will be used.
+;
+  if(panel_lbarid.ge.0.and.panel_lbarid.le.(nplots-1).and. \
+     .not.ismissing(plot(panel_lbarid))) then
+    valid_plot_lbar = panel_lbarid
+  else
+    valid_plot_lbar = valid_plot
+  end if
   bb     = NhlGetBB(plot(valid_plot))   ; Get bounding box of this plot
   top    = bb(0)
   bottom = bb(1)
@@ -6518,10 +6531,10 @@ begin
 ; by an attribute, for example, "plot@contour" or "plot@vector".
 ;
   new_plot     = get_plot_not_loglin(plot(valid_plot))
-  new_plot_lab = get_plot_labelbar(plot(valid_plot))
+  new_plot_lab = get_plot_labelbar(plot(valid_plot_lbar))
 
 ;---If plot type is unknown or xy, then we can't create a labelbar.
-  if(panel_labelbar.and.(new_plot@plot_type.eq."unknown".or.new_plot@plot_type.eq."xy")) then
+  if(panel_labelbar.and.(new_plot_lab@plot_type.eq."unknown".or.new_plot_lab@plot_type.eq."xy")) then
     print("Warning: gsn_panel: unrecognized plot type for getting labelbar information. Ignoring labelbar request.")
     panel_labelbar = False
   end if
