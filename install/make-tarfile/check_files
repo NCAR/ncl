@@ -625,6 +625,7 @@ lib/ncarg/colormaps/cb_rainbow_inv.rgb
 lib/ncarg/colormaps/circular_0.rgb
 lib/ncarg/colormaps/circular_1.rgb
 lib/ncarg/colormaps/circular_2.rgb
+lib/ncarg/colormaps/cividis.rgb
 lib/ncarg/colormaps/cmocean_algae.rgb
 lib/ncarg/colormaps/cmocean_amp.rgb
 lib/ncarg/colormaps/cmocean_balance.rgb
