@@ -12525,7 +12525,7 @@ begin
     fill_on = True
   end if
 
-  gsres_tmp = get_res_eq(res2,"gs")           ; Get resource list for lines. Remove gsFill
+  gsres_tmp = get_res_eq(res,"gs")           ; Get resource list for lines. Remove gsFill
   lnres     = get_res_ne(gsres_tmp,"gsFill")  ; resources so they don't get passed to gsn_polyline.
   delete(gsres_tmp)
 
