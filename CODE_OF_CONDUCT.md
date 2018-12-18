@@ -1,6 +1,8 @@
-# CONTRIBUTOR CODE OF CONDUCT
-## RELATED CODE OF CONDUCT
-### Participant Code of Conduct
+# Contributor Code of Conduct
+
+## Related Code of Conduct 
+
+Participant Code of Conduct
 [https://www2.fin.ucar.edu/ethics/participant-code-conduct](https://www2.fin.ucar.edu/ethics/participant-code-conduct)
 
 ## Our Pledge
@@ -66,7 +68,7 @@ Upon receipt of a complaint, the project administrator(s) may take any action de
 
 All UCAR managed projects are required to adopt this Contributor Code of Conduct. Adoption is assumed even if not expressly stated in the repository. Projects should fill in sections where prompted with project-specific information, including, project name, email addresses, adoption date, etc. There is one section below marked "optional" that may not apply to a given project.
 
-Projects that adopt this Code of Conduct need to stay up to date with UCAR's Contributor Code of Conduct, linked above. Projects can make limited substantive changes to the Code of Conduct, however, the changes must be limited in scope and may not contradict the UCAR Contributor Code of Conduct.
+Projects that adopt this Code of Conduct need to stay up to date with UCAR's Contributor Code of Conduct, linked with a DOI in the "Attribution" section below. Projects can make limited substantive changes to the Code of Conduct, however, the changes must be limited in scope and may not contradict the UCAR Contributor Code of Conduct.
 
 ## Attribution
 
