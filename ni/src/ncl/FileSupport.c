@@ -3726,9 +3726,9 @@ NclQuark _NclFindFileExt(NclQuark path, NclQuark *fname_q, NhlBoolean *is_http,
 			    ".shp",
 #endif
 #ifdef BuildGRIB2
-			    ".grib2", ".grb2", ".gr2",
+			    ".grib2", ".grb2", ".gr2", ".g2",
 #endif
-			    ".grib1", ".grb1", ".grib", ".grb", ".gr1", ".gr",
+			    ".grib1", ".grb1", ".grib", ".grb", ".gr1", ".gr", ".g1",
 	                    ".netcdf"};
 
 	int n = -1;

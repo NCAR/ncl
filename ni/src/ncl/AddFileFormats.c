@@ -119,10 +119,12 @@ void _NclAddFileFormats
 	_NclRegisterFormat(GribAddFileFormat,"grib");
 	_NclRegisterFormat(GribAddFileFormat,"grb1");
 	_NclRegisterFormat(GribAddFileFormat,"grib1");
+	_NclRegisterFormat(GribAddFileFormat,"g1");
 #ifdef  BuildGRIB2
 	_NclRegisterFormat(GribAddFileFormat,"gr2");
 	_NclRegisterFormat(GribAddFileFormat,"grib2");
 	_NclRegisterFormat(GribAddFileFormat,"grb2");
+	_NclRegisterFormat(GribAddFileFormat,"g2");
 #endif  /* BuildGRIB2 */
 	_NclRegisterFormat(CcmAddFileFormat,"ccm");
 

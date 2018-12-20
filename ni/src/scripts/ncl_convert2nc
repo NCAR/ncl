@@ -657,9 +657,11 @@ while ($n <= $nfiles)
             case grib:
             case grb1:
             case grib1:
+            case g1:
             case gr2:
             case grb2:
             case grib2:
+            case g2:
                 set ftype = "GRIB"
                 set if = "$fil"
                 set of = "$if:r"
@@ -808,9 +810,11 @@ while ($n <= $nfiles)
             case grib:
             case grb1:
             case grib1:
+            case g1:
             case gr2:
             case grb2:
             case grib2:
+            case g2:
                 set ftype = "GRIB"
                 set if = "$tf:r".$lsfx
                 set of = "$tf:r"
