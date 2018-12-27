@@ -10,9 +10,9 @@
 ; function wrf_user_vert_interp(file_handle,field:float,\
 ;                               vert_coordinate[1]:string, \
 ;                               interp_levels[*]:numeric,opts[1]:logical)
-; function wrf_user_vertcross(var3d:numeric, z:numeric, loc_param:numeric, \
-;                             angle:numeric, opts:logical )
-; function wrf_user_interpline(var2d:numeric, loc_param:numeric, opts:logical )
+; function wrf_user_vert_cross(var3d:numeric, z:numeric, loc_param:numeric, \
+;                              angle:numeric, opts:logical )
+; function wrf_user_interp_line(var2d:numeric, loc_param:numeric, opts:logical )
 ; function wrf_user_getvar( file_handle, variable:string, time:integer )
 ; function wrf_user_list_times( file_handle )
 ; function wrf_user_ll_to_ij( nc_file:file, longitude:numeric, latitude:numeric, \
@@ -2142,7 +2142,7 @@ begin
 
   opts = opts_args
   useT  = get_res_value_keep(opts,"useTime",0)
-  returnI= get_res_value_keep(opts,"returnInt",True)
+  returnI = get_res_value_keep(opts,"returnInt",True)
 
   res = True
   res@MAP_PROJ  = nc_file@MAP_PROJ
@@ -2291,7 +2291,7 @@ begin
 
   opts = opts_args
   useT  = get_res_value_keep(opts,"useTime",0)
-  returnI = get_res_value_keep(opts,"returnInt",False)
+  returnI = get_res_value_keep(opts,"returnInt",True)
 
   res = True
   res@MAP_PROJ  = nc_file@MAP_PROJ
@@ -2602,9 +2602,9 @@ end
 
 ;--------------------------------------------------------------------------------
  
-undef("wrf_user_vertcross")
-function wrf_user_vertcross(var3d:numeric, z_in:numeric, \
-                           loc_param:numeric, opts:logical )
+undef("wrf_user_vert_cross")
+function wrf_user_vert_cross(var3d:numeric, z_in:numeric, \
+                             loc_param:numeric, opts:logical )
 
 ; var3d      - 3d field to interpolate (all input fields must be unstaggered)
 ; z_in       - interpolate to this field (either p/z)
@@ -2836,8 +2836,8 @@ end
 
 ;--------------------------------------------------------------------------------
  
-undef("wrf_user_interpline")
-function wrf_user_interpline(var2d:numeric, loc_param:numeric, opts:logical )
+undef("wrf_user_interp_line")
+function wrf_user_interp_line(var2d:numeric, loc_param:numeric, opts:logical )
 
 ; var2d      - 2d field to interpolate to a line
 ; loc_param  - an array of 4 values representing the start point and end point 
@@ -3020,8 +3020,8 @@ end
 
 ;--------------------------------------------------------------------------------
  
-undef("wrf_user_interplevel")
-function wrf_user_interplevel(var3d:numeric, z_in:numeric, \
+undef("wrf_user_interp_level")
+function wrf_user_interp_level(var3d:numeric, z_in:numeric, \
                               loc_param:numeric, opts:logical )
                            
 begin
