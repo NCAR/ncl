@@ -1376,29 +1376,29 @@ static NhlErrorTypes AddDataBoundToAreamap
 		xa[1] = xa[2] = wl + xeps;
 		ya[0] = ya[1] = ya[4] = wb;
 		ya[2] = ya[3] = wt;
-		_NhlAredam(cnp->aws,xa,ya,1,3,0,-1,entry_name);
+		_NhlAredam(cnp->aws,xa,ya,5,3,0,-1,entry_name);
 		xa[0] = xa[3] = xa[4] = wr;
 		xa[1] = xa[2] = wr - xeps;
 		ya[0] = ya[1] = ya[4] = wb;
 		ya[2] = ya[3] = wt;
-		_NhlAredam(cnp->aws,xa,ya,1,3,0,-1,entry_name);
+		_NhlAredam(cnp->aws,xa,ya,5,3,0,-1,entry_name);
 		xa[0] = xa[3] = xa[4] = wl + xeps;
 		xa[1] = xa[2] = wr - xeps;
 		ya[0] = ya[1] = ya[4] = wb;
 		ya[2] = ya[3] = wb + yeps;
-		_NhlAredam(cnp->aws,xa,ya,1,3,0,-1,entry_name);
+		_NhlAredam(cnp->aws,xa,ya,5,3,0,-1,entry_name);
 		xa[0] = xa[3] = xa[4] = wl + xeps;
 		xa[1] = xa[2] = wr - xeps;
 		ya[0] = ya[1] = ya[4] = wt - yeps;
 		ya[2] = ya[3] = wt;
-		_NhlAredam(cnp->aws,xa,ya,1,3,0,-1,entry_name);
+		_NhlAredam(cnp->aws,xa,ya,5,3,0,-1,entry_name);
 
 #endif
 
 		c_arseti("RC",1);
 		c_mpgetc("OU",cval,3);
 		c_mpsetc("OU","NO");
-		c_mpseti("G2",2);
+		c_mpseti("G2",3);
 		c_mpseti("VS",1);
 		_NhlMapbla(cnp->aws,entry_name);
 		c_mpsetc("OU",cval);

@@ -1977,6 +1977,11 @@ NhlErrorTypes _NhlArpram
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
 		return NhlFATAL;
 	}
+	if ( ((int*) wsrp->ws_ptr)[3] == 1) {
+		/* the areamap has already been pre-processed (by arpram) and no new areas have
+		   been added */
+		return NhlNOERROR;
+	}
 
 	c_entsr(&save_mode,1);
 
