@@ -1093,28 +1093,25 @@ static NhlErrorTypes AddDataBoundToAreamap
 	NhlString	entry_name;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR;
-	char			*e_text;
 	NhlContourPlotLayerPart	*cnp = 
 		(NhlContourPlotLayerPart *) &cl->contourplot;
-	int			status;
 	NhlBoolean		ezmap = False;
-	int			xrev,yrev;
+	int			status;
+	NhlErrorTypes		ret = NhlNOERROR;
+	char			*e_text;
 	float			xa[5],ya[5];
-	float	   		xeps,yeps;
-
+	char		cval[4];
 #define _cnBBOXGID 3
 #if 0
 #define _cnMAPBOUNDINC	3700
 #endif
 #define _cnMAPBOUNDINC	100
 
-	/*return NhlNOERROR; */
+
 	if (cnp->trans_obj->base.layer_class->base_class.class_name ==
 	    NhlmapTransObjClass->base_class.class_name) {
 		ezmap = True;
 	}
-
 
 #if 0
 	gset_linewidth(4.0);
@@ -1122,7 +1119,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 	c_arseti("RC(1)",1);
 	c_arseti("RC(3)",2);
 #endif
-	/* RC has been set to 1 ; I am now finding better results with 0 -- we'll see */
+
 
 	if (! ezmap) {
 		float twlx,twrx,twby,twuy;
@@ -1130,19 +1127,22 @@ static NhlErrorTypes AddDataBoundToAreamap
 		float txmin,txmax,tymin,tymax;
 		float gxmin,gxmax,gymin,gymax;
 		NhlBoolean lbox, rbox, bbox, tbox;
+		int txrev, tyrev;
 
 #if 0
 		if (cnp->smoothing_on)
 			c_arseti("RC",1);
 		else
 			c_arseti("RC",0);
-#endif 
+#endif
 		c_arseti("RC",1);
 		ret = NhlVAGetValues(cnp->trans_obj->base.id,
 				     NhlNtrXMinF,&txmin,
 				     NhlNtrXMaxF,&txmax,
 				     NhlNtrYMinF,&tymin,
 				     NhlNtrYMaxF,&tymax,
+				     NhlNtrXReverse,&txrev,
+				     NhlNtrYReverse,&tyrev,
 				     NULL);
 
 		_NhlDataToWin(cnp->trans_obj,&txmin,&tymin,
@@ -1189,8 +1189,13 @@ static NhlErrorTypes AddDataBoundToAreamap
 			ret = MIN(ret,NhlWARNING);
 			return ret;
 		}
-#if 0
-		if (twlx < twrx) {
+/*
+ * the following was incorrect because the controlling reverse parameters belong to the overlay transformation
+ * if there is one. If there is no overlay then the local trans obj works but otherwise it does not. 
+ * The cnp->trans_obj always points to the correct transformation
+ */
+
+/*		if (twlx < twrx) {
 			xrev = cl->trans.x_reverse;
 		}
 		else {
@@ -1202,19 +1207,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 		else {
 			yrev = ! cl->trans.y_reverse;
 		}
-#endif
-		if (cnp->sfp->x_start < cnp->sfp->x_end) {
-			xrev = cl->trans.x_reverse;
-		}
-		else {
-			xrev = ! cl->trans.x_reverse;
-		}
-		if (cnp->sfp->y_start < cnp->sfp->y_end) {
-			yrev = cl->trans.y_reverse;
-		}
-		else {
-			yrev = ! cl->trans.y_reverse;
-		}
+*/
 
 /*
  * added a hack to prevent fill dropout in certain cases, where because
@@ -1223,41 +1216,6 @@ static NhlErrorTypes AddDataBoundToAreamap
  * edge. Now a very thin rectangle is drawn just to the inside of each
  * viewport edge in this situation.
  */
-		xeps = 1e-5 * fabs(twrx-twlx);
-		yeps = 1e-5 * fabs(twuy-twby);
-
-		if (! xrev) {
-			if (gwlx >= twlx && gwlx - twlx < xeps)
-				gwlx = twlx + xeps;
-			if (gwrx <= twrx && twrx - gwrx < xeps)
-				gwrx = twrx - xeps;
-			lbox = gwlx > twlx;
-			rbox = gwrx < twrx;
-		}
-		else {
-			if (gwrx >= twrx && gwrx - twrx < xeps)
-				gwrx = twrx + xeps;
-			if (gwlx <= twlx && twlx - gwlx < xeps)
-				gwlx = twlx - xeps;
-			lbox = gwlx < twlx;
-			rbox = gwrx > twrx;
-		}
-		if (! yrev) {
-			if (gwby >= twby && gwby - twby < xeps)
-				gwby = twby + yeps;
-			if (gwuy <= twuy && twuy - gwuy < yeps)
-				gwuy = twuy - yeps;
-			bbox = gwby > twby;
-			tbox = gwuy < twuy;
-		}
-		else {
-			if (gwuy >= twuy && gwuy - twuy < yeps)
-				gwuy = twuy + yeps;
-			if (gwby <= twby && twby - gwby < yeps)
-				gwby = twby - yeps;
-			bbox = gwby > twby;
-			tbox = gwuy < twuy;
-		}
 
 /*
  * This code from 'added a hack' above to the end of 'if (! ezmap)' below was not working properly
@@ -1295,13 +1253,25 @@ static NhlErrorTypes AddDataBoundToAreamap
 					      4,xn,yn,&st,NULL,NULL);
 			}
 			if (! st) {
-				gwlx = xn[0];
-				gwrx = xn[1];
-				gwby = yn[0];
-				gwuy = yn[2];
+				gwlx = txrev ? xn[1] : xn[0];
+				gwrx = txrev ? xn[0] : xn[1];
+				gwby = tyrev ? yn[2] : yn[0];
+				gwuy = tyrev ? yn[0] : yn[2];
 			}
 		}
-
+		/* 
+		 * for whatever reason it seems that it works better to only put these 
+		 * rectangles on two opposite sides of the viewport. 
+                 * The choice of which sides seems to depend on which axes are reversed.
+                 */
+		if ( ! (txrev || tyrev) || (txrev && tyrev))  {
+			lbox = rbox  = 1;
+			tbox = bbox = 0;
+		}
+		else {
+			lbox = rbox  = 0;
+			tbox = bbox = 1;
+		}
 		if (lbox) {
 				
 			xa[0] = xa[1] = xa[4] = twlx;
@@ -1309,7 +1279,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 			ya[0] = ya[3] = ya[4] = twuy;
 			ya[1] = ya[2] = twby;
 
-			if (! (xrev || yrev) || (xrev && yrev)) 
+			if ( ! (txrev || tyrev) || (txrev && tyrev)) 
 				_NhlAredam(cnp->aws,xa,ya,
 					   5,_cnBBOXGID,9999,0,entry_name);
 			else
@@ -1321,7 +1291,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 			xa[2] = xa[3] = twrx;
 			ya[0] = ya[3] = ya[4] = twuy;
 			ya[1] = ya[2] = twby;
-			if (! (xrev || yrev) || (xrev && yrev)) 
+			if ( ! (txrev || tyrev) || (txrev && tyrev))
 				_NhlAredam(cnp->aws,xa,ya,
 					   5,_cnBBOXGID,9999,0,entry_name);
 			else
@@ -1329,11 +1299,11 @@ static NhlErrorTypes AddDataBoundToAreamap
 					   5,_cnBBOXGID,0,9999,entry_name);
 		}
 		if (bbox) {
-			xa[0] = xa[1] = xa[4] = gwlx;
-			xa[2] = xa[3] = gwrx;
-			ya[0] = ya[3] = ya[4] = gwby;
-			ya[1] = ya[2] = twby;
-			if (! (xrev || yrev) || (xrev && yrev)) 
+			xa[0] = xa[1] = xa[4] = twlx;
+			xa[2] = xa[3] = twrx;
+			ya[0] = ya[3] = ya[4] = twby;
+			ya[1] = ya[2] = gwby;
+			if ( ! (txrev || tyrev) || (txrev && tyrev)) 
 				_NhlAredam(cnp->aws,xa,ya,
 					   5,_cnBBOXGID,9999,0,entry_name);
 			else
@@ -1341,11 +1311,11 @@ static NhlErrorTypes AddDataBoundToAreamap
 					   5,_cnBBOXGID,0,9999,entry_name);
 		}
 		if (tbox) {
-			xa[0] = xa[1] = xa[4] = gwlx;
-			xa[2] = xa[3] = gwrx;
-			ya[0] = ya[3] = ya[4] = twuy;
-			ya[1] = ya[2] = gwuy;
-			if (! (xrev || yrev) || (xrev && yrev)) 
+			xa[0] = xa[1] = xa[4] = twlx;
+			xa[2] = xa[3] = twrx;
+			ya[0] = ya[3] = ya[4] = gwuy;
+			ya[1] = ya[2] = twuy;
+			if ( ! (txrev || tyrev) || (txrev && tyrev))
 				_NhlAredam(cnp->aws,xa,ya,
 					   5,_cnBBOXGID,9999,0,entry_name);
 			else
@@ -1354,15 +1324,17 @@ static NhlErrorTypes AddDataBoundToAreamap
 		}
 	}
 	else {
-		char		cval[4];
 
 #if 0
+		float xeps,yeps;
 		float wb,wt,wl,wr;
+
+		xeps = 1e-5 * fabs(twrx-twlx);
+		yeps = 1e-5 * fabs(twuy-twby);
 
 		/* apparently none of this stuff is necessary as long as you set the vertical strips correctly*/
 		if (! cnp->fix_fill_bleed)
-			return NhlNOERROR;
-
+			return NhlNOERROR; 
 		ret = NhlVAGetValues(cnp->trans_obj->base.id,
 				     NhlNmpBottomWindowF,&wb,
 				     NhlNmpTopWindowF,&wt,
@@ -1394,7 +1366,6 @@ static NhlErrorTypes AddDataBoundToAreamap
 		_NhlAredam(cnp->aws,xa,ya,5,3,0,-1,entry_name);
 
 #endif
-
 		c_arseti("RC",1);
 		c_mpgetc("OU",cval,3);
 		c_mpsetc("OU","NO");
@@ -1402,7 +1373,9 @@ static NhlErrorTypes AddDataBoundToAreamap
 		c_mpseti("VS",1);
 		_NhlMapbla(cnp->aws,entry_name);
 		c_mpsetc("OU",cval);
+
 	}
+
 	return NhlNOERROR;
 }
 
