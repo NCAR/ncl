@@ -549,10 +549,10 @@ static NhlErrorTypes CreateTilePartitions
 		}
 		for (block_ix = 0; block_ix < block_count; block_ix++) {
 			tbp = &(tmp->tri_block[block_ix]);
-			xs = tbp->xs;
-			xe = tbp->xe;
-			ys = tbp->ys;
-			ye = tbp->ye;
+			xs = MIN(tbp->xs,tbp->xe);
+			xe = MAX(tbp->xs,tbp->xe);
+			ys = MIN(tbp->ys,tbp->ye);
+			ye = MAX(tbp->ys,tbp->ye);
 			if (xt < xs || xt > xe || yt < ys || yt > ye) {
 				continue;
 			}
