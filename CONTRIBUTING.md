@@ -17,16 +17,13 @@ Thank you for your interest in NCL. We welcome contributions from everyone. Ther
 - Examples, scripts, documentation fixes may be submitted via the **ncl-talk@ucar.edu** email group. ([Registration](http://mailman.ucar.edu/mailman/listinfo/ncl-talk) is required).
 - Suggestions, commentary may be submitted ( to-be-filled-in)
 
-## Conduct
+## Code of Conduct
 
-In contributing to NCL, you agree to follow our [Code of Conduct]( to-be-filled-in).
+In contributing to NCL, you agree to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
-NCL has separate binary and source code licenses which are based on the OSI <a href="http://www.opensource.org/licenses/apache2.0.php">Apache License, Version 2.0</a> license.
-
-* [NCL Source Code License](LICENSE.md#ncl-source-code-license)
-* [NCL Binary License](LICENSE.md#ncl-binary-license)
+[NCL's license](LICENSE) is based on the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>.
 
 ## Additional Resources
 
