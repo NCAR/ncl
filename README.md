@@ -61,6 +61,6 @@ Use the GitHub [issue tracker](https://github.com/NCAR/ncl/issues) to submit a b
 
 Cite NCL using the following text:
 
-> The NCAR Command Language (Version 6.5.0) [Software]. (2018). Boulder, Colorado: UCAR/NCAR/CISL/TDD. http://dx.doi.org/10.5065/D6WD3XH5
+> The NCAR Command Language (Version 6.5.0) [Software]. (2019). Boulder, Colorado: UCAR/NCAR/CISL/TDD. http://dx.doi.org/10.5065/D6WD3XH5
 
 Update the NCL version and year as appropriate.
