@@ -8,39 +8,6 @@
 ; code can be extracted without loss of functionality.
 ;
 ;************************************************************
-undef("get_pi")
-function get_pi( p )
-local pi, ptype
-begin
-  ptype = typeof(p)
-
-  if (ptype.eq."double" .or.  \
-     (ptype.eq."string" .and. (p.eq."double" .or. p.eq."d"))) then
-      pi = 4d*atan(1d0)
-  else
-      pi = 4.0*atan(1.0)       ; default is to return float
-  end if
-  pi@long_name = "ratio of a circle's circumference to its diameter"
-  return( pi )
-end
-;************************************************************
-undef("get_d2r")                ; degrees to radians
-function get_d2r( x )
-local d2r
-begin
-  d2r = get_pi(x)/180
-  d2r@long_name = "convert degrees to radians"
-  return( d2r )
-end
-;************************************************************
-undef("get_r2d")                ; radians to degrees
-function get_r2d( x )
-local r2d
-begin
-  r2d = 180/get_pi(x)
-  r2d@long_name = "convert radians to degrees"
-  return( r2d )
-end
 ;************************************************************
 ; return number of elements of an array [scalar==> size=1]
 ;************************************************************

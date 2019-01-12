@@ -5751,24 +5751,79 @@ end
 ;
 ; Special coordinates recognized by this routine:
 ;
-;    "gsnCoordsX" and "gsnCoordsY" - The X and Y coordinates to plot.
-;       You only need to set these if the input data array 
-;       doesn't have 1D coordinate arrays attached, or doesn't
-;       have the special "lat2d", "lon2d" attributes.
+;    gsnCoordsX / gsnCoordsY - [no default]
+;       The X and Y coordinates to plot. These only should be set if
+;       the input data array doesn't have coordinate arrays attached,
+;       or doesn't have the special "lat2d", "lon2d" attributes.
 ;
-;    "gsnCoordsAttach" - if True, then the markers will be
-;       attached via gsn_add_polymarker, instead of just 
-;       drawn with gsn_polymarker. Note that gsnDraw and Frame will
+;    gsnCoordsAttach - [default = False]
+;       If True, then the markers or lines will be attached via
+;       gsn_add_polymarker/line, instead of being drawn instantly
+;       with gsn_polymarker/line. Note that gsnDraw and Frame will
 ;       both be set to False in this case.
 ;
-;    "gsnCoordsAsLines" - [not implemented yet] if True, 
-;      coordinates will be drawn as lines rather than markers.
-;      This only works for 2D coordinate arrays.
+;    gsnCoordsAsLines - [default = False]
+;      If True, coordinates will be drawn as lines rather than
+;      than markers. This will only work if your data is rectilinear
+;      or curvilinear. If it's an unstructured mesh or a random series
+;      of points, then read on for other available options.
 ;
-;    "gsnCoordsMissingColor"
-;    "gsnCoordsNonMissingColor" - If either one of these are set,
-;       then at locations where the data is or isn't missing, they
-;       will be drawn in the given color
+;    gsnCoordsMissingColor
+;    gsnCoordsNonMissingColor - [default=foreground color]
+;       If either one of these are set, then at locations where the
+;       data is or isn't missing, they will be drawn in the given color
+;
+;    gsnCoordsMinLat / gsnCoordsMaxLat
+;    gsnCoordsMinLon / gsnCoordsMaxLon 
+;       Set the desired min/max of the lat/lon area where the 
+;       grid or mesh edges are to be drawn. This can help
+;       save significant time in drawing. If not set, then
+;       it will either default to the min/max of cell edges, or
+;       if those are not set, then the input lat/lon.
+;
+;    gsnCoordsConvertRad2Deg (default=False)
+;       This function assumes that any input lat/lon values are
+;       in degrees_north and degrees_east. If they are in radians, 
+;       then set this attribute to True to force conversion to
+;       degrees. Note: this will apply only to the following
+;       attributes. It will not apply to the lat/lon attached to
+;       the input data array via coordinate arrays or lat2d/lon2d.
+;           gsnCoordsMeshLat/LonCenter
+;           gsnCoordsMeshLat/LonBounds
+;           gsnCoordsMeshLat/LonVertices
+;
+;    gsnCoordsMeshLatCenter, gsnCoordsLonCenter
+;       1D arrays containing the lat/lon locations of 
+;       each cell center. If set, then these will be 
+;       drawn as markers.
+;
+;    gsnCoordsMeshLatBounds, gsnCoordsMeshLonBounds
+;       1D arrays containing lat,lon locations for the
+;       vertices of each mesh cell. If these two are set,
+;       then none of gsnCoordsMeshXXVerticesXX or
+;       gsnCoordsMeshNumEdgesOnCell should be set.
+;
+;    gsnCoordsMeshLatVertices, gsnCoordsLonVertices
+;    gsnCoordsMeshVerticesOnCell
+;       The Lat/LonVertices contains the lat/lon values for each
+;       vertex in a mesh, and the VerticesOnCell (ncells x 
+;       max_edges) contains the index values into these arrays
+;       for each mesh cell.
+;
+;     gsnCoordsMeshVerticesOneBased (default=False)
+;       For MeshLat/LonVerticesOnCell, are the vertex indexes 
+;       0-based or 1-based? That is, do they go from 1 to ncells 
+;       or 0 to ncells-1? If they are 1-based, then you need to 
+;       set this attribute to True.
+;
+;    gsnCoordsMeshNumEdgesOnCell
+;       1D array of length ncell containing the number
+;       of edges for each mesh cell. Only recognized if
+;       gsnCoordsMeshLat/LonVertices is set.
+;
+;    gsnCoordsMeshClosePolygons (default=True)
+;       If the mesh cell polygons are not closed, then
+;       set this to True to force them to be closed.
 ;
 ;***********************************************************************;
 undef("gsn_coordinates")
@@ -5782,6 +5837,18 @@ local type_xcoord, type_ycoord, pres, res2, pres, dims, rank, \
 begin
   res2 = res                     ; Make copy so we can modify it
 
+;---This is for mesh or unstructured data.
+  have_latlon_centers = False
+  have_mesh_vertices  = False
+  have_mesh_bounds    = False
+;
+; Right now anything that needs to get converted will be converted
+; to double precision. This can be unnecessarily memory-intensive  
+; if the lat/lon are float. May want to fix this later.
+; convert everything to double.
+;
+  RAD2DEG = get_r2d("double")
+
 ;---Check for special resources
   maxbb         = get_bb_res(res2)
   defclr        = get_res_value(res2,"gsMarkerColor",1)
@@ -5791,9 +5858,12 @@ begin
   nonmsgclr     = get_res_value(res2,"gsnCoordsNonMissingColor",defclr)
   nonmsgidx     = get_res_value(res2,"gsnCoordsNonMissingIndex",defmrk)
   attach_coords = get_res_value(res2,"gsnCoordsAttach",False)
-  draw_lines    = get_res_value(res2,"gsnCoordsAsLines",False)
+  debug         = get_res_value(res2,"gsnCoordsDebug",False)
+  convert_rad2deg = get_res_value(res2,"gsnCoordsConvertRad2Deg",False)
   draw_msg      = .not.is_color_transparent(msgclr)        ; this is for markers only
   draw_nonmsg   = .not.is_color_transparent(nonmsgclr)     ; ditto
+  draw_coords_as_lines   = get_res_value(res2,"gsnCoordsAsLines",False)
+  draw_coords_as_markers = .not.draw_coords_as_lines
 
   if(attach_coords) then
     calldraw  = get_res_value(res2,"gsnDraw", False)
@@ -5809,11 +5879,13 @@ begin
 ;    gsnCoordsX or gsnCoordsY attributes attached to res ("res_coord").
 ;    1D coord array attached to data ("data_coord").
 ;    2D lat2d/lon2d attributes attached to data ("data_att")
+;    Mesh coordinates provided by res attributes ("res_mesh_centers")
+;      (added in NCL V6.6.0)
 ; 
   type_xcoord = ""
   type_ycoord = ""
   dims        = dimsizes(data)
-  rank       = dimsizes(dims)
+  rank        = dimsizes(dims)
 
 ;----------------------------------------------------------------------
 ; This section gets the X,Y coordinate arrays and converts them
@@ -5823,12 +5895,12 @@ begin
   if(res2.and.isatt(res2,"gsnCoordsLat").and.isatt(res2,"gsnCoordsLon")) then
     type_xcoord = "res_coord"
     type_ycoord = "res_coord"
-    if(draw_lines) then
+    if(draw_coords_as_lines) then
       xcoord_2d = res2@gsnCoordsLon
       ycoord_2d = res2@gsnCoordsLat
     else
-      xcoord_1d = ndtooned(res2@gsnCoordsLon)
-      ycoord_1d = ndtooned(res2@gsnCoordsLat)
+      xcoord_1d = res2@gsnCoordsLon
+      ycoord_1d = res2@gsnCoordsLat
     end if
     delete(res2@gsnCoordsLat)
     delete(res2@gsnCoordsLon)
@@ -5838,7 +5910,7 @@ begin
      isatt(res2,"gsnCoordsX").and.isatt(res2,"gsnCoordsY")) then
     type_xcoord = "res_coord"
     type_ycoord = "res_coord"
-    if(draw_lines) then
+    if(draw_coords_as_lines) then
       xcoord_2d = res2@gsnCoordsX
       ycoord_2d = res2@gsnCoordsY
     else
@@ -5859,7 +5931,7 @@ begin
     type_xcoord = "data_coord"
     type_ycoord = "data_coord"
     dd          = (/dims(ydim),dims(xdim)/)
-    if(draw_lines) then
+    if(draw_coords_as_lines) then
       xcoord_2d = conform_dims(dd,data&$data!xdim$,1)
       ycoord_2d = conform_dims(dd,data&$data!ydim$,0)
     else
@@ -5871,7 +5943,7 @@ begin
 ;---Check if "data" contains "lat2d", "lon2d" attributes
   if(type_xcoord.eq."".and.isatt(data,"lon2d")) then
     type_xcoord = "data_att"
-    if(draw_lines) then
+    if(draw_coords_as_lines) then
       xcoord_2d = data@lon2d
     else
       xcoord_1d = ndtooned(data@lon2d)
@@ -5879,7 +5951,7 @@ begin
   end if
   if(type_ycoord.eq."".and.isatt(data,"lat2d")) then
     type_ycoord = "data_att"
-    if(draw_lines) then
+    if(draw_coords_as_lines) then
       ycoord_2d = data@lat2d
     else
       ycoord_1d = ndtooned(data@lat2d)
@@ -5888,33 +5960,295 @@ begin
 
 ;---Check if "data" contains "lat1d", "lon1d" attributes
   if(type_xcoord.eq."".and.isatt(data,"lon1d")) then
-    if(draw_lines) then
-      print("gsn_coordinates: cannot draw an unstructured grid using lines")
+    if(draw_coords_as_lines) then
+      print("gsn_coordinates: cannot draw one-dimensional lat/lon points using lines")
+      print("                 Do not set gsnCoordsAsLines to True")
       return
     end if
     type_xcoord = "data_att"
     xcoord_1d   = data@lon1d
   end if
   if(type_ycoord.eq."".and.isatt(data,"lat1d")) then
-    if(draw_lines) then
-      print("gsn_coordinates: cannot draw an unstructured grid using lines")
+    if(draw_coords_as_lines) then
+      print("gsn_coordinates: cannot draw one-dimensional lat/lon points using lines")
+      print("                 Do not set gsnCoordsAsLines to True")
       return
     end if
     type_ycoord = "data_att"
     ycoord_1d   = data@lat1d
   end if
+;
+; This section was added in NCL V6.6.0 to check for mesh-style 
+; coordinates (MPAS mesh, triangular mesh, etc).
+;
+  if(type_xcoord.eq."".and.type_ycoord.eq."".and.res2.and.\
+     all(isatt(res2,(/"gsnCoordsMeshLatCenter",\
+                      "gsnCoordsMeshLonCenter"/)))) then
+    if(draw_coords_as_lines) then
+      print("gsn_coordinates: cannot draw one-dimensional lat/lon mesh centers using lines")
+      print("                 Do not set gsnCoordsAsLines to True")
+      return
+    end if
+    type_xcoord = "res_mesh_centers"
+    type_ycoord = "res_mesh_centers"
+    if(convert_rad2deg) then
+      ycoord_1d = res2@gsnCoordsMeshLatCenter * RAD2DEG
+      xcoord_1d = res2@gsnCoordsMeshLonCenter * RAD2DEG
+    else
+      ycoord_1d = res2@gsnCoordsMeshLatCenter
+      xcoord_1d = res2@gsnCoordsMeshLonCenter
+    end if
+    have_latlon_centers = True
+    delete(res2@gsnCoordsMeshLatCenter)
+    delete(res2@gsnCoordsMeshLonCenter)
+  end if
+
+  if((type_xcoord.eq."".and.type_ycoord.eq."").and.(res2.and.\
+      (all(isatt(res2,(/"gsnCoordsMeshLatVertices",\
+                        "gsnCoordsMeshLonVertices"/)))).or.\
+      (all(isatt(res2,(/"gsnCoordsMeshLatBounds",\
+                        "gsnCoordsMeshLonBounds"/)))))) then
+    type_xcoord = "res_mesh_vertices"
+    type_ycoord = "res_mesh_vertices"
+;---At this point we know that nothing is desired for the coordinates themselves.
+    draw_coords_as_markers = False
+    draw_coords_as_lines   = False
+  end if
 
 ;---Error checking
   if(type_xcoord.eq."".or.type_ycoord.eq."") then
-    print("gsn_coordinates: no valid X and/or Y coordinate values provided.")
+    print("gsn_coordinates: no valid X and/or Y values or mesh information provided.")
     return
   end if
   if(type_xcoord.ne.type_ycoord) then
-    print("gsn_coordinates: conflicting X/Y coordinate values provided.")
+    print("gsn_coordinates: conflicting X/Y values or mesh information provided.")
     return
   end if
 
-  if(draw_lines) then
+  if(res2.and.\
+     all(isatt(res2,(/"gsnCoordsMeshLatVertices",\
+                      "gsnCoordsMeshLonVertices",\
+                      "gsnCoordsMeshVerticesOnCell"/)))) then
+    have_mesh_vertices = True
+    vertices  = get_res_value(res2,"gsnCoordsMeshVerticesOnCell",-1)
+    vdims     = dimsizes(vertices)
+    ncells    = vdims(0)
+    max_edges = vdims(1)
+    if(isatt(res2,"gsnCoordsMeshNumEdgesOnCell")) then
+      nedges = get_res_value(res2,"gsnCoordsMeshNumEdgesOnCell",-1)
+    else
+      nedges = conform_dims(ncells,max_edges,0)
+    end if
+    if(convert_rad2deg) then
+      lat_vert = get_res_value(res2,"gsnCoordsMeshLatVertices",-1) * RAD2DEG
+      lon_vert = get_res_value(res2,"gsnCoordsMeshLonVertices",-1) * RAD2DEG
+    else
+      lat_vert = get_res_value(res2,"gsnCoordsMeshLatVertices",-1)
+      lon_vert = get_res_value(res2,"gsnCoordsMeshLonVertices",-1)
+    end if
+  end if
+  if(res2.and.\
+     all(isatt(res2,(/"gsnCoordsMeshLatBounds",\
+                      "gsnCoordsMeshLonBounds"/)))) then
+    have_mesh_bounds = True
+    if(convert_rad2deg) then
+      lat_bnds = get_res_value(res2,"gsnCoordsMeshLatBounds",-1) * RAD2DEG
+      lon_bnds = get_res_value(res2,"gsnCoordsMeshLonBounds",-1) * RAD2DEG
+    else
+      lat_bnds = get_res_value(res2,"gsnCoordsMeshLatBounds",-1)
+      lon_bnds = get_res_value(res2,"gsnCoordsMeshLonBounds",-1)
+    end if
+    dims      := dimsizes(lat_bnds)
+    ncells    = dims(0)
+    max_edges = dims(1)
+  end if
+  if(have_mesh_vertices.or.have_mesh_bounds) then
+    mesh_indexes_one_based = get_res_value(res2,"gsnCoordsMeshVerticesOneBased",False)
+    close_mesh_polygons    = get_res_value(res2,"gsnCoordsMeshClosePolygons",False)
+    if(close_mesh_polygons) then
+      total_edges = max_edges+1
+    else
+      total_edges = max_edges
+    end if
+  end if
+
+  if(res2.and.isatt(res2,"gsnCoordsMinLat")) then
+    minlat = get_res_value(res2,"gsnCoordsMinLat",-1)
+  elseif(have_mesh_vertices)
+    minlat = min(lat_vert)
+  elseif(have_mesh_bounds)
+    minlat = min(lat_bnds)
+  elseif(have_latlon_centers)
+    minlat = min(ycoord_1d)
+  else
+    minlat = -90
+  end if
+  if(res2.and.isatt(res2,"gsnCoordsMaxLat")) then
+    maxlat = get_res_value(res2,"gsnCoordsMaxLat",-1)
+  elseif(have_mesh_vertices)
+    maxlat = max(lat_vert)
+  elseif(have_mesh_bounds)
+    maxlat = max(lat_bnds)
+  elseif(have_latlon_centers)
+    maxlat = max(ycoord_1d)
+  else
+    maxlat = 90
+  end if
+  if(res2.and.isatt(res2,"gsnCoordsMinLon")) then
+    minlon = get_res_value(res2,"gsnCoordsMinLon",-1)
+  elseif(have_mesh_vertices)
+    minlon = min(lon_vert)
+  elseif(have_mesh_bounds)
+    minlon = min(lon_bnds)
+  elseif(have_latlon_centers)
+    minlon = min(xcoord_1d)
+  else
+    minlon = -180
+  end if
+  if(res2.and.isatt(res2,"gsnCoordsMaxLon")) then
+    maxlon = get_res_value(res2,"gsnCoordsMaxLon",-1)
+  elseif(have_mesh_vertices)
+    maxlon = max(lon_vert)
+  elseif(have_mesh_bounds)
+    maxlon = max(lon_bnds)
+  elseif(have_latlon_centers)
+    maxlon = max(xcoord_1d)
+  else
+    maxlon = 180
+  end if
+
+;---Some debug prints
+  if(debug) then
+    if(have_mesh_vertices) then
+      print("==================================================")
+      print("gsn_coordinates: information about mesh")
+      print("  Mesh is " + ncells + " cells x " +  max_edges + " edges")
+      print("  Min/max lat vertices : " + min(lat_vert) + "/" + max(lat_vert))
+      print("  Min/max lon vertices : " + min(lon_vert) + "/" + max(lon_vert))
+      print("  Min/max lat area of interest: " + minlat + "/" + maxlat)
+      print("  Min/max lon area of interest: " + minlon + "/" + maxlon)
+
+      min_vertices = min(vertices)    ; Get min/max cell indexes
+      max_vertices = max(vertices)
+      print("  Min/max vertices : " + min_vertices + "/" + max_vertices)
+      if(min_vertices.eq.1.and.max_vertices.eq.ncells)  then
+        print("  The min/max vertices are 1/" + ncells + ".")
+        print("  This likely means you have 1-based indexes.")
+        if(mesh_indexes_one_based) then
+          print("  'mesh_indexes_one_based' is set to True, so you should be good there.")
+        else
+          print("  'mesh_indexes_one_based' is NOT set to True; set to False if mesh doesn't look correct.")
+        end if
+      end if
+    end if
+    if(have_mesh_bounds) then
+      print("==================================================")
+      print("gsn_coordinates: information about mesh")
+      print("  Mesh is " + ncells + " cells x " +  max_edges + " edges")
+      print("  Min/max lat bounds : " + min(lat_bnds) + "/" + max(lat_bnds))
+      print("  Min/max lon bounds : " + min(lon_bnds) + "/" + max(lon_bnds))
+      print("  Min/max lat area of interest: " + minlat + "/" + maxlat)
+      print("  Min/max lon area of interest: " + minlon + "/" + maxlon)
+    end if
+  end if
+;
+; By looping through the vertices and only selecting the ones in 
+; our domain of interest, we greatly speed up the code because we
+; are not drawing polylines that fall outside our view area.
+;
+  if(have_mesh_vertices) then
+    ii = new(ncells,typeof(ncells))
+    if(mesh_indexes_one_based) then
+      do i=0,ncells-1
+        iv = vertices(i,:)-1
+        if(any(lat_vert(iv).ge.minlat.and.\
+               lat_vert(iv).le.maxlat.and.\
+               lon_vert(iv).ge.minlon.and.\
+               lon_vert(iv).le.maxlon)) then
+          ii(i) = i
+        end if
+      end do
+    else
+      do i=0,ncells-1
+        if(any(lat_vert(vertices(i,:)).ge.minlat.and.\
+               lat_vert(vertices(i,:)).le.maxlat.and.\
+               lon_vert(vertices(i,:)).ge.minlon.and.\
+               lon_vert(vertices(i,:)).le.maxlon)) then
+          ii(i) = i
+        end if
+      end do
+    end if
+  elseif(have_mesh_bounds)
+    ii = new(ncells,typeof(ncells))
+    do i=0,ncells-1
+      if(any(lat_bnds(i,:).ge.minlat.and.\
+             lat_bnds(i,:).le.maxlat.and.\
+             lon_bnds(i,:).ge.minlon.and.\
+             lon_bnds(i,:).le.maxlon)) then
+        ii(i) = i
+      end if
+    end do
+  end if
+  if(have_mesh_vertices.or.have_mesh_bounds) then
+    if(all(ismissing(ii))) then
+      print("gsn_coordinates: Error: couldn't find any mesh values inside")
+      print("  the lat/lon range you provided: ")
+      print("  " + minlat + "/" + maxlat + ", " + minlon + "/" + maxlon)
+      print("  Can't add any mesh polylines.")
+      return
+    end if
+    ii_area_of_interest = ii(ind(.not.ismissing(ii)))
+    ncells_subset = dimsizes(ii_area_of_interest)    ; recalculate ncells
+  end if
+
+;---Create lat/lon arrays to hold the lat/lon values for each set of mesh cell edges
+  if(have_mesh_vertices) then
+    lat_bnds_subset = new((/ncells_subset,total_edges/),typeof(lat_vert))
+    lon_bnds_subset = new((/ncells_subset,total_edges/),typeof(lon_vert))
+    nedges_area_of_interest = nedges(ii_area_of_interest)
+    if(mesh_indexes_one_based) then
+      do i = 0,max_edges-1
+        lat_bnds_subset(:,i) = lat_vert(vertices(ii_area_of_interest,i)-1)
+        lon_bnds_subset(:,i) = lon_vert(vertices(ii_area_of_interest,i)-1)
+      end do
+    else
+      do i = 0,max_edges-1
+        lat_bnds_subset(:,i) = lat_vert(vertices(ii_area_of_interest,i))
+        lon_bnds_subset(:,i) = lon_vert(vertices(ii_area_of_interest,i))
+      end do
+    end if
+    if(close_mesh_polygons) then
+      do i = 0,ncells_subset-1
+        lat_bnds_subset(i,nedges_area_of_interest(i)) = lat_bnds_subset(i,0)
+        lon_bnds_subset(i,nedges_area_of_interest(i)) = lon_bnds_subset(i,0)
+      end do
+    end if
+  end if
+  if(have_mesh_bounds) then
+    if(close_mesh_polygons) then
+      lat_bnds_subset = new((/ncells_subset,total_edges/),typeof(lat_bnds))
+      lon_bnds_subset = new((/ncells_subset,total_edges/),typeof(lon_bnds))
+      lat_bnds_subset(:,0:total_edges-2) = lat_bnds(ii_area_of_interest,0:total_edges-2)
+      lon_bnds_subset(:,0:total_edges-2) = lon_bnds(ii_area_of_interest,0:total_edges-2)
+      lat_bnds_subset(:,total_edges-1) = lat_bnds(ii_area_of_interest,0)
+      lon_bnds_subset(:,total_edges-1) = lon_bnds(ii_area_of_interest,0)
+    else
+      lat_bnds_subset = lat_bnds(ii_area_of_interest,:)
+      lon_bnds_subset = lon_bnds(ii_area_of_interest,:)
+    end if
+  end if
+
+  if(have_mesh_vertices.or.have_mesh_bounds) then
+    gsres = get_res_ne(res,"gsnCoords")
+    gsres = True
+;---Using gsSegments is the key to drawing the lines faster.
+    gsres@gsSegments = ispan(0,ncells_subset*total_edges,total_edges)
+    tmpstr = unique_string("mesh_lines")
+    plot@$tmpstr$ = gsn_add_polyline(wks,plot,ndtooned(lon_bnds_subset),\
+                                              ndtooned(lat_bnds_subset),gsres)
+  end if
+
+  if(draw_coords_as_lines) then
     dims_xcoord = dimsizes(xcoord_2d)
     dims_ycoord = dimsizes(ycoord_2d)
     rank_xcoord = dimsizes(dims_xcoord)
@@ -5931,7 +6265,7 @@ begin
       print("                      dimensionality")
       return
     end if
-  else
+  elseif(draw_coords_as_markers) then
     dims_xcoord = dimsizes(xcoord_1d)
     dims_ycoord = dimsizes(ycoord_1d)
     if(dims_xcoord.ne.dims_ycoord) then
@@ -5953,7 +6287,7 @@ begin
   end if
 
 ;---Draw coordinates using lines.
-  if(draw_lines) then
+  if(draw_coords_as_lines) then
     if(attach_coords) then
       do i=0,ny-1
         tmpstr = unique_string("xlines")
@@ -5975,37 +6309,56 @@ begin
                               ycoord_2d(:,i),pres)
       end do
     end if
-  else
-;---Draw coordinates using markers.
+  elseif(draw_coords_as_markers) then
     if(draw_nonmsg) then
       pres@gsMarkerColor := nonmsgclr
       pres@gsMarkerIndex := nonmsgidx
-      ii = ind(.not.ismissing(ndtooned(data)))
-      if(.not.all(ismissing(ii))) then
+      if(have_latlon_centers)
+        ii := ind(.not.ismissing(data(ii_area_of_interest)))
+        if(ismissing(ii(0))) then
+          ii_nomsg = new(1,integer)   ; set to missing
+        else
+          ii_nomsg = ii_area_of_interest(ii)
+        end if
+        delete(ii)
+      else
+        ii_nomsg = ind(.not.ismissing(ndtooned(data)))
+      end if
+      if(.not.ismissing(ii_nomsg(0))) then
         if(attach_coords) then
           tmpstr = unique_string("markers_nonmsg")
-          plot@$tmpstr$ = gsn_add_polymarker(wks,plot,xcoord_1d(ii),\
-                                             ycoord_1d(ii),pres)
+          plot@$tmpstr$ = gsn_add_polymarker(wks,plot,xcoord_1d(ii_nomsg),\
+                                             ycoord_1d(ii_nomsg),pres)
         else
-          gsn_polymarker(wks,plot,xcoord_1d(ii),ycoord_1d(ii),pres)
+          gsn_polymarker(wks,plot,xcoord_1d(ii_nomsg),ycoord_1d(ii_nomsg),pres)
         end if
       end if
     end if ; draw_nonmsg
     if(draw_msg) then
       pres@gsMarkerColor := msgclr
       pres@gsMarkerIndex := msgidx
-      ii := ind(ismissing(ndtooned(data)))
-      if(.not.all(ismissing(ii))) then
+      if(have_latlon_centers)
+        ii := ind(ismissing(data(ii_area_of_interest)))
+        if(ismissing(ii(0))) then
+          ii_msg = new(1,integer)   ; set to missing
+        else
+          ii_msg = ii_area_of_interest(ii)
+        end if
+        delete(ii)
+      else
+        ii_msg = ind(ismissing(ndtooned(data)))
+      end if
+      if(.not.ismissing(ii_msg(0))) then
         if(attach_coords) then
           tmpstr = unique_string("markers_msg")
-          plot@$tmpstr$ = gsn_add_polymarker(wks,plot,xcoord_1d(ii),\
-                                             ycoord_1d(ii),pres)
+          plot@$tmpstr$ = gsn_add_polymarker(wks,plot,xcoord_1d(ii_msg),\
+                                             ycoord_1d(ii_msg),pres)
         else
-          gsn_polymarker(wks,plot,xcoord_1d(ii),ycoord_1d(ii),pres)
+          gsn_polymarker(wks,plot,xcoord_1d(ii_msg),ycoord_1d(ii_msg),pres)
         end if
       end if
     end if ; draw_msg
-  end if   ; draw_lines
+  end if   ; draw_coords_as_lines
 
   if(attach_coords) then
     draw_and_frame(wks,plot,calldraw,callframe,False,maxbb)
