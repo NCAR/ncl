@@ -10,7 +10,10 @@ NCL is a scripting language for the analysis and visualization of climate and we
 * Has hundreds of built-in computational routines
 * Produces high-quality graphics
 
-NCL is developed by the [Computational and Information Systems Lab](https://www2.cisl.ucar.edu) at the [National Center for Atmospheric Research](https://ncar.ucar.edu), and is funded by the [National Science Foundation](https://www.nsf.gov).
+NCL is developed by the [Computational and Information Systems Lab](https://www2.cisl.ucar.edu) at the [National Center for Atmospheric Research](https://ncar.ucar.edu) (NCAR).
+
+NCAR is sponsored by the [National Science Foundation](https://www.nsf.gov). Any opinions, findings and conclusions or recommendations expressed in this material do not necessarily reflect the views of the National Science Foundation.
+
 
 # Installation
 
