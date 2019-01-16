@@ -16670,7 +16670,12 @@ begin
  ;print("rigrad_bruntv_atm: shear2: min="+min(shear)+"   max="+max(shear))
   delete([/dudz,dvdz/])
 
-  Ri     = buoy/shear2               ; [1/s2] / [1/s2] => dimensionless
+  if (any(shear2.eq.0)) then
+      SHEAR2 = where(shear2.eq.0, shear2@_FillValue, shear2)  ; temporary
+      Ri  = buoy/SHEAR2               ; [1/s2] / [1/s2] => dimensionless
+  else
+      Ri  = buoy/shear2               ; [1/s2] / [1/s2] => dimensionless
+  end if
   copy_VarCoords(u, Ri)
   Ri@long_name   = "Gradient Richardson Number"
   Ri@info = "http://glossary.ametsoc.org/wiki/Gradient_richardson_number"
@@ -19272,7 +19277,7 @@ begin
 ;************************************************
 ; Miscellaneous
 ;************************************************
-  rad   = 4.0*atan(1.0)/180.0
+  rad   = get_d2r(typeof(lat))   ; = 4.0*atan(1.0)/180.0
   re    = 6.37122e6  
   con   = re*rad                 ; one deg lat = 111198.8 meters
 
@@ -19293,6 +19298,8 @@ begin
 ; This assumes that the longitudes are equally spaced
 ; Pre-allocate space for gradients
 ;************************************************
+; Set pole values ( -90 and 90) values to _FillValue
+;************************************************
 
   dlon_re = re*(lon(2)-lon(1))*rad    ; meters at 're' radius 
   lon_re  = ispan(0,mlon-1,1)*dlon_re ; lon(mlon)
@@ -19304,19 +19311,38 @@ begin
           lonx          = lon_re*cos(lat(nl)*rad) ; longitude spacing (x) function(latitude)
           cgx(nl,:)     = totype( center_finite_diff_n (z(nl,:)    , lonx, rCyclic,0,0), typeof(cgx))
       end do
-  else if (rankz.eq.3) then
+
+      if (lat(0).le.-89.999) then                 ; pole values?
+          cgx(0,:) = cgx@_FillValue 
+      end if
+      if (lat(nlat-1).ge.89.999) then
+          cgx(nlat-1,:) = cgx@_FillValue 
+      end if
+  elseif (rankz.eq.3) then
       do nl=0,nlat-1                              ; loop over each latitude (y)
           lonx          = lon_re*cos(lat(nl)*rad) ; longitude spacing (x) function(latitude)
           cgx(:,nl,:)   = totype( center_finite_diff_n (z(:,nl,:)  , lonx, rCyclic,0,1), typeof(cgx))
       end do
-  else if (rankz.eq.4) then
+
+      if (lat(0).le.-89.999) then                 ; pole values
+          cgx(:,0,:) = cgx@_FillValue 
+      end if
+      if (lat(nlat-1).ge.89.999) then
+          cgx(:,nlat-1,:) = cgx@_FillValue 
+      end if
+  elseif (rankz.eq.4) then
       do nl=0,nlat-1                              ; loop over each latitude (y)
           lonx          = lon_re*cos(lat(nl)*rad) ; longitude spacing (x) function(latitude)
           cgx(:,:,nl,:) = totype( center_finite_diff_n (z(:,:,nl,:), lonx, rCyclic,0,2), typeof(cgx))
       end do
-    end if      ; rankz=4
-   end if       ; rankz=3
-  end if        ; rankz=2
+
+      if (lat(0).le.-89.999) then                 ; pole values
+          cgx(:,:,0,:) = cgx@_FillValue 
+      end if
+      if (lat(nlat-1).ge.89.999) then
+          cgx(:,:,nlat-1,:) = cgx@_FillValue 
+      end if
+  end if        
 
   copy_VarCoords( z, cgx)            
   cgx@long_name = "cfd: zonal gradient"
