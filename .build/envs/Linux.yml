@@ -1,6 +1,6 @@
 name: ncl_build
 channels:
-  - conda-forge
+  - conda-forge/label/cf201901
 dependencies:
   - gcc
   - toolchain_c_linux-64
