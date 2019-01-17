@@ -20635,3 +20635,808 @@ begin
   copy_VarCoords(t, te)
   return(te)
 end
+;====================
+undef("advect_variable_cfd")
+function advect_variable_cfd (u:numeric, v:numeric, q:numeric, lat[*]:numeric, lon[*]:numeric \
+                             ,cyclic[1]:logical,long_name[1]:string, units[1]:string, iopt[1]:integer)
+;
+; compute advection of a variable: UV.GRADIENT(X) ; U*(dX/dlon) + V*(dX/dlat)
+; on a rectilinear grid that is not global
+;
+; Requires:
+;    (1) required dimension order ([time,[lev,]lat,lon)
+;    (2) the input grids *must* be ordered South==>North
+; 
+; Nomenclature:
+;   u, v      - zonal and meridional wind components [m/s]
+;               rightmost dimensions must be ([...,]lat,lon)
+;   q         - scalar quantity to be advected 
+;               rightmost dimensions must be ([...,]lat,lon)
+;               eg: T, Z, divergence, vorticity, latent energy,..., whatever
+;   lat, lon  - rectilinear coordinates
+;   cyclic    - True means cyclic in longitude; otherwise False             
+;   long_name - descriptive name (eg: "Temperature Advection" )
+;   units     - units of result  (eg: "m-K/s" )
+;   iopt      - flag: =0 means return only the advect result          
+;                     =1 means return the advect, longitidinal and latitudinal gradients
+;                     =2 means return the advect, longitidinal and latitudinal gradients
+;                        u*dq/dx and v*dq/dy 
+;                        as part of a list
+; Usage:
+;   f = addfile ("foo_region.nc", "r")
+;   u = f->U    ; (time,lev,lat,lon)
+;   v = f->V
+;   T = f->T
+;               ; linear advection of temperature
+;   Tadv = advect_variable_cfd(u,v,T,T&lat,T&lon, False \
+;                        ,"linear advection of temperature","m-K/s",0)
+;
+local dimu, dimv, dimq, ranku, rankv, rankq, ier, yord \
+    , gradLatLon, uq_grad_lon, vq_grad_lat, advect
+begin
+                             ; ERROR CHECKING
+  dimu  = dimsizes(u)
+  dimv  = dimsizes(v)
+  dimq  = dimsizes(q)
+  ranku = dimsizes(dimu)
+  rankv = dimsizes(dimv)
+  rankq = dimsizes(dimq)
+
+  ier   = 0
+  if (.not.(ranku.eq.rankv .and. ranku.eq.rankq)) then
+      print("advect_variable_cfd: all input arguments must have the same rank")
+      print("            ranku="+ranku)
+      print("            rankv="+rankv)
+      print("            rankq="+rankq)
+      ier = ier + 10
+  end if
+  if (.not.(all(dimu.eq.dimv) .and. all(dimu.eq.dimq))) then
+      print("advect_variable_cfd: all input arguments must have the same dimension sizes")
+      print("            ranku="+ranku)
+      print("            rankv="+rankv)
+      print("            rankq="+rankq)
+      ier = ier + 100
+  end if
+  if (rankq.lt.2) then
+      print("advect_variable_cfd: variable rank must be at least 2D: ([time,[lev,]lat,lon)")
+      print("advect_variable_cfd: rank="+rankq+"D")
+      ier = ier + 1000
+  end if
+
+  yord  = isMonotonic(lat)
+  if (yord.le.0) then
+      print("advect_variable_cfd: grid is not in South-to-North order.")
+      ier = ier + 10000
+  end if
+
+  if (ier.ne.0) then
+      print("advect_variable_cfd fatal error(s) encountered: ier="+ier)
+      exit
+  end if
+                                 ; zonal (x) and meriodonal (y) gradients
+  gradLatLon  = grad_latlon_cfd (q, lat, lon, cyclic, False)
+  q_grad_lat  = gradLatLon[0]    ; for clarity; explicitly extract variables from returned 'list' 
+  q_grad_lon  = gradLatLon[1]
+  delete(gradLatLon)
+                                        ; advection
+  uq_grad_lon = u*q_grad_lon 
+  vq_grad_lat = v*q_grad_lat
+  advect      = uq_grad_lon + vq_grad_lat
+                                        ; add meta data
+  copy_VarCoords(q, advect)
+  advect@long_name = long_name
+  advect@units     = units
+  advect@NCL_tag   = "advect_variable_cfd"
+
+  if (iopt.eq.0) then
+      return(advect)
+  elseif (iopt.eq.1) then
+      return([/ advect, q_grad_lon, q_grad_lat /] )
+  else 
+      copy_VarCoords(q, uq_grad_lon)
+      uq_grad_lon@long_name = "U*dQ/dx"
+
+      copy_VarCoords(q, vq_grad_lat)
+      vq_grad_lat@long_name = "V*dQ/dy"
+
+      return([/ advect, q_grad_lon, q_grad_lat, uq_grad_lon, vq_grad_lat /] )
+  end if
+
+end
+;----------------------------------------------------------------------------
+undef("shear_stretch_deform")
+function shear_stretch_deform(u:numeric, v:numeric, lat[*]:numeric, gridType[1]:integer, opt:integer)
+;
+; *GLOBAL RECTILINEAR* grids: Data *MUST* be global and cyclic
+;
+; Compute kinematic shear, stretch and deformation on *GLOBAL RECTILINEAR* grids
+; The reason for the *GLOBAL RECTILINEAR* grids is that this function ; uses 
+; 'highly accurate' SPHERICAL HARMONICS to derive the various derivative terms
+;
+; Nomenclature
+;     u       - zonal wind  (m/s)     [2D or 3D or 4D]          
+;     v       - meridional wind (m/s) [2D or 3D or 4D]    
+;     lat     - latitudes
+;     gridType- grid type
+;               =0 means gaussian grid
+;               =1 means regular or fixed grid
+;     opt     - return options:
+;               opt=0 ; return; [/stretch, shear, deform/] 
+;               opt=1 ; return; [/stretch, shear, deform, dudx, dudy, dvdx, dvdy/] 
+;
+; Note: grids must be GLOBAL because spherical harmonics are used
+;   
+; Usage:
+;   f   = addfile ("foo.nc", "r")
+;   U   = f->U    ; (time,lev,lat,lon) or (lev,lat,lon)
+;   V   = f->V
+;   lat = f->lat
+;   def = shear_stretch_deform(u,v,  lat, 0, 0)
+;   def = shear_stretch_deform(u,v,u&lat, 0, 0)
+;
+; Reference: Djurić, D: "Weather Analysis". Prentice Hall, 1994. ISBN 0-13-501149-3.
+;            Class:
+; https://www.atmos.illinois.edu/~snesbitt/ATMS505/stuff/04_Kinematics%20of%20horizontal%20wind%20field.pdf
+;
+local dimu, ranku, dimv, rankv, dudx, dudy, dvdx, dvdy, shear, stretch, deform 
+begin
+                                   ; ERROR CHECK
+  if (opt.lt.0 .or. opt.gt.1) then
+      print("shear_stretch_deform: opt=0 or opt=1 allowed: opt="+opt)
+      exit
+  end if
+
+  dimu   = dimsizes(u)
+  ranku  = dimsizes(dimu) 
+  if (.not.(ranku.ge.2 .and. ranku.le.4)) then
+      print("shear_stretch_deform: only 2D-to-4D arrays allowed: rank="+ranku)
+      exit
+  end if
+  dimv   = dimsizes(v)
+  rankv  = dimsizes(dimv) 
+  if (.not.(ranku.eq.rankv)) then
+      print("shear_stretch_deform: u, v must be the same rank: ranku=" \
+            +ranku+"  rankv="+rankv)
+      exit
+  end if
+
+  if (.not.(gridType.eq.0 .or. gridType.eq.1)) then
+      print("shear_stretch_deform: unrecognized gridType: only 0 and 1 allowed")
+      print("           gridType="+gridType)
+      exit
+  end if
+
+  if ((lat(1)-lat(0)).le.0) then
+      print("shear_stretch_deform: data must be in S-N order")
+      exit
+  end if
+       ; pre-allocate memory
+  dudx = new (dimu, typeof(u), "No_FillValue")
+  dudy = new (dimu, typeof(u), "No_FillValue")
+  dvdx = new (dimu, typeof(u), "No_FillValue")
+  dvdy = new (dimu, typeof(u), "No_FillValue")
+
+  if (gridType.eq.0) then
+      gradsg (u, dudx, dudy) 
+      gradsg (v, dvdx, dvdy) 
+  elseif (gridType.eq.1) then
+      gradsf (u, dudx, dudy) 
+      gradsf (v, dvdx, dvdy) 
+  end if
+
+  shear  = dvdx + dudy
+  stretch= dudx - dvdy 
+  deform = sqrt(shear^2 + stretch^2)
+
+  stretch@long_name  = "(dudx-dvdy): SPH"      
+  stretch@units      = "1/s"
+
+  shear@long_name    = "(dvdx+dudy): SPH"
+  shear@units        = "1/s"
+
+  deform@long_name    = "deformation: SPH"
+  deform@units        = "1/s"
+  deform@long_name    = "deformation"
+  deform@information  = "sqrt[shear^2 + stretch^2 ]"
+
+  copy_VarCoords(u, shear )
+  copy_VarCoords(u, stretch)
+  copy_VarCoords(u, deform)
+
+  if (opt.eq.0) then
+      return( [/stretch, shear, deform/] ) ; variable
+
+  elseif (opt.eq.1) then
+      dudx@long_name = "dudx: SPH"      ; longitudinal gradient: zonal wind
+      dudy@long_name = "dudy: SPH"      ; latitudinal gradient:  zonal wind
+      dudx@units     = "K/m"
+      dudy@units     = "K/m"
+      copy_VarCoords(u, dudx)
+      copy_VarCoords(u, dudy)
+    
+      dvdx@long_name = "dvdx: SPH"      ; longitudinal gradient: meridional wind
+      dvdy@long_name = "dvdy: SPH"      ; latitudinal gradient:  meridional wind
+      dvdx@units     = "K/m"
+      dvdy@units     = "K/m"
+      copy_VarCoords(v, dvdx)
+      copy_VarCoords(v, dvdy)
+
+      return( [/stretch, shear, deform, dudx, dudy, dvdx, dvdy/] )
+  end if
+end
+;=====================================================================
+undef("shear_stretch_deform_cfd")
+function shear_stretch_deform_cfd(u:numeric, v:numeric, lat[*]:numeric, lon[*]:numeric\
+                                 ,cyclic[1]:logical, opt[1]:integer)
+;
+; Compute kinematic shear, stretch and deformation on *RECTILINEAR* grids
+; Variable may be regional or global                             
+;
+; Compute kinematic shear, stretch and deformation on *RECTILINEAR* grids
+;
+; Nomenclature
+;     u       - zonal wind  (m/s)     [2D or 3D or 4D]; ordered South-to-North          
+;     v       - meridional wind (m/s) [2D or 3D or 4D];               "    
+;     lat     - latitudes
+;     lon     - longitudes
+;     cyclic  - Cyclic in longitude: True or False   
+;     opt     - return options:
+;               opt=0 ; return; [/stretch, shear, deform/] 
+;               opt=1 ; return; [/stretch, shear, deform, dudx, dudy, dvdx, dvdy/] 
+; Usage:
+;   f   = addfile ("foo.nc", "r")
+;   U   = f->U    ; (time,lev,lat,lon) or (lev,lat,lon)
+;   V   = f->V
+;   lat = f->lat
+;   def = shear_stretch_deform_cfd(u,v,  lat,lon, cyclic,  0)
+;   def = shear_stretch_deform_cfd(u,v,u&lat,u&lon, cyclic, 0)
+;
+; Reference: Djurić, D: "Weather Analysis". Prentice Hall, 1994. ISBN 0-13-501149-3.
+;            Class:
+; https://www.atmos.illinois.edu/~snesbitt/ATMS505/stuff/04_Kinematics%20of%20horizontal%20wind%20field.pdf
+;
+local dimu, ranku, dimv, rankv, dudx, dudy, dvdx, dvdy, shear, stretch, deform 
+begin
+                                   ; ERROR CHECK
+  if (opt.lt.0 .or. opt.gt.1) then
+      print("shear_stretch_deform_cfd: opt=0 or opt=1 allowed: opt="+opt)
+      exit
+  end if
+
+  dimu   = dimsizes(u)
+  ranku  = dimsizes(dimu) 
+  if (.not.(ranku.ge.2 .and. ranku.le.4)) then
+      print("shear_stretch_deform_cfd: only 2D-to-4D arrays allowed: rank="+ranku)
+      exit
+  end if
+  dimv   = dimsizes(v)
+  rankv  = dimsizes(dimv) 
+  if (.not.(ranku.eq.rankv)) then
+      print("shear_stretch_deform_cfd: u, v must be the same rank: ranku=" \
+            +ranku+"  rankv="+rankv)
+      exit
+  end if
+
+  if ((lat(1)-lat(0)).le.0) then
+      print("shear_stretch_deform_cfd: data must be in S-N order")
+      exit
+  end if
+
+  gradLatLon  = grad_latlon_cfd (u, lat, lon, cyclic, False)
+  dudy   = gradLatLon[0]    ; for clarity; explicitly extract variables from returned 'list' 
+  dudx   = gradLatLon[1]    
+
+  gradLatLon  = grad_latlon_cfd (v, lat, lon, cyclic, False)
+  dvdy   = gradLatLon[0]    
+  dvdx   = gradLatLon[1]   
+
+  delete( gradLatLon )
+
+  shear   = dvdx + dudy
+  stretch = dudx - dvdy 
+  deform  = sqrt(shear^2 + stretch^2)
+
+  stretch@long_name  = "(dudx-dvdy): CFD"      
+  stretch@units      = "1/s"
+  stretch@NCL_tag    = "shear_stretch_deform_cfd"
+
+  shear@long_name    = "(dvdx+dudy): CFD"
+  shear@units        = "1/s"
+  shear@NCL_tag      = "shear_stretch_deform_cfd"
+
+  deform@long_name    = "deformation: CFD"
+  deform@units        = "1/s"
+  deform@long_name    = "deformation"
+  deform@information  = "sqrt[shear^2 + stretch^2 ]"
+  deform@NCL_tag      = "shear_stretch_deform_cfd"
+
+  copy_VarCoords(u, shear )
+  copy_VarCoords(u, stretch)
+  copy_VarCoords(u, deform)
+
+  if (opt.eq.0) then
+      return( [/stretch, shear, deform/] ) ; variable
+
+  elseif (opt.eq.1) then
+      dudx@long_name = "dudx: CFD"      ; longitudinal gradient: zonal wind
+      dudy@long_name = "dudy: CFD"      ; latitudinal gradient:  zonal wind
+      dudx@units     = "K/m"
+      dudy@units     = "K/m"
+      copy_VarCoords(u, dudx)
+      copy_VarCoords(u, dudy)
+    
+      dvdx@long_name = "dvdx: CFD"      ; longitudinal gradient: meridional wind
+      dvdy@long_name = "dvdy: CFD"      ; latitudinal gradient:  meridional wind
+      dvdx@units     = "K/m"
+      dvdy@units     = "K/m"
+      copy_VarCoords(v, dvdx)
+      copy_VarCoords(v, dvdy)
+
+      return( [/stretch, shear, deform, dudx, dudy, dvdx, dvdy/] )
+  end if
+end
+;============================
+undef("beta_dfdy_rossby")
+function beta_dfdy_rossby(lat[*]:numeric, opt[1]:logical)
+;
+; https://en.wikipedia.org/wiki/Rossby_parameter
+;  
+; beta = df/dy   where 'f' is the coriolis parameter
+;
+; It arises due to the meridional variation of the Coriolis force 
+; caused by the spherical shape of the Earth. It is important in 
+; the generation of Rossby waves.  
+;
+local rearth, omega, con, d2r, beta
+begin
+  if (typeof(lat).eq."double") then
+      rearth = 6371220d0             ; rearth
+  else
+      rearth = 6371220.0             ; rearth
+  end if
+
+  if (opt .and. isatt(opt, "rearth")) then
+      rearth := opt@rearth 
+  end if
+
+  if (typeof(lat).eq."double") then
+      omega = 7.2921159d-05          ; [1/s] earth's angular vel   [radians/sec] 
+  else
+      omega = 7.2921159e-05  
+  end if
+
+  con  = 2*omega/rearth
+  d2r  = get_d2r(typeof(omega))      ; 6.4.0; pi/180
+
+  beta           = con*cos(lat*d2r)
+  beta@long_name = "Rossby parameter: beta=df/dy"
+  beta@units     = "1/(s-m)"  
+  beta@info      = "meridional variation of the Coriolis parameter" 
+  beta@www       = "https://en.wikipedia.org/wiki/Rossby_parameter"
+  copy_VarCoords(lat, beta)
+
+  return(beta)
+end
+;====================
+undef("qvector_isobaric_cfd")
+function qvector_isobaric_cfd (u:numeric, v:numeric, t:numeric, s:numeric, p[*]:numeric \
+                              ,pdim[1]:integer, lat[*]:numeric, lon[*]:numeric          \
+                              ,cyclic[1]:logical, opt[1]:integer)
+;
+; Compute Q-Vector on a rectilinear grid that is NOT fully global
+;
+; WikiPedia: 
+; Q-vectors are used in atmospheric dynamics to understand physical processes 
+; such as vertical motion and frontogenesis. Q-vectors are not physical 
+; quantities that can be measured in the atmosphere but are derived from 
+; the quasi-geostrophic equations and can be used in diagnostic situations.
+;
+; Remember: [1] The form used below are derived using the 'f-plane' approximation.
+;               f-plane: approx are based on 'Cartesian planar geometry with constant rotation.
+;               Mid-latitude applications. Coriolis parameter is constant.
+;           [2] Q-vectors are not physical entities. They do not exist.
+;           [3] Q-vectors point TOWARD upward motion and AWAY from downward motion. 
+;           [4] Q-vectors are an alternative to the omega equation for diagnosing vertical 
+;               motion in the quasi-geostrophic equations.
+;           [5] If 's' [static stability] is used: 
+;               Weaker static stability produces more vertical motion for a given forcing
+;
+; Argument Requirements:
+;    (1) required dimension order ([time,[lev,]lat,lon)
+;    (2) the input grids *MUST* be ordered South==>North
+; 
+; Nomenclature:
+;   u, v      - zonal and meridional wind components [m/s]
+;               technically *GEOSTROPHIC* wind components
+;               rightmost dimensions must be ([...,]lat,lon)
+;   t         - temperature [K]                         
+;               rightmost dimensions must be ([...,]lat,lon)
+;   s         - static stability or a constant=1.0                    
+;               if static stability, rightmost dimensions must be ([...,]lat,lon)
+;   p         - isobaric pressure level(s) ; [Pa]
+;   pdim      - pressure dim number
+;   lat, lon  - rectilinear coordinates. Need not be equally spaced.
+;   cyclic    - True means cyclic in longitude; otherwise False             
+;   opt       - flag: =0 means return only the Q-Vector components          
+;                     =1 means return the  Q-Vector components, longitidinal and latitudinal gradients
+;                       as elements of a list variable
+; Usage:
+;   f = addfile ("foo_region.nc", "r")   ; here, not cyclic
+;   u = f->U    ; (time,lev,lat,lon)
+;   v = f->V
+;   T = f->T
+;   QV = qvector_isobaric_cfd(u,v,t,ss,t&plev,pdim,t&lat,t&lon,cyclic,opt)
+;
+; Reference: An Introduction to Dynamic Meteorology
+;            J.R. Holton, Academic Press, 3rd Edition
+;            pp 170-175: 
+;            Note: Holton's Q-Vector formulation uses s=1.0
+;
+local dimu, dimv, dimt, dims, dimp \
+    , ranku, rankv, rankt, ranks, rankp, ier, yord \
+    , gradLatLon, dtdy, dtdx, dudy, dudx, dvdy, dvdx, q1, q2, R, Rsp
+begin
+                             ; ERROR CHECKING
+  dimu  = dimsizes(u)
+  dimv  = dimsizes(v)
+  dimt  = dimsizes(t)
+  dims  = dimsizes(s)        ; could be scalar
+  dimp  = dimsizes(p)
+  ranku = dimsizes(dimu)
+  rankv = dimsizes(dimv)
+  rankt = dimsizes(dimt)
+  ranks = dimsizes(dims)     ; could be scalar
+  rankp = dimsizes(dimp) 
+
+  ier   = 0
+  if (.not.(ranku.eq.rankv   .and. ranku.eq.rankt    .and. \
+           (.not.isscalar(s) .and. ranku.eq.ranks)) ) then
+      print("qvector_isobaric_cfd: all input arguments must have the same rank")
+      print("            ranku="+ranku)
+      print("            rankv="+rankv)
+      print("            rankt="+rankt)
+      print("            ranks="+ranks)
+      ier = ier + 1
+  end if
+  if (.not.(all(dimu.eq.dimv) .and. all(dimu.eq.dimt))     .and. \
+           (.not.isscalar(s)  .and. all(ranku.eq.ranks)) ) then
+      print("qvector_isobaric_cfd: all input arguments must have the same dimension sizes")
+      print("             dimu="+dimu)
+      print("             dimv="+dimv)
+      print("             dimt="+dimt)
+      print("             dims="+dims)
+      ier = ier + 10
+  end if
+  if (rankt.lt.2) then
+      print("qvector_isobaric_cfd: variable rank must be at least 2D: ([time,[lev,]lat,lon)")
+      print("qvector_isobaric_cfd: rank="+rankt+"D")
+      ier = ier + 100
+  end if
+
+  yord  = isMonotonic(lat)
+  if (yord.le.0) then
+      print("qvector_isobaric_cfd: grid is not in South-to-North order.")
+      ier = ier + 1000
+  end if
+
+  if (ier.ne.0) then
+      print("qvector_isobaric_cfd: fatal error(s) encountered: ier="+ier)
+      exit
+  end if
+                           ; zonal (x=>longitude) and meridiodonal (y==>latitude) gradients
+  gradLatLon  = grad_latlon_cfd (t, lat, lon, cyclic, False)
+  dtdy  = gradLatLon[0]    ; for clarity; explicitly extract variables from returned 'list' 
+  dtdx  = gradLatLon[1]
+
+  gradLatLon  = grad_latlon_cfd (u, lat, lon, cyclic, False)
+  dudy  = gradLatLon[0] 
+  dudx  = gradLatLon[1]
+
+  gradLatLon  = grad_latlon_cfd (v, lat, lon, cyclic, False)
+  dvdy  = gradLatLon[0]
+  dvdx  = gradLatLon[1]
+
+  delete(gradLatLon)
+
+  dtdx@long_name = "cfd: dt/dx"
+  dtdx@units     = "1/s"
+  dtdy@long_name = "cfd: dt/dy"
+  dtdy@units     = "1/s"
+  dudx@long_name = "cfd: du/dx"
+  dudx@units     = "1/s"
+  dudy@long_name = "cfd: du/dy"
+  dudy@units     = "1/s"
+  dvdx@long_name = "cfd: dv/dx"
+  dvdx@units     = "1/s"
+  dvdy@long_name = "cfd: dv/dy"
+  dvdy@units     = "1/s"
+
+  R   = 287.04             ; Specific gas constant for air [J/(kg-K)]
+  if (isscalar(s) .or. ranks.eq.rankp) then
+      Rsp = R/(s*p)        ; 's' could be a scalar
+  else
+      Rsp = R/(s*conform(s,p,pdim))     
+  end if 
+  q1  = -Rsp*( dudx*dtdx + dvdx*dtdy )
+  q2  = -Rsp*( dudy*dtdx + dvdy*dtdy )
+  
+  q1@long_name = "QI"
+  q1@units     = ""      
+  q1@gradients = "central-finite-difference"
+  copy_VarCoords(u, q1)
+  
+  q2@long_name = "QJ"
+  q2@units     = q1@units
+  q2@gradients = "central-finite-difference"
+  copy_VarCoords(u, q2)
+
+;pintMinMax(q1,0)
+;pintMinMax(q2,0)
+;pintMinMax(dtdx,0)
+;pintMinMax(dtdy,0)
+;pintMinMax(dudx,0)
+;pintMinMax(dudy,0)
+;pintMinMax(dvdx,0)
+;pintMinMax(dvdy,0)
+
+  if (opt.eq.0) then
+      return( [/q1, q2/] )
+  else
+      return( [/q1, q2, dtdx, dtdy, dudx, dudy, dvdx, dvdy/] )
+  end if
+end
+;====================
+undef("qvector_isobaric")
+function qvector_isobaric (u:numeric, v:numeric, t:numeric, s:numeric    \
+                          ,p[*]:numeric, pdim[1]:integer, gridType[1]:integer \
+                          ,lat[*]:numeric, lon[*]:numeric,opt[1]:integer)
+;
+; Compute Q-Vector on a rectilinear grid that is fully global
+;
+; WikiPedia: Q-vectors are used in atmospheric dynamics to understand physical processes 
+; such as vertical motion and frontogenesis. Q-vectors are not physical quantities that 
+; can be measured in the atmosphere but are derived from the quasi-geostrophic equations
+; and can be used in diagnostic situations.
+;
+; Remember: [1] The form used below are derived using the 'f-plane' approximation.
+;               f-plane: approx are based on 'Cartesian planar geometry with constant rotation.
+;               Mid-latitude applications. Coriolis parameter is constant.
+;           [2] Q-vectors are not physical entities. They do not exist.
+;           [3] Q-vectors point TOWARD upward motion and AWAY from downward motion. 
+;           [4] Q-vectors are an alternative to the omega equation for diagnosing vertical 
+;               motion in the quasi-geostrophic equations.
+;           [5] If 's' [static stability] is used: 
+;               Weaker static stability produces more vertical motion for a given forcing
+;
+; Argument Requirements:
+;    (1) required dimension order ([time,[lev,]lat,lon)
+;    (2) the input grids *MUST* be ordered South==>North
+; 
+; Nomenclature:
+;   u, v      - zonal and meridional wind components [m/s]
+;               technically *GEOSTROPHIC* wind components
+;               rightmost dimensions must be ([...,]lat,lon)
+;   t         - temperature [K]                         
+;               rightmost dimensions must be ([...,]lat,lon)
+;   s         - static stability or a constant=1.0                    
+;               if static stability, rightmost dimensions must be ([...,]lat,lon)
+;   p         - isobaric pressure level(s) ; [Pa]
+;   pdim      - pressure dim number
+;   gridType  - 1-fixed; 0-gaussian
+;   lat, lon  - rectilinear coordinates. Need not be equally spaced.
+;   opt       - flag: =0 means return only the Q-Vector components          
+;                     =1 means return the Q-Vector components, longitude & latitude gradients
+;                        as elements of a list variable
+; Usage:
+;   f = addfile ("foo_region.nc", "r")
+;   u = f->U    ; (time,lev,lat,lon)
+;   v = f->V
+;   t = f->T
+;   s = static_stability(pPa, t, dimp, opt_ss))
+;   QV = qvector_isobaric(U,V,T,S,pPa,t&lat,t&lon,opt_qv)
+;
+; Reference: An Introduction to Dynamic Meteorology
+;            J.R. Holton, Academic Press, 3rd Edition
+;            pp 170-175: 
+;            Note: Holton's Q-Vector formulation uses s=1.0
+;
+local dimu, dimv, dimt, dims, dimp \
+    , ranku, rankv, rankt, ranks, rankp, ier, yord \
+    , dtdy, dtdx, dudy, dudx, dvdy, dvdx, q1, q2, R, Rsp
+begin
+                             ; ERROR CHECKING
+  dimu  = dimsizes(u)
+  dimv  = dimsizes(v)
+  dimt  = dimsizes(t)
+  dims  = dimsizes(s)        ; could be scalar
+  dimp  = dimsizes(p)
+  ranku = dimsizes(dimu)
+  rankv = dimsizes(dimv)
+  rankt = dimsizes(dimt)
+  ranks = dimsizes(dims)     ; could be scalar
+  rankp = dimsizes(dimp) 
+
+  ier   = 0
+  if (.not.(ranku.eq.rankv   .and. ranku.eq.rankt    .and. \
+           (.not.isscalar(s) .and. ranku.eq.ranks)) ) then
+      print("qvector_isobaric: all input arguments must have the same rank")
+      print("            ranku="+ranku)
+      print("            rankv="+rankv)
+      print("            rankt="+rankt)
+      print("            ranks="+ranks)
+      ier = ier + 1
+  end if
+  if (.not.(all(dimu.eq.dimv) .and. all(dimu.eq.dimt))     .and. \
+           (.not.isscalar(s)  .and. all(ranku.eq.ranks)) ) then
+      print("qvector_isobaric: all input arguments must have the same dimension sizes")
+      print("             dimu="+dimu)
+      print("             dimv="+dimv)
+      print("             dimt="+dimt)
+      print("             dims="+dims)
+      ier = ier + 10
+  end if
+  if (rankt.lt.2) then
+      print("qvector_isobaric: variable rank must be at least 2D: ([time,[lev,]lat,lon)")
+      print("qvector_isobaric: rank="+rankt+"D")
+      ier = ier + 100
+  end if
+
+  yord  = isMonotonic(lat)
+  if (yord.le.0) then
+      print("qvector_isobaric: grid is not in South-to-North order.")
+      ier = ier + 1000
+  end if
+
+  if (ier.ne.0) then
+      print("qvector_isobaric: fatal error(s) encountered: ier="+ier)
+      exit
+  end if
+
+; pre-allocate memory
+; zonal (x=>longitude) and meridiodonal (y==>latitude) gradients
+
+  dudx = new (dimu, typeof(u), "No_FillValue")
+  dudy = new (dimu, typeof(u), "No_FillValue")
+  dvdx = new (dimv, typeof(v), "No_FillValue")
+  dvdy = new (dimv, typeof(v), "No_FillValue")
+  dtdx = new (dimt, typeof(t), "No_FillValue")
+  dtdy = new (dimt, typeof(t), "No_FillValue")
+
+  if (gridType.eq.0) then
+      gradsg (u, dudx, dudy) 
+      gradsg (v, dvdx, dvdy) 
+      gradsg (t, dtdx, dtdy) 
+  elseif (gridType.eq.1) then
+      gradsf (u, dudx, dudy) 
+      gradsf (v, dvdx, dvdy) 
+      gradsf (t, dtdx, dtdy) 
+  end if
+
+  dudx@long_name = "sph: du/dx"
+  dudx@units     = "1/s"
+  dudy@long_name = "sph: du/dy"
+  dudy@units     = "1/s"
+  dvdx@long_name = "sph: dv/dx"
+  dvdx@units     = "1/s"
+  dvdy@long_name = "sph: dv/dy"
+  dvdy@units     = "1/s"
+  dtdx@long_name = "sph: dt/dx"
+  dtdx@units     = "1/s"
+  dtdy@long_name = "sph: dt/dy"
+  dtdy@units     = "1/s"
+
+  R   = 287.04             ; Specific gas constant for air [J/(kg-K)]
+  if (isscalar(s) .or. ranks.eq.rankp) then
+      Rsp = R/(s*p)        ; 's' could be a scalar
+  else
+      Rsp = R/(s*conform(s,p,pdim))     
+  end if 
+  q1  = -Rsp*( dudx*dtdx + dvdx*dtdy )
+  q2  = -Rsp*( dudy*dtdx + dvdy*dtdy )
+  
+  q1@long_name = "QI"
+  q1@units     = ""    
+  q1@gradients = "spherical harmonics"
+  copy_VarCoords(u, q1)
+  
+  q2@long_name = "QJ"
+  q2@units     = q1@units
+  q2@gradients = "spherical harmonics"
+  copy_VarCoords(u, q2)
+
+;pintMinMax(q1,0)
+;pintMinMax(q2,0)
+;pintMinMax(dtdx,0)
+;pintMinMax(dtdy,0)
+;pintMinMax(dudx,0)
+;pintMinMax(dudy,0)
+;pintMinMax(dvdx,0)
+;pintMinMax(dvdy,0)
+  if (opt.eq.0) then
+      return( [/q1, q2/] )
+  else
+      return( [/q1, q2, dtdx, dtdy, dudx, dudy, dvdx, dvdy/] )
+  end if
+end
+;======================================
+undef("scale_values")
+function scale_values(x:numeric, loNew[1]:numeric, hiNew[1]:numeric, opt[1]:logical)
+;
+; Scale values to a user specified range
+;
+; opt=True: opt@minVal and opt@maxVal are used
+;         : use *ONLY* if you know what you are doing
+; ======================================================
+; New scaled variable
+;         xscale = scale_values(x, loNew, hiNew, opt)
+; or, overwrire
+;         x = scale_values(x, loNew, hiNew, opt)
+;
+; x(N,M)             
+;         xscale = new( dimx, typeof(x), getVarFillValue(x))
+;         do nt-0,ntim-1
+;            xscale(nt,:,:) = scale_values(x(nt,:,:), loNew, hiNew, opt)
+;         ;;;x(nt,:,:) = scale_values(X(nt,:,:), loNew, hiNew, opt)
+;         end do
+; x(ntim,nlat,mlon)
+;         xscale = new( dimx, typeof(x), getVarFillValue(x))
+;         do nt-0,ntim-1
+;            xscale(nt,:,:) = scale_values(x(nt,:,:), loNew, hiNew, opt)
+;         ;;;x(nt,:,:) = scale_values(X(nt,:,:), loNew, hiNew, opt)
+;         end do
+;
+; x(ntim,klev,nlat,mlon)
+;         xscale = new( dimx, typeof(x), getVarFillValue(x))
+;         do nt-0,ntim-1
+;         do kl-0,klev-1
+;            xscale(nt,kl,:,:) = scale_values(x(nt,kl,:,:), loNew, hiNew, opt)
+;         ;;;x(nt,kl,:,:) = scale_values(x(nt,kl,:,:), loNew, hiNew, opt)
+;         end do
+;         end do
+;
+local minX, maxX, xNew
+begin
+  if (loNew.eq.hiNew) then
+      print("scale_values: Fatal: loNew=hiNew")
+      print("                     loNew="+loNew)
+      print("                     hiNew="+hiNew)
+      exit
+  end if
+
+  if (loNew.gt.hiNew) then
+      print("scale_values: Fatal: loNew > hiNew")
+      print("                     loNew="+loNew)
+      print("                     hiNew="+hiNew)
+      exit
+  end if
+
+  if (isatt(x,"_FillValue") .and. all(ismissing(x))) then
+      print("scale_values: Warning: input array contains all missing values")
+      exit
+  end if
+
+  xtype = typeof(x)
+
+  minX  = min(x)             ; default
+  maxX  = max(x)
+  if (minX.eq.maxX) then
+      print("scale_values: input array values are all constant")
+      exit
+  end if
+  
+  if (isatt(opt,"minVal")) then
+           minX := totype(opt@minVal, xtype)
+  end if
+  if (isatt(opt,"maxVal")) then
+           maxX := totype(opt@maxVal, xtype)
+  end if
+
+  if (xtype.eq."float" .or. xtype.eq."double") then
+      xNew   = loNew + (hiNew-loNew)*((x-minX)/(maxX-minX))
+  else
+      xNew   = loNew + (hiNew-loNew)*((tofloat(x)-minX)/tofloat(maxX-minX))
+  end if
+  copy_VarCoords(x,xNew)
+  xNew@NCL_tag = "scale_values"
+  return(xNew)
+end
