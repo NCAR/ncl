@@ -20830,14 +20830,17 @@ begin
 
   stretch@long_name  = "(dudx-dvdy): SPH"      
   stretch@units      = "1/s"
+  stretch@NCL_tag    = "shear_stretch_deform"
 
   shear@long_name    = "(dvdx+dudy): SPH"
   shear@units        = "1/s"
+  shear@NCL_tag      = "shear_stretch_deform"
 
   deform@long_name    = "deformation: SPH"
   deform@units        = "1/s"
   deform@long_name    = "deformation"
   deform@information  = "sqrt[shear^2 + stretch^2 ]"
+  deform@NCL_tag      = "shear_stretch_deform"
 
   copy_VarCoords(u, shear )
   copy_VarCoords(u, stretch)
