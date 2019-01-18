@@ -935,7 +935,7 @@ function skewT_PlotData_Original \
   if (localOpts@PlotWindP) then
           gsOpts                   = True
           gsOpts@gsLineThicknessF  = 2.5
-      if (.not.all(ismissing(WSPD))) then
+      if (.not.all(ismissing(WSPD)) .and. .not.all(ismissing(WDIR))) then
                    ; IDW - indices where P/WSPD/WDIR are not all missing
           IDW = ind (.not.ismissing(P)    .and. P.ge.100. .and.     \
                      .not.ismissing(WSPD) .and. .not.ismissing(WDIR) )
