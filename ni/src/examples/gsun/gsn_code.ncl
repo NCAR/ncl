@@ -5710,6 +5710,185 @@ begin
   end do
 end
 
+;***********************************************************************
+; This function reads a lat or lon associated attribute attached to
+; a variable and converts it from radians to degrees if necessary. This 
+; is currently only used by gsn_coordinates for converting lat/lon mesh 
+; coordinates. Additionally, the attribute will be removed from the 
+; variable it's attached to (by get_res_value).
+;***********************************************************************
+undef("convert_latlon_deg")
+function convert_latlon_deg(res,att_name,convert_r2d)
+begin
+  if(convert_r2d) then
+    if(typeof(res@$att_name$).eq."double") then
+      return(get_res_value(res,att_name,-1) * get_r2d("double"))
+    else
+      return(get_res_value(res,att_name,-1) * get_r2d("float"))
+    end if
+  else
+    return(get_res_value(res,att_name,-1))
+  end if
+end
+
+;***********************************************************************
+; This function constructs an array of lat/lon values that make up the
+; edges of a group of cells, given the cell vertices, number of edges,
+; and whether each cell needs to be closed.
+;
+; This function also checks if the vertex indexes start at 0 or 1
+; (one_based_based) and whether each cell boundary needs to be closed
+; (close_cell).
+;***********************************************************************
+undef("calculate_mesh_bounds_from_vertices")
+function calculate_mesh_bounds_from_vertices(latv[*],lonv[*],\
+         verts[*][*],nedges[*],one_based_indexes,close_cell)
+local i, dims, ncells, max_edges, total_edges, lat_bnds_2d, \
+      lon_bnds_2d, lat_bnds_1d, lon_bnds_1d
+begin
+  dims      = dimsizes(verts)
+  ncells    = dims(0)
+  max_edges = dims(1)
+  if(close_cell) then 
+     total_edges = max_edges+1
+  else
+     total_edges = max_edges
+  end if
+;
+; Check if we have a set of cells that have different numbers of edges.
+; If we do, then we have to carefully construct the lat/lon arrays
+; based on the number of edges of each cell.
+;
+; The reason we don't make a copy of the "verts" array and subtract
+; one if one_based_indexes is True is because of memory. These 
+; type of arrays can have millions of cells.
+;
+  if(any(nedges.ne.max_edges)) then
+    lat_bnds_2d = new((/ncells,total_edges/),typeof(latv))
+    lon_bnds_2d = new((/ncells,total_edges/),typeof(lonv))
+    if(one_based_indexes) then
+      do i = 0,ncells-1
+        lat_bnds_2d(i,0:nedges(i)-1) = latv(verts(i,nedges(i)-1)-1)
+        lon_bnds_2d(i,0:nedges(i)-1) = lonv(verts(i,nedges(i)-1)-1)
+      end do
+    else
+      do i = 0,ncells-1
+        lat_bnds_2d(i,0:nedges(i)-1) = latv(verts(i,nedges(i)-1))
+        lon_bnds_2d(i,0:nedges(i)-1) = lonv(verts(i,nedges(i)-1))
+      end do
+    end if
+    if(close_cell) then
+;---Add an additional point to close the cell boundary
+      do i = 0,ncells-1
+        lat_bnds_2d(i,nedges(i)) = lat_bnds_2d(i,0)
+        lon_bnds_2d(i,nedges(i)) = lon_bnds_2d(i,0)
+      end do
+    end if
+;---Convert to 1D and then remove any missing values.
+    lat_bnds_1d = ndtooned(lat_bnds_2d)
+    delete(lat_bnds_2d)
+    lon_bnds_1d = ndtooned(lon_bnds_2d)
+    delete(lon_bnds_2d)
+    ii = ind(.not.missing(lat_bnds_1d))
+    lat_bnds = lat_bnds_1d(ii)
+    delete(lat_bnds_1d)
+    lon_bnds = lon_bnds_1d(ii)
+    delete([/lon_bnds_1d,ii/])
+  else
+;
+; If each cell has the same number of edges, this makes things a
+; little easier. Also, we don't need to check for missing values.
+;
+    lat_bnds_2d = new((/ncells,total_edges/),typeof(latv))
+    lon_bnds_2d = new((/ncells,total_edges/),typeof(lonv))
+    if(one_based_indexes) then
+      do i = 0,max_edges-1
+        lat_bnds_2d(:,i) = latv(verts(:,i)-1)
+        lon_bnds_2d(:,i) = lonv(verts(:,i)-1)
+      end do
+    else
+      do i = 0,max_edges-1
+        lat_bnds_2d(:,i) = latv(verts(:,i))
+        lon_bnds_2d(:,i) = lonv(verts(:,i))
+      end do
+    end if
+;---Add an additional point to close the cell boundary
+    if(close_cell) then
+      do i = 0,ncells-1
+        lat_bnds_2d(i,nedges(i)) = lat_bnds_2d(i,0)
+        lon_bnds_2d(i,nedges(i)) = lon_bnds_2d(i,0)
+      end do
+    end if
+    lat_bnds_1d = ndtooned(lat_bnds_2d)
+    delete(lat_bnds_2d)
+    lon_bnds_1d = ndtooned(lon_bnds_2d)
+    delete(lon_bnds_2d)
+  end if
+  return([/lat_bnds_1d,lon_bnds_1d/])
+end
+
+;***********************************************************************
+; This function constructs an array of lat/lon values that make up a
+; boundaries of a group of cells (for example, a triangular mesh), 
+; given existing boundaries and whether or not the cells need to be 
+; closed.
+;***********************************************************************
+undef("get_mesh_bounds")
+function get_mesh_bounds(latb,lonb,close_cell)
+local ncells, total_edges, lat_bnds_2d, lon_bnds_2d
+begin
+  ncells = dimsizes(latb(:,0))
+  if(close_cell) then 
+     total_edges = dimsizes(latb(0,:))+1
+  else
+     total_edges = dimsizes(latb(0,:))
+  end if
+  if(close_cell) then
+    lat_bnds_2d = new((/ncells,total_edges/),typeof(latb))
+    lon_bnds_2d = new((/ncells,total_edges/),typeof(lonb))
+    lat_bnds_2d(:,0:total_edges-2) = latb(:,0:total_edges-2)
+    lon_bnds_2d(:,0:total_edges-2) = lonb(:,0:total_edges-2)
+    lat_bnds_2d(:,total_edges-1) = latb(:,0)
+    lon_bnds_2d(:,total_edges-1) = lonb(:,0)
+    return([/ndtooned(lat_bnds_2d),ndtooned(lon_bnds_2d)/])
+  else
+    return([/ndtooned(latb),ndtooned(lonb)/])
+  end if
+end
+
+;***********************************************************************
+; This function constructs an array of segment indexes based on an
+; array that contains the number of edges for each cell.
+; This information will be used for the gsSegments resource.
+;***********************************************************************
+undef("calculate_segments_for_unequal_edges")
+function calculate_segments_for_unequal_edges(nedges_array,close_cell)
+local num_edges, max_edges, ne
+begin
+  max_edges = max(nedges_array)
+  num_edges = dimsizes(nedges_array)
+  if(any(nedges_array.ne.max_edges))
+    segments = new(num_edges,long)
+    segments(0) = 0
+    if(close_cell) then
+      do ne=1,num_edges-1
+        segments(ne) = segments(ne-1)+nedges_array(ne-1)+1
+      end do
+    else
+      do ne=1,num_edges-1
+        segments(ne) = segments(ne-1)+nedges_array(ne-1)
+      end do
+    end if
+    return(segments)
+  else
+    if(close_cell) then
+      return(ispan(0,num_edges*(max_edges+1),(max_edges+1)))
+    else
+      return(ispan(0,num_edges*max_edges,max_edges))
+    end if
+  end if
+end
+
 ;***********************************************************************;
 ; This procedure draws or attaches markers or lines on the given plot
 ; at coordinates associated with the input data array. For the markers,
@@ -5837,32 +6016,25 @@ local type_xcoord, type_ycoord, pres, res2, pres, dims, rank, \
 begin
   res2 = res                     ; Make copy so we can modify it
 
-;---This is for mesh or unstructured data.
-  have_mesh_vertices  = False
-  have_mesh_bounds    = False
-;
-; Right now anything that needs to get converted will be converted
-; to double precision. This can be unnecessarily memory-intensive  
-; if the lat/lon are float. May want to fix this later.
-; convert everything to double.
-;
-  RAD2DEG = get_r2d("double")
-
 ;---Check for special resources
-  maxbb         = get_bb_res(res2)
-  defclr        = get_res_value(res2,"gsMarkerColor",1)
-  defmrk        = get_res_value(res2,"gsMarkerIndex",16)
-  msgclr        = get_res_value(res2,"gsnCoordsMissingColor",defclr)
-  msgidx        = get_res_value(res2,"gsnCoordsMissingIndex",defmrk)
-  nonmsgclr     = get_res_value(res2,"gsnCoordsNonMissingColor",defclr)
-  nonmsgidx     = get_res_value(res2,"gsnCoordsNonMissingIndex",defmrk)
-  attach_coords = get_res_value(res2,"gsnCoordsAttach",False)
-  debug         = get_res_value(res2,"gsnCoordsDebug",False)
+  maxbb           = get_bb_res(res2)
+  defclr          = get_res_value(res2,"gsMarkerColor",1)
+  defmrk          = get_res_value(res2,"gsMarkerIndex",16)
+  msgclr          = get_res_value(res2,"gsnCoordsMissingColor",defclr)
+  msgidx          = get_res_value(res2,"gsnCoordsMissingIndex",defmrk)
+  nonmsgclr       = get_res_value(res2,"gsnCoordsNonMissingColor",defclr)
+  nonmsgidx       = get_res_value(res2,"gsnCoordsNonMissingIndex",defmrk)
+  attach_coords   = get_res_value(res2,"gsnCoordsAttach",False)
+  debug           = get_res_value(res2,"gsnCoordsDebug",False)
   convert_rad2deg = get_res_value(res2,"gsnCoordsConvertRad2Deg",False)
+
   draw_msg      = .not.is_color_transparent(msgclr)        ; this is for markers only
   draw_nonmsg   = .not.is_color_transparent(nonmsgclr)     ; ditto
   draw_coords_as_lines   = get_res_value(res2,"gsnCoordsAsLines",False)
   draw_coords_as_markers = .not.draw_coords_as_lines
+
+  have_mesh_vertices  = False                              ; for mesh / unstructured data
+  have_mesh_bounds    = False
 
   if(attach_coords) then
     calldraw  = get_res_value(res2,"gsnDraw", False)
@@ -5877,8 +6049,8 @@ begin
 ;    gsnCoordsLon or gsnCoordsLat attributes attached to res ("res_coord").
 ;    gsnCoordsX or gsnCoordsY attributes attached to res ("res_coord").
 ;    1D coord array attached to data ("data_coord").
-;    2D lat2d/lon2d attributes attached to data ("data_att")
-;    Mesh coordinates provided by res attributes ("res_mesh_centers")
+;    2D lat2d/lon2d or 1D lat1d/ lon1d attributes attached to data ("data_att")
+;    Mesh coordinates provided by various gsnCoords attributes ("res_mesh_centers")
 ;      (added in NCL V6.6.0)
 ; 
   type_xcoord = ""
@@ -5889,6 +6061,10 @@ begin
 ;----------------------------------------------------------------------
 ; This section gets the X,Y coordinate arrays and converts them
 ; to 1D for markers, and 2D for lines.
+;
+; For mesh/unstructured data (NCL V6.6.0), it's a little more 
+; complicated. Mesh centers will be done as markers only, while edges
+; will be done as lines.
 ;----------------------------------------------------------------------
 
   if(res2.and.isatt(res2,"gsnCoordsLat").and.isatt(res2,"gsnCoordsLon")) then
@@ -5990,15 +6166,8 @@ begin
     end if
     type_xcoord = "res_mesh_centers"
     type_ycoord = "res_mesh_centers"
-    if(convert_rad2deg) then
-      ycoord_1d = res2@gsnCoordsMeshLatCenter * RAD2DEG
-      xcoord_1d = res2@gsnCoordsMeshLonCenter * RAD2DEG
-    else
-      ycoord_1d = res2@gsnCoordsMeshLatCenter
-      xcoord_1d = res2@gsnCoordsMeshLonCenter
-    end if
-    delete(res2@gsnCoordsMeshLatCenter)
-    delete(res2@gsnCoordsMeshLonCenter)
+    ycoord_1d = convert_latlon_deg(res2,"gsnCoordsMeshLatCenter",convert_rad2deg)
+    xcoord_1d = convert_latlon_deg(res2,"gsnCoordsMeshLonCenter",convert_rad2deg)
   end if
 
   if((type_xcoord.eq."".and.type_ycoord.eq."").and.(res2.and.\
@@ -6025,37 +6194,27 @@ begin
 
   if(res2.and.\
      all(isatt(res2,(/"gsnCoordsMeshLatVertices",\
-                      "gsnCoordsMeshLonVertices",\
-                      "gsnCoordsMeshVerticesOnCell"/)))) then
+                      "gsnCoordsMeshVerticesOnCell",\
+                      "gsnCoordsMeshLonVertices"/)))) then
     have_mesh_vertices = True
-    vertices  = get_res_value(res2,"gsnCoordsMeshVerticesOnCell",-1)
-    vdims     = dimsizes(vertices)
-    ncells    = vdims(0)
-    max_edges = vdims(1)
+    vertices_on_cell  = get_res_value(res2,"gsnCoordsMeshVerticesOnCell",-1)
+    vdims             = dimsizes(vertices_on_cell)
+    ncells            = vdims(0)
+    max_edges         = vdims(1)
     if(isatt(res2,"gsnCoordsMeshNumEdgesOnCell")) then
-      nedges = get_res_value(res2,"gsnCoordsMeshNumEdgesOnCell",-1)
+      nedges_on_cell = get_res_value(res2,"gsnCoordsMeshNumEdgesOnCell",-1)
     else
-      nedges = conform_dims(ncells,max_edges,0)
+      nedges_on_cell = conform_dims(ncells,max_edges,0)
     end if
-    if(convert_rad2deg) then
-      lat_vert = get_res_value(res2,"gsnCoordsMeshLatVertices",-1) * RAD2DEG
-      lon_vert = get_res_value(res2,"gsnCoordsMeshLonVertices",-1) * RAD2DEG
-    else
-      lat_vert = get_res_value(res2,"gsnCoordsMeshLatVertices",-1)
-      lon_vert = get_res_value(res2,"gsnCoordsMeshLonVertices",-1)
-    end if
+    lat_vert = convert_latlon_deg(res2,"gsnCoordsMeshLatVertices",convert_rad2deg)
+    lon_vert = convert_latlon_deg(res2,"gsnCoordsMeshLonVertices",convert_rad2deg)
   end if
   if(res2.and.\
      all(isatt(res2,(/"gsnCoordsMeshLatBounds",\
                       "gsnCoordsMeshLonBounds"/)))) then
     have_mesh_bounds = True
-    if(convert_rad2deg) then
-      lat_bnds = get_res_value(res2,"gsnCoordsMeshLatBounds",-1) * RAD2DEG
-      lon_bnds = get_res_value(res2,"gsnCoordsMeshLonBounds",-1) * RAD2DEG
-    else
-      lat_bnds = get_res_value(res2,"gsnCoordsMeshLatBounds",-1)
-      lon_bnds = get_res_value(res2,"gsnCoordsMeshLonBounds",-1)
-    end if
+    lat_bnds = convert_latlon_deg(res2,"gsnCoordsMeshLatBounds",convert_rad2deg)
+    lon_bnds = convert_latlon_deg(res2,"gsnCoordsMeshLonBounds",convert_rad2deg)
     dims      := dimsizes(lat_bnds)
     ncells    = dims(0)
     max_edges = dims(1)
@@ -6117,8 +6276,8 @@ begin
       print("  Min/max lat vertices : " + min(lat_vert) + "/" + max(lat_vert))
       print("  Min/max lon vertices : " + min(lon_vert) + "/" + max(lon_vert))
 
-      min_vertices = min(vertices)    ; Get min/max cell indexes
-      max_vertices = max(vertices)
+      min_vertices = min(vertices_on_cell)    ; Get min/max cell indexes
+      max_vertices = max(vertices_on_cell)
       print("  Min/max vertices : " + min_vertices + "/" + max_vertices)
       if(min_vertices.eq.1) then
         print("  The minimum vertex index is 1. This likely means you have 1-based indexes.")
@@ -6149,7 +6308,7 @@ begin
       index_mesh = new(ncells,typeof(ncells))
       if(mesh_indexes_one_based) then
         do i=0,ncells-1
-          iv = vertices(i,:)-1
+          iv = vertices_on_cell(i,:)-1
           if(any(lat_vert(iv).ge.minlat.and.\
                  lat_vert(iv).le.maxlat.and.\
                  lon_vert(iv).ge.minlon.and.\
@@ -6159,10 +6318,10 @@ begin
         end do
       else
         do i=0,ncells-1
-          if(any(lat_vert(vertices(i,:)).ge.minlat.and.\
-                 lat_vert(vertices(i,:)).le.maxlat.and.\
-                 lon_vert(vertices(i,:)).ge.minlon.and.\
-                 lon_vert(vertices(i,:)).le.maxlon)) then
+          if(any(lat_vert(vertices_on_cell(i,:)).ge.minlat.and.\
+                 lat_vert(vertices_on_cell(i,:)).le.maxlat.and.\
+                 lon_vert(vertices_on_cell(i,:)).ge.minlon.and.\
+                 lon_vert(vertices_on_cell(i,:)).le.maxlon)) then
             index_mesh(i) = i
           end if
         end do
@@ -6210,49 +6369,26 @@ begin
 ; mesh cell edges.
 ;
   if(have_mesh_vertices) then
-    lat_bnds_subset = new((/ncells_mesh_subset,total_edges/),typeof(lat_vert))
-    lon_bnds_subset = new((/ncells_mesh_subset,total_edges/),typeof(lon_vert))
-    nedges_area_of_interest = nedges(index_mesh_area_of_interest)
-    if(mesh_indexes_one_based) then
-      do i = 0,max_edges-1
-        lat_bnds_subset(:,i) = lat_vert(vertices(index_mesh_area_of_interest,i)-1)
-        lon_bnds_subset(:,i) = lon_vert(vertices(index_mesh_area_of_interest,i)-1)
-      end do
-    else
-      do i = 0,max_edges-1
-        lat_bnds_subset(:,i) = lat_vert(vertices(index_mesh_area_of_interest,i))
-        lon_bnds_subset(:,i) = lon_vert(vertices(index_mesh_area_of_interest,i))
-      end do
-    end if
-    if(close_mesh_polygons) then
-      do i = 0,ncells_mesh_subset-1
-        lat_bnds_subset(i,nedges_area_of_interest(i)) = lat_bnds_subset(i,0)
-        lon_bnds_subset(i,nedges_area_of_interest(i)) = lon_bnds_subset(i,0)
-      end do
-    end if
+    latlon_bnds = calculate_mesh_bounds_from_vertices(lat_vert,lon_vert,\
+                  vertices_on_cell(index_mesh_area_of_interest,:),\
+                  nedges_on_cell(index_mesh_area_of_interest),\
+                  mesh_indexes_one_based,close_mesh_polygons)
   end if
   if(have_mesh_bounds) then
-    if(close_mesh_polygons) then
-      lat_bnds_subset = new((/ncells_mesh_subset,total_edges/),typeof(lat_bnds))
-      lon_bnds_subset = new((/ncells_mesh_subset,total_edges/),typeof(lon_bnds))
-      lat_bnds_subset(:,0:total_edges-2) = lat_bnds(index_mesh_area_of_interest,0:total_edges-2)
-      lon_bnds_subset(:,0:total_edges-2) = lon_bnds(index_mesh_area_of_interest,0:total_edges-2)
-      lat_bnds_subset(:,total_edges-1) = lat_bnds(index_mesh_area_of_interest,0)
-      lon_bnds_subset(:,total_edges-1) = lon_bnds(index_mesh_area_of_interest,0)
-    else
-      lat_bnds_subset = lat_bnds(index_mesh_area_of_interest,:)
-      lon_bnds_subset = lon_bnds(index_mesh_area_of_interest,:)
-    end if
+    latlon_bnds = get_mesh_bounds(lat_bnds(index_mesh_area_of_interest,:),\
+                                  lon_bnds(index_mesh_area_of_interest,:),close_mesh_polygons)
   end if
 
   if(have_mesh_vertices.or.have_mesh_bounds) then
     gsres = get_res_ne(res,"gsnCoords")
     gsres = True
-;---Using gsSegments is the key to drawing the lines faster.
-    gsres@gsSegments = ispan(0,ncells_mesh_subset*total_edges,total_edges)
-    tmpstr = unique_string("mesh_lines")
-    plot@$tmpstr$ = gsn_add_polyline(wks,plot,ndtooned(lon_bnds_subset),\
-                                              ndtooned(lat_bnds_subset),gsres)
+    if(have_mesh_vertices)
+      gsres@gsSegments = calculate_segments_for_unequal_edges(nedges_on_cell(index_mesh_area_of_interest),\
+                                                              close_mesh_polygons)
+    else
+      gsres@gsSegments = ispan(0,ncells_mesh_subset*total_edges,total_edges)
+    end if
+    plot@$unique_string("mesh_lines")$ = gsn_add_polyline(wks,plot,latlon_bnds[1],latlon_bnds[0],gsres)
   end if
 
   if(draw_coords_as_lines) then
