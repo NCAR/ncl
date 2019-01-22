@@ -221,7 +221,7 @@ int NclDriver(int argc, char **argv)
      */
     if (!NCLnoCopyright) 
         (void) fprintf(stdout,
-            " Copyright (C) 1995-2018 - All Rights Reserved\n University Corporation for Atmospheric Research\n NCAR Command Language Version %s\n The use of this software is governed by a License Agreement.\n See http://www.ncl.ucar.edu/ for more details.\n", GetNCLVersion());
+            " Copyright (C) 1995-2019 - All Rights Reserved\n University Corporation for Atmospheric Research\n NCAR Command Language Version %s\n The use of this software is governed by a License Agreement.\n See http://www.ncl.ucar.edu/ for more details.\n", GetNCLVersion());
 
     if (NCLnoPreload) {
 	    numberOfPreloadedScripts = 0;
