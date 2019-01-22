@@ -5810,11 +5810,11 @@ end
 ;       max_edges) contains the index values into these arrays
 ;       for each mesh cell.
 ;
-;     gsnCoordsMeshVerticesOneBased (default=False)
+;     gsnCoordsMeshVerticesOneBased (default=True)
 ;       For MeshLat/LonVerticesOnCell, are the vertex indexes 
 ;       0-based or 1-based? That is, do they go from 1 to ncells 
-;       or 0 to ncells-1? If they are 1-based, then you need to 
-;       set this attribute to True.
+;       or 0 to ncells-1? If they are 0-based, then you need to 
+;       set this attribute to False.
 ;
 ;    gsnCoordsMeshNumEdgesOnCell
 ;       1D array of length ncell containing the number
@@ -5838,7 +5838,6 @@ begin
   res2 = res                     ; Make copy so we can modify it
 
 ;---This is for mesh or unstructured data.
-  have_latlon_centers = False
   have_mesh_vertices  = False
   have_mesh_bounds    = False
 ;
@@ -5899,8 +5898,8 @@ begin
       xcoord_2d = res2@gsnCoordsLon
       ycoord_2d = res2@gsnCoordsLat
     else
-      xcoord_1d = res2@gsnCoordsLon
-      ycoord_1d = res2@gsnCoordsLat
+      xcoord_1d = ndtooned(res2@gsnCoordsLon)
+      ycoord_1d = ndtooned(res2@gsnCoordsLat)
     end if
     delete(res2@gsnCoordsLat)
     delete(res2@gsnCoordsLon)
@@ -5998,7 +5997,6 @@ begin
       ycoord_1d = res2@gsnCoordsMeshLatCenter
       xcoord_1d = res2@gsnCoordsMeshLonCenter
     end if
-    have_latlon_centers = True
     delete(res2@gsnCoordsMeshLatCenter)
     delete(res2@gsnCoordsMeshLonCenter)
   end if
@@ -6063,58 +6061,51 @@ begin
     max_edges = dims(1)
   end if
   if(have_mesh_vertices.or.have_mesh_bounds) then
-    mesh_indexes_one_based = get_res_value(res2,"gsnCoordsMeshVerticesOneBased",False)
+    mesh_indexes_one_based = get_res_value(res2,"gsnCoordsMeshVerticesOneBased",True)
     close_mesh_polygons    = get_res_value(res2,"gsnCoordsMeshClosePolygons",False)
     if(close_mesh_polygons) then
       total_edges = max_edges+1
     else
       total_edges = max_edges
     end if
+;
+; Currently, the gsnCordsMin/MaxLat/Lon resources only affect mesh-style
+; coordinates, and not rectilinear or curvilinear coordinates.
+;
+    use_minlat = False
+    use_maxlat = False
+    use_minlon = False
+    use_maxlon = False
+    if(res2.and.isatt(res2,"gsnCoordsMinLat")) then
+      minlat = get_res_value(res2,"gsnCoordsMinLat",-1)
+      use_minlat = True
+    end if
+    if(res2.and.isatt(res2,"gsnCoordsMaxLat")) then
+      maxlat = get_res_value(res2,"gsnCoordsMaxLat",-1)
+      use_maxlat = True
+    end if
+    if(res2.and.isatt(res2,"gsnCoordsMinLon")) then
+      minlon = get_res_value(res2,"gsnCoordsMinLon",-1)
+      use_minlon = True
+    end if
+    if(res2.and.isatt(res2,"gsnCoordsMaxLon")) then
+      maxlon = get_res_value(res2,"gsnCoordsMaxLon",-1)
+      use_maxlon = True
+    end if
+    if(     any(use_minlat.and.use_maxlat.and.use_minlon.and.use_maxlon).and.\
+       .not.all(use_minlat.and.use_maxlat.and.use_minlon.and.use_maxlon))
+        print("gsn_coordinates: warning: You set one or more gsnCoordsMin/MaxLat/Lon")
+        print("   attributes, but not all of them. In order for these attributes to be")
+        print("   effective, you must set all of them. Will ignore the other settings.")
+    end if
+    use_latlon_minmax = all(use_minlat.and.use_maxlat.and.use_minlon.and.use_maxlon)
   end if
-
-  if(res2.and.isatt(res2,"gsnCoordsMinLat")) then
-    minlat = get_res_value(res2,"gsnCoordsMinLat",-1)
-  elseif(have_mesh_vertices)
-    minlat = min(lat_vert)
-  elseif(have_mesh_bounds)
-    minlat = min(lat_bnds)
-  elseif(have_latlon_centers)
-    minlat = min(ycoord_1d)
-  else
-    minlat = -90
-  end if
-  if(res2.and.isatt(res2,"gsnCoordsMaxLat")) then
-    maxlat = get_res_value(res2,"gsnCoordsMaxLat",-1)
-  elseif(have_mesh_vertices)
-    maxlat = max(lat_vert)
-  elseif(have_mesh_bounds)
-    maxlat = max(lat_bnds)
-  elseif(have_latlon_centers)
-    maxlat = max(ycoord_1d)
-  else
-    maxlat = 90
-  end if
-  if(res2.and.isatt(res2,"gsnCoordsMinLon")) then
-    minlon = get_res_value(res2,"gsnCoordsMinLon",-1)
-  elseif(have_mesh_vertices)
-    minlon = min(lon_vert)
-  elseif(have_mesh_bounds)
-    minlon = min(lon_bnds)
-  elseif(have_latlon_centers)
-    minlon = min(xcoord_1d)
-  else
-    minlon = -180
-  end if
-  if(res2.and.isatt(res2,"gsnCoordsMaxLon")) then
-    maxlon = get_res_value(res2,"gsnCoordsMaxLon",-1)
-  elseif(have_mesh_vertices)
-    maxlon = max(lon_vert)
-  elseif(have_mesh_bounds)
-    maxlon = max(lon_bnds)
-  elseif(have_latlon_centers)
-    maxlon = max(xcoord_1d)
-  else
-    maxlon = 180
+  if((have_mesh_vertices.or.have_mesh_bounds).and..not.use_latlon_minmax.and.ncells.ge.500000) then
+    print("gsn_coordinates: warning: drawing a lat/lon mesh with a large number of cells")
+    print("   can take a very long time. If you are not drawing the mesh over the full map,")
+    print("   then you should set the gsnCoordsMinLat / gsnCoordsMaxLat and")
+    print("   gsnCoordsMinLon / gsnCoordMaxLon attributes to limit the lat/lon area you")
+    print("   want to draw the cells in.")
   end if
 
 ;---Some debug prints
@@ -6125,19 +6116,16 @@ begin
       print("  Mesh is " + ncells + " cells x " +  max_edges + " edges")
       print("  Min/max lat vertices : " + min(lat_vert) + "/" + max(lat_vert))
       print("  Min/max lon vertices : " + min(lon_vert) + "/" + max(lon_vert))
-      print("  Min/max lat area of interest: " + minlat + "/" + maxlat)
-      print("  Min/max lon area of interest: " + minlon + "/" + maxlon)
 
       min_vertices = min(vertices)    ; Get min/max cell indexes
       max_vertices = max(vertices)
       print("  Min/max vertices : " + min_vertices + "/" + max_vertices)
-      if(min_vertices.eq.1.and.max_vertices.eq.ncells)  then
-        print("  The min/max vertices are 1/" + ncells + ".")
-        print("  This likely means you have 1-based indexes.")
+      if(min_vertices.eq.1) then
+        print("  The minimum vertex index is 1. This likely means you have 1-based indexes.")
         if(mesh_indexes_one_based) then
-          print("  'mesh_indexes_one_based' is set to True, so you should be good there.")
+          print("  'gsnCoordsMeshVerticesOneBased' is set to True, so you should be good there.")
         else
-          print("  'mesh_indexes_one_based' is NOT set to True; set to False if mesh doesn't look correct.")
+          print("  'gsnCoordsMeshVerticesOneBased' is NOT set to True; set to False if mesh doesn't look correct.")
         end if
       end if
     end if
@@ -6147,8 +6135,6 @@ begin
       print("  Mesh is " + ncells + " cells x " +  max_edges + " edges")
       print("  Min/max lat bounds : " + min(lat_bnds) + "/" + max(lat_bnds))
       print("  Min/max lon bounds : " + min(lon_bnds) + "/" + max(lon_bnds))
-      print("  Min/max lat area of interest: " + minlat + "/" + maxlat)
-      print("  Min/max lon area of interest: " + minlon + "/" + maxlon)
     end if
   end if
 ;
@@ -6157,68 +6143,89 @@ begin
 ; are not drawing polylines that fall outside our view area.
 ;
   if(have_mesh_vertices) then
-    ii = new(ncells,typeof(ncells))
-    if(mesh_indexes_one_based) then
-      do i=0,ncells-1
-        iv = vertices(i,:)-1
-        if(any(lat_vert(iv).ge.minlat.and.\
-               lat_vert(iv).le.maxlat.and.\
-               lon_vert(iv).ge.minlon.and.\
-               lon_vert(iv).le.maxlon)) then
-          ii(i) = i
-        end if
-      end do
+    if(.not.use_latlon_minmax) then
+      index_mesh = ispan(0,ncells-1,1)
     else
+      index_mesh = new(ncells,typeof(ncells))
+      if(mesh_indexes_one_based) then
+        do i=0,ncells-1
+          iv = vertices(i,:)-1
+          if(any(lat_vert(iv).ge.minlat.and.\
+                 lat_vert(iv).le.maxlat.and.\
+                 lon_vert(iv).ge.minlon.and.\
+                 lon_vert(iv).le.maxlon)) then
+            index_mesh(i) = i
+          end if
+        end do
+      else
+        do i=0,ncells-1
+          if(any(lat_vert(vertices(i,:)).ge.minlat.and.\
+                 lat_vert(vertices(i,:)).le.maxlat.and.\
+                 lon_vert(vertices(i,:)).ge.minlon.and.\
+                 lon_vert(vertices(i,:)).le.maxlon)) then
+            index_mesh(i) = i
+          end if
+        end do
+      end if
+    end if
+  elseif(have_mesh_bounds) then
+    if(.not.use_latlon_minmax) then
+      index_mesh = ispan(0,ncells-1,1)
+    else
+      index_mesh = new(ncells,typeof(ncells))
       do i=0,ncells-1
-        if(any(lat_vert(vertices(i,:)).ge.minlat.and.\
-               lat_vert(vertices(i,:)).le.maxlat.and.\
-               lon_vert(vertices(i,:)).ge.minlon.and.\
-               lon_vert(vertices(i,:)).le.maxlon)) then
-          ii(i) = i
+        if(any(lat_bnds(i,:).ge.minlat.and.\
+               lat_bnds(i,:).le.maxlat.and.\
+               lon_bnds(i,:).ge.minlon.and.\
+               lon_bnds(i,:).le.maxlon)) then
+          index_mesh(i) = i
         end if
       end do
     end if
-  elseif(have_mesh_bounds)
-    ii = new(ncells,typeof(ncells))
-    do i=0,ncells-1
-      if(any(lat_bnds(i,:).ge.minlat.and.\
-             lat_bnds(i,:).le.maxlat.and.\
-             lon_bnds(i,:).ge.minlon.and.\
-             lon_bnds(i,:).le.maxlon)) then
-        ii(i) = i
-      end if
-    end do
   end if
   if(have_mesh_vertices.or.have_mesh_bounds) then
-    if(all(ismissing(ii))) then
-      print("gsn_coordinates: Error: couldn't find any mesh values inside")
-      print("  the lat/lon range you provided: ")
-      print("  " + minlat + "/" + maxlat + ", " + minlon + "/" + maxlon)
-      print("  Can't add any mesh polylines.")
+    if(use_latlon_minmax.and.all(ismissing(index_mesh))) then
+      print("gsn_coordinates: Warning: couldn't find any mesh values inside")
+      print("  the lat/lon range provided: ")
+      print("  min/max lat : " + minlat + "/" + maxlat)
+      print("  min/max lon : " + minlon + "/" + maxlon)
+      print("  No mesh lines or markers will be drawn.")
+      print("  Double-check your settings for gsnCoordsMin/MaxLat/Lon")
+      print("  You may also want to set the 'gsnCoordsDebug' attribute")
+      print("  to True for debug information.")
       return
     end if
-    ii_area_of_interest = ii(ind(.not.ismissing(ii)))
-    ncells_subset = dimsizes(ii_area_of_interest)    ; recalculate ncells
+    index_mesh_area_of_interest = index_mesh(ind(.not.ismissing(index_mesh)))
+    ncells_mesh_subset = dimsizes(index_mesh_area_of_interest)    ; recalculate ncells
+    if(debug.and.use_latlon_minmax) then
+      print("  Information about lat/lon area selected for drawing mesh")
+      print("  Min/max lat area : " + minlat + "/" + maxlat)
+      print("  Min/max lon area : " + minlon + "/" + maxlon)
+      print("  Original mesh    : " + ncells + " cells")
+      print("  Subsetted mesh   : " + ncells_mesh_subset + " cells")
+    end if
   end if
-
-;---Create lat/lon arrays to hold the lat/lon values for each set of mesh cell edges
+;
+; Create lat/lon arrays to hold the lat/lon values for each set of
+; mesh cell edges.
+;
   if(have_mesh_vertices) then
-    lat_bnds_subset = new((/ncells_subset,total_edges/),typeof(lat_vert))
-    lon_bnds_subset = new((/ncells_subset,total_edges/),typeof(lon_vert))
-    nedges_area_of_interest = nedges(ii_area_of_interest)
+    lat_bnds_subset = new((/ncells_mesh_subset,total_edges/),typeof(lat_vert))
+    lon_bnds_subset = new((/ncells_mesh_subset,total_edges/),typeof(lon_vert))
+    nedges_area_of_interest = nedges(index_mesh_area_of_interest)
     if(mesh_indexes_one_based) then
       do i = 0,max_edges-1
-        lat_bnds_subset(:,i) = lat_vert(vertices(ii_area_of_interest,i)-1)
-        lon_bnds_subset(:,i) = lon_vert(vertices(ii_area_of_interest,i)-1)
+        lat_bnds_subset(:,i) = lat_vert(vertices(index_mesh_area_of_interest,i)-1)
+        lon_bnds_subset(:,i) = lon_vert(vertices(index_mesh_area_of_interest,i)-1)
       end do
     else
       do i = 0,max_edges-1
-        lat_bnds_subset(:,i) = lat_vert(vertices(ii_area_of_interest,i))
-        lon_bnds_subset(:,i) = lon_vert(vertices(ii_area_of_interest,i))
+        lat_bnds_subset(:,i) = lat_vert(vertices(index_mesh_area_of_interest,i))
+        lon_bnds_subset(:,i) = lon_vert(vertices(index_mesh_area_of_interest,i))
       end do
     end if
     if(close_mesh_polygons) then
-      do i = 0,ncells_subset-1
+      do i = 0,ncells_mesh_subset-1
         lat_bnds_subset(i,nedges_area_of_interest(i)) = lat_bnds_subset(i,0)
         lon_bnds_subset(i,nedges_area_of_interest(i)) = lon_bnds_subset(i,0)
       end do
@@ -6226,15 +6233,15 @@ begin
   end if
   if(have_mesh_bounds) then
     if(close_mesh_polygons) then
-      lat_bnds_subset = new((/ncells_subset,total_edges/),typeof(lat_bnds))
-      lon_bnds_subset = new((/ncells_subset,total_edges/),typeof(lon_bnds))
-      lat_bnds_subset(:,0:total_edges-2) = lat_bnds(ii_area_of_interest,0:total_edges-2)
-      lon_bnds_subset(:,0:total_edges-2) = lon_bnds(ii_area_of_interest,0:total_edges-2)
-      lat_bnds_subset(:,total_edges-1) = lat_bnds(ii_area_of_interest,0)
-      lon_bnds_subset(:,total_edges-1) = lon_bnds(ii_area_of_interest,0)
+      lat_bnds_subset = new((/ncells_mesh_subset,total_edges/),typeof(lat_bnds))
+      lon_bnds_subset = new((/ncells_mesh_subset,total_edges/),typeof(lon_bnds))
+      lat_bnds_subset(:,0:total_edges-2) = lat_bnds(index_mesh_area_of_interest,0:total_edges-2)
+      lon_bnds_subset(:,0:total_edges-2) = lon_bnds(index_mesh_area_of_interest,0:total_edges-2)
+      lat_bnds_subset(:,total_edges-1) = lat_bnds(index_mesh_area_of_interest,0)
+      lon_bnds_subset(:,total_edges-1) = lon_bnds(index_mesh_area_of_interest,0)
     else
-      lat_bnds_subset = lat_bnds(ii_area_of_interest,:)
-      lon_bnds_subset = lon_bnds(ii_area_of_interest,:)
+      lat_bnds_subset = lat_bnds(index_mesh_area_of_interest,:)
+      lon_bnds_subset = lon_bnds(index_mesh_area_of_interest,:)
     end if
   end if
 
@@ -6242,7 +6249,7 @@ begin
     gsres = get_res_ne(res,"gsnCoords")
     gsres = True
 ;---Using gsSegments is the key to drawing the lines faster.
-    gsres@gsSegments = ispan(0,ncells_subset*total_edges,total_edges)
+    gsres@gsSegments = ispan(0,ncells_mesh_subset*total_edges,total_edges)
     tmpstr = unique_string("mesh_lines")
     plot@$tmpstr$ = gsn_add_polyline(wks,plot,ndtooned(lon_bnds_subset),\
                                               ndtooned(lat_bnds_subset),gsres)
@@ -6313,12 +6320,12 @@ begin
     if(draw_nonmsg) then
       pres@gsMarkerColor := nonmsgclr
       pres@gsMarkerIndex := nonmsgidx
-      if(have_latlon_centers)
-        ii := ind(.not.ismissing(data(ii_area_of_interest)))
+      if(have_mesh_vertices.or.have_mesh_bounds) then
+        ii := ind(.not.ismissing(data(index_mesh_area_of_interest)))
         if(ismissing(ii(0))) then
           ii_nomsg = new(1,integer)   ; set to missing
         else
-          ii_nomsg = ii_area_of_interest(ii)
+          ii_nomsg = index_mesh_area_of_interest(ii)
         end if
         delete(ii)
       else
@@ -6333,16 +6340,17 @@ begin
           gsn_polymarker(wks,plot,xcoord_1d(ii_nomsg),ycoord_1d(ii_nomsg),pres)
         end if
       end if
+      delete(ii_nomsg)
     end if ; draw_nonmsg
     if(draw_msg) then
       pres@gsMarkerColor := msgclr
       pres@gsMarkerIndex := msgidx
-      if(have_latlon_centers)
-        ii := ind(ismissing(data(ii_area_of_interest)))
+      if(have_mesh_vertices.or.have_mesh_bounds) then
+        ii := ind(ismissing(data(index_mesh_area_of_interest)))
         if(ismissing(ii(0))) then
           ii_msg = new(1,integer)   ; set to missing
         else
-          ii_msg = ii_area_of_interest(ii)
+          ii_msg = index_mesh_area_of_interest(ii)
         end if
         delete(ii)
       else
@@ -6357,8 +6365,9 @@ begin
           gsn_polymarker(wks,plot,xcoord_1d(ii_msg),ycoord_1d(ii_msg),pres)
         end if
       end if
+      delete(ii_msg)
     end if ; draw_msg
-  end if   ; draw_coords_as_lines
+  end if   ; draw_coords_as_markers
 
   if(attach_coords) then
     draw_and_frame(wks,plot,calldraw,callframe,False,maxbb)
