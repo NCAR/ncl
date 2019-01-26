@@ -1108,6 +1108,88 @@ begin
 
        return(wa)
   end if
+  
+  if (any(variable .eq. (/"wspd_wdir", "wspd_wdir10", "uvmet_wspd_wdir", "uvmet10_wspd_wdir"/))) then
+      if (variable .eq. "wspd_wdir") then
+          u = wrf_user_getvar(file_handle, "ua", time)
+          v = wrf_user_getvar(file_handle, "va", time)
+      end if
+    
+      if (variable .eq. "wspd_wdir10") then
+          if(isfilevar(nc_file,"U10")) then
+              getTHIS = "U10" 
+          elseif(isfilevar(nc_file,"UU")) then
+              getTHIS = "UU"
+          else
+              print("wrf_user_getvar: Error: cannot find 'U10' or 'UU' on the file")
+              return
+          end if
+        
+          var = _get_wrf_var(file_handle,getTHIS,time)
+          u  = wrf_user_unstagger(var,var@stagger)
+        
+          if(isfilevar(nc_file,"V10")) then
+              getTHIS = "V10" 
+          elseif(isfilevar(nc_file,"VV")) then
+              getTHIS = "VV"
+          else
+              print("wrf_user_getvar: Error: cannot find 'V10' or 'VV' on the file")
+              return
+          end if
+        
+          var = _get_wrf_var(file_handle,getTHIS,time)
+          v  = wrf_user_unstagger(var,var@stagger)
+        
+          if (getTHIS .eq. "VV") then 
+              dims = dimsizes(u)
+              nd = dimsizes(dims)
+              if ( nd .eq. 5 ) then 
+                  u := u(:,:,0,:,:)
+                  v := v(:,:,0,:,:)
+              elseif (nd .eq. 4) then 
+                  u := u(:,0,:,:)
+                  v := v(:,0,:,:)
+              elseif (nd .eq. 3) then
+                  u := u(0,:,:)
+                  v := v(0,:,:)
+              end if
+          end if 
+      end if
+    
+      if (any(variable .eq. (/"uvmet_wspd_wdir", "uvmet10_wspd_wdir"/))) then 
+          
+          if (variable .eq. "uvmet_wspd_wdir") then
+              windvar = "uvmet"
+          else
+              windvar = "uvmet10"
+          end if
+          
+          uv = wrf_user_getvar(file_handle, windvar, time)
+          
+          dims = dimsizes(uv)
+          nd = dimsizes(dims)
+        
+          if (nd .eq. 6) then
+              u = uv(0, :, :, :, :, :)
+              v = uv(1, :, :, :, :, :)
+          elseif (nd .eq. 5) then
+              u = uv(0, :, :, :, :)
+              v = uv(1, :, :, :, :)
+          elseif (nd .eq. 4) then
+              u = uv(0, :, :, :)
+              v = uv(1, :, :, :)
+          elseif (nd .eq. 3) then
+              u = uv(0, :, :)
+              v = uv(1, :, :)
+          end if
+
+      end if
+    
+      wspd_wdir = wrf_wspd_wdir(u, v)
+    
+      return(wspd_wdir)
+    
+  end if
 
 
 

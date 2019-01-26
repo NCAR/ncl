@@ -118,6 +118,7 @@ extern NhlErrorTypes wrf_ctt_W(void);
 extern NhlErrorTypes wrf_cloud_frac_W(void);
 extern NhlErrorTypes wrf_monotonic_W(void);
 extern NhlErrorTypes wrf_pw_W(void);
+extern NhlErrorTypes wrf_wspd_wdir_W(void);
 
 extern NhlErrorTypes cape_thermo_W(void);
 extern NhlErrorTypes gaus_lobat_W(void);
@@ -2122,6 +2123,20 @@ void NclAddUserFuncs(void)
 		SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
 		NclRegisterFunc(wrf_pw_W,args,"wrf_pw",nargs);
+
+
+/*
+ * Register "wrf_wspd_wdir"
+ * wspd(u, v)
+ * Create private argument array
+ */
+		nargs = 0;
+		args = NewArgs(2);
+		SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+		SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+		NclRegisterFunc(wrf_wspd_wdir_W,args,"wrf_wspd_wdir",nargs);
+
 
 /*
  * Register "wrf_vintrp".
