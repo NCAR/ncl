@@ -14954,8 +14954,8 @@ NhlErrorTypes wrf_wspd_wdir_W( void )
  * Output variable and attributes.
  */
   void *wspd_wdir = NULL;
-  NclQuark *description, *units;
-  char *cdescription, *cunits;
+  NclQuark *description;
+  char *cdescription;
   double *tmp_wspd_wdir = NULL;
   NclBasicDataTypes type_wspd_wdir;
   int ndims_wspd_wdir;
@@ -15216,13 +15216,8 @@ NhlErrorTypes wrf_wspd_wdir_W( void )
  */
   cdescription = (char *)calloc(25,sizeof(char));
   strcpy(cdescription,"Wind Speed and Direction");
-  cunits       = (char *)calloc(8,sizeof(char));
-  strcpy(cunits,"m s-1");
   description = (NclQuark*)NclMalloc(sizeof(NclQuark));
-  units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
-  *units       = NrmStringToQuark(cunits);
-  free(cunits);
   free(cdescription);
 
 /*
@@ -15269,25 +15264,6 @@ NhlErrorTypes wrf_wspd_wdir_W( void )
              NULL
              );
 
-  att_md = _NclCreateVal(
-                         NULL,
-                         NULL,
-                         Ncl_MultiDValData,
-                         0,
-                         (void*)units,
-                         NULL,
-                         1,
-                         dsizes,
-                         TEMPORARY,
-                         NULL,
-                         (NclObjClass)nclTypestringClass
-                         );
-  _NclAddAtt(
-             att_id,
-             "units",
-             att_md,
-             NULL
-             );
 
   tmp_var = _NclVarCreate(
                           NULL,

@@ -1111,11 +1111,13 @@ begin
   
   if (any(variable .eq. (/"wspd_wdir", "wspd_wdir10", "uvmet_wspd_wdir", "uvmet10_wspd_wdir"/))) then
       if (variable .eq. "wspd_wdir") then
+          desc = "grid relative wind speed and direction"
           u = wrf_user_getvar(file_handle, "ua", time)
           v = wrf_user_getvar(file_handle, "va", time)
       end if
     
       if (variable .eq. "wspd_wdir10") then
+          desc = "10m grid relative wind speed and direction"
           if(isfilevar(nc_file,"U10")) then
               getTHIS = "U10" 
           elseif(isfilevar(nc_file,"UU")) then
@@ -1158,9 +1160,12 @@ begin
     
       if (any(variable .eq. (/"uvmet_wspd_wdir", "uvmet10_wspd_wdir"/))) then 
           
+          
           if (variable .eq. "uvmet_wspd_wdir") then
+              desc = "earth relative wind speed and direction"
               windvar = "uvmet"
           else
+              desc = "10m earth relative wind speed and direction"
               windvar = "uvmet10"
           end if
           
@@ -1186,6 +1191,9 @@ begin
       end if
     
       wspd_wdir = wrf_wspd_wdir(u, v)
+      
+      copy_VarAtts_except(u, wspd_wdir, (/"description"/))
+      wspd_wdir@description = desc
     
       return(wspd_wdir)
     
