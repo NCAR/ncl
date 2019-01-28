@@ -21443,3 +21443,102 @@ begin
   xNew@NCL_tag = "scale_values"
   return(xNew)
 end
+;======================================================
+undef("precip_rain_snow")
+function precip_rain_snow(prc:numeric, tmp:numeric \
+                         ,train:numeric, tsnow:numeric)
+;
+; Partition a monthly precipitation total into rain and snow totals
+; using the empirical methodology used by the USGS Monthly Water-Balance Model .
+;
+; A Monthly Water-Balance Model Driven By a Graphical User Interface
+; https://pubs.usgs.gov/of/2007/1088/pdf/of07-1088_508.pdf
+;         Gregory J. McCabe and Steven L. Markstrom  (2007)
+;
+; tmp: degC ; train=3.3C; tsnow=-10C are typical values
+;
+; These values were determined from previous model calibrations 
+; during testing and evaluation for streamflow-gauge sites in 
+; the conterminous United State
+;
+; Useful values for Tsnow appear to vary by elevation. 
+; For elevations below 1,000 m, Tsnow= -10°C seems to work best, 
+; and for locations above 1,000 m Tsnow= -1°C is more appropriate.
+; 
+local rank_prc, rank_tmp, dim_prc, dim_tmp, prain, psnow
+begin
+  dim_prc    = dimsizes(prc)
+  dim_tmp    = dimsizes(tmp)
+  rank_prc   = dimsizes(dim_prc)
+  rank_tmp   = dimsizes(dim_tmp)
+  if (rank_prc.ne.rank_tmp) then
+      print("precip_rain_snow: prc and tmp have different ranks:")
+      print("                rank_prc="+rank_prc)
+      print("                rank_tmp="+rank_tmp)
+      exit
+  end if
+  if (.not.all(dim_prc.eq.dim_tmp)) then
+      print("precip_rain_snow: prc and tmp have different sizes:")
+      print("                dim_prc="+dim_prc+"   dim_tmp="+dim_tmp)
+      exit
+  end if
+
+; Scalar train or tsnow are conformable to any array
+; Otherwise, arrays must conform
+
+  if (.not.isscalar(train)) then
+      dim_train    = dimsizes(train)
+      rank_train   = dimsizes(dim_train)
+      if (rank_train.ne.rank_tmp) then
+          print("precip_rain_snow: train and tmp have different ranks:")
+          print("                rank_tmp="+rank_tmp)
+          print("                rank_train="+rank_train)
+          exit
+      end if
+      if (.not.all(dim_train.eq.dim_tmp)) then
+          print("precip_rain_snow: train and tmp have different sizes:")
+          print("                dim_train="+dim_train+"   dim_tmp="+dim_tmp)
+          exit
+      end if
+  end if
+
+  if (.not.isscalar(tsnow)) then
+      dim_tsnow    = dimsizes(tsnow)
+      rank_tsnow   = dimsizes(dim_tsnow)
+      if (rank_tsnow.ne.rank_tmp) then
+          print("precip_rain_snow: tsnow and tmp have different ranks:")
+          print("                rank_tmp="+rank_tmp)
+          print("                rank_tsnow="+rank_tsnow)
+          exit
+      end if
+      if (.not.all(dim_tsnow.eq.dim_tmp)) then
+          print("precip_rain_snow: tsnow and tmp have different sizes:")
+          print("                dim_tsnow="+dim_tsnow+"   dim_tmp="+dim_tmp)
+          exit
+      end if
+  end if
+
+  prain = prc       ; create return arrays; keep meta data
+  psnow = prc  
+
+  if (all(tmp.ge.train)) then
+      psnow = (/ 0 /)
+  elseif (all(tmp.le.tsnow)) then
+      prain = (/ 0 /)
+  else        
+      psnow = where(tmp.le.tsnow, prc,  0 )
+      psnow = where(tmp.gt.tsnow .and. tmp.lt.train  \
+                   ,prc*((train-tmp)/(train-tsnow)),psnow)
+      prain = prc-psnow
+  end if
+
+  prain@long_name = "prc: rain partition"
+  prain@url       = "https://pubs.usgs.gov/of/2007/1088/pdf/of07-1088_508.pdf"
+  prain@mwbm      = "Monthly Water-Balance Model"
+
+  psnow@long_name = "prc: snow partition"
+  psnow@url       = "https://pubs.usgs.gov/of/2007/1088/pdf/of07-1088_508.pdf"
+  psnow@mwbm      = "Monthly Water-Balance Model"
+
+  return([/prain, psnow /])  ; return as list
+end
