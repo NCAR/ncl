@@ -1307,7 +1307,7 @@ begin
          return
        end if  
        if( variable .eq. "tc" ) then
-         t = t - 273.16
+         t = t - 273.15
          t@units = "C"     ; Overwrite return units
        end if
        return(t)
@@ -1771,7 +1771,7 @@ begin
        phb    = _get_wrf_var(file_handle,"PHB",time)
        ua     = wrf_user_unstagger(u_in,u_in@stagger)
        va     = wrf_user_unstagger(v_in,v_in@stagger)
-       mapfct = nc_file->MAPFAC_M(0,:,:)
+       mapfct = _get_wrf_var(file_handle,"MAPFAC_M",time)
        zp     = (ph + phb) / 9.81
        dx     = nc_file@DX
        dy     = nc_file@DY
