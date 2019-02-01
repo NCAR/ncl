@@ -3181,7 +3181,7 @@ begin
     return
   end if
 
-  rgas    = 287.04     ;J/K/kg
+  rgas    = 287.     ;J/K/kg
   ussalr  = .0065      ; deg C per m
   sclht   = rgas*256./9.81
   
