@@ -14,6 +14,9 @@ NCL is developed by the [Computational and Information Systems Lab](https://www2
 
 NCAR is sponsored by the [National Science Foundation](https://www.nsf.gov). Any opinions, findings and conclusions or recommendations expressed in this material do not necessarily reflect the views of the National Science Foundation.
 
+# Important announcement on the future of NCL
+
+NCAR has made the decision to adopt Python as the scripting language platform of choice for future development of analysis and visualization tools. Please read this [open letter to NCL users](https://www.ncl.ucar.edu/open_letter_to_ncl_users.shtml) to understand what kind of impact this will have on the future of NCL.
 
 # Installation
 
