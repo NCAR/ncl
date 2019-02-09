@@ -45,6 +45,22 @@ AC_PROG_INSTALL
 # Check to see if any macros must be set to enable large (>2GB) files.
 AC_SYS_LARGEFILE
 
+# Does the user want to build NGMATH?
+AC_MSG_CHECKING([whether we should build NGMATH])
+AC_ARG_ENABLE([ngmath], [AS_HELP_STRING([--disable-ngmath],
+              [do not build with NGMATH (disables most of build)])])
+test "x$enable_ngmath" = xno || enable_ngmath=yes
+AC_MSG_RESULT([$enable_ngmath])
+AM_CONDITIONAL(BUILD_NGMATH, [test x$enable_ngmath = xyes])
+if test x$enable_ngmath = xno; then
+   enable_ncl=no
+   AM_CONDITIONAL(BUILD_NCAR2D, [1])
+   AM_CONDITIONAL(BUILD_NCARVIEW, [1])
+else
+   AM_CONDITIONAL(BUILD_NCAR2D, [0])
+   AM_CONDITIONAL(BUILD_NCARVIEW, [0])
+fi
+
 # Does the user want to build NCL?
 AC_MSG_CHECKING([whether we should build NCL])
 AC_ARG_ENABLE([ncl], [AS_HELP_STRING([--disable-ncl],
@@ -52,6 +68,9 @@ AC_ARG_ENABLE([ncl], [AS_HELP_STRING([--disable-ncl],
 test "x$enable_ncl" = xno || enable_ncl=yes
 AC_MSG_RESULT([$enable_ncl])
 AM_CONDITIONAL(BUILD_NCL, [test x$enable_ncl = xyes])
+if test $enable_ngmath = no -a $enable_ncl = yes; then
+   AC_MSG_ERROR([Cannot build NCL if NGMATH is disabled.])
+fi
 
 # Make sure to check for Xlibs in this old directory.
 AC_CHECK_FILE([/usr/X11R6/lib], [LDFLAGS="-L/usr/X11R6/lib"])
