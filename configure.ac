@@ -54,8 +54,6 @@ AC_MSG_RESULT([$enable_ngmath])
 AM_CONDITIONAL(BUILD_NGMATH, [test x$enable_ngmath = xyes])
 if test x$enable_ngmath = xno; then
    enable_ncar2d=no
-   enable_ncarview=no
-   enable_ncl=no
 fi
 
 # Does the user want to build NCAR2D?
@@ -68,6 +66,9 @@ AM_CONDITIONAL(BUILD_NCAR2D, [test x$enable_ncar2d = xyes])
 if test $enable_ngmath = no -a $enable_ncar2d = yes; then
    AC_MSG_ERROR([Cannot build NCAR2D if NGMATH is disabled.])
 fi
+if test x$enable_ncar2d = xno; then
+   enable_ncarview=no
+fi
 
 # Does the user want to build NCARVIEW?
 AC_MSG_CHECKING([whether we should build NCARVIEW])
@@ -76,8 +77,11 @@ AC_ARG_ENABLE([ncarview], [AS_HELP_STRING([--disable-ncarview],
 test "x$enable_ncarview" = xno || enable_ncarview=yes
 AC_MSG_RESULT([$enable_ncarview])
 AM_CONDITIONAL(BUILD_NCARVIEW, [test x$enable_ncarview = xyes])
-if test $enable_ncarr2d = no -a $enable_ncarview = yes; then
+if test $enable_ncar2d = no -a $enable_ncarview = yes; then
    AC_MSG_ERROR([Cannot build NCARVIEW if NCAR2D is disabled.])
+fi
+if test x$enable_ncarview = xno; then
+   enable_ncl=no
 fi
 
 # Does the user want to build NCL?
