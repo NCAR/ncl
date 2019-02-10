@@ -14,8 +14,8 @@ if BUILD_NGMATH
 NGMATH = ngmath
 endif
 
-if BUILD_NCAR2D
-NCAR2D = ncar2d
+if BUILD_NCARG2D
+NCARG2D = ncarg2d
 endif
 
 if BUILD_NCARVIEW
