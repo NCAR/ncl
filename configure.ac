@@ -53,7 +53,7 @@ test "x$enable_ngmath" = xno || enable_ngmath=yes
 AC_MSG_RESULT([$enable_ngmath])
 AM_CONDITIONAL(BUILD_NGMATH, [test x$enable_ngmath = xyes])
 if test x$enable_ngmath = xno; then
-   enable_ncar2d=no
+   enable_ncarg2d=no
 fi
 
 # Does the user want to build NCARG2D?
