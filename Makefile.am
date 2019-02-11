@@ -10,6 +10,18 @@ EXTERNAL = external
 NI = ni
 endif
 
-SUBDIRS = $(EXTERNAL) common ngmath ncarg2d ncarview $(NI)
+if BUILD_NGMATH
+NGMATH = ngmath
+endif
+
+if BUILD_NCARG2D
+NCARG2D = ncarg2d
+endif
+
+if BUILD_NCARVIEW
+NCARVIEW = ncarview
+endif
+
+SUBDIRS = $(EXTERNAL) common $(NGMATH) $(NCARG2D) $(NCARVIEW) $(NI)
 
 EXTRA_DIST = COPYING

@@ -45,6 +45,45 @@ AC_PROG_INSTALL
 # Check to see if any macros must be set to enable large (>2GB) files.
 AC_SYS_LARGEFILE
 
+# Does the user want to build NGMATH?
+AC_MSG_CHECKING([whether we should build NGMATH])
+AC_ARG_ENABLE([ngmath], [AS_HELP_STRING([--disable-ngmath],
+              [do not build with NGMATH (disables most of build)])])
+test "x$enable_ngmath" = xno || enable_ngmath=yes
+AC_MSG_RESULT([$enable_ngmath])
+AM_CONDITIONAL(BUILD_NGMATH, [test x$enable_ngmath = xyes])
+if test x$enable_ngmath = xno; then
+   enable_ncarg2d=no
+fi
+
+# Does the user want to build NCARG2D?
+AC_MSG_CHECKING([whether we should build NCARG2D])
+AC_ARG_ENABLE([ncarg2d], [AS_HELP_STRING([--disable-ncarg2d],
+              [do not build with NCARG2D])])
+test "x$enable_ncarg2d" = xno || enable_ncarg2d=yes
+AC_MSG_RESULT([$enable_ncarg2d])
+AM_CONDITIONAL(BUILD_NCARG2D, [test x$enable_ncarg2d = xyes])
+if test $enable_ngmath = no -a $enable_ncarg2d = yes; then
+   AC_MSG_ERROR([Cannot build NCARG2D if NGMATH is disabled.])
+fi
+if test x$enable_ncarg2d = xno; then
+   enable_ncarview=no
+fi
+
+# Does the user want to build NCARVIEW?
+AC_MSG_CHECKING([whether we should build NCARVIEW])
+AC_ARG_ENABLE([ncarview], [AS_HELP_STRING([--disable-ncarview],
+              [do not build with NCARVIEW])])
+test "x$enable_ncarview" = xno || enable_ncarview=yes
+AC_MSG_RESULT([$enable_ncarview])
+AM_CONDITIONAL(BUILD_NCARVIEW, [test x$enable_ncarview = xyes])
+if test $enable_ncarg2d = no -a $enable_ncarview = yes; then
+   AC_MSG_ERROR([Cannot build NCARVIEW if NCARG2D is disabled.])
+fi
+if test x$enable_ncarview = xno; then
+   enable_ncl=no
+fi
+
 # Does the user want to build NCL?
 AC_MSG_CHECKING([whether we should build NCL])
 AC_ARG_ENABLE([ncl], [AS_HELP_STRING([--disable-ncl],
@@ -52,6 +91,9 @@ AC_ARG_ENABLE([ncl], [AS_HELP_STRING([--disable-ncl],
 test "x$enable_ncl" = xno || enable_ncl=yes
 AC_MSG_RESULT([$enable_ncl])
 AM_CONDITIONAL(BUILD_NCL, [test x$enable_ncl = xyes])
+if test $enable_ncarview = no -a $enable_ncl = yes; then
+   AC_MSG_ERROR([Cannot build NCL if NCARVIEW is disabled.])
+fi
 
 # Make sure to check for Xlibs in this old directory.
 AC_CHECK_FILE([/usr/X11R6/lib], [LDFLAGS="-L/usr/X11R6/lib"])

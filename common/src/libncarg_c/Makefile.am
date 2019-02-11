@@ -19,6 +19,10 @@ noinst_HEADERS = options.h ncarg_path.h
 
 include_HEADERS = c.h
 
+# Parallel builds don't currently work due to the argget.f target
+# below. This target may be rewritten with the BUILT_SOURCE primary
+# and then parallel builds would (probably) work.
+.NOTPARALLEL:
 argget.f:argget.f.sed
 	cp $< $*.F
 	$(CPP) $(CPPFLAGS) -o $@ $*.F
