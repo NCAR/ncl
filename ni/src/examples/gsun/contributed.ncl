@@ -4141,6 +4141,120 @@ begin
    
    return (xAnom)
 end
+;========================================
+undef("clmMonAnomTLL_RefPeriod")
+function clmMonAnomTLL_RefPeriod(x[*][*][*]:numeric, xClmRef[12][*][*]:numeric)
+local nmo, nmos, niRef, dimx, ntim, xClmRef, xClmAnom
+begin
+  nmos  = 12
+  dimx  = dimsizes(x)
+  ntim  = dimx(0)
+  if (ntim%nmos .ne.0 ) then
+      print("clmMonAnomTLL_RefPeriod: number of months in source array [x] must be mod_12")
+      exit
+  end if
+
+  xClmAnom = x                                ; create anomaly  array with meta data
+
+  do nmo=0,nmos-1
+     xClmAnom(nmo::12,:,:) = x(nmo::12,:,:) \
+                           - conform(x(nmo::12,:,:), xClmRef(nmo,:,:), (/1,2/))
+  end do
+  if (isatt(x,"long_name")) then
+      xClmAnom@long_name = "Anomalies: "+x@long_name
+  else
+      xClmAnom@long_name = "Anomalies"
+  end if
+  xClmAnom@NCL_tag = "clmMonAnomTLL_RefPeriod"
+
+  return(xClmAnom)
+end
+;========================================
+undef("clmMonAnomTLLL_RefPeriod")
+function clmMonAnomTLLL_RefPeriod(x[*][*][*][*]:numeric, xClmRef[12][*][*][*]:numeric)
+local nmo, nmos, dimx, ntim, xClmRef, xClmAnom
+begin
+  nmos = 12
+  dimx = dimsizes(x)
+  ntim = dimx(0)
+  if (ntim%nmos .ne.0 ) then
+      print("clmMonAnomTLLL_RefPeriod: number of months in source array [x] must be mod_12")
+      exit
+  end if
+
+  xClmAnom = x                                   ; create anomaly  array with meta data
+
+  do nmo=0,nmos-1
+     xClmAnom(nmo::12,:,:,:) = x(nmo::12,:,:,:) \
+                               - conform(x(nmo::12,:,:,:), xClmRef(nmo,:,:,:), (/1,2,3/))
+  end do
+  if (isatt(x,"long_name")) then
+      xClmAnom@long_name = "Anomalies: "+x@long_name
+  else
+      xClmAnom@long_name = "Anomalies"
+  end if
+  xClmAnom@NCL_tag = "clmMonAnomTLLL_RefPeriod"
+
+  return(xClmAnom)
+end
+;========================================
+undef("clmMonAnomLLT_RefPeriod")
+function clmMonAnomLLT_RefPeriod(x[*][*][*]:numeric, xClmRef[*][*][12]:numeric)
+local nmo, nmos, dimx, ntim, xClmRef, xClmAnom
+begin
+  nmos   = 12
+  dimx   = dimsizes(x)
+  ntim   = dimx(2)
+  if (ntim%nmos .ne.0 ) then
+      print("clmMonAnomLLT_RefPeriod: number of months in source array [x] must be mod_12")
+      exit
+  end if
+
+  xClmAnom = x                                ; create anomaly  array with meta data
+
+  do nmo=0,nmos-1
+     xClmAnom(:,:,nmo::12) = x(:,:,nmo::12) \
+                           - conform(x(:,:,nmo::12), xClmRef(:,:,nmo), (/0,1/))
+  end do
+
+  if (isatt(x,"long_name")) then
+      xClmAnom@long_name = "Anomalies: "+x@long_name
+  else
+      xClmAnom@long_name = "Anomalies"
+  end if
+  xClmAnom@NCL_tag = "clmMonAnomLLT_RefPeriod"
+
+  return(xClmAnom)
+end
+;========================================
+undef("clmMonAnomLLLT_RefPeriod")
+function clmMonAnomLLLT_RefPeriod(x[*][*][*][*]:numeric, xClmRef[*][*][*][12]:numeric)
+local nmo, nmos, niRef, dimx, ntim, xClmRef, xClmAnom
+begin
+  nmos  = 12
+  dimx  = dimsizes(x)
+  ntim  = dimx(3)
+  if (ntim%nmos .ne.0 ) then
+      print("clmMonAnomLLLT_RefPeriod: number of months in source array [x] must be mod_12")
+      exit
+  end if
+
+  xClmAnom = x                                   ; create anomaly  array with meta data
+
+  do nmo=0,nmos-1
+     xClmAnom(:,:,:,nmo::12) = x(:,:,:,nmo::12) \
+                               - conform(x(:,:,:,nmo::12), xClmRef(:,:,:,nmo), (/0,1,2/))
+  end do
+
+  if (isatt(x,"long_name")) then
+      xClmAnom@long_name = "Anomalies: "+x@long_name
+  else
+      xClmAnom@long_name = "Anomalies"
+  end if
+  xClmAnom@NCL_tag = "clmMonAnomLLLT_RefPeriod"
+
+  return(xClmAnom)
+end
 
 ; ******************************************************************
 ; D. Shea
@@ -4904,6 +5018,336 @@ begin
     copy_VarCoords(x, xAnom)
     return(xAnom)
  end
+; =====================================
+undef("clmDayHourTLL")
+function clmDayHourTLL (x[*][*][*]:numeric, yyyydddhh[*]:integer, hour[*]:integer, opt_shape[1]:logical)   
+;
+; calculate the mean Annual Cycle from daily and hourly data. 
+; The return array will gave the raw climatology at each grid point
+;
+;              x(time,lat,lon)  <==== input dimension order: TLL
+;              x!0 = "time"    
+;              x!1 = "lat"
+;              x!2 = "lon"
+;
+;    non-Leap  yyyydddhh
+;              190500100 =>  Jan  1, 1905   ; 00Z
+;              190503206 =>  Feb  1, 1905   ; 06Z
+;              190505915 =>  Feb 28, 1905   ; 15Z
+;              190506017 =>  Mar  1, 1905   ; 17Z
+;              190536521 =>  Dec 31, 1905   ; 21Z
+;
+;    Leap      yyyydddhh
+;              190800100 =>  Jan  1, 1908   ; 00Z
+;              190803206 =>  Feb  1, 1908   ; 06Z
+;              190805912 =>  Feb 28, 1908   ; 12Z
+;              190806018 =>  Feb 29, 1908   ; 18Z
+;              190806120 =>  Mar  1, 1908   ; 20Z
+;              190836621 =>  Dec 31, 1908   ; 21Z
+;
+;    hour      (/0,6,12,18/)     ; desired climatology hours; monotonic increasing 
+;           or (/0,12/)          
+;           or (/2,7,13,16,22/)  ; non-evenly spaced  
+;           or ispan(0,23,1)     ; every hour
+;           or ....
+;
+; Usage:  xClmDayHour = clmDayHourTLL (x, yyyydddhh, hour, opt_shape)
+;         opt_shape   = True  ===> 4D: (366,nhrs,lat,lon)
+;         opt_shape   = False ===> 3D: (366*nhrs,lat,lon)
+; -------
+
+local dimx, ntim, nlat, mlon, ndys, nhr, nhrs, days, clmDayHour, ndy, indx \
+    , yyyyddd, hh, dddhh, year_day, ndys_nhrs,  nFill
+begin
+   dimx  = dimsizes (x)
+
+   ntim  = dimx(0)
+   nlat  = dimx(1)
+   mlon  = dimx(2)
+   if (isatt(yyyydddhh,"calendar")) then
+       if (yyyydddhh@calendar.eq."360_day" .or. yyyydddhh@calendar.eq."360") then
+           ndys = 360
+       end if
+       if (yyyydddhh@calendar.eq."365_day" .or. yyyydddhh@calendar.eq."365"      .or. \
+           yyyydddhh@calendar.eq."noleap"  .or. yyyydddhh@calendar.eq."no_leap") then
+           ndys  = 365
+       end if
+       if (yyyydddhh@calendar.eq."366_day" .or. yyyydddhh@calendar.eq."366"      .or. \
+           yyyydddhh@calendar.eq."allleap" .or. yyyydddhh@calendar.eq."all_leap") then
+           ndys  = 366
+       end if
+       if (yyyydddhh@calendar.eq."standard" .or. yyyydddhh@calendar.eq."gregorian") then
+           ndys  = 366
+       end if
+   else
+       ndys  = 366     ; default
+   end if
+
+   if (any(hour.lt.0) .or. any(hour.ge.24)) then
+       print("clmDayHourTLL: FATAL: illegal hour encountered: 0 to 23 allowed")
+       exit
+   end if
+   nhrs  = dimsizes(hour)                            ; number of desired hours
+
+   yyyyddd = yyyydddhh/100                           ; strip yyyyddd
+   yyyy    = yyyyddd/1000                            ; strip yyyy
+   hh      = yyyydddhh - (yyyyddd*100)               ; strip hh
+   days    = yyyyddd - (yyyy*1000)                   ; strip ddd
+ ;;print(yyyydddhh+"  "+yyyyddd+"  "+yyyy+"  "+days+"   "+hh)
+
+   clmDayHour = new((/ndys,nhrs,nlat,mlon/),typeof(x), getFillValue(x) ) ; day/hour climatology
+;
+; Compute averages for each sequential day & hour of the year. 
+;
+   ndys_nhrs = ndys*nhrs
+   do ndy=0,ndys-1                                 
+     do nhr=0,nhrs-1
+        indx := ind( days.eq.(ndy+1) .and. hh.eq.hour(nhr) )               
+        if (.not.ismissing(indx(0))) then
+            nindx = dimsizes(indx)
+            if (nindx.eq.1) then                       ; force 3rd dimension
+                clmDayHour(ndy,nhr,:,:) = dim_avg_n(x(indx:indx,:,:), 0) 
+             else
+                clmDayHour(ndy,nhr,:,:) = dim_avg_n(x(indx,:,:), 0) 
+             end if
+        end if
+     end do
+   end do
+;
+; Mean value for day 366
+; 
+   if (.not.isatt(yyyydddhh,"calendar") .or. \
+       isatt(yyyydddhh,"calendar") .and. yyyydddhh@calendar.eq."standard" .or. \
+                                         yyyydddhh@calendar.eq."gregorian") then
+                                                   ; nominal day 366 
+                                                   ; ave(31 Dec + 1 Jan)=leap
+       do nhr=0,nhrs-1
+          clmDayHour(ndys-1,nhr,:,:) = (clmDayHour(0,nhr,:,:) + clmDayHour(ndys-2,nhr,:,:))*0.5
+       end do
+   end if
+
+   nFill = num(ismissing(clmDayHour))
+   if (nFill.eq.0) then
+       delete(clmDayHour@_FillValue)
+   end if
+
+   clmDayHour@long_name   = "Day-Hour Climatology"
+   if (isatt(x,"long_name")) then
+       clmDayHour@long_name = clmDayHour@long_name +": "+x@long_name
+   end if
+   if (isatt(x,"units")) then
+       clmDayHour@units     = x@units
+   end if
+   clmDayHour@information = "Raw day-hour averages across all years"
+   clmDayHour@smoothing   = "None"
+   clmDayHour@NCL_tag     = "clmDayHourTLL"
+
+   year_day           = ispan(1,ndys,1)
+   year_day@long_name = "day of year"
+   year_day@units     = "ddd"
+
+   clmDayHour!0           = "year_day"
+   clmDayHour&year_day    =  year_day
+
+   clmDayHour!1           = "hour_day"
+   clmDayHour&hour_day    =  hour      
+   
+   copy_VarCoords(x(0,:,:), clmDayHour(0,0,:,:))   ; trick
+   if (isatt(clmDayHour,"year_day")) then
+       delete(clmDayHour@year_day)               ; clean up
+   end if
+
+   if (isatt(yyyydddhh,"calendar")) then
+       clmDayHour@calendar = yyyydddhh@calendar 
+   end if
+ 
+   if (opt_shape)
+       return (clmDayHour)   ; (366,nhrs,lat,lon)
+   else
+       clmDayHour_3D = reshape(clmDayHour, (/ndys_nhrs,nlat,mlon/))
+       copy_VarAtts(clmDayHour, clmDayHour_3D)
+       copy_VarCoords(clmDayHour(0,0,:,:), clmDayHour_3D(0,:,:))
+       dddhh = new( 366*nhrs, "integer", "No_FillValue")
+       nn = -1
+       do ddd=1,366
+         do nhr=0,nhrs-1
+            nn = nn+1
+            dddhh(nn) = ddd*100 + hour(nhr)
+         end do
+       end do
+       dddhh!0 = "dddhh"
+       dddhh&dddhh = dddhh
+       clmDayHour_3D!0 = dddhh!0
+       clmDayHour_3D&dddhh = dddhh
+       return (clmDayHour_3D)   ; (366*nhrs,lat,lon)
+   end if
+end
+; =====================================
+undef("clmDayHourTLLL")
+function clmDayHourTLLL (x[*][*][*][*]:numeric, yyyydddhh[*]:integer, hour[*]:integer, opt_shape[1]:logical)   
+;
+; calculate the mean Annual Cycle from daily and hourly data. 
+; The return array will gave the raw climatology at each grid point
+;
+;              x(time,lev,lat,lon)  <==== input dimension order: TLLL
+;              x!0 = "time"    
+;              x!1 = "lev"
+;              x!2 = "lat"
+;              x!3 = "lon"
+;
+;    non-Leap  yyyydddhh
+;              190500100 =>  Jan  1, 1905   ; 00Z
+;              190503206 =>  Feb  1, 1905   ; 06Z
+;              190505915 =>  Feb 28, 1905   ; 15Z
+;              190506017 =>  Mar  1, 1905   ; 17Z
+;              190536521 =>  Dec 31, 1905   ; 21Z
+;
+;    Leap      yyyydddhh
+;              190800100 =>  Jan  1, 1908   ; 00Z
+;              190803206 =>  Feb  1, 1908   ; 06Z
+;              190805912 =>  Feb 28, 1908   ; 12Z
+;              190806018 =>  Feb 29, 1908   ; 18Z
+;              190806120 =>  Mar  1, 1908   ; 20Z
+;              190836621 =>  Dec 31, 1908   ; 21Z
+;
+;    hour      (/0,6,12,18/)     ; desired climatology hours; monotonic increasing 
+;           or (/0,12/)          
+;           or (/2,7,13,16,22/)  ; non-evenly spaced  
+;           or ispan(0,23,1)     ; every hour
+;           or ....
+;
+; Usage:  xClmDayHour = clmDayHourTLLL (x, yyyydddhh, hour, opt_shape)
+;         opt_shape   = True  ===> 4D: (366,nhrs,lev,lat,lon)
+;         opt_shape   = False ===> 4D: (366*nhrs,lev,lat,lon)
+; -------
+
+local dimx, ntim, klev, nlat, mlon, ndys, nhr, nhrs, days, clmDayHour, ndy, indx \
+    , yyyyddd, hh, dddhh, year_day, ndys_nhrs,  nFill
+begin
+   dimx  = dimsizes (x)
+
+   ntim  = dimx(0)
+   klev  = dimx(1)
+   nlat  = dimx(2)
+   mlon  = dimx(3)
+   if (isatt(yyyydddhh,"calendar")) then
+       if (yyyydddhh@calendar.eq."360_day" .or. yyyydddhh@calendar.eq."360") then
+           ndys = 360
+       end if
+       if (yyyydddhh@calendar.eq."365_day" .or. yyyydddhh@calendar.eq."365"      .or. \
+           yyyydddhh@calendar.eq."noleap"  .or. yyyydddhh@calendar.eq."no_leap") then
+           ndys  = 365
+       end if
+       if (yyyydddhh@calendar.eq."366_day" .or. yyyydddhh@calendar.eq."366"      .or. \
+           yyyydddhh@calendar.eq."allleap" .or. yyyydddhh@calendar.eq."all_leap") then
+           ndys  = 366
+       end if
+       if (yyyydddhh@calendar.eq."standard" .or. yyyydddhh@calendar.eq."gregorian") then
+           ndys  = 366
+       end if
+   else
+       ndys  = 366     ; default
+   end if
+
+   if (any(hour.lt.0) .or. any(hour.ge.24)) then
+       print("clmDayHourTLLL: FATAL: illegal hour encountered: 0 to 23 allowed")
+       exit
+   end if
+   nhrs  = dimsizes(hour)                            ; number of desired hours
+
+   yyyyddd = yyyydddhh/100                           ; strip yyyyddd
+   yyyy    = yyyyddd/1000                            ; strip yyyy
+   hh      = yyyydddhh - (yyyyddd*100)               ; strip hh
+   days    = yyyyddd - (yyyy*1000)                   ; strip ddd
+ ;;print(yyyydddhh+"  "+yyyyddd+"  "+yyyy+"  "+days+"   "+hh)
+
+   clmDayHour = new((/ndys,nhrs,klev,nlat,mlon/),typeof(x), getFillValue(x) ) ; day/hour climatology
+;
+; Compute averages for each sequential day & hour of the year. 
+;
+   ndys_nhrs = ndys*nhrs
+   do ndy=0,ndys-1                                 
+     do nhr=0,nhrs-1
+        indx := ind( days.eq.(ndy+1) .and. hh.eq.hour(nhr) )               
+        if (.not.ismissing(indx(0))) then
+            nindx = dimsizes(indx)
+            if (nindx.eq.1) then                       ; force 3rd dimension
+                clmDayHour(ndy,nhr,:,:,:) = dim_avg_n(x(indx:indx,:,:,:), 0) 
+             else
+                clmDayHour(ndy,nhr,:,:,:) = dim_avg_n(x(indx,:,:,:), 0) 
+             end if
+        end if
+     end do
+   end do
+;
+; Mean value for day 366
+; 
+   if (.not.isatt(yyyydddhh,"calendar") .or. \
+       isatt(yyyydddhh,"calendar") .and. yyyydddhh@calendar.eq."standard" .or. \
+                                         yyyydddhh@calendar.eq."gregorian") then
+                                                   ; nominal day 366 
+                                                   ; ave(31 Dec + 1 Jan)=leap
+       do nhr=0,nhrs-1
+          clmDayHour(ndys-1,nhr,:,:,:) = (clmDayHour(0,nhr,:,:,:) + clmDayHour(ndys-2,nhr,:,:,:))*0.5
+       end do
+   end if
+
+   nFill = num(ismissing(clmDayHour))
+   if (nFill.eq.0) then
+       delete(clmDayHour@_FillValue)
+   end if
+
+   clmDayHour@long_name   = "Day-Hour Climatology"
+   if (isatt(x,"long_name")) then
+       clmDayHour@long_name = clmDayHour@long_name +": "+x@long_name
+   end if
+   if (isatt(x,"units")) then
+       clmDayHour@units     = x@units
+   end if
+   clmDayHour@information = "Raw day-hour averages across all years"
+   clmDayHour@smoothing   = "None"
+   clmDayHour@NCL_tag     = "clmDayHourTLLL"
+
+   year_day           = ispan(1,ndys,1)
+   year_day@long_name = "day of year"
+   year_day@units     = "ddd"
+
+   clmDayHour!0           = "year_day"
+   clmDayHour&year_day    =  year_day
+
+   clmDayHour!1           = "hour_day"
+   clmDayHour&hour_day    =  hour      
+   
+   copy_VarCoords(x(0,:,:,:), clmDayHour(0,0,:,:,:))   ; trick
+   if (isatt(clmDayHour,"year_day")) then
+       delete(clmDayHour@year_day)               ; clean up
+   end if
+
+   if (isatt(yyyydddhh,"calendar")) then
+       clmDayHour@calendar = yyyydddhh@calendar 
+   end if
+ 
+   if (opt_shape)
+       return (clmDayHour)   ; (366,nhrs,lev,lat,lon)
+   else
+       clmDayHour_4D = reshape(clmDayHour, (/ndys_nhrs,klev,nlat,mlon/))
+       copy_VarAtts(clmDayHour, clmDayHour_4D)
+       copy_VarCoords(clmDayHour(0,0,:,:,:), clmDayHour_4D(0,:,:,:))
+       dddhh = new( 366*nhrs, "integer", "No_FillValue")
+       nn = -1
+       do ddd=1,366
+         do nhr=0,nhrs-1
+            nn = nn+1
+            dddhh(nn) = ddd*100 + hour(nhr)
+         end do
+       end do
+       dddhh!0 = "dddhh"
+       dddhh&dddhh = dddhh
+       clmDayHour_4D!0 = dddhh!0
+       clmDayHour_4D&dddhh = dddhh
+       return (clmDayHour_4D)   ; (366*nhrs,lev,lat,lon)
+   end if
+end
  
  ; **********************************************************************
  ; D. Shea
