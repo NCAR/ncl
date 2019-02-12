@@ -39,7 +39,7 @@
 #include <errno.h>
 #include <string.h>
 #include <ctype.h>
-#include "ncarg/c.h"
+#include "c.h"
 #include "options.h"
 
 
