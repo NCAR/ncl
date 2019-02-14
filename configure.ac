@@ -231,7 +231,7 @@ AC_CONFIG_FILES([Makefile
                  common/Makefile
                  common/src/Makefile
                  common/src/libncarg_c/Makefile
-                 common/src/libncarg_c/c.h
+                 common/src/libncarg_c/ncarg/c.h:common/src/libncarg_c/c.h.in
                  common/src/libncarg_c/ncarg_path.c
                  common/src/bin/Makefile
                  common/src/bin/ncargpath/Makefile

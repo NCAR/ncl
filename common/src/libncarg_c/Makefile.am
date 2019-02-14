@@ -1,6 +1,8 @@
 # This is an automake file for NCL.
 # Ed Hartnett 8/30/18
 
+AM_CPPFLAGS = -I${top_builddir}/common/src/libncarg_c/ncarg -I${top_builddir}/common/src/libncarg_c
+
 # Build this convenience library.
 lib_LTLIBRARIES = libncarg_c.la
 
@@ -17,7 +19,8 @@ libncarg_c_la_LDFLAGS = -version-info 1:0:0
 
 noinst_HEADERS = options.h ncarg_path.h
 
-include_HEADERS = c.h
+# This header is created by configure.
+include_HEADERS = ncarg/c.h
 
 # Parallel builds don't currently work due to the argget.f target
 # below. This target may be rewritten with the BUILT_SOURCE primary
