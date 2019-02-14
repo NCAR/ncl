@@ -8,7 +8,7 @@
 
 MYNAME  = psplit
 
-SOURCES  = psplit.c
+psplit_SOURCES  = psplit.c
 
 OBJECTS  = psplit.o
 

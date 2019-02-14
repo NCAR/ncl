@@ -1,0 +1,4 @@
+# This is an automake file for NCL.
+# Ed Hartnett 9/4/18
+
+man3_MANS = ezmapa.m ezmap.m ezmap_params.m mapaci.m mapbla.m mapblm.m mapdrw.m mapeod.m mapfst.m mapgci.m mapgrd.m mapgrm.m mapgtc.m mapgti.m mapgtl.m mapgtr.m mapint.m mapiqa.m mapiqd.m mapiq.m mapiqm.m mapita.m mapitd.m mapit.m mapitm.m maplbl.m maplmb.m maplot.m mappos.m maproj.m maprs.m maprst.m mapsav.m mapset.m mapstc.m mapsti.m mapstl.m mapstr.m maptra.m maptri.m maptrn.m mapusr.m mapvec.m mpchln.m mpfnme.m mpgetc.m mpgeti.m mpgetl.m mpgetr.m mpglty.m mpiaty.m mpifnb.m mpilnb.m mpiola.m mpiosa.m mpipai.m mpipan.m mpipar.m mpisci.m mplnam.m mplndm.m mplndr.m mplnri.m mpname.m mprset.m mpsetc.m mpseti.m mpsetl.m mpsetr.m supcon.m supmap.m 

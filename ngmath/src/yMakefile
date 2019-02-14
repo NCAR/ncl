@@ -3,7 +3,7 @@
 #
 #define IHaveSubdirs
 
-SUBDIRS = lib bin examples 
+SUBDIRS = lib bin examples
 
 OBJECTS = ngmathbd.o
 FSOURCES = ngmathbd.f
