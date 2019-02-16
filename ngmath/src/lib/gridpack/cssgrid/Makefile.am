@@ -3,6 +3,8 @@
 
 noinst_LTLIBRARIES = libngmath_cssgrid.la
 
+AM_CPPFLAGS = -I../../../../src/lib
+
 libngmath_cssgrid_la_SOURCES = csaddnod.f csaplyr.f csaplyrt.f		\
 csarcint.f csarclen.f csareas.f csbdyadd.f csblda.f csbnodes.f		\
 cscircum.f csconstr.f cscovsph.f cscrlist.f csdelarc.f csdelnb.f	\
