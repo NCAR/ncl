@@ -4,6 +4,9 @@
 # Build this convenience library.
 noinst_LTLIBRARIES = libncarg_plotchar.la
 
+# Find c.h.
+AM_CPPFLAGS = -I$(top_srcdir)/common/src/libncarg_c
+
 # Sources for convenience library.
 libncarg_plotchar_la_SOURCES = plchhq.f plchmq.f plchlq.f pcgetc.f	\
 pcgeti.f pcgetr.f pcsetc.f pcseti.f pcsetr.f pccchk.f pccffc.f		\

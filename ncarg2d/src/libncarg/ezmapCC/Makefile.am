@@ -6,6 +6,15 @@ LDADD = ${top_builddir}/common/src/libncarg_c/libncarg_c.la
 # Build this convenience library.
 noinst_LTLIBRARIES = libncarg_ezmapcc.la
 
+# Find gks.h.
+AM_CPPFLAGS = -I$(top_srcdir)/ncarg2d/src/libncarg_gks
+
+# Find c.h.
+AM_CPPFLAGS += -I$(top_srcdir)/common/src/libncarg_c
+
+# Find ncargC.h.
+AM_CPPFLAGS += -I$(top_srcdir)/ncarg2d/src/libncarg
+
 # Sources for convenience library.
 libncarg_ezmapcc_la_SOURCES = c_mapblm.c c_mapdrw.c c_mapfst.c		\
 c_mapgrd.c c_mapgtc.c c_mapgti.c c_mapgtl.c c_mapgtr.c c_mapint.c	\

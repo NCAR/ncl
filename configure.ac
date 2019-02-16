@@ -279,6 +279,7 @@ AC_CONFIG_FILES([Makefile
                  ncarg2d/man/wmap/Makefile
                  ncarg2d/src/Makefile
                  ncarg2d/src/libncarg/Makefile
+                 ncarg2d/src/libncarg/ncarg/ncargC.h:ncarg2d/src/libncarg/ncargC.h
                  ncarg2d/src/libncarg/Iftran/Makefile
                  ncarg2d/src/libncarg/areas/Makefile
                  ncarg2d/src/libncarg/autogrph/Makefile

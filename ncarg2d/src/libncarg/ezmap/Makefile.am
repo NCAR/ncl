@@ -4,6 +4,15 @@
 # Build this convenience library.
 noinst_LTLIBRARIES = libncarg_ezmap.la
 
+# Find gks.h.
+AM_CPPFLAGS = -I$(top_srcdir)/ncarg2d/src/libncarg_gks
+
+# Find c.h.
+AM_CPPFLAGS += -I$(top_srcdir)/common/src/libncarg_c
+
+# Find ncargC.h.
+AM_CPPFLAGS += -I$(top_srcdir)/ncarg2d/src/libncarg
+
 # Sources for convenience library.
 libncarg_ezmap_la_SOURCES = mapnga.c mapngb.c hlumapeod.f hlumapusr.f	\
 idictl.f mapbd.f mapdrw.f mapeod.f mapfst.f mapgci.f mapgrd.f		\

@@ -4,6 +4,15 @@
 # Build this convenience library.
 noinst_LTLIBRARIES = libncarg_conpacktc.la
 
+# Find gks.h.
+AM_CPPFLAGS = -I$(top_srcdir)/ncarg2d/src/libncarg_gks
+
+# Find c.h.
+AM_CPPFLAGS += -I$(top_srcdir)/common/src/libncarg_c
+
+# Find ncargC.h.
+AM_CPPFLAGS += -I$(top_srcdir)/ncarg2d/src/libncarg
+
 # Sources for convenience library.
 libncarg_conpacktc_la_SOURCES = c_ctback.c c_ctcica.c c_ctclam.c	\
 c_ctcldm.c c_ctcldr.c c_ctcltr.c c_ctgetc.c c_ctgeti.c c_ctgetr.c	\

@@ -6,6 +6,15 @@ LDADD = ${top_builddir}/common/src/libncarg_c/libncarg_c.la
 # Build this convenience library.
 noinst_LTLIBRARIES = libncarg_tdpackc.la
 
+# Find gks.h.
+AM_CPPFLAGS = -I$(top_srcdir)/ncarg2d/src/libncarg_gks
+
+# Find c.h.
+AM_CPPFLAGS += -I$(top_srcdir)/common/src/libncarg_c
+
+# Find ncargC.h.
+AM_CPPFLAGS += -I$(top_srcdir)/ncarg2d/src/libncarg
+
 # Sources for convenience library.
 libncarg_tdpackc_la_SOURCES = c_tdclrs.c c_tddtri.c c_tdez2d.c		\
 c_tdez3d.c c_tdgeti.c c_tdgetr.c c_tdgrds.c c_tdgrid.c c_tdgtrs.c	\
