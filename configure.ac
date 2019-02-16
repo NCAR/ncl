@@ -349,6 +349,7 @@ AC_CONFIG_FILES([Makefile
                  ncarg2d/src/libncarg/threedC/Makefile
                  ncarg2d/src/libncarg/velvctC/Makefile
                  ncarg2d/src/libncarg/wmapC/Makefile
+                 ncarg2d/src/libncarg_gks/ncarg/gks.h:ncarg2d/src/libncarg_gks/gks.h
                  ncarg2d/src/libncarg_gks/Makefile
                  ncarg2d/src/libncarg_gks/awi/Makefile
                  ncarg2d/src/libncarg_gks/bwi/Makefile

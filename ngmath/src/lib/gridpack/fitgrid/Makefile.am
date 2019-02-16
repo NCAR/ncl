@@ -6,6 +6,12 @@ noinst_LTLIBRARIES = libngmath_fitgrid.la
 # Find the ngmath.h file.
 AM_CPPFLAGS = -I../../../../src/lib
 
+# Find gks.h.
+AM_CPPFLAGS += -I$(top_srcdir)/ncarg2d/src/libncarg_gks
+
+# Find c.h.
+AM_CPPFLAGS += -I$(top_srcdir)/common/src/libncarg_c
+
 libngmath_fitgrid_la_SOURCES = ceezdp.f curv1.f curvd.f curvp1.f	\
 curvpi.f curvps.f curvs2.f curvss.f ftstore.f intrvp.f kurv2.f		\
 kurvp1.f kurvpd.f strhlp.f surf2.f ceez.f curv2dp.f curvidp.f		\
