@@ -7,6 +7,15 @@ LDADD = ${top_builddir}/ncarg2d/src/libncarg_gks/cdrivers/libbasegks.la
 # Build this convenience library.
 noinst_LTLIBRARIES = libncarg_awic.la
 
+# Find gks.h.
+AM_CPPFLAGS = -I$(top_srcdir)/ncarg2d/src/libncarg_gks
+
+# Find c.h.
+AM_CPPFLAGS += -I$(top_srcdir)/common/src/libncarg_c
+
+# Find ncargC.h.
+AM_CPPFLAGS += -I$(top_srcdir)/ncarg2d/src/libncarg
+
 # Sources for convenience library.
 libncarg_awic_la_SOURCES = s_gactm.c s_gacwk.c s_gca.c s_gclks.c	\
 s_gclrwk.c s_gclwk.c s_gdawk.c s_geclks.c s_gerhnd.c s_gerlog.c		\

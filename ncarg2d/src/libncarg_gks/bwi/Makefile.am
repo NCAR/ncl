@@ -4,6 +4,15 @@
 # Build this convenience library.
 noinst_LTLIBRARIES = libncarg_bwi.la
 
+# Find gks.h.
+AM_CPPFLAGS = -I$(top_srcdir)/ncarg2d/src/libncarg_gks
+
+# Find c.h.
+AM_CPPFLAGS += -I$(top_srcdir)/common/src/libncarg_c
+
+# Find ncargC.h.
+AM_CPPFLAGS += -I$(top_srcdir)/ncarg2d/src/libncarg
+
 # Sources for convenience library.
 libncarg_bwi_la_SOURCES = g01bkd.f g01ca.f g01clp.f g01clw.f g01ctb.f	\
 g01d2r.f g01d2s.f g01diq.f g01dmp.f g01esc.f g01fa.f g01flb.f		\
