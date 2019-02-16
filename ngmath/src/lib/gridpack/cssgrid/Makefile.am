@@ -3,6 +3,7 @@
 
 noinst_LTLIBRARIES = libngmath_cssgrid.la
 
+# Find the ngmath.h file.
 AM_CPPFLAGS = -I../../../../src/lib
 
 libngmath_cssgrid_la_SOURCES = csaddnod.f csaplyr.f csaplyrt.f		\

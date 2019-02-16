@@ -468,7 +468,7 @@ AC_CONFIG_FILES([Makefile
                  ngmath/src/bin/Makefile
                  ngmath/src/bin/nnalg/Makefile
                  ngmath/src/lib/Makefile
-                 ngmath/src/lib/ncarg/ngmath.h:ngmath/src/lib/ngmath.h.sed
+                 ngmath/src/lib/ncarg/ngmath.h:ngmath/src/lib/ngmath.h.in
                  ngmath/src/lib/gridpack/Makefile
                  ngmath/src/lib/gridpack/csagrid/Makefile
                  ngmath/src/lib/gridpack/cssgrid/Makefile
