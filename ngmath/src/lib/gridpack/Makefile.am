@@ -2,7 +2,6 @@
 # Ed Hartnett 9/5/18
 
 SUBDIRS = cssgrid natgrid dsgrid fitgrid csagrid shgrid
-#SUBDIRS = fitgrid
 
 lib_LTLIBRARIES = libngmath.la
 
