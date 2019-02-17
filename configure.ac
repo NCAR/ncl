@@ -507,6 +507,8 @@ AC_CONFIG_FILES([Makefile
                  ni/src/lib/hlu/ncarg/hlu/Error.h:ni/src/lib/hlu/Error.h
                  ni/src/lib/hlu/ncarg/hlu/Base.h:ni/src/lib/hlu/Base.h
                  ni/src/lib/hlu/ncarg/hlu/ResList.h:ni/src/lib/hlu/ResList.h
+                 ni/src/lib/hlu/ncarg/hlu/NresDB.h:ni/src/lib/hlu/NresDB.h
+                 ni/src/lib/hlu/ncarg/hlu/Callbacks.h:ni/src/lib/hlu/Callbacks.h
                  ni/src/lib/nfpfort/Makefile
                  ni/src/lib/nio/Makefile
                  ni/src/lib/nfp/Makefile
