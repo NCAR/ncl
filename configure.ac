@@ -464,8 +464,10 @@ AC_CONFIG_FILES([Makefile
                  ncarview/src/lib/Makefile
                  ncarview/src/lib/libictrans/Makefile
                  ncarview/src/lib/libcgm/Makefile
+                 ncarview/src/lib/libcgm/ncarg/cgmdef.h:ncarview/src/lib/libcgm/cgmdef.h
                  ncarview/src/lib/libctrans/Makefile
                  ncarview/src/lib/libncarg_ras/Makefile
+                 ncarview/src/lib/libncarg_ras/ncarg/ncarg_ras.h:ncarview/src/lib/libncarg_ras/ncarg_ras.h
                  ncarview/src/Makefile
                  ncarview/app/Makefile
                  ngmath/src/bin/Makefile
