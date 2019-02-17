@@ -41,7 +41,7 @@ gzw2nx.f gzw2ny.f gzxid.f gzacwk.f gzclwk.f gzclrwk.f gzdawk.f		\
 gzopwk.f
 
 ggkwdr_stub.o: ggkwdr_stub.c
-	$(FC) -c ${FCFLAGS} -o $@ $^
+	$(FC) -c ${FCFLAGS} ${AM_CPPFLAGS} -o $@ $^
 
 noinst_HEADERS = gkscom.h trbufr.h trcode.h trdefl.h trinst.h	\
 trpars.h trstat.h
