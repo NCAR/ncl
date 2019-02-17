@@ -5,8 +5,17 @@ bin_PROGRAMS = ncl
 
 .NOTPARALLEL:
 
+# Find gks.h.
+AM_CPPFLAGS = -I$(top_srcdir)/ncarg2d/src/libncarg_gks
+
+# Find c.h.
+AM_CPPFLAGS += -I$(top_srcdir)/common/src/libncarg_c
+
+# Find ncargC.h.
+AM_CPPFLAGS += -I$(top_srcdir)/ncarg2d/src/libncarg
+
 # Find hlu.h.
-AM_CPPFLAGS = -I$(top_srcdir)/ni/src/lib/hlu
+AM_CPPFLAGS += -I$(top_srcdir)/ni/src/lib/hlu
 
 CREATED_FILES = parser.h TypeSupport.h TypeSupport.c			\
 NclMultiDValData.c MathFuncs.c MathFuncs.h NclTypedouble.h		\

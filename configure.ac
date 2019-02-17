@@ -502,6 +502,11 @@ AC_CONFIG_FILES([Makefile
                  ni/src/lib/Makefile
                  ni/src/lib/hlu/Makefile
                  ni/src/lib/hlu/ncarg/hlu/hlu.h:ni/src/lib/hlu/hlu.h
+                 ni/src/lib/hlu/ncarg/hlu/defs.h:ni/src/lib/hlu/defs.h
+                 ni/src/lib/hlu/ncarg/hlu/NgSizeT.h:ni/src/lib/hlu/NgSizeT.h
+                 ni/src/lib/hlu/ncarg/hlu/Error.h:ni/src/lib/hlu/Error.h
+                 ni/src/lib/hlu/ncarg/hlu/Base.h:ni/src/lib/hlu/Base.h
+                 ni/src/lib/hlu/ncarg/hlu/ResList.h:ni/src/lib/hlu/ResList.h
                  ni/src/lib/nfpfort/Makefile
                  ni/src/lib/nio/Makefile
                  ni/src/lib/nfp/Makefile
