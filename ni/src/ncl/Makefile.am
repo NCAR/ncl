@@ -5,6 +5,9 @@ bin_PROGRAMS = ncl
 
 .NOTPARALLEL:
 
+# Find hlu.h.
+AM_CPPFLAGS = -I$(top_srcdir)/ni/src/lib/hlu
+
 CREATED_FILES = parser.h TypeSupport.h TypeSupport.c			\
 NclMultiDValData.c MathFuncs.c MathFuncs.h NclTypedouble.h		\
 NclTypedouble.c NclTypefloat.h NclTypefloat.c NclTypeint.h		\

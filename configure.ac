@@ -501,6 +501,7 @@ AC_CONFIG_FILES([Makefile
                  ngmath/Makefile
                  ni/src/lib/Makefile
                  ni/src/lib/hlu/Makefile
+                 ni/src/lib/hlu/ncarg/hlu/hlu.h:ni/src/lib/hlu/hlu.h
                  ni/src/lib/nfpfort/Makefile
                  ni/src/lib/nio/Makefile
                  ni/src/lib/nfp/Makefile
