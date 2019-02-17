@@ -1,7 +1,7 @@
 # This is an automake file for NCL.
 # Ed Hartnett 9/5/18
 
-lib_LTLIBRARIES = libngmath_shgrid.la
+noinst_LTLIBRARIES = libngmath_shgrid.la
 
 # Find the ngmath.h file.
 AM_CPPFLAGS = -I../../../../src/lib

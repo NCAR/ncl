@@ -20,7 +20,9 @@ libncarg_c_la_LDFLAGS = -version-info 1:0:0
 noinst_HEADERS = options.h ncarg_path.h
 
 # This header is created by configure.
-include_HEADERS = ncarg/c.h
+# Header get installed in special subdirectory.
+ncargdir = $(prefix)/include/ncarg
+include_HEADERS = c.h
 
 # Parallel builds don't currently work due to the argget.f target
 # below. This target may be rewritten with the BUILT_SOURCE primary

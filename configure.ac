@@ -511,7 +511,12 @@ AC_CONFIG_FILES([Makefile
                  ni/src/lib/hlu/ncarg/hlu/ResList.h:ni/src/lib/hlu/ResList.h
                  ni/src/lib/hlu/ncarg/hlu/NresDB.h:ni/src/lib/hlu/NresDB.h
                  ni/src/lib/hlu/ncarg/hlu/Callbacks.h:ni/src/lib/hlu/Callbacks.h
+                 ni/src/lib/hlu/ncarg/hlu/Convert.h:ni/src/lib/hlu/Convert.h
                  ni/src/lib/hlu/ncarg/hlu/ConvertP.h:ni/src/lib/hlu/ConvertP.h
+                 ni/src/lib/hlu/ncarg/hlu/BaseI.h:ni/src/lib/hlu/BaseI.h
+                 ni/src/lib/hlu/ncarg/hlu/PlotManager.h:ni/src/lib/hlu/PlotManager.h
+                 ni/src/lib/hlu/ncarg/hlu/Transform.h:ni/src/lib/hlu/Transform.h
+                 ni/src/lib/hlu/ncarg/hlu/View.h:ni/src/lib/hlu/View.h
                  ni/src/lib/nfpfort/Makefile
                  ni/src/lib/nio/Makefile
                  ni/src/lib/nfp/Makefile
