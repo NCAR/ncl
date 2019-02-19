@@ -23,7 +23,7 @@
 extern "C" {
 #endif
 
-#include <OpenCL/opencl.h>
+#include <CL/opencl.h>
 
 #include <stdio.h>
 #include <stdlib.h>
