@@ -5716,6 +5716,9 @@ end
 ; is currently only used by gsn_coordinates for converting lat/lon mesh 
 ; coordinates. Additionally, the attribute will be removed from the 
 ; variable it's attached to (by get_res_value).
+;
+; This is currently used for drawing mesh outlines in gsn_coordinates,
+; but could be adapted for use by other routines.
 ;***********************************************************************
 undef("convert_latlon_deg")
 function convert_latlon_deg(res,att_name,convert_r2d)
@@ -5739,6 +5742,8 @@ end
 ; This function also checks if the vertex indexes start at 0 or 1
 ; (one_based_based) and whether each cell boundary needs to be closed
 ; (close_cell).
+;
+; This is for use with drawing mesh outlines in gsn_coordinates.
 ;***********************************************************************
 undef("calculate_mesh_bounds_from_vertices")
 function calculate_mesh_bounds_from_vertices(latv[*],lonv[*],\
@@ -5832,6 +5837,8 @@ end
 ; boundaries of a group of cells (for example, a triangular mesh), 
 ; given existing boundaries and whether or not the cells need to be 
 ; closed.
+;
+; This is for use with drawing mesh outlines in gsn_coordinates.
 ;***********************************************************************
 undef("get_mesh_bounds")
 function get_mesh_bounds(latb,lonb,close_cell)
@@ -5859,7 +5866,9 @@ end
 ;***********************************************************************
 ; This function constructs an array of segment indexes based on an
 ; array that contains the number of edges for each cell.
-; This information will be used for the gsSegments resource.
+;
+; This information will be used for the gsSegments resource when
+; drawing cell meshes in gsn_coordinates.
 ;***********************************************************************
 undef("calculate_segments_for_unequal_edges")
 function calculate_segments_for_unequal_edges(nedges_array,close_cell)
@@ -5887,6 +5896,79 @@ begin
       return(ispan(0,num_edges*max_edges,max_edges))
     end if
   end if
+end
+
+;***********************************************************************
+; This function returns the indexes into a mesh array that is defined
+; by an array of lat/lon values and vertices into those arrays.
+; If a min/max lat/lon area of interest was provided, then the mesh will
+; will be limited to this area. Otherwise, all indexes are returned. 
+;
+; This is for use with drawing mesh outlines in gsn_coordinates.
+;***********************************************************************
+undef("calculate_mesh_indexes_from_vertices")
+function calculate_mesh_indexes_from_vertices(latv,lonv,verts,\
+         one_based_indexes,use_ll_mnmx,minlat,maxlat,minlon,maxlon)
+local i, iv, ncells, dims, max_edges
+begin
+  dims   = dimsizes(verts)
+  ncells = dims(0)
+  if(.not.use_ll_mnmx) then
+    return(ispan(0,ncells-1,1))
+  else
+    imesh = new(ncells,typeof(ncells))
+    if(one_based_indexes) then
+      do i=0,ncells-1
+        iv = verts(i,:)-1
+        if(any(latv(iv).ge.minlat.and.\
+               latv(iv).le.maxlat.and.\
+               lonv(iv).ge.minlon.and.\
+               lonv(iv).le.maxlon)) then
+          imesh(i) = i
+        end if
+      end do
+    else
+      do i=0,ncells-1
+        if(any(latv(verts(i,:)).ge.minlat.and.\
+               latv(verts(i,:)).le.maxlat.and.\
+               lonv(verts(i,:)).ge.minlon.and.\
+               lonv(verts(i,:)).le.maxlon)) then
+          imesh(i) = i
+        end if
+      end do
+    end if
+  end if
+  return(imesh)
+end
+
+;***********************************************************************
+; This function returns the indexes into a mesh array defined by lat/lon
+; bounds that are inside the min/max lat/lon area of interest. If there
+; is no lat/lon area of interest, then all indexes are returned. 
+;
+; This is for use with drawing mesh outlines in gsn_coordinates.
+;***********************************************************************
+undef("calculate_mesh_indexes_from_bounds")
+function calculate_mesh_indexes_from_bounds(latb,lonb,\
+                 use_ll_mnmx,minlat,maxlat,minlon,maxlon)
+local ncells, i, dims
+begin
+  dims   = dimsizes(latb)
+  ncells = dims(0)
+  if(.not.use_ll_mnmx) then
+    return(ispan(0,ncells-1,1))
+  else
+    imesh = new(ncells,typeof(ncells))
+    do i=0,ncells-1
+      if(any(latb(i,:).ge.minlat.and.\
+             latb(i,:).le.maxlat.and.\
+             lonb(i,:).ge.minlon.and.\
+             lonb(i,:).le.maxlon)) then
+        imesh(i) = i
+      end if
+    end do
+  end if
+  return(imesh)
 end
 
 ;***********************************************************************;
@@ -5952,13 +6034,56 @@ end
 ;       If either one of these are set, then at locations where the
 ;       data is or isn't missing, they will be drawn in the given color
 ;
+;***********************************************************************;
+; The next set of attributes were added in NCL V6.6.0 to handle the
+; plotting of mesh coordinates and cell edges. The code was modeled
+; after how MPAS meshes are structured, with 1D lat/lon arrays,
+; an array of lat/lon vertices into the 1D lat/lon arrays that defines
+; the cell boundaries, and the number of edges for each cell (since this
+; can vary within a mesh). This code also handles meshes like the
+; triangular ICON mesh, where you are given an ncell x 3 lat/lon "bounds:
+; arrays.
+;
+;    gsnCoordsMeshLatCenter / gsnCoordsMeshLonCenter
+;       1D arrays containing the lat/lon locations of 
+;       each cell center. If set, then these will be 
+;       drawn as markers.
+;
+;    gsnCoordsMeshLatBounds, gsnCoordsMeshLonBounds
+;       1D arrays containing lat,lon locations for the
+;       vertices of each mesh cell. If these two are set,
+;       then none of gsnCoordsMeshXXXVerticesXXX or
+;       gsnCoordsMeshNumEdgesOnCell should be set.
+;
+;    gsnCoordsMeshLatVertices / gsnCoordsMeshLonVertices /
+;    gsnCoordsMeshVerticesOnCell
+;       The gsnCoordsMeshLat/LonVertices contains the lat/lon values
+;       for each vertex in a mesh, and the gsnCoordsVerticesOnCell
+;       (ncells x max_edges) contains the index values into these
+;       arrays for each mesh cell.
+;
+;    gsnCoordsMeshNumEdgesOnCell
+;       1D array of length ncell containing the number of edges for 
+;       each mesh cell. Only recognized if gsnCoordsMeshLatVertices
+;       and gsnCoordsMeshLonVertices are set.
+;
+;     gsnCoordsMeshVerticesStartIndex (default=0) (only 0 or 1 allowed)
+;       For gsnCoordsMeshVerticesOnCell, do the vertex indexes start 
+;       at 0 or 1? That is, do they go
+;       from 1 to ncells  or 0 to ncells-1? If they start at 1, then
+;       set this attribute to 1.
+;
+;    gsnCoordsMeshClosePolygons (default=True)
+;       If the mesh cell polygons are not closed, then
+;       set this to True to force them to be closed.
+;
 ;    gsnCoordsMinLat / gsnCoordsMaxLat
 ;    gsnCoordsMinLon / gsnCoordsMaxLon 
 ;       Set the desired min/max of the lat/lon area where the 
-;       grid or mesh edges are to be drawn. This can help
+;       mesh centers or edges are to be drawn. This can help
 ;       save significant time in drawing. If not set, then
 ;       it will either default to the min/max of cell edges, or
-;       if those are not set, then the input lat/lon.
+;       if those are not set, then the input mesh centers
 ;
 ;    gsnCoordsConvertRad2Deg (default=False)
 ;       This function assumes that any input lat/lon values are
@@ -5967,42 +6092,9 @@ end
 ;       degrees. Note: this will apply only to the following
 ;       attributes. It will not apply to the lat/lon attached to
 ;       the input data array via coordinate arrays or lat2d/lon2d.
-;           gsnCoordsMeshLat/LonCenter
-;           gsnCoordsMeshLat/LonBounds
-;           gsnCoordsMeshLat/LonVertices
-;
-;    gsnCoordsMeshLatCenter, gsnCoordsLonCenter
-;       1D arrays containing the lat/lon locations of 
-;       each cell center. If set, then these will be 
-;       drawn as markers.
-;
-;    gsnCoordsMeshLatBounds, gsnCoordsMeshLonBounds
-;       1D arrays containing lat,lon locations for the
-;       vertices of each mesh cell. If these two are set,
-;       then none of gsnCoordsMeshXXVerticesXX or
-;       gsnCoordsMeshNumEdgesOnCell should be set.
-;
-;    gsnCoordsMeshLatVertices, gsnCoordsLonVertices
-;    gsnCoordsMeshVerticesOnCell
-;       The Lat/LonVertices contains the lat/lon values for each
-;       vertex in a mesh, and the VerticesOnCell (ncells x 
-;       max_edges) contains the index values into these arrays
-;       for each mesh cell.
-;
-;     gsnCoordsMeshVerticesOneBased (default=True)
-;       For MeshLat/LonVerticesOnCell, are the vertex indexes 
-;       0-based or 1-based? That is, do they go from 1 to ncells 
-;       or 0 to ncells-1? If they are 0-based, then you need to 
-;       set this attribute to False.
-;
-;    gsnCoordsMeshNumEdgesOnCell
-;       1D array of length ncell containing the number
-;       of edges for each mesh cell. Only recognized if
-;       gsnCoordsMeshLat/LonVertices is set.
-;
-;    gsnCoordsMeshClosePolygons (default=True)
-;       If the mesh cell polygons are not closed, then
-;       set this to True to force them to be closed.
+;           gsnCoordsMeshLatCenter/gsnCoordsMeshLonCenter
+;           gsnCoordsMeshLatBounds/gsnCoordsMeshLonBounds
+;           gsnCoordsMeshLatVertices/gsnCoordsMeshLonVertices
 ;
 ;***********************************************************************;
 undef("gsn_coordinates")
@@ -6219,8 +6311,9 @@ begin
     ncells    = dims(0)
     max_edges = dims(1)
   end if
+  use_latlon_minmax = False
   if(have_mesh_vertices.or.have_mesh_bounds) then
-    mesh_indexes_one_based = get_res_value(res2,"gsnCoordsMeshVerticesOneBased",True)
+    mesh_indexes_one_based = get_res_value(res2,"gsnCoordsMeshVerticesStartIndex",0).eq.1
     close_mesh_polygons    = get_res_value(res2,"gsnCoordsMeshClosePolygons",False)
     if(close_mesh_polygons) then
       total_edges = max_edges+1
@@ -6231,40 +6324,27 @@ begin
 ; Currently, the gsnCordsMin/MaxLat/Lon resources only affect mesh-style
 ; coordinates, and not rectilinear or curvilinear coordinates.
 ;
-    use_minlat = False
-    use_maxlat = False
-    use_minlon = False
-    use_maxlon = False
-    if(res2.and.isatt(res2,"gsnCoordsMinLat")) then
+    if(res2.and.isatt(res2,"gsnCoordsMinLat").and.isatt(res2,"gsnCoordsMaxLat").and.\
+                isatt(res2,"gsnCoordsMinLon").and.isatt(res2,"gsnCoordsMaxLon")) then
       minlat = get_res_value(res2,"gsnCoordsMinLat",-1)
-      use_minlat = True
-    end if
-    if(res2.and.isatt(res2,"gsnCoordsMaxLat")) then
       maxlat = get_res_value(res2,"gsnCoordsMaxLat",-1)
-      use_maxlat = True
-    end if
-    if(res2.and.isatt(res2,"gsnCoordsMinLon")) then
       minlon = get_res_value(res2,"gsnCoordsMinLon",-1)
-      use_minlon = True
-    end if
-    if(res2.and.isatt(res2,"gsnCoordsMaxLon")) then
       maxlon = get_res_value(res2,"gsnCoordsMaxLon",-1)
-      use_maxlon = True
+      use_latlon_minmax = True
     end if
-    if(     any(use_minlat.and.use_maxlat.and.use_minlon.and.use_maxlon).and.\
-       .not.all(use_minlat.and.use_maxlat.and.use_minlon.and.use_maxlon))
-        print("gsn_coordinates: warning: You set one or more gsnCoordsMin/MaxLat/Lon")
-        print("   attributes, but not all of them. In order for these attributes to be")
-        print("   effective, you must set all of them. Will ignore the other settings.")
-    end if
-    use_latlon_minmax = all(use_minlat.and.use_maxlat.and.use_minlon.and.use_maxlon)
   end if
-  if((have_mesh_vertices.or.have_mesh_bounds).and..not.use_latlon_minmax.and.ncells.ge.500000) then
-    print("gsn_coordinates: warning: drawing a lat/lon mesh with a large number of cells")
-    print("   can take a very long time. If you are not drawing the mesh over the full map,")
-    print("   then you should set the gsnCoordsMinLat / gsnCoordsMaxLat and")
-    print("   gsnCoordsMinLon / gsnCoordMaxLon attributes to limit the lat/lon area you")
-    print("   want to draw the cells in.")
+  if((have_mesh_vertices.or.have_mesh_bounds).and..not.use_latlon_minmax) then
+    minlat = -1
+    maxlat = -1
+    minlon = -1
+    maxlon = -1
+    if(ncells.ge.500000) then
+      print("gsn_coordinates: warning: drawing a lat/lon mesh with a large number of cells")
+      print("   can take a very long time. You may want to consider subsetting the area")
+      print("   of the mesh using the gsnCoordsMinLat / gsnCoordsMaxLat and")
+      print("   gsnCoordsMinLon / gsnCoordsMaxLon attributes to limit the lat/lon area you")
+      print("   want to draw the cells in.")
+    end if
   end if
 
 ;---Some debug prints
@@ -6282,9 +6362,9 @@ begin
       if(min_vertices.eq.1) then
         print("  The minimum vertex index is 1. This likely means you have 1-based indexes.")
         if(mesh_indexes_one_based) then
-          print("  'gsnCoordsMeshVerticesOneBased' is set to True, so you should be good there.")
+          print("  'gsnCoordsMeshVerticesStartIndex' is set to 1, so you should be good there.")
         else
-          print("  'gsnCoordsMeshVerticesOneBased' is NOT set to True; set to False if mesh doesn't look correct.")
+          print("  'gsnCoordsMeshVerticesStartIndex' is NOT set to 1; set to 1 if mesh doesn't look correct.")
         end if
       end if
     end if
@@ -6296,52 +6376,16 @@ begin
       print("  Min/max lon bounds : " + min(lon_bnds) + "/" + max(lon_bnds))
     end if
   end if
-;
-; By looping through the vertices and only selecting the ones in 
-; our domain of interest, we greatly speed up the code because we
-; are not drawing polylines that fall outside our view area.
-;
+;---Get indexes into mesh array that falls in the area of interest.
   if(have_mesh_vertices) then
-    if(.not.use_latlon_minmax) then
-      index_mesh = ispan(0,ncells-1,1)
-    else
-      index_mesh = new(ncells,typeof(ncells))
-      if(mesh_indexes_one_based) then
-        do i=0,ncells-1
-          iv = vertices_on_cell(i,:)-1
-          if(any(lat_vert(iv).ge.minlat.and.\
-                 lat_vert(iv).le.maxlat.and.\
-                 lon_vert(iv).ge.minlon.and.\
-                 lon_vert(iv).le.maxlon)) then
-            index_mesh(i) = i
-          end if
-        end do
-      else
-        do i=0,ncells-1
-          if(any(lat_vert(vertices_on_cell(i,:)).ge.minlat.and.\
-                 lat_vert(vertices_on_cell(i,:)).le.maxlat.and.\
-                 lon_vert(vertices_on_cell(i,:)).ge.minlon.and.\
-                 lon_vert(vertices_on_cell(i,:)).le.maxlon)) then
-            index_mesh(i) = i
-          end if
-        end do
-      end if
-    end if
-  elseif(have_mesh_bounds) then
-    if(.not.use_latlon_minmax) then
-      index_mesh = ispan(0,ncells-1,1)
-    else
-      index_mesh = new(ncells,typeof(ncells))
-      do i=0,ncells-1
-        if(any(lat_bnds(i,:).ge.minlat.and.\
-               lat_bnds(i,:).le.maxlat.and.\
-               lon_bnds(i,:).ge.minlon.and.\
-               lon_bnds(i,:).le.maxlon)) then
-          index_mesh(i) = i
-        end if
-      end do
-    end if
+    index_mesh = calculate_mesh_indexes_from_vertices(lat_vert,lon_vert,vertices_on_cell,\
+                 mesh_indexes_one_based,use_latlon_minmax,minlat,maxlat,minlon,maxlon)
   end if
+  if(have_mesh_bounds) then
+    index_mesh = calculate_mesh_indexes_from_bounds(lat_bnds,lon_bnds,\
+                 use_latlon_minmax,minlat,maxlat,minlon,maxlon)
+  end if
+
   if(have_mesh_vertices.or.have_mesh_bounds) then
     if(use_latlon_minmax.and.all(ismissing(index_mesh))) then
       print("gsn_coordinates: Warning: couldn't find any mesh values inside")
