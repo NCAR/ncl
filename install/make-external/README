@@ -1,3 +1,8 @@
+build_external is the only file used here, to build the external
+packages of NCL. It's a mess as it's just a giant c-shell
+script that has blocks of builds for each external
+package.
+
 ----------------------------------------------------------------------
 cairo notes: There's a PNG bug with cairo 1.12.16 and earlier, so use
 cairo-1.10.2 instead.

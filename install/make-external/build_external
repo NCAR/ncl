@@ -244,28 +244,27 @@ echo "=================================================="
 # be in a directory called "netcdf-4.4.0".
 AUTOMAKE_DIR="automake-1.15"
 AUTOCONF_DIR="autoconf-2.69"
-CAIRO_DIR="cairo-1.14.12"
-# Had to add this in for NetCDF 4.5.0?
-CURL_DIR="curl-7.60.0"
+CAIRO_DIR="cairo-1.16.0"
+CURL_DIR="curl-7.64.0"
 ESMF_DIR="esmf-7.1.0r"
 EXPAT_DIR="expat-2.2.5"
 FREETYPE_DIR="freetype-2.9.1"
 G2CLIB_DIR="g2clib-1.6.0-patch"
-GDAL_DIR="gdal-2.2.4"
-GSL_DIR="gsl-2.4"
-HDF4_DIR="hdf-4.2.13"
-HDF5_DIR="hdf5-1.10.1"
+GDAL_DIR="gdal-2.4.0"
+GSL_DIR="gsl-2.5"
+HDF4_DIR="hdf-4.2.14"
+HDF5_DIR="hdf5-1.10.4"
 HDFEOS_DIR="hdfeos-2.20"
 HDFEOS5_DIR="hdfeos5-1.16"
 JASPER_DIR="jasper-1.900.1"
 JPEG_DIR="jpeg-9b"
 LIBTOOL_DIR="libtool-2.4.6"
-NETCDF4_DIR="netcdf-c-4.6.1"
+NETCDF4_DIR="netcdf-c-4.6.2"
 NETCDF4_FORTRAN_DIR="netcdf-fortran-4.4.4"
-PIXMAN_DIR="pixman-0.34.0"
+PIXMAN_DIR="pixman-0.38.0"
 PKGCONFIG_DIR="pkg-config-0.29.2"
-PNG_DIR="libpng-1.6.34"
-PROJ4_DIR="proj-5.1.0"
+PNG_DIR="libpng-1.6.36"
+PROJ4_DIR="proj-5.2.0"
 SZIP_DIR="szip-2.1.1"
 UDUNITS_DIR="udunits-2.2.26"
 VIS5DPLUS_DIR="vis5d+-1.3.0-beta"
@@ -764,7 +763,7 @@ if [ $INSTALL_JASPER ] ; then
     else
       echo "$JASPER_DIR build NOT successful."
     fi
-## Be sure to do this for Jasper V2 and greater
+## Use this for Jasper V2 and greater
 ##  unset SOURCE_DIR
 ##  unset BUILD_DIR
 ##  unset INSTALL_DIR
@@ -1024,12 +1023,14 @@ then
         make install
         make distclean
         make clean
+        unset LIBS
       fi
       echo "Cleaning $NETCDF4_DIR to do OPeNDAP build"
       export LIBS="-lhdf5_hl -lhdf5 -lsz -lz $CURL_LIBS"
       ./configure --enable-netcdf-4 --enable-dap --disable-dispatch --disable-shared --prefix\=$PREFIX  --enable-large-file-tests --enable-dap-remote-tests
       make all install
       make install
+      unset LIBS
     else
       if [ "$un" = "yellowstone_gnu483" ] || [ "$un" = "yellowstone_gnu472" ] || [ "$un" = "yellowstone_gnu447" ] || [ "$un" = "k9" ] ; then
         export LIBS="-lhdf5_hl -lhdf5 -lsz -lz -ldl"
@@ -1043,6 +1044,7 @@ then
         mv config.log config.log.nodap
         make distclean
         make clean
+        unset LIBS
       fi
       echo "Cleaning $NETCDF4_DIR to do OPeNDAP build"
       export LIBS="-lhdf5_hl -lhdf5 -lsz -lz $CURL_LIBS"
@@ -1087,6 +1089,8 @@ then
     export LIBS="-lnetcdf -lhdf5_hl -lhdf5 -lsz -lz $CURL_LIBS"
     ./configure --disable-shared --prefix\=$PREFIX
     make all install
+    make install
+    unset LIBS
     if [ $? ] ; then
       echo "$NETCDF4_FORTRAN_DIR build successful."
       if [ $CLEAN_AFTER ] ; then
@@ -1591,7 +1595,8 @@ if [ $INSTALL_ESMF ] ; then
       export ESMF_COMPILER=intel
       export ESMF_OS=Linux
     elif [ "$os" = "Darwin" ] ; then
-      export ESMF_COMPILER=gfortranclang
+#     export ESMF_COMPILER=gfortranclang
+      export ESMF_COMPILER=gfortran
       export ESMF_OS=Darwin
     else
       export ESMF_COMPILER=gfortran

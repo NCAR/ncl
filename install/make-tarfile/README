@@ -1,0 +1,3 @@
+"create_dist" is the only thing used in this directory, to create
+a binary tar file based on whatever NCARG_ROOT is set to. 
+
