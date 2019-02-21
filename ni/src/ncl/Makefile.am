@@ -266,4 +266,4 @@ NclTypelogical.c.specific NclTypelong.c.specific			\
 NclTypeobj.c.specific NclTypeshort.c.specific				\
 NclTypestring.c.specific NclTypeubyte.c.specific			\
 NclTypeuint64.c.specific NclTypeuint.c.specific				\
-NclTypeulong.c.specific NclTypeushort.c.specific
+NclTypeulong.c.specific NclTypeushort.c.specific MathFuncs.h NclTypebyte.h
