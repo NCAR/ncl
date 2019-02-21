@@ -4144,57 +4144,19 @@ end
 ;========================================
 undef("clmMonAnomTLL_RefPeriod")
 function clmMonAnomTLL_RefPeriod(x[*][*][*]:numeric, xClmRef[12][*][*]:numeric)
-local nmo, nmos, niRef, dimx, ntim, xClmRef, xClmAnom
+local xClmAnom
+; DEEP backward compatibility interface 
 begin
-  nmos  = 12
-  dimx  = dimsizes(x)
-  ntim  = dimx(0)
-  if (ntim%nmos .ne.0 ) then
-      print("clmMonAnomTLL_RefPeriod: number of months in source array [x] must be mod_12")
-      exit
-  end if
-
-  xClmAnom = x                                ; create anomaly  array with meta data
-
-  do nmo=0,nmos-1
-     xClmAnom(nmo::12,:,:) = x(nmo::12,:,:) \
-                           - conform(x(nmo::12,:,:), xClmRef(nmo,:,:), (/1,2/))
-  end do
-  if (isatt(x,"long_name")) then
-      xClmAnom@long_name = "Anomalies: "+x@long_name
-  else
-      xClmAnom@long_name = "Anomalies"
-  end if
-  xClmAnom@NCL_tag = "clmMonAnomTLL_RefPeriod"
-
+  xClmAnom = calcMonAnomTLL(x,xClmRef)   ; documented interface
   return(xClmAnom)
 end
 ;========================================
 undef("clmMonAnomTLLL_RefPeriod")
 function clmMonAnomTLLL_RefPeriod(x[*][*][*][*]:numeric, xClmRef[12][*][*][*]:numeric)
-local nmo, nmos, dimx, ntim, xClmRef, xClmAnom
+local xClmAnom
+; DEEP backward compatibility interface 
 begin
-  nmos = 12
-  dimx = dimsizes(x)
-  ntim = dimx(0)
-  if (ntim%nmos .ne.0 ) then
-      print("clmMonAnomTLLL_RefPeriod: number of months in source array [x] must be mod_12")
-      exit
-  end if
-
-  xClmAnom = x                                   ; create anomaly  array with meta data
-
-  do nmo=0,nmos-1
-     xClmAnom(nmo::12,:,:,:) = x(nmo::12,:,:,:) \
-                               - conform(x(nmo::12,:,:,:), xClmRef(nmo,:,:,:), (/1,2,3/))
-  end do
-  if (isatt(x,"long_name")) then
-      xClmAnom@long_name = "Anomalies: "+x@long_name
-  else
-      xClmAnom@long_name = "Anomalies"
-  end if
-  xClmAnom@NCL_tag = "clmMonAnomTLLL_RefPeriod"
-
+  xClmAnom = calcMonAnomTLLL(x,xClmRef)  ; documented interface
   return(xClmAnom)
 end
 ;========================================
