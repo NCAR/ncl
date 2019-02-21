@@ -11,6 +11,15 @@ index c70c4bebb..444fe1ded 100755
  
  #
  #   This "C" source code contains many uses of the C++
+@@ -28,8 +28,6 @@ INC=-I/usr/local/include/
+ 
+ CFLAGS=  -g -m64 $(INC) $(DEFS) -D__64BIT__
+ 
+-CC=gcc
+-
+ LIB=libgrib2c.a
+ ARFLAGS=
+ 
 diff --git a/external/yMakefile b/external/yMakefile
 index 31219f27f..25115da84 100644
 --- a/external/yMakefile

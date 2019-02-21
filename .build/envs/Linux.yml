@@ -1,10 +1,10 @@
 name: ncl_build
 channels:
-  - conda-forge/label/cf201901
+  - conda-forge
 dependencies:
-  - gcc
-  - toolchain_c_linux-64
-  - toolchain_fort_linux-64
+  - gcc_linux-64
+  - gxx_linux-64
+  - gfortran_linux-64
   - pkg-config
   - blas=1.1=openblas
   - bzip2
@@ -29,3 +29,5 @@ dependencies:
   - flex
   - xorg-libxaw
   - xorg-libxmu
+  - xorg-makedepend
+  - xorg-imake
