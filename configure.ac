@@ -237,6 +237,7 @@ AC_CONFIG_FILES([Makefile
                  common/src/bin/ncargpath/Makefile
                  common/src/fontcap/Makefile
                  common/src/graphcap/Makefile
+                 common/man/Makefile
                  external/Makefile
                  external/fftpack5_dp/Makefile
                  external/blas/Makefile

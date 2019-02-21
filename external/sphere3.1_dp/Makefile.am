@@ -1,8 +1,8 @@
 # This is an automake file for NCL
 # Ed Hartnett 9/5/18
 
-#lib_LTLIBARAIES = libsphere3_1_dp.la
 lib_LTLIBRARIES = libsphere3.1_dp.la
+
 libsphere3_1_dp_la_SOURCES = divec.f dives.f divgc.f divgs.f gaqd.f	\
 geo2math.f gradec.f grades.f gradgc.f gradgs.f hrfft.f idivec.f		\
 idives.f idivgc.f idivgs.f idvtec.f idvtes.f idvtgc.f idvtgs.f		\
