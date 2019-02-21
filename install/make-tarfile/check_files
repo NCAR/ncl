@@ -229,6 +229,7 @@ bin/ncl
 bin/ncl_convert2nc
 bin/ncl_filedump
 bin/ncl_grib2nc
+bin/ncl_quicklook
 bin/ng4ex
 bin/nhlcc
 bin/nhlf77
