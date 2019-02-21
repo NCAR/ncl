@@ -141,6 +141,9 @@ MathFuncs.c: MathFuncs.c.sed MathFuncs.h.sed MathTemplate.c.sed MathTemplate.h.s
 
 MathFuncs.h: MathFuncs.c.sed MathFuncs.h.sed MathTemplate2.c.sed MathTemplate.c.sed MathTemplate.h.sed math_funcs.sh
 	$(SHELL) math_funcs.sh
+	mkdir -p ncarg
+	mkdir -p ncarg/ncl
+	$(CP) MathFuncs.h ncarg/ncl
 
 NclTypedouble.h:	data_h.sh NclType.h.sed
 	$(SHELL) data_h.sh double
@@ -266,4 +269,8 @@ NclTypelogical.c.specific NclTypelong.c.specific			\
 NclTypeobj.c.specific NclTypeshort.c.specific				\
 NclTypestring.c.specific NclTypeubyte.c.specific			\
 NclTypeuint64.c.specific NclTypeuint.c.specific				\
-NclTypeulong.c.specific NclTypeushort.c.specific MathFuncs.h NclTypebyte.h
+NclTypeulong.c.specific NclTypeushort.c.specific MathFuncs.h		\
+NclTypebyte.h
+
+# Make clean must remove all created files.
+CLEANFILES = $(CREATED_FILES)

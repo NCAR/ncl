@@ -718,7 +718,6 @@ AC_CONFIG_FILES([Makefile
                  ni/src/ncl/ncarg/ncl/Keywords.h:ni/src/ncl/Keywords.h
                  ni/src/ncl/ncarg/ncl/ListSupport.h:ni/src/ncl/ListSupport.h
                  ni/src/ncl/ncarg/ncl/Machine.h:ni/src/ncl/Machine.h
-                 ni/src/ncl/ncarg/ncl/MathFuncs.h:ni/src/ncl/MathFuncs.h
                  ni/src/ncl/ncarg/ncl/mpi_128_gtb.h:ni/src/ncl/mpi_128_gtb.h
                  ni/src/ncl/ncarg/ncl/mpi_180_gtb.h:ni/src/ncl/mpi_180_gtb.h
                  ni/src/ncl/ncarg/ncl/mpi_181_gtb.h:ni/src/ncl/mpi_181_gtb.h
