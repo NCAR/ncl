@@ -768,11 +768,9 @@ AC_CONFIG_FILES([Makefile
                  ni/src/ncl/ncarg/ncl/NclVar.h:ni/src/ncl/NclVar.h
                  ni/src/ncl/ncarg/ncl/OpsFuncs.h:ni/src/ncl/OpsFuncs.h
                  ni/src/ncl/ncarg/ncl/OpsList.h:ni/src/ncl/OpsList.h
-                 ni/src/ncl/ncarg/ncl/parser.h:ni/src/ncl/parser.h
                  ni/src/ncl/ncarg/ncl/SrcTree.h:ni/src/ncl/SrcTree.h
                  ni/src/ncl/ncarg/ncl/Symbol.h:ni/src/ncl/Symbol.h
                  ni/src/ncl/ncarg/ncl/tables.h:ni/src/ncl/tables.h
-                 ni/src/ncl/ncarg/ncl/TypeSupport.h:ni/src/ncl/TypeSupport.h
                  ni/src/ncl/ncarg/ncl/VarSupport.h:ni/src/ncl/VarSupport.h
                  ni/src/ncl/Makefile
                  ni/src/nyacc/Makefile
