@@ -5,6 +5,10 @@ bin_PROGRAMS = ncl
 
 .NOTPARALLEL:
 
+# Create ncarg and ncarg/ncl directories.
+DIRS=ncarg ncarg/ncl
+$(shell mkdir -p $(DIRS))
+
 # Find gks.h.
 AM_CPPFLAGS = -I$(top_srcdir)/ncarg2d/src/libncarg_gks
 
@@ -117,6 +121,7 @@ scanner.c:	lex.yy.c
 
 parser.h:	y.tab.h
 	$(CP) y.tab.h parser.h
+	$(CP) $@ ncarg/ncl
 
 parser.c:	y.tab.c
 	$(CP) y.tab.c parser.c
@@ -129,6 +134,7 @@ y.tab.c y.tab.h: ncl.y
 
 TypeSupport.h: TypeSupport.h.sed TypeSupportMatTemplate.h.sed TypeSupportOpTemplate.h.sed TypeSupportMonoOpTemplate.h.sed
 	$(SHELL) type_support_h.sh
+	$(CP) $@ ncarg/ncl
 
 TypeSupport.c: TypeSupport.c.sed TypeSupportMatTemplate.c.sed TypeSupportOpTemplate.c.sed TypeSupportMonoOpTemplate.c.sed
 	$(SHELL) type_support_c.sh
@@ -141,102 +147,116 @@ MathFuncs.c: MathFuncs.c.sed MathFuncs.h.sed MathTemplate.c.sed MathTemplate.h.s
 
 MathFuncs.h: MathFuncs.c.sed MathFuncs.h.sed MathTemplate2.c.sed MathTemplate.c.sed MathTemplate.h.sed math_funcs.sh
 	$(SHELL) math_funcs.sh
-	mkdir -p ncarg
-	mkdir -p ncarg/ncl
-	$(CP) MathFuncs.h ncarg/ncl
+	$(CP) $@ ncarg/ncl
 
 NclTypedouble.h:	data_h.sh NclType.h.sed
 	$(SHELL) data_h.sh double
+	$(CP) $@ ncarg/ncl
 
 NclTypedouble.c:	double_data_c.sh op_funcs.sh NclTypedouble.c.specific $(NUM_OP_TMPL)
 	$(SHELL) double_data_c.sh
 
 NclTypefloat.h:	data_h.sh NclType.h.sed
 	$(SHELL) data_h.sh float
+	$(CP) $@ ncarg/ncl
 
 NclTypefloat.c:	float_data_c.sh op_funcs.sh NclTypefloat.c.specific $(NUM_OP_TMPL)
 	$(SHELL) float_data_c.sh
 
 NclTypeint.h:	data_h.sh NclType.h.sed
 	$(SHELL) data_h.sh int
+	$(CP) $@ ncarg/ncl
 
 NclTypeint.c:	int_data_c.sh op_funcs.sh NclTypeint.c.specific $(NUM_OP_TMPL)
 	$(SHELL) int_data_c.sh
 
 NclTypelong.h:	data_h.sh NclType.h.sed
 	$(SHELL) data_h.sh long
+	$(CP) $@ ncarg/ncl
 
 NclTypelong.c:	long_data_c.sh op_funcs.sh NclTypelong.c.specific $(NUM_OP_TMPL)
 	$(SHELL) long_data_c.sh
 
 NclTypeshort.h:	data_h.sh NclType.h.sed
 	$(SHELL) data_h.sh short
+	$(CP) $@ ncarg/ncl
 
 NclTypeshort.c:	short_data_c.sh op_funcs.sh NclTypeshort.c.specific $(NUM_OP_TMPL)
 	$(SHELL) short_data_c.sh
 
 NclTypelogical.h:	data_h.sh NclType.h.sed
 	$(SHELL) data_h.sh logical
+	$(CP) $@ ncarg/ncl
 
 NclTypelogical.c:	logical_data_c.sh op_funcs.sh NclTypelogical.c.specific $(NUM_OP_TMPL)
 	$(SHELL) logical_data_c.sh
 
 NclTypestring.h:	data_h.sh NclType.h.sed
 	$(SHELL) data_h.sh string
+	$(CP) $@ ncarg/ncl
 
 NclTypestring.c:	string_data_c.sh op_funcs.sh NclTypestring.c.specific $(STR_OP_TMPL)
 	$(SHELL) string_data_c.sh
 
 NclTypeobj.h:	data_h.sh NclType.h.sed
 	$(SHELL) data_h.sh obj
+	$(CP) $@ ncarg/ncl
 
 NclTypeobj.c:	obj_data_c.sh op_funcs.sh NclTypeobj.c.specific $(NUM_OP_TMPL)
 	$(SHELL) obj_data_c.sh
 
 NclTypechar.h:	data_h.sh NclType.h.sed
 	$(SHELL) data_h.sh char
+	$(CP) $@ ncarg/ncl
 
 NclTypechar.c:	char_data_c.sh op_funcs.sh NclTypechar.c.specific $(NUM_OP_TMPL)
 	$(SHELL) char_data_c.sh
 
 NclTypebyte.h:	data_h.sh NclType.h.sed
 	$(SHELL) data_h.sh byte
+	$(CP) $@ ncarg/ncl
 
 NclTypebyte.c:	byte_data_c.sh op_funcs.sh NclTypebyte.c.specific $(NUM_OP_TMPL)
 	$(SHELL) byte_data_c.sh
 
 NclTypeint64.h:	data_h.sh NclType.h.sed
 	$(SHELL) data_h.sh int64
+	$(CP) $@ ncarg/ncl
 
 NclTypeint64.c:	int64_data_c.sh op_funcs.sh NclTypeint64.c.specific $(NUM_OP_TMPL)
 	$(SHELL) int64_data_c.sh
 
 NclTypeushort.h:	data_h.sh NclType.h.sed
 	$(SHELL) data_h.sh ushort
+	$(CP) $@ ncarg/ncl
 
 NclTypeushort.c:	ushort_data_c.sh op_funcs.sh NclTypeushort.c.specific $(NUM_OP_TMPL)
 	$(SHELL) ushort_data_c.sh
 
 NclTypeuint.h:	data_h.sh NclType.h.sed
 	$(SHELL) data_h.sh uint
+	$(CP) $@ ncarg/ncl
 
 NclTypeuint.c:	uint_data_c.sh op_funcs.sh NclTypeuint.c.specific $(NUM_OP_TMPL)
 	$(SHELL) uint_data_c.sh
 
 NclTypeulong.h:	data_h.sh NclType.h.sed
 	$(SHELL) data_h.sh ulong
+	$(CP) $@ ncarg/ncl
 
 NclTypeulong.c:	ulong_data_c.sh op_funcs.sh NclTypeulong.c.specific $(NUM_OP_TMPL)
 	$(SHELL) ulong_data_c.sh
 
 NclTypeuint64.h:	data_h.sh NclType.h.sed
 	$(SHELL) data_h.sh uint64
+	$(CP) $@ ncarg/ncl
 
 NclTypeuint64.c:	uint64_data_c.sh op_funcs.sh NclTypeuint64.c.specific $(NUM_OP_TMPL)
 	$(SHELL) uint64_data_c.sh
 
 NclTypeubyte.h:	data_h.sh NclType.h.sed
 	$(SHELL) data_h.sh ubyte
+	$(CP) $@ ncarg/ncl
 
 NclTypeubyte.c:	ubyte_data_c.sh op_funcs.sh NclTypeubyte.c.specific $(NUM_OP_TMPL)
 	$(SHELL) ubyte_data_c.sh

@@ -765,24 +765,6 @@ AC_CONFIG_FILES([Makefile
                  ni/src/ncl/ncarg/ncl/NclOneDValCoordData.h:ni/src/ncl/NclOneDValCoordData.h
                  ni/src/ncl/ncarg/ncl/NclOptions.h:ni/src/ncl/NclOptions.h
                  ni/src/ncl/ncarg/ncl/NclProf.h:ni/src/ncl/NclProf.h
-                 ni/src/ncl/ncarg/ncl/NclTypebyte.h:ni/src/ncl/NclTypebyte.h
-                 ni/src/ncl/ncarg/ncl/NclTypechar.h:ni/src/ncl/NclTypechar.h
-                 ni/src/ncl/ncarg/ncl/NclTypedouble.h:ni/src/ncl/NclTypedouble.h
-                 ni/src/ncl/ncarg/ncl/NclTypefloat.h:ni/src/ncl/NclTypefloat.h
-                 ni/src/ncl/ncarg/ncl/NclType.h:ni/src/ncl/NclType.h
-                 ni/src/ncl/ncarg/ncl/NclTypeint64.h:ni/src/ncl/NclTypeint64.h
-                 ni/src/ncl/ncarg/ncl/NclTypeint.h:ni/src/ncl/NclTypeint.h
-                 ni/src/ncl/ncarg/ncl/NclTypelist.h:ni/src/ncl/NclTypelist.h
-                 ni/src/ncl/ncarg/ncl/NclTypelogical.h:ni/src/ncl/NclTypelogical.h
-                 ni/src/ncl/ncarg/ncl/NclTypelong.h:ni/src/ncl/NclTypelong.h
-                 ni/src/ncl/ncarg/ncl/NclTypeobj.h:ni/src/ncl/NclTypeobj.h
-                 ni/src/ncl/ncarg/ncl/NclTypeshort.h:ni/src/ncl/NclTypeshort.h
-                 ni/src/ncl/ncarg/ncl/NclTypestring.h:ni/src/ncl/NclTypestring.h
-                 ni/src/ncl/ncarg/ncl/NclTypeubyte.h:ni/src/ncl/NclTypeubyte.h
-                 ni/src/ncl/ncarg/ncl/NclTypeuint64.h:ni/src/ncl/NclTypeuint64.h
-                 ni/src/ncl/ncarg/ncl/NclTypeuint.h:ni/src/ncl/NclTypeuint.h
-                 ni/src/ncl/ncarg/ncl/NclTypeulong.h:ni/src/ncl/NclTypeulong.h
-                 ni/src/ncl/ncarg/ncl/NclTypeushort.h:ni/src/ncl/NclTypeushort.h
                  ni/src/ncl/ncarg/ncl/NclVar.h:ni/src/ncl/NclVar.h
                  ni/src/ncl/ncarg/ncl/OpsFuncs.h:ni/src/ncl/OpsFuncs.h
                  ni/src/ncl/ncarg/ncl/OpsList.h:ni/src/ncl/OpsList.h
