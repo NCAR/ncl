@@ -21,7 +21,20 @@ AM_CPPFLAGS += -I$(top_srcdir)/ncarg2d/src/libncarg
 # Find hlu.h.
 AM_CPPFLAGS += -I$(top_srcdir)/ni/src/lib/hlu
 
+# Link to hlu library.
 AM_LDFLAGS = ${top_builddir}/ni/src/lib/hlu/libhlu.la
+
+# Link to ncarg library.
+AM_LDFLAGS += ${top_builddir}/ncarg2d/src/libncarg/libncarg.la
+
+# Link to ncarg c library.
+AM_LDFLAGS += ${top_builddir}/common/src/libncarg_c/libncarg_c.la
+
+# Link to ncarg gks library.
+AM_LDFLAGS += ${top_builddir}/ncarg2d/src/libncarg_gks/libncarg_gks.la
+
+# Link to ngmath library.
+AM_LDFLAGS += ${top_builddir}/ngmath/src/lib/gridpack/libngmath.la
 
 CREATED_FILES = parser.h TypeSupport.h TypeSupport.c			\
 NclMultiDValData.c MathFuncs.c MathFuncs.h NclTypedouble.h		\
@@ -52,7 +65,8 @@ NclNewHDFEOS5.c NclOGR.c NclOneDValCoordData.c NclProf.c NclTime.c	\
 NclType.c NclTypelist.c NclUserFileFormStub.c NclUserFuncStub.c		\
 NclUserHLUStub.c NclVar.c openclAddFuncs.c openclAddProto.c		\
 OpsFuncs.c PrintToken.c SrcTree.c subprocess.c Symbol.c sysunix.c	\
-Translate.c userAddFuncs.c userAddProto.c VarSupport.c yywrap.c
+Translate.c userAddFuncs.c userAddProto.c VarSupport.c yywrap.c		\
+$(CREATED_FILES)
 
 include_HEADERS = AdvancedFileSupport.h ApiRecords.h AttSupport.h	\
 ccmhdr.h cptec_254_gtb.h DataSupport.h date.h defs.h dwd_002_gtb.h	\
