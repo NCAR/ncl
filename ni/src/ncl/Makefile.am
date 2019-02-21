@@ -17,6 +17,8 @@ AM_CPPFLAGS += -I$(top_srcdir)/ncarg2d/src/libncarg
 # Find hlu.h.
 AM_CPPFLAGS += -I$(top_srcdir)/ni/src/lib/hlu
 
+AM_LDFLAGS = ${top_builddir}/ni/src/lib/hlu/libhlu.la
+
 CREATED_FILES = parser.h TypeSupport.h TypeSupport.c			\
 NclMultiDValData.c MathFuncs.c MathFuncs.h NclTypedouble.h		\
 NclTypedouble.c NclTypefloat.h NclTypefloat.c NclTypeint.h		\

@@ -20,5 +20,3 @@
 #	Description:	yMakefile for external libraries and software
 SUBDIRS = blas lapack sphere3.1_dp  fftpack5_dp
 #define IHaveSubdirs
-
-
