@@ -2245,3 +2245,228 @@ begin
    x       = x*conv(units_in_row, units_out_col)
    x@units = units_col(units_out_col)
 end
+;========================================================================
+undef("refevt_hamon_mwbm")
+function refevt_hamon_mwbm(tmean:numeric, daylight:numeric, iounit[2]:integer)
+;
+; Use the simple Hamon method to derive reference evapotranspiration (here, evt)
+; The input arrays (tmean and daylight) must be the same size (conform).
+;
+; This is essentially the same as 'refevt_hamon'
+; A simple comparison resulted in "almost" identical numbers:   
+;       refevt_hamon= 4.02 [4.015283],     refevt_hamon_mwbm=3.989  [3.988279] 
+; Actually, this is (almost) the original formulation by Hamon (1960).
+; The only difference is that the original Hamon formulation returned mm/month while
+;     this function returns mm/day or equivalent.
+
+; Nomenclature:
+;   tmean         - Mean temperature at 2-meters (reference height)
+;   daylight      - effective number of hours of sunlight per day 
+;                   eg: with (say) 30% cloudy: (1-0.3)*max_daylight_hours
+;   iounit        - option for input [iounit(0), iounit(1] and returned units [iounit(2)]
+;                   iounit(0) =0: degC          ;  units: tmean
+;                             =1: degK    
+;                             =2: deg farenheit
+; 
+;                   iounit(1) =0: mm/day        ;  output (returned) units
+;                             =1: MJ/(M2-day)
+;                             =2: W/m2
+;                             =3: cal/(cm2-day)
+;
+; Reference: Hamon, W.R. (1961)
+;            Estimating Potential Evaportranspiration
+;            Journal of the Hydraulics Division
+;            Proceedings of the American Society of Civil Engineers, v87 pp 107-120.
+;            https://dspace.mit.edu/bitstream/handle/1721.1/79479/32827649-MIT.pdf?sequence=2
+;
+;            Gregory J. McCabe and Steven L. Markstro (2007)
+;            A Monthly Water-Balance Model Driven By A Graphical User Interface
+;            https://pubs.usgs.gov/of/2007/1088/pdf/of07-1088_508.pdf
+;            Equations: 7 & 8
+;
+local dimt, dimd, rankt, rankd, conu, evt, tk0, tCrit, es, TMEAN, nday, wt, D
+begin
+
+; error check
+
+   if (.not.(isscalar(tmean) .and. isscalar(daylight)) ) then
+       dimt   = dimsizes(tmean)
+       dimd   = dimsizes(daylight)
+       rankt  = dimsizes(dimt)
+       rankd  = dimsizes(dimd)
+    
+       if (rankt.ne.rankd) then
+           print("refevt_hamon_mwbm: tmean and daylight must have the same rank")
+           print("                   conform or conform_dims could be used prior to call")
+           exit
+       end if
+    
+       if (.not.all(dimt.eq.dimd)) then
+           print("refevt_hamon_mwbm: tmean must be the same shape and size")
+           print("                   conform or conform_dims could be used prior to call")
+           exit
+       end if
+   end if
+
+   if (any(iounit.lt.0) .or. any(iounit.gt.3)) then               ; iounit error check
+       if (iounit(0).lt.0 .or. iounit(0).gt.2) then             
+           print("refevt_hamon_mwbm: unrecognized iounit(0) argument: iounit(0)="+iounit(0))
+       end if
+       if (iounit(1).lt.0 .or. iounit(1).gt.3) then               
+           print("refevt_hamon_mwbm: unrecognized iounit(1) argument: iounit(1)="+iounit(1))
+       end if
+       exit
+   end if
+
+   if (isatt(tmean,"_FillValue")) then
+       tFill = tmean@_FillValue
+   else
+       tFill = totype(-999, typeof(tmean))
+   end if
+
+   nday  = 1                                  ; original 'nday=days_in_month'
+   D     = daylight/12.0                      ; mean daylight hours for month; units of 12 hours
+
+   tk0   = 273.16                             ; degK 
+   tCrit = 0.0                                ; degC
+
+; Eqns 7 & 8 of the McCabe & Markstrom reference
+
+   if (iounit(0).eq.0) then
+       wt  = 0.0495*exp(0.062*tmean)          ; 4.95*exp(0.062*tmean)/100
+       evt = where(tmean.gt.tCrit  \          ; standard formula
+                  ,13.97*nday*D^2*wt, 0)
+   else
+       if (iounit(0).eq.1) then
+           TMEAN = tmean-tk0                  ; degK -> degC
+       else                   
+           TMEAN = (tmean-32)*0.5555556       ; F -> degC
+       end if
+       wt  = 0.0495*exp(0.062*TMEAN)          ; 4.95*exp(0.062*tmean)/100
+       evt = where(TMEAN.gt.tCrit  \          ; standard formula
+                  ,13.97*nday*D^2*wt, 0)
+   end if
+
+   evt@long_name = "reference evapotranspiration: Hamon: MWBM"
+   evt@units     = "mm/day"
+
+   if (iounit(1).eq.1) then            ; 1 mm/day = 2.45 MJ/(m2-day)
+       evt = (/ evt*2.45098 /)         ;   mm/day => MJ/(m2-day)
+       evt@units = "MJ/(m2-day)"
+   end if
+
+   if (iounit(1).eq.2) then            ; 1 mm/day = 28.4 W/m2
+       evt = (/ evt*28.4 /)            ;   mm/day => W/m2
+       evt@units = "W/m2"
+   end if
+
+   if (iounit(1).eq.3) then            ; 1 mm/day =  58.5 cal/(cm2-day)
+       evt = (/ evt*58.5 /)            ;   mm/day => cal/(cm2-day)  
+       evt@units = "cal/(cm2-day)"
+   end if
+
+   if (.not.isatt(evt,"_FillValue") .and. any(evt.eq.tFill) ) then
+       evt@_FillValue = tFill
+   end if
+
+   copy_VarCoords(tmean, evt)
+   return(evt)
+end
+;========================================================================
+undef("rain_snow_mwbm")
+function rain_snow_mwbm(prc:numeric, tmp:numeric \
+                       ,train:numeric, tsnow:numeric)
+;
+; mwbm - Monthly Water-Balance Model (USGS)
+;
+; A Monthly Water-Balance Model Driven By a Graphical User Interface
+; https://pubs.usgs.gov/of/2007/1088/pdf/of07-1088_508.pdf
+;
+; tmp: degC ; train=3.3C; tsnow=-10C are typical values
+;
+; These values were determined from previous model calibrations 
+; during testing and evaluation for streamflow-gauge sites in 
+; the conterminous United State
+;
+; Useful values for Tsnow appear to vary by elevation. 
+; For elevations below 1,000 m, Tsnow= -10°C seems 
+; to work best, and for locations above 1,000 m Tsnow= -1°C 
+; is more appropriate.
+; 
+local rank_prc, rank_tmp, dim_prc, dim_tmp, prain, psnow
+begin
+  dim_prc    = dimsizes(prc)
+  dim_tmp    = dimsizes(tmp)
+  rank_prc   = dimsizes(dim_prc)
+  rank_tmp   = dimsizes(dim_tmp)
+  if (rank_prc.ne.rank_tmp) then
+      print("rain_snow_mwbm: prc and tmp have different ranks:")
+      print("                rank_prc="+rank_prc)
+      print("                rank_tmp="+rank_tmp)
+      exit
+  end if
+  if (.not.all(dim_prc.eq.dim_tmp)) then
+      print("rain_snow_mwbm: prc and tmp have different sizes:")
+      print("                dim_prc="+dim_prc+"   dim_tmp="+dim_tmp)
+      exit
+  end if
+
+; Scalar train or tsnow are conformable to any array
+; Otherwise, arrays must conform
+
+  if (.not.isscalar(train)) then
+      dim_train    = dimsizes(train)
+      rank_train   = dimsizes(dim_train)
+      if (rank_train.ne.rank_tmp) then
+          print("rain_snow_mwbm: train and tmp have different ranks:")
+          print("                rank_tmp="+rank_tmp)
+          print("                rank_train="+rank_train)
+          exit
+      end if
+      if (.not.all(dim_train.eq.dim_tmp)) then
+          print("rain_snow_mwbm: train and tmp have different sizes:")
+          print("                dim_train="+dim_train+"   dim_tmp="+dim_tmp)
+          exit
+      end if
+  end if
+
+  if (.not.isscalar(tsnow)) then
+      dim_tsnow    = dimsizes(tsnow)
+      rank_tsnow   = dimsizes(dim_tsnow)
+      if (rank_tsnow.ne.rank_tmp) then
+          print("rain_snow_mwbm: tsnow and tmp have different ranks:")
+          print("                rank_tmp="+rank_tmp)
+          print("                rank_tsnow="+rank_tsnow)
+          exit
+      end if
+      if (.not.all(dim_tsnow.eq.dim_tmp)) then
+          print("rain_snow_mwbm: tsnow and tmp have different sizes:")
+          print("                dim_tsnow="+dim_tsnow+"   dim_tmp="+dim_tmp)
+          exit
+      end if
+  end if
+
+  prain = prc       ; create return arrays; keep meta data
+  psnow = prc  
+
+  if (all(tmp.ge.train)) then
+      psnow = (/ 0 /)
+  elseif (all(tmp.le.tsnow)) then
+      prain = (/ 0 /)
+  else        
+      psnow = where(tmp.le.tsnow, prc,  0 )
+      psnow = where(tmp.gt.tsnow .and. tmp.lt.train  \
+                   ,prc*((train-tmp)/(train-tsnow)),psnow)
+      prain = prc-psnow
+  end if
+
+  prain@long_name = "prc: rain partition"
+  prain@url       = "https://pubs.usgs.gov/of/2007/1088/pdf/of07-1088_508.pdf"
+  prain@mwbm      = "Monthly Water-Balance Model"
+
+  psnow@long_name = "prc: snow partition"
+  psnow@url       = "https://pubs.usgs.gov/of/2007/1088/pdf/of07-1088_508.pdf"
+  psnow@mwbm      = "Monthly Water-Balance Model"
+
+  return([/prain, psnow /])  ; return as list
+end

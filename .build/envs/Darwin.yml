@@ -1,10 +1,10 @@
 name: ncl_build
 channels:
-  - conda-forge/label/cf201901
+  - conda-forge
 dependencies:
-  - gcc
-  - toolchain_c_osx-64
-  - toolchain_fort_osx-64
+  - clang_osx-64
+  - clangcxx_osx-64
+  - gfortran_osx-64
   - pkg-config
   - blas=1.1=openblas
   - bzip2

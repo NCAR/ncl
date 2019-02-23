@@ -26,9 +26,9 @@ jobs:
           - v1-dependencies-{{ checksum ".build/envs/Linux.yml" }}-{{ checksum ".circleci/config.yml" }}
 
       - run:
-          name: install csh
+          name: install csh and byacc
           command: |
-            sudo apt install tcsh
+            sudo apt install tcsh byacc
 
       - run:
           name: install conda and dependencies
@@ -41,7 +41,7 @@ jobs:
             bash $MINICONDA_FILE -b
             source ~/miniconda3/bin/activate root
             conda env create -f .build/envs/Linux.yml
-            conda install -n ncl_build -c conda-forge imagemagick esmf
+            conda install -n ncl_build -c conda-forge imagemagick esmf libgdal=2.4
 
       - save_cache:
           paths:

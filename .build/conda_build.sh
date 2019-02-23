@@ -12,13 +12,17 @@ source activate ncl_build 2>/dev/null || conda activate ncl_build
 
 
 export PREFIX="${CONDA_PREFIX}"
-export CC="gcc"
 export CXXFLAGS="-fPIC $CXXFLAGS"
 export LDFLAGS="-L${PREFIX}/lib $LDFLAGS"
 export CPPFLAGS="-I${PREFIX}/include $CPPFLAGS"
 export CFLAGS="-I${PREFIX}/include $CFLAGS"
 
 if [ "$(uname)" = "Darwin" ]; then
+    export CC="${CLANG}"
+    export CPP="${CLANG} -E -traditional"
+    export CXX="${CLANG}++"
+    export FC
+
     if [ -d "/opt/X11" ]; then
         x11_lib="-L/opt/X11/lib"
         x11_inc="-I/opt/X11/include -I/opt/X11/include/freetype2"
@@ -33,6 +37,11 @@ if [ "$(uname)" = "Darwin" ]; then
     LDFLAGS="-headerpad_max_install_names $LDFLAGS"
     conf_file=config/Darwin_Intel
 elif [ "$(uname)" = "Linux" ]; then
+    export CC="$GCC"
+    export CPP="${CPP} -traditional"
+    export CXX="$GXX"
+    export FC
+
     conf_file=config/LINUX
 fi
 
@@ -43,14 +52,15 @@ export EXTRA_INCLUDES=-I${grib2_dir}
 
 # fix malformed sed subsitutions
 sed -e 's/+/|/g' -i.backup ni/src/scripts/yMakefile
+sed -e 's/+/|/g' -i.backup ni/src/ncl/yMakefile
+
 
 # fix path to cpp in ymake -- we should fix this in NCL
-sed -e "s|^\(  set cpp = \)/lib/cpp$|\1cpp|g" -i.backup config/ymake
+sed -e "s|^\(  set cpp = \)/lib/cpp$|\1'$CPP'|g" -i.backup config/ymake
 
-# fix path to cpp in $conf_file
-sed -e "s|/usr/bin/cpp|cpp|g" -i.backup ${conf_file}
 
-sed -e "s|\${PREFIX}|${PREFIX}|g" -e "s|\${x11_inc}|${x11_inc}|g" -e "s|\${x11_lib}|${x11_lib}|g" -e "s|\${CAIROLIB}|${CAIROLIB}|g" -e "s|\${CAIROLIBUSER}|${CAIROLIBUSER}|g" -e "s|\${grib2_dir}|${grib2_dir}|g" "${RECIPE_DIR}/Site.local.template" > config/Site.local
+# generate Site.local
+sed -e "s|\${PREFIX}|${PREFIX}|g" -e "s|\${x11_inc}|${x11_inc}|g" -e "s|\${x11_lib}|${x11_lib}|g" -e "s|\${CAIROLIB}|${CAIROLIB}|g" -e "s|\${CAIROLIBUSER}|${CAIROLIBUSER}|g" -e "s|\${grib2_dir}|${grib2_dir}|g" -e "s|\${CC}|${CC}|g" -e "s|\${FC}|${FC}|g" -e "s|\${CPP}|${CPP}|g" -e "s|\${CXX}|${CXX}|g" -e "s|\${LD}|${LD}|g" "${RECIPE_DIR}/Site.local.template" > config/Site.local
 
 patch -N -p1 < ${RECIPE_DIR}/grib2.patch >/dev/null 2>&1
 

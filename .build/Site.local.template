@@ -21,4 +21,10 @@
 ${CAIROLIB}
 ${CAIROLIBUSER}
 
+#define CCompiler   "${CC}"
+#define FCompiler   "${FC}"
+#define CxxCompiler "${CXX}"
+#define CppCommand  "${CPP}"
+#define LdCommand   "${LD}"
+
 #endif /* SecondSite */
