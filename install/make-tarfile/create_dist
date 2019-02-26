@@ -1,5 +1,7 @@
 #!/bin/csh -f
 #
+# THIS SCRIPT IS OLD, DON'T USE IT!
+#
 #   $Id: create_dist,v 1.21.4.1 2010-05-03 03:14:30 haley Exp $
 #
 #######################################################################
@@ -84,6 +86,11 @@
 #
 # set echo verbose timestamp
 #
+
+echo "Don't use this script! It's old."
+echo "See test_and_make_tarfile.py instead."
+exit
+
 set rootdir     = $NCARG_ROOT
 set sys_version = `uname -r`
 set sys         = `uname -m`

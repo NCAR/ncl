@@ -1,5 +1,8 @@
 # 
-# Mary used this script to:
+# This is the script used to tar up an NCL binary release for a particular
+# system. See near the bottom of the script where it says 
+# "Modify these lines if needed."
+#
 # - creating opendap and non-opendap versions of ncl, which requires
 #   you have a Site.local.dap and Site.local.nodap file in $NCARG.
 # - testing both versions
@@ -521,21 +524,48 @@ def check_python_version():
 #----------------------------------------------------------------------
 check_python_version()
 
-version   = '6.6.0'
+#----------------------------------------------------------------------
+# Modify these lines if needed.
+#----------------------------------------------------------------------
+version   = '6.6.1'
 mach_name = 'cisl-molalla'
 mach_type = 'MacOS_10.13'
 bit_str   = '64bit'
 comp_str  = 'gnu710'
+
+# This is the root directory of the NCL source tree
 src_root  = '/Users/haley/src/ncl-trunk-clean'
+
+# This is the root directory of the NCL test directory
 nclt_root = '/Users/haley/ncargtest'
-ncl_root  = '/Users/haley/dev/clean'
-ext_root  = '/Users/haley/dev/external'
+
+# This should be whatever $NCARG_ROOT is.
+ncl_root  = '/Users/haley/dev/clean'      
+
+# Directory where external software (netcdf, gdal) is installed
+ext_root  = '/Users/haley/dev/external'   
+
+#----------------------------------------------------------------------
+# End of lines to modify.
+#----------------------------------------------------------------------
 cur_dir   = os.getcwd()
 
+# Create a temporary directory for running some tests and copying the tar files.
 tmp_test_dir = create_test_directory(version,mach_name,comp_str)
+
+# Set environment variables needed.
 set_ncl_environment(ncl_root,src_root,nclt_root)
 
-# First create a non-opendap enabled NCL and test it.
+#----------------------------------------------------------------------
+# 26 Feb 2019 note
+#
+# The two opendap sections below are for building both a non-OPeNDAP
+# and OPeNDAP versions of NCL. This requires two versions of the NetCDF
+# library be built and installed to $ext_root/nodap/{lib,include}.
+#
+# Talk to Mary if you don't understand this code. She didn't have time
+# to fully document it before she retired.
+#----------------------------------------------------------------------
 opendap = False
 make_ncl(src_root,opendap,quiet=False)
 copy_esmf_exec(ext_root,opendap)
@@ -544,7 +574,6 @@ nondap_tarfile = create_tarfile(ncl_root,tmp_test_dir,version,mach_type,
 test_ncl_tarfile(src_root,nclt_root,tmp_test_dir,version,mach_name,mach_type,
                  comp_str,nondap_tarfile,opendap,minimal=True,do_large=False)
 
-# Second create an opendap enabled NCL and test it.
 opendap = True
 make_ncl(src_root,opendap,quiet=False)
 copy_esmf_exec(ext_root,opendap)
