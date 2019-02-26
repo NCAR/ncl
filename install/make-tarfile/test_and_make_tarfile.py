@@ -501,7 +501,7 @@ def copy_esmf_exec(external_root,opendap):
   copyfile(src_file,dst_file)
 
 def scp_ncl_tarfiles_to_super(tar_list,version):
-  remote_dir = "/glade/p/cisl/vast/ncldev/src/tarfiles/dist/ncl/" + version
+  remote_dir = "/glade/p/cisl/vast/ncldev/src/software_releases/ncl/" + version
   if(mach_name == "geyser"):
     for file in tar_list:
       cmd = "cp %s %s" % (file,remote_dir)
