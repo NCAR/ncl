@@ -5794,7 +5794,7 @@ begin
     delete(lat_bnds_2d)
     lon_bnds_1d = ndtooned(lon_bnds_2d)
     delete(lon_bnds_2d)
-    ii = ind(.not.missing(lat_bnds_1d))
+    ii = ind(.not.ismissing(lat_bnds_1d))
     lat_bnds = lat_bnds_1d(ii)
     delete(lat_bnds_1d)
     lon_bnds = lon_bnds_1d(ii)
@@ -5824,12 +5824,12 @@ begin
         lon_bnds_2d(i,nedges(i)) = lon_bnds_2d(i,0)
       end do
     end if
-    lat_bnds_1d = ndtooned(lat_bnds_2d)
+    lat_bnds = ndtooned(lat_bnds_2d)
     delete(lat_bnds_2d)
-    lon_bnds_1d = ndtooned(lon_bnds_2d)
+    lon_bnds = ndtooned(lon_bnds_2d)
     delete(lon_bnds_2d)
   end if
-  return([/lat_bnds_1d,lon_bnds_1d/])
+  return([/lat_bnds,lon_bnds/])
 end
 
 ;***********************************************************************
