@@ -663,3 +663,45 @@ MakeNcl: MakeNcl.csh Makefile
 	-e 's+SED_INCPATH+$(INCPATH)+' \
 	<MakeNcl.csh > MakeNcl
 
+#
+#      $Id$
+#
+###########################################################################
+#			   Copyright (C)  1993			 	  #
+#	     University Corporation for Atmospheric Research		  #
+#			   All Rights Reserved				  #
+#									  #
+###########################################################################
+#
+#	File:		yMakefile for NCL
+#
+#	Author:		Ethan Alpert
+#				National Center for Atmospheric Research
+#				POB 3000, Boulder, Colorado
+#
+#	Date:		$Date$
+#
+#	Description:	
+#
+#	Usage:
+#
+#	Environment:
+#
+#	Files:
+#
+#
+#	Options:
+
+MYBIN		=	ncl
+#ifdef JIRA1530
+MYXQFBIN	=	ncl.xq.fix
+#endif
+MYLIB		=	libncl
+MYLIB_API	=	libnclapi
+YACC		=	$(NYACC)
+
+#if defined(Darwin)
+BuiltInFuncs.o: BuiltInFuncs.c
+	$(CC) -c BuiltInFuncs.c $(ALLDEFINES) $(CCOPTIONS)
+#endif
+
