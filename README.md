@@ -20,7 +20,7 @@ NCAR has made the decision to adopt Python as the scripting language platform of
 
 # Installation
 
-The current version of NCL is [6.6.1](http://www.ncl.ucar.edu/current_release.shtml), which can be installed via [conda](http://www.ncl.ucar.edu/Download/conda.shtml).
+The current version of NCL is [6.6.2](http://www.ncl.ucar.edu/current_release.shtml), which can be installed via [conda](http://www.ncl.ucar.edu/Download/conda.shtml).
 
 ```
 conda create -n ncl_stable -c conda-forge ncl
@@ -67,6 +67,6 @@ Use the GitHub [issue tracker](https://github.com/NCAR/ncl/issues) to submit a b
 
 Cite NCL using the following text:
 
-<> The NCAR Command Language (Version 6.6.1) [Software]. (2019). Boulder, Colorado: UCAR/NCAR/CISL/TDD. http://dx.doi.org/10.5065/D6WD3XH5
+<> The NCAR Command Language (Version 6.6.2) [Software]. (2019). Boulder, Colorado: UCAR/NCAR/CISL/TDD. http://dx.doi.org/10.5065/D6WD3XH5
 
 Update the NCL version and year as appropriate.
