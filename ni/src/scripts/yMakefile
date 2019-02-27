@@ -2,8 +2,8 @@
 #	$Id: yMakefile,v 1.16 2010-04-02 17:52:38 haley Exp $
 #
 
-SCRIPTS1 = nhlcc nhlf77 nhlf90 ng4ex ncl_quicklook
-SCRIPTS2 = WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc scrip_check_input
+SCRIPTS1 = nhlcc nhlf77 nhlf90 ng4ex
+SCRIPTS2 = WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc scrip_check_input ncl_quicklook
 
 MAN1 = ng4ex nhlcc nhlf77 nhlf90
 
