@@ -1,0 +1,4 @@
+# This is an automake file for NCL.
+# Ed Hartnett 9/4/18
+
+man3_MANS = gactm.m gacwk.m gca.m gclks.m gclrwk.m gclsg.m gclwk.m gcrsg.m gcsgwk.m gdawk.m gdsg.m gesc.m gevtm.m gfa.m gks.m gopks.m gopwk.m gpl.m gpm.m gqasf.m gqchh.m gqchsp.m gqchup.m gqchxp.m gqclip.m gqcntn.m gqcr.m gqfaci.m gqfais.m gqfasi.m gqln.m gqlwsc.m gqmk.m gqmksc.m gqmntn.m gqnt.m gqopsg.m gqops.m gqplci.m gqpmci.m gqsgus.m gqtxal.m gqtxci.m gqtxfp.m gqtxp.m gsasf.m gschh.m gschsp.m gschup.m gschxp.m gsclip.m gscr.m gselnt.m gsfaci.m gsfais.m gsfasi.m gsln.m gslwsc.m gsmk.m gsmksc.m gsplci.m gspmci.m gssgt.m gstxal.m gstxci.m gstxfp.m gstxp.m gsvp.m gswn.m gtx.m guwk.m 

@@ -1,0 +1,4 @@
+# This is an automake file for NCL
+# Ed Hartnett 9/5/18
+
+man3_MANS = c_natgridd.m c_natgrids.m c_nngetaspectd.m c_nngetaspects.m c_nngetc.m c_nngeti.m c_nngetrd.m c_nngetr.m c_nngetsloped.m c_nngetslopes.m c_nnpntd.m c_nnpntendd.m c_nnpntend.m c_nnpntinitd.m c_nnpntinits.m c_nnpnts.m c_nnsetc.m c_nnseti.m c_nnsetrd.m c_nnsetr.m natgridd.m natgrid_errors.m natgrid.m natgrid_params.m natgrids.m nnalg.m nngetaspectd.m nngetaspects.m nngetc.m nngeti.m nngetrd.m nngetr.m nngetsloped.m nngetslopes.m nnpntd.m nnpntendd.m nnpntend.m nnpntinitd.m nnpntinits.m nnpnts.m nnsetc.m nnseti.m nnsetrd.m nnsetr.m 

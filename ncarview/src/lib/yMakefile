@@ -7,4 +7,4 @@
 
 #define IHaveSubdirs
 
-SUBDIRS = libcgm libncarg_ras libctrans libictrans 
+SUBDIRS = libcgm libncarg_ras libctrans libictrans
