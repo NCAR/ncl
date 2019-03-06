@@ -23,21 +23,21 @@ triple2grid.f triple2grid2d.f trssphx.f trvsphx.f ttest.f upsl_dp.f	\
 varimax_dp.f vibeta_dp.f vinth2p_dp.f vintp2p_ecmwf.f vinth2p_ecmwf.f	\
 volAve.f volRmse.f wavelet.f writematrix.f wrunave_dp.f zon_mpsi.f	\
 zregr.f z2geouv_dp.f gendat.f eof_scripps.f p2hyo.f cdft_dp.f		\
-stndAtmUS76_dp.f rip_cape.f wrf_user.f lspoly.f wrf_bint3d.f		\
+stndAtmUS76_dp.f rip_cape.f90 wrf_user.f90 lspoly.f wrf_bint3d.f		\
 erf_sub.f dimavgwgt.f dimsumwgt.f wgtVertAvg_beta.f student_tprob.f	\
 dpres_plevel_dp.f fill_msg_grid.f sg_tools.f dcolconv.f cfft_driver.f	\
 wk_smooth121.f conservLinInt_2d_ncl.f dz_height.f covcorm_driver.f	\
-kron_square.f wrf_user_dbz.f wrf_pvo.f wrf_user_latlon_routines.f	\
-vpower.f VSPCORR.f MOC.loops.f eqthecalc.f bindata.f binavg.f		\
+kron_square.f wrf_user_dbz.f90 wrf_pvo.f90 wrf_user_latlon_routines.f90	\
+vpower.f VSPCORR.f MOC.loops.f eqthecalc.f90 bindata.f binavg.f		\
 stattrop_dp.f xy2pdf77.f vinth2p_ecmwf_nodes_dp.f vinth2p_nodes_dp.f	\
 obsp1_mult_time_dp.f area_conremap.f varimax_JiangLing_dp.f		\
-wrf_relhl.f calc_uh.f90 runknt.f gamma_interface.f			\
+wrf_relhl.f90 calc_uh.f90 runknt.f gamma_interface.f			\
 dtrend_lsq_msg_dp.f gamfitd3.f spid.f xy1pdf77.f potmp_dpth2pres.f	\
 ocean.f plotgrids_var.f90 covcorm_xy_matrix_ncl.f dgeevx_interface.f	\
 plotfmt_open.f90 plotfmt_rdhead.f90 plotfmt_rddata.f spareapoly.f	\
-KolmSmir2.f slatec_DPOLFT.f wrf_rip_phys_routines.f accumrun.f		\
+KolmSmir2.f slatec_DPOLFT.f wrf_rip_phys_routines.f90 accumrun.f		\
 thornthwaite_v2.f bfilter1.f distribfit.f kens_trend_dp.ncl.f		\
-det_code42.f kmeans_kmns_as136.f spi3.f wrf_vinterp.f wrf_fctt.f	\
+det_code42.f kmeans_kmns_as136.f spi3.f wrf_vinterp.f90 wrf_fctt.f90	\
 wrf_write_wps.f pres_hybrid_jra55_dp.f relhum_ice.f relhum_water.f	\
-wetbulb_profs.f wrf_cloud_fracf.f mlegev_memory.f kernel_density.f	\
-meemd.f90 dpsort_large.f
+wetbulb_profs.f wrf_cloud_fracf.f90 mlegev_memory.f kernel_density.f	\
+meemd.f90 dpsort_large.f wrf_constants.f90 wrf_wind.f90
