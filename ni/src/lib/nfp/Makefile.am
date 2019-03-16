@@ -50,6 +50,9 @@ cdtimeW.c dimnumrunW.c sparse_matrixW.c gammaW.c gamfitW.c spiW.c	\
 oceanW.c dgeevxW.c areapolyW.c kolsm2W.c kmeansW.c thornW.c		\
 wrf_vinterpW.c wrf_cloud_topW.c wrfwpsW.c speiW.c spei_func.c		\
 auxiliary.c lmoments.c pdfs.c thornthwaite.c wetbulbW.c mlegevW.c	\
-wrf_cloud_fracW.c kdeW.c
+wrf_cloud_fracW.c kdeW.c DirectVincenty.c directVincenty_W.c rgba2png.c	\
+rgba2png_W.c KML_Funcs.c add_NCL_KML_Arrow_W.c 				\
+add_NCL_KML_2DGrid_W.c add_NCL_KML_UnstructGrid_W.c 			\
+TransformCoordinate.c TransformCoordinate_W.c
 
 include_HEADERS = wrapper.h nctime.h

@@ -1,0 +1,6845 @@
+
+/*
+ *      $Id: MathFuncs.c.sed,v 1.3 1997-04-14 23:57:14 ethan Exp $
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Jan 31 15:16:30 MST 1995
+ *
+ *	Description:	
+ */
+
+#include <math.h>
+#include <ncarg/hlu/hlu.h>
+#include <ncarg/hlu/NresDB.h>
+#include "defs.h"
+#include "NclDataDefs.h"
+#include "NclBuiltInSupport.h"
+#include "NclMdInc.h"
+#include "TypeSupport.h"
+
+
+
+
+/*
+ *      $Id$
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Jan 31 15:16:07 MST 1995
+ *
+ *	Description:	
+ */
+
+
+NhlErrorTypes _Nclsinh
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+	int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	void *out_val;
+	float *fout_val;
+	double *dout_val;
+	void *value;
+	float *fvalue;
+	double *dvalue;
+	byte *bvalue;
+	char *cvalue;
+	short *svalue;
+	int  *ivalue;
+	long *lvalue;
+	long long *llvalue;
+	unsigned char *ucvalue;
+	unsigned short *usvalue;
+	unsigned int  *uivalue;
+	unsigned long *ulvalue;
+	unsigned long long *ullvalue;
+	
+	NclBasicDataTypes type;
+	ng_size_t total=1;
+	ng_size_t i;
+
+	value = (void*)NclGetArgValue(
+			0,
+			1,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	switch(type) {
+	case NCL_float:
+		fvalue = (float*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(fvalue[i] != missing.floatval) {
+					fout_val[i] = (float)sinh((double)fvalue[i]);
+				} else {
+					fout_val[i] = (float)missing.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sinh((double)fvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_double:
+		dvalue = (double*)value;
+		out_val = (void*)NclMalloc(total*sizeof(double));
+		dout_val = (double*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(dvalue[i] != missing.doubleval) {
+					dout_val[i] = (double)sinh((double)dvalue[i]);
+				} else {
+					dout_val[i] = (double)missing.doubleval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				dout_val[i] = (double)sinh((double)dvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_double,
+			0
+		));
+	case NCL_byte:
+		bvalue = (byte*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.byteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(bvalue[i] != missing.byteval) {
+					fout_val[i] = (float)sinh((double)bvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sinh((double)bvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_short:
+		svalue = (short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.shortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(svalue[i] != missing.shortval) {
+					fout_val[i] = (float)sinh((double)svalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sinh((double)svalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int:
+		ivalue = (int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.intval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ivalue[i] != missing.intval) {
+					fout_val[i] = (float)sinh((double)ivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sinh((double)ivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_long:
+		lvalue = (long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.longval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(lvalue[i] != missing.longval) {
+					fout_val[i] = (float)sinh((double)lvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sinh((double)lvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int64:
+		llvalue = (long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.int64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(llvalue[i] != missing.int64val) {
+					fout_val[i] = (float)sinh((double)llvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sinh((double)llvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_char:
+		ucvalue = (unsigned char*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.charval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.charval) {
+					fout_val[i] = (float)sinh((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sinh((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ubyte:
+		ucvalue = (unsigned char *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ubyteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.ubyteval) {
+					fout_val[i] = (float)sinh((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sinh((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ushort:
+		usvalue = (unsigned short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ushortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(usvalue[i] != missing.ushortval) {
+					fout_val[i] = (float)sinh((double)usvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sinh((double)usvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint:
+		uivalue = (unsigned int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uintval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(uivalue[i] != missing.uintval) {
+					fout_val[i] = (float)sinh((double)uivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sinh((double)uivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ulong:
+		ulvalue = (unsigned long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ulongval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ulvalue[i] != missing.ulongval) {
+					fout_val[i] = (float)sinh((double)ulvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sinh((double)ulvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint64:
+		ullvalue = (unsigned long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uint64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ullvalue[i] != missing.uint64val) {
+					fout_val[i] = (float)sinh((double)ullvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sinh((double)ullvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"sinh: a non-numeric type was passed to this function, can not continue");
+	}
+	return NhlFATAL;
+}
+
+/*
+ *      $Id$
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Jan 31 15:16:07 MST 1995
+ *
+ *	Description:	
+ */
+
+
+NhlErrorTypes _Nclcosh
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+	int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	void *out_val;
+	float *fout_val;
+	double *dout_val;
+	void *value;
+	float *fvalue;
+	double *dvalue;
+	byte *bvalue;
+	char *cvalue;
+	short *svalue;
+	int  *ivalue;
+	long *lvalue;
+	long long *llvalue;
+	unsigned char *ucvalue;
+	unsigned short *usvalue;
+	unsigned int  *uivalue;
+	unsigned long *ulvalue;
+	unsigned long long *ullvalue;
+	
+	NclBasicDataTypes type;
+	ng_size_t total=1;
+	ng_size_t i;
+
+	value = (void*)NclGetArgValue(
+			0,
+			1,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	switch(type) {
+	case NCL_float:
+		fvalue = (float*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(fvalue[i] != missing.floatval) {
+					fout_val[i] = (float)cosh((double)fvalue[i]);
+				} else {
+					fout_val[i] = (float)missing.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cosh((double)fvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_double:
+		dvalue = (double*)value;
+		out_val = (void*)NclMalloc(total*sizeof(double));
+		dout_val = (double*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(dvalue[i] != missing.doubleval) {
+					dout_val[i] = (double)cosh((double)dvalue[i]);
+				} else {
+					dout_val[i] = (double)missing.doubleval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				dout_val[i] = (double)cosh((double)dvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_double,
+			0
+		));
+	case NCL_byte:
+		bvalue = (byte*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.byteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(bvalue[i] != missing.byteval) {
+					fout_val[i] = (float)cosh((double)bvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cosh((double)bvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_short:
+		svalue = (short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.shortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(svalue[i] != missing.shortval) {
+					fout_val[i] = (float)cosh((double)svalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cosh((double)svalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int:
+		ivalue = (int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.intval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ivalue[i] != missing.intval) {
+					fout_val[i] = (float)cosh((double)ivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cosh((double)ivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_long:
+		lvalue = (long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.longval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(lvalue[i] != missing.longval) {
+					fout_val[i] = (float)cosh((double)lvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cosh((double)lvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int64:
+		llvalue = (long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.int64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(llvalue[i] != missing.int64val) {
+					fout_val[i] = (float)cosh((double)llvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cosh((double)llvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_char:
+		ucvalue = (unsigned char*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.charval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.charval) {
+					fout_val[i] = (float)cosh((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cosh((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ubyte:
+		ucvalue = (unsigned char *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ubyteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.ubyteval) {
+					fout_val[i] = (float)cosh((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cosh((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ushort:
+		usvalue = (unsigned short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ushortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(usvalue[i] != missing.ushortval) {
+					fout_val[i] = (float)cosh((double)usvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cosh((double)usvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint:
+		uivalue = (unsigned int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uintval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(uivalue[i] != missing.uintval) {
+					fout_val[i] = (float)cosh((double)uivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cosh((double)uivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ulong:
+		ulvalue = (unsigned long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ulongval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ulvalue[i] != missing.ulongval) {
+					fout_val[i] = (float)cosh((double)ulvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cosh((double)ulvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint64:
+		ullvalue = (unsigned long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uint64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ullvalue[i] != missing.uint64val) {
+					fout_val[i] = (float)cosh((double)ullvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cosh((double)ullvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"cosh: a non-numeric type was passed to this function, can not continue");
+	}
+	return NhlFATAL;
+}
+
+/*
+ *      $Id$
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Jan 31 15:16:07 MST 1995
+ *
+ *	Description:	
+ */
+
+
+NhlErrorTypes _Ncltanh
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+	int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	void *out_val;
+	float *fout_val;
+	double *dout_val;
+	void *value;
+	float *fvalue;
+	double *dvalue;
+	byte *bvalue;
+	char *cvalue;
+	short *svalue;
+	int  *ivalue;
+	long *lvalue;
+	long long *llvalue;
+	unsigned char *ucvalue;
+	unsigned short *usvalue;
+	unsigned int  *uivalue;
+	unsigned long *ulvalue;
+	unsigned long long *ullvalue;
+	
+	NclBasicDataTypes type;
+	ng_size_t total=1;
+	ng_size_t i;
+
+	value = (void*)NclGetArgValue(
+			0,
+			1,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	switch(type) {
+	case NCL_float:
+		fvalue = (float*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(fvalue[i] != missing.floatval) {
+					fout_val[i] = (float)tanh((double)fvalue[i]);
+				} else {
+					fout_val[i] = (float)missing.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tanh((double)fvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_double:
+		dvalue = (double*)value;
+		out_val = (void*)NclMalloc(total*sizeof(double));
+		dout_val = (double*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(dvalue[i] != missing.doubleval) {
+					dout_val[i] = (double)tanh((double)dvalue[i]);
+				} else {
+					dout_val[i] = (double)missing.doubleval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				dout_val[i] = (double)tanh((double)dvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_double,
+			0
+		));
+	case NCL_byte:
+		bvalue = (byte*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.byteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(bvalue[i] != missing.byteval) {
+					fout_val[i] = (float)tanh((double)bvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tanh((double)bvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_short:
+		svalue = (short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.shortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(svalue[i] != missing.shortval) {
+					fout_val[i] = (float)tanh((double)svalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tanh((double)svalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int:
+		ivalue = (int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.intval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ivalue[i] != missing.intval) {
+					fout_val[i] = (float)tanh((double)ivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tanh((double)ivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_long:
+		lvalue = (long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.longval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(lvalue[i] != missing.longval) {
+					fout_val[i] = (float)tanh((double)lvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tanh((double)lvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int64:
+		llvalue = (long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.int64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(llvalue[i] != missing.int64val) {
+					fout_val[i] = (float)tanh((double)llvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tanh((double)llvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_char:
+		ucvalue = (unsigned char*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.charval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.charval) {
+					fout_val[i] = (float)tanh((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tanh((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ubyte:
+		ucvalue = (unsigned char *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ubyteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.ubyteval) {
+					fout_val[i] = (float)tanh((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tanh((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ushort:
+		usvalue = (unsigned short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ushortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(usvalue[i] != missing.ushortval) {
+					fout_val[i] = (float)tanh((double)usvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tanh((double)usvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint:
+		uivalue = (unsigned int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uintval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(uivalue[i] != missing.uintval) {
+					fout_val[i] = (float)tanh((double)uivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tanh((double)uivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ulong:
+		ulvalue = (unsigned long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ulongval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ulvalue[i] != missing.ulongval) {
+					fout_val[i] = (float)tanh((double)ulvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tanh((double)ulvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint64:
+		ullvalue = (unsigned long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uint64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ullvalue[i] != missing.uint64val) {
+					fout_val[i] = (float)tanh((double)ullvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tanh((double)ullvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"tanh: a non-numeric type was passed to this function, can not continue");
+	}
+	return NhlFATAL;
+}
+
+/*
+ *      $Id$
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Jan 31 15:16:07 MST 1995
+ *
+ *	Description:	
+ */
+
+
+NhlErrorTypes _Nclsin
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+	int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	void *out_val;
+	float *fout_val;
+	double *dout_val;
+	void *value;
+	float *fvalue;
+	double *dvalue;
+	byte *bvalue;
+	char *cvalue;
+	short *svalue;
+	int  *ivalue;
+	long *lvalue;
+	long long *llvalue;
+	unsigned char *ucvalue;
+	unsigned short *usvalue;
+	unsigned int  *uivalue;
+	unsigned long *ulvalue;
+	unsigned long long *ullvalue;
+	
+	NclBasicDataTypes type;
+	ng_size_t total=1;
+	ng_size_t i;
+
+	value = (void*)NclGetArgValue(
+			0,
+			1,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	switch(type) {
+	case NCL_float:
+		fvalue = (float*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(fvalue[i] != missing.floatval) {
+					fout_val[i] = (float)sin((double)fvalue[i]);
+				} else {
+					fout_val[i] = (float)missing.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sin((double)fvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_double:
+		dvalue = (double*)value;
+		out_val = (void*)NclMalloc(total*sizeof(double));
+		dout_val = (double*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(dvalue[i] != missing.doubleval) {
+					dout_val[i] = (double)sin((double)dvalue[i]);
+				} else {
+					dout_val[i] = (double)missing.doubleval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				dout_val[i] = (double)sin((double)dvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_double,
+			0
+		));
+	case NCL_byte:
+		bvalue = (byte*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.byteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(bvalue[i] != missing.byteval) {
+					fout_val[i] = (float)sin((double)bvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sin((double)bvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_short:
+		svalue = (short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.shortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(svalue[i] != missing.shortval) {
+					fout_val[i] = (float)sin((double)svalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sin((double)svalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int:
+		ivalue = (int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.intval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ivalue[i] != missing.intval) {
+					fout_val[i] = (float)sin((double)ivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sin((double)ivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_long:
+		lvalue = (long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.longval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(lvalue[i] != missing.longval) {
+					fout_val[i] = (float)sin((double)lvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sin((double)lvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int64:
+		llvalue = (long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.int64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(llvalue[i] != missing.int64val) {
+					fout_val[i] = (float)sin((double)llvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sin((double)llvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_char:
+		ucvalue = (unsigned char*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.charval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.charval) {
+					fout_val[i] = (float)sin((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sin((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ubyte:
+		ucvalue = (unsigned char *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ubyteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.ubyteval) {
+					fout_val[i] = (float)sin((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sin((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ushort:
+		usvalue = (unsigned short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ushortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(usvalue[i] != missing.ushortval) {
+					fout_val[i] = (float)sin((double)usvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sin((double)usvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint:
+		uivalue = (unsigned int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uintval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(uivalue[i] != missing.uintval) {
+					fout_val[i] = (float)sin((double)uivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sin((double)uivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ulong:
+		ulvalue = (unsigned long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ulongval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ulvalue[i] != missing.ulongval) {
+					fout_val[i] = (float)sin((double)ulvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sin((double)ulvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint64:
+		ullvalue = (unsigned long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uint64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ullvalue[i] != missing.uint64val) {
+					fout_val[i] = (float)sin((double)ullvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sin((double)ullvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"sin: a non-numeric type was passed to this function, can not continue");
+	}
+	return NhlFATAL;
+}
+
+/*
+ *      $Id$
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Jan 31 15:16:07 MST 1995
+ *
+ *	Description:	
+ */
+
+
+NhlErrorTypes _Nclcos
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+	int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	void *out_val;
+	float *fout_val;
+	double *dout_val;
+	void *value;
+	float *fvalue;
+	double *dvalue;
+	byte *bvalue;
+	char *cvalue;
+	short *svalue;
+	int  *ivalue;
+	long *lvalue;
+	long long *llvalue;
+	unsigned char *ucvalue;
+	unsigned short *usvalue;
+	unsigned int  *uivalue;
+	unsigned long *ulvalue;
+	unsigned long long *ullvalue;
+	
+	NclBasicDataTypes type;
+	ng_size_t total=1;
+	ng_size_t i;
+
+	value = (void*)NclGetArgValue(
+			0,
+			1,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	switch(type) {
+	case NCL_float:
+		fvalue = (float*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(fvalue[i] != missing.floatval) {
+					fout_val[i] = (float)cos((double)fvalue[i]);
+				} else {
+					fout_val[i] = (float)missing.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cos((double)fvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_double:
+		dvalue = (double*)value;
+		out_val = (void*)NclMalloc(total*sizeof(double));
+		dout_val = (double*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(dvalue[i] != missing.doubleval) {
+					dout_val[i] = (double)cos((double)dvalue[i]);
+				} else {
+					dout_val[i] = (double)missing.doubleval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				dout_val[i] = (double)cos((double)dvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_double,
+			0
+		));
+	case NCL_byte:
+		bvalue = (byte*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.byteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(bvalue[i] != missing.byteval) {
+					fout_val[i] = (float)cos((double)bvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cos((double)bvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_short:
+		svalue = (short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.shortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(svalue[i] != missing.shortval) {
+					fout_val[i] = (float)cos((double)svalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cos((double)svalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int:
+		ivalue = (int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.intval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ivalue[i] != missing.intval) {
+					fout_val[i] = (float)cos((double)ivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cos((double)ivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_long:
+		lvalue = (long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.longval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(lvalue[i] != missing.longval) {
+					fout_val[i] = (float)cos((double)lvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cos((double)lvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int64:
+		llvalue = (long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.int64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(llvalue[i] != missing.int64val) {
+					fout_val[i] = (float)cos((double)llvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cos((double)llvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_char:
+		ucvalue = (unsigned char*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.charval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.charval) {
+					fout_val[i] = (float)cos((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cos((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ubyte:
+		ucvalue = (unsigned char *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ubyteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.ubyteval) {
+					fout_val[i] = (float)cos((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cos((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ushort:
+		usvalue = (unsigned short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ushortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(usvalue[i] != missing.ushortval) {
+					fout_val[i] = (float)cos((double)usvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cos((double)usvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint:
+		uivalue = (unsigned int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uintval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(uivalue[i] != missing.uintval) {
+					fout_val[i] = (float)cos((double)uivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cos((double)uivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ulong:
+		ulvalue = (unsigned long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ulongval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ulvalue[i] != missing.ulongval) {
+					fout_val[i] = (float)cos((double)ulvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cos((double)ulvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint64:
+		ullvalue = (unsigned long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uint64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ullvalue[i] != missing.uint64val) {
+					fout_val[i] = (float)cos((double)ullvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)cos((double)ullvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"cos: a non-numeric type was passed to this function, can not continue");
+	}
+	return NhlFATAL;
+}
+
+/*
+ *      $Id$
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Jan 31 15:16:07 MST 1995
+ *
+ *	Description:	
+ */
+
+
+NhlErrorTypes _Ncltan
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+	int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	void *out_val;
+	float *fout_val;
+	double *dout_val;
+	void *value;
+	float *fvalue;
+	double *dvalue;
+	byte *bvalue;
+	char *cvalue;
+	short *svalue;
+	int  *ivalue;
+	long *lvalue;
+	long long *llvalue;
+	unsigned char *ucvalue;
+	unsigned short *usvalue;
+	unsigned int  *uivalue;
+	unsigned long *ulvalue;
+	unsigned long long *ullvalue;
+	
+	NclBasicDataTypes type;
+	ng_size_t total=1;
+	ng_size_t i;
+
+	value = (void*)NclGetArgValue(
+			0,
+			1,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	switch(type) {
+	case NCL_float:
+		fvalue = (float*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(fvalue[i] != missing.floatval) {
+					fout_val[i] = (float)tan((double)fvalue[i]);
+				} else {
+					fout_val[i] = (float)missing.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tan((double)fvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_double:
+		dvalue = (double*)value;
+		out_val = (void*)NclMalloc(total*sizeof(double));
+		dout_val = (double*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(dvalue[i] != missing.doubleval) {
+					dout_val[i] = (double)tan((double)dvalue[i]);
+				} else {
+					dout_val[i] = (double)missing.doubleval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				dout_val[i] = (double)tan((double)dvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_double,
+			0
+		));
+	case NCL_byte:
+		bvalue = (byte*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.byteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(bvalue[i] != missing.byteval) {
+					fout_val[i] = (float)tan((double)bvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tan((double)bvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_short:
+		svalue = (short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.shortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(svalue[i] != missing.shortval) {
+					fout_val[i] = (float)tan((double)svalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tan((double)svalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int:
+		ivalue = (int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.intval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ivalue[i] != missing.intval) {
+					fout_val[i] = (float)tan((double)ivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tan((double)ivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_long:
+		lvalue = (long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.longval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(lvalue[i] != missing.longval) {
+					fout_val[i] = (float)tan((double)lvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tan((double)lvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int64:
+		llvalue = (long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.int64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(llvalue[i] != missing.int64val) {
+					fout_val[i] = (float)tan((double)llvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tan((double)llvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_char:
+		ucvalue = (unsigned char*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.charval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.charval) {
+					fout_val[i] = (float)tan((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tan((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ubyte:
+		ucvalue = (unsigned char *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ubyteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.ubyteval) {
+					fout_val[i] = (float)tan((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tan((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ushort:
+		usvalue = (unsigned short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ushortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(usvalue[i] != missing.ushortval) {
+					fout_val[i] = (float)tan((double)usvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tan((double)usvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint:
+		uivalue = (unsigned int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uintval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(uivalue[i] != missing.uintval) {
+					fout_val[i] = (float)tan((double)uivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tan((double)uivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ulong:
+		ulvalue = (unsigned long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ulongval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ulvalue[i] != missing.ulongval) {
+					fout_val[i] = (float)tan((double)ulvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tan((double)ulvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint64:
+		ullvalue = (unsigned long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uint64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ullvalue[i] != missing.uint64val) {
+					fout_val[i] = (float)tan((double)ullvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)tan((double)ullvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"tan: a non-numeric type was passed to this function, can not continue");
+	}
+	return NhlFATAL;
+}
+
+/*
+ *      $Id$
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Jan 31 15:16:07 MST 1995
+ *
+ *	Description:	
+ */
+
+
+NhlErrorTypes _Nclasin
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+	int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	void *out_val;
+	float *fout_val;
+	double *dout_val;
+	void *value;
+	float *fvalue;
+	double *dvalue;
+	byte *bvalue;
+	char *cvalue;
+	short *svalue;
+	int  *ivalue;
+	long *lvalue;
+	long long *llvalue;
+	unsigned char *ucvalue;
+	unsigned short *usvalue;
+	unsigned int  *uivalue;
+	unsigned long *ulvalue;
+	unsigned long long *ullvalue;
+	
+	NclBasicDataTypes type;
+	ng_size_t total=1;
+	ng_size_t i;
+
+	value = (void*)NclGetArgValue(
+			0,
+			1,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	switch(type) {
+	case NCL_float:
+		fvalue = (float*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(fvalue[i] != missing.floatval) {
+					fout_val[i] = (float)asin((double)fvalue[i]);
+				} else {
+					fout_val[i] = (float)missing.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)asin((double)fvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_double:
+		dvalue = (double*)value;
+		out_val = (void*)NclMalloc(total*sizeof(double));
+		dout_val = (double*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(dvalue[i] != missing.doubleval) {
+					dout_val[i] = (double)asin((double)dvalue[i]);
+				} else {
+					dout_val[i] = (double)missing.doubleval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				dout_val[i] = (double)asin((double)dvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_double,
+			0
+		));
+	case NCL_byte:
+		bvalue = (byte*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.byteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(bvalue[i] != missing.byteval) {
+					fout_val[i] = (float)asin((double)bvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)asin((double)bvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_short:
+		svalue = (short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.shortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(svalue[i] != missing.shortval) {
+					fout_val[i] = (float)asin((double)svalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)asin((double)svalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int:
+		ivalue = (int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.intval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ivalue[i] != missing.intval) {
+					fout_val[i] = (float)asin((double)ivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)asin((double)ivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_long:
+		lvalue = (long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.longval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(lvalue[i] != missing.longval) {
+					fout_val[i] = (float)asin((double)lvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)asin((double)lvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int64:
+		llvalue = (long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.int64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(llvalue[i] != missing.int64val) {
+					fout_val[i] = (float)asin((double)llvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)asin((double)llvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_char:
+		ucvalue = (unsigned char*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.charval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.charval) {
+					fout_val[i] = (float)asin((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)asin((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ubyte:
+		ucvalue = (unsigned char *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ubyteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.ubyteval) {
+					fout_val[i] = (float)asin((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)asin((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ushort:
+		usvalue = (unsigned short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ushortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(usvalue[i] != missing.ushortval) {
+					fout_val[i] = (float)asin((double)usvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)asin((double)usvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint:
+		uivalue = (unsigned int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uintval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(uivalue[i] != missing.uintval) {
+					fout_val[i] = (float)asin((double)uivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)asin((double)uivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ulong:
+		ulvalue = (unsigned long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ulongval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ulvalue[i] != missing.ulongval) {
+					fout_val[i] = (float)asin((double)ulvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)asin((double)ulvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint64:
+		ullvalue = (unsigned long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uint64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ullvalue[i] != missing.uint64val) {
+					fout_val[i] = (float)asin((double)ullvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)asin((double)ullvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"asin: a non-numeric type was passed to this function, can not continue");
+	}
+	return NhlFATAL;
+}
+
+/*
+ *      $Id$
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Jan 31 15:16:07 MST 1995
+ *
+ *	Description:	
+ */
+
+
+NhlErrorTypes _Nclacos
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+	int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	void *out_val;
+	float *fout_val;
+	double *dout_val;
+	void *value;
+	float *fvalue;
+	double *dvalue;
+	byte *bvalue;
+	char *cvalue;
+	short *svalue;
+	int  *ivalue;
+	long *lvalue;
+	long long *llvalue;
+	unsigned char *ucvalue;
+	unsigned short *usvalue;
+	unsigned int  *uivalue;
+	unsigned long *ulvalue;
+	unsigned long long *ullvalue;
+	
+	NclBasicDataTypes type;
+	ng_size_t total=1;
+	ng_size_t i;
+
+	value = (void*)NclGetArgValue(
+			0,
+			1,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	switch(type) {
+	case NCL_float:
+		fvalue = (float*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(fvalue[i] != missing.floatval) {
+					fout_val[i] = (float)acos((double)fvalue[i]);
+				} else {
+					fout_val[i] = (float)missing.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)acos((double)fvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_double:
+		dvalue = (double*)value;
+		out_val = (void*)NclMalloc(total*sizeof(double));
+		dout_val = (double*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(dvalue[i] != missing.doubleval) {
+					dout_val[i] = (double)acos((double)dvalue[i]);
+				} else {
+					dout_val[i] = (double)missing.doubleval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				dout_val[i] = (double)acos((double)dvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_double,
+			0
+		));
+	case NCL_byte:
+		bvalue = (byte*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.byteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(bvalue[i] != missing.byteval) {
+					fout_val[i] = (float)acos((double)bvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)acos((double)bvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_short:
+		svalue = (short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.shortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(svalue[i] != missing.shortval) {
+					fout_val[i] = (float)acos((double)svalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)acos((double)svalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int:
+		ivalue = (int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.intval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ivalue[i] != missing.intval) {
+					fout_val[i] = (float)acos((double)ivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)acos((double)ivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_long:
+		lvalue = (long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.longval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(lvalue[i] != missing.longval) {
+					fout_val[i] = (float)acos((double)lvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)acos((double)lvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int64:
+		llvalue = (long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.int64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(llvalue[i] != missing.int64val) {
+					fout_val[i] = (float)acos((double)llvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)acos((double)llvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_char:
+		ucvalue = (unsigned char*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.charval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.charval) {
+					fout_val[i] = (float)acos((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)acos((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ubyte:
+		ucvalue = (unsigned char *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ubyteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.ubyteval) {
+					fout_val[i] = (float)acos((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)acos((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ushort:
+		usvalue = (unsigned short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ushortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(usvalue[i] != missing.ushortval) {
+					fout_val[i] = (float)acos((double)usvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)acos((double)usvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint:
+		uivalue = (unsigned int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uintval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(uivalue[i] != missing.uintval) {
+					fout_val[i] = (float)acos((double)uivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)acos((double)uivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ulong:
+		ulvalue = (unsigned long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ulongval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ulvalue[i] != missing.ulongval) {
+					fout_val[i] = (float)acos((double)ulvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)acos((double)ulvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint64:
+		ullvalue = (unsigned long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uint64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ullvalue[i] != missing.uint64val) {
+					fout_val[i] = (float)acos((double)ullvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)acos((double)ullvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"acos: a non-numeric type was passed to this function, can not continue");
+	}
+	return NhlFATAL;
+}
+
+/*
+ *      $Id$
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Jan 31 15:16:07 MST 1995
+ *
+ *	Description:	
+ */
+
+
+NhlErrorTypes _Nclatan
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+	int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	void *out_val;
+	float *fout_val;
+	double *dout_val;
+	void *value;
+	float *fvalue;
+	double *dvalue;
+	byte *bvalue;
+	char *cvalue;
+	short *svalue;
+	int  *ivalue;
+	long *lvalue;
+	long long *llvalue;
+	unsigned char *ucvalue;
+	unsigned short *usvalue;
+	unsigned int  *uivalue;
+	unsigned long *ulvalue;
+	unsigned long long *ullvalue;
+	
+	NclBasicDataTypes type;
+	ng_size_t total=1;
+	ng_size_t i;
+
+	value = (void*)NclGetArgValue(
+			0,
+			1,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	switch(type) {
+	case NCL_float:
+		fvalue = (float*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(fvalue[i] != missing.floatval) {
+					fout_val[i] = (float)atan((double)fvalue[i]);
+				} else {
+					fout_val[i] = (float)missing.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)atan((double)fvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_double:
+		dvalue = (double*)value;
+		out_val = (void*)NclMalloc(total*sizeof(double));
+		dout_val = (double*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(dvalue[i] != missing.doubleval) {
+					dout_val[i] = (double)atan((double)dvalue[i]);
+				} else {
+					dout_val[i] = (double)missing.doubleval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				dout_val[i] = (double)atan((double)dvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_double,
+			0
+		));
+	case NCL_byte:
+		bvalue = (byte*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.byteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(bvalue[i] != missing.byteval) {
+					fout_val[i] = (float)atan((double)bvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)atan((double)bvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_short:
+		svalue = (short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.shortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(svalue[i] != missing.shortval) {
+					fout_val[i] = (float)atan((double)svalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)atan((double)svalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int:
+		ivalue = (int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.intval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ivalue[i] != missing.intval) {
+					fout_val[i] = (float)atan((double)ivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)atan((double)ivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_long:
+		lvalue = (long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.longval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(lvalue[i] != missing.longval) {
+					fout_val[i] = (float)atan((double)lvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)atan((double)lvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int64:
+		llvalue = (long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.int64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(llvalue[i] != missing.int64val) {
+					fout_val[i] = (float)atan((double)llvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)atan((double)llvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_char:
+		ucvalue = (unsigned char*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.charval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.charval) {
+					fout_val[i] = (float)atan((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)atan((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ubyte:
+		ucvalue = (unsigned char *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ubyteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.ubyteval) {
+					fout_val[i] = (float)atan((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)atan((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ushort:
+		usvalue = (unsigned short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ushortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(usvalue[i] != missing.ushortval) {
+					fout_val[i] = (float)atan((double)usvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)atan((double)usvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint:
+		uivalue = (unsigned int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uintval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(uivalue[i] != missing.uintval) {
+					fout_val[i] = (float)atan((double)uivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)atan((double)uivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ulong:
+		ulvalue = (unsigned long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ulongval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ulvalue[i] != missing.ulongval) {
+					fout_val[i] = (float)atan((double)ulvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)atan((double)ulvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint64:
+		ullvalue = (unsigned long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uint64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ullvalue[i] != missing.uint64val) {
+					fout_val[i] = (float)atan((double)ullvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)atan((double)ullvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"atan: a non-numeric type was passed to this function, can not continue");
+	}
+	return NhlFATAL;
+}
+
+/*
+ *      $Id$
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Jan 31 15:16:07 MST 1995
+ *
+ *	Description:	
+ */
+
+
+NhlErrorTypes _Nclceil
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+	int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	void *out_val;
+	float *fout_val;
+	double *dout_val;
+	void *value;
+	float *fvalue;
+	double *dvalue;
+	byte *bvalue;
+	char *cvalue;
+	short *svalue;
+	int  *ivalue;
+	long *lvalue;
+	long long *llvalue;
+	unsigned char *ucvalue;
+	unsigned short *usvalue;
+	unsigned int  *uivalue;
+	unsigned long *ulvalue;
+	unsigned long long *ullvalue;
+	
+	NclBasicDataTypes type;
+	ng_size_t total=1;
+	ng_size_t i;
+
+	value = (void*)NclGetArgValue(
+			0,
+			1,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	switch(type) {
+	case NCL_float:
+		fvalue = (float*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(fvalue[i] != missing.floatval) {
+					fout_val[i] = (float)ceil((double)fvalue[i]);
+				} else {
+					fout_val[i] = (float)missing.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)ceil((double)fvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_double:
+		dvalue = (double*)value;
+		out_val = (void*)NclMalloc(total*sizeof(double));
+		dout_val = (double*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(dvalue[i] != missing.doubleval) {
+					dout_val[i] = (double)ceil((double)dvalue[i]);
+				} else {
+					dout_val[i] = (double)missing.doubleval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				dout_val[i] = (double)ceil((double)dvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_double,
+			0
+		));
+	case NCL_byte:
+		bvalue = (byte*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.byteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(bvalue[i] != missing.byteval) {
+					fout_val[i] = (float)ceil((double)bvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)ceil((double)bvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_short:
+		svalue = (short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.shortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(svalue[i] != missing.shortval) {
+					fout_val[i] = (float)ceil((double)svalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)ceil((double)svalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int:
+		ivalue = (int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.intval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ivalue[i] != missing.intval) {
+					fout_val[i] = (float)ceil((double)ivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)ceil((double)ivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_long:
+		lvalue = (long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.longval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(lvalue[i] != missing.longval) {
+					fout_val[i] = (float)ceil((double)lvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)ceil((double)lvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int64:
+		llvalue = (long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.int64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(llvalue[i] != missing.int64val) {
+					fout_val[i] = (float)ceil((double)llvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)ceil((double)llvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_char:
+		ucvalue = (unsigned char*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.charval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.charval) {
+					fout_val[i] = (float)ceil((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)ceil((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ubyte:
+		ucvalue = (unsigned char *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ubyteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.ubyteval) {
+					fout_val[i] = (float)ceil((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)ceil((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ushort:
+		usvalue = (unsigned short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ushortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(usvalue[i] != missing.ushortval) {
+					fout_val[i] = (float)ceil((double)usvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)ceil((double)usvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint:
+		uivalue = (unsigned int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uintval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(uivalue[i] != missing.uintval) {
+					fout_val[i] = (float)ceil((double)uivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)ceil((double)uivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ulong:
+		ulvalue = (unsigned long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ulongval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ulvalue[i] != missing.ulongval) {
+					fout_val[i] = (float)ceil((double)ulvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)ceil((double)ulvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint64:
+		ullvalue = (unsigned long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uint64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ullvalue[i] != missing.uint64val) {
+					fout_val[i] = (float)ceil((double)ullvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)ceil((double)ullvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"ceil: a non-numeric type was passed to this function, can not continue");
+	}
+	return NhlFATAL;
+}
+
+/*
+ *      $Id$
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Jan 31 15:16:07 MST 1995
+ *
+ *	Description:	
+ */
+
+
+NhlErrorTypes _Nclfloor
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+	int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	void *out_val;
+	float *fout_val;
+	double *dout_val;
+	void *value;
+	float *fvalue;
+	double *dvalue;
+	byte *bvalue;
+	char *cvalue;
+	short *svalue;
+	int  *ivalue;
+	long *lvalue;
+	long long *llvalue;
+	unsigned char *ucvalue;
+	unsigned short *usvalue;
+	unsigned int  *uivalue;
+	unsigned long *ulvalue;
+	unsigned long long *ullvalue;
+	
+	NclBasicDataTypes type;
+	ng_size_t total=1;
+	ng_size_t i;
+
+	value = (void*)NclGetArgValue(
+			0,
+			1,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	switch(type) {
+	case NCL_float:
+		fvalue = (float*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(fvalue[i] != missing.floatval) {
+					fout_val[i] = (float)floor((double)fvalue[i]);
+				} else {
+					fout_val[i] = (float)missing.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)floor((double)fvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_double:
+		dvalue = (double*)value;
+		out_val = (void*)NclMalloc(total*sizeof(double));
+		dout_val = (double*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(dvalue[i] != missing.doubleval) {
+					dout_val[i] = (double)floor((double)dvalue[i]);
+				} else {
+					dout_val[i] = (double)missing.doubleval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				dout_val[i] = (double)floor((double)dvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_double,
+			0
+		));
+	case NCL_byte:
+		bvalue = (byte*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.byteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(bvalue[i] != missing.byteval) {
+					fout_val[i] = (float)floor((double)bvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)floor((double)bvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_short:
+		svalue = (short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.shortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(svalue[i] != missing.shortval) {
+					fout_val[i] = (float)floor((double)svalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)floor((double)svalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int:
+		ivalue = (int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.intval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ivalue[i] != missing.intval) {
+					fout_val[i] = (float)floor((double)ivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)floor((double)ivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_long:
+		lvalue = (long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.longval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(lvalue[i] != missing.longval) {
+					fout_val[i] = (float)floor((double)lvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)floor((double)lvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int64:
+		llvalue = (long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.int64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(llvalue[i] != missing.int64val) {
+					fout_val[i] = (float)floor((double)llvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)floor((double)llvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_char:
+		ucvalue = (unsigned char*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.charval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.charval) {
+					fout_val[i] = (float)floor((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)floor((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ubyte:
+		ucvalue = (unsigned char *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ubyteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.ubyteval) {
+					fout_val[i] = (float)floor((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)floor((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ushort:
+		usvalue = (unsigned short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ushortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(usvalue[i] != missing.ushortval) {
+					fout_val[i] = (float)floor((double)usvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)floor((double)usvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint:
+		uivalue = (unsigned int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uintval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(uivalue[i] != missing.uintval) {
+					fout_val[i] = (float)floor((double)uivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)floor((double)uivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ulong:
+		ulvalue = (unsigned long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ulongval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ulvalue[i] != missing.ulongval) {
+					fout_val[i] = (float)floor((double)ulvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)floor((double)ulvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint64:
+		ullvalue = (unsigned long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uint64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ullvalue[i] != missing.uint64val) {
+					fout_val[i] = (float)floor((double)ullvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)floor((double)ullvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"floor: a non-numeric type was passed to this function, can not continue");
+	}
+	return NhlFATAL;
+}
+
+/*
+ *      $Id$
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Jan 31 15:16:07 MST 1995
+ *
+ *	Description:	
+ */
+
+
+NhlErrorTypes _Nclfabs
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+	int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	void *out_val;
+	float *fout_val;
+	double *dout_val;
+	void *value;
+	float *fvalue;
+	double *dvalue;
+	byte *bvalue;
+	char *cvalue;
+	short *svalue;
+	int  *ivalue;
+	long *lvalue;
+	long long *llvalue;
+	unsigned char *ucvalue;
+	unsigned short *usvalue;
+	unsigned int  *uivalue;
+	unsigned long *ulvalue;
+	unsigned long long *ullvalue;
+	
+	NclBasicDataTypes type;
+	ng_size_t total=1;
+	ng_size_t i;
+
+	value = (void*)NclGetArgValue(
+			0,
+			1,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	switch(type) {
+	case NCL_float:
+		fvalue = (float*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(fvalue[i] != missing.floatval) {
+					fout_val[i] = (float)fabs((double)fvalue[i]);
+				} else {
+					fout_val[i] = (float)missing.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)fabs((double)fvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_double:
+		dvalue = (double*)value;
+		out_val = (void*)NclMalloc(total*sizeof(double));
+		dout_val = (double*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(dvalue[i] != missing.doubleval) {
+					dout_val[i] = (double)fabs((double)dvalue[i]);
+				} else {
+					dout_val[i] = (double)missing.doubleval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				dout_val[i] = (double)fabs((double)dvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_double,
+			0
+		));
+	case NCL_byte:
+		bvalue = (byte*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.byteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(bvalue[i] != missing.byteval) {
+					fout_val[i] = (float)fabs((double)bvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)fabs((double)bvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_short:
+		svalue = (short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.shortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(svalue[i] != missing.shortval) {
+					fout_val[i] = (float)fabs((double)svalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)fabs((double)svalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int:
+		ivalue = (int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.intval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ivalue[i] != missing.intval) {
+					fout_val[i] = (float)fabs((double)ivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)fabs((double)ivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_long:
+		lvalue = (long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.longval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(lvalue[i] != missing.longval) {
+					fout_val[i] = (float)fabs((double)lvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)fabs((double)lvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int64:
+		llvalue = (long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.int64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(llvalue[i] != missing.int64val) {
+					fout_val[i] = (float)fabs((double)llvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)fabs((double)llvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_char:
+		ucvalue = (unsigned char*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.charval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.charval) {
+					fout_val[i] = (float)fabs((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)fabs((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ubyte:
+		ucvalue = (unsigned char *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ubyteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.ubyteval) {
+					fout_val[i] = (float)fabs((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)fabs((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ushort:
+		usvalue = (unsigned short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ushortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(usvalue[i] != missing.ushortval) {
+					fout_val[i] = (float)fabs((double)usvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)fabs((double)usvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint:
+		uivalue = (unsigned int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uintval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(uivalue[i] != missing.uintval) {
+					fout_val[i] = (float)fabs((double)uivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)fabs((double)uivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ulong:
+		ulvalue = (unsigned long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ulongval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ulvalue[i] != missing.ulongval) {
+					fout_val[i] = (float)fabs((double)ulvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)fabs((double)ulvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint64:
+		ullvalue = (unsigned long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uint64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ullvalue[i] != missing.uint64val) {
+					fout_val[i] = (float)fabs((double)ullvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)fabs((double)ullvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fabs: a non-numeric type was passed to this function, can not continue");
+	}
+	return NhlFATAL;
+}
+
+/*
+ *      $Id$
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Jan 31 15:16:07 MST 1995
+ *
+ *	Description:	
+ */
+
+
+NhlErrorTypes _Ncllog
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+	int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	void *out_val;
+	float *fout_val;
+	double *dout_val;
+	void *value;
+	float *fvalue;
+	double *dvalue;
+	byte *bvalue;
+	char *cvalue;
+	short *svalue;
+	int  *ivalue;
+	long *lvalue;
+	long long *llvalue;
+	unsigned char *ucvalue;
+	unsigned short *usvalue;
+	unsigned int  *uivalue;
+	unsigned long *ulvalue;
+	unsigned long long *ullvalue;
+	
+	NclBasicDataTypes type;
+	ng_size_t total=1;
+	ng_size_t i;
+
+	value = (void*)NclGetArgValue(
+			0,
+			1,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	switch(type) {
+	case NCL_float:
+		fvalue = (float*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(fvalue[i] != missing.floatval) {
+					fout_val[i] = (float)log((double)fvalue[i]);
+				} else {
+					fout_val[i] = (float)missing.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log((double)fvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_double:
+		dvalue = (double*)value;
+		out_val = (void*)NclMalloc(total*sizeof(double));
+		dout_val = (double*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(dvalue[i] != missing.doubleval) {
+					dout_val[i] = (double)log((double)dvalue[i]);
+				} else {
+					dout_val[i] = (double)missing.doubleval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				dout_val[i] = (double)log((double)dvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_double,
+			0
+		));
+	case NCL_byte:
+		bvalue = (byte*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.byteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(bvalue[i] != missing.byteval) {
+					fout_val[i] = (float)log((double)bvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log((double)bvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_short:
+		svalue = (short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.shortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(svalue[i] != missing.shortval) {
+					fout_val[i] = (float)log((double)svalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log((double)svalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int:
+		ivalue = (int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.intval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ivalue[i] != missing.intval) {
+					fout_val[i] = (float)log((double)ivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log((double)ivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_long:
+		lvalue = (long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.longval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(lvalue[i] != missing.longval) {
+					fout_val[i] = (float)log((double)lvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log((double)lvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int64:
+		llvalue = (long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.int64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(llvalue[i] != missing.int64val) {
+					fout_val[i] = (float)log((double)llvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log((double)llvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_char:
+		ucvalue = (unsigned char*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.charval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.charval) {
+					fout_val[i] = (float)log((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ubyte:
+		ucvalue = (unsigned char *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ubyteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.ubyteval) {
+					fout_val[i] = (float)log((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ushort:
+		usvalue = (unsigned short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ushortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(usvalue[i] != missing.ushortval) {
+					fout_val[i] = (float)log((double)usvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log((double)usvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint:
+		uivalue = (unsigned int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uintval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(uivalue[i] != missing.uintval) {
+					fout_val[i] = (float)log((double)uivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log((double)uivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ulong:
+		ulvalue = (unsigned long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ulongval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ulvalue[i] != missing.ulongval) {
+					fout_val[i] = (float)log((double)ulvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log((double)ulvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint64:
+		ullvalue = (unsigned long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uint64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ullvalue[i] != missing.uint64val) {
+					fout_val[i] = (float)log((double)ullvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log((double)ullvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"log: a non-numeric type was passed to this function, can not continue");
+	}
+	return NhlFATAL;
+}
+
+/*
+ *      $Id$
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Jan 31 15:16:07 MST 1995
+ *
+ *	Description:	
+ */
+
+
+NhlErrorTypes _Nclexp
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+	int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	void *out_val;
+	float *fout_val;
+	double *dout_val;
+	void *value;
+	float *fvalue;
+	double *dvalue;
+	byte *bvalue;
+	char *cvalue;
+	short *svalue;
+	int  *ivalue;
+	long *lvalue;
+	long long *llvalue;
+	unsigned char *ucvalue;
+	unsigned short *usvalue;
+	unsigned int  *uivalue;
+	unsigned long *ulvalue;
+	unsigned long long *ullvalue;
+	
+	NclBasicDataTypes type;
+	ng_size_t total=1;
+	ng_size_t i;
+
+	value = (void*)NclGetArgValue(
+			0,
+			1,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	switch(type) {
+	case NCL_float:
+		fvalue = (float*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(fvalue[i] != missing.floatval) {
+					fout_val[i] = (float)exp((double)fvalue[i]);
+				} else {
+					fout_val[i] = (float)missing.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)exp((double)fvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_double:
+		dvalue = (double*)value;
+		out_val = (void*)NclMalloc(total*sizeof(double));
+		dout_val = (double*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(dvalue[i] != missing.doubleval) {
+					dout_val[i] = (double)exp((double)dvalue[i]);
+				} else {
+					dout_val[i] = (double)missing.doubleval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				dout_val[i] = (double)exp((double)dvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_double,
+			0
+		));
+	case NCL_byte:
+		bvalue = (byte*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.byteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(bvalue[i] != missing.byteval) {
+					fout_val[i] = (float)exp((double)bvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)exp((double)bvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_short:
+		svalue = (short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.shortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(svalue[i] != missing.shortval) {
+					fout_val[i] = (float)exp((double)svalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)exp((double)svalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int:
+		ivalue = (int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.intval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ivalue[i] != missing.intval) {
+					fout_val[i] = (float)exp((double)ivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)exp((double)ivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_long:
+		lvalue = (long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.longval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(lvalue[i] != missing.longval) {
+					fout_val[i] = (float)exp((double)lvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)exp((double)lvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int64:
+		llvalue = (long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.int64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(llvalue[i] != missing.int64val) {
+					fout_val[i] = (float)exp((double)llvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)exp((double)llvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_char:
+		ucvalue = (unsigned char*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.charval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.charval) {
+					fout_val[i] = (float)exp((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)exp((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ubyte:
+		ucvalue = (unsigned char *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ubyteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.ubyteval) {
+					fout_val[i] = (float)exp((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)exp((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ushort:
+		usvalue = (unsigned short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ushortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(usvalue[i] != missing.ushortval) {
+					fout_val[i] = (float)exp((double)usvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)exp((double)usvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint:
+		uivalue = (unsigned int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uintval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(uivalue[i] != missing.uintval) {
+					fout_val[i] = (float)exp((double)uivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)exp((double)uivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ulong:
+		ulvalue = (unsigned long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ulongval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ulvalue[i] != missing.ulongval) {
+					fout_val[i] = (float)exp((double)ulvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)exp((double)ulvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint64:
+		ullvalue = (unsigned long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uint64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ullvalue[i] != missing.uint64val) {
+					fout_val[i] = (float)exp((double)ullvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)exp((double)ullvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"exp: a non-numeric type was passed to this function, can not continue");
+	}
+	return NhlFATAL;
+}
+
+/*
+ *      $Id$
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Jan 31 15:16:07 MST 1995
+ *
+ *	Description:	
+ */
+
+
+NhlErrorTypes _Ncllog10
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+	int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	void *out_val;
+	float *fout_val;
+	double *dout_val;
+	void *value;
+	float *fvalue;
+	double *dvalue;
+	byte *bvalue;
+	char *cvalue;
+	short *svalue;
+	int  *ivalue;
+	long *lvalue;
+	long long *llvalue;
+	unsigned char *ucvalue;
+	unsigned short *usvalue;
+	unsigned int  *uivalue;
+	unsigned long *ulvalue;
+	unsigned long long *ullvalue;
+	
+	NclBasicDataTypes type;
+	ng_size_t total=1;
+	ng_size_t i;
+
+	value = (void*)NclGetArgValue(
+			0,
+			1,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	switch(type) {
+	case NCL_float:
+		fvalue = (float*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(fvalue[i] != missing.floatval) {
+					fout_val[i] = (float)log10((double)fvalue[i]);
+				} else {
+					fout_val[i] = (float)missing.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log10((double)fvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_double:
+		dvalue = (double*)value;
+		out_val = (void*)NclMalloc(total*sizeof(double));
+		dout_val = (double*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(dvalue[i] != missing.doubleval) {
+					dout_val[i] = (double)log10((double)dvalue[i]);
+				} else {
+					dout_val[i] = (double)missing.doubleval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				dout_val[i] = (double)log10((double)dvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_double,
+			0
+		));
+	case NCL_byte:
+		bvalue = (byte*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.byteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(bvalue[i] != missing.byteval) {
+					fout_val[i] = (float)log10((double)bvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log10((double)bvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_short:
+		svalue = (short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.shortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(svalue[i] != missing.shortval) {
+					fout_val[i] = (float)log10((double)svalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log10((double)svalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int:
+		ivalue = (int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.intval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ivalue[i] != missing.intval) {
+					fout_val[i] = (float)log10((double)ivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log10((double)ivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_long:
+		lvalue = (long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.longval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(lvalue[i] != missing.longval) {
+					fout_val[i] = (float)log10((double)lvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log10((double)lvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int64:
+		llvalue = (long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.int64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(llvalue[i] != missing.int64val) {
+					fout_val[i] = (float)log10((double)llvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log10((double)llvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_char:
+		ucvalue = (unsigned char*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.charval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.charval) {
+					fout_val[i] = (float)log10((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log10((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ubyte:
+		ucvalue = (unsigned char *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ubyteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.ubyteval) {
+					fout_val[i] = (float)log10((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log10((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ushort:
+		usvalue = (unsigned short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ushortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(usvalue[i] != missing.ushortval) {
+					fout_val[i] = (float)log10((double)usvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log10((double)usvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint:
+		uivalue = (unsigned int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uintval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(uivalue[i] != missing.uintval) {
+					fout_val[i] = (float)log10((double)uivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log10((double)uivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ulong:
+		ulvalue = (unsigned long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ulongval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ulvalue[i] != missing.ulongval) {
+					fout_val[i] = (float)log10((double)ulvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log10((double)ulvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint64:
+		ullvalue = (unsigned long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uint64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ullvalue[i] != missing.uint64val) {
+					fout_val[i] = (float)log10((double)ullvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)log10((double)ullvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"log10: a non-numeric type was passed to this function, can not continue");
+	}
+	return NhlFATAL;
+}
+
+/*
+ *      $Id$
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Jan 31 15:16:07 MST 1995
+ *
+ *	Description:	
+ */
+
+
+NhlErrorTypes _Nclsqrt
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+	int has_missing,n_dims;
+	ng_size_t dimsizes[NCL_MAX_DIMENSIONS];
+	void *out_val;
+	float *fout_val;
+	double *dout_val;
+	void *value;
+	float *fvalue;
+	double *dvalue;
+	byte *bvalue;
+	char *cvalue;
+	short *svalue;
+	int  *ivalue;
+	long *lvalue;
+	long long *llvalue;
+	unsigned char *ucvalue;
+	unsigned short *usvalue;
+	unsigned int  *uivalue;
+	unsigned long *ulvalue;
+	unsigned long long *ullvalue;
+	
+	NclBasicDataTypes type;
+	ng_size_t total=1;
+	ng_size_t i;
+
+	value = (void*)NclGetArgValue(
+			0,
+			1,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	switch(type) {
+	case NCL_float:
+		fvalue = (float*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(fvalue[i] != missing.floatval) {
+					fout_val[i] = (float)sqrt((double)fvalue[i]);
+				} else {
+					fout_val[i] = (float)missing.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sqrt((double)fvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_double:
+		dvalue = (double*)value;
+		out_val = (void*)NclMalloc(total*sizeof(double));
+		dout_val = (double*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(dvalue[i] != missing.doubleval) {
+					dout_val[i] = (double)sqrt((double)dvalue[i]);
+				} else {
+					dout_val[i] = (double)missing.doubleval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				dout_val[i] = (double)sqrt((double)dvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_double,
+			0
+		));
+	case NCL_byte:
+		bvalue = (byte*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.byteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(bvalue[i] != missing.byteval) {
+					fout_val[i] = (float)sqrt((double)bvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sqrt((double)bvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_short:
+		svalue = (short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.shortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(svalue[i] != missing.shortval) {
+					fout_val[i] = (float)sqrt((double)svalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sqrt((double)svalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int:
+		ivalue = (int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.intval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ivalue[i] != missing.intval) {
+					fout_val[i] = (float)sqrt((double)ivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sqrt((double)ivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_long:
+		lvalue = (long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.longval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(lvalue[i] != missing.longval) {
+					fout_val[i] = (float)sqrt((double)lvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sqrt((double)lvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_int64:
+		llvalue = (long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.int64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(llvalue[i] != missing.int64val) {
+					fout_val[i] = (float)sqrt((double)llvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sqrt((double)llvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_char:
+		ucvalue = (unsigned char*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.charval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.charval) {
+					fout_val[i] = (float)sqrt((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sqrt((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ubyte:
+		ucvalue = (unsigned char *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ubyteval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ucvalue[i] != missing.ubyteval) {
+					fout_val[i] = (float)sqrt((double)ucvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sqrt((double)ucvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ushort:
+		usvalue = (unsigned short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ushortval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(usvalue[i] != missing.ushortval) {
+					fout_val[i] = (float)sqrt((double)usvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sqrt((double)usvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint:
+		uivalue = (unsigned int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uintval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(uivalue[i] != missing.uintval) {
+					fout_val[i] = (float)sqrt((double)uivalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sqrt((double)uivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_ulong:
+		ulvalue = (unsigned long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.ulongval;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ulvalue[i] != missing.ulongval) {
+					fout_val[i] = (float)sqrt((double)ulvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sqrt((double)ulvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_uint64:
+		ullvalue = (unsigned long long *)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			missing2.floatval = (float)missing.uint64val;
+			for( i = 0 ; i < total; i ++ ) {
+				if(ullvalue[i] != missing.uint64val) {
+					fout_val[i] = (float)sqrt((double)ullvalue[i]);
+				} else {
+					fout_val[i] = missing2.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)sqrt((double)ullvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing2 : NULL),
+			NCL_float,
+			0
+		));
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"sqrt: a non-numeric type was passed to this function, can not continue");
+	}
+	return NhlFATAL;
+}
+
+/*
+ *      $Id: MathTemplate2.c.sed,v 1.5 2009-02-10 18:48:09 haley Exp $
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1995			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Tue Jan 31 15:16:07 MST 1995
+ *
+ *	Description:	
+ */
+
+
+NhlErrorTypes _Nclatan2
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing0,missing1,dm0,dm1;
+	int has_missing0,n_dims0;
+	ng_size_t dimsizes0[NCL_MAX_DIMENSIONS];
+	int has_missing1,n_dims1;
+	ng_size_t dimsizes1[NCL_MAX_DIMENSIONS];
+	double *dout_val;
+	float *fout_val;
+	void *value0;
+	void *value1;
+	double *dval0;
+	double *dval1;
+	float *fval0;
+	float *fval1;
+	NclBasicDataTypes type0,out_type;
+	NclBasicDataTypes type1;
+	ng_size_t total1=1;
+	ng_size_t total0=1;
+	ng_size_t i;
+
+	value0 = (void*)NclGetArgValue(
+			0,
+			2,
+			&n_dims0,
+			dimsizes0,
+			&missing0,
+			&has_missing0,
+			&type0,
+			0);
+	for(i = 0; i < n_dims0; i++) {
+		total0 *= dimsizes0[i];
+	}
+
+	value1 = (void*)NclGetArgValue(
+			1,
+			2,
+			&n_dims1,
+			dimsizes1,
+			&missing1,
+			&has_missing1,
+			&type1,
+			0);
+	for(i = 0; i < n_dims1; i++) {
+		total1 *= dimsizes1[i];
+	}
+	if((type1 == NCL_double)||(type0==NCL_double)) {
+		out_type = NCL_double;
+	} else {
+		out_type = NCL_float;
+	}
+	if(total0 == total1) {
+		switch(out_type) {
+		case NCL_double:
+			if(type0 == NCL_double) {
+				dval0 = (double*)value0;
+				if(has_missing0) {
+					dm0.doubleval = missing0.doubleval;
+				}
+			} else {
+				dval0 = (double*)NclMalloc(sizeof(double)*total0);
+				_Nclcoerce((NclTypeClass)nclTypedoubleClass,
+						dval0,
+						value0,
+						total0,
+						&missing0,
+						NULL,
+						(NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type0))));
+
+				dm0.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.floatval;
+			}
+			if(type1 == NCL_double) {
+				dval1 = (double*)value1;
+				if(has_missing1) {
+					dm1.doubleval = missing1.doubleval;
+				}
+			} else {
+				dval1 = (double*)NclMalloc(sizeof(double)*total1);
+				_Nclcoerce((NclTypeClass)nclTypedoubleClass,
+						dval1,
+						value1,
+						total1,
+						&missing1,
+						NULL,
+						(NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type1))));
+				dm1.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+			}
+		
+			dout_val = (double*)NclMalloc(total0*sizeof(double));
+
+			if(has_missing0&&!has_missing1) {
+				for( i = 0 ; i < total0; i ++ ) {
+					if(dval0[i] != dm0.doubleval) {
+						dout_val[i] = atan2((double)dval0[i],(double)dval1[i]);
+					} else {
+						dout_val[i] = dm0.doubleval;
+					}
+				}
+			} else if(has_missing1&&!has_missing0) {
+				for( i = 0 ; i < total1; i ++ ) {
+					if(dval1[i] != dm1.doubleval) {
+						dout_val[i] = atan2((double)dval0[i],(double)dval1[i]);
+					} else {
+						dout_val[i] = dm1.doubleval;
+					}
+				}
+			} else if(has_missing1&&has_missing0) {
+				for( i = 0 ; i < total0; i ++ ) {
+					if((dval0[i] != dm0.doubleval)&&(dval1[i] != dm1.doubleval)) {
+						dout_val[i] = atan2((double)dval0[i],(double)dval1[i]);
+					} else {
+						dout_val[i] = dm1.doubleval;
+					}
+				}
+			} else {
+				for( i = 0 ; i < total0; i ++ ) {
+					dout_val[i] = atan2((double)dval0[i],(double)dval1[i]);
+				}
+			}
+			if((void*)dval0 != value0) {
+				NclFree(dval0);
+			}
+			if((void*)dval1 != value1) {
+				NclFree(dval1);
+			}
+			return(NclReturnValue(
+				dout_val,
+				n_dims0,
+				dimsizes0,
+				(has_missing0 ? &dm0 : has_missing1 ? &dm1 : NULL),
+				NCL_double,
+				0
+			));
+		case NCL_float:
+			if(type0 == NCL_float) {
+				fval0 = (float*)value0;
+				if(has_missing0) {
+					dm0.floatval = missing0.floatval;
+				}
+			} else {
+				fval0 = (float*)NclMalloc(sizeof(float)*total0);
+				_Nclcoerce((NclTypeClass)nclTypefloatClass,
+						fval0,
+						value0,
+						total0,
+						&missing0,
+						NULL,
+						(NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type0))));
+				dm0.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+			}
+			if(type1 == NCL_float) {
+				fval1 = (float*)value1;
+				if(has_missing1) {
+					dm1.floatval = missing1.floatval;
+				}
+			} else {
+				fval1 = (float*)NclMalloc(sizeof(float)*total1);
+				_Nclcoerce((NclTypeClass)nclTypefloatClass,
+						fval1,
+						value1,
+						total1,
+						&missing1,
+						NULL,
+						(NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type1))));
+				dm1.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+			}
+		
+			fout_val = (float*)NclMalloc(total0*sizeof(float));
+
+			if(has_missing0&&!has_missing1) {
+				for( i = 0 ; i < total0; i ++ ) {
+					if(fval0[i] != dm0.floatval) {
+						fout_val[i] = atan2((double)fval0[i],(double)fval1[i]);
+					} else {
+						fout_val[i] = dm0.floatval;
+					}
+				}
+			} else if(has_missing1&&!has_missing0) {
+				for( i = 0 ; i < total1; i ++ ) {
+					if(fval1[i] != dm1.floatval) {
+						fout_val[i] = atan2((double)fval0[i],(double)fval1[i]);
+					} else {
+						fout_val[i] = dm1.floatval;
+					}
+				}
+			} else if(has_missing1&&has_missing0) {
+				for( i = 0 ; i < total0; i ++ ) {
+					if((fval0[i] != dm0.floatval)&&(fval1[i] != dm1.floatval)) {
+						fout_val[i] = atan2((double)fval0[i],(double)fval1[i]);
+					} else {
+						fout_val[i] = dm1.floatval;
+					}
+				}
+			} else {
+				for( i = 0 ; i < total0; i ++ ) {
+					fout_val[i] = atan2((double)fval0[i],(double)fval1[i]);
+				}
+			}
+			if((void*)fval0 != value0) {
+				NclFree(fval0);
+			}
+			if((void*)fval1 != value1) {
+				NclFree(fval1);
+			}
+			return(NclReturnValue(
+				fout_val,
+				n_dims0,
+				dimsizes0,
+				(has_missing0 ? &dm0 : has_missing1 ? &dm1 : NULL),
+				NCL_float,
+				0
+			));
+		default:
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"atan2: internal error: can not continue");
+			return NhlFATAL;
+		}
+
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"atan2 parameter 0 and parameter 1 are not the same size");
+		return(NhlFATAL);
+	}
+}

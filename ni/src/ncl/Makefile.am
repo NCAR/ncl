@@ -43,6 +43,7 @@ AM_LDFLAGS += ${top_builddir}/external/fftpack5_dp/libfftpack5_dp.la
 AM_LDFLAGS += ${top_builddir}/external/lapack/liblapack_ncl.la
 AM_LDFLAGS += ${top_builddir}/external/sphere3.1_dp/libsphere3.1_dp.la
 AM_LDFLAGS += ${top_builddir}/ni/src/lib/nfp/libnfp.la
+AM_LDFLAGS += ${top_builddir}/ni/src/lib/nfpfort/libnfpfort.la
 
 CREATED_FILES = parser.h TypeSupport.h TypeSupport.c			\
 NclMultiDValData.c MathFuncs.c MathFuncs.h NclTypedouble.h		\
