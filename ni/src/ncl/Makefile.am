@@ -75,6 +75,7 @@ NclType.c NclTypelist.c NclUserFileFormStub.c NclUserFuncStub.c		\
 NclUserHLUStub.c NclVar.c openclAddFuncs.c openclAddProto.c		\
 OpsFuncs.c PrintToken.c SrcTree.c subprocess.c Symbol.c sysunix.c	\
 Translate.c userAddFuncs.c userAddProto.c VarSupport.c yywrap.c		\
+ncepcode.f qu2reg3.f rowina3.f scm0.f					\
 $(CREATED_FILES)
 
 include_HEADERS = AdvancedFileSupport.h ApiRecords.h AttSupport.h	\
@@ -313,7 +314,7 @@ NclTypeobj.c.specific NclTypeshort.c.specific				\
 NclTypestring.c.specific NclTypeubyte.c.specific			\
 NclTypeuint64.c.specific NclTypeuint.c.specific				\
 NclTypeulong.c.specific NclTypeushort.c.specific MathFuncs.h		\
-NclTypebyte.h
+NclTypebyte.h 
 
 # Make clean must remove all created files.
 CLEANFILES = $(CREATED_FILES)

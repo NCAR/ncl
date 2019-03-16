@@ -53,6 +53,8 @@ auxiliary.c lmoments.c pdfs.c thornthwaite.c wetbulbW.c mlegevW.c	\
 wrf_cloud_fracW.c kdeW.c DirectVincenty.c directVincenty_W.c rgba2png.c	\
 rgba2png_W.c KML_Funcs.c add_NCL_KML_Arrow_W.c 				\
 add_NCL_KML_2DGrid_W.c add_NCL_KML_UnstructGrid_W.c 			\
-TransformCoordinate.c TransformCoordinate_W.c
+TransformCoordinate.c TransformCoordinate_W.c determinantW.c		\
+bfilterW.c trendmankenW.c poissonW.c fftshiftW.c weibullW.c
+
 
 include_HEADERS = wrapper.h nctime.h

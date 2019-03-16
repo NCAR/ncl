@@ -40,4 +40,4 @@ thornthwaite_v2.f bfilter1.f distribfit.f kens_trend_dp.ncl.f		\
 det_code42.f kmeans_kmns_as136.f spi3.f wrf_vinterp.f90 wrf_fctt.f90	\
 wrf_write_wps.f pres_hybrid_jra55_dp.f relhum_ice.f relhum_water.f	\
 wetbulb_profs.f wrf_cloud_fracf.f90 mlegev_memory.f kernel_density.f	\
-meemd.f90 dpsort_large.f wrf_constants.f90 wrf_wind.f90
+meemd.f90 dpsort_large.f wrf_constants.f90 wrf_wind.f90 wrf_pw.f90
