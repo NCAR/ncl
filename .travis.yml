@@ -1,0 +1,33 @@
+language: c
+dist: trusty
+sudo: false
+
+branches:
+  only:
+  - master
+
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - pkg-config netcdf-bin libnetcdf-dev openmpi-bin libopenmpi-dev gfortran
+
+before_install:
+  - test -n $CC && unset CC
+  - test -n $FC && unset FC
+  - test -n $CPPFLAGS && unset CPPFLAGS
+  - test -n FCFLAGS && unset FCFLAGS
+
+before_script:
+  - pwd
+  
+env:
+  global:
+    - CPPFLAGS='-I/usr/include'
+    - LDFLAGS='-L/usr/lib'
+  
+script:
+  - autoreconf -i
+  - ./configure 
+  - make check
