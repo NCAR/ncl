@@ -102,6 +102,7 @@ AC_CHECK_LIB([Xext], [XShmAttach])
 AC_CHECK_LIB([Xrender], [XRenderQueryExtension])
 
 # Find required libraries and thier headers.
+AC_CHECK_HEADERS([netcdf.h])
 AC_CHECK_LIB([m], [floor], [], [AC_MSG_ERROR([math library is required])], [])
 AC_CHECK_LIB([netcdf], [nc_create], [], [AC_MSG_ERROR([NetCDF library is required])], [])
 AC_CHECK_LIB([jpeg], [jpeg_write_marker], [], [AC_MSG_ERROR([JPEG library is required])], [])
