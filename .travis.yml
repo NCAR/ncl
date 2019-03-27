@@ -28,8 +28,8 @@ env:
     - LDFLAGS='-L/usr/lib'
   
 script:
-  - ls -l /usr/local/lib        
-  - ls -l /usr/local/include        
+  - ls -l /usr/lib        
+  - ls -l /usr/include        
   - autoreconf -i
   - ./configure
   - cat config.log
