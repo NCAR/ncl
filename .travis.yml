@@ -28,6 +28,9 @@ env:
     - LDFLAGS='-L/usr/lib'
   
 script:
+  - ls -l /usr/local/lib        
+  - ls -l /usr/local/include        
   - autoreconf -i
-  - ./configure 
+  - ./configure
+  - cat config.log
   - make check
