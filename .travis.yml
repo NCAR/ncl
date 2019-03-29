@@ -14,7 +14,7 @@ addons:
     - pkg-config netcdf-bin libnetcdf-dev gfortran libfreetype6-dev
 
 before_install:
-    - sudo apt-get install -y  libhdf5-serial-dev libhe5-hdfeos-dev libhe5-hdfeos0  libhdf4-alt-dev libhdfeos-dev libhdfeos0 libudunits2-dev libgeotiff-dev libgdal-dev
+    - sudo apt-get install -y  libhdf5-serial-dev libhe5-hdfeos-dev libhe5-hdfeos0  libhdf4-alt-dev libhdfeos-dev libhdfeos0 libudunits2-dev libgeotiff-dev libgdal-dev &> /dev/null
 
 before_script:
   - pwd
@@ -26,9 +26,6 @@ env:
     - LIBS='-lhdfeos -ldl -lhe5_hdfeos -lhdf5 -lhdf5_hl -ljasper'
     - FFLAGS=-fno-range-check 
 script:
-  - ls -l /usr/lib        
-  - ls -l /usr/include        
-  - autoreconf -i
+  - autoreconf -i &> /dev/null
   - ./configure
-  - cat config.log
   - make check
