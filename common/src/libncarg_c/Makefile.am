@@ -1,7 +1,7 @@
 # This is an automake file for NCL.
 # Ed Hartnett 8/30/18
 
-AM_CPPFLAGS = -I${top_builddir}/common/src/libncarg_c/ncarg -I${top_builddir}/common/src/libncarg_c
+AM_CPPFLAGS = -I${top_srcdir}/common/src/libncarg_c/ncarg -I${top_srcdir}/common/src/libncarg_c
 
 # Build this convenience library.
 lib_LTLIBRARIES = libncarg_c.la
