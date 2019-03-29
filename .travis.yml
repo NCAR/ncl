@@ -21,16 +21,10 @@ before_install:
 
 before_script:
   - pwd
-  - wget https://sourceforge.net/projects/freetype/files/freetype2/2.10.0/freetype-2.10.0.tar.gz
-  - tar zxf freetype-2.10.0.tar.gz
-  - cd freetype-2.10.0
-  - ./configure --prefix=/usr
-  - make all install
-  - cd ..
   
 env:
   global:
-    - CPPFLAGS='-I/usr/include'
+    - CPPFLAGS='-I/usr/include -I/usr/include/freetype2'
     - LDFLAGS='-L/usr/lib'
   
 script:
