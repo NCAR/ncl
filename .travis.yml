@@ -27,5 +27,5 @@ env:
     - FFLAGS=-fno-range-check 
 script:
   - autoreconf -i &> /dev/null
-  - ./configure
-  - make check
+  - ./configure &> /dev/null
+  - make check > /dev/null
