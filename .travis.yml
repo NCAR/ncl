@@ -1,5 +1,5 @@
 language: c
-dist: trusty
+dist: bionic
 sudo: false
 
 branches:
@@ -11,7 +11,7 @@ addons:
     sources:
     - ubuntu-toolchain-r-test
     packages:
-    - pkg-config netcdf-bin libnetcdf-dev gfortran libfreetype6-dev
+    - pkg-config netcdf-bin libnetcdf-dev gfortran libfreetype6-dev libhdf5-serial-dev libhe5-hdfeos-dev libhe5-hdfeos0 libhdf4-dev
 
 before_install:
   - test -n $CC && unset CC
@@ -26,7 +26,8 @@ env:
   global:
     - CPPFLAGS='-I/usr/include -I/usr/include/freetype2'
     - LDFLAGS='-L/usr/lib'
-  
+    - LIBS='-lhdfeos -ldl -lhe5_hdfeos -lhdf5 -lhdf5_hl -ljasper'
+    - FFLAGS=-fno-range-check 
 script:
   - ls -l /usr/lib        
   - ls -l /usr/include        
