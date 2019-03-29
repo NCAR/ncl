@@ -21,6 +21,10 @@ before_install:
 
 before_script:
   - pwd
+  - wget https://sourceforge.net/projects/freetype/files/freetype2/2.10.0/freetype-2.10.0.tar.gz
+  - tar zxf freetype-2.10.0.tar.gz
+  - ./configure --prefix=/usr
+  - make all install
   
 env:
   global:
