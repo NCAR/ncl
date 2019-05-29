@@ -3142,7 +3142,7 @@ begin
      if (isatt(z_in, "units")) then
         var2d@level_units = z_in@units
      else
-        vart2d@level_units = "unknown"
+        var2d@level_units = "unknown"
      end if
      
      return var2d
