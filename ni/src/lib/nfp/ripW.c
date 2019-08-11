@@ -533,7 +533,7 @@ NhlErrorTypes rip_cape_3d_W( void )
 
 /* Terminate if there was an error */
 	if (errstat != 0) {
-		fprintf(stderr, errmsg);
+		fputs(errmsg, stderr);
 		exit(errstat);
 	}
 
@@ -1080,7 +1080,7 @@ NhlErrorTypes rip_cape_2d_W( void )
 
 /* Terminate if there was an error */
 	if (errstat != 0) {
-		fprintf(stderr, errmsg);
+		fputs(errmsg, stderr);
 		exit(errstat);
 	}
 

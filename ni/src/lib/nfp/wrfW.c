@@ -1514,7 +1514,7 @@ NhlErrorTypes wrf_slp_W( void )
 
     /* Terminate if there was an error */
     if (errstat != 0) {
-    	fprintf(stderr, errmsg);
+    	fputs(errmsg, stderr);
     	exit(errstat);
     }
 /*
@@ -9221,7 +9221,7 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
 
     /* Terminate if there was an error */
 	if (errstat != 0) {
-		fprintf(stderr, errmsg);
+		fputs(errmsg, stderr);
 		exit(errstat);
 	}
 
@@ -9867,7 +9867,7 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
 
     /* Terminate if there was an error */
 	if (errstat != 0) {
-		fprintf(stderr, errmsg);
+		fputs(errmsg, stderr);
 		exit(errstat);
 	}
 
@@ -10529,7 +10529,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
 
 /* Terminate if there was an error */
 	if (errstat != 0) {
-		fprintf(stderr, errmsg);
+		fputs(errmsg, stderr);
 		exit(errstat);
 	}
 
@@ -11232,7 +11232,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
 
     /* Terminate if there was an error */
     if (errstat != 0) {
-      fprintf(stderr, errmsg);
+      fputs(errmsg, stderr);
       exit(errstat);
     }
 /*
@@ -13620,7 +13620,7 @@ NhlErrorTypes wrf_wetbulb_W( void )
 
     /* Terminate if there was an error */
 	if (errstat != 0) {
-		fprintf(stderr, errmsg);
+		fputs(errmsg, stderr);
 		exit(errstat);
 	}
 
