@@ -31,7 +31,7 @@ DEP_LIBS	=	$(DEPICTRANSLIB) $(DEPCTRANSLIB) $(DEPCGMLIB) \
 MORE_LIBS	= -lmalloc
 #endif
 
-EXTRA_LIBS	= $(X11LIBS) $(SUNLIBS) $(NETCDFLIB) $(HDFLIB) $(CTOFLIBS)
+EXTRA_LIBS	= $(X11LIBS) $(SUNLIBS) $(NETCDFLIB) $(HDFLIB) $(CTOFLIBS) -lm
 SYS_LIBS	=  $(MORE_LIBS)
 
 SRCS		= main.c 
@@ -39,9 +39,6 @@ OBJS		= main.o
 
 CProgram($(MYNAME),$(OBJS),$(DEP_LIBS))
 DependTarget($(SRCS))
-
-all-local::
-	@$(CAT) Copyright
 
 lint: $(HDR) $(SRCS)
 	lint $(CDEFINES) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1
