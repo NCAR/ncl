@@ -819,7 +819,7 @@ NclBasicDataTypes type_ter;
 								   &errstat, errmsg, ERRLEN);
     /* Terminate if there was an error */
 	if (errstat != 0) {
-		fprintf(stderr, errmsg);
+		fputs(errmsg, stderr);
 		exit(errstat);
 	}
 
