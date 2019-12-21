@@ -10,23 +10,27 @@
  */
 
 #define    HdfDefines  -DFreeBSD
-#define    StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped
+#define    StdDefines  -DSYSV -D_XOPEN_SOURCE -DByteSwapped -DACCEPT_USE_OF_DEPRECATED_PROJ_API_H
 #define    ByteSwapped
 #define    Cstatic
 #define    Cdynamic
 #define    CppCommand  '/usr/bin/cpp -traditional'
 #define    CCompiler   cc
-#define    FCompiler   f77
-#define    CtoFLibraries   -lg2c -lgcc -lm
-#define    CcOptions       -ansi
+#define    CxxCompiler c\+\+
+#define    FCompiler   gfortran9
+#define    CtoFLibraries -L/usr/local/lib/gcc9 -lgfortran -lquadmath
+#define    FcOptions -fno-range-check -fomit-frame-pointer -fno-exceptions -fno-asynchronous-unwind-tables -fno-unwind-tables
+#define    CcOptions -fomit-frame-pointer -fno-exceptions -fno-asynchronous-unwind-tables -fno-unwind-tables
+#define    COptimizeFlag -O2
+#define    FOptimizeFlag -O2
 #define    XToolLibrary    -lXt -lSM -lICE
 #define    BuildShared NO
 #define    XLibrary    -lX11 -lXext
 
-#define    ArchRecLibSearch    -L/usr/X11R6/lib -L/usr/local/lib
-#define    ArchRecIncSearch    -I/usr/X11R6/include -I/usr/local/include
+#define    ArchRecLibSearch    -L/usr/local/lib
+#define    ArchRecIncSearch    -I/usr/local/include -I/usr/local/include/freetype2
 
-FC ?= $(F77)
+FC = /usr/local/bin/gfortran9
 
 /*************** Redefine Macros from Rules ********************************/
 

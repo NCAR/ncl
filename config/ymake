@@ -391,6 +391,7 @@ case    FreeBSD:
         switch ("$mach")
         case    i*86:
         case    i*64:
+        case    amd64:
         case    alpha:
             set model   = $mach
             set arch    = $mach

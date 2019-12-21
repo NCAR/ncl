@@ -35,7 +35,11 @@ short    NCLuseAFS;
 
 #include <ctype.h>
 #include <unistd.h>
+#ifdef __FreeBSD__
+#include <stdlib.h>
+#else
 #include <alloca.h>
+#endif
 #include <netcdf.h>
 
 #ifdef BuildHDF4

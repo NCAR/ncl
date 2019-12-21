@@ -24,7 +24,11 @@
 #include <sys/stat.h>
 #include <assert.h>
 #include <math.h>
+#ifdef __FreeBSD__
+#include <stdlib.h>
+#else
 #include <alloca.h>
+#endif
 #include "defs.h"
 #include "Symbol.h"
 #include "NclVar.h"
