@@ -43,7 +43,7 @@ CleanFilesTarget($(FONTCAPS))
 # Rule for processing fontcaps
 .SUFFIXES: .fc
 
-.fc:
+.fc: $(FONTC)
 	@echo "	Processing fontcap $@"
 	@$(FONTC) $< $@
 
