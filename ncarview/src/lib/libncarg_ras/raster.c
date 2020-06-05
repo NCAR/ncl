@@ -35,6 +35,7 @@
  *		
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -505,6 +506,7 @@ RasterPrintInfo(ras)
  *		RAS_ERROR or RAS_EOF if something went wrong.
  *		
  *********************************************************************/
+int
 RasterLoadPalette(ras, colors)
 	Raster		*ras;
 	unsigned char	colors[768];

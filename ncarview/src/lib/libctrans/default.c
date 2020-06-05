@@ -86,7 +86,7 @@ ColorLUTable			*clut = &colorLUTable;
 
 
 
-InitDefault()
+void	InitDefault()
 {
 	static	boolean	isInit = FALSE;
 	int	max_intensity = (1 << DCP) - 1;
@@ -160,7 +160,7 @@ void	_CtDefNoColorDefault()
 	colorLUTable.damage = FALSE;
 }
 
-SetInPic(value)
+void	 SetInPic(value)
 boolean		value;
 {
 	int	i;
@@ -1277,7 +1277,7 @@ CGMC *c;
 /*
  *	set mininum line width
  */
-SetMinLineWidthDefault(line_width)
+void SetMinLineWidthDefault(line_width)
 	float	line_width;
 {
 
@@ -1302,7 +1302,7 @@ SetMinLineWidthDefault(line_width)
 /*
  *	Set Maximum line width.
  */
-SetMaxLineWidthDefault(line_width)
+void SetMaxLineWidthDefault(line_width)
 	float	line_width;
 {
 	defaulttable.line_width = MIN(line_width, defaulttable.line_width);
@@ -1317,7 +1317,7 @@ SetMaxLineWidthDefault(line_width)
 /*
  *	set additional line scaling
  */
-SetAdditionalLineScale(line_scale)
+void SetAdditionalLineScale(line_scale)
 	float	line_scale;
 {
 	LINE_WIDTH_DAMAGE = TRUE;
@@ -1331,7 +1331,7 @@ SetAdditionalLineScale(line_scale)
 /*
  *	set rgb intensity scaling
  */
-SetRGBIntensityScale(rgb_scale)
+void SetRGBIntensityScale(rgb_scale)
 	float	rgb_scale;
 {
 	COLOUR_TABLE_DAMAGE = TRUE;

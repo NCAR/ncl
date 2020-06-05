@@ -31,6 +31,7 @@
 
 #include	<stdio.h>
 #include	<stdlib.h>
+#include	<string.h>
 #include	<errno.h>
 #include	<ncarg/c.h>
 #include	"cgmc.h"
@@ -39,9 +40,8 @@
 #include	"ctrandef.h"
 #include	"translate.h"
 #include	"bitops.h"
-
-
-
+#include	"buffer.h"
+#include	"format.h"
 
 static	boolean	Runlength;	/* true if device wants run length encoded
 				 * pixel map

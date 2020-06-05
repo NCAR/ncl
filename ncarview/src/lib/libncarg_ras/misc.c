@@ -58,6 +58,7 @@ read_swap(fp, nb, buf, swapflag)
 
 /* Swiped from John Clyne */
 
+void
 _swapshort (bp, n)
     register char *bp;
     register unsigned n;
@@ -73,6 +74,7 @@ _swapshort (bp, n)
     }
 }
 
+void
 _swaplong (bp, n)
     register char *bp;
     register unsigned n;
@@ -99,6 +101,7 @@ _swaplong (bp, n)
  *
  *	Return the number of images in a file. Return -1 on error
  */
+int
 ImageCount_(name, format)
 	char	*name;
 	char	*format;

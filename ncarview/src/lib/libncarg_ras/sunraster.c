@@ -46,8 +46,10 @@
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "ncarg_ras.h"
 #include "sunraster.h"
+#include "misc.h"
 
 static char	*FormatName = "sun";
 
@@ -222,18 +224,18 @@ SunWrite(ras)
 		dep = (SunInfo *) ras->dep;
 	}
 
-	nb = write(ras->fd, (char *) dep, sizeof(SunInfo));
+	nb = write(ras->fd, dep, sizeof(SunInfo));
 	if (nb != sizeof(SunInfo)) return(RAS_EOF);
 
 	/* Write the color table. */
 
-	nb = write(ras->fd, (char *) ras->red, ras->ncolor);
+	nb = write(ras->fd, ras->red, ras->ncolor);
 	if (nb != ras->ncolor) return(RAS_EOF);
 
-	nb = write(ras->fd, (char *) ras->green, ras->ncolor);
+	nb = write(ras->fd, ras->green, ras->ncolor);
 	if (nb != ras->ncolor) return(RAS_EOF);
 
-	nb = write(ras->fd, (char *) ras->blue, ras->ncolor);
+	nb = write(ras->fd, ras->blue, ras->ncolor);
 	if (nb != ras->ncolor) return(RAS_EOF);
 
 	/*
