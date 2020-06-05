@@ -7,6 +7,12 @@ SCRIPTS2 = WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc scrip_check_input ncl_
 
 MAN1 = ng4ex nhlcc nhlf77 nhlf90
 
+InstallTarget($(SCRIPTS1),$(INSTALL_BIN),$(BINPATH))
+InstallTarget($(SCRIPTS2),$(INSTALL_BIN),$(BINPATH))
+CleanFilesTarget($(SCRIPTS1))
+InstallManPages($(MAN1),$(FORMAT_EXT),$(MAN1PATH),$(MAN1_SECTION))
+FormatManPages($(MAN1),.m,.p)
+
 nhlf77: nhlf77.csh Makefile
 	@sed \
 	-e 's+SED_FC+$(F77)+' \
@@ -75,12 +81,6 @@ FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m
 #endif
-
-InstallTarget($(SCRIPTS1),$(INSTALL_BIN),$(BINPATH))
-InstallTarget($(SCRIPTS2),$(INSTALL_BIN),$(BINPATH))
-CleanFilesTarget($(SCRIPTS1))
-InstallManPages($(MAN1),$(FORMAT_EXT),$(MAN1PATH),$(MAN1_SECTION))
-FormatManPages($(MAN1),.m,.p)
 
 #if !defined(CRAY)
 ng4ex: ng4ex.csh Makefile
