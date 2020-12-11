@@ -140,9 +140,10 @@ extern char *the_input_buffer;
 extern char *the_input_buffer_ptr;
 extern int the_input_buffer_size;
 
-FILE *thefptr;
-FILE *theoptr;
-int cmd_line;
+extern FILE *thefptr;
+extern FILE *theoptr;
+extern int cmd_line;
+
 extern int cur_line_number;
 extern char *cur_line_text;
 extern int cur_line_maxsize;
