@@ -82,7 +82,7 @@ static NrmQuark Qfill_val;
 
 #define NUMPOSDIMNAMES	6
 
-NclQuark possibleDimNames[NUMPOSDIMNAMES];
+static NclQuark possibleDimNames[NUMPOSDIMNAMES];
 
 #ifndef FALSE
 #define FALSE           0
