@@ -63,7 +63,7 @@ int	GcapOpenBuffer(file)
 /*
  *	Flushes out the output buffer. Called at the end of a picture.
  */
-flush()
+void	flush()
 {
 	(void)write(outFD,outbuf,outbufnum);
 	outbufnum = 0;
@@ -73,7 +73,7 @@ flush()
  *	Copies the "count" number of chars from "str" into the output buffer,
  *	flushing the buffer if need be.
  */
-buffer(str,count)
+void	buffer(str,count)
 	SignedChar 	*str;
 	int  		count;
 {

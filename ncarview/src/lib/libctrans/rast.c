@@ -17,6 +17,7 @@
 *                                                                      *
 ***********************************************************************/
 		
+#include "in.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,6 +32,7 @@
 #include "ctrandef.h"
 #include "default.h"
 #include "devices.h"
+#include "misc.h"
 
 extern	boolean	*softFill;
 extern	boolean	deviceIsInit;
@@ -91,7 +93,7 @@ RasColrTab	colorTab;	/* the color table			*/
 Raster	*rastGrid;		/* struct for creating output file	*/
 boolean	rasIsDirect;		/* direct encoded image?		*/
 
-static	build_ras_arg(ras_argc, ras_argv, rast_opts)
+static	int build_ras_arg(ras_argc, ras_argv, rast_opts)
 	int	*ras_argc;
 	char	**ras_argv;
 	struct	Opts rast_opts;
@@ -153,7 +155,7 @@ static	build_ras_arg(ras_argc, ras_argv, rast_opts)
 }
 
 
-static	clear_grid(grid)
+static	void clear_grid(grid)
 	Raster	*grid;
 {
 	if (rasIsDirect) {
@@ -171,7 +173,7 @@ static	clear_grid(grid)
 	}
 }
 
-static	init_color_tab()
+static	void init_color_tab()
 {
 
 	/*
@@ -185,7 +187,7 @@ static	init_color_tab()
 	
 #define DEFAULT_WIDTH   512	/* default raster width         */
 #define DEFAULT_HEIGHT  512	/* default raster height        */
-get_resolution(dev_extent, opts, name)
+void get_resolution(dev_extent, opts, name)
 	CoordRect	*dev_extent;
 	struct	Opts opts;
 	char	*name;

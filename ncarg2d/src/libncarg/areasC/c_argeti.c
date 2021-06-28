@@ -11,6 +11,7 @@
 *                                                                       *
 ************************************************************************/
 
+#include <string.h>
 #include <ncarg/ncargC.h>
 
 extern void NGCALLF(argeti,ARGETI)(NGstring,int*,int);

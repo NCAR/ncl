@@ -23,7 +23,7 @@
  *	Description:	miscellaneous ctrans funcions
  */
 
-CoordStringToInt(s, llx, lly, urx, ury)
+int CoordStringToInt(s, llx, lly, urx, ury)
 	char	*s;
 	int	*llx, *lly, *urx, *ury;
 {

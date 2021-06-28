@@ -163,6 +163,12 @@ extern void c_agback(
 #endif
 );
 
+extern void NGCALLF(agback,AGBACK)(
+#ifdef  NeedFuncProto
+    void
+#endif
+);
+
 extern char *c_agbnch(
 #ifdef  NeedFuncProto
     int idsh

@@ -16,6 +16,9 @@
 *                      NCAR View V3.00 - UNIX Release                  *
 *                                                                      *
 ***********************************************************************/
+
+#include "cgmc.h"
+
 #define	BUFSIZE 	1440	/*size of CGM buffer in bytes	*/
 #define N 		-1	/*flag indicating any integer value	*/
 #define STDIN		0
@@ -59,4 +62,5 @@ enum ads { na,			/*none          */
 				 */
          };
 
+int Instr_Dec(CGMC *cgmc);
 
