@@ -37,15 +37,14 @@ jobs:
           activate-environment: ncl_build
           python-version: ${{ matrix.python-version }}
           channels: conda-forge, ncar
-          environment-file: .build/envs/$(uname).yml
-#      - name: Conda install (Darwin)
-#        if: matrix.os == 'macos-latest'
-#        run: |
-#          conda install numpy=1.19 xarray dask pytest pytest-cov gfortran_osx-64 liblapack
-#      - name: Conda install (Linux)
-#        if: matrix.os == 'ubuntu-latest'
-#        run: |
-#          conda install numpy=1.19 xarray dask pytest pytest-cov gfortran_linux-64 liblapack
+      - name: Conda install (Darwin)
+        if: matrix.os == 'macos-latest'
+        run: |
+          conda env create --file .build/envs/Darwin.yml
+      - name: Conda install (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          conda env create --file .build/envs/Linux.yml
       - name: Install additional dependencies
         run: |
           conda install -n ncl_build -c conda-forge imagemagick esmf libgdal=2.4
