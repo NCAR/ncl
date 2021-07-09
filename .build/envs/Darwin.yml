@@ -1,5 +1,6 @@
 name: ncl_build
 channels:
+  - anaconda
   - conda-forge
 dependencies:
   - clang_osx-64
