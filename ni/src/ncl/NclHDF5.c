@@ -240,7 +240,7 @@ struct _HDF5FileRecord
 
 #define NUMPOSDIMNAMES	6
 
-NclQuark possibleDimNames[NUMPOSDIMNAMES];
+static NclQuark possibleDimNames[NUMPOSDIMNAMES];
 
 static int _H5_initializeOptions 
 #if    NhlNeedProto
