@@ -1,3 +1,5 @@
+#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
+
 #include <stdio.h>
 #include <proj_api.h>
 #include "TransformCoordinate.h"
