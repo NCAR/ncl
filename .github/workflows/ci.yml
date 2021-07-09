@@ -50,7 +50,7 @@ jobs:
           conda install -n ncl_build -c conda-forge imagemagick esmf libgdal=2.4
       - name: Build-Install ncl
         run: |
-#          sh -c "${CIRCLE_COMMAND_1}"
+          # sh -c "${CIRCLE_COMMAND_1}"
           source .build/conda_build.sh
       - name: Run tests
         run: |
