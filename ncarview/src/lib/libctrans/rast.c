@@ -32,7 +32,6 @@
 #include "ctrandef.h"
 #include "default.h"
 #include "devices.h"
-#include "misc.h"
 
 extern	boolean	*softFill;
 extern	boolean	deviceIsInit;

@@ -49,7 +49,6 @@
 #include <unistd.h>
 #include "ncarg_ras.h"
 #include "sunraster.h"
-#include "misc.h"
 
 static char	*FormatName = "sun";
 
