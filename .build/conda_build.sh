@@ -65,7 +65,7 @@ sed -e "s|\${PREFIX}|${PREFIX}|g" -e "s|\${x11_inc}|${x11_inc}|g" -e "s|\${x11_l
 patch -N -p1 < ${RECIPE_DIR}/grib2.patch >/dev/null 2>&1
 
 echo -e "n\n" | ./Configure
-make Everything
+#make Everything
 
 ACTIVATE_DIR="$PREFIX/etc/conda/activate.d"
 DEACTIVATE_DIR="$PREFIX/etc/conda/deactivate.d"
