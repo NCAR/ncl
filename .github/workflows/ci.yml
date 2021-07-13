@@ -14,7 +14,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        shell: sh -e {0}
+        shell: bash -l {0}
 
     strategy:
       fail-fast: false
