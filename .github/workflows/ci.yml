@@ -67,7 +67,25 @@ jobs:
           export LDFLAGS="-L${PREFIX}/lib $LDFLAGS"
           export CPPFLAGS="-I${PREFIX}/include $CPPFLAGS"
           export CFLAGS="-I${PREFIX}/include $CFLAGS"
-          source .build/conda_build.sh
+
+          export CC="$GCC"
+          export CPP="${CPP} -traditional"
+          export CXX="$GXX"
+          export FC
+
+          conf_file=config/LINUX
+
+          fi
+
+          export EXTRA_LDFLAGS="$LDFLAGS"
+
+          export grib2_dir=${SRC_DIR}/external/g2clib-1.6.0
+          export EXTRA_INCLUDES=-I${grib2_dir}
+
+          # fix malformed sed subsitutions
+          sed -e 's/+/|/g' -i.backup ni/src/scripts/yMakefile
+          sed -e 's/+/|/g' -i.backup ni/src/ncl/yMakefile
+
       - name: Run tests
         run: |
           test "`ncl -V`" = "`cat version`"
