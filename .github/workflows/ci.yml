@@ -14,7 +14,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        shell: bash
+        shell: bash -l {0}
 
     strategy:
       fail-fast: false
@@ -48,8 +48,25 @@ jobs:
       - name: Install additional dependencies
         run: |
           conda install -n ncl_build -c conda-forge imagemagick esmf libgdal=2.4
-      - name: Build-Install ncl
+      - name: Build ncl
         run: |
+          unsetopt EQUALS 2>/dev/null
+
+          RECIPE_DIR="$(dirname "$0")"
+          export SRC_DIR="$(cd `dirname ${RECIPE_DIR}`; pwd)"
+          export RECIPE_DIR="${SRC_DIR}/$(basename "${RECIPE_DIR}")"
+
+          cd ${SRC_DIR}
+
+          conda env create -f "${RECIPE_DIR}/envs/`uname`.yml" 2>/dev/null
+          source activate ncl_build 2>/dev/null || conda activate ncl_build
+
+
+          export PREFIX="${CONDA_PREFIX}"
+          export CXXFLAGS="-fPIC $CXXFLAGS"
+          export LDFLAGS="-L${PREFIX}/lib $LDFLAGS"
+          export CPPFLAGS="-I${PREFIX}/include $CPPFLAGS"
+          export CFLAGS="-I${PREFIX}/include $CFLAGS"
           source .build/conda_build.sh
       - name: Run tests
         run: |
