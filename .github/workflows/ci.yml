@@ -50,8 +50,6 @@ jobs:
           conda install -n ncl_build -c conda-forge imagemagick esmf libgdal=2.4
       - name: Build ncl
         run: |
-          unsetopt EQUALS 2>/dev/null
-
           RECIPE_DIR="$(dirname "$0")"
           export SRC_DIR="$(cd `dirname ${RECIPE_DIR}`; pwd)"
           export RECIPE_DIR="${SRC_DIR}/$(basename "${RECIPE_DIR}")"
