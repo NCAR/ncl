@@ -10,7 +10,7 @@
  */
 
 #define    HdfDefines  -DFreeBSD
-#define    StdDefines  -DSYSV -D_XOPEN_SOURCE -DByteSwapped -DACCEPT_USE_OF_DEPRECATED_PROJ_API_H
+#define    StdDefines  -DSYSV -D_XOPEN_SOURCE -DByteSwapped
 #define    ByteSwapped
 #define    Cstatic
 #define    Cdynamic
