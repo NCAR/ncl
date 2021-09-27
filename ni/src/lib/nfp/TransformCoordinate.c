@@ -1,49 +1,39 @@
-#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
-
 #include <stdio.h>
-#include <proj_api.h>
+#include <proj.h>
 #include "TransformCoordinate.h"
 
 int TransformCoordinate(char * SrcProjStr, char * DstProjStr,
                         double * x, double * y, double * z,
                         unsigned int nPoint) {
-  projPJ SrcProj, DstProj;
+  PJ_CONTEXT *CTX;
+  PJ *P;
+  size_t stride = sizeof(double);
   int Err, i;
 
-  /* Constructing the projections */
-  if (!(SrcProj = pj_init_plus(SrcProjStr))) {
-    printf("FATAL ERROR: Can not make a projection out of <%s>\n", SrcProjStr);
-    return (1);
-  }
-  if (!(DstProj = pj_init_plus(DstProjStr))) {
-    printf("FATAL ERROR: Can not make a projection out of <%s>\n", DstProjStr);
-    return (2);
-  }
+  CTX = proj_context_create();
+  P = proj_create_crs_to_crs(CTX, SrcProjStr, DstProjStr, NULL);
 
-  /* Converting to radian if needed */
-  if (pj_is_latlong(SrcProj)) {
-    for (i = 0; i < nPoint; i++) {
-      x[i] *= DEG_TO_RAD;
-      y[i] *= DEG_TO_RAD;
-    }
+  /* Constructing the projections */
+  if (P==0) {
+    printf("FATAL ERROR: Can not make a transform out of <%s> and <%s>\n",
+           SrcProjStr, DstProjStr);
+    return (1);
   }
 
   /* Transforming the coordinates */
-  if ((Err = pj_transform(SrcProj, DstProj, nPoint, 1, x, y, z)) != 0) {
-    printf("FATAL ERROR: %s\n", pj_strerrno(Err));
+  Err = proj_trans_generic(P, PJ_FWD,
+                           x, stride, nPoint,
+                           y, stride, nPoint,
+                           z, stride, nPoint,
+                           0, 0, 0);
+  if (Err != 0) {
+    printf("FATAL ERROR: Could convert only %i out of %u points\n",
+           Err, nPoint);
     return (3);
   }
 
-  /* converting to degree if needed */
-  if (pj_is_latlong(DstProj)) {
-    for (i = 0; i < nPoint; i++) {
-      x[i] *= RAD_TO_DEG;
-      y[i] *= RAD_TO_DEG;
-    }
-  }
-
   /* freeing the projection */
-  pj_free(DstProj);
-  pj_free(SrcProj);
+  proj_destroy(P);
+  proj_context_destroy(CTX);
   return (0);
 }
