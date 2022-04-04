@@ -47,7 +47,7 @@ jobs:
           conda env update --file .build/envs/Linux.yml --prune
       - name: Install additional dependencies
         run: |
-          conda install -n ncl_build -c conda-forge imagemagick esmf libgdal=2.4
+          conda install -n ncl_build -c conda-forge imagemagick esmf libgdal
       - name: Build ncl
         run: |
           RECIPE_DIR="$(dirname "$0")"
