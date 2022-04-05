@@ -8,6 +8,7 @@ export RECIPE_DIR="${SRC_DIR}/$(basename "${RECIPE_DIR}")"
 cd ${SRC_DIR}
 
 #conda env create -f "${RECIPE_DIR}/envs/`uname`.yml" 2>/dev/null
+eval "$(conda shell.bash hook)"
 source activate ncl_build 2>/dev/null || conda activate ncl_build
 
 
