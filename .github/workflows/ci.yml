@@ -62,6 +62,7 @@ jobs:
 
       - name: Run tests
         run: |
+          conda activate ncl_build
           test "`ncl -V`" = "`cat version`"
           git clone https://github.com/NCAR/ncl_ci_test
           cd ncl_ci_test
