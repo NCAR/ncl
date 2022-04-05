@@ -48,39 +48,7 @@ jobs:
           environment-file: .build/envs/Linux.yml
       - name: Build ncl
         run: |
-          RECIPE_DIR="$(dirname "$0")"
-          export SRC_DIR="$(cd `dirname ${RECIPE_DIR}`; pwd)"
-          export RECIPE_DIR="${SRC_DIR}/$(basename "${RECIPE_DIR}")"
-
-          cd ${SRC_DIR}
-
-          conda env create -f "${RECIPE_DIR}/envs/`uname`.yml" 2>/dev/null
-          source activate ncl_build 2>/dev/null || conda activate ncl_build
-
-
-          export PREFIX="${CONDA_PREFIX}"
-          export CXXFLAGS="-fPIC $CXXFLAGS"
-          export LDFLAGS="-L${PREFIX}/lib $LDFLAGS"
-          export CPPFLAGS="-I${PREFIX}/include $CPPFLAGS"
-          export CFLAGS="-I${PREFIX}/include $CFLAGS"
-
-          export CC="$GCC"
-          export CPP="${CPP} -traditional"
-          export CXX="$GXX"
-          export FC
-
-          conf_file=config/LINUX
-
-          fi
-
-          export EXTRA_LDFLAGS="$LDFLAGS"
-
-          export grib2_dir=${SRC_DIR}/external/g2clib-1.6.0
-          export EXTRA_INCLUDES=-I${grib2_dir}
-
-          # fix malformed sed subsitutions
-          sed -e 's/+/|/g' -i.backup ni/src/scripts/yMakefile
-          sed -e 's/+/|/g' -i.backup ni/src/ncl/yMakefile
+          source .build/conda_build.sh
 
       - name: Run tests
         run: |
