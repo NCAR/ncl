@@ -58,7 +58,6 @@ jobs:
           environment-file: .build/envs/Linux.yml
       - name: Build ncl
         run: |
-          eval "$(conda shell.bash hook)"
           bash .build/conda_build.sh
 
       - name: Run tests
