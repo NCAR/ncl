@@ -47,6 +47,7 @@ jobs:
           environment-name: ncl_build
           environment-file: .build/envs/Linux.yml
       - name: Build ncl
+        shell: sh
         run: |
           source .build/conda_build.sh
 
