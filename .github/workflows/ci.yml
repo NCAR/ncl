@@ -33,11 +33,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install tcsh
-      - name: Install tcsh
+      - name: Install dependencies
         if: matrix.os == 'macos-latest'
         run: |
           brew update
-          brew install tcsh
+          brew install --cask xquartz
       - name: Create conda environment (Darwin)
         if: matrix.os == 'macos-latest'
         env:
