@@ -23,31 +23,29 @@ jobs:
         python-version: [ "3.6", "3.7", "3.8", "3.9" ]
 
     steps:
+      - uses: actions/checkout@v2
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.9.0
         with:
           access_token: ${{ github.token }}
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          token: ${{ github.token }}
-      - name: Conda setup
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          activate-environment: ncl_build
-          python-version: ${{ matrix.python-version }}
-          channels: conda-forge, ncar
-      - name: Conda install (Darwin)
+      - name: Create conda environment (Darwin)
         if: matrix.os == 'macos-latest'
-        run: |
-          conda env update --file .build/envs/Darwin.yml --prune
-      - name: Conda install (Linux)
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+        uses: mamba-org/provision-with-micromamba@main
+        with:
+          micromamba-version: "latest"
+          environment-name: ncl_build
+          environment-file: .build/envs/Darwin.yml
+      - name: Create conda environment (Linux)
         if: matrix.os == 'ubuntu-latest'
-        run: |
-          conda env update --file .build/envs/Linux.yml --prune
-#      - name: Install additional dependencies
-#        run: |
-#          conda install -n ncl_build -c conda-forge imagemagick esmf libgdal
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+        uses: mamba-org/provision-with-micromamba@main
+        with:
+          micromamba-version: "latest"
+          environment-name: ncl_build
+          environment-file: .build/envs/Linux.yml
       - name: Build ncl
         run: |
           RECIPE_DIR="$(dirname "$0")"
