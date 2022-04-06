@@ -24,20 +24,24 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.9.0
         with:
           access_token: ${{ github.token }}
+
       - name: Install tcsh
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install tcsh
+
       - name: Install dependencies
         if: matrix.os == 'macos-latest'
         run: |
           brew update
           brew install --cask xquartz
+
       - name: Create conda environment (Darwin)
         if: matrix.os == 'macos-latest'
         env:
@@ -47,8 +51,7 @@ jobs:
           micromamba-version: "latest"
           environment-name: ncl_build
           environment-file: .build/envs/Darwin.yml
-        run: |
-          bash source ~/Users/runner/micromamba/bin/activate ncl_build
+
       - name: Create conda environment (Linux)
         if: matrix.os == 'ubuntu-latest'
         env:
@@ -58,8 +61,17 @@ jobs:
           micromamba-version: "latest"
           environment-name: ncl_build
           environment-file: .build/envs/Linux.yml
+
+      - name: Activate environment (Darwin)
+        if: matrix.os == 'macos-latest'
+        run: |
+          bash source ~/Users/runner/micromamba/bin/activate ncl_build
+
+      - name: Activate environment (Linux)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           bash source ~/runner/micromamba/bin/activate ncl_build
+
       - name: Build ncl
         run: |
           bash .build/conda_build.sh
