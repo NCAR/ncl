@@ -64,6 +64,7 @@ jobs:
 
       - name: Build ncl
         run: |
+          eval "$(micromamba shell hook --shell=bash)"
           bash .build/conda_build.sh
 
       - name: Run tests
