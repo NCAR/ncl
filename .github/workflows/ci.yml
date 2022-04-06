@@ -68,8 +68,7 @@ jobs:
 
       - name: Run tests
         run: |
-          source ~/micromamba/bin/activate ncl_build
-          micromamba activate ncl_build
+          conda activate ncl_build
           test "`ncl -V`" = "`cat version`"
           git clone https://github.com/NCAR/ncl_ci_test
           cd ncl_ci_test
