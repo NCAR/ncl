@@ -47,6 +47,8 @@ jobs:
           micromamba-version: "latest"
           environment-name: ncl_build
           environment-file: .build/envs/Darwin.yml
+        run: |
+          bash source ~/Users/runner/micromamba/bin/activate ncl_build
       - name: Create conda environment (Linux)
         if: matrix.os == 'ubuntu-latest'
         env:
@@ -56,6 +58,8 @@ jobs:
           micromamba-version: "latest"
           environment-name: ncl_build
           environment-file: .build/envs/Linux.yml
+        run: |
+          bash source ~/runner/micromamba/bin/activate ncl_build
       - name: Build ncl
         run: |
           bash .build/conda_build.sh
