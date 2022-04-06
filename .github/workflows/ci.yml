@@ -62,16 +62,6 @@ jobs:
           environment-name: ncl_build
           environment-file: .build/envs/Linux.yml
 
-      - name: Activate environment (Darwin)
-        if: matrix.os == 'macos-latest'
-        run: |
-          bash source ~/Users/runner/micromamba/bin/activate ncl_build
-
-      - name: Activate environment (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          bash source ~/runner/micromamba/bin/activate ncl_build
-
       - name: Build ncl
         run: |
           bash .build/conda_build.sh
