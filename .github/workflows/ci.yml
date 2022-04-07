@@ -7,20 +7,15 @@ on:
     - cron: '0 0 * * *' # Daily “At 00:00”
 
 jobs:
-  test:
-    # if: |
-    #   github.repository == 'NCAR/ncl'
-    name: Python (${{ matrix.python-version }}, ${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
+  test-linux:
+    name: Build and test on Linux
+    runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash -l {0}
 
     strategy:
       fail-fast: false
-      matrix:
-        os: [ "ubuntu-latest", "macos-latest"]
-        python-version: [ "3.6", "3.7", "3.8", "3.9" ]
 
     steps:
       - uses: actions/checkout@v2
@@ -31,26 +26,9 @@ jobs:
           access_token: ${{ github.token }}
 
       - name: Install tcsh
-        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install tcsh
-
-      - name: Install dependencies
-        if: matrix.os == 'macos-latest'
-        run: |
-          brew update
-          brew install --cask xquartz
-
-      - name: Create conda environment (Darwin)
-        if: matrix.os == 'macos-latest'
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-        uses: mamba-org/provision-with-micromamba@main
-        with:
-          micromamba-version: "latest"
-          environment-name: ncl_build
-          environment-file: .build/envs/Darwin.yml
 
       - name: Create conda environment (Linux)
         if: matrix.os == 'ubuntu-latest'
@@ -61,6 +39,50 @@ jobs:
           micromamba-version: "latest"
           environment-name: ncl_build
           environment-file: .build/envs/Linux.yml
+
+      - name: Build ncl
+        run: |
+          bash .build/conda_build.sh
+
+      - name: Run tests
+        run: |
+          micromamba activate ncl_build
+          test "`ncl -V`" = "`cat version`"
+          git clone https://github.com/NCAR/ncl_ci_test
+          cd ncl_ci_test
+          source run_tests.bash
+
+  test-osx:
+    name: Build and test on Osx
+    runs-on: macos-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.9.0
+        with:
+          access_token: ${{ github.token }}
+
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install --cask xquartz
+
+      - name: Create conda environment (Darwin)
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+        uses: mamba-org/provision-with-micromamba@main
+        with:
+          micromamba-version: "latest"
+          environment-name: ncl_build
+          environment-file: .build/envs/Darwin.yml
 
       - name: Build ncl
         run: |
