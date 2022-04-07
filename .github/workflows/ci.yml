@@ -34,7 +34,6 @@ jobs:
           sudo apt-get install tcsh
 
       - name: Create conda environment (Linux)
-        if: matrix.os == 'ubuntu-latest'
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         uses: mamba-org/provision-with-micromamba@main
