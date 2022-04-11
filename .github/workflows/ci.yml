@@ -30,11 +30,12 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
-      - name: Install tcsh (Linux)
+      - name: Install tcsh and byacc (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install tcsh
+          sudo apt-get install byacc
 
       - name: Install dependencies (Darwin)
         if: matrix.os == 'macos-latest'
