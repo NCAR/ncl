@@ -1,6 +1,9 @@
 name: CI
 on:
   push:
+    branches:
+      - 'develop'
+      - 'master'
   pull_request:
   workflow_dispatch:
   schedule:
@@ -8,9 +11,7 @@ on:
 
 jobs:
   test:
-    # if: |
-    #   github.repository == 'NCAR/ncl'
-    name: Python (${{ matrix.python-version }}, ${{ matrix.os }})
+    name: (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -20,7 +21,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [ "ubuntu-latest", "macos-latest"]
-        python-version: [ "3.6", "3.7", "3.8", "3.9" ]
 
     steps:
       - uses: actions/checkout@v2
@@ -30,13 +30,13 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
-      - name: Install tcsh
+      - name: Install tcsh (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install tcsh
 
-      - name: Install dependencies
+      - name: Install dependencies (Darwin)
         if: matrix.os == 'macos-latest'
         run: |
           brew update
