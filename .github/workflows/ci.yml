@@ -1,9 +1,6 @@
 name: CI
 on:
   push:
-    branches:
-      - 'develop'
-      - 'master'
   pull_request:
   workflow_dispatch:
   schedule:
@@ -11,7 +8,9 @@ on:
 
 jobs:
   test:
-    name: (${{ matrix.os }})
+    # if: |
+    #   github.repository == 'NCAR/ncl'
+    name: Python (${{ matrix.python-version }}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -31,14 +30,13 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
-      - name: Install tcsh and byacc (Linux)
+      - name: Install tcsh
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install tcsh
-          sudo apt-get install byacc
 
-      - name: Install dependencies (Darwin)
+      - name: Install dependencies
         if: matrix.os == 'macos-latest'
         run: |
           brew update

@@ -1,0 +1,69 @@
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version you desire here
+      # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
+      - image: circleci/python:3.6.1
+      
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/postgres:9.4
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum ".build/envs/Linux.yml" }}-{{ checksum ".circleci/config.yml" }}
+
+      - run:
+          name: install csh and byacc
+          command: |
+            sudo apt install tcsh byacc
+
+      - run:
+          name: install conda and dependencies
+          command: |
+            test -d ~/miniconda3 && echo "conda was restored from cache" && exit 0
+            echo "Installing a fresh version of Miniconda."
+            MINICONDA_URL="https://repo.continuum.io/miniconda"
+            MINICONDA_FILE="Miniconda3-latest-Linux-x86_64.sh"
+            curl -L -O "${MINICONDA_URL}/${MINICONDA_FILE}"
+            bash $MINICONDA_FILE -b
+            source ~/miniconda3/bin/activate root
+            conda env create -f .build/envs/Linux.yml
+            conda install -n ncl_build -c conda-forge imagemagick esmf libgdal=2.4
+
+      - save_cache:
+          paths:
+            - ~/miniconda3
+          key: v1-dependencies-{{ checksum ".build/envs/Linux.yml" }}-{{ checksum ".circleci/config.yml" }}
+
+      - run:
+          name: build ncl
+          command: |
+            source ~/miniconda3/bin/activate root
+            sh -c "${CIRCLE_COMMAND_1}"
+            bash .build/conda_build.sh
+
+      - run:
+          name: run tests
+          command: |
+            source ~/miniconda3/bin/activate ncl_build
+            test "`ncl -V`" = "`cat version`"
+            git clone https://github.com/NCAR/ncl_ci_test
+            cd ncl_ci_test
+            bash run_tests.bash
+
+      - store_artifacts:
+          path: ncl_ci_test/nug/bad
+          destination: test-reports
