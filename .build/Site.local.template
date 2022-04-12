@@ -21,6 +21,12 @@
 ${CAIROLIB}
 ${CAIROLIBUSER}
 
+#undef CCompiler
+#undef FCompiler
+#undef CxxCompiler
+#undef CppCommand
+#undef LdCommand
+
 #define CCompiler   "${CC}"
 #define FCompiler   "${FC}"
 #define CxxCompiler "${CXX}"
