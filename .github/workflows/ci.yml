@@ -65,6 +65,7 @@ jobs:
 
       - name: Build ncl
         run: |
+          conda env list
           bash .build/conda_build.sh
 
       - name: Run tests
