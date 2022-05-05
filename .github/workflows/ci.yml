@@ -71,6 +71,8 @@ jobs:
       - name: Run tests
         run: |
           micromamba activate ncl_build
+          micromamba env list
+          micromamba list
           test "`ncl -V`" = "`cat version`"
           git clone https://github.com/NCAR/ncl_ci_test
           cd ncl_ci_test
