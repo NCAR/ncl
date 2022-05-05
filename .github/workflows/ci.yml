@@ -65,8 +65,6 @@ jobs:
 
       - name: Build ncl
         run: |
-          ./bin/micromamba shell init -s bash -p ~/micromamba
-          source ~/.bashrc
           bash .build/conda_build.sh
 
       - name: Run tests

@@ -8,6 +8,8 @@ export RECIPE_DIR="${SRC_DIR}/$(basename "${RECIPE_DIR}")"
 cd ${SRC_DIR}
 
 #conda env create -f "${RECIPE_DIR}/envs/`uname`.yml" 2>/dev/null
+./bin/micromamba shell init -s bash -p ~/micromamba
+source ~/.bashrc
 source activate ncl_build 2>/dev/null || conda activate ncl_build
 #eval "$(micromamba shell hook --shell=bash)"
 #micromamba shell init --shell=bash --prefix=~/micromamba
