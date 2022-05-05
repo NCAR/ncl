@@ -82,6 +82,7 @@ jobs:
 
       - name: Build ncl
         run: |
+          conda install -n ncl_build -c conda-forge imagemagick esmf libgdal=2.4
           conda env list
           bash .build/conda_build.sh
 
