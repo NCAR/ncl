@@ -13,6 +13,8 @@ cd ${SRC_DIR}
 #micromamba shell init --shell=bash --prefix=~/micromamba
 source activate ncl_build 2>/dev/null || conda activate ncl_build
 
+conda list
+
 export PREFIX="${CONDA_PREFIX}"
 export CXXFLAGS="-fPIC $CXXFLAGS"
 export LDFLAGS="-L${PREFIX}/lib $LDFLAGS"
@@ -77,3 +79,5 @@ mkdir -p "$DEACTIVATE_DIR"
 
 cp "$RECIPE_DIR/scripts/activate.sh" "$ACTIVATE_DIR/ncl-activate.sh"
 cp "$RECIPE_DIR/scripts/deactivate.sh" "$DEACTIVATE_DIR/ncl-deactivate.sh"
+
+conda list
