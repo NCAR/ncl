@@ -43,36 +43,53 @@ jobs:
           brew update
           brew install --cask xquartz
 
-      - name: Create conda environment (Darwin)
-        if: matrix.os == 'macos-latest'
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-        uses: mamba-org/provision-with-micromamba@main
-        with:
-          micromamba-version: "latest"
-          environment-name: ncl_build
-          environment-file: .build/envs/Darwin.yml
+#      - name: Create conda environment (Darwin)
+#        if: matrix.os == 'macos-latest'
+#        env:
+#          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+#        uses: mamba-org/provision-with-micromamba@main
+#        with:
+#          micromamba-version: "latest"
+#          environment-name: ncl_build
+#          environment-file: .build/envs/Darwin.yml
+#
+#      - name: Create conda environment (Linux)
+#        if: matrix.os == 'ubuntu-latest'
+#        env:
+#          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+#        uses: mamba-org/provision-with-micromamba@main
+#        with:
+#          micromamba-version: "latest"
+#          environment-name: ncl_build
+#          environment-file: .build/envs/Linux.yml
 
-      - name: Create conda environment (Linux)
+      - name: Conda setup
+          uses: conda-incubator/setup-miniconda@v2
+          with:
+            activate-environment: ncl_build
+            channels: conda-forge
+            channel-priority: strict
+
+      - name: Conda install (Darwin)
+        if: matrix.os == 'macos-latest'
+        run: |
+          conda env update --file .build/envs/Darwin.yml --prune
+
+      - name: Conda install (Linux)
         if: matrix.os == 'ubuntu-latest'
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-        uses: mamba-org/provision-with-micromamba@main
-        with:
-          micromamba-version: "latest"
-          environment-name: ncl_build
-          environment-file: .build/envs/Linux.yml
+        run: |
+          conda env update --file .build/envs/Linux.yml --prune
 
       - name: Build ncl
         run: |
-          micromamba env list
+          conda env list
           bash .build/conda_build.sh
 
       - name: Run tests
         run: |
-          micromamba activate ncl_build
-          micromamba env list
-          micromamba list
+          conda env list
+          conda activate ncl_build
+          conda list
           test "`ncl -V`" = "`cat version`"
           git clone https://github.com/NCAR/ncl_ci_test
           cd ncl_ci_test

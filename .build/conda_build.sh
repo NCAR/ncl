@@ -9,12 +9,9 @@ cd ${SRC_DIR}
 
 #conda env create -f "${RECIPE_DIR}/envs/`uname`.yml" 2>/dev/null
 . "$(conda info --base)/etc/profile.d/conda.sh"
-eval "$(micromamba shell hook --shell=bash)"
-micromamba shell init --shell=bash --prefix=~/micromamba
-source activate ncl_build 2>/dev/null || micromamba activate ncl_build
 #eval "$(micromamba shell hook --shell=bash)"
 #micromamba shell init --shell=bash --prefix=~/micromamba
-#micromamba activate ncl_build
+source activate ncl_build 2>/dev/null || conda activate ncl_build
 
 export PREFIX="${CONDA_PREFIX}"
 export CXXFLAGS="-fPIC $CXXFLAGS"
