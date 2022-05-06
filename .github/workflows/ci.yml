@@ -69,7 +69,6 @@ jobs:
           activate-environment: ncl_build
 #          python-version: 3.6
           channels: conda-forge
-          channel-priority: strict
 
       - name: Conda install (Darwin)
         if: matrix.os == 'macos-latest'
@@ -81,9 +80,12 @@ jobs:
         run: |
           conda env update --file .build/envs/Linux.yml --prune
 
-      - name: Conda install additional dependencies
+      - name: Conda install libgdal
         run: |
           conda install -n ncl_build -c conda-forge libgdal
+
+      - name: Conda install additional dependencies
+        run: |
           conda install -n ncl_build -c conda-forge imagemagick esmf
 
       - name: Build ncl
