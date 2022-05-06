@@ -67,7 +67,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: ncl_build
-          python-version: 3.6
+#          python-version: 3.6
           channels: conda-forge
           channel-priority: strict
 
@@ -81,10 +81,13 @@ jobs:
         run: |
           conda env update --file .build/envs/Linux.yml --prune
 
+      - name: Conda install additional dependencies
+        run: |
+          conda install -n ncl_build -c conda-forge imagemagick esmf
+          conda install -n ncl_build -c conda-forge libgdal=2.4
+
       - name: Build ncl
         run: |
-          conda install -n ncl_build -c conda-forge imagemagick esmf libgdal=2.4
-          conda env list
           bash .build/conda_build.sh
 
       - name: Run tests
