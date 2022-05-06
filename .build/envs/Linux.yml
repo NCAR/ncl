@@ -18,7 +18,6 @@ dependencies:
   - hdfeos5
   - jasper
   - jpeg
-  - libgdal
   - libiconv
   - libnetcdf
   - libpng
