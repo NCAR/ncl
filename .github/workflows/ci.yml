@@ -67,6 +67,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: ncl_build
+          python-version: 3.6
           channels: conda-forge
           channel-priority: strict
 
