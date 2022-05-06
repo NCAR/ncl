@@ -83,8 +83,8 @@ jobs:
 
       - name: Conda install additional dependencies
         run: |
+          conda install -n ncl_build -c conda-forge libgdal
           conda install -n ncl_build -c conda-forge imagemagick esmf
-          conda install -n ncl_build -c conda-forge libgdal=2.4
 
       - name: Build ncl
         run: |
