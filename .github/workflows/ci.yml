@@ -94,9 +94,9 @@ jobs:
 
       - name: Run tests
         run: |
-          conda env list
-          conda activate ncl_build
-          conda list
+          micromamba env list
+          micromamba activate ncl_build
+          micromamba list
           test "`ncl -V`" = "`cat version`"
           git clone https://github.com/NCAR/ncl_ci_test
           cd ncl_ci_test
