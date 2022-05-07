@@ -10,14 +10,17 @@ dependencies:
   - bzip2
   - cairo
   - curl
+  - esmf
   - freetype
   - gsl
   - hdf4
   - hdf5
   - hdfeos2
   - hdfeos5
+  - imagemagick
   - jasper
   - jpeg
+  - libgdal
   - libiconv
   - libnetcdf
   - libpng
@@ -30,6 +33,3 @@ dependencies:
   - xorg-libxmu
   - xorg-makedepend
   - xorg-imake
-  - imagemagick
-  - esmf
-  - libgdal

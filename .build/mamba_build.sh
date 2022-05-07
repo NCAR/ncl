@@ -12,9 +12,6 @@ eval "$(micromamba shell hook --shell=bash)"
 micromamba shell init --shell=bash --prefix=~/micromamba
 source activate ncl_build 2>/dev/null || micromamba activate ncl_build
 
-micromamba env list
-micromamba list
-
 export PREFIX="${CONDA_PREFIX}"
 export CXXFLAGS="-fPIC $CXXFLAGS"
 export LDFLAGS="-L${PREFIX}/lib $LDFLAGS"
