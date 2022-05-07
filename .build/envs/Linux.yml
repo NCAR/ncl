@@ -30,3 +30,6 @@ dependencies:
   - xorg-libxmu
   - xorg-makedepend
   - xorg-imake
+  - imagemagick
+  - esmf
+  - libgdal

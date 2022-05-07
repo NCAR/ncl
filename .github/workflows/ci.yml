@@ -43,54 +43,54 @@ jobs:
           brew update
           brew install --cask xquartz
 
-#      - name: Create conda environment (Darwin)
-#        if: matrix.os == 'macos-latest'
-#        env:
-#          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-#        uses: mamba-org/provision-with-micromamba@main
-#        with:
-#          micromamba-version: "latest"
-#          environment-name: ncl_build
-#          environment-file: .build/envs/Darwin.yml
-#
-#      - name: Create conda environment (Linux)
-#        if: matrix.os == 'ubuntu-latest'
-#        env:
-#          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-#        uses: mamba-org/provision-with-micromamba@main
-#        with:
-#          micromamba-version: "latest"
-#          environment-name: ncl_build
-#          environment-file: .build/envs/Linux.yml
-
-      - name: Conda setup
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          activate-environment: ncl_build
-          python-version: 3.7
-          channels: conda-forge
-
-      - name: Conda install (Darwin)
+      - name: Create mamba environment (Darwin)
         if: matrix.os == 'macos-latest'
-        run: |
-          conda env update --file .build/envs/Darwin.yml --prune
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+        uses: mamba-org/provision-with-micromamba@main
+        with:
+          micromamba-version: "latest"
+          environment-name: ncl_build
+          environment-file: .build/envs/Darwin.yml
 
-      - name: Conda install (Linux)
+      - name: Create mamba environment (Linux)
         if: matrix.os == 'ubuntu-latest'
-        run: |
-          conda env update --file .build/envs/Linux.yml --prune
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+        uses: mamba-org/provision-with-micromamba@main
+        with:
+          micromamba-version: "latest"
+          environment-name: ncl_build
+          environment-file: .build/envs/Linux.yml
 
-      - name: Conda install additional dependencies
-        run: |
-          conda install -n ncl_build -c conda-forge imagemagick esmf
-
-      - name: Conda install libgdal=2.4
-        run: |
-          conda install -n ncl_build -c conda-forge libgdal
+#      - name: Conda setup
+#        uses: conda-incubator/setup-miniconda@v2
+#        with:
+#          activate-environment: ncl_build
+#          python-version: 3.7
+#          channels: conda-forge
+#
+#      - name: Conda install (Darwin)
+#        if: matrix.os == 'macos-latest'
+#        run: |
+#          conda env update --file .build/envs/Darwin.yml --prune
+#
+#      - name: Conda install (Linux)
+#        if: matrix.os == 'ubuntu-latest'
+#        run: |
+#          conda env update --file .build/envs/Linux.yml --prune
+#
+#      - name: Conda install additional dependencies
+#        run: |
+#          conda install -n ncl_build -c conda-forge imagemagick esmf
+#
+#      - name: Conda install libgdal=2.4
+#        run: |
+#          conda install -n ncl_build -c conda-forge libgdal
 
       - name: Build ncl
         run: |
-          bash .build/conda_build.sh
+          bash .build/mamba_build.sh
 
       - name: Run tests
         run: |
