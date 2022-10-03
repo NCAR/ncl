@@ -42,9 +42,9 @@
 #define Cdynamic 
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   gcc-12
-#define CxxCompiler   g\+\+
+#define CxxCompiler   g\+\+-12
 #define FCompiler   gfortran
-#define CcOptions      -ansi -fPIC -Wall -Wno-error=implicit-function-declaration
+#define CcOptions      -ansi -fPIC -Wall -std=c99 -Wno-error=implicit-function-declaration
 #define FcOptions      -fPIC -fno-range-check -Wall -fallow-argument-mismatch -fallow-invalid-boz
 #define CtoFLibraries      -lgfortran -lquadmath
 #define CtoFLibrariesUser  -lgfortran -lquadmath
@@ -58,6 +58,8 @@
 
 #define ArchRecLibSearch    -L/opt/X11/lib
 #define ArchRecIncSearch    -I/opt/X11/include -I/opt/X11/include/freetype2
+
+#define LexLibrary -ll
 
 FC = $(F77)
 

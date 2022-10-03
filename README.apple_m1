@@ -6,4 +6,8 @@ For Configure, my library and include settings are:
 
 /opt/X11/include /opt/X11/include/freetype2 /Users/Shared/opt/local/netcdf480ser/include /Users/Shared/homebrew/include
 
+Make sure to install proj at version 7 in homebrew:
+ brew install proj@7
+And if proj v. 9 is install, then unlink that with 'brew unlink proj' and then link the v7 with 'brew link proj@7'
 
+Also need to set g++ at as g\+\+-12 so that ncl linking finds the gfortran library.
