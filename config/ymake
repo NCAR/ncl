@@ -422,6 +422,12 @@ case    Darwin:
             set sysincs = Darwin_Intel
             set vendor  = Apple
             breaksw
+        case    arm64:
+            set model   = $mach
+            set arch    = $mach
+            set sysincs = Darwin_Arm
+            set vendor  = Apple
+            breaksw
         default:
             echo "$0 : Unknown machine type" > /dev/tty
             exit 1

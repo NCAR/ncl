@@ -1,0 +1,9 @@
+I have netcdf installed separately and other ncarg dependencies were installed with homebrew. GCC version 12 was installed with homebrew, as well. That version (gcc-12) is wired into the Darwin_Arm configure file and probably should be made generic.
+
+For Configure, my library and include settings are:
+
+/opt/X11/lib /Users/Shared/opt/local/netcdf480ser/lib /Users/Shared/homebrew/lib
+
+/opt/X11/include /opt/X11/include/freetype2 /Users/Shared/opt/local/netcdf480ser/include /Users/Shared/homebrew/include
+
+
