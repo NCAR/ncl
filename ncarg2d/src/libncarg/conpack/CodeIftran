@@ -9666,9 +9666,6 @@ C
 C Find the length of the character buffer and initialize it to blanks.
 C
         LBUF=LEN(CBUF)
-C  hack: Check if lbuf is "large" and, if it is, assume calling from C 
-C    and length is bad and should be 128
-        IF ( LBUF > 512 ) LBUF = 128 
         CBUF(1:lbuf)=' '
 C
 C Use the local I/O routines to generate an E-format representation of
