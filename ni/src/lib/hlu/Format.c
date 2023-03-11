@@ -940,11 +940,7 @@ NhlString _NhlFormatFloat
         NGCALLF(cpinrc,CPINRC)();
 
 	{
-#ifdef arm64
-		long int len1,len2,len3,len4;
-#else
-		int len1,len2,len3,len4;
-#endif
+		long len1,len2,len3,len4;
 		NGstring cex1_f;
 		NGstring cex2_f;
 		NGstring cex3_f;
@@ -1287,11 +1283,7 @@ NhlErrorTypes _NhlGetScaleInfo
         NGCALLF(cpinrc,CPINRC)();
 
 	{
-#ifdef arm64
-		long int len1,len2,len3,len4;
-#else
-		int len1,len2,len3,len4;
-#endif
+		long len1,len2,len3,len4;
 		NGstring cex1_f;
 		NGstring cex2_f;
 		NGstring cex3_f;
