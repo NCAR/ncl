@@ -48,7 +48,7 @@ Qt_DEFINES      = -DBuildQtEnabled
 #define Qt_DEFINES
 #endif
 
-EXTRA_CDEFINES	=	$(OS_DEF) $(TRIANGLE_DEF) $(PNG_DEF) $(Qt_DEFINES) $(ARCH_DEF)
+EXTRA_CDEFINES	=	$(OS_DEF) $(TRIANGLE_DEF) $(PNG_DEF) $(Qt_DEFINES)
 
 HDRS1   	= Base.h BaseI.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		CoordApprox.h Error.h ErrorI.h ErrorP.h IrregularTransObj.h \
