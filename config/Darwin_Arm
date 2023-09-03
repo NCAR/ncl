@@ -26,6 +26,7 @@
  *  #define CtoFLibraries    -L/Users/Shared/homebrew/Cellar/gcc/12.2.0/lib/gcc/current  -lgfortran -lquadmath
  * #define CtoFLibrariesUser -L/Users/Shared/homebrew/Cellar/gcc/12.2.0/lib/gcc/current -lgfortran -lquadmath
  */
+#define DEBUG 1
 #define HdfDefines  -DDARWIN
 #define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped -D__UNIXOS2__ -D_DARWIN_C_SOURCE
 #define ByteSwapped
@@ -34,9 +35,9 @@
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   gcc-12
 #define CxxCompiler   g\+\+-12
-#define FCompiler   gfortran
-#define CcOptions      -ansi -fPIC -Wall -std=c99 -Wno-error=implicit-function-declaration
-#define FcOptions      -fPIC -fno-range-check -Wall -fallow-argument-mismatch -fallow-invalid-boz
+#define FCompiler   gfortran-12
+#define CcOptions      -ansi -fPIC -Wall -std=c99 -Wno-error=implicit-function-declaration -O
+#define FcOptions      -fPIC -fno-range-check -Wall -fallow-argument-mismatch -fallow-invalid-boz -O
 #define CtoFLibraries      -lgfortran -lquadmath
 #define CtoFLibrariesUser  -lgfortran -lquadmath
 #define XToolLibrary    -lXt -lSM -lICE
