@@ -1,5 +1,9 @@
 # NCAR Command Language
 
+> [!WARNING]
+> **NCL was placed in maintenance mode as of 2019.** You can find more details in the [most recent announcement here](https://geocat.ucar.edu/blog/2020/11/11/November-2020-update).
+
+
 <img src="http://www.ncl.ucar.edu/Images/NCLLogoWithoutText.jpg" width="150" align=right title="NCL Logo">
 
 This is the source code for the NCAR Command Language (NCL).
