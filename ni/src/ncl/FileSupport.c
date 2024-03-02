@@ -43,7 +43,6 @@ short    NCLuseAFS;
 #include <netcdf.h>
 
 #ifdef BuildHDF4
-#include <dfi.h>
 #include <mfhdf.h>
 #ifdef BuildHDFEOS
 #include <HdfEosDef.h>
