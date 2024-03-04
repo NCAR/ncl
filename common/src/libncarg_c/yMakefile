@@ -42,7 +42,16 @@ EXCSRCS = bcopyswap.c logic32.c
 EXFSRCS = gbytes.f sbytes.f
 EXOBJS  = sbytes.o gbytes.o bcopyswap.o logic32.o
 
+#elif defined(Darwin) && defined(arm64) && defined(__LP64__)
+EXCSRCS = bcopyswap.c logic32.c
+EXFSRCS = gbytes.f sbytes.f
+EXOBJS  = sbytes.o gbytes.o bcopyswap.o logic32.o
+
 #elif defined(Darwin) && defined(i386) && !defined(__LP64__)
+EXCSRCS = bcopyswap.c logic32.c gsbytes.c
+EXOBJS  = bcopyswap.o logic32.o gsbytes.o
+
+#elif defined(Darwin) && defined(arm64) && !defined(__LP64__)
 EXCSRCS = bcopyswap.c logic32.c gsbytes.c
 EXOBJS  = bcopyswap.o logic32.o gsbytes.o
 

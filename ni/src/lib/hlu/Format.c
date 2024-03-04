@@ -940,7 +940,7 @@ NhlString _NhlFormatFloat
         NGCALLF(cpinrc,CPINRC)();
 
 	{
-		int len1,len2,len3,len4;
+		long len1,len2,len3,len4;
 		NGstring cex1_f;
 		NGstring cex2_f;
 		NGstring cex3_f;
@@ -1283,7 +1283,7 @@ NhlErrorTypes _NhlGetScaleInfo
         NGCALLF(cpinrc,CPINRC)();
 
 	{
-		int len1,len2,len3,len4;
+		long len1,len2,len3,len4;
 		NGstring cex1_f;
 		NGstring cex2_f;
 		NGstring cex3_f;

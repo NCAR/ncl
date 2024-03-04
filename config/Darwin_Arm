@@ -1,0 +1,68 @@
+/*
+ *	Description:	This file contains the configuration for a
+ *                      gfortran/gcc build on a *64 bit* ARM (Apple Silicon) Mac system.
+ *
+ *                      You may need to modify it to change or include
+ *                      options. This version was tested with GCC-12.2
+ *                      built with Homebrew and XCode 13.4.1 on OS 12.6 (Monterey)
+ *
+ *                       Note: if the build has trouble finding the
+ *                       "gfortran" library, then you may need to modify
+ *                       the "CtoFLibraries" line below and include a "-L"
+ *                       path to help it. For example:
+ *
+ *     #define CtoFLibraries  -L/usr/local/lib -lgfortran -lquadmath
+ *     or
+ *     #define CtoFLibraries  /usr/local/lib/libgfortran.a /usr/local/lib/libquadmath.a
+ *
+ *                       You'll need to change "/usr/local/lib" to
+ *                       whatever directory contains "libgfortran.so".
+ *
+ *			 The references to the "User" macros below is for building the
+ *                       ncargcc, ncargf90, nhlcc, etc, scripts.  We don't want the
+ *                       development stuff (like the CtoFLibraries) jammed into those
+ *                       scripts, like "/usr/local/lib/libcairo.a"; instead, we want
+ *                       clean paths like "-lcairo".
+ *  #define CtoFLibraries    -L/Users/Shared/homebrew/Cellar/gcc/12.2.0/lib/gcc/current  -lgfortran -lquadmath
+ * #define CtoFLibrariesUser -L/Users/Shared/homebrew/Cellar/gcc/12.2.0/lib/gcc/current -lgfortran -lquadmath
+ */
+#define DEBUG 1
+#define HdfDefines  -DDARWIN
+#define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped -D__UNIXOS2__ -D_DARWIN_C_SOURCE
+#define ByteSwapped
+#define Cstatic 
+#define Cdynamic 
+#define CppCommand '/usr/bin/cpp -traditional'
+#define CCompiler   gcc-12
+#define CxxCompiler   g\+\+-12
+#define FCompiler   gfortran-12
+#define CcOptions      -ansi -fPIC -Wall -std=c99 -Wno-error=implicit-function-declaration -O
+#define FcOptions      -fPIC -fno-range-check -Wall -fallow-argument-mismatch -fallow-invalid-boz -O
+#define CtoFLibraries      -lgfortran -lquadmath
+#define CtoFLibrariesUser  -lgfortran -lquadmath
+#define XToolLibrary    -lXt -lSM -lICE
+#define BuildShared NO
+#define XLibrary -lXpm -lX11 -lXext
+
+#define LibSearchUser    -L/opt/X11/lib
+#define IncSearchUser    -I/opt/X11/include -I/opt/X11/include/freetype2
+#define ExtraIncSearch   -I/opt/X11/include/freetype2
+
+#define ArchRecLibSearch    -L/opt/X11/lib
+#define ArchRecIncSearch    -I/opt/X11/include -I/opt/X11/include/freetype2
+
+#define LexLibrary -ll
+
+FC = $(F77)
+
+/*************** Redefine Macros from Rules ********************************/
+
+/*
+ * Macro:	MakeDir
+ *
+ * Description:	This rule creates a directory - if a parent dir doesn't exist
+ *		it attempts to create it.
+ */
+#ifndef MakeDir
+#define MakeDir(dir)    @if (test ! -d dir); then ($(MKDIRHIER) dir); fi
+#endif

@@ -9666,7 +9666,7 @@ C
 C Find the length of the character buffer and initialize it to blanks.
 C
         LBUF=LEN(CBUF)
-        CBUF=' '
+        CBUF(1:lbuf)=' '
 C
 C Use the local I/O routines to generate an E-format representation of
 C the number.
@@ -9788,7 +9788,7 @@ C which requires special action).
 C
         IF (NDGS.EQ.0.OR.IEXF.EQ.0)
           IF (IEXP.GT.0.OR.LMSD.EQ.-10000)
-            CBUF='0'
+            CBUF(1:LBUF)='0'
             NBUF=1
             NDGS=1
             IEVA=0
