@@ -16,7 +16,7 @@ dependencies:
   - hdfeos2
   - hdfeos5
   - imagemagick
-  - jasper
+  - jasper=1.900.1
   - jpeg
   - libgdal=2.4
   - libiconv
