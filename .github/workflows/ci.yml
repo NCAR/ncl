@@ -1,4 +1,4 @@
-name: CI (mamba)
+name: CI
 on:
   push:
     branches:
@@ -8,6 +8,10 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * *' # Daily “At 00:00”
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -20,15 +24,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ "ubuntu-latest", "macos-latest"]
+        os: [ "ubuntu-latest", "macos-13"]
 
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.9.0
-        with:
-          access_token: ${{ github.token }}
+      - name: Checkout
+      - uses: actions/checkout@v4
 
       - name: Install tcsh and byacc (Linux)
         if: matrix.os == 'ubuntu-latest'
@@ -38,32 +38,24 @@ jobs:
           sudo apt-get install byacc
 
       - name: Install dependencies (Darwin)
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-13'
         run: |
           brew update
           brew install --cask xquartz
 
       - name: Create mamba environment (Darwin)
-        if: matrix.os == 'macos-latest'
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-        uses: mamba-org/provision-with-micromamba@main
+        if: matrix.os == 'macos-13'
+        uses: mamba-org/setup-micromamba@0dea6379afdaffa5d528b3d1dabc45da37f443fc # v2.0.4
         with:
-          micromamba-version: "latest"
-          environment-name: ncl_build
           environment-file: .build/envs/Darwin.yml
 
       - name: Create mamba environment (Linux)
         if: matrix.os == 'ubuntu-latest'
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-        uses: mamba-org/provision-with-micromamba@main
+        uses: mamba-org/setup-micromamba@0dea6379afdaffa5d528b3d1dabc45da37f443fc # v2.0.4
         with:
-          micromamba-version: "latest"
-          environment-name: ncl_build
           environment-file: .build/envs/Linux.yml
 
-      - name: Build ncl
+      - name: Build NCL
         run: |
           bash .build/mamba_build.sh
 
