@@ -16,10 +16,14 @@ C
       integer index, nearest
       integer i
       integer ARGBMASK, RMASK, GMASK, BMASK
-      parameter (ARGBMASK = Z'40000000')
-      parameter (RMASK     = Z'00FF0000')
-      parameter (GMASK     = Z'0000FF00')
-      parameter (BMASK     = Z'000000FF')
+      parameter (ARGBMASK  = int(Z'40000000'))
+      parameter (RMASK     = int(Z'00FF0000'))
+      parameter (GMASK     = int(Z'0000FF00'))
+      parameter (BMASK     = int(Z'000000FF'))
+!      parameter (ARGBMASK = Z'40000000')
+!      parameter (RMASK     = Z'00FF0000')
+!      parameter (GMASK     = Z'0000FF00')
+!      parameter (BMASK     = Z'000000FF')
       real r, g, b, dist, mindist
 
       if (iand(index, ARGBMASK).eq.0) then
@@ -31,8 +35,8 @@ C     find the closest match, based upon distance in color space
       mindist = 2e31
       nearest = 0
       do i=1,mol
-          r = (iand(index, RMASK) / Z'0000FFFF') / 255.
-          g = (iand(index, GMASK) / Z'000000FF') / 255.
+          r = (iand(index, RMASK) / int(Z'0000FFFF')) / 255.
+          g = (iand(index, GMASK) / int(Z'000000FF')) / 255.
           b = (iand(index, BMASK))               / 255.
 
 C         we don't need absolute distance, so forego the sqrt operation...
