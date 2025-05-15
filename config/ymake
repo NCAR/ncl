@@ -367,6 +367,7 @@ case    Linux:
         case    x*64:
         case    p*64:
         case    alpha:
+        case    loongarch64:
             set model   = $mach
             set arch    = $mach
             set sysincs = LINUX
