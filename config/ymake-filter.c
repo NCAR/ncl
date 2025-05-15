@@ -47,7 +47,7 @@ int main()
 {
 	char	*line, *getcppline();
 	int	len, lastlen;
-	int	isacppcomment();
+	int	isacppcomment(char *);
 
 	lastlen = 0;
 
