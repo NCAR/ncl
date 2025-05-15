@@ -53,7 +53,6 @@
 #include <ncarg/c.h>
 #include <hdf.h>
 #include <df.h>
-#include <dfgr.h>
 #include "ncarg_ras.h"
 #include "hdfP.h"
 #include "options.h"
