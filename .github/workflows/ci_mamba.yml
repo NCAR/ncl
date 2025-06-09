@@ -45,13 +45,13 @@ jobs:
 
       - name: Create mamba environment (Darwin)
         if: matrix.os == 'macos-13'
-        uses: mamba-org/setup-micromamba@0dea6379afdaffa5d528b3d1dabc45da37f443fc # v2.0.4
+        uses: mamba-org/setup-micromamba@b09ef9b599704322748535812ca03efb2625677b # v2.0.5
         with:
           environment-file: .build/envs/Darwin.yml
 
       - name: Create mamba environment (Linux)
         if: matrix.os == 'ubuntu-latest'
-        uses: mamba-org/setup-micromamba@0dea6379afdaffa5d528b3d1dabc45da37f443fc # v2.0.4
+        uses: mamba-org/setup-micromamba@b09ef9b599704322748535812ca03efb2625677b # v2.0.5
         with:
           environment-file: .build/envs/Linux.yml
 
