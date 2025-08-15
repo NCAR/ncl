@@ -3833,8 +3833,9 @@ static void *H5InitializeFileRec(NclFileFormat *format)
         first = False;
     }
 
-    /*nc_set_log_level(3);*/
+#ifdef HAVE_NC_SET_LOG_LEVEL
     nc_set_log_level(3);
+#endif
 
     grpnode = (NclFileGrpNode *)NclCalloc(1, sizeof(NclFileGrpNode));
     assert(grpnode);

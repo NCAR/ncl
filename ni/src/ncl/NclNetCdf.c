@@ -613,8 +613,9 @@ NclFileFormat *format;
 		first = False;
 	}
 
-        /*nc_set_log_level(3);*/
-        nc_set_log_level(3);
+#ifdef HAVE_NC_SET_LOG_LEVEL
+	nc_set_log_level(3);
+#endif
 
 	ChunkSizeHint = 64 * blksize;
 	therec = (NetCdfFileRecord*)NclCalloc(1, sizeof(NetCdfFileRecord));
